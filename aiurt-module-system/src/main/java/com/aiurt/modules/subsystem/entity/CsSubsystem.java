@@ -1,28 +1,28 @@
 package com.aiurt.modules.subsystem.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
 import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.material.entity.MaterialBaseType;
+import com.aiurt.modules.system.entity.SysUser;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: cs_subsystem
@@ -104,6 +104,10 @@ public class CsSubsystem implements Serializable {
     @ApiModelProperty(value = "子系统人员名称")
     @TableField(exist = false)
     private String systemUserName;
+    /**子系统人员*/
+    @ApiModelProperty(value = "子系统人员")
+    @TableField(exist = false)
+    private List<SysUser> systemUsers;
     /**子系统人员*/
     @ApiModelProperty(value = "子系统下的物资分类")
     @TableField(exist = false)

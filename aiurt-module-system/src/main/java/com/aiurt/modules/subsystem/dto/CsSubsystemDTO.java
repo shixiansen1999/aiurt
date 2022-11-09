@@ -1,6 +1,7 @@
 package com.aiurt.modules.subsystem.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.system.entity.SysUser;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -11,6 +12,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: cs_subsystem
@@ -55,10 +57,10 @@ public class CsSubsystemDTO implements Serializable {
     @ApiModelProperty(value = "系统概况")
     private String generalSituation;
 
-    /**子系统人员账号id*/
-    @ApiModelProperty(value = "子系统人员账号id")
+    /**子系统人员*/
+    @ApiModelProperty(value = "子系统人员")
     @TableField(exist = false)
-    private String systemUserList;
+    private List<SysUser> systemUserList;
 
     /**删除标志，0未删除，1已删除*/
     @ApiModelProperty(value = "删除标志，0未删除，1已删除")

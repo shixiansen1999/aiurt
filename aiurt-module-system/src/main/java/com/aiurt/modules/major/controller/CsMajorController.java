@@ -289,6 +289,7 @@ public class CsMajorController extends BaseController<CsMajor, ICsMajorService> 
             // 获取上传文件对象
             MultipartFile file = entity.getValue();
             ImportParams params = new ImportParams();
+            params.setTitleRows(1);
             params.setHeadRows(1);
             params.setNeedSave(true);
             try {
@@ -320,6 +321,7 @@ public class CsMajorController extends BaseController<CsMajor, ICsMajorService> 
                     BeanUtils.copyProperties(csMajorImportVO, csMajor);
                     list.add(csMajor);
                     successLines++;
+
                 }
                 if(errorLines==0)
                 {
