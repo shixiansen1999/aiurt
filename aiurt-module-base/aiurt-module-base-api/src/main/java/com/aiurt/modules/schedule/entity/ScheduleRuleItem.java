@@ -96,6 +96,17 @@ public class ScheduleRuleItem {
     private  Date  endTime;
 
 
+    /**创建人*/
+    @Excel(name = "创建人", width = 15)
+    @ApiModelProperty(value = "创建人")
+    private  String  createBy;
+
+    /**修改人*/
+    @Excel(name = "修改人", width = 15)
+    @ApiModelProperty(value = "修改人")
+    private  String  updateBy;
+
+
     /**时间标记*/
     @Excel(name = "时间标记（0无，1跨日 非字典值）", width = 15)
     @ApiModelProperty(value = "时间标记（0无，1跨日 非字典值）")

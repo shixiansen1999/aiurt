@@ -54,6 +54,16 @@ public class ScheduleRule {
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 
+    /**创建人*/
+    @Excel(name = "创建人", width = 15)
+    @ApiModelProperty(value = "创建人")
+    private  String  createBy;
+
+    /**修改人*/
+    @Excel(name = "修改人", width = 15)
+    @ApiModelProperty(value = "修改人")
+    private  String  updateBy;
+
     /**
      * 更新时间
      */

@@ -94,6 +94,16 @@ public class ScheduleItem {
     @ApiModelProperty(value = "更新时间")
 	private  Date  updateTime;
 
+	/**创建人*/
+	@Excel(name = "创建人", width = 15)
+	@ApiModelProperty(value = "创建人")
+	private  String  createBy;
+
+	/**修改人*/
+	@Excel(name = "修改人", width = 15)
+	@ApiModelProperty(value = "修改人")
+	private  String  updateBy;
+
 
     private static final String ID = "id";
     private static final String NAME = "name";
