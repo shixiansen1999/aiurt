@@ -1,6 +1,7 @@
 package com.aiurt.modules.schedule.controller;
 
 
+import cn.hutool.core.date.DateUtil;
 import com.aiurt.modules.schedule.service.IScheduleItemService;
 import com.aiurt.modules.schedule.entity.ScheduleItem;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -274,6 +275,11 @@ public class ScheduleItemController {
     public Result<List<ScheduleItem>> getAllScheduleItem() {
         Result<List<ScheduleItem>> result = new Result<List<ScheduleItem>>();
         List<ScheduleItem> itemList = scheduleItemService.list(new LambdaQueryWrapper<ScheduleItem>().eq(ScheduleItem::getDelFlag, 0));
+        itemList.forEach(e->{
+            String format1 = DateUtil.format(e.getStartTime(), "HH:mm");
+            String format2 = DateUtil.format(e.getEndTime(), "HH:mm");
+            e.setComposition(e.getName()+"（"+format1+"-"+format2+")");
+        });
         result.setResult(itemList);
         result.setSuccess(true);
         return result;

@@ -2,6 +2,7 @@ package com.aiurt.modules.schedule.entity;
 
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
@@ -52,6 +53,17 @@ public class ScheduleItem {
 	@Excel(name = "标识", width = 15)
     @ApiModelProperty(value = "标识")
 	private  String  remark;
+
+	/**时间标记*/
+	@Excel(name = "时间标记（0无，1跨日 非字典值）", width = 15)
+    @ApiModelProperty(value = "时间标记（0无，1跨日 非字典值）")
+	private  String  timeId;
+
+	/**班次组成*/
+	@Excel(name = "班次组成", width = 15)
+	@ApiModelProperty(value = "班次组成")
+	@TableField(exist = false)
+	private  String  composition;
 
 	/**颜色*/
 	@Excel(name = "颜色", width = 15)
