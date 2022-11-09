@@ -1,7 +1,6 @@
 package com.aiurt.modules.major.controller;
 
 
-import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
@@ -11,13 +10,11 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.system.base.view.AiurtEntityExcelView;
-import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.major.entity.CsMajor;
-import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
@@ -32,25 +29,18 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -280,69 +270,7 @@ public class CsMajorController extends BaseController<CsMajor, ICsMajorService> 
     @Transactional(rollbackFor = Exception.class)
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
-        // 错误信息
-        List<String> errorMessage = new ArrayList<>();
-        int successLines = 0, errorLines = 0;
-        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
-            // 获取上传文件对象
-            MultipartFile file = entity.getValue();
-            ImportParams params = new ImportParams();
-            params.setTitleRows(1);
-            params.setHeadRows(1);
-            params.setNeedSave(true);
-            try {
-                List<CsMajorImportVO> csMajorList = ExcelImportUtil.importExcel(file.getInputStream(), CsMajorImportVO.class, params);
-                List<CsMajor> list = new ArrayList<>();
-                for (int i = 0; i < csMajorList.size(); i++) {
-                    CsMajorImportVO csMajorImportVO = csMajorList.get(i);
-                    if (ObjectUtil.isNull(csMajorImportVO.getMajorCode())) {
-                        errorMessage.add("专业编码为必填项，忽略导入");
-                        errorLines++;
-                    } else {
-                        CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorCode, csMajorImportVO.getMajorCode()).eq(CsMajor::getDelFlag, 0));
-                        if (csMajor != null) {
-                            errorMessage.add(csMajorImportVO.getMajorCode() + "专业编码已经存在，忽略导入");
-                            errorLines++;
-                        }
-                    }
-                    if (ObjectUtil.isNull(csMajorImportVO.getMajorName())) {
-                        errorMessage.add("专业名称为必填项，忽略导入");
-                        errorLines++;
-                    } else {
-                        CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorName, csMajorImportVO.getMajorName()).eq(CsMajor::getDelFlag, 0));
-                        if (csMajor != null) {
-                            errorMessage.add(csMajorImportVO.getMajorCode() + "专业名称已经存在，忽略导入");
-                            errorLines++;
-                        }
-                    }
-                    CsMajor csMajor = new CsMajor();
-                    BeanUtils.copyProperties(csMajorImportVO, csMajor);
-                    list.add(csMajor);
-                    successLines++;
-
-                }
-                if(errorLines==0)
-                {
-                    csMajorService.saveBatch(list);
-                }
-                else
-                {
-                    successLines =0;
-                }
-            } catch (Exception e) {
-                errorMessage.add("发生异常：" + e.getMessage());
-                log.error(e.getMessage(), e);
-            } finally {
-                try {
-                    file.getInputStream().close();
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-        }
-        return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorMessage);
+       return csMajorService.importExcel(request,response);
     }
 
 }

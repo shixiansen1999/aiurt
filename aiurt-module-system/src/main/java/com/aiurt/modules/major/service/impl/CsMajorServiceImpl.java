@@ -1,20 +1,34 @@
 package com.aiurt.modules.major.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.util.dynamic.db.DataSourceCachePool;
+import com.aiurt.common.util.PmsUtil;
 import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.system.controller.SysDictController;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.api.vo.Result;
+import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: cs_major
@@ -85,5 +99,116 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
         //刷新缓存
         sysDictController.refleshCache();
         return Result.OK("编辑成功！");
+    }
+
+
+    @Override
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        // 错误信息
+        List<String> errorMessage = new ArrayList<>();
+        int successLines = 0, errorLines = 0;
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            ImportParams params = new ImportParams();
+            params.setTitleRows(1);
+            params.setHeadRows(1);
+            params.setNeedSave(true);
+            try {
+                List<CsMajorImportVO> csMajorList = ExcelImportUtil.importExcel(file.getInputStream(), CsMajorImportVO.class, params);
+                List<CsMajor> list = new ArrayList<>();
+                for (int i = 0; i < csMajorList.size(); i++) {
+                    CsMajorImportVO csMajorImportVO = csMajorList.get(i);
+                    boolean error = true;
+                    if (ObjectUtil.isNull(csMajorImportVO.getMajorCode())) {
+                        errorMessage.add("专业编码为必填项，忽略导入");
+                        errorLines++;
+                        error=false;
+                    } else {
+                        CsMajor csMajor = csMajorMapper.selectOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorCode, csMajorImportVO.getMajorCode()).eq(CsMajor::getDelFlag, 0));
+                        if (csMajor != null) {
+                            errorMessage.add(csMajorImportVO.getMajorCode() + "专业编码已经存在，忽略导入");
+                            if(error)
+                            {
+                                errorLines++;
+                                error=false;
+                            }
+                        }
+                    }
+                    if (ObjectUtil.isNull(csMajorImportVO.getMajorName())) {
+                        errorMessage.add("专业名称为必填项，忽略导入");
+                        errorLines++;
+                    } else {
+                        CsMajor csMajor = csMajorMapper.selectOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorName, csMajorImportVO.getMajorName()).eq(CsMajor::getDelFlag, 0));
+                        if (csMajor != null) {
+                            errorMessage.add(csMajorImportVO.getMajorCode() + "专业名称已经存在，忽略导入");
+                            if(error)
+                            {
+                                errorLines++;
+                            }
+                        }
+                    }
+                    CsMajor csMajor = new CsMajor();
+                    BeanUtils.copyProperties(csMajorImportVO, csMajor);
+                    list.add(csMajor);
+                    successLines++;
+
+                }
+                if(errorLines==0)
+                {
+                    for (CsMajor csMajor : list) {
+                        csMajorMapper.insert(csMajor);
+                    }
+
+                }
+                else
+                {
+                    successLines =0;
+                }
+            } catch (Exception e) {
+                errorMessage.add("发生异常：" + e.getMessage());
+                log.error(e.getMessage(), e);
+            } finally {
+                try {
+                    file.getInputStream().close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+        return imporReturnRes(errorLines, successLines, errorMessage);
+    }
+
+    public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage) throws IOException {
+        if (errorLines != 0) {
+            JSONObject result = new JSONObject(5);
+            result.put("isAllImport", false);
+            result.put("errorCount", errorLines);
+            result.put("successCount", successLines);
+            int totalCount = successLines + errorLines;
+            result.put("totalCount", totalCount);
+            Result res = Result.ok(result);
+            res.setMessage("文件失败，数据有错误。");
+            res.setCode(200);
+            return res;
+        } else {
+            JSONObject result = new JSONObject(5);
+            int totalCount = successLines + errorLines;
+            result.put("totalCount", totalCount);
+            result.put("errorCount", errorLines);
+            result.put("successCount", successLines);
+            result.put("msg", "总上传行数：" + totalCount + "，已导入行数：" + successLines + "，错误行数：" + errorLines);
+            String fileUrl = PmsUtil.saveErrorTxtByList(errorMessage, "userImportExcelErrorLog");
+            int lastIndex = fileUrl.lastIndexOf(File.separator);
+            String fileName = fileUrl.substring(lastIndex + 1);
+            result.put("fileUrl", "/sys/common/static/" + fileUrl);
+            result.put("fileName", fileName);
+            Result res = Result.ok(result);
+            res.setCode(201);
+            res.setMessage("文件导入成功，但有错误。");
+            return res;
+        }
     }
 }

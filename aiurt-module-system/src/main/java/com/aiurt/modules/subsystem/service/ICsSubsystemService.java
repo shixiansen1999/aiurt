@@ -4,13 +4,14 @@ import com.aiurt.modules.subsystem.dto.SubsystemFaultDTO;
 import com.aiurt.modules.subsystem.dto.SystemByCodeDTO;
 import com.aiurt.modules.subsystem.dto.YearFaultDTO;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -81,4 +82,6 @@ public interface ICsSubsystemService extends IService<CsSubsystem> {
      * @return
      */
     SystemByCodeDTO csSubsystemByCode(String subsystemCode);
+
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

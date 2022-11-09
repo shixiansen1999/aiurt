@@ -8,7 +8,6 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.view.AiurtEntityExcelView;
-import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.major.entity.CsMajor;
@@ -23,7 +22,6 @@ import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
-import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.service.ISysUserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -34,23 +32,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -443,121 +439,7 @@ public class CsSubsystemController  {
 	@Transactional(rollbackFor = Exception.class)
 	@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
 	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
-		// 错误信息
-		List<String> errorMessage = new ArrayList<>();
-		int successLines = 0, errorLines = 0,errorUsers=0;;
-		for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
-			// 获取上传文件对象
-			MultipartFile file = entity.getValue();
-			ImportParams params = new ImportParams();
-			params.setTitleRows(1);
-			params.setHeadRows(1);
-			params.setNeedSave(true);
-			try {
-				List<CsSubsystemDTO> csSubsystemDTOList = ExcelImportUtil.importExcel(file.getInputStream(), CsSubsystemDTO.class, params);
-				List<CsSubsystem> list = new ArrayList<>();
-				for (int i = 0; i < csSubsystemDTOList.size(); i++) {
-					CsSubsystemDTO csSubsystemDTO = csSubsystemDTOList.get(i);
-					if (ObjectUtil.isNull(csSubsystemDTO.getMajorCode())) {
-						errorMessage.add("专业编码为必填项，忽略导入");
-						errorLines++;
-					}
-					else
-					{
-						CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorName, csSubsystemDTO.getMajorName()).eq(CsMajor::getDelFlag, 0));
-						if (csMajor == null) {
-							errorMessage.add(csSubsystemDTO.getMajorName() + "专业名称不存在，忽略导入");
-							errorLines++;
-						}
-						else
-						{
-							csSubsystemDTO.setMajorCode(csMajor.getMajorCode());
-						}
-
-					}
-						if (ObjectUtil.isNull(csSubsystemDTO.getSystemCode())) {
-							errorMessage.add("系统编码为必填项，忽略导入");
-							errorLines++;
-						}
-						else
-						{
-							CsSubsystem csSubsystem = csSubsystemService.getOne(new QueryWrapper<CsSubsystem>().lambda().eq(CsSubsystem::getSystemCode, csSubsystemDTO.getSystemCode()).eq(CsSubsystem::getDelFlag, 0));
-							if (csSubsystem != null) {
-								errorMessage.add(csSubsystemDTO.getMajorCode() + "系统编码已经存在，忽略导入");
-								errorLines++;
-							}
-						}
-
-						if (ObjectUtil.isNull(csSubsystemDTO.getSystemName())) {
-							errorMessage.add("系统名称为必填项，忽略导入");
-							errorLines++;
-						}
-						else {
-							CsSubsystem csSubsystem = csSubsystemService.getOne(new QueryWrapper<CsSubsystem>().lambda().eq(CsSubsystem::getSystemName, csSubsystemDTO.getSystemName()).eq(CsSubsystem::getDelFlag, 0));
-							if (csSubsystem != null) {
-								errorMessage.add(csSubsystem.getMajorCode() + "系统名称已经存在，忽略导入");
-								errorLines++;
-							}
-						}
-					CsSubsystem csSubsystem = new CsSubsystem();
-					BeanUtils.copyProperties(csSubsystemDTO, csSubsystem);
-					String[] arr = csSubsystemDTO.getSystemUserName().split(",");
-					for(String userName :arr){
-						//判断是否存在
-						List<SysUser> users = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getRealname, userName));
-						if(CollUtil.isNotEmpty(users))
-						{
-							errorMessage.add(csSubsystem.getMajorCode() + "技术人不存在，忽略导入");
-							errorLines++;
-							errorUsers++;
-							break;
-						}
-						else
-						{
-							List<SysUser> userList  = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getRealname, userName));
-							csSubsystem.setSystemUsers(userList);
-						}
-
-					}
-					list.add(csSubsystem);
-					successLines++;
-				}
-				if(errorLines==0&&errorUsers==0)
-				{
-					csSubsystemService.saveBatch(list);
-					for (CsSubsystem csSubsystem : list) {
-						 List<SysUser> systemUserList = csSubsystem.getSystemUsers();
-						 if(CollUtil.isNotEmpty(systemUserList))
-						 {
-							 for (SysUser sysUser : systemUserList) {
-								 CsSubsystemUser csSubsystemUser = new CsSubsystemUser();
-								 csSubsystemUser.setSubsystemId(csSubsystem.getId());
-								 csSubsystemUser.setUserId(sysUser.getId());
-								 csSubsystemUser.setUsername(sysUser.getUsername());
-								 csSubsystemUserMapper.insert(csSubsystemUser);
-							 }
-
-						 }
-					}
-				}
-				else
-				{
-					successLines =0;
-				}
-			} catch (Exception e) {
-				errorMessage.add("发生异常：" + e.getMessage());
-				log.error(e.getMessage(), e);
-			} finally {
-				try {
-					file.getInputStream().close();
-				} catch (IOException e) {
-					log.error(e.getMessage(), e);
-				}
-			}
-		}
-		return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorMessage);
+		return  csSubsystemService.importExcel(request,response);
 	}
 
 
