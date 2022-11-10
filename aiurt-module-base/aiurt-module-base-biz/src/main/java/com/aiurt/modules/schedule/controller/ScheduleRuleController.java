@@ -74,7 +74,7 @@ public class ScheduleRuleController {
                                                      HttpServletRequest req) {
         //获取用户
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        scheduleRule.setCreateBy(user.getId());
+        scheduleRule.setCreateBy(user.getUsername());
         Result<IPage<ScheduleRule>> result = new Result<IPage<ScheduleRule>>();
         QueryWrapper<ScheduleRule> queryWrapper = QueryGenerator.initQueryWrapper(scheduleRule, req.getParameterMap());
         Page<ScheduleRule> page = new Page<ScheduleRule>(pageNo, pageSize);

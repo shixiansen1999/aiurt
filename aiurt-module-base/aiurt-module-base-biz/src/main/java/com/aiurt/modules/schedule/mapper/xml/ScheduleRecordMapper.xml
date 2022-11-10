@@ -121,6 +121,7 @@
         sr.user_id as userId,
         sr.date as date,
         su.realname as userName,
+        su.org_name as orgName,
         sr.item_id as itemId,
         si.name as itemName,
         si.color as color,

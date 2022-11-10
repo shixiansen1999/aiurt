@@ -72,7 +72,7 @@ public class ScheduleItemController {
                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                      HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        scheduleItem.setCreateBy(user.getId());
+        scheduleItem.setCreateBy(user.getUsername());
         Result<IPage<ScheduleItem>> result = new Result<IPage<ScheduleItem>>();
         QueryWrapper<ScheduleItem> queryWrapper = QueryGenerator.initQueryWrapper(scheduleItem, req.getParameterMap());
         Page<ScheduleItem> page = new Page<ScheduleItem>(pageNo, pageSize);
@@ -280,7 +280,7 @@ public class ScheduleItemController {
     public Result<List<ScheduleItem>> getAllScheduleItem() {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Result<List<ScheduleItem>> result = new Result<List<ScheduleItem>>();
-        List<ScheduleItem> itemList = scheduleItemService.list(new LambdaQueryWrapper<ScheduleItem>().eq(ScheduleItem::getDelFlag, 0));
+        List<ScheduleItem> itemList = scheduleItemService.list(new LambdaQueryWrapper<ScheduleItem>().eq(ScheduleItem::getDelFlag, 0).eq(ScheduleItem::getCreateBy,user.getUsername()));
         itemList.forEach(e->{
             String format1 = DateUtil.format(e.getStartTime(), "HH:mm");
             String format2 = DateUtil.format(e.getEndTime(), "HH:mm");

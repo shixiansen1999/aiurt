@@ -14,13 +14,17 @@ public class ScheduleRecordModel {
     private Integer id;
     private String userId;
     private String userName;
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    /**日期*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "日期")
+    @TableField(exist = false)
     private Date date;
     private Integer itemId;
     private String itemName;
     private String color;
     private String remark;
+    private String orgName;
 
     /**开始时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
