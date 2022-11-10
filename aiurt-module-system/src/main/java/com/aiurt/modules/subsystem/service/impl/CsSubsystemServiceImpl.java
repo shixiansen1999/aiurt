@@ -351,7 +351,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             MultipartFile file = entity.getValue();
             String type = FilenameUtils.getExtension(file.getOriginalFilename());
             if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-                return imporReturnRes(errorLines, successLines, errorMessage,false);
+                return imporReturnRes(errorLines, successLines, errorMessage,false,null);
             }
             ImportParams params = new ImportParams();
             params.setTitleRows(1);
@@ -500,9 +500,9 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 }
             }
         }
-        return imporReturnRes(errorLines, successLines, errorMessage,true);
+        return imporReturnRes(errorLines, successLines, errorMessage,true,null);
     }
-    public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage,boolean isType) throws IOException {
+    public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage,boolean isType,String url) throws IOException {
         if(isType)
         {
             if (errorLines != 0) {
@@ -512,7 +512,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 result.put("successCount", successLines);
                 int totalCount = successLines + errorLines;
                 result.put("totalCount", totalCount);
-                result.put("failReportUrl", "");
+                result.put("failReportUrl", url);
                 Result res = Result.ok(result);
                 res.setMessage("文件失败，数据有错误。");
                 res.setCode(200);
