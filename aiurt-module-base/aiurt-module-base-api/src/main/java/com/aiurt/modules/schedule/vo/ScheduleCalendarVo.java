@@ -14,6 +14,14 @@ public class ScheduleCalendarVo {
     public String type;
     public String content;
     public String color;
+    private String orgName;
+
+    /**日期*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "日期")
+    @TableField(exist = false)
+    private Date date;
 
     /**开始时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
