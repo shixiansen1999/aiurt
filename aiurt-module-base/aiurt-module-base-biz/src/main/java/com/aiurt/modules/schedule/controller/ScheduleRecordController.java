@@ -305,7 +305,8 @@ public class ScheduleRecordController {
         return result;
     }
 
-    @ApiOperation(value = "查询工班日历1", notes = "查询工班日历1")
+    @AutoLog(value = "排班记录-查询工班日历1")
+    @ApiOperation(value = "排班记录-查询工班日历1", notes = "排班记录-查询工班日历1")
     @GetMapping(value = "getUserSchedule")
     public Result<List<DayScheduleModel>> getUserSchedule(@RequestParam(name = "date", required = false) String date,
                                                           @RequestParam(name = "orgId", required = false) String orgId) {
@@ -347,6 +348,69 @@ public class ScheduleRecordController {
                     scheduleCalendarVo.setType("error");
                 }
                 scheduleCalendarVo.setColor(recordModel.getColor());
+                scheduleCalendarVo.setContent(recordModel.getItemName() + "-" + recordModel.getUserName());
+                list.get(index).getVoList().add(scheduleCalendarVo);
+            }
+        }
+        List<ScheduleHolidays> holidaysList = holidaysService.getListByMonth(date);
+        if (holidaysList != null && holidaysList.size() > 0) {
+            for (ScheduleHolidays holidays : holidaysList) {
+                calendar.setTime(holidays.getDate());
+                int index = calendar.get(Calendar.DAY_OF_MONTH) - 1;
+                list.get(index).getHolidays().add(holidays.getName());
+            }
+        }
+        result.setResult(list);
+        result.setSuccess(true);
+        return result;
+    }
+
+    @AutoLog(value = "排班记录-我的排班")
+    @ApiOperation(value = "排班记录-我的排班", notes = "排班记录-我的排班")
+    @GetMapping(value = "getMySchedule")
+    public Result<List<DayScheduleModel>> getMySchedule(@RequestParam(name = "date", required = false) String date,
+                                                          @RequestParam(name = "userId", required = false) String userId) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<String> roleCodeList = scheduleRecordMapper.getRoleCodeById(loginUser.getId());
+        if (StringUtils.isBlank(userId) && !roleCodeList.contains(RoleConstant.DIRECTOR) && !roleCodeList.contains(RoleConstant.ADMIN)) {
+            userId = loginUser.getId();
+        }
+        Result<List<DayScheduleModel>> result = new Result<List<DayScheduleModel>>();
+        if (StringUtils.isEmpty(date)) {
+            date = DateUtil.format(new Date(), "yyyy-MM");
+        }
+        Calendar calendar = Calendar.getInstance();
+        try {
+            calendar.setTime(DateUtils.parseDate(date, "yyyy-MM"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        int maximum = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+        List<DayScheduleModel> list = new ArrayList<>(maximum);
+        for (int index = 0; index < maximum; index++) {
+            DayScheduleModel model = new DayScheduleModel();
+            model.setHolidays(new ArrayList<String>());
+            model.setVoList(new ArrayList<ScheduleCalendarVo>());
+            list.add(model);
+        }
+        List<ScheduleRecordModel> allRecordList = scheduleRecordService.getMySchedule(date, userId);
+        if (allRecordList != null && allRecordList.size() > 0) {
+            for (ScheduleRecordModel recordModel : allRecordList) {
+                calendar.setTime(recordModel.getDate());
+                int index = calendar.get(Calendar.DAY_OF_MONTH) - 1;
+                ScheduleCalendarVo scheduleCalendarVo = new ScheduleCalendarVo();
+                if ("白班".equals(recordModel.getItemName())) {
+                    scheduleCalendarVo.setType("success");
+                } else if ("夜班".equals(recordModel.getItemName())) {
+                    scheduleCalendarVo.setType("warning");
+                } else {
+                    scheduleCalendarVo.setType("error");
+                }
+                scheduleCalendarVo.setColor(recordModel.getColor());
+                scheduleCalendarVo.setStartTime(recordModel.getStartTime());
+                scheduleCalendarVo.setEndTime(recordModel.getEndTime());
+                scheduleCalendarVo.setTimeId(recordModel.getTimeId());
                 scheduleCalendarVo.setContent(recordModel.getItemName() + "-" + recordModel.getUserName());
                 list.get(index).getVoList().add(scheduleCalendarVo);
             }

@@ -115,6 +115,31 @@
         </if>
         order by sr.date, sr.item_id
     </select>
+    <select id="getMySchedule"
+            resultType="com.aiurt.modules.schedule.model.ScheduleRecordModel">
+        select sr.id as id,
+        sr.user_id as userId,
+        sr.date as date,
+        su.realname as userName,
+        sr.item_id as itemId,
+        si.name as itemName,
+        si.color as color,
+        si.start_time as startTime,
+        si.end_time as endTime,
+        si.time_id as timeId
+        from schedule_record sr
+        inner join schedule_item si
+        on sr.item_id = si.id
+        inner join sys_user su on sr.user_id=su.id
+        where DATE_FORMAT(sr.date
+        , '%Y-%m') = #{date}
+        and sr.del_flag = 0
+        and si.del_flag=0
+        <if test="userId !=null and userId !=''">
+            and su.id=#{userId}
+        </if>
+        order by sr.date, sr.item_id
+    </select>
 
     <select id="getScheduleUserDataByDay"
             resultType="org.jeecg.common.system.vo.LoginUser">
