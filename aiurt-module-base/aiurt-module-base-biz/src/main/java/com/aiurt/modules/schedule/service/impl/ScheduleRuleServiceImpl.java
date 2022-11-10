@@ -2,16 +2,16 @@ package com.aiurt.modules.schedule.service.impl;
 
 import com.aiurt.modules.schedule.entity.ScheduleRule;
 import com.aiurt.modules.schedule.entity.ScheduleRuleItem;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-
 import com.aiurt.modules.schedule.mapper.ScheduleRuleMapper;
 import com.aiurt.modules.schedule.service.IScheduleRuleItemService;
 import com.aiurt.modules.schedule.service.IScheduleRuleService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import java.util.List;
 
@@ -28,8 +28,11 @@ public class ScheduleRuleServiceImpl extends ServiceImpl<ScheduleRuleMapper, Sch
 
     @Override
     public List<ScheduleRule> getAllDetailRules() {
-        QueryWrapper wrapper = new QueryWrapper();
-        wrapper.eq("del_flag", 0);
+        LambdaQueryWrapper<ScheduleRule> wrapper = new LambdaQueryWrapper<>();
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        wrapper.eq(ScheduleRule::getDelFlag, 0);
+        //只能看到自己创建的规则
+        wrapper.eq(ScheduleRule::getCreateBy, user.getId());
         List<ScheduleRule> rules = this.baseMapper.selectList(wrapper);
         rules.forEach(rule -> {
             List<ScheduleRuleItem> detailRuleItems = scheduleRuleItemService.getDetailRuleItems(rule.getId());
@@ -39,7 +42,14 @@ public class ScheduleRuleServiceImpl extends ServiceImpl<ScheduleRuleMapper, Sch
                     if (StringUtils.isNotEmpty(temp)) {
                         temp += "|";
                     }
-                    temp += item.getItemName();
+                    StringBuilder stringBuffer = new StringBuilder();
+                    stringBuffer.append("(").append(item.getStartTime()).append("-");
+                    String nextDay = "1";
+                    if (nextDay.equals(item.getTimeId())) {
+                        stringBuffer.append("次日");
+                    }
+                    stringBuffer.append(item.getEndTime()).append(")");
+                    temp += item.getItemName()+"-"+stringBuffer.toString();
                 }
             }
             rule.setItemNames(temp);

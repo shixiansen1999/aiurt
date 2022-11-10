@@ -5,19 +5,29 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.schedule.dto.*;
+import com.aiurt.modules.schedule.entity.ScheduleItem;
+import com.aiurt.modules.schedule.entity.ScheduleLog;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
+import com.aiurt.modules.schedule.entity.ScheduleRuleItem;
 import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.model.ScheduleUser;
+import com.aiurt.modules.schedule.service.IScheduleItemService;
+import com.aiurt.modules.schedule.service.IScheduleLogService;
 import com.aiurt.modules.schedule.service.IScheduleRecordService;
+import com.aiurt.modules.schedule.service.IScheduleRuleItemService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SiteModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,6 +49,19 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
 //    private ILineService lineService;
     @Autowired
     private ISysBaseAPI sysBaseAPI;
+
+    @Autowired
+    private IScheduleItemService itemService;
+    @Autowired
+    private ISysBaseAPI userService;
+
+    @Autowired
+    private IScheduleLogService logService;
+
+    @Autowired
+    private IScheduleRuleItemService ruleItemService;
+    @Autowired
+    private IScheduleItemService ItemService;
 
     @Override
     public List<ScheduleRecord> getScheduleRecordBySchedule(Integer scheduleId) {
@@ -288,5 +311,121 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     @Override
     public List<SysUserTeamDTO> getTodayOndutyDetailNoPage(List<String> orgCodes, Date date) {
         return baseMapper.getTodayOndutyDetailNoPage(orgCodes,date);
+    }
+
+    @Override
+    @Transactional
+    public Result<ScheduleRecord> editRecord(List<ScheduleRecordREditDTO> scheduleRecordREditDTOList) {
+        Result<ScheduleRecord> result = new Result<ScheduleRecord>();
+        for (ScheduleRecordREditDTO scheduleRecordREditDTO : scheduleRecordREditDTOList) {
+            String item = "0";
+            if (item.equals(scheduleRecordREditDTO.getSchedulingMethod())) {
+                ScheduleRecord scheduleRecordEntity = this.getById(scheduleRecordREditDTO.getScheduleRecordId());
+                if (scheduleRecordEntity == null) {
+                    result.onnull("未找到对应实体");
+                } else {
+                    ScheduleItem oldItem = itemService.getById(scheduleRecordEntity.getItemId());
+                    ScheduleItem newItem = itemService.getById(scheduleRecordREditDTO.getScheduleItemId());
+                    scheduleRecordEntity.setItemId(newItem.getId());
+                    scheduleRecordEntity.setColor(newItem.getColor());
+                    scheduleRecordEntity.setItemName(newItem.getName());
+                    scheduleRecordEntity.setStartTime(newItem.getStartTime());
+                    scheduleRecordEntity.setEndTime(newItem.getEndTime());
+
+                    this.updateById(scheduleRecordEntity);
+
+                    ScheduleLog log = new ScheduleLog();
+                    log.setDate(scheduleRecordEntity.getDate());
+                    log.setRecordId(scheduleRecordEntity.getId());
+                    log.setDelFlag(0);
+                    log.setSourceItemId(oldItem.getId());
+                    log.setSourceItemName(oldItem.getName());
+                    log.setTargetItemId(newItem.getId());
+                    log.setTargetItemName(newItem.getName());
+                    log.setUserId(scheduleRecordEntity.getUserId());
+//            LoginUser user = new LoginUser();
+                    LoginUser user = userService.getUserById(log.getUserId());
+                    log.setUserName(user.getRealname());
+                    logService.save(log);
+                }
+            } else {
+                Calendar start = Calendar.getInstance();
+                start.setTime(scheduleRecordREditDTO.getStartTime());
+                QueryWrapper wrapper = new QueryWrapper();
+                wrapper.eq("rule_id", scheduleRecordREditDTO.getScheduleRuleId());
+                List<ScheduleRuleItem> itemList = ruleItemService.list(wrapper);
+                int itemSize = itemList.size();
+                Map<Integer, Integer> scheduleRuleItemMap = new HashMap<>(itemSize);
+                for (ScheduleRuleItem scheduleRuleItem : itemList) {
+                    scheduleRuleItemMap.put(scheduleRuleItem.getSort(), scheduleRuleItem.getItemId());
+                }
+                int i = 0;
+                while (!scheduleRecordREditDTO.getStartTime().after(scheduleRecordREditDTO.getEndTime())) {
+                    LambdaQueryWrapper<ScheduleRecord> queryWrapper = new LambdaQueryWrapper<>();
+                    queryWrapper.eq(ScheduleRecord::getDelFlag, "0");
+                    queryWrapper.eq(ScheduleRecord::getUserId, scheduleRecordREditDTO.getUserId());
+                    queryWrapper.eq(ScheduleRecord::getDate, scheduleRecordREditDTO.getStartTime());
+                    ScheduleRecord one = this.getOne(queryWrapper);
+
+                    int index = (i % itemSize == 0 ? itemSize : i % itemSize);
+                    Integer ruleItemId = scheduleRuleItemMap.get(index);
+                    ScheduleItem scheduleItem = ItemService.getById(ruleItemId);
+                    if (ObjectUtil.isNotEmpty(one)) {
+                        ScheduleItem oldItem = itemService.getById(one.getItemId());
+                        ScheduleItem newItem = scheduleItem;
+                        one.setItemId(newItem.getId());
+                        one.setColor(newItem.getColor());
+                        one.setItemName(newItem.getName());
+                        one.setStartTime(newItem.getStartTime());
+                        one.setEndTime(newItem.getEndTime());
+
+                        this.updateById(one);
+
+                        ScheduleLog log = new ScheduleLog();
+                        log.setDate(one.getDate());
+                        log.setRecordId(one.getId());
+                        log.setDelFlag(0);
+                        log.setSourceItemId(oldItem.getId());
+                        log.setSourceItemName(oldItem.getName());
+                        log.setTargetItemId(newItem.getId());
+                        log.setTargetItemName(newItem.getName());
+                        log.setUserId(one.getUserId());
+//            LoginUser user = new LoginUser();
+                        LoginUser user = userService.getUserById(log.getUserId());
+                        log.setUserName(user.getRealname());
+                        logService.save(log);
+
+                    } else {
+                        ScheduleRecord record = ScheduleRecord.builder()
+                                .userId(scheduleRecordREditDTO.getUserId())
+                                .date(start.getTime())
+                                .itemId(scheduleItem.getId())
+                                .itemName(scheduleItem.getName())
+                                .startTime(scheduleItem.getStartTime())
+                                .endTime(scheduleItem.getEndTime())
+                                .color(scheduleItem.getColor())
+                                .delFlag(0)
+                                .build();
+                        this.save(record);
+
+                        ScheduleLog log = new ScheduleLog();
+                        log.setDate(record.getDate());
+                        log.setRecordId(record.getId());
+                        log.setDelFlag(0);
+                        log.setTargetItemId(scheduleItem.getId());
+                        log.setTargetItemName(scheduleItem.getName());
+                        log.setUserId(record.getUserId());
+//            LoginUser user = new LoginUser();
+                        LoginUser user = userService.getUserById(log.getUserId());
+                        log.setUserName(user.getRealname());
+                        logService.save(log);
+                    }
+                    start.add(Calendar.DAY_OF_YEAR, 1);
+                    i++;
+                }
+            }
+        }
+        result.success("修改成功!");
+        return result;
     }
 }

@@ -108,44 +108,49 @@ public class ScheduleController {
     @PostMapping(value = "/add")
     public Result<Schedule> add(@RequestBody Schedule schedule) {
         Result<Schedule> result = new Result<Schedule>();
-        try {
-            Calendar start = Calendar.getInstance();
-            start.setTime(schedule.getStartDate());
-            QueryWrapper wrapper = new QueryWrapper();
-            wrapper.eq("rule_id", schedule.getRuleId());
-            List<ScheduleRuleItem> itemList = ruleItemService.list(wrapper);
-            int itemSize = itemList.size();
-            Map<Integer, Integer> scheduleRuleItemMap = new HashMap<>(itemSize);
-            for (ScheduleRuleItem item : itemList) {
-                scheduleRuleItemMap.put(item.getSort(), item.getItemId());
-            }
-            int i = 0;
-            while (!start.getTime().after(schedule.getEndDate())) {
-                i++;
-                int index = (i % itemSize == 0 ? itemSize : i % itemSize);
-                Integer ruleItemId = scheduleRuleItemMap.get(index);
-                ScheduleItem scheduleItem = ItemService.getById(ruleItemId);
-                for (String userId : schedule.getUserIds()) {
-                    ScheduleRecord record = ScheduleRecord.builder()
-                            .scheduleId(schedule.getId())
-                            .userId(userId)
-                            .date(start.getTime())
-                            .itemId(scheduleItem.getId())
-                            .itemName(scheduleItem.getName())
-                            .startTime(scheduleItem.getStartTime())
-                            .endTime(scheduleItem.getEndTime())
-                            .color(scheduleItem.getColor())
-                            .delFlag(0)
-                            .build();
-                    recordService.save(record);
+        List<ScheduleRuleItem> scheduleRuleItems = schedule.getScheduleRuleItems();
+        for (ScheduleRuleItem scheduleRuleItem : scheduleRuleItems) {
+            try {
+                Calendar start = Calendar.getInstance();
+                start.setTime(schedule.getStartDate());
+                QueryWrapper wrapper = new QueryWrapper();
+                wrapper.eq("rule_id", schedule.getRuleId());
+                List<ScheduleRuleItem> itemList = ruleItemService.list(wrapper);
+                int itemSize = itemList.size();
+                Map<Integer, Integer> scheduleRuleItemMap = new HashMap<>(itemSize);
+                for (ScheduleRuleItem item : itemList) {
+                    scheduleRuleItemMap.put(item.getSort(), item.getItemId());
                 }
-                start.add(Calendar.DAY_OF_YEAR, 1);
+                int i = scheduleRuleItem.getSort();
+                while (!start.getTime().after(schedule.getEndDate())) {
+                    int index = (i % itemSize == 0 ? itemSize : i % itemSize);
+                    Integer ruleItemId = scheduleRuleItemMap.get(index);
+                    ScheduleItem scheduleItem = ItemService.getById(ruleItemId);
+                    for (String userId : scheduleRuleItem.getUserIds()) {
+                        ScheduleRecord record = ScheduleRecord.builder()
+                                .scheduleId(schedule.getId())
+                                .userId(userId)
+                                .date(start.getTime())
+                                .itemId(scheduleItem.getId())
+                                .itemName(scheduleItem.getName())
+                                .startTime(scheduleItem.getStartTime())
+                                .endTime(scheduleItem.getEndTime())
+                                .color(scheduleItem.getColor())
+                                .delFlag(0)
+                                .build();
+                        recordService.save(record);
+                    }
+                    start.add(Calendar.DAY_OF_YEAR, 1);
+                    i++;
+                }
+                result.success("添加成功！");
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                result.error500("操作失败");
             }
-            result.success("添加成功！");
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            result.error500("操作失败");
+
         }
+
         return result;
     }
 
@@ -373,7 +378,7 @@ public class ScheduleController {
         String orgCode = loginUser.getOrgId();
         Result<List<LoginUser>> result = new Result<List<LoginUser>>();
 
-       // List<LoginUser> userList = new ArrayList<>();
+       //如果已经被安排过排班则把状态设置为冻结
         List<LoginUser> userList = scheduleRecordMapper.userList(orgCode);
         userList.forEach(user -> {
             List list = recordService.getRecordListInDays(user.getId(), startDate, endDate);
@@ -386,6 +391,8 @@ public class ScheduleController {
         return result;
     }
 
+    @AutoLog(value = "获取本人创建的所有规则")
+    @ApiOperation(value = "获取本人创建的所有规则", notes = "获取本人创建的所有规则")
     @RequestMapping(value = "selectScheduleRule", method = RequestMethod.GET)
     public Result<List<ScheduleRule>> selectScheduleRule() {
 

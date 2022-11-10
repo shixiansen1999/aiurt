@@ -2,6 +2,7 @@ package com.aiurt.modules.schedule.controller;
 
 
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.modules.schedule.service.IScheduleRuleItemService;
 import com.aiurt.modules.schedule.entity.ScheduleRuleItem;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -240,5 +241,25 @@ public class ScheduleRuleItemController {
       }
       return Result.ok("文件导入失败！");
   }
+
+	 /**
+	  * 根据规则id查询
+	  * @param ruleId
+	  * @return
+	  */
+	 @AutoLog(value = "排班规则关联班次-根据规则id查询")
+	 @ApiOperation(value="排班规则关联班次-根据规则id查询", notes="排班规则关联班次-根据规则id查询")
+	 @GetMapping(value = "/querryById")
+	 public Result<List<ScheduleRuleItem>> queryPageList(@RequestParam(name="ruleId",required=true)Integer ruleId){
+		 List<ScheduleRuleItem> detailRuleItems = scheduleRuleItemService.getDetailRuleItems(ruleId);
+		 if (CollUtil.isNotEmpty(detailRuleItems)) {
+			 for (ScheduleRuleItem detailRuleItem : detailRuleItems) {
+				 detailRuleItem.setItemTimeName(detailRuleItem.getItemName() + "(" + detailRuleItem.getStartTime() + "-" + detailRuleItem.getEndTime() + ")");
+			 }
+		 }
+		 Result<List<ScheduleRuleItem>> result = new Result<>();
+		 result.setResult(detailRuleItems);
+		 return result;
+	 }
 
 }

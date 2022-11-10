@@ -8,15 +8,11 @@ import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.schedule.dto.*;
 import com.aiurt.modules.schedule.entity.ScheduleHolidays;
-import com.aiurt.modules.schedule.entity.ScheduleItem;
-import com.aiurt.modules.schedule.entity.ScheduleLog;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.modules.schedule.model.DayScheduleModel;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.service.IScheduleHolidaysService;
-import com.aiurt.modules.schedule.service.IScheduleItemService;
-import com.aiurt.modules.schedule.service.IScheduleLogService;
 import com.aiurt.modules.schedule.service.IScheduleRecordService;
 import com.aiurt.modules.schedule.vo.ScheduleCalendarVo;
 import com.alibaba.fastjson.JSON;
@@ -33,7 +29,6 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecg.common.system.vo.DepartScheduleModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
@@ -74,14 +69,9 @@ public class ScheduleRecordController {
     @Autowired
     private IScheduleHolidaysService holidaysService;
     @Autowired
-    private IScheduleItemService itemService;
-    @Autowired
-    private ISysBaseAPI userService;
-    @Autowired
-    private IScheduleLogService logService;
-    @Autowired
     private ScheduleRecordMapper scheduleRecordMapper;
-
+    @Autowired
+    private ISysBaseAPI iSysBaseApi;
     /**
      * 分页列表查询
      *
@@ -451,42 +441,8 @@ public class ScheduleRecordController {
     @AutoLog(value = "排班记录-编辑")
     @ApiOperation(value = "排班记录-编辑", notes = "排班记录-编辑")
     @PutMapping(value = "/editRecord")
-    public Result<ScheduleRecord> editRecord(@RequestBody ScheduleRecordModel scheduleRecord) {
-        Result<ScheduleRecord> result = new Result<ScheduleRecord>();
-        ScheduleRecord scheduleRecordEntity = scheduleRecordService.getById(scheduleRecord.getId());
-        if (scheduleRecordEntity == null) {
-            result.onnull("未找到对应实体");
-        } else {
-            ScheduleItem oldItem = itemService.getById(scheduleRecordEntity.getItemId());
-            ScheduleItem newItem = itemService.getById(scheduleRecord.getItemId());
-            scheduleRecordEntity.setItemId(newItem.getId());
-            scheduleRecordEntity.setColor(newItem.getColor());
-            scheduleRecordEntity.setItemName(newItem.getName());
-            scheduleRecordEntity.setStartTime(newItem.getStartTime());
-            scheduleRecordEntity.setEndTime(newItem.getEndTime());
-
-            boolean ok = scheduleRecordService.updateById(scheduleRecordEntity);
-
-            ScheduleLog log = new ScheduleLog();
-            log.setDate(scheduleRecordEntity.getDate());
-            log.setRecordId(scheduleRecordEntity.getId());
-            log.setDelFlag(0);
-            log.setSourceItemId(oldItem.getId());
-            log.setSourceItemName(oldItem.getName());
-            log.setTargetItemId(newItem.getId());
-            log.setTargetItemName(newItem.getName());
-            log.setUserId(scheduleRecordEntity.getUserId());
-            log.setRemark(scheduleRecord.getRemark());
-//            LoginUser user = new LoginUser();
-            LoginUser user = userService.getUserById(log.getUserId());
-            log.setUserName(user.getRealname());
-            logService.save(log);
-            if (ok) {
-                result.success("修改成功!");
-            }
-        }
-
-        return result;
+    public Result<ScheduleRecord> editRecord(@RequestBody List<ScheduleRecordREditDTO> scheduleRecordREditDTOList) {
+        return scheduleRecordService.editRecord(scheduleRecordREditDTOList);
     }
 
 
@@ -575,5 +531,18 @@ public class ScheduleRecordController {
         Page<SysTotalTeamDTO> page = new Page<>(pageNo, pageSize);
         IPage<SysTotalTeamDTO> result = scheduleRecordService.getTotalTeamDetail(page, lineCode);
         return Result.OK(result);
+    }
+
+
+    /**
+     * 班组下拉框
+     * @return
+     */
+    @AutoLog(value = "班组下拉框", operateType = 1, operateTypeAlias = "查询")
+    @ApiOperation(value = "班组下拉框", notes = "班组下拉框")
+    @GetMapping(value = "/selectDepart")
+    public List<SysDepartModel> selectDepart() {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        return iSysBaseApi.getUserSysDepart(sysUser.getId());
     }
 }

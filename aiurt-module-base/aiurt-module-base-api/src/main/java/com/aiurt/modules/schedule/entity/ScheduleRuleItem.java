@@ -1,19 +1,20 @@
 package com.aiurt.modules.schedule.entity;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: schedule_rule_item
@@ -80,6 +81,8 @@ public class ScheduleRuleItem {
     @TableField(exist = false)
     private String color;
 
+    @TableField(exist = false)
+    private String itemTimeName;
 
     /**开始时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
@@ -121,5 +124,6 @@ public class ScheduleRuleItem {
     private static final String CREATE_TIME = "create_time";
     private static final String UPDATE_TIME = "update_time";
 
-
+    @TableField(exist = false)
+    private List<String> userIds;
 }

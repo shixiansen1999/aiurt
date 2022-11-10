@@ -8,6 +8,7 @@ import com.aiurt.modules.schedule.model.ScheduleUser;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 
 import java.util.Date;
@@ -100,4 +101,6 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
      * @return
      */
     List<SysUserTeamDTO> getTodayOndutyDetailNoPage(List<String> orgCodes, Date date);
+
+    Result<ScheduleRecord> editRecord(List<ScheduleRecordREditDTO> scheduleRecordREditDTOList);
 }
