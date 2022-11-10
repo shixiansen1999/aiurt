@@ -74,7 +74,7 @@ public interface SysDictMapper extends BaseMapper<SysDict> {
      * @return List<DictModel>
      */
 	@Deprecated
-	public List<DictModel> queryTableDictItemsByCode(@Param("table") String table,@Param("text") String text,@Param("code") String code);
+	public List<DictModel> queryTableDictItemsByCode(@Param("table") String table,@Param("text") String text,@Param("code") String code,@Param("delFlag") Long delFlag );
 
     /**
      * 通过查询指定table的 text code 获取字典（指定查询条件）

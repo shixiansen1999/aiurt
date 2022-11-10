@@ -437,7 +437,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                         for(String userName :arr){
                             //判断是否存在
                             List<SysUser> users = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getRealname, userName));
-                            if(CollUtil.isNotEmpty(users))
+                            if(CollUtil.isEmpty(users))
                             {
                                 errorMessage.add(csSubsystem.getMajorCode() + "技术人不存在，忽略导入");
                                 if(error)

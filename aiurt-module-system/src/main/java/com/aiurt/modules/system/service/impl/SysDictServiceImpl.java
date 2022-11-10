@@ -140,7 +140,9 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 	@Override
 	public List<DictModel> queryTableDictItemsByCode(String table, String text, String code) {
 		log.debug("无缓存dictTableList的时候调用这里！");
-		return sysDictMapper.queryTableDictItemsByCode(table,text,code);
+		// 判断是否存在del_flag 字段
+		Long delFlag = sysDictMapper.isExistDelFlag(table);
+		return sysDictMapper.queryTableDictItemsByCode(table,text,code,delFlag);
 	}
 
 	@Override

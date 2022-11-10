@@ -33,7 +33,6 @@ import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -267,7 +266,7 @@ public class CsMajorController extends BaseController<CsMajor, ICsMajorService> 
      * @param response
      * @return
      */
-    @Transactional(rollbackFor = Exception.class)
+    @ApiOperation(value = "导入数据", notes = "导入数据")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
        return csMajorService.importExcel(request,response);
