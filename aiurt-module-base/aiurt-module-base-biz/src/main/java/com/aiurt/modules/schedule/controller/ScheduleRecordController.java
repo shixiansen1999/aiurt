@@ -371,8 +371,10 @@ public class ScheduleRecordController {
     public Result<List<DayScheduleModel>> getMySchedule(@RequestParam(name = "date", required = false) String date,
                                                           @RequestParam(name = "userId", required = false) String userId) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<String> roleCodeList = scheduleRecordMapper.getRoleCodeById(loginUser.getId());
-        if (StringUtils.isBlank(userId) && !roleCodeList.contains(RoleConstant.DIRECTOR) && !roleCodeList.contains(RoleConstant.ADMIN)) {
+        //List<String> roleCodeList = scheduleRecordMapper.getRoleCodeById(loginUser.getId());
+        if (StringUtils.isBlank(userId)
+                //&& !roleCodeList.contains(RoleConstant.DIRECTOR) && !roleCodeList.contains(RoleConstant.ADMIN)
+        ) {
             userId = loginUser.getId();
         }
         Result<List<DayScheduleModel>> result = new Result<List<DayScheduleModel>>();
