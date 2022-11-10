@@ -295,68 +295,7 @@ public class StockLevel2InfoController extends BaseController<StockLevel2Info,IS
     @ApiOperation(value="二级仓库管理-通过excel导入数据", notes="二级仓库管理-通过excel导入数据")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
-        // 错误信息
-        List<String> errorMessage = new ArrayList<>();
-        int successLines = 0, errorLines = 0;
-        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
-            // 获取上传文件对象
-            MultipartFile file = entity.getValue();
-            ImportParams params = new ImportParams();
-            params.setTitleRows(1);
-            params.setHeadRows(1);
-            params.setNeedSave(true);
-            try {
-                List<StockLevel2InfoVo> slList = ExcelImportUtil.importExcel(file.getInputStream(), StockLevel2InfoVo.class, params);
-                List<StockLevel2InfoVo> stockLevel2InfoList = slList.stream().filter(item -> item.getWarehouseName() != null).collect(Collectors.toList());
-
-                List<StockLevel2Info> list = new ArrayList<>();
-                for (int i = 0; i < stockLevel2InfoList.size(); i++) {
-                    StockLevel2InfoVo stockLevel2InfoVo = stockLevel2InfoList.get(i);
-                    if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseCode())) {
-                        errorMessage.add("仓库编码为必填项，忽略导入");
-                        errorLines++;
-                    } else {
-                        StockLevel2Info stockLevel2Info = iStockLevel2InfoService.getOne(new QueryWrapper<StockLevel2Info>().lambda().eq(StockLevel2Info::getWarehouseCode, stockLevel2InfoVo.getWarehouseCode()).eq(StockLevel2Info::getDelFlag, 0));
-                        if (stockLevel2Info != null) {
-                            errorMessage.add(stockLevel2InfoVo.getWarehouseCode() + "仓库编码已经存在，忽略导入");
-                            errorLines++;
-                        }
-                    }
-                    if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseName())) {
-                        errorMessage.add("仓库名称为必填项，忽略导入");
-                        errorLines++;
-                    } else {
-                        StockLevel2Info stockLevel2Info = iStockLevel2InfoService.getOne(new QueryWrapper<StockLevel2Info>().lambda().eq(StockLevel2Info::getWarehouseName, stockLevel2InfoVo.getWarehouseName()).eq(StockLevel2Info::getDelFlag, 0));
-                        if (stockLevel2Info != null) {
-                            errorMessage.add(stockLevel2InfoVo.getWarehouseCode() + "仓库名称已经存在，忽略导入");
-                            errorLines++;
-                        }
-                    }
-                    StockLevel2Info stockLevel2Info = new StockLevel2Info();
-                    BeanUtils.copyProperties(stockLevel2InfoVo, stockLevel2Info);
-                    list.add(stockLevel2Info);
-                    successLines++;
-
-                }
-                if (errorLines == 0) {
-                    iStockLevel2InfoService.saveBatch(list);
-                } else {
-                    successLines = 0;
-                }
-            } catch (Exception e) {
-                errorMessage.add("发生异常：" + e.getMessage());
-                log.error(e.getMessage(), e);
-            } finally {
-                try {
-                    file.getInputStream().close();
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-        }
-        return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorMessage);
+        return iStockLevel2InfoService.importExcel(request,response);
 
     }
 

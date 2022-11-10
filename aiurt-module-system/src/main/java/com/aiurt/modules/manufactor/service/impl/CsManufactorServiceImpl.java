@@ -1,18 +1,35 @@
 package com.aiurt.modules.manufactor.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.manufactor.entity.vo.CsManuFactorImportVo;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.manufactor.mapper.CsManufactorMapper;
 import com.aiurt.modules.manufactor.service.ICsManufactorService;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.apache.commons.io.FilenameUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Description: cs_manufactor
@@ -84,5 +101,117 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
         }
         csManufactorMapper.updateById(csManufactor);
         return Result.OK("编辑成功！");
+    }
+
+    @Override
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        // 错误信息
+        List<String> errorMessage = new ArrayList<>();
+        int successLines = 0, errorLines = 0;
+
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            String type = FilenameUtils.getExtension(file.getOriginalFilename());
+            if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+                return imporReturnRes(errorLines, successLines, errorMessage,false);
+            }
+            ImportParams params = new ImportParams();
+            params.setTitleRows(1);
+            params.setHeadRows(1);
+            params.setNeedSave(true);
+            try {
+                List<CsManuFactorImportVo> csList = ExcelImportUtil.importExcel(file.getInputStream(), CsManuFactorImportVo.class, params);
+                List<CsManuFactorImportVo> csManuFactorList = csList.stream().filter(item -> ObjectUtil.isNotNull(item)).collect(Collectors.toList());
+                List<CsManufactor> list = new ArrayList<>();
+                for (int i = 0; i < csManuFactorList.size(); i++) {
+                    CsManuFactorImportVo csManuFactorImportVo = csManuFactorList.get(i);
+                    boolean error = true;
+                    if (ObjectUtil.isNull(csManuFactorImportVo.getName())) {
+                        errorMessage.add("厂商名称为必填项，忽略导入");
+                        errorLines++;
+                        error = false;
+                    }else {
+                        CsManufactor csManufactor = csManufactorMapper.selectOne(new QueryWrapper<CsManufactor>().lambda().eq(CsManufactor::getCode, csManuFactorImportVo.getCode()).eq(CsManufactor::getDelFlag, 0));
+                        if (csManufactor != null) {
+                            errorMessage.add(csManuFactorImportVo.getCode() + "厂商编码已经存在，忽略导入");
+                            if(error) {
+                                errorLines++;
+                                error=false;
+                            }
+                        }
+                    }
+                    if (ObjectUtil.isNull(csManuFactorImportVo.getLevel())) {
+                        errorMessage.add("厂商等级为必填项，忽略导入");
+                        errorLines++;
+                    }
+                    CsManufactor csManufactor = new CsManufactor();
+                    BeanUtils.copyProperties(csManuFactorImportVo, csManufactor);
+                    list.add(csManufactor);
+                    successLines++;
+                }
+                if(errorLines==0) {
+                    for (CsManufactor csManufactor : list) {
+                        csManufactorMapper.insert(csManufactor);
+                    }
+                } else {
+                    successLines =0;
+                }
+            } catch (Exception e) {
+                errorMessage.add("发生异常：" + e.getMessage());
+                log.error(e.getMessage(), e);
+            } finally {
+                try {
+                    file.getInputStream().close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+        return imporReturnRes(errorLines, successLines, errorMessage,true);
+    }
+
+
+    public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage,boolean isType) throws IOException {
+        if (isType) {
+            if (errorLines != 0) {
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", false);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                result.put("failReportUrl", "");
+                Result res = Result.ok(result);
+                res.setMessage("文件失败，数据有错误。");
+                res.setCode(200);
+                return res;
+            } else {
+                //是否成功
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", true);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                Result res = Result.ok(result);
+                res.setMessage("文件导入成功！");
+                res.setCode(200);
+                return res;
+            }
+        } else {
+            JSONObject result = new JSONObject(5);
+            result.put("isSucceed", false);
+            result.put("errorCount", errorLines);
+            result.put("successCount", successLines);
+            int totalCount = successLines + errorLines;
+            result.put("totalCount", totalCount);
+            Result res = Result.ok(result);
+            res.setMessage("导入失败，文件类型不对。");
+            res.setCode(200);
+            return res;
+        }
     }
 }

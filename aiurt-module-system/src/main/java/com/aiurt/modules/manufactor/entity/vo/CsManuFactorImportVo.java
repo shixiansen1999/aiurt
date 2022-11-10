@@ -1,4 +1,4 @@
-package com.aiurt.modules.manufactor.entity;
+package com.aiurt.modules.manufactor.entity.vo;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
