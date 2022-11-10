@@ -1,12 +1,24 @@
 package com.aiurt.modules.manufactor.controller;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.service.IDeviceService;
+import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
+import com.aiurt.modules.manufactor.entity.CsManuFactorImportVo;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.manufactor.service.ICsManufactorService;
 import com.aiurt.modules.material.entity.MaterialBase;
@@ -21,13 +33,23 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
+import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 
- /**
+/**
  * @Description: cs_manufactor
  * @Author: jeecg-boot
  * @Date:   2022-06-21
@@ -37,7 +59,9 @@ import io.swagger.annotations.ApiOperation;
 @RestController
 @RequestMapping("/manufactor")
 @Slf4j
-public class CsManufactorController  {
+public class CsManufactorController extends BaseController<CsManufactor,ICsManufactorService> {
+	@Value("${jeecg.path.upload}")
+	private String upLoadPath;
 	@Autowired
 	private ICsManufactorService csManufactorService;
 	@Autowired
@@ -149,6 +173,102 @@ public class CsManufactorController  {
 			return Result.error("未找到对应数据");
 		}
 		return Result.OK(csManufactor);
+	}
+
+	/**
+	 * 厂商信息导出
+	 * @param request
+	 * @param csManufactor
+	 * @return
+	 */
+	@AutoLog(value = "厂商信息-厂商信息分页列表-导出excel", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/manufactor/list")
+	@ApiOperation(value="厂商信息-导出excel", notes="厂商信息-导出excel")
+	@RequestMapping(value = "/exportXls")
+	public ModelAndView exportXls(HttpServletRequest request, CsManufactor csManufactor) {
+		return super.exportXls(request, csManufactor, CsManufactor.class, "厂商信息");
+	}
+
+	/**
+	 * 厂商信息导入
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@AutoLog(value = "厂商信息-厂商信息分页列表-通过excel导入数据", operateType =  6, operateTypeAlias = "通过excel导入数据", permissionUrl = "/manufactor/list")
+	@ApiOperation(value="厂商信息-通过excel导入数据", notes="厂商信息-通过excel导入数据")
+	@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws Exception{
+		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+		// 错误信息
+		List<String> errorMessage = new ArrayList<>();
+		int successLines = 0, errorLines = 0;
+
+		for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+			// 获取上传文件对象
+			MultipartFile file = entity.getValue();
+			ImportParams params = new ImportParams();
+			params.setTitleRows(1);
+			params.setHeadRows(1);
+			params.setNeedSave(true);
+			try {
+				List<CsManuFactorImportVo> csList = ExcelImportUtil.importExcel(file.getInputStream(), CsManuFactorImportVo.class, params);
+				List<CsManuFactorImportVo> csManuFactorList = csList.stream().filter(item -> item.getName() != null).filter(item -> item.getLevel() != null).collect(Collectors.toList());
+
+				List<CsManufactor> list = new ArrayList<>();
+				for (int i = 0; i < csManuFactorList.size(); i++) {
+					CsManuFactorImportVo csManuFactorImportVo = csManuFactorList.get(i);
+					if (ObjectUtil.isNull(csManuFactorImportVo.getName())) {
+						errorMessage.add("厂商名称为必填项，忽略导入");
+						errorLines++;
+					}else {
+						CsManufactor csManufactor = csManufactorService.getOne(new QueryWrapper<CsManufactor>().lambda().eq(CsManufactor::getCode, csManuFactorImportVo.getCode()).eq(CsManufactor::getDelFlag, 0));
+						if (csManufactor != null) {
+							errorMessage.add(csManuFactorImportVo.getCode() + "厂商编码已经存在，忽略导入");
+							errorLines++;
+						}
+					}
+					if (ObjectUtil.isNull(csManuFactorImportVo.getLevel())) {
+						errorMessage.add("厂商等级为必填项，忽略导入");
+						errorLines++;
+					}
+					CsManufactor csManufactor = new CsManufactor();
+					BeanUtils.copyProperties(csManuFactorImportVo, csManufactor);
+					list.add(csManufactor);
+					successLines++;
+				}
+				if(errorLines==0)
+				{
+					csManufactorService.saveBatch(list);
+				}
+				else
+				{
+					successLines =0;
+				}
+			} catch (Exception e) {
+				errorMessage.add("发生异常：" + e.getMessage());
+				log.error(e.getMessage(), e);
+			} finally {
+				try {
+					file.getInputStream().close();
+				} catch (IOException e) {
+					log.error(e.getMessage(), e);
+				}
+			}
+		}
+		return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorMessage);
+	}
+
+
+	/**
+	 * 厂商信息导入模板下载
+	 * @return
+	 */
+	@AutoLog(value = "厂商信息导入模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/manufactor/list")
+	@ApiOperation(value="厂商信息导入模板下载", notes="厂商信息导入模板下载")
+	@RequestMapping(value = "/exportTemplateXls")
+	public ModelAndView exportTemplateXl() {
+		return super.exportTemplateXls("", CsManufactor.class,"厂商信息","");
 	}
 
 }

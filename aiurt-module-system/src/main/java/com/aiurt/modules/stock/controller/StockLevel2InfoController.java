@@ -1,17 +1,19 @@
 package com.aiurt.modules.stock.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.modules.device.entity.DeviceAssembly;
-import com.aiurt.modules.device.entity.DeviceCompose;
-import com.aiurt.modules.device.service.IDeviceAssemblyService;
-import com.aiurt.modules.device.service.IDeviceComposeService;
+import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.ImportExcelUtil;
+import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
 import com.aiurt.modules.stock.entity.StockInOrderLevel2;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.entity.StockLevel2Info;
+import com.aiurt.modules.stock.entity.StockLevel2InfoVo;
 import com.aiurt.modules.stock.service.IStockInOrderLevel2Service;
 import com.aiurt.modules.stock.service.IStockLevel2InfoService;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
@@ -26,22 +28,23 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 二级库
@@ -53,7 +56,7 @@ import java.util.Map;
 @Api(tags = "系统管理-基础数据-二级库仓库")
 @RestController
 @RequestMapping("/stock/stockLevel2Info")
-public class StockLevel2InfoController {
+public class StockLevel2InfoController extends BaseController<StockLevel2Info,IStockLevel2InfoService> {
 
     @Autowired
     private IStockLevel2InfoService iStockLevel2InfoService;
@@ -267,5 +270,104 @@ public class StockLevel2InfoController {
             result.success(res);
         }
         return result;
+    }
+
+    /**
+     * 二级仓库管理导出
+     * @param request
+     * @param stockLevel2Info
+     * @return
+     */
+    @AutoLog(value = "二级仓库管理-二级仓库分页列表-导出excel", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/manage/StockLevelTwoList")
+    @ApiOperation(value="二级仓库管理-导出excel", notes="二级仓库管理-导出excel")
+    @RequestMapping(value = "/exportXls")
+    public ModelAndView exportXls(HttpServletRequest request, StockLevel2Info stockLevel2Info) {
+        return super.exportXls(request, stockLevel2Info, StockLevel2Info.class, "二级仓库管理");
+    }
+
+    /**
+     * 二级仓库管理导入
+     * @param request
+     * @param response
+     * @return
+     */
+    @AutoLog(value = "二级仓库管理-二级仓库分页列表-通过excel导入数据", operateType =  6, operateTypeAlias = "通过excel导入数据", permissionUrl = "/manage/StockLevelTwoList")
+    @ApiOperation(value="二级仓库管理-通过excel导入数据", notes="二级仓库管理-通过excel导入数据")
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        // 错误信息
+        List<String> errorMessage = new ArrayList<>();
+        int successLines = 0, errorLines = 0;
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            ImportParams params = new ImportParams();
+            params.setTitleRows(1);
+            params.setHeadRows(1);
+            params.setNeedSave(true);
+            try {
+                List<StockLevel2InfoVo> slList = ExcelImportUtil.importExcel(file.getInputStream(), StockLevel2InfoVo.class, params);
+                List<StockLevel2InfoVo> stockLevel2InfoList = slList.stream().filter(item -> item.getWarehouseName() != null).collect(Collectors.toList());
+
+                List<StockLevel2Info> list = new ArrayList<>();
+                for (int i = 0; i < stockLevel2InfoList.size(); i++) {
+                    StockLevel2InfoVo stockLevel2InfoVo = stockLevel2InfoList.get(i);
+                    if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseCode())) {
+                        errorMessage.add("仓库编码为必填项，忽略导入");
+                        errorLines++;
+                    } else {
+                        StockLevel2Info stockLevel2Info = iStockLevel2InfoService.getOne(new QueryWrapper<StockLevel2Info>().lambda().eq(StockLevel2Info::getWarehouseCode, stockLevel2InfoVo.getWarehouseCode()).eq(StockLevel2Info::getDelFlag, 0));
+                        if (stockLevel2Info != null) {
+                            errorMessage.add(stockLevel2InfoVo.getWarehouseCode() + "仓库编码已经存在，忽略导入");
+                            errorLines++;
+                        }
+                    }
+                    if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseName())) {
+                        errorMessage.add("仓库名称为必填项，忽略导入");
+                        errorLines++;
+                    } else {
+                        StockLevel2Info stockLevel2Info = iStockLevel2InfoService.getOne(new QueryWrapper<StockLevel2Info>().lambda().eq(StockLevel2Info::getWarehouseName, stockLevel2InfoVo.getWarehouseName()).eq(StockLevel2Info::getDelFlag, 0));
+                        if (stockLevel2Info != null) {
+                            errorMessage.add(stockLevel2InfoVo.getWarehouseCode() + "仓库名称已经存在，忽略导入");
+                            errorLines++;
+                        }
+                    }
+                    StockLevel2Info stockLevel2Info = new StockLevel2Info();
+                    BeanUtils.copyProperties(stockLevel2InfoVo, stockLevel2Info);
+                    list.add(stockLevel2Info);
+                    successLines++;
+
+                }
+                if (errorLines == 0) {
+                    iStockLevel2InfoService.saveBatch(list);
+                } else {
+                    successLines = 0;
+                }
+            } catch (Exception e) {
+                errorMessage.add("发生异常：" + e.getMessage());
+                log.error(e.getMessage(), e);
+            } finally {
+                try {
+                    file.getInputStream().close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+        return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorMessage);
+
+    }
+
+    /**
+     * 二级仓库管理导入模板下载
+     * @return
+     */
+    @AutoLog(value = "二级仓库管理导入模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/manage/StockLevelTwoList")
+    @ApiOperation(value="二级仓库管理导入模板下载", notes="二级仓库管理导入模板下载")
+    @RequestMapping(value = "/exportTemplateXls")
+    public ModelAndView exportTemplateXl() {
+        return super.exportTemplateXls("",StockLevel2Info.class, "二级仓库管理导入模板");
     }
 }

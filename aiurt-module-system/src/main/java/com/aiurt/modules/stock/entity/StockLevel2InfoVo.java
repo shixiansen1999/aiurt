@@ -26,7 +26,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @ApiModel(value="二级库", description="二级库")
-public class StockLevel2Info extends DictEntity {
+public class StockLevel2InfoVo extends DictEntity {
 
 	/**主键id*/
 	@TableId(type= IdType.ASSIGN_ID)
@@ -45,7 +45,7 @@ public class StockLevel2Info extends DictEntity {
 	private  String  warehouseCode;
 
 	/**备注*/
-	@Excel(name = "备注",width = 15)
+	@Excel(name = "备注")
 	@ApiModelProperty(value = "备注")
 	private  String  remark;
 
@@ -69,42 +69,4 @@ public class StockLevel2Info extends DictEntity {
 	@Dict(dicCode = "stock_level2_info_status")
 	private  Integer  status;
 
-	/**创建人*/
-    @ApiModelProperty(value = "创建人")
-	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
-	private  String  createBy;
-
-	/**修改人*/
-    @ApiModelProperty(value = "修改人")
-	private  String  updateBy;
-
-	/**创建时间 CURRENT_TIMESTAMP*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "创建时间 CURRENT_TIMESTAMP")
-	private  java.util.Date  createTime;
-
-	/**修改时间 根据当前时间戳更新*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "修改时间 根据当前时间戳更新")
-	private  java.util.Date  updateTime;
-
-	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
-	@TableLogic
-	private  Integer  delFlag;
-
-	/**入库时间开始*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-	@DateTimeFormat(pattern="yyyy-MM-dd")
-	@ApiModelProperty(value = "入库时间开始")
-	@TableField(exist = false)
-	private  java.util.Date  startTime;
-
-	/**入库时间结束*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-	@DateTimeFormat(pattern="yyyy-MM-dd")
-	@ApiModelProperty(value = "入库时间结束")
-	@TableField(exist = false)
-	private  java.util.Date  endTime;
 }
