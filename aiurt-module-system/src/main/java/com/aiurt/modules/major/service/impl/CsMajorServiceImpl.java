@@ -182,7 +182,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                 }
             }
         }
-        return imporReturnRes(errorLines, successLines, errorMessage,true);
+        return imporReturnRes(errorLines, successLines, errorMessage, true);
     }
 
     public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage,boolean isType) throws IOException {
@@ -195,6 +195,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                 result.put("successCount", successLines);
                 int totalCount = successLines + errorLines;
                 result.put("totalCount", totalCount);
+                result.put("failReportUrl", "");
                 Result res = Result.ok(result);
                 res.setMessage("文件失败，数据有错误。");
                 res.setCode(200);
@@ -202,7 +203,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
             } else {
                 //是否成功
                 JSONObject result = new JSONObject(5);
-                result.put("isSucceed", false);
+                result.put("isSucceed", true);
                 result.put("errorCount", errorLines);
                 result.put("successCount", successLines);
                 int totalCount = successLines + errorLines;
