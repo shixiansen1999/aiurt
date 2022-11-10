@@ -2,6 +2,7 @@ package com.aiurt.modules.schedule.controller;
 
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.schedule.service.IScheduleItemService;
 import com.aiurt.modules.schedule.entity.ScheduleItem;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -14,8 +15,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -68,6 +71,8 @@ public class ScheduleItemController {
                                                      @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                      HttpServletRequest req) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        scheduleItem.setCreateBy(user.getId());
         Result<IPage<ScheduleItem>> result = new Result<IPage<ScheduleItem>>();
         QueryWrapper<ScheduleItem> queryWrapper = QueryGenerator.initQueryWrapper(scheduleItem, req.getParameterMap());
         Page<ScheduleItem> page = new Page<ScheduleItem>(pageNo, pageSize);
@@ -273,12 +278,15 @@ public class ScheduleItemController {
 
     @GetMapping("getAllScheduleItem")
     public Result<List<ScheduleItem>> getAllScheduleItem() {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Result<List<ScheduleItem>> result = new Result<List<ScheduleItem>>();
         List<ScheduleItem> itemList = scheduleItemService.list(new LambdaQueryWrapper<ScheduleItem>().eq(ScheduleItem::getDelFlag, 0));
         itemList.forEach(e->{
             String format1 = DateUtil.format(e.getStartTime(), "HH:mm");
             String format2 = DateUtil.format(e.getEndTime(), "HH:mm");
-            e.setComposition(e.getName()+"（"+format1+"-"+format2+")");
+            String string = StrUtil.isNotBlank(e.getTimeId()) ? e.getTimeId() : "0";
+            String string1 = "1".equals(string) ? "次日" : "";
+            e.setComposition(e.getName()+"（"+format1+"-"+ string1+format2+")");
         });
         result.setResult(itemList);
         result.setSuccess(true);

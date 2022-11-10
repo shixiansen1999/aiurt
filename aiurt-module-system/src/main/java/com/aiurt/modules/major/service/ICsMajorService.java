@@ -4,6 +4,10 @@ import com.aiurt.modules.major.entity.CsMajor;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 
 /**
  * @Description: cs_major
@@ -26,4 +30,6 @@ public interface ICsMajorService extends IService<CsMajor> {
      * @return
      */
     Result<?> update(CsMajor csMajor);
+
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

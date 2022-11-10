@@ -15,8 +15,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -70,6 +72,9 @@ public class ScheduleRuleController {
                                                      @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                      HttpServletRequest req) {
+        //获取用户
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        scheduleRule.setCreateBy(user.getId());
         Result<IPage<ScheduleRule>> result = new Result<IPage<ScheduleRule>>();
         QueryWrapper<ScheduleRule> queryWrapper = QueryGenerator.initQueryWrapper(scheduleRule, req.getParameterMap());
         Page<ScheduleRule> page = new Page<ScheduleRule>(pageNo, pageSize);
