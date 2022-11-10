@@ -71,7 +71,8 @@
         <module>aiurt-module-inspection</module>
 		<module>aiurt-module-flowable</module>
 		<module>aiurt-module-base</module>
-	</modules>
+        <module>aiurt-module-construction</module>
+    </modules>
 
 	<distributionManagement>
 	  	<repository>
