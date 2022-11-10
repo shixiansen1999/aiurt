@@ -359,7 +359,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             params.setNeedSave(true);
             try {
                 List<CsSubsystemDTO> csSubsystemDTOList = ExcelImportUtil.importExcel(file.getInputStream(), CsSubsystemDTO.class, params);
-                csSubsystemDTOList = csSubsystemDTOList.stream().filter(c->c.getSystemName()!=null).collect(Collectors.toList());
+                csSubsystemDTOList = csSubsystemDTOList.parallelStream().filter(c->c.getMajorCode()!=null||c.getSystemName()!=null||c.getSystemCode()!=null||c.getSystemUserName()!=null||c.getGeneralSituation()!=null).collect(Collectors.toList());
                 List<CsSubsystem> list = new ArrayList<>();
                 for (int i = 0; i < csSubsystemDTOList.size(); i++) {
                     CsSubsystemDTO csSubsystemDTO = csSubsystemDTOList.get(i);
