@@ -60,6 +60,10 @@
         <if test="username !=null and username !=''">
             and su.realname like concat('%',#{username},'%')
         </if>
+        <if test="text != null and text != ''">
+            AND su.realname like CONCAT( '%', #{text}, '%' )
+            or su.work_no like CONCAT( '%', #{text}, '%' )
+        </if>
         group by sr.user_id
     </select>
     <select id="getDutyUserByOrgIdAndDate" resultType="com.aiurt.modules.schedule.model.SysUserScheduleModel">

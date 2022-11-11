@@ -127,6 +127,10 @@ public class Schedule {
     private String workNo;
 
     @TableField(exist = false)
+    @ApiModelProperty(value = "查询条件")
+    private String text;
+
+    @TableField(exist = false)
     private List<ScheduleRuleItem> scheduleRuleItems;
 
 }
