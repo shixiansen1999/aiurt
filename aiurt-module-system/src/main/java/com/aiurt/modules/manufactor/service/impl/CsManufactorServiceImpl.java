@@ -145,7 +145,6 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                 for (int i = 0; i < csManuFactorList.size(); i++) {
                     CsManuFactorImportVo csManuFactorImportVo = csManuFactorList.get(i);
                     boolean error = true;
-                    String a="厂商名称为必填项";
                     if (ObjectUtil.isNull(csManuFactorImportVo.getName())) {
                         errorMessage.add("厂商名称为必填项，忽略导入");
                         csManuFactorImportVo.setErrorCause("厂商名称为必填项"+";");
@@ -164,12 +163,12 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                     }
                     if (ObjectUtil.isNull(csManuFactorImportVo.getLevel()) && ObjectUtil.isNotNull(csManuFactorImportVo.getName()) ) {
                         errorMessage.add("厂商等级为必填项，忽略导入");
-                        csManuFactorImportVo.setErrorCause("厂商等级为必填项"+";");
+                        csManuFactorImportVo.setErrorCause("厂商等级为必填项");
                         errorLines++;
                     }
                     if (ObjectUtil.isNull(csManuFactorImportVo.getLevel())) {
                         errorMessage.add("厂商等级为必填项，忽略导入");
-                        csManuFactorImportVo.setErrorCause(a+"厂商等级为必填项"+";");
+                        csManuFactorImportVo.setErrorCause("厂商等级为必填项");
                     }
 
                     CsManufactor csManufactor = new CsManufactor();
