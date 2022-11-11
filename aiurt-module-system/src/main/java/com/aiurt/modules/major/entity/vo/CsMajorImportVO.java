@@ -31,4 +31,8 @@ public class CsMajorImportVO implements Serializable {
     @Excel(name = "专业名称", width = 15)
     @ApiModelProperty(value = "专业名称")
     private String majorName;
+    /**错误原因*/
+    @Excel(name = "错误原因", width = 15)
+    @ApiModelProperty(value = "错误原因")
+    private String wrongReason;
 }
