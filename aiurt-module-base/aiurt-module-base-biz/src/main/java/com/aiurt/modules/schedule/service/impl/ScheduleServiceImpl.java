@@ -70,13 +70,24 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
     @Autowired
     private ScheduleMapper scheduleMapper;
 
+    @Autowired
+    private ISysBaseAPI iSysBaseApi;
+
     @Override
     public IPage<Schedule> getList(Schedule schedule, Page<Schedule> temp) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String orgCode = sysUser.getOrgCode();
+        List<Schedule> scheduleList = new ArrayList<>();
         IPage page = new Page();
         page = temp;
-        List<Schedule> scheduleList = new ArrayList<>();
+
+        List<SysDepartModel> userSysDepart = iSysBaseApi.getUserSysDepart(sysUser.getId());
+        List<String> orgList = new ArrayList<>();
+        if (CollUtil.isNotEmpty(userSysDepart)) {
+            List<String> collect = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+            orgList.addAll(collect);
+        }else {
+            return page.setRecords(scheduleList);
+        }
 
         /**
          * 1、获取查询范围及当月有多少天
@@ -98,7 +109,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
          */
         //List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDate(DateUtils.format(date, "yyyy-MM"),schedule.getUserName());
         //List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCode(DateUtils.format(date, "yyyy-MM"),schedule.getUserName(),orgCode);
-        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtil.format(date, "yyyy-MM"), schedule.getUserName(), orgCode, schedule.getOrgId(),schedule.getText());
+        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtil.format(date, "yyyy-MM"), orgList, schedule.getOrgId(),schedule.getText());
         /**
          * 3、获取记录数据
          */

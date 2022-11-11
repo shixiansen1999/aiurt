@@ -114,8 +114,8 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     }
 
     @Override
-    public List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, String username, String orgCode, String orgId,String text) {
-        return this.baseMapper.getScheduleUserByDateAndOrgCodeAndOrgId(date, username, orgCode, orgId,text);
+    public List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, List<String> orgList , String orgId,String text) {
+        return this.baseMapper.getScheduleUserByDateAndOrgCodeAndOrgId(date, orgList, orgId,text);
     }
 
     @Override

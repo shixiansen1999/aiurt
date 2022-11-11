@@ -4,7 +4,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.util.DateUtils;
-import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.schedule.entity.*;
 import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.modules.schedule.model.ScheduleUser;
@@ -12,7 +11,6 @@ import com.aiurt.modules.schedule.service.*;
 import com.aiurt.modules.schedule.util.ImportExcelUtil;
 import com.aiurt.modules.schedule.vo.RecordParam;
 import com.aiurt.modules.schedule.vo.ScheduleRecordVo;
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -23,23 +21,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URLDecoder;
 import java.util.*;
 
 /**
@@ -258,31 +250,55 @@ public class ScheduleController {
      * @param request
      * @param response
      */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response) {
-        // Step.1 组装查询条件
-        QueryWrapper<Schedule> queryWrapper = null;
-        try {
-            String paramsStr = request.getParameter("paramsStr");
-            if (oConvertUtils.isNotEmpty(paramsStr)) {
-                String deString = URLDecoder.decode(paramsStr, "UTF-8");
-                Schedule schedule = JSON.parseObject(deString, Schedule.class);
-                queryWrapper = QueryGenerator.initQueryWrapper(schedule, request.getParameterMap());
+   // @RequestMapping(value = "/exportXls")
+   /* public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response,Schedule schedule) {
+        Page<Schedule> page = new Page<Schedule>(1, 10000);
+        IPage<Schedule> pageList = scheduleService.getList(schedule, page);
+        List<Schedule> records = pageList.getRecords();
+        List<Map<String,Object>> dataList = new ArrayList<Map<String,Object>>();
+        if (CollUtil.isNotEmpty(records)) {
+            int i = 1;
+            for (Schedule record : records) {
+                Map<String,Object> map = new HashMap<>();
+                map.put("sort", i);
+                map.put("orgName", record.getOrgName());
+                map.put("userName",record.getUserName());
+                map.put("workNo", record.getWorkNo());
+                List<ScheduleRecordModel> item = record.getItem();
+                for (int j = 0; j < item.size(); j++) {
+                    ScheduleRecordModel scheduleRecordModel = item.get(j);
+                    map.put("day" + j + 1, scheduleRecordModel.getItemName());
+                }
+                dataList.add(map);
+                i++;
             }
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(schedule.getDate());
+        int maximum = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+        //配置ExcelExportEntity集合如下：
+        List<ExcelExportEntity> entityList = new ArrayList<>();
+        //一般表头使用这种两个参数的构造器
+        ExcelExportEntity e1 = new ExcelExportEntity("序号","sort");
+        ExcelExportEntity e2 = new ExcelExportEntity("班组","orgName");
+        ExcelExportEntity e3 = new ExcelExportEntity("姓名","userName");
+        ExcelExportEntity e4 = new ExcelExportEntity("工号","workNo");
+
+        entityList.add(e1);
+        entityList.add(e2);
+        entityList.add(e3);
+        entityList.add(e4);
+
+        for (int i = 0; i < maximum; i++) {
+            String format = String.format("%02d", i + 1);
+            ExcelExportEntity e = new ExcelExportEntity(format,"day" + i + 1);
         }
 
-        //Step.2 AutoPoi 导出Excel
-        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-        List<Schedule> pageList = scheduleService.list(queryWrapper);
-        //导出文件名称
-        mv.addObject(NormalExcelConstants.FILE_NAME, "schedule列表");
-        mv.addObject(NormalExcelConstants.CLASS, Schedule.class);
-        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("schedule列表数据", "导出人:Jeecg", "导出信息"));
-        mv.addObject(NormalExcelConstants.DATA_LIST, pageList);
+
         return mv;
-    }
+    }*/
 
     @RequestMapping(value = "/exportXls1")
     public void exportXls2(HttpServletRequest request, HttpServletResponse response) {

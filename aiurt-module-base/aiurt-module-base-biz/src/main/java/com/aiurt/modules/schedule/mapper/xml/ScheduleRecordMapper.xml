@@ -56,10 +56,10 @@
         <if test="orgId !=null and orgId !=''">
             and su.org_id = #{orgId}
         </if>
-        and su.org_code like concat(#{orgCode},'%')
-        <if test="username !=null and username !=''">
-            and su.realname like concat('%',#{username},'%')
-        </if>
+        and su.org_code in
+        <foreach collection="orgList" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
         <if test="text != null and text != ''">
             AND su.realname like CONCAT( '%', #{text}, '%' )
             or su.work_no like CONCAT( '%', #{text}, '%' )
@@ -111,7 +111,8 @@
         si.name as itemName,
         si.color as color,
         si.start_time as startTime ,
-        si.end_time as endTime
+        si.end_time as endTime,
+        su.org_name as orgName
         from schedule_record sr
         inner join schedule_item si
         on sr.item_id = si.id

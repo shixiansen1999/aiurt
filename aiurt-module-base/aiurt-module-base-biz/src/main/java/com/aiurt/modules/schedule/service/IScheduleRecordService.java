@@ -42,7 +42,7 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
 
     List<ScheduleUser> getScheduleUserByDateAndOrgCode(String date, String username, String orgCode);
 
-    List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, String username, String orgCode, String orgId,String text);
+    List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, List<String> orgList , String orgId,String text);
 
     /**
      * 统计分析
