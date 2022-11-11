@@ -12,6 +12,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: cs_manufactor
@@ -25,7 +26,6 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="cs_manufactor对象", description="cs_manufactor")
 public class CsManuFactorImportVo implements Serializable {
-    private static final long serialVersionUID = 1L;
 
 	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
@@ -60,5 +60,10 @@ public class CsManuFactorImportVo implements Serializable {
 	@Excel(name = "企业资质文件", width = 15)
     @ApiModelProperty(value = "企业资质文件")
     private String filePath;
+
+    /**错误原因*/
+    @Excel(name = "错误原因", width = 15)
+    @ApiModelProperty(value = "错误原因")
+    private String errorCause;
 
 }

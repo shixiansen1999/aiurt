@@ -1,12 +1,18 @@
 package com.aiurt.modules.manufactor.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
@@ -14,6 +20,8 @@ import com.aiurt.modules.manufactor.service.ICsManufactorService;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 
@@ -23,11 +31,18 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 
@@ -193,6 +208,26 @@ public class CsManufactorController extends BaseController<CsManufactor,ICsManuf
 	@RequestMapping(value = "/exportTemplateXls")
 	public ModelAndView exportTemplateXl() {
 		return super.exportTemplateXls("", CsManufactor.class,"厂商信息","");
+	}
+
+
+	@AutoLog(value = "厂商信息导入错误清单下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/manufactor/list")
+	@ApiOperation(value="厂商信息导入错误清单下载", notes="厂商信息导入错误清单下载")
+	@RequestMapping(value = "/exportErrorXls")
+	public ModelAndView exportErrorXl(String exportFields, HttpServletRequest request) {
+		List<CsManufactor> exportList =new ArrayList<>();
+		// Step.3 AutoPoi 导出Excel
+		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+		//此处设置的filename无效 ,前端会重更新设置一下
+		mv.addObject(NormalExcelConstants.FILE_NAME, "厂商信息");
+		mv.addObject(NormalExcelConstants.CLASS, CsManufactor.class);
+		//update-begin--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置--------------------
+		ExportParams exportParams=new ExportParams("厂商信息导入错误清单",  "厂商信息");
+		exportParams.setImageBasePath(upLoadPath);
+		//update-end--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置----------------------
+		mv.addObject(NormalExcelConstants.PARAMS,exportParams);
+		mv.addObject(NormalExcelConstants.DATA_LIST, exportList);
+		return mv;
 	}
 
 }

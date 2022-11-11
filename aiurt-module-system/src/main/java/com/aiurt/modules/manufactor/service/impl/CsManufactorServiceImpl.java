@@ -3,6 +3,9 @@ package com.aiurt.modules.manufactor.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.system.base.entity.BaseImportResult;
+import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
+import com.aiurt.modules.manufactor.entity.vo.CsManuFactorImportErrorVo;
 import com.aiurt.modules.manufactor.entity.vo.CsManuFactorImportVo;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.manufactor.mapper.CsManufactorMapper;
@@ -11,24 +14,32 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
+import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Field;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +52,9 @@ import java.util.stream.Collectors;
 public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsManufactor> implements ICsManufactorService {
     @Autowired
     private CsManufactorMapper csManufactorMapper;
+
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
     /**
      * 添加
      *
@@ -124,29 +138,40 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
             params.setNeedSave(true);
             try {
                 List<CsManuFactorImportVo> csList = ExcelImportUtil.importExcel(file.getInputStream(), CsManuFactorImportVo.class, params);
-                List<CsManuFactorImportVo> csManuFactorList = csList.stream().filter(item -> ObjectUtil.isNotNull(item)).collect(Collectors.toList());
+                List<CsManuFactorImportVo> csManuFactorList = csList.stream().filter(item -> existFieldNotEmpty(item)).collect(Collectors.toList());
+
                 List<CsManufactor> list = new ArrayList<>();
+                List<String> errorList = new ArrayList<>();
                 for (int i = 0; i < csManuFactorList.size(); i++) {
                     CsManuFactorImportVo csManuFactorImportVo = csManuFactorList.get(i);
                     boolean error = true;
+                    String a="厂商名称为必填项";
                     if (ObjectUtil.isNull(csManuFactorImportVo.getName())) {
                         errorMessage.add("厂商名称为必填项，忽略导入");
+                        csManuFactorImportVo.setErrorCause("厂商名称为必填项"+";");
                         errorLines++;
                         error = false;
                     }else {
                         CsManufactor csManufactor = csManufactorMapper.selectOne(new QueryWrapper<CsManufactor>().lambda().eq(CsManufactor::getCode, csManuFactorImportVo.getCode()).eq(CsManufactor::getDelFlag, 0));
                         if (csManufactor != null) {
                             errorMessage.add(csManuFactorImportVo.getCode() + "厂商编码已经存在，忽略导入");
+                            csManuFactorImportVo.setErrorCause("厂商编码已经存在"+";");
                             if(error) {
                                 errorLines++;
                                 error=false;
                             }
                         }
                     }
-                    if (ObjectUtil.isNull(csManuFactorImportVo.getLevel())) {
+                    if (ObjectUtil.isNull(csManuFactorImportVo.getLevel()) && ObjectUtil.isNotNull(csManuFactorImportVo.getName()) ) {
                         errorMessage.add("厂商等级为必填项，忽略导入");
+                        csManuFactorImportVo.setErrorCause("厂商等级为必填项"+";");
                         errorLines++;
                     }
+                    if (ObjectUtil.isNull(csManuFactorImportVo.getLevel())) {
+                        errorMessage.add("厂商等级为必填项，忽略导入");
+                        csManuFactorImportVo.setErrorCause(a+"厂商等级为必填项"+";");
+                    }
+
                     CsManufactor csManufactor = new CsManufactor();
                     BeanUtils.copyProperties(csManuFactorImportVo, csManufactor);
                     list.add(csManufactor);
@@ -158,6 +183,23 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                     }
                 } else {
                     successLines =0;
+                    ModelAndView model = new ModelAndView(new JeecgEntityExcelView());
+                    model.addObject(NormalExcelConstants.FILE_NAME, "下载错误模板");
+                    //excel注解对象Class
+                    model.addObject(NormalExcelConstants.CLASS, CsManuFactorImportVo.class);
+                    //自定义表格参数
+                    model.addObject(NormalExcelConstants.PARAMS, new ExportParams("错误清单模板", "错误清单模板"));
+                    //导出数据列表
+                    model.addObject(NormalExcelConstants.DATA_LIST, csManuFactorList);
+                    Map<String, Object> model1 = model.getModel();
+                    // 生成错误excel
+                    Workbook workbook = ExcelExportUtil.exportExcel((ExportParams)model1.get("params"), (Class)model1.get("entity"), (Collection)model1.get("data"));
+                    // 写到文件中
+                    String filename = "错误清单模板";
+                    FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+filename+".xlsx");
+                    System.out.println("路径："+upLoadPath+File.separator+filename+".xlsx");
+                    System.out.println("下载成功");
+                    workbook.write(out);
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());
@@ -169,8 +211,34 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                     log.error(e.getMessage(), e);
                 }
             }
+
         }
+
         return imporReturnRes(errorLines, successLines, errorMessage,true);
+    }
+
+    /**
+     * 校验字段属性是否存在不为空字段
+     *
+     * @param
+     * @return
+     */
+    private static <T> boolean existFieldNotEmpty(T t) {
+        if (ObjectUtil.isEmpty(t)) {
+            return false;
+        }
+        try {
+            Field[] fields = t.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                if (ObjectUtil.isNotEmpty(field.get(t))) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
 

@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,8 +64,10 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 			params.setHeadRows(1);
 			params.setNeedSave(true);
 			try {
-				List<StockLevel2InfoVo> stockLevel2InfoList = ExcelImportUtil.importExcel(file.getInputStream(), StockLevel2InfoVo.class, params);
-//				List<StockLevel2InfoVo> stockLevel2InfoList = slList.stream().filter(item -> item.getWarehouseName() != null).collect(Collectors.toList());
+				List<StockLevel2InfoVo> slList = ExcelImportUtil.importExcel(file.getInputStream(), StockLevel2InfoVo.class, params);
+				List<StockLevel2InfoVo> stockLevel2InfoList = slList.stream()
+						.filter(item -> existFieldNotEmpty(item))
+						.collect(Collectors.toList());
 
 				List<StockLevel2Info> list = new ArrayList<>();
 				for (int i = 0; i < stockLevel2InfoList.size(); i++) {
@@ -84,9 +87,12 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 							}
 						}
 					}
-					if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseName())) {
+					if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseName()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseCode())) {
 						errorMessage.add("仓库名称为必填项，忽略导入");
 						errorLines++;
+					}
+					if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseName())) {
+						errorMessage.add("仓库名称为必填项，忽略导入");
 					} else {
 						StockLevel2Info stockLevel2Info = stockLevel2InfoMapper.selectOne(new QueryWrapper<StockLevel2Info>().lambda().eq(StockLevel2Info::getWarehouseName, stockLevel2InfoVo.getWarehouseName()).eq(StockLevel2Info::getDelFlag, 0));
 						if (stockLevel2Info != null) {
@@ -95,6 +101,20 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 								errorLines++;
 							}
 						}
+					}
+					if (ObjectUtil.isNull(stockLevel2InfoVo.getOrganizationId()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseName()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseCode())) {
+						errorMessage.add("组织机构ID为必填项，忽略导入");
+						errorLines++;
+					}
+					if(ObjectUtil.isNull(stockLevel2InfoVo.getOrganizationId())){
+						errorMessage.add("组织机构ID为必填项，忽略导入");
+					}
+					if (ObjectUtil.isNull(stockLevel2InfoVo.getStatus())& ObjectUtil.isNotNull(stockLevel2InfoVo.getOrganizationId()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseName()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseCode())) {
+						errorMessage.add("状态为必填项，忽略导入");
+						errorLines++;
+					}
+					if (ObjectUtil.isNull(stockLevel2InfoVo.getStatus())) {
+						errorMessage.add("状态为必填项，忽略导入");
 					}
 					StockLevel2Info stockLevel2Info = new StockLevel2Info();
 					BeanUtils.copyProperties(stockLevel2InfoVo, stockLevel2Info);
@@ -123,6 +143,29 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 		return imporReturnRes(errorLines, successLines, errorMessage, true);
 	}
 
+	/**
+	 * 校验字段属性是否存在不为空字段
+	 *
+	 * @param
+	 * @return
+	 */
+	private static <T> boolean existFieldNotEmpty(T t) {
+		if (ObjectUtil.isEmpty(t)) {
+			return false;
+		}
+		try {
+			Field[] fields = t.getClass().getDeclaredFields();
+			for (Field field : fields) {
+				field.setAccessible(true);
+				if (ObjectUtil.isNotEmpty(field.get(t))) {
+					return true;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 
 	public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage,boolean isType) throws IOException {
 		if(isType)
