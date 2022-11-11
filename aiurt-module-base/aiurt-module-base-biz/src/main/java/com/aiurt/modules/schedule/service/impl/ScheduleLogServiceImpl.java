@@ -35,9 +35,9 @@ public class ScheduleLogServiceImpl extends ServiceImpl<ScheduleLogMapper, Sched
         List<ScheduleLog> scheduleLogs = scheduleLogMapper.queryPageList(page, scheduleLog);
         if (CollUtil.isNotEmpty(scheduleLogs)) {
             for (ScheduleLog log : scheduleLogs) {
-                if (StrUtil.isNotEmpty(log.getSourceItemName()) && ObjectUtil.isNotEmpty(log.getSourceItemId())) {
+                if (StrUtil.isEmpty(log.getSourceItemName()) && ObjectUtil.isEmpty(log.getSourceItemId())) {
                     log.setShiftRecord("由休息调整为" + log.getTargetItemName());
-                } else if (StrUtil.isNotEmpty(log.getTargetItemName()) && ObjectUtil.isNotEmpty(log.getTargetItemId())) {
+                } else if (StrUtil.isEmpty(log.getTargetItemName()) && ObjectUtil.isEmpty(log.getTargetItemId())) {
                     log.setShiftRecord("由" + log.getSourceItemName() + "调整为休息");
                 } else {
                     log.setShiftRecord("由" + log.getSourceItemName() + "调整为" + log.getTargetItemName());
