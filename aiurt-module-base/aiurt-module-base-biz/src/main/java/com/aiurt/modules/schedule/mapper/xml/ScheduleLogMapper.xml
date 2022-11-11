@@ -9,5 +9,11 @@
         AND su.realname like CONCAT( '%', #{scheduleLog.text}, '%' )
         or su.work_no like CONCAT( '%', #{scheduleLog.text}, '%' )
     </if>
+    <if test="scheduleLog.startDate!=null ">
+    and sl.date &gt;= #{scheduleLog.startDate}
+    </if>
+    <if test="scheduleLog.endDate!=null ">
+    and sl.date &lt;= #{scheduleLog.endDate}
+    </if>
     </select>
 </mapper>
