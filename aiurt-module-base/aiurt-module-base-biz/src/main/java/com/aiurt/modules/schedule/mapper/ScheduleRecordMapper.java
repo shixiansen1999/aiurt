@@ -36,7 +36,7 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
 
     List<ScheduleRecordModel> getMySchedule(@Param("date") String date,@Param("userId") String userId);
 
-    List<ScheduleRecordModel> getAllScheduleRecordsByMonth(@Param("date") String date, @Param("orgId") String orgId);
+    List<ScheduleRecordModel> getAllScheduleRecordsByMonth(@Param("date") String date, @Param("orgId") String orgId,@Param("text") String text);
 
     List<LoginUser> getScheduleUserDataByDay(@Param("day") String day, @Param("orgId") String orgId);
 

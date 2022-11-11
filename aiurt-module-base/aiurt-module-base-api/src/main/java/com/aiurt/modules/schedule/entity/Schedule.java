@@ -118,6 +118,13 @@ public class Schedule {
     @TableField(exist = false)
     private Date date;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "班组名称")
+    private String orgName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "工号")
+    private String workNo;
 
     @TableField(exist = false)
     private List<ScheduleRuleItem> scheduleRuleItems;

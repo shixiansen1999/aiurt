@@ -64,9 +64,8 @@ public class ScheduleLogController {
 													@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 													HttpServletRequest req) {
 		Result<IPage<ScheduleLog>> result = new Result<IPage<ScheduleLog>>();
-		QueryWrapper<ScheduleLog> queryWrapper = QueryGenerator.initQueryWrapper(scheduleLog, req.getParameterMap());
 		Page<ScheduleLog> page = new Page<ScheduleLog>(pageNo, pageSize);
-		IPage<ScheduleLog> pageList = scheduleLogService.page(page, queryWrapper);
+		IPage<ScheduleLog> pageList = scheduleLogService.queryPageList(page,scheduleLog);
 		result.setSuccess(true);
 		result.setResult(pageList);
 		return result;

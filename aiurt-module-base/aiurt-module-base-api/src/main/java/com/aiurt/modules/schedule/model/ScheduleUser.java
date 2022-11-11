@@ -6,4 +6,6 @@ import lombok.Data;
 public class ScheduleUser {
     private String userId;
     private String userName;
+    private String orgName;
+    private String workNo;
 }

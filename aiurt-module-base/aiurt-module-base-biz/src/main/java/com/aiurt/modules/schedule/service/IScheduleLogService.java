@@ -2,6 +2,8 @@ package com.aiurt.modules.schedule.service;
 
 
 import com.aiurt.modules.schedule.entity.ScheduleLog;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -12,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IScheduleLogService extends IService<ScheduleLog> {
 
+    IPage<ScheduleLog> queryPageList(Page<ScheduleLog> page, ScheduleLog scheduleLog);
 }

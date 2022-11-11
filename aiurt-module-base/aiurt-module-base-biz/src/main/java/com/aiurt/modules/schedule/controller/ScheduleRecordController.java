@@ -299,7 +299,8 @@ public class ScheduleRecordController {
     @ApiOperation(value = "排班记录-查询工班日历1", notes = "排班记录-查询工班日历1")
     @GetMapping(value = "getUserSchedule")
     public Result<List<DayScheduleModel>> getUserSchedule(@RequestParam(name = "date", required = false) String date,
-                                                          @RequestParam(name = "orgId", required = false) String orgId) {
+                                                          @RequestParam(name = "orgId", required = false) String orgId,
+                                                          @RequestParam(name = "text", required = false) String text) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> roleCodeList = scheduleRecordMapper.getRoleCodeById(loginUser.getId());
         if (StringUtils.isBlank(orgId) && !roleCodeList.contains(RoleConstant.DIRECTOR) && !roleCodeList.contains(RoleConstant.ADMIN)) {
@@ -324,7 +325,7 @@ public class ScheduleRecordController {
             model.setVoList(new ArrayList<ScheduleCalendarVo>());
             list.add(model);
         }
-        List<ScheduleRecordModel> allRecordList = scheduleRecordService.getAllScheduleRecordsByMonth(date, orgId);
+        List<ScheduleRecordModel> allRecordList = scheduleRecordService.getAllScheduleRecordsByMonth(date, orgId,text);
         if (allRecordList != null && allRecordList.size() > 0) {
             for (ScheduleRecordModel recordModel : allRecordList) {
                 calendar.setTime(recordModel.getDate());
@@ -339,6 +340,8 @@ public class ScheduleRecordController {
                 }
                 scheduleCalendarVo.setColor(recordModel.getColor());
                 scheduleCalendarVo.setContent(recordModel.getItemName() + "-" + recordModel.getUserName());
+                scheduleCalendarVo.setStartTime(recordModel.getStartTime());
+                scheduleCalendarVo.setEndTime(recordModel.getEndTime());
                 list.get(index).getVoList().add(scheduleCalendarVo);
             }
         }

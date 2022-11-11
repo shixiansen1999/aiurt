@@ -28,7 +28,7 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
 
     List<ScheduleRecordModel> getRecordListByUserAndDate(String userId, String date);
 
-    List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date, String orgId);
+    List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date, String orgId,String text);
 
     List<ScheduleRecordModel> getMySchedule(String date, String userId);
 

@@ -44,7 +44,9 @@
     <select id="getScheduleUserByDateAndOrgCodeAndOrgId"
             resultType="com.aiurt.modules.schedule.model.ScheduleUser">
         select sr.user_id as userId,
-        su.realname as userName
+        su.realname as userName,
+        su.org_name as orgName,
+        su.work_no as workNo
         from schedule_record sr
         inner join sys_user su on sr.user_id = su.id
         where su.status = 1
@@ -82,7 +84,9 @@
                sr.date as date,
                sr.item_id as itemId,
                si.name as itemName,
-               si.color as color
+               si.color as color,
+               si.start_time as startTime ,
+               si.end_time as endTime
         from schedule_record sr
             inner join schedule_item si
         on sr.item_id = si.id
@@ -101,7 +105,9 @@
         su.realname as userName,
         sr.item_id as itemId,
         si.name as itemName,
-        si.color as color
+        si.color as color,
+        si.start_time as startTime ,
+        si.end_time as endTime
         from schedule_record sr
         inner join schedule_item si
         on sr.item_id = si.id
@@ -112,6 +118,10 @@
         and si.del_flag=0
         <if test="orgId !=null and orgId !=''">
             and su.org_id=#{orgId}
+        </if>
+        <if test="text != null and text != ''">
+            AND su.realname like CONCAT( '%', #{text}, '%' )
+            or su.work_no like CONCAT( '%', #{text}, '%' )
         </if>
         order by sr.date, sr.item_id
     </select>

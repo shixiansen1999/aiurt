@@ -1,17 +1,19 @@
 package com.aiurt.modules.schedule.entity;
 
-import java.util.Date;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 
 /**
  * @Description: schedule_log
@@ -40,6 +42,9 @@ public class ScheduleLog {
 	@Excel(name = "排班人员姓名", width = 15)
     @ApiModelProperty(value = "排班人员姓名")
 	private  String  userName;
+
+	@ApiModelProperty(value = "工号")
+	private  String  workNo;
 
 	/**排班记录id*/
 	@Excel(name = "排班记录id", width = 15)
@@ -97,6 +102,10 @@ public class ScheduleLog {
     @ApiModelProperty(value = "更新时间")
 	private  Date  updateTime;
 
+	/**创建人*/
+	@Excel(name = "创建人", width = 15)
+	@ApiModelProperty(value = "创建人")
+	private  String  createBy;
 
     private static final String ID = "id";
     private static final String USER_ID = "user_id";
@@ -111,5 +120,11 @@ public class ScheduleLog {
     private static final String CREATE_TIME = "create_time";
     private static final String UPDATE_TIME = "update_time";
 
+	@ApiModelProperty(value = "查询条件")
+	@TableField(exist = false)
+	private  String  text;
 
+	@ApiModelProperty(value = "调班记录")
+	@TableField(exist = false)
+	private  String  shiftRecord ;
 }
