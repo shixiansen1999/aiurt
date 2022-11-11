@@ -1,0 +1,294 @@
+package com.aiurt.modules.maplocation.service.impl;
+
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.api.vo.TreeNode;
+import com.aiurt.common.util.RedisUtil;
+import com.aiurt.modules.common.service.ICommonService;
+import com.aiurt.modules.maplocation.dto.*;
+import com.aiurt.modules.maplocation.mapper.BdMapListMapper;
+import com.aiurt.modules.maplocation.service.IBdMapListService;
+import com.aiurt.modules.maplocation.utils.MapDistance;
+import com.aiurt.modules.weeklyplan.entity.BdStation;
+import com.aiurt.modules.weeklyplan.service.IBdStationService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.lang.StringUtils;
+
+import org.apache.shiro.SecurityUtils;
+import org.gavaghan.geodesy.Ellipsoid;
+import org.gavaghan.geodesy.GlobalCoordinates;
+import org.jeecg.common.constant.CommonConstant;
+import org.jeecg.common.exception.JeecgBootException;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.util.JwtUtil;
+
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.TokenUtils;
+
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+/**
+ * @Description:
+ * @Author: wgp
+ * @Date: 2021-04-19
+ * @Version: V1.0
+ */
+@Service
+public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTeamPosition> implements IBdMapListService {
+    @Autowired
+    private IBdStationService bdStationService;
+    @Autowired
+    private ICommonService commonService;
+    @Autowired
+    private RedisUtil redisUtil;
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
+
+    /**
+     * 查询人员的位置信息
+     *
+     * @param teamId       班组id
+     * @param userInfoList 用户id
+     * @param stationId    站点id
+     * @param stateId      状态id
+     * @return
+     */
+    @Override
+    public List<CurrentTeamPosition> queryPositionById(String teamId, String userInfoList, String stationId, String stateId) {
+
+        List<CurrentTeamPosition> currentTeamPositions = new ArrayList<>();
+        if (StrUtil.isNotEmpty(userInfoList)) {
+
+            // 获得人员位置
+            List<String> userIdList = new ArrayList<>();
+            if ("all".equals(userInfoList)) {
+                List<UserInfo> userByTeamIdList = this.getUserByTeamIdList(teamId);
+                if (CollUtil.isNotEmpty(userByTeamIdList)) {
+                    userIdList = userByTeamIdList.stream().map(user -> user.getId()).collect(Collectors.toList());
+                }
+            } else {
+                userIdList = Arrays.asList(userInfoList);
+            }
+
+            // 获取登录人员
+            Set<String> userNameSet = getUserInfo();
+
+            // 封装用户的在离线信息
+            List<CurrentTeamPosition> currentTeamPositionList = baseMapper.queryPositionById(userIdList);
+            if (CollUtil.isNotEmpty(currentTeamPositionList)) {
+                for (CurrentTeamPosition teamPosition : currentTeamPositionList) {
+                    if (ObjectUtil.isNotEmpty(teamPosition)) {
+                        teamPosition.setCurrentStaffStatusName(userNameSet.contains(teamPosition.getUsername()) ? "在线" : "离线");
+                        teamPosition.setCurrentStaffStatusId(userNameSet.contains(teamPosition.getUsername()) ? "1" : "0");
+                    }
+                }
+
+                // 过滤状态
+                if (StrUtil.isNotEmpty(stateId)) {
+                    List<CurrentTeamPosition> currentTeamPositionTempList = currentTeamPositionList.stream().filter(new Predicate<CurrentTeamPosition>() {
+                        @Override
+                        public boolean test(CurrentTeamPosition currentTeamPosition) {
+                            return StrUtil.isNotEmpty(currentTeamPosition.getCurrentStaffStatusId()) && currentTeamPosition.getCurrentStaffStatusId().equals(stateId) ? true : false;
+                        }
+                    }).collect(Collectors.toList());
+                    return currentTeamPositionTempList;
+                } else {
+                    return currentTeamPositionList;
+                }
+            }
+        }
+
+        // 按站点查询
+        if (StrUtil.isNotEmpty(stationId)) {
+            BdStation byId = bdStationService.getById(stationId);
+            if (ObjectUtil.isNotEmpty(byId) && byId.getPositionY() != null && byId.getPositionX() != null) {
+                CurrentTeamPosition currentTeamPosition = new CurrentTeamPosition();
+                currentTeamPosition.setPositionX(byId.getPositionX());
+                currentTeamPosition.setPositionY(byId.getPositionY());
+                currentTeamPosition.setStationId(byId.getId());
+                currentTeamPosition.setStationName(byId.getName());
+                currentTeamPosition.setFlag(1);
+                currentTeamPositions.add(currentTeamPosition);
+            }
+        }
+
+        return currentTeamPositions;
+    }
+
+    // 根据机构查询人员
+    @Override
+    public List<UserInfo> getUserByTeamIdList(String teamId) {
+        List<TreeNode> teamList = baseMapper.getAllTeam();
+        List<String> teamChild = new ArrayList<>();
+        if (StrUtil.isEmpty(teamId)) {
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            List<String> teamIdList = iSysBaseAPI.getUserSysDepart(sysUser.getId()).stream().map(team -> team.getId()).collect(Collectors.toList());
+            for (String teamsInt : teamIdList) {
+                teamChild.add(teamsInt);
+            }
+        } else {
+//            teamChild = TreeUtils.treeMenuList(teamList, Integer.parseInt(teamId), new ArrayList<TreeNode>()).stream().map(treeNode -> treeNode.getId()).collect(Collectors.toList());
+            teamChild.add(teamId);
+        }
+
+        return baseMapper.getUserByTeamIdList(teamChild);
+    }
+
+
+    /**
+     * 根据人员id查询人员信息
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public List<UserInfo> getUserById(String id) {
+        List<UserInfo> userById = baseMapper.getUserById(id);
+        // 封装角色信息
+        if (CollUtil.isNotEmpty(userById)) {
+            userById.forEach(user -> {
+                List<String> roleNamesByUsername = iSysBaseAPI.getRoleNamesById(user.getId());
+                if (CollUtil.isNotEmpty(roleNamesByUsername)) {
+                    user.setRoleName(StrUtil.join(",", roleNamesByUsername));
+                }
+            });
+        }
+        return userById;
+    }
+
+    // 根据人员id查询附近设备
+    @Override
+    public Page<EquipmentHistoryDTO> getEquipmentByUserId(String id, String stationId, Page<EquipmentHistoryDTO> pageList) {
+        String stationIdStr = null;
+        // 管理的班组
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<String> teamIdList = iSysBaseAPI.getUserSysDepart(sysUser.getId()).stream().map(teamId -> teamId.getId()).collect(Collectors.toList());
+
+
+        // 如果是按站点查，直接用站点的id,如果是按人员查，就是人员的位置信息和哪个站点离得最近，就取那个站点的id
+        if (StrUtil.isNotEmpty(id)) {
+            UserStationDTO userStation = baseMapper.getStationId(id);
+            QueryWrapper<BdStation> bdStationQueryWrapper = new QueryWrapper<>();
+            bdStationQueryWrapper.lambda().isNotNull(BdStation::getPositionX);
+            bdStationQueryWrapper.lambda().isNotNull(BdStation::getPositionY);
+            List<BdStation> bdStationList = bdStationService.getBaseMapper().selectList(bdStationQueryWrapper);
+            if (ObjectUtil.isNotEmpty(userStation)
+                    && userStation.getPositionX() != null
+                    && userStation.getPositionY() != null
+                    && CollUtil.isNotEmpty(bdStationList)) {
+
+                GlobalCoordinates userDistance = new GlobalCoordinates(userStation.getPositionY(), userStation.getPositionX());
+                double distance = 2000.0d; // 2000米范围内
+                for (BdStation bdStation : bdStationList) {
+                    GlobalCoordinates stationDistance = new GlobalCoordinates(bdStation.getPositionY(), bdStation.getPositionX());
+                    double meter = MapDistance.getDistanceMeter(userDistance, stationDistance, Ellipsoid.Sphere);
+                    if (meter <= distance) {
+                        stationIdStr = bdStation.getId();
+                        distance = meter;
+                    }
+                }
+            }
+        }
+
+        if (StrUtil.isNotEmpty(stationId)) {
+            stationIdStr = stationId;
+        }
+
+        if (StrUtil.isEmpty(stationIdStr)) {
+            return pageList.setRecords(new ArrayList<>());
+        }
+
+        List<EquipmentHistoryDTO> equipmentHistoryDTOS = baseMapper.selectEquipment(pageList, teamIdList, stationIdStr);
+        return pageList.setRecords(equipmentHistoryDTOS);
+    }
+
+    /**
+     * 根据机构获取机构下的人员状态
+     *
+     * @param teamId
+     * @return
+     */
+    @Override
+    public List<AssignUserDTO> getUserStateByTeamId(String teamId) {
+        List<AssignUserDTO> result = new ArrayList<>();
+        // 获取登录人员
+        Set<String> userNameSet = getUserInfo();
+
+        // 班组下的人员
+        List<UserInfo> userByTeamIdList = getUserByTeamIdList(teamId);
+        if (CollUtil.isNotEmpty(userByTeamIdList)) {
+            userByTeamIdList.stream().forEach(entity -> {
+                AssignUserDTO assign = new AssignUserDTO();
+                assign.setRealname(entity.getName());
+                assign.setId(entity.getId());
+                if (userNameSet.contains(entity.getUserName())) {
+                    assign.setStatus("已登录");
+                } else {
+                    assign.setStatus("未登录");
+                }
+                result.add(assign);
+            });
+        }
+
+        return result;
+    }
+
+    /**
+     * 发送消息给对应的用户
+     *
+     * @param username 用户账号
+     * @param msg      消息
+     * @return
+     */
+    @Override
+    public void sendSysAnnouncement(String username, String msg) {
+        MessageDTO messageDTO = new MessageDTO();
+        if (StrUtil.isNotEmpty(username) && StrUtil.isNotEmpty(msg)) {
+            messageDTO.setToUser(username);
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            messageDTO.setFromUser(sysUser.getId());
+            messageDTO.setContent(msg);
+            messageDTO.setTitle("");
+            messageDTO.setCategory("1");
+            iSysBaseAPI.sendSysAnnouncement(messageDTO);
+        } else {
+            throw new JeecgBootException("发送失败");
+        }
+    }
+
+    /**
+     * 获取登录人员信息
+     *
+     * @return
+     */
+    @NotNull
+    private Set<String> getUserInfo() {
+        Collection<String> keys = redisTemplate.keys(CommonConstant.PREFIX_USER_TOKEN + "*");
+        Set<String> userNameSet = new HashSet<>();
+        for (String key : keys) {
+            String token = (String) redisUtil.get(key);
+            if (StringUtils.isNotEmpty(token)) {
+                String username = JwtUtil.getUsername(token);
+                if (StrUtil.isNotBlank(username)) {
+                    userNameSet.add(username);
+                }
+            }
+        }
+        return userNameSet;
+    }
+
+
+}

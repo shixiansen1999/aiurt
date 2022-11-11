@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.maplocation.mapper.BdAlarmRecordMapper">
+    <select id="listAlarmRecord" resultType="com.aiurt.modules.maplocation.dto.AlarmRecordDTO">
+        SELECT
+          sy.realname as name,
+          sy.position_update_time as uploadLocationTime,
+          bar.start_time as alarmStartTime,
+          bar.end_time as alarmEndTime,
+          bar.alarm_status as state
+        FROM
+            bd_alarm_record bar
+        LEFT JOIN sys_user sy on sy.id = bar.staff_id
+        <where>
+            <if test="bdAlarmRecord.teamId!=null and bdAlarmRecord.teamId!=''">
+                bar.staff_id IN (
+                select id from sys_user where team_id = #{bdAlarmRecord.teamId}
+                )
+            </if>
+            <if test="bdAlarmRecord.startTime!=null">
+                and bar.start_time like concat('%',#{bdAlarmRecord.startTime},'%')
+            </if>
+            <if test="bdAlarmRecord.endTime!=null">
+                and bar.end_time like concat('%',#{bdAlarmRecord.endTime},'%')
+            </if>
+            <if test="bdAlarmRecord.alarmType!=null">
+                and bar.alarm_type = #{bdAlarmRecord.alarmType}
+            </if>
+        </where>
+    </select>
+</mapper>
