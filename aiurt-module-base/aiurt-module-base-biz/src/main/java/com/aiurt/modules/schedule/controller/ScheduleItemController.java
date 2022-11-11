@@ -276,14 +276,14 @@ public class ScheduleItemController {
         return Result.ok("文件导入失败！");
     }
 
-    @AutoLog(value = "获取本人创建的所有班次")
-    @ApiOperation(value="获取本人创建的所有班次", notes="获取本人创建的所有班次")
+    @AutoLog(value = "排班班次-获取本人创建的所有班次")
+    @ApiOperation(value="排班班次-获取本人创建的所有班次", notes="排班班次-获取本人创建的所有班次")
     @GetMapping("getAllScheduleItem")
     public Result<List<ScheduleItem>> getAllScheduleItem() {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Result<List<ScheduleItem>> result = new Result<List<ScheduleItem>>();
         List<ScheduleItem> itemList = scheduleItemService.list(new LambdaQueryWrapper<ScheduleItem>().eq(ScheduleItem::getDelFlag, 0)
-                .eq(ScheduleItem::getCreateBy,user.getId()));
+                .eq(ScheduleItem::getCreateBy,user.getUsername()));
         itemList.forEach(e->{
             String format1 = DateUtil.format(e.getStartTime(), "HH:mm");
             String format2 = DateUtil.format(e.getEndTime(), "HH:mm");
