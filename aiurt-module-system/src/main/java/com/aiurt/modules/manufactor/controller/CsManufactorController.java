@@ -211,23 +211,4 @@ public class CsManufactorController extends BaseController<CsManufactor,ICsManuf
 	}
 
 
-	@AutoLog(value = "厂商信息导入错误清单下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/manufactor/list")
-	@ApiOperation(value="厂商信息导入错误清单下载", notes="厂商信息导入错误清单下载")
-	@RequestMapping(value = "/exportErrorXls")
-	public ModelAndView exportErrorXl(String exportFields, HttpServletRequest request) {
-		List<CsManufactor> exportList =new ArrayList<>();
-		// Step.3 AutoPoi 导出Excel
-		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-		//此处设置的filename无效 ,前端会重更新设置一下
-		mv.addObject(NormalExcelConstants.FILE_NAME, "厂商信息");
-		mv.addObject(NormalExcelConstants.CLASS, CsManufactor.class);
-		//update-begin--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置--------------------
-		ExportParams exportParams=new ExportParams("厂商信息导入错误清单",  "厂商信息");
-		exportParams.setImageBasePath(upLoadPath);
-		//update-end--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置----------------------
-		mv.addObject(NormalExcelConstants.PARAMS,exportParams);
-		mv.addObject(NormalExcelConstants.DATA_LIST, exportList);
-		return mv;
-	}
-
 }
