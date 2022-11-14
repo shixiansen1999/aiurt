@@ -119,6 +119,9 @@ public class ScheduleController {
                 Map<Integer, Integer> scheduleRuleItemMap = new HashMap<>(itemSize);
                 for (ScheduleRuleItem item : itemList) {
                     scheduleRuleItemMap.put(item.getSort(), item.getItemId());
+                    if(item.getItemId().equals(scheduleRuleItem.getId())){
+                        scheduleRuleItem.setSort(item.getSort());
+                    }
                 }
                 int i = scheduleRuleItem.getSort();
                 while (!start.getTime().after(schedule.getEndDate())) {
