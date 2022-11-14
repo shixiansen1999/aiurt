@@ -65,5 +65,7 @@ public class CsSubsystemDTO implements Serializable {
     /**删除标志，0未删除，1已删除*/
     @ApiModelProperty(value = "删除标志，0未删除，1已删除")
     private Integer delFlag;
-
+    /**错误原因*/
+    @ApiModelProperty(value = "错误原因")
+    private String wrongReason;
 }

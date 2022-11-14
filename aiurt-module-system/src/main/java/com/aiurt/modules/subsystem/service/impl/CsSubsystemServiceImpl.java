@@ -6,7 +6,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.common.system.base.view.AiurtEntityExcelView;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.subsystem.dto.*;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
@@ -25,9 +25,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -35,6 +37,7 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,9 +46,12 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -68,6 +74,8 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     private ICsMajorService csMajorService;
     @Autowired
     private CsUserSubsystemMapper csUserSubsystemMapper;
+    @Value("${jeecg.path.upload}")
+    String filepath;
     /**
      * 添加
      *
@@ -345,7 +353,8 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
         // 错误信息
         List<String> errorMessage = new ArrayList<>();
-        int successLines = 0, errorLines = 0,errorUsers=0;;
+        int successLines = 0, errorLines = 0;
+        String url = null;
         for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
             // 获取上传文件对象
             MultipartFile file = entity.getValue();
@@ -358,116 +367,30 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             params.setHeadRows(1);
             params.setNeedSave(true);
             try {
-                List<CsSubsystemDTO> csSubsystemDTOList = ExcelImportUtil.importExcel(file.getInputStream(), CsSubsystemDTO.class, params);
+                List<CsSubsystemImportDTO> csSubsystemDTOList = ExcelImportUtil.importExcel(file.getInputStream(), CsSubsystemImportDTO.class, params);
                 csSubsystemDTOList = csSubsystemDTOList.parallelStream().filter(c->c.getMajorCode()!=null||c.getSystemName()!=null||c.getSystemCode()!=null||c.getSystemUserName()!=null||c.getGeneralSituation()!=null).collect(Collectors.toList());
                 List<CsSubsystem> list = new ArrayList<>();
                 for (int i = 0; i < csSubsystemDTOList.size(); i++) {
-                    CsSubsystemDTO csSubsystemDTO = csSubsystemDTOList.get(i);
-                    boolean error = true;
-                    if (ObjectUtil.isNull(csSubsystemDTO.getMajorCode())) {
-                        errorMessage.add("专业编码为必填项，忽略导入");
-                        errorLines++;
-                        error=false;
-
-                    }
-                    else
-                    {
-                        CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorCode, csSubsystemDTO.getMajorCode()).eq(CsMajor::getDelFlag, 0));
-                        if (csMajor == null) {
-                            errorMessage.add(csSubsystemDTO.getMajorName() + "专业名称不存在，忽略导入");
-                            if(error)
-                            {
-                                errorLines++;
-                                error=false;
-                            }
-                        }
-                        else
-                        {
-                            csSubsystemDTO.setMajorCode(csMajor.getMajorCode());
-                        }
-
-                    }
-                    if (ObjectUtil.isNull(csSubsystemDTO.getSystemCode())) {
-                        errorMessage.add("系统编码为必填项，忽略导入");
-                        if(error)
-                        {
-                            errorLines++;
-                            error=false;
-                        }
-                    }
-                    else
-                    {
-                        CsSubsystem csSubsystem = csSubsystemMapper.selectOne(new QueryWrapper<CsSubsystem>().lambda().eq(CsSubsystem::getSystemCode, csSubsystemDTO.getSystemCode()).eq(CsSubsystem::getDelFlag, 0));
-                        if (csSubsystem != null) {
-                            errorMessage.add(csSubsystemDTO.getMajorCode() + "系统编码已经存在，忽略导入");
-                            if(error)
-                            {
-                                errorLines++;
-                                error=false;
-                            }
-                        }
-                    }
-
-                    if (ObjectUtil.isNull(csSubsystemDTO.getSystemName())) {
-                        errorMessage.add("系统名称为必填项，忽略导入");
-                        if(error)
-                        {
-                            errorLines++;
-                            error=false;
-                        }
-                    }
-                    else {
-                        CsSubsystem csSubsystem = csSubsystemMapper.selectOne(new QueryWrapper<CsSubsystem>().lambda().eq(CsSubsystem::getSystemName, csSubsystemDTO.getSystemName()).eq(CsSubsystem::getDelFlag, 0));
-                        if (csSubsystem != null) {
-                            errorMessage.add(csSubsystem.getMajorCode() + "系统名称已经存在，忽略导入");
-                            if(error)
-                            {
-                                errorLines++;
-                                error=false;
-                            }
-                        }
-                    }
+                    CsSubsystemImportDTO csSubsystemDTO = csSubsystemDTOList.get(i);
                     CsSubsystem csSubsystem = new CsSubsystem();
+                     String s = decideIsNull(csSubsystemDTO);
+                    if(ObjectUtil.isNotEmpty(s))
+                    {
+                        errorLines++;
+                        csSubsystemDTO.setWrongReason(s);
+                    }
                     BeanUtils.copyProperties(csSubsystemDTO, csSubsystem);
-                    Integer lineUser=0;
                     if(ObjectUtil.isNotEmpty(csSubsystemDTO.getSystemUserName()))
                     {
-                        String[] arr = csSubsystemDTO.getSystemUserName().split(",");
-
-                        for(String userName :arr){
-                            //判断是否存在
-                            List<SysUser> users = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getRealname, userName));
-                            if(CollUtil.isEmpty(users))
-                            {
-                                errorMessage.add(csSubsystem.getMajorCode() + "技术人不存在，忽略导入");
-                                if(error)
-                                {
-                                    errorLines++;
-                                    error=false;
-                                }
-                                lineUser++;
-                            }
-                            else
-                            {
-                                List<SysUser> userList  = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getRealname, userName));
-                                csSubsystem.setSystemUsers(userList);
-                            }
-
-                        }
+                        List<SysUser> userList = isNUllUsers(csSubsystemDTO.getSystemUserName());
+                        csSubsystem.setSystemUsers(userList);
                     }
-                    if(lineUser!=0)
-                    {
-                        if(error)
-                        {
-                            errorLines++;
-                        }
-                        errorUsers++;
-                    }
+
                     list.add(csSubsystem);
                     successLines++;
                 }
 
-                if(errorLines==0&&errorUsers==0)
+                if(errorLines==0)
                 {
                     for (CsSubsystem csSubsystem : list) {
                         csSubsystemMapper.insert(csSubsystem);
@@ -488,6 +411,23 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 else
                 {
                     successLines =0;
+                    ModelAndView model = new ModelAndView(new AiurtEntityExcelView());
+                    model.addObject(NormalExcelConstants.FILE_NAME, "子系统信息导入错误清单");
+                    //excel注解对象Class
+                    model.addObject(NormalExcelConstants.CLASS, CsSubsystemImportDTO.class);
+                    //自定义表格参数
+                    model.addObject(NormalExcelConstants.PARAMS, new ExportParams("子系统信息导入错误清单", "子系统信息导入错误清单"));
+                    //导出数据列表
+                    model.addObject(NormalExcelConstants.DATA_LIST, csSubsystemDTOList);
+                    Map<String, Object> model1 = model.getModel();
+                    // 生成错误excel
+                    Workbook workbook = ExcelExportUtil.exportExcel((ExportParams) model1.get("params"), (Class) model1.get("entity"), (Collection) model1.get("data"));
+                    // w文件路径
+                    // 写到文件中
+                    String filename = "子系统信息导入错误清单" + "_" + System.currentTimeMillis()+"."+type;
+                    FileOutputStream out = new FileOutputStream(filepath + File.separator + filename);
+                    workbook.write(out);
+                    url = filename;
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());
@@ -500,8 +440,85 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 }
             }
         }
-        return imporReturnRes(errorLines, successLines, errorMessage,true,null);
+        return imporReturnRes(errorLines, successLines, errorMessage,true,url);
     }
+    private String decideIsNull(CsSubsystemImportDTO csSubsystemDTO) {
+        List<SysUser> nUllUsers = isNUllUsers(csSubsystemDTO.getSystemUserName());
+         Integer size = nUllUsers.size();
+        if (csSubsystemDTO.getMajorCode() == null && csSubsystemDTO.getSystemName() == null && csSubsystemDTO.getSystemCode()==null) {
+            return "必填字段为空";
+        }
+        else if (csSubsystemDTO.getMajorCode() == null && csSubsystemDTO.getSystemName() != null && csSubsystemDTO.getSystemCode()==null) {
+            CsSubsystem csSubsystem = csSubsystemMapper.selectOne(new QueryWrapper<CsSubsystem>().lambda().eq(CsSubsystem::getSystemName, csSubsystemDTO.getSystemName()).eq(CsSubsystem::getDelFlag, 0));
+            if (csSubsystem != null&&size==0) {
+                return "必填字段为空;系统名称重复;技术员不存在";
+            }
+            if (csSubsystem != null&&size!=0) {
+                return "必填字段为空;系统名称重复";
+            }
+            if (csSubsystem == null&&size!=0)
+            {
+                return "必填字段为空";
+            }
+        }
+        else if (csSubsystemDTO.getMajorCode() == null && csSubsystemDTO.getSystemName() == null && csSubsystemDTO.getSystemCode()!=null) {
+            CsSubsystem csSubsystem = csSubsystemMapper.selectOne(new QueryWrapper<CsSubsystem>().lambda().eq(CsSubsystem::getSystemCode, csSubsystemDTO.getSystemCode()).eq(CsSubsystem::getDelFlag, 0));
+            if (csSubsystem != null&&size==0) {
+                return "必填字段为空;系统编码重复;技术员不存在";
+            }
+            if (csSubsystem != null&&size!=0) {
+                return "必填字段为空;系统编码重复";
+            }
+            if (csSubsystem == null&&size!=0)
+            {
+                return "必填字段为空";
+            }
+        }
+        else if (csSubsystemDTO.getMajorCode() != null && csSubsystemDTO.getSystemName() != null && csSubsystemDTO.getSystemCode()!=null) {
+            CsSubsystem csSubsystemName = csSubsystemMapper.selectOne(new QueryWrapper<CsSubsystem>().lambda().eq(CsSubsystem::getSystemName, csSubsystemDTO.getSystemName()).eq(CsSubsystem::getDelFlag, 0));
+            CsSubsystem csSubsystemCode = csSubsystemMapper.selectOne(new QueryWrapper<CsSubsystem>().lambda().eq(CsSubsystem::getSystemCode, csSubsystemDTO.getSystemCode()).eq(CsSubsystem::getDelFlag, 0));
+
+            if (csSubsystemName != null&&csSubsystemCode!=null&&size!=0) {
+                return "系统编码重复;系统名称重复";
+            }
+            if (csSubsystemName != null&&csSubsystemCode!=null&&size==0) {
+                return "系统编码重复;系统名称重复;技术员不存在";
+            }
+            if (csSubsystemCode != null&&csSubsystemName==null&&size!=0) {
+                return "系统编码重复";
+            }
+            if (csSubsystemCode != null&&csSubsystemName==null&&size==0) {
+                return "系统编码重复;技术员不存在";
+            }
+            if (csSubsystemCode == null&&csSubsystemName!=null&&size!=0) {
+                return "系统名称重复";
+            }
+            if (csSubsystemCode == null&&csSubsystemName!=null&&size==0) {
+                return "系统名称重复;技术员不存在";
+            }
+        }
+        return null;
+    }
+    private List<SysUser> isNUllUsers(String  realName) {
+        if(ObjectUtil.isNotEmpty(realName))
+        {
+            String[] arr = realName.split(",");
+            for(String userName :arr){
+                //判断是否存在
+                List<SysUser> users = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getRealname, userName));
+                if(CollUtil.isNotEmpty(users))
+                {
+                    List<SysUser> userList  = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getRealname, userName));
+                    return  userList;
+                }
+                else
+                {
+                   return  null;
+                }
+            }
+        }
+        return  null;
+        }
     public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage,boolean isType,String url) throws IOException {
         if(isType)
         {

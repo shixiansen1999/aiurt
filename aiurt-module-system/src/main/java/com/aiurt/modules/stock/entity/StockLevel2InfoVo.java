@@ -69,4 +69,9 @@ public class StockLevel2InfoVo extends DictEntity {
 	@Dict(dicCode = "stock_level2_info_status")
 	private  Integer  status;
 
+	/**错误原因*/
+	@Excel(name = "错误原因", width = 15)
+	@ApiModelProperty(value = "错误原因")
+	private String errorCause;
+
 }

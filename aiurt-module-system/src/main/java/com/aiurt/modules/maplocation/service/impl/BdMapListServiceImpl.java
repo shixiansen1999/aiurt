@@ -3,6 +3,8 @@ package com.aiurt.modules.maplocation.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.weeklyplan.entity.BdStation;
+import com.aiurt.boot.weeklyplan.service.IBdStationService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.api.vo.TreeNode;
 import com.aiurt.common.util.RedisUtil;
@@ -11,13 +13,10 @@ import com.aiurt.modules.maplocation.dto.*;
 import com.aiurt.modules.maplocation.mapper.BdMapListMapper;
 import com.aiurt.modules.maplocation.service.IBdMapListService;
 import com.aiurt.modules.maplocation.utils.MapDistance;
-import com.aiurt.modules.weeklyplan.entity.BdStation;
-import com.aiurt.modules.weeklyplan.service.IBdStationService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
-
 import org.apache.shiro.SecurityUtils;
 import org.gavaghan.geodesy.Ellipsoid;
 import org.gavaghan.geodesy.GlobalCoordinates;
@@ -25,10 +24,7 @@ import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.util.JwtUtil;
-
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.util.TokenUtils;
-
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -175,7 +171,7 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
         String stationIdStr = null;
         // 管理的班组
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<String> teamIdList = iSysBaseAPI.getUserSysDepart(sysUser.getId()).stream().map(teamId -> teamId.getId()).collect(Collectors.toList());
+        List<String> teamIdList = iSysBaseAPI.getUserSysDepart(sysUser.getId()).stream().map(teamId -> teamId.getOrgCode()).collect(Collectors.toList());
 
 
         // 如果是按站点查，直接用站点的id,如果是按人员查，就是人员的位置信息和哪个站点离得最近，就取那个站点的id

@@ -36,11 +36,14 @@ import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
@@ -72,6 +75,10 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
 
     @Autowired
     private ISysBaseAPI iSysBaseApi;
+
+
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
 
     @Override
     public IPage<Schedule> getList(Schedule schedule, Page<Schedule> temp) {
@@ -154,7 +161,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         //校验
         Boolean aBoolean = importErrorExcel(response, scheduleDate);
         if (aBoolean) {
-            Result.error("文件导入失败");
+            return Result.OK("文件导入失败");
         }
         //从表头获取时间
         String title = scheduleDate.get(1).get(3);
@@ -300,15 +307,15 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                 for (int i = 0; i <31 ; i++) {
                     ExcelSelectListUtil.selectList(workbook, i+3, i+3, names);
                 }
-                String fileName = "导入失败错误报告";
+
                 try {
-                    response.setHeader("Content-Disposition",
-                            "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
-                    response.setContentType("application/vnd.ms-excel;charset=UTF-8");
-                    BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
-                    workbook.write(bufferedOutPut);
-                    bufferedOutPut.flush();
-                    bufferedOutPut.close();
+                    String fileName = "排班表导入失败错误报告";
+                    FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName+".xlsx");
+                    System.out.println("路径："+upLoadPath+File.separator+fileName+".xlsx");
+                    System.out.println("下载成功");
+                    workbook.write(out);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

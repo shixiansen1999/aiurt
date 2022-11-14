@@ -22,11 +22,14 @@
         </where>
     </select>
     <select id="getUserList" parameterType="string" resultType="com.aiurt.modules.maplocation.dto.UserInfo">
-        select id,position_x,position_y
-        from sys_user
+        select sy.id,  sp.longitude as positionX,
+        sp.latitude as positionY
+        from sys_user sy
+        left join  sys_user_position sp on sp.create_by = sy.username
         <where>
+            sy.del_flag = 0
             <if test="id!=null and id!=''">
-                id = #{id}
+               sy.id = #{id}
             </if>
         </where>
     </select>
@@ -42,49 +45,41 @@
         </where>
     </select>
     <select id="getUserById" parameterType="string" resultType="com.aiurt.modules.maplocation.dto.UserInfo">
-        select sy.id,sy.username as userName,sy.realname as name,sy.safe_level, sy.identity_number, sy.phone from sys_user sy
+        select sy.id,sy.username as userName,sy.realname as name,sy.work_no, sy.phone from sys_user sy
         where sy.id=#{id}
     </select>
     <select id="getAllEquipmentList" resultType="com.aiurt.modules.maplocation.dto.EquipmentDTO">
-        select bda.id,bs.position_x,bs.position_y from  bd_device_archives bda
-        LEFT JOIN  bd_station bs on bs.id = bda.station_id
+        select bda.id, bs.longitude as positionX,  bs.latitude as positionYfrom
+         from  device bda
+        LEFT JOIN  cs_station bs on bs.station_code = bda.station_code
+        where  bda.del_flag = 0  and  bs.del_flag = 0
     </select>
 
     <select id="selectEquipment" resultType="com.aiurt.modules.maplocation.dto.EquipmentHistoryDTO">
         SELECT
         bda.device_code,
         bdt.NAME AS typeName,
-        bds.state,
-        bda.position,
+        bda.position_code,
         bda.NAME AS deviceName
         FROM
-        bd_device_archives bda
-        LEFT JOIN bd_device_type bdt ON bdt.id = bda.type_id
-        LEFT JOIN bd_device_state bds ON bds.id = bda.state
+        device bda
+        LEFT JOIN device_type bdt ON bdt.code = bda.device_type_code
         <where>
             bda.station_id = #{stationIdStr}
+            and bda.del_flag = 0 and bdt.del_flag = 0
             <if test="teamIdList.size()>0">
                 and (
-                bda.check_team_id in
+                bda.use_deprt_code in
                 <foreach collection="teamIdList" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
-                or
-                bda.repair_team_id in
-                <foreach collection="teamIdList" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-                or
-                bda.check_repair_team_id in
-                <foreach collection="teamIdList" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-                )
+             )
             </if>
         </where>
     </select>
     <select id="getAllTeam" resultType="com.aiurt.common.api.vo.TreeNode">
-        select id,name,parent_id as pid from bd_team
+        select id,depart_name as name ,parent_id as pid from sys_depart
+       where  del_flag = 0
     </select>
     <select id="queryUserById" resultType="com.aiurt.modules.maplocation.dto.UserInfo">
         select id, realname as name
@@ -93,15 +88,17 @@
         <foreach collection="idList" item="id" index="index" open="(" close=")" separator=",">
             #{id}
         </foreach>
+        and del_flag = 0
     </select>
     <select id="getStationId" parameterType="string" resultType="com.aiurt.modules.maplocation.dto.UserStationDTO">
         SELECT
-        su.position_x,
-        su.position_y
+        sp.longitude as positionX,
+        sp.latitude as positionY,
         from sys_user su
+        left sys_user_position sp on sp.create_by = su.username
         <where>
-            su.position_x IS NOT NULL
-            AND su.position_y IS NOT NULL
+            sp.longitude IS NOT NULL
+            AND sp.latitude IS NOT NULL
             <if test="id!=null and id !=''">
                 and su.id = #{id}
             </if>

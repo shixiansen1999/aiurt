@@ -173,7 +173,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                     String filename = "专业信息导入错误清单" + "_" + System.currentTimeMillis()+"."+type;
                     FileOutputStream out = new FileOutputStream(filepath + File.separator + filename);
                     workbook.write(out);
-                    url = System.currentTimeMillis()+"?"+"fileName=专业信息导入错误清单."+type;
+                    url = filename;
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());
