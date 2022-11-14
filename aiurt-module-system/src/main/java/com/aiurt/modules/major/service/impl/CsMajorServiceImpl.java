@@ -170,10 +170,10 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                     Workbook workbook = ExcelExportUtil.exportExcel((ExportParams) model1.get("params"), (Class) model1.get("entity"), (Collection) model1.get("data"));
                     // w文件路径
                     // 写到文件中
-                    String filename = "专业信息导入错误清单.xlsx";
+                    String filename = "专业信息导入错误清单" + "_" + System.currentTimeMillis()+"."+type;
                     FileOutputStream out = new FileOutputStream(filepath + File.separator + filename);
                     workbook.write(out);
-                    url = new Date().getTime()+filename;
+                    url = System.currentTimeMillis()+"?"+"fileName=专业信息导入错误清单."+type;
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());
