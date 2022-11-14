@@ -79,8 +79,8 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     }
 
     @Override
-    public List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date, String orgId,String text) {
-        return this.baseMapper.getAllScheduleRecordsByMonth(date, orgId,text);
+    public List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date, String orgId,String text,List<String> orgList) {
+        return this.baseMapper.getAllScheduleRecordsByMonth(date, orgId,text,orgList);
     }
 
     @Override
