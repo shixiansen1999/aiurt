@@ -37,13 +37,13 @@ public class CsSubsystemImportDTO implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "id")
     private String id;
-	/**名称*/
-	@Excel(name = "系统名称", width = 15)
-    @ApiModelProperty(value = "系统名称")
+	/**子系统名称*/
+	@Excel(name = "子系统名称", width = 15)
+    @ApiModelProperty(value = "子系统名称")
     private String systemName;
 	/**编号*/
-	@Excel(name = "系统编号", width = 15)
-    @ApiModelProperty(value = "系统编号")
+	@Excel(name = "子系统编号", width = 15)
+    @ApiModelProperty(value = "子系统编号")
     private String systemCode;
 
     /**技术员*/
@@ -53,8 +53,8 @@ public class CsSubsystemImportDTO implements Serializable {
     private String systemUserName;
 
     /**子系统概况*/
-    @Excel(name = "系统概况", width = 15)
-    @ApiModelProperty(value = "系统概况")
+    @Excel(name = "子系统概况", width = 15)
+    @ApiModelProperty(value = "子系统概况")
     private String generalSituation;
 
     /**子系统人员*/

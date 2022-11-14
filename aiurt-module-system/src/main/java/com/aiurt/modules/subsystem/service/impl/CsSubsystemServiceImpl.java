@@ -6,7 +6,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.system.base.view.AiurtEntityExcelView;
+import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.subsystem.dto.*;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
@@ -17,15 +17,19 @@ import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.mapper.CsUserSubsystemMapper;
 import com.aiurt.modules.system.service.ISysUserService;
+import com.aiurt.modules.train.utils.DlownTemplateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
@@ -34,6 +38,7 @@ import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,12 +51,11 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -346,8 +350,6 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             }
         }
     }
-
-    @Override
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
@@ -355,10 +357,11 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         List<String> errorMessage = new ArrayList<>();
         int successLines = 0, errorLines = 0;
         String url = null;
-        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
             // 获取上传文件对象
-            MultipartFile file = entity.getValue();
-            String type = FilenameUtils.getExtension(file.getOriginalFilename());
+        MultipartFile file = multipartRequest.getFile("file");
+        InputStream inputStream = file.getInputStream();//获取后缀名
+        String nameAndType[] = file.getOriginalFilename().split("\\.");
+        String type = nameAndType[1];
             if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
                 return imporReturnRes(errorLines, successLines, errorMessage,false,null);
             }
@@ -411,23 +414,8 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 else
                 {
                     successLines =0;
-                    ModelAndView model = new ModelAndView(new AiurtEntityExcelView());
-                    model.addObject(NormalExcelConstants.FILE_NAME, "子系统信息导入错误清单");
-                    //excel注解对象Class
-                    model.addObject(NormalExcelConstants.CLASS, CsSubsystemImportDTO.class);
-                    //自定义表格参数
-                    model.addObject(NormalExcelConstants.PARAMS, new ExportParams("子系统信息导入错误清单", "子系统信息导入错误清单"));
-                    //导出数据列表
-                    model.addObject(NormalExcelConstants.DATA_LIST, csSubsystemDTOList);
-                    Map<String, Object> model1 = model.getModel();
-                    // 生成错误excel
-                    Workbook workbook = ExcelExportUtil.exportExcel((ExportParams) model1.get("params"), (Class) model1.get("entity"), (Collection) model1.get("data"));
-                    // w文件路径
-                    // 写到文件中
-                    String filename = "子系统信息导入错误清单" + "_" + System.currentTimeMillis()+"."+type;
-                    FileOutputStream out = new FileOutputStream(filepath + File.separator + filename);
-                    workbook.write(out);
-                    url = filename;
+                    String s = importErrorExcel(response, csSubsystemDTOList,type);
+                    url =s;
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());
@@ -439,8 +427,100 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                     log.error(e.getMessage(), e);
                 }
             }
-        }
         return imporReturnRes(errorLines, successLines, errorMessage,true,url);
+    }
+
+
+
+    /**校验,如果导入出错怎返回错误报告*/
+    public String importErrorExcel(HttpServletResponse response,List<CsSubsystemImportDTO> scheduleDate,String type) {
+        //创建导入失败错误报告,进行模板导出
+        URL resource = DlownTemplateUtil.class.getResource("/templates/csSubsystemImportDTO.xlsx");
+        String path = resource.getPath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<String, Object> errorMap = new HashMap<String, Object>();
+        errorMap.put("title", "子系统导入失败错误清单");
+        List<Map<String, Object>> listMap = new ArrayList<>();
+        for (CsSubsystemImportDTO dto : scheduleDate) {
+            //获取一条排班记录
+            Map<String, Object> lm = new HashMap<String, Object>();
+             CsMajor csMajor = csMajorService.getBaseMapper().selectOne(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getMajorCode, dto.getMajorCode()).eq(CsMajor::getDelFlag, 0));
+            //错误报告获取信息
+            lm.put("major", csMajor.getMajorName());
+            lm.put("systemcode", dto.getSystemCode());
+            lm.put("systemname", dto.getSystemName());
+            lm.put("systemusername", dto.getSystemUserName());
+            lm.put("generalsituation", dto.getGeneralSituation());
+            lm.put("mistake", dto.getWrongReason());
+            listMap.add(lm);
+        }
+        errorMap.put("maplist", listMap);
+        for (Map<String, Object> map : listMap) {
+            Object mistake = map.get("mistake");
+            if (ObjectUtil.isNotNull(mistake)) {
+                Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
+                List<CsMajor> scheduleItems = csMajorService.getBaseMapper().selectList(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag, 0));
+                List<String> names = scheduleItems.stream().map(CsMajor::getMajorName).collect(Collectors.toList());
+                ExcelSelectListUtil.selectList(workbook, 1, 1, names);
+                String fileName = "子系统导入失败错误清单"+ "_" + System.currentTimeMillis()+"."+type;
+                try {
+                    FileOutputStream out = new FileOutputStream(filepath+ File.separator+fileName);
+                    workbook.write(out);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return fileName;
+            }
+        }
+
+        return null;
+    }
+
+
+
+
+
+
+    public static final class ExcelSelectListUtil {
+        /**
+         * firstRow 開始行號 根据此项目，默认为3(下标0开始)
+         * lastRow  根据此项目，默认为最大65535
+         * firstCol 区域中第一个单元格的列号 (下标0开始)
+         * lastCol 区域中最后一个单元格的列号
+         * strings 下拉内容
+         * */
+        public static void selectList(Workbook workbook,int firstCol,int lastCol,List<String >majorName ){
+            if (CollectionUtil.isNotEmpty(majorName)) {
+                Sheet sheet = workbook.getSheetAt(0);
+                //将新建的sheet页隐藏掉, 下拉值太多，需要创建隐藏页面
+                int sheetTotal = workbook.getNumberOfSheets();
+                String hiddenSheetName = "专业" + "_hiddenSheet";
+                Sheet hiddenSheet = workbook.getSheet(hiddenSheetName);
+                if (hiddenSheet == null) {
+                    hiddenSheet = workbook.createSheet(hiddenSheetName);
+                    //写入下拉数据到新的sheet页中
+                    for (int i = 0; i < majorName.size(); i++) {
+                        Row hiddenRow = hiddenSheet.createRow(i);
+                        Cell hiddenCell = hiddenRow.createCell(0);
+                        hiddenCell.setCellValue(majorName.get(i));
+                    }
+                    workbook.setSheetHidden(sheetTotal, true);
+                }
+
+                // 下拉数据
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3, 65535, 0, 0);
+                //  生成下拉框内容名称
+                String strFormula = hiddenSheetName + "!$A$1:$A$65535";
+                // 根据隐藏页面创建下拉列表
+                XSSFDataValidationConstraint constraint = new XSSFDataValidationConstraint(DataValidationConstraint.ValidationType.LIST, strFormula);
+                XSSFDataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) hiddenSheet);
+                DataValidation validation = dvHelper.createValidation(constraint, cellRangeAddressList);
+                //  对sheet页生效
+                sheet.addValidationData(validation);
+            }
+        }
     }
     private String decideIsNull(CsSubsystemImportDTO csSubsystemDTO) {
         List<SysUser> nUllUsers = isNUllUsers(csSubsystemDTO.getSystemUserName());

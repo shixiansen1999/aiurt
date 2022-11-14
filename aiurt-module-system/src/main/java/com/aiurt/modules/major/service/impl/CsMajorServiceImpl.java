@@ -8,6 +8,7 @@ import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.system.controller.SysDictController;
+import com.aiurt.modules.train.utils.DlownTemplateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -17,10 +18,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
+import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,14 +27,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: cs_major
@@ -157,23 +160,8 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
 
                 } else {
                     successLines = 0;
-                    ModelAndView model = new ModelAndView(new JeecgEntityExcelView());
-                    model.addObject(NormalExcelConstants.FILE_NAME, "专业信息导入错误清单");
-                    //excel注解对象Class
-                    model.addObject(NormalExcelConstants.CLASS, CsMajorImportVO.class);
-                    //自定义表格参数
-                    model.addObject(NormalExcelConstants.PARAMS, new ExportParams("专业信息导入错误清单", "专业信息导入错误清单"));
-                    //导出数据列表
-                    model.addObject(NormalExcelConstants.DATA_LIST, csMajorList);
-                    Map<String, Object> model1 = model.getModel();
-                    // 生成错误excel
-                    Workbook workbook = ExcelExportUtil.exportExcel((ExportParams) model1.get("params"), (Class) model1.get("entity"), (Collection) model1.get("data"));
-                    // w文件路径
-                    // 写到文件中
-                    String filename = "专业信息导入错误清单" + "_" + System.currentTimeMillis()+"."+type;
-                    FileOutputStream out = new FileOutputStream(filepath + File.separator + filename);
-                    workbook.write(out);
-                    url = filename;
+                    String s = importErrorExcel(response, csMajorList,type);
+                    url =s;
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());
@@ -265,5 +253,42 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
             return res;
         }
 
+    }
+    public String importErrorExcel(HttpServletResponse response, List<CsMajorImportVO> scheduleDate, String type) {
+        //创建导入失败错误报告,进行模板导出
+        URL resource = DlownTemplateUtil.class.getResource("/templates/csMajorImportVO.xlsx");
+        String path = resource.getPath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<String, Object> errorMap = new HashMap<String, Object>();
+        errorMap.put("title", "专业信息导入失败错误清单");
+        List<Map<String, Object>> listMap = new ArrayList<>();
+        for (CsMajorImportVO dto : scheduleDate) {
+            //获取一条排班记录
+            Map<String, Object> lm = new HashMap<String, Object>();
+            //错误报告获取信息
+            lm.put("majorcode", dto.getMajorCode());
+            lm.put("majorname", dto.getMajorName());
+            lm.put("mistake", dto.getWrongReason());
+            listMap.add(lm);
+        }
+        errorMap.put("maplist", listMap);
+        for (Map<String, Object> map : listMap) {
+            Object mistake = map.get("mistake");
+            if (ObjectUtil.isNotNull(mistake)) {
+                Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
+                String fileName = "专业信息导入失败错误清单"+ "_" + System.currentTimeMillis()+"."+type;
+                try {
+                    FileOutputStream out = new FileOutputStream(filepath+ File.separator+fileName);
+                    workbook.write(out);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return fileName;
+            }
+        }
+
+        return null;
     }
 }
