@@ -32,7 +32,7 @@ public class ScheduleRuleServiceImpl extends ServiceImpl<ScheduleRuleMapper, Sch
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         wrapper.eq(ScheduleRule::getDelFlag, 0);
         //只能看到自己创建的规则
-        wrapper.eq(ScheduleRule::getCreateBy, user.getId());
+        wrapper.eq(ScheduleRule::getCreateBy, user.getUsername());
         List<ScheduleRule> rules = this.baseMapper.selectList(wrapper);
         rules.forEach(rule -> {
             List<ScheduleRuleItem> detailRuleItems = scheduleRuleItemService.getDetailRuleItems(rule.getId());
