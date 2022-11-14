@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.manufactor.entity.vo.CsManuFactorImportVo;
 import com.aiurt.modules.stock.entity.StockLevel2Info;
 import com.aiurt.modules.stock.entity.StockLevel2InfoVo;
 import com.aiurt.modules.stock.mapper.StockLevel2InfoMapper;
@@ -13,22 +14,29 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
+import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -44,6 +52,8 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 	private StockLevel2InfoMapper stockLevel2InfoMapper;
 	@Autowired
 	private SysBaseApiImpl sysBaseApi;
+	@Value("${jeecg.path.upload}")
+	private String upLoadPath;
 
 	@Override
 	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -52,12 +62,13 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 		// 错误信息
 		List<String> errorMessage = new ArrayList<>();
 		int successLines = 0, errorLines = 0;
+		String url = null;
 		for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
 			// 获取上传文件对象
 			MultipartFile file = entity.getValue();
 			String type = FilenameUtils.getExtension(file.getOriginalFilename());
 			if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-				return imporReturnRes(errorLines, successLines, errorMessage, false);
+				return imporReturnRes(errorLines, successLines, errorMessage, false,url);
 			}
 			ImportParams params = new ImportParams();
 			params.setTitleRows(1);
@@ -75,12 +86,14 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 					boolean error = true;
 					if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseCode())) {
 						errorMessage.add("仓库编码为必填项，忽略导入");
+						stockLevel2InfoVo.setErrorCause("仓库编码为必填项;");
 						errorLines++;
 						error = false;
 					} else {
 						StockLevel2Info stockLevel2Info = stockLevel2InfoMapper.selectOne(new QueryWrapper<StockLevel2Info>().lambda().eq(StockLevel2Info::getWarehouseCode, stockLevel2InfoVo.getWarehouseCode()).eq(StockLevel2Info::getDelFlag, 0));
 						if (stockLevel2Info != null) {
 							errorMessage.add(stockLevel2InfoVo.getWarehouseCode() + "仓库编码已经存在，忽略导入");
+							stockLevel2InfoVo.setErrorCause("仓库编码已经存在;");
 							if (error) {
 								errorLines++;
 								error = false;
@@ -89,14 +102,17 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 					}
 					if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseName()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseCode())) {
 						errorMessage.add("仓库名称为必填项，忽略导入");
+						stockLevel2InfoVo.setErrorCause("仓库名称为必填项;");
 						errorLines++;
 					}
 					if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseName())) {
 						errorMessage.add("仓库名称为必填项，忽略导入");
+						stockLevel2InfoVo.setErrorCause("仓库编码为必填项;仓库名称为必填项;");
 					} else {
 						StockLevel2Info stockLevel2Info = stockLevel2InfoMapper.selectOne(new QueryWrapper<StockLevel2Info>().lambda().eq(StockLevel2Info::getWarehouseName, stockLevel2InfoVo.getWarehouseName()).eq(StockLevel2Info::getDelFlag, 0));
 						if (stockLevel2Info != null) {
 							errorMessage.add(stockLevel2InfoVo.getWarehouseCode() + "仓库名称已经存在，忽略导入");
+							stockLevel2InfoVo.setErrorCause("仓库名称已经存在;");
 							if (error) {
 								errorLines++;
 							}
@@ -104,17 +120,21 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 					}
 					if (ObjectUtil.isNull(stockLevel2InfoVo.getOrganizationId()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseName()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseCode())) {
 						errorMessage.add("组织机构ID为必填项，忽略导入");
+						stockLevel2InfoVo.setErrorCause("组织机构ID为必填项;");
 						errorLines++;
 					}
 					if(ObjectUtil.isNull(stockLevel2InfoVo.getOrganizationId())){
 						errorMessage.add("组织机构ID为必填项，忽略导入");
+						stockLevel2InfoVo.setErrorCause("仓库编码为必填项;仓库名称为必填项;组织机构ID为必填项;");
 					}
 					if (ObjectUtil.isNull(stockLevel2InfoVo.getStatus())& ObjectUtil.isNotNull(stockLevel2InfoVo.getOrganizationId()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseName()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseCode())) {
 						errorMessage.add("状态为必填项，忽略导入");
+						stockLevel2InfoVo.setErrorCause("状态为必填项;");
 						errorLines++;
 					}
 					if (ObjectUtil.isNull(stockLevel2InfoVo.getStatus())) {
 						errorMessage.add("状态为必填项，忽略导入");
+						stockLevel2InfoVo.setErrorCause("仓库编码为必填项;仓库名称为必填项;组织机构ID为必填项;状态为必填项;");
 					}
 					StockLevel2Info stockLevel2Info = new StockLevel2Info();
 					BeanUtils.copyProperties(stockLevel2InfoVo, stockLevel2Info);
@@ -128,6 +148,22 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 					}
 				} else {
 					successLines = 0;
+					ModelAndView model = new ModelAndView(new JeecgEntityExcelView());
+					model.addObject(NormalExcelConstants.FILE_NAME, "下载错误模板");
+					//excel注解对象Class
+					model.addObject(NormalExcelConstants.CLASS, StockLevel2InfoVo.class);
+					//自定义表格参数
+					model.addObject(NormalExcelConstants.PARAMS, new ExportParams("错误清单模板", "错误清单模板"));
+					//导出数据列表
+					model.addObject(NormalExcelConstants.DATA_LIST, stockLevel2InfoList);
+					Map<String, Object> model1 = model.getModel();
+					// 生成错误excel
+					Workbook workbook = ExcelExportUtil.exportExcel((ExportParams)model1.get("params"), (Class)model1.get("entity"), (Collection)model1.get("data"));
+					// 写到文件中
+					String filename = new Date().getTime()+"二级仓库管理错误清单";
+					FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+filename+".xlsx");
+					workbook.write(out);
+					url =filename+".xlsx";
 				}
 			} catch (Exception e) {
 				errorMessage.add("发生异常：" + e.getMessage());
@@ -140,7 +176,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 				}
 			}
 		}
-		return imporReturnRes(errorLines, successLines, errorMessage, true);
+		return imporReturnRes(errorLines, successLines, errorMessage, true,url);
 	}
 
 	/**
@@ -167,7 +203,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 		return false;
 	}
 
-	public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage,boolean isType) throws IOException {
+	public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage,boolean isType,String failReportUrl) throws IOException {
 		if(isType)
 		{
 			if (errorLines != 0) {
@@ -177,7 +213,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 				result.put("successCount", successLines);
 				int totalCount = successLines + errorLines;
 				result.put("totalCount", totalCount);
-				result.put("failReportUrl", "");
+				result.put("failReportUrl", failReportUrl);
 				Result res = Result.ok(result);
 				res.setMessage("文件失败，数据有错误。");
 				res.setCode(200);
