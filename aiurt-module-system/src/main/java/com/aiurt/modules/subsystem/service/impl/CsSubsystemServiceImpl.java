@@ -416,7 +416,6 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                     successLines =0;
                     String s = importErrorExcel(csSubsystemDTOList,type);
                     url =s;
-                    return imporReturnRes(errorLines, successLines, errorMessage,true,url);
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());
@@ -428,7 +427,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                     log.error(e.getMessage(), e);
                 }
             }
-            return null;
+        return imporReturnRes(errorLines, successLines, errorMessage,true,url);
     }
 
 
