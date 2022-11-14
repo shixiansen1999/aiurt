@@ -159,10 +159,10 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 					// 生成错误excel
 					Workbook workbook = ExcelExportUtil.exportExcel((ExportParams)model1.get("params"), (Class)model1.get("entity"), (Collection)model1.get("data"));
 					// 写到文件中
-					String filename = new Date().getTime()+"二级仓库管理错误清单";
+					String filename = "二级仓库管理错误清单"+"_" + System.currentTimeMillis()+"."+type;
 					FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+filename+".xlsx");
 					workbook.write(out);
-					url =upLoadPath+ File.separator+filename+".xlsx";
+					url =filename;
 				}
 			} catch (Exception e) {
 				errorMessage.add("发生异常：" + e.getMessage());
