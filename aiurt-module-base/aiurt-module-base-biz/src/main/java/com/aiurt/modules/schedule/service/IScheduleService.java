@@ -20,4 +20,6 @@ public interface IScheduleService extends IService<Schedule> {
     public IPage<Schedule> getList(Schedule schedule, Page<Schedule> page);
 
     Result<?> importScheduleExcel(List<Map<Integer, String>> scheduleDate, HttpServletResponse response);
+
+    Result<Schedule> add(Schedule schedule);
 }

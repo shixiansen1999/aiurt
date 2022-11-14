@@ -9,14 +9,17 @@ import com.aiurt.common.util.DateUtils;
 import com.aiurt.modules.schedule.entity.Schedule;
 import com.aiurt.modules.schedule.entity.ScheduleItem;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
+import com.aiurt.modules.schedule.entity.ScheduleRuleItem;
 import com.aiurt.modules.schedule.mapper.ScheduleMapper;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.model.ScheduleUser;
 import com.aiurt.modules.schedule.service.IScheduleItemService;
 import com.aiurt.modules.schedule.service.IScheduleRecordService;
+import com.aiurt.modules.schedule.service.IScheduleRuleItemService;
 import com.aiurt.modules.schedule.service.IScheduleService;
 import com.aiurt.modules.train.utils.DlownTemplateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -76,6 +79,10 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
     @Autowired
     private ISysBaseAPI iSysBaseApi;
 
+    @Autowired
+    private IScheduleRuleItemService ruleItemService;
+    @Autowired
+    private IScheduleItemService ItemService;
 
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
@@ -201,6 +208,57 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
 
         }
         return Result.ok("文件导入成功！");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<Schedule> add(Schedule schedule) {
+        Result<Schedule> result = new Result<Schedule>();
+        List<ScheduleRuleItem> scheduleRuleItems = schedule.getScheduleRuleItems();
+        for (ScheduleRuleItem scheduleRuleItem : scheduleRuleItems) {
+            try {
+                Calendar start = Calendar.getInstance();
+                start.setTime(schedule.getStartDate());
+                QueryWrapper wrapper = new QueryWrapper();
+                wrapper.eq("rule_id", schedule.getRuleId());
+                List<ScheduleRuleItem> itemList = ruleItemService.list(wrapper);
+                int itemSize = itemList.size();
+                Map<Integer, Integer> scheduleRuleItemMap = new HashMap<>(itemSize);
+                for (ScheduleRuleItem item : itemList) {
+                    scheduleRuleItemMap.put(item.getSort(), item.getItemId());
+                    if(item.getItemId().equals(scheduleRuleItem.getId())){
+                        scheduleRuleItem.setSort(item.getSort());
+                    }
+                }
+                int i = scheduleRuleItem.getSort();
+                while (!start.getTime().after(schedule.getEndDate())) {
+                    int index = (i % itemSize == 0 ? itemSize : i % itemSize);
+                    Integer ruleItemId = scheduleRuleItemMap.get(index);
+                    ScheduleItem scheduleItem = ItemService.getById(ruleItemId);
+                    for (String userId : scheduleRuleItem.getUserIds()) {
+                        ScheduleRecord record = ScheduleRecord.builder()
+                                .scheduleId(schedule.getId())
+                                .userId(userId)
+                                .date(start.getTime())
+                                .itemId(scheduleItem.getId())
+                                .itemName(scheduleItem.getName())
+                                .startTime(scheduleItem.getStartTime())
+                                .endTime(scheduleItem.getEndTime())
+                                .color(scheduleItem.getColor())
+                                .delFlag(0)
+                                .build();
+                        recordService.save(record);
+                    }
+                    start.add(Calendar.DAY_OF_YEAR, 1);
+                    i++;
+                }
+                result.success("添加成功！");
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                result.error500("操作失败");
+            }
+        }
+        return result;
     }
 
     /**校验,如果导入出错怎返回错误报告*/

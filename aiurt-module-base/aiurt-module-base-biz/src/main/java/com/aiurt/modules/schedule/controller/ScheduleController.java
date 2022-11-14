@@ -60,10 +60,7 @@ public class ScheduleController {
     private IScheduleRecordService recordService;
     @Autowired
     private IScheduleRuleService ruleService;
-    @Autowired
-    private IScheduleRuleItemService ruleItemService;
-    @Autowired
-    private IScheduleItemService ItemService;
+
     @Autowired
     private IScheduleHolidaysService scheduleHolidaysService;
     @Autowired
@@ -106,54 +103,7 @@ public class ScheduleController {
     @ApiOperation(value = "人员排班-添加", notes = "人员排班-添加")
     @PostMapping(value = "/add")
     public Result<Schedule> add(@RequestBody Schedule schedule) {
-        Result<Schedule> result = new Result<Schedule>();
-        List<ScheduleRuleItem> scheduleRuleItems = schedule.getScheduleRuleItems();
-        for (ScheduleRuleItem scheduleRuleItem : scheduleRuleItems) {
-            try {
-                Calendar start = Calendar.getInstance();
-                start.setTime(schedule.getStartDate());
-                QueryWrapper wrapper = new QueryWrapper();
-                wrapper.eq("rule_id", schedule.getRuleId());
-                List<ScheduleRuleItem> itemList = ruleItemService.list(wrapper);
-                int itemSize = itemList.size();
-                Map<Integer, Integer> scheduleRuleItemMap = new HashMap<>(itemSize);
-                for (ScheduleRuleItem item : itemList) {
-                    scheduleRuleItemMap.put(item.getSort(), item.getItemId());
-                    if(item.getItemId().equals(scheduleRuleItem.getId())){
-                        scheduleRuleItem.setSort(item.getSort());
-                    }
-                }
-                int i = scheduleRuleItem.getSort();
-                while (!start.getTime().after(schedule.getEndDate())) {
-                    int index = (i % itemSize == 0 ? itemSize : i % itemSize);
-                    Integer ruleItemId = scheduleRuleItemMap.get(index);
-                    ScheduleItem scheduleItem = ItemService.getById(ruleItemId);
-                    for (String userId : scheduleRuleItem.getUserIds()) {
-                        ScheduleRecord record = ScheduleRecord.builder()
-                                .scheduleId(schedule.getId())
-                                .userId(userId)
-                                .date(start.getTime())
-                                .itemId(scheduleItem.getId())
-                                .itemName(scheduleItem.getName())
-                                .startTime(scheduleItem.getStartTime())
-                                .endTime(scheduleItem.getEndTime())
-                                .color(scheduleItem.getColor())
-                                .delFlag(0)
-                                .build();
-                        recordService.save(record);
-                    }
-                    start.add(Calendar.DAY_OF_YEAR, 1);
-                    i++;
-                }
-                result.success("添加成功！");
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-                result.error500("操作失败");
-            }
-
-        }
-
-        return result;
+        return scheduleService.add(schedule);
     }
 
     /**
