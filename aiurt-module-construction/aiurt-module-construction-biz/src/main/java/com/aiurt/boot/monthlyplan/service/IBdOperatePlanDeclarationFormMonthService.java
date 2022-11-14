@@ -1,7 +1,7 @@
-package com.aiurt.modules.planmountfind.service;
+package com.aiurt.boot.monthlyplan.service;
 
-import com.aiurt.modules.planmountfind.dto.*;
-import com.aiurt.modules.planmountfind.entity.BdOperatePlanDeclarationFormMonth;
+import com.aiurt.boot.monthlyplan.dto.*;
+import com.aiurt.boot.monthlyplan.entity.BdOperatePlanDeclarationFormMonth;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.servlet.ModelAndView;
@@ -155,7 +155,7 @@ public interface IBdOperatePlanDeclarationFormMonthService extends IService<BdOp
      * @param id         数据行id
      * @return 对数据库表修改的行数
      */
-    Integer cancelButton(String userID, int formStatus, String id,String rejectedReason);
+    Integer cancelButton(String userID, int formStatus, String id, String rejectedReason);
 
     /**
      * 新版审核按钮

@@ -1,4 +1,4 @@
-package com.aiurt.modules.planmountfind.dto;
+package com.aiurt.boot.monthlyplan.dto;
 
 import io.swagger.annotations.ApiModel;
 import lombok.Data;

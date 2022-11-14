@@ -1,4 +1,4 @@
-package com.aiurt.modules.planmountfind.dto;
+package com.aiurt.boot.monthlyplan.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

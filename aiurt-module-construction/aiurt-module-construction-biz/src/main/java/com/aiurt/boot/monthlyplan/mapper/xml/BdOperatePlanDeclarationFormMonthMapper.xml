@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.aiurt.modules.planmountfind.mapper.BdOperatePlanDeclarationFormMonthMapper">
+<mapper namespace="com.aiurt.boot.monthlyplan.mapper.BdOperatePlanDeclarationFormMonthMapper">
 
 
     <!-- 取消计划 -->
@@ -18,7 +18,7 @@
     <!--     线路负责人        施工负责人                     线路负责人 -->
     <!--     驻班工程师        施工负责人                     申请人    -->
     <!--     经理             施工负责人                     调度人    -->
-    <select id="getAllByDate" resultType="com.aiurt.modules.planmountfind.dto.getAllByDateDTO">
+    <select id="getAllByDate" resultType="com.aiurt.boot.monthlyplan.dto.getAllByDateDTO">
 
         select
         month.id,
@@ -118,7 +118,7 @@
 
 
     <!--    作业类别下拉框,此处使用了dto-->
-    <select id="queryAllContruction" resultType="com.aiurt.modules.planmountfind.dto.BdWorkTypeDTO">
+    <select id="queryAllContruction" resultType="com.aiurt.boot.monthlyplan.dto.BdWorkTypeDTO">
         select cw.work_code as id,
                cw.work_name as name
         from cs_work as cw
@@ -126,7 +126,7 @@
     </select>
 
     <!--    施工负责人-下拉框接口,此处使用了dto-->
-    <select id="queryByTeamIdStaff" resultType="com.aiurt.modules.planmountfind.dto.queryByTeamIdStaffDTO">
+    <select id="queryByTeamIdStaff" resultType="com.aiurt.boot.monthlyplan.dto.queryByTeamIdStaffDTO">
 
         SELECT distinct bs.id         AS id,
                         bs.realname   AS name
@@ -139,7 +139,7 @@
     <!--    #         如果deptid不等于0-->
     <!--    #         此逻辑智慧来源于老变电的远古东方长老-->
     <!--    #         2021-6-16,远古东方智慧被修改了.更改成新表的样子了.-->
-    <select id="queryStaffsByRoleType" resultType="com.aiurt.modules.planmountfind.dto.queryStaffsByRoleTypeDTO">
+    <select id="queryStaffsByRoleType" resultType="com.aiurt.boot.monthlyplan.dto.queryStaffsByRoleTypeDTO">
 
         select id, realname as name
         from sys_user
@@ -161,7 +161,7 @@
     </select>
 
     <!--    月计划线路信息查询,使用了DTO-->
-    <select id="queryAllStationInfo" resultType="com.aiurt.modules.planmountfind.dto.BdStationCopyDTO">
+    <select id="queryAllStationInfo" resultType="com.aiurt.boot.monthlyplan.dto.BdStationCopyDTO">
 
         select station.id, station.station_name, bs.id as lineId, bs.line_name as lineName
         from cs_station as station
@@ -171,7 +171,7 @@
     </select>
 
     <!--    获取线路信息,使用了BdLineInfoDTO-->
-    <select id="getLineInfo" resultType="com.aiurt.modules.planmountfind.dto.BdLineInfoDTO">
+    <select id="getLineInfo" resultType="com.aiurt.boot.monthlyplan.dto.BdLineInfoDTO">
 
         select *
         from cs_line where del_flag = 0
@@ -180,14 +180,14 @@
 
 
     <!--查询员工信息 , 貌似没有被调用过-->
-    <select id="getAllInfoByStaffTable" resultType="com.aiurt.modules.planmountfind.dto.BdStaffDTO">
+    <select id="getAllInfoByStaffTable" resultType="com.aiurt.boot.monthlyplan.dto.BdStaffDTO">
         select id, realname as name
         from sys_user
     </select>
 
 
     <!--    excel导出查询-->
-    <select id="exportExcel" resultType="com.aiurt.modules.planmountfind.dto.ExcelExportDTO">
+    <select id="exportExcel" resultType="com.aiurt.boot.monthlyplan.dto.ExcelExportDTO">
         select monthPl.id,
         monthPl.type as type,
         monthPl.department_id as departmentId,
@@ -263,7 +263,7 @@
 
 
     <!--通过id查询-->
-    <select id="queryByID" resultType="com.aiurt.modules.planmountfind.dto.BdqueryByID">
+    <select id="queryByID" resultType="com.aiurt.boot.monthlyplan.dto.BdqueryByID">
 
         select month.id,
                month.type,
@@ -321,7 +321,7 @@
     </select>
 
     <!--    无过滤字段,全都查询.使用的是entity-->
-    <select id="queryAllInfoByID" resultType="com.aiurt.modules.planmountfind.entity.BdOperatePlanDeclarationFormMonth">
+    <select id="queryAllInfoByID" resultType="com.aiurt.boot.monthlyplan.entity.BdOperatePlanDeclarationFormMonth">
 
         select *
         from bd_operate_plan_declaration_form_month
@@ -372,7 +372,7 @@
     </update>
 
     <!--根据id 获取 role_id(角色类型)-->
-    <select id="queryRoleTypeByID" resultType="com.aiurt.modules.planmountfind.dto.queryRoleTypeByIDDTO">
+    <select id="queryRoleTypeByID" resultType="com.aiurt.boot.monthlyplan.dto.queryRoleTypeByIDDTO">
 
         select role_id as roleType
 
@@ -383,7 +383,7 @@
     </select>
 
     <!-- 审核页面查询 -->
-    <select id="ApproveQuery" resultType="com.aiurt.modules.planmountfind.dto.getAllByDateDTO">
+    <select id="ApproveQuery" resultType="com.aiurt.boot.monthlyplan.dto.getAllByDateDTO">
 
         select
         month.id,

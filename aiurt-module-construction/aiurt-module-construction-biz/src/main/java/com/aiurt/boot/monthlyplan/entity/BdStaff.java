@@ -1,4 +1,4 @@
-package com.aiurt.modules.planmountfind.entity;
+package com.aiurt.boot.monthlyplan.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
