@@ -31,7 +31,6 @@ public class ScheduleLogServiceImpl extends ServiceImpl<ScheduleLogMapper, Sched
 
     @Override
     public IPage<ScheduleLog> queryPageList(Page<ScheduleLog> page, ScheduleLog scheduleLog) {
-        Page<ScheduleLog> pageList = new Page<>();
         List<ScheduleLog> scheduleLogs = scheduleLogMapper.queryPageList(page, scheduleLog);
         if (CollUtil.isNotEmpty(scheduleLogs)) {
             for (ScheduleLog log : scheduleLogs) {
@@ -44,7 +43,7 @@ public class ScheduleLogServiceImpl extends ServiceImpl<ScheduleLogMapper, Sched
                 }
             }
         }
-        pageList.setRecords(scheduleLogs);
-        return pageList;
+        page.setRecords(scheduleLogs);
+        return page;
     }
 }

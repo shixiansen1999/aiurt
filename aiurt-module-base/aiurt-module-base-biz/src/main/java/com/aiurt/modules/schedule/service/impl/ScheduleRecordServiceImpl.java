@@ -364,7 +364,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                     LambdaQueryWrapper<ScheduleRecord> queryWrapper = new LambdaQueryWrapper<>();
                     queryWrapper.eq(ScheduleRecord::getDelFlag, "0");
                     queryWrapper.eq(ScheduleRecord::getUserId, scheduleRecordREditDTO.getUserId());
-                    queryWrapper.eq(ScheduleRecord::getDate, scheduleRecordREditDTO.getStartTime());
+                    queryWrapper.eq(ScheduleRecord::getDate, start.getTime());
                     ScheduleRecord one = this.getOne(queryWrapper);
 
                     int index = (i % itemSize == 0 ? itemSize : i % itemSize);

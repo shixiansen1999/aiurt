@@ -16,5 +16,5 @@ import java.util.List;
  */
 public interface ScheduleLogMapper extends BaseMapper<ScheduleLog> {
 
-    List<ScheduleLog> queryPageList(Page<ScheduleLog> page, @Param("scheduleLog") ScheduleLog scheduleLog);
+    List<ScheduleLog> queryPageList(@Param("page")Page<ScheduleLog> page, @Param("scheduleLog") ScheduleLog scheduleLog);
 }
