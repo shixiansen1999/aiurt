@@ -22,14 +22,14 @@ public class ScheduleRecordREditDTO {
     private  Integer  scheduleRuleId;
 
     /**开始时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
-    @DateTimeFormat(pattern="HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "开始时间")
     private Date startTime;
 
     /**结束时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
-    @DateTimeFormat(pattern="HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "结束时间")
     private  Date  endTime;
 
