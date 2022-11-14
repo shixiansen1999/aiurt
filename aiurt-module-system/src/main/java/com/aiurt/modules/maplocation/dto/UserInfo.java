@@ -30,4 +30,6 @@ public class UserInfo
     private String safeLevel;
     @ApiModelProperty(value = "证件编码")
     private String identityNumber;
+    @ApiModelProperty(value = "工号")
+    private String workNo;
 }

@@ -23,7 +23,7 @@ import java.util.List;
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-public class CsSubsystemDTO implements Serializable {
+public class CsSubsystemImportDTO implements Serializable {
 
     /**所属专业*/
     @Excel(name = "所属专业", width = 15, dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
@@ -66,6 +66,7 @@ public class CsSubsystemDTO implements Serializable {
     @ApiModelProperty(value = "删除标志，0未删除，1已删除")
     private Integer delFlag;
     /**错误原因*/
+    @Excel(name = "错误原因", width = 15)
     @ApiModelProperty(value = "错误原因")
     private String wrongReason;
 }

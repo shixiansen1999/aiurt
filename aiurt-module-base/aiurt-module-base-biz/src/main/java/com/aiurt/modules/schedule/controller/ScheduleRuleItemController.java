@@ -1,12 +1,12 @@
 package com.aiurt.modules.schedule.controller;
 
 
-
 import cn.hutool.core.collection.CollUtil;
-import com.aiurt.modules.schedule.service.IScheduleRuleItemService;
-import com.aiurt.modules.schedule.entity.ScheduleRuleItem;
+import cn.hutool.core.date.DateUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.schedule.entity.ScheduleRuleItem;
+import com.aiurt.modules.schedule.service.IScheduleRuleItemService;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -254,7 +254,7 @@ public class ScheduleRuleItemController {
 		 List<ScheduleRuleItem> detailRuleItems = scheduleRuleItemService.getDetailRuleItems(ruleId);
 		 if (CollUtil.isNotEmpty(detailRuleItems)) {
 			 for (ScheduleRuleItem detailRuleItem : detailRuleItems) {
-				 detailRuleItem.setItemTimeName(detailRuleItem.getItemName() + "(" + detailRuleItem.getStartTime() + "-" + detailRuleItem.getEndTime() + ")");
+				 detailRuleItem.setItemTimeName(detailRuleItem.getItemName() + "(" +  DateUtil.format(detailRuleItem.getStartTime(), "HH:mm") + "-" + DateUtil.format(detailRuleItem.getEndTime(), "HH:mm") + ")");
 			 }
 		 }
 		 Result<List<ScheduleRuleItem>> result = new Result<>();

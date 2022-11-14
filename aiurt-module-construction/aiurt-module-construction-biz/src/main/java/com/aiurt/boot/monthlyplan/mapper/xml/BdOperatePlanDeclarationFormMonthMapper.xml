@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.boot.monthlyplan.mapper.BdOperatePlanDeclarationFormMonthMapper">
+
+
+    <!-- 取消计划 -->
+    <update id="cancelButton">
+        update bd_operate_plan_declaration_form_month
+        set form_status   = #{formStatus},
+            change_reason = #{rejectedReason}
+        where id = #{id};
+
+    </update>
+
+    <!--    根据日期和线路查询月计划表 -->
+    <!--    注意 查询的信息只有 以下 权限相关人员所见.-->
+    <!--  此处对应是一下where标签内,if里面的判断字段  -->
+    <!--     线路负责人        施工负责人                     线路负责人 -->
+    <!--     驻班工程师        施工负责人                     申请人    -->
+    <!--     经理             施工负责人                     调度人    -->
+    <select id="getAllByDate" resultType="com.aiurt.boot.monthlyplan.dto.getAllByDateDTO">
+
+        select
+        month.id,
+        month.type,
+        month.remark,
+        month.apply_staff_id as applyStaffId,
+        month.change_reason as rejectedReason,
+        month.plan_change as planChange,
+        month.weekday as weekDay,
+        month.task_date as taskDate,
+        month.task_time taskTime,
+        month.task_range as taskRange,
+        month.task_content as taskContent,
+        month.department_id as departmentId,
+        month.line_form_status as lineFormStatus,
+        month.large_appliances as largeAppliances,
+        month.form_status as FormStatus,
+        month.assist_station_ids as assistStationIds,
+        month.protective_measure as protectiveMeasure,
+        month.dispatch_form_status as dispatchFormStatus,
+        month.assist_station_manager_ids as assistStationManagerIds,
+        month.power_supply_requirement as powerSupplyRequirement,
+        month.coordination_department_id as coordinationDepartmentid,
+        fstation.station_name as firstStationId,
+        sstation.station_name as secondStationId,
+        staff.realname as chargeStaffId
+
+
+        from bd_operate_plan_declaration_form_month as month
+
+        left join sys_user as staff
+        on
+        month.charge_staff_id = staff.id
+
+        left join cs_station as station
+        on
+        month.first_station_id = station.id
+
+        left join cs_station as fstation
+        on
+        month.first_station_id = fstation.id
+
+        left join cs_station as sstation
+        on
+        month.second_station_id = sstation.id
+
+        <where>
+
+
+            <if test=" '-1'.toString() != line_id.toString()">
+                and
+                month.task_date BETWEEN #{start_time} and #{end_time}
+                and month.first_station_id
+                in (
+                select station.id
+                from cs_station as station
+                LEFT JOIN cs_line as line on line.line_code = station.line_code
+                where
+                line.id = #{line_id}
+                )
+            </if>
+
+
+            <if test=" '-1'.toString() == line_id.toString()">
+                and
+                month.task_date BETWEEN #{start_time} and #{end_time}
+            </if>
+
+
+            <if test="roleType.toString() == '1392313109028872194'.toString()">
+                and (charge_staff_id = #{staffID} or line_staff_id = #{staffID} )
+            </if>
+
+
+            <if test="roleType.toString() == '1393530645335650305'.toString()">
+
+                and (charge_staff_id = #{staffID} or dispatch_staff_id = #{staffID} )
+            </if>
+
+            <if test="roleType.toString() == '1392314605636231169'.toString()">
+
+                and (charge_staff_id = #{staffID} or apply_staff_id =#{staffID})
+
+            </if>
+
+            <if test="roleType.toString() == 'f6817f48af4fb3af11b9e8bf182f618b'.toString()">
+
+            </if>
+
+            <if test="roleType.toString() != '1393530645335650305'.toString() and roleType.toString() != '1392314605636231169'.toString() and roleType.toString() != '1392313109028872194'.toString() and roleType.toString() != 'f6817f48af4fb3af11b9e8bf182f618b'.toString()">
+                and apply_staff_id = #{staffID}
+            </if>
+
+        </where>
+
+    </select>
+
+
+    <!--    作业类别下拉框,此处使用了dto-->
+    <select id="queryAllContruction" resultType="com.aiurt.boot.monthlyplan.dto.BdWorkTypeDTO">
+        select cw.work_code as id,
+               cw.work_name as name
+        from cs_work as cw
+
+    </select>
+
+    <!--    施工负责人-下拉框接口,此处使用了dto-->
+    <select id="queryByTeamIdStaff" resultType="com.aiurt.boot.monthlyplan.dto.queryByTeamIdStaffDTO">
+
+        SELECT distinct bs.id         AS id,
+                        bs.realname   AS name
+        FROM sys_user AS bs
+        where bs.del_flag = 0 and bs.org_id = #{team_id};
+
+    </select>
+
+    <!-- 生产经理 与 线路负责人-下拉框数据 ,此处使用了DTO-->
+    <!--    #         如果deptid不等于0-->
+    <!--    #         此逻辑智慧来源于老变电的远古东方长老-->
+    <!--    #         2021-6-16,远古东方智慧被修改了.更改成新表的样子了.-->
+    <select id="queryStaffsByRoleType" resultType="com.aiurt.boot.monthlyplan.dto.queryStaffsByRoleTypeDTO">
+
+        select id, realname as name
+        from sys_user
+        where id in (
+        select user_id
+        from sys_user_role
+        where role_id = #{roleType}
+        )
+        and del_flag = '0'
+
+        <if test="deptId.toString() != '0'.toString()">
+            and depart_ids in(
+            select dep_id from sys_user_depart where dep_id = #{deptId}
+            );
+
+        </if>
+
+
+    </select>
+
+    <!--    月计划线路信息查询,使用了DTO-->
+    <select id="queryAllStationInfo" resultType="com.aiurt.boot.monthlyplan.dto.BdStationCopyDTO">
+
+        select station.id, station.station_name, bs.id as lineId, bs.line_name as lineName
+        from cs_station as station
+                 left join cs_line bs on station.line_code = bs.line_code
+            where station.del_flag = 0 and bs.del_flag = 0
+        order by bs.id asc;
+    </select>
+
+    <!--    获取线路信息,使用了BdLineInfoDTO-->
+    <select id="getLineInfo" resultType="com.aiurt.boot.monthlyplan.dto.BdLineInfoDTO">
+
+        select *
+        from cs_line where del_flag = 0
+
+    </select>
+
+
+    <!--查询员工信息 , 貌似没有被调用过-->
+    <select id="getAllInfoByStaffTable" resultType="com.aiurt.boot.monthlyplan.dto.BdStaffDTO">
+        select id, realname as name
+        from sys_user
+    </select>
+
+
+    <!--    excel导出查询-->
+    <select id="exportExcel" resultType="com.aiurt.boot.monthlyplan.dto.ExcelExportDTO">
+        select monthPl.id,
+        monthPl.type as type,
+        monthPl.department_id as departmentId,
+        monthPl.task_date as taskDate,
+        monthPl.task_time as taskTime,
+        monthPl.task_range as taskRange,
+        monthPl.task_staff_num as taskStaffNum,
+        monthPl.power_supply_requirement as powerSupplyRequirement,
+        monthPl.task_content as taskContent,
+        monthPl.protective_measure as protectiveMeasure,
+        staff.realname as staffName,
+        monthPl.coordination_department_id as coordinationDepartmentId,
+        station.station_name as qingDianStationName,
+        monthPl.assist_station_ids as assistStationIds,
+        secstation.station_name as xiaoDianStationName,
+        monthPl.large_appliances as largeAppliances
+
+        from bd_operate_plan_declaration_form_month as monthPl
+        left join sys_user as staff on monthPl.charge_staff_id = staff.id
+        left join cs_station as station on monthPl.first_station_id = station.id
+        left join cs_station as secstation on monthPl.second_station_id = secstation.id
+        <where>
+
+
+            <if test=" '-1'.toString() != line_id.toString()">
+                and
+
+                monthPl.task_date BETWEEN #{start_time} and #{end_time}
+                and monthPl.first_station_id
+                in (
+                select station_in.id
+                from cs_station as station_in
+                left join cs_line line on line.line_code = station_in.line_code
+                where
+                line.id = #{line_id}
+                )
+            </if>
+
+
+            <if test=" '-1'.toString() == line_id.toString()">
+                and
+                monthPl.task_date BETWEEN #{start_time} and #{end_time}
+            </if>
+
+
+            <if test="roleType.toString() == '1392313109028872194'.toString()">
+                and (charge_staff_id = #{staffID} or line_staff_id = #{staffID} )
+            </if>
+
+
+            <if test="roleType.toString() == '1393530645335650305'.toString()">
+
+                and (charge_staff_id = #{staffID} or dispatch_staff_id = #{staffID} )
+            </if>
+
+            <if test="roleType.toString() == '1392314605636231169'.toString()">
+
+                and (charge_staff_id = #{staffID} or apply_staff_id =#{staffID})
+
+            </if>
+
+            <if test="roleType.toString() == 'f6817f48af4fb3af11b9e8bf182f618b'.toString()">
+
+            </if>
+
+            <if test="roleType.toString() != '1393530645335650305'.toString() and roleType.toString() != '1392314605636231169'.toString() and roleType.toString() != '1392313109028872194'.toString() and roleType.toString() != 'f6817f48af4fb3af11b9e8bf182f618b'.toString()">
+                and apply_staff_id = #{staffID}
+            </if>
+
+        </where>
+
+    </select>
+
+
+    <!--通过id查询-->
+    <select id="queryByID" resultType="com.aiurt.boot.monthlyplan.dto.BdqueryByID">
+
+        select month.id,
+               month.type,
+               month.remark,
+               month.code                       as code,
+               month.picture                    as picture,
+               month.change_reason              as rejectedReason,
+               month.plan_change                as planChange,
+               month.weekday                    as weekDay,
+               month.task_date                  as taskDate,
+               month.task_time                  as taskTime,
+               month.task_range                 as taskRange,
+               month.task_content               as taskContent,
+               month.task_staff_num             as taskStaffNum,
+               month.department_id              as departmentId,
+               month.line_form_status           as lineFormStatus,
+               month.large_appliances           as largeAppliances,
+               month.form_status                as FormStatus,
+               month.apply_staff_id             as applyStaffId,
+               month.assist_station_ids         as assistStationName,
+               month.protective_measure         as protectiveMeasure,
+               month.dispatch_form_status       as dispatchFormStatus,
+               month.assist_station_manager_ids as assistStationManagerIds,
+               month.power_supply_requirement   as powerSupplyRequirement,
+               month.coordination_department_id as coordinationDepartmentid,
+               fstation.station_name                    as firstStationId,
+               sstation.station_name                    as secondStationId,
+               staff.realname                   as chargeStaffId,
+               lineStaffID.realname             as lineStaffID,
+               dispatchStaffID.realname         as dispatchStaffID
+
+        from bd_operate_plan_declaration_form_month as month
+
+                 left join sys_user as staff
+                           on
+                               month.charge_staff_id = staff.id
+                 left join cs_station as station
+                           on
+                               month.first_station_id = station.id
+                 left join cs_station as fstation
+                           on
+                               month.first_station_id = fstation.id
+                 left join cs_station as sstation
+                           on
+                               month.second_station_id = sstation.id
+                 left join sys_user as lineStaffID
+                           on
+                               month.line_staff_id = lineStaffID.id
+                 left join sys_user as dispatchStaffID
+                           on
+                               month.dispatch_staff_id = dispatchStaffID.id
+
+        where month.id = #{id}
+
+    </select>
+
+    <!--    无过滤字段,全都查询.使用的是entity-->
+    <select id="queryAllInfoByID" resultType="com.aiurt.boot.monthlyplan.entity.BdOperatePlanDeclarationFormMonth">
+
+        select *
+        from bd_operate_plan_declaration_form_month
+        where id = #{id}
+
+    </select>
+
+    <!--  通过role_name 获取sys_role 表中的 id-->
+    <select id="getRoleType" resultType="java.lang.String">
+
+        select id
+        from sys_role
+        where role_name = #{roleName}
+
+    </select>
+
+    <!--  查询role  -->
+    <select id="getRoleId" resultType="java.lang.Integer">
+
+        select id
+        from sys_role
+        where role_name = #{roleName}
+
+    </select>
+
+    <!--    消息相关    -->
+    <insert id="insertOperate_plan_state_change_monthByID">
+        insert into bd_operate_plan_state_change(bd_operate_plan_declaration_form_id, remark, change_staff_id,
+                                                 change_reason, forward_line_status, forward_dispatch_status,
+                                                 after_status)
+        values (#{id}, #{remark}, #{dispatchStaffId}, #{changeReason}, #{lineFormStatus}, #{dispatchFormStatus},
+                #{formStatus})
+    </insert>
+
+    <!--  审核按钮  -->
+    <update id="updateBd_operate_plan_declaration_form_monthByID">
+        update bd_operate_plan_declaration_form_month
+        set dispatch_form_status = #{DispatchFormStatus},
+
+            picture              = #{Picture},
+            plan_change          = #{PlanChange},
+            form_status          = #{LineFormStatus},
+            line_form_status     = #{LineFormStatus},
+            voice                = #{Voice},
+            change_reason        = #{changeReason}
+        where id = #{id}
+
+    </update>
+
+    <!--根据id 获取 role_id(角色类型)-->
+    <select id="queryRoleTypeByID" resultType="com.aiurt.boot.monthlyplan.dto.queryRoleTypeByIDDTO">
+
+        select role_id as roleType
+
+        from sys_user_role
+        where user_id = #{id}
+
+
+    </select>
+
+    <!-- 审核页面查询 -->
+    <select id="ApproveQuery" resultType="com.aiurt.boot.monthlyplan.dto.getAllByDateDTO">
+
+        select
+        month.id,
+        month.type,
+        month.remark,
+        month.plan_change as planChange,
+        month.weekday as weekDay,
+        month.task_date as taskDate,
+        month.task_time taskTime,
+        month.task_range as taskRange,
+        month.task_content as taskContent,
+        month.department_id as departmentId,
+        month.line_form_status as lineFormStatus,
+        month.large_appliances as largeAppliances,
+        month.form_status as FormStatus,
+        month.assist_station_ids as assistStationIds,
+        month.protective_measure as protectiveMeasure,
+        month.dispatch_form_status as dispatchFormStatus,
+        month.assist_station_manager_ids as assistStationManagerIds,
+        month.power_supply_requirement as powerSupplyRequirement,
+        month.coordination_department_id as coordinationDepartmentid,
+        fstation.station_name as firstStationId,
+        sstation.station_name as secondStationId,
+        staff.realname as chargeStaffId,
+        month.change_reason as rejectedReason
+
+
+        from bd_operate_plan_declaration_form_month as month
+
+        left join sys_user as staff
+        on
+        month.charge_staff_id = staff.id
+
+        left join cs_station as station
+        on
+        month.first_station_id = station.id
+
+        left join cs_station as fstation
+        on
+        month.first_station_id = fstation.id
+
+        left join cs_station as sstation
+        on
+        month.second_station_id = sstation.id
+
+        <where>
+
+
+            <if test=" '-1'.toString() != line_id.toString()">
+                and
+                month.task_date BETWEEN #{start_time} and #{end_time}
+                and month.first_station_id
+                in (
+                select station_in.id
+                from cs_station as station_in
+                left join cs_line line on line.line_code = station_in.line_code
+                where
+                line.id = #{line_id}
+                ) and month.form_status between 0 and 1
+            </if>
+
+
+            <if test=" '-1'.toString() == line_id.toString()">
+                and
+                month.task_date BETWEEN #{start_time} and #{end_time}
+                and month.form_status between 0 and 1
+            </if>
+
+
+            <if test="roleType.toString() == '1392313109028872194'.toString()">
+                and (charge_staff_id = #{staffID} or line_staff_id = #{staffID}) and form_status = '0'
+            </if>
+
+
+            <if test="roleType.toString() == '1393530645335650305'.toString()">
+
+                and (charge_staff_id = #{staffID} or dispatch_staff_id = #{staffID}) and form_status = '0'
+            </if>
+
+            <if test="roleType.toString() == '1392314605636231169'.toString()">
+
+                and (charge_staff_id = #{staffID} or apply_staff_id =#{staffID})
+
+            </if>
+
+            <if test="roleType.toString() == 'f6817f48af4fb3af11b9e8bf182f618b'.toString()">
+
+            </if>
+
+            <if test="roleType.toString() != '1393530645335650305'.toString() and roleType.toString() != '1392314605636231169'.toString() and roleType.toString() != '1392313109028872194'.toString() and roleType.toString() != 'f6817f48af4fb3af11b9e8bf182f618b'.toString()">
+                and apply_staff_id = #{staffID}
+            </if>
+
+            <if test="busId!=null and busId!=''">
+                 and month.id = #{busId}
+            </if>
+
+        </where>
+
+    </select>
+
+
+    <!--好了,到之里,说明你看完了这个xml智慧宝藏,没错,这不是你的错觉,你升华了. -->
+
+
+</mapper>
