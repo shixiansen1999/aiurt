@@ -38,6 +38,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -281,7 +282,13 @@ public class ScheduleController {
 
         }
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(schedule.getDate());
+       if (schedule.getDate() == null) {
+           try {
+               calendar.setTime(DateUtils.parseDate(DateUtils.formatDate(), "yyyy-MM"));
+           } catch (ParseException e) {
+               e.printStackTrace();
+           }
+       }else {calendar.setTime(schedule.getDate());}
         int maximum = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         //配置ExcelExportEntity集合如下：
