@@ -192,7 +192,7 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                     Workbook workbook = ExcelExportUtil.exportExcel((ExportParams)model1.get("params"), (Class)model1.get("entity"), (Collection)model1.get("data"));
                     // 写到文件中
                     String filename = "厂商信息导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
-                    FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+filename+".xlsx");
+                    FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+filename);
                     workbook.write(out);
                     url =filename;
                 }

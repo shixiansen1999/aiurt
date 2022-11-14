@@ -160,7 +160,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 					Workbook workbook = ExcelExportUtil.exportExcel((ExportParams)model1.get("params"), (Class)model1.get("entity"), (Collection)model1.get("data"));
 					// 写到文件中
 					String filename = "二级仓库管理错误清单"+"_" + System.currentTimeMillis()+"."+type;
-					FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+filename+".xlsx");
+					FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+filename);
 					workbook.write(out);
 					url =filename;
 				}
