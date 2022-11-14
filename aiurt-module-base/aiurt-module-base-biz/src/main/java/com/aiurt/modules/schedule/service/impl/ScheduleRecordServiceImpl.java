@@ -314,7 +314,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Result<ScheduleRecord> editRecord(List<ScheduleRecordREditDTO> scheduleRecordREditDTOList) {
         Result<ScheduleRecord> result = new Result<ScheduleRecord>();
         for (ScheduleRecordREditDTO scheduleRecordREditDTO : scheduleRecordREditDTOList) {
@@ -360,7 +360,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                     scheduleRuleItemMap.put(scheduleRuleItem.getSort(), scheduleRuleItem.getItemId());
                 }
                 int i = 0;
-                while (!scheduleRecordREditDTO.getStartTime().after(scheduleRecordREditDTO.getEndTime())) {
+                while (!start.getTime().after(scheduleRecordREditDTO.getEndTime())) {
                     LambdaQueryWrapper<ScheduleRecord> queryWrapper = new LambdaQueryWrapper<>();
                     queryWrapper.eq(ScheduleRecord::getDelFlag, "0");
                     queryWrapper.eq(ScheduleRecord::getUserId, scheduleRecordREditDTO.getUserId());
