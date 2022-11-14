@@ -141,31 +141,31 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                 for (int i = 0; i < csManuFactorList.size(); i++) {
                     CsManuFactorImportVo csManuFactorImportVo = csManuFactorList.get(i);
                     boolean error = true;
+                    StringBuffer sb = new StringBuffer();
                     if (ObjectUtil.isNull(csManuFactorImportVo.getName())) {
                         errorMessage.add("厂商名称为必填项，忽略导入");
-                        csManuFactorImportVo.setErrorCause("厂商名称为必填项;");
+                        sb.append("厂商名称为必填项;");
                         errorLines++;
                         error = false;
                     }else {
                         CsManufactor csManufactor = csManufactorMapper.selectOne(new QueryWrapper<CsManufactor>().lambda().eq(CsManufactor::getCode, csManuFactorImportVo.getCode()).eq(CsManufactor::getDelFlag, 0));
                         if (csManufactor != null) {
                             errorMessage.add(csManuFactorImportVo.getCode() + "厂商编码已经存在，忽略导入");
-                            csManuFactorImportVo.setErrorCause("厂商编码已经存在;");
+                            sb.append("厂商编码已经存在;");
                             if(error) {
                                 errorLines++;
                                 error=false;
                             }
                         }
                     }
-                    if (ObjectUtil.isNull(csManuFactorImportVo.getLevel()) && ObjectUtil.isNotNull(csManuFactorImportVo.getName()) ) {
-                        errorMessage.add("厂商等级为必填项，忽略导入");
-                        csManuFactorImportVo.setErrorCause("厂商等级为必填项");
-                        errorLines++;
-                    }
                     if (ObjectUtil.isNull(csManuFactorImportVo.getLevel())) {
                         errorMessage.add("厂商等级为必填项，忽略导入");
-                        csManuFactorImportVo.setErrorCause("厂商名称为必填项;厂商等级为必填项");
+                        sb.append("厂商等级为必填项");
+                        if(error){
+                            errorLines++;
+                        }
                     }
+                    csManuFactorImportVo.setErrorCause(String.valueOf(sb));
                     CsManufactor csManufactor = new CsManufactor();
                     BeanUtils.copyProperties(csManuFactorImportVo, csManufactor);
                     list.add(csManufactor);
@@ -177,22 +177,24 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                     }
                 } else {
                     successLines =0;
+                    List<CsManuFactorImportVo> exportList =new ArrayList<>();
                     ModelAndView model = new ModelAndView(new JeecgEntityExcelView());
                     model.addObject(NormalExcelConstants.FILE_NAME, "下载错误模板");
                     //excel注解对象Class
                     model.addObject(NormalExcelConstants.CLASS, CsManuFactorImportVo.class);
                     //自定义表格参数
-                    model.addObject(NormalExcelConstants.PARAMS, new ExportParams("错误清单模板", "错误清单模板"));
+                    ExportParams  exportParams =new ExportParams("错误清单模板", "错误清单模板");
+                    model.addObject(NormalExcelConstants.PARAMS,exportParams );
                     //导出数据列表
                     model.addObject(NormalExcelConstants.DATA_LIST, csManuFactorList);
                     Map<String, Object> model1 = model.getModel();
                     // 生成错误excel
                     Workbook workbook = ExcelExportUtil.exportExcel((ExportParams)model1.get("params"), (Class)model1.get("entity"), (Collection)model1.get("data"));
                     // 写到文件中
-                    String filename = "厂商信息导入错误清单";
+                    String filename =new Date().getTime()+ "厂商信息导入错误清单";
                     FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+filename+".xlsx");
                     workbook.write(out);
-                    url = new Date().getTime()+filename;
+                    url =upLoadPath+File.separator+filename+".xlsx";
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());

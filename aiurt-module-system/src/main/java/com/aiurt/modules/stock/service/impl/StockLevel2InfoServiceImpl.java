@@ -84,63 +84,62 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 				for (int i = 0; i < stockLevel2InfoList.size(); i++) {
 					StockLevel2InfoVo stockLevel2InfoVo = stockLevel2InfoList.get(i);
 					boolean error = true;
+					StringBuffer sb = new StringBuffer();
 					if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseCode())) {
 						errorMessage.add("仓库编码为必填项，忽略导入");
-						stockLevel2InfoVo.setErrorCause("仓库编码为必填项;");
+						sb.append("仓库编码为必填项;");
 						errorLines++;
 						error = false;
 					} else {
 						StockLevel2Info stockLevel2Info = stockLevel2InfoMapper.selectOne(new QueryWrapper<StockLevel2Info>().lambda().eq(StockLevel2Info::getWarehouseCode, stockLevel2InfoVo.getWarehouseCode()).eq(StockLevel2Info::getDelFlag, 0));
 						if (stockLevel2Info != null) {
 							errorMessage.add(stockLevel2InfoVo.getWarehouseCode() + "仓库编码已经存在，忽略导入");
-							stockLevel2InfoVo.setErrorCause("仓库编码已经存在;");
+							sb.append("仓库编码已经存在;");
 							if (error) {
 								errorLines++;
 								error = false;
 							}
 						}
 					}
-					if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseName()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseCode())) {
-						errorMessage.add("仓库名称为必填项，忽略导入");
-						stockLevel2InfoVo.setErrorCause("仓库名称为必填项;");
-						errorLines++;
-					}
 					if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseName())) {
 						errorMessage.add("仓库名称为必填项，忽略导入");
-						stockLevel2InfoVo.setErrorCause("仓库编码为必填项;仓库名称为必填项;");
+						sb.append("仓库名称为必填项;");
+						if(error){
+							errorLines++;
+							error = false;
+						}
 					} else {
 						StockLevel2Info stockLevel2Info = stockLevel2InfoMapper.selectOne(new QueryWrapper<StockLevel2Info>().lambda().eq(StockLevel2Info::getWarehouseName, stockLevel2InfoVo.getWarehouseName()).eq(StockLevel2Info::getDelFlag, 0));
 						if (stockLevel2Info != null) {
 							errorMessage.add(stockLevel2InfoVo.getWarehouseCode() + "仓库名称已经存在，忽略导入");
-							stockLevel2InfoVo.setErrorCause("仓库名称已经存在;");
+							sb.append("仓库名称已经存在;");
 							if (error) {
 								errorLines++;
+								error =false;
 							}
 						}
 					}
-					if (ObjectUtil.isNull(stockLevel2InfoVo.getOrganizationId()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseName()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseCode())) {
-						errorMessage.add("组织机构ID为必填项，忽略导入");
-						stockLevel2InfoVo.setErrorCause("组织机构ID为必填项;");
-						errorLines++;
-					}
 					if(ObjectUtil.isNull(stockLevel2InfoVo.getOrganizationId())){
 						errorMessage.add("组织机构ID为必填项，忽略导入");
-						stockLevel2InfoVo.setErrorCause("仓库编码为必填项;仓库名称为必填项;组织机构ID为必填项;");
-					}
-					if (ObjectUtil.isNull(stockLevel2InfoVo.getStatus())& ObjectUtil.isNotNull(stockLevel2InfoVo.getOrganizationId()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseName()) & ObjectUtil.isNotNull(stockLevel2InfoVo.getWarehouseCode())) {
-						errorMessage.add("状态为必填项，忽略导入");
-						stockLevel2InfoVo.setErrorCause("状态为必填项;");
-						errorLines++;
+						sb.append("组织机构ID为必填项;");
+						if(error){
+							errorLines++;
+							error = false;
+						}
 					}
 					if (ObjectUtil.isNull(stockLevel2InfoVo.getStatus())) {
 						errorMessage.add("状态为必填项，忽略导入");
-						stockLevel2InfoVo.setErrorCause("仓库编码为必填项;仓库名称为必填项;组织机构ID为必填项;状态为必填项;");
+						sb.append("状态为必填项;");
+						if(error){
+							errorLines++;
+							error = false;
+						}
 					}
+					stockLevel2InfoVo.setErrorCause(String.valueOf(sb));
 					StockLevel2Info stockLevel2Info = new StockLevel2Info();
 					BeanUtils.copyProperties(stockLevel2InfoVo, stockLevel2Info);
 					list.add(stockLevel2Info);
 					successLines++;
-
 				}
 				if (errorLines == 0) {
 					for (StockLevel2Info stockLevel2Info : list) {
@@ -163,7 +162,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 					String filename = new Date().getTime()+"二级仓库管理错误清单";
 					FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+filename+".xlsx");
 					workbook.write(out);
-					url =filename+".xlsx";
+					url =upLoadPath+ File.separator+filename+".xlsx";
 				}
 			} catch (Exception e) {
 				errorMessage.add("发生异常：" + e.getMessage());
