@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.system.base.annotation.ExcelExtend;
 import com.aiurt.common.system.base.entity.ExcelTemplateExportEntity;
 import com.aiurt.common.util.oConvertUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -93,6 +94,7 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
                 build.setIndex(j);
                 j = j+1;
                 build.setName(excel.name());
+               // 字典值，下拉处理
                 Dict dict = field.getAnnotation(Dict.class);
                 if (Objects.nonNull(dict)) {
                     String dicText = dict.dicText();
@@ -107,6 +109,13 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
                         List<DictModel> dictModels = bean.queryTableDictItemsByCode(dictTable, dicText, dicCode);
                         build.setDictModelList(dictModels);
                     }
+                }
+                // 批注内容， 是否必填
+                ExcelExtend excelExtend = field.getAnnotation(ExcelExtend.class);
+                build.setIsRequired(false);
+                if (Objects.nonNull(excelExtend)) {
+                    build.setRemark(excelExtend.remark());
+                    build.setIsRequired(excelExtend.isRequired());
                 }
                 list.add(build);
             }
@@ -173,7 +182,7 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
                 }
 
                 // 下拉数据
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(rowListIndex, 65535, exportEntity.getIndex(), exportEntity.getIndex());
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(rowListIndex+1, 65535, exportEntity.getIndex(), exportEntity.getIndex());
                 //  生成下拉框内容名称
                 String strFormula = hiddenSheetName + "!$A$1:$A$65535";
                 // 根据隐藏页面创建下拉列表
@@ -182,6 +191,21 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
                 DataValidation validation = dvHelper.createValidation(constraint, cellRangeAddressList);
                 //  对sheet页生效
                 sheet.addValidationData(validation);
+
+                String rk = exportEntity.getRemark();
+                if (StrUtil.isNotBlank(rk)) {
+                    Drawing draw = sheet.createDrawingPatriarch();
+                    Comment comment = draw.createCellComment(new XSSFClientAnchor(0, 0, 0, 0, rowListIndex, exportEntity.getIndex(), 9, 7));
+                    comment.setString(new XSSFRichTextString(rk));//设置批注内容
+                    cell.setCellComment(comment);
+                }
+                // 批注， 必填处理
+                if (exportEntity.getIsRequired()) {
+                    CellStyle cellStyle = workbook.createCellStyle();
+                    cellStyle.setFillForegroundColor(IndexedColors.RED.getIndex()); // 背景色
+                    cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                    cell.setCellStyle(cellStyle);
+                }
             }
         }
 

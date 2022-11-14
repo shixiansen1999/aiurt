@@ -34,4 +34,14 @@ public class ExcelTemplateExportEntity implements Serializable {
      * 字典值
      */
     private List<DictModel> dictModelList;
+
+    /**
+     * 批注
+     */
+    private String remark;
+
+    /**
+     * 是否必填
+     */
+    private Boolean isRequired;
 }
