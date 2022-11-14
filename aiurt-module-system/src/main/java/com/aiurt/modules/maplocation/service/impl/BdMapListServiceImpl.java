@@ -171,7 +171,7 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
         String stationIdStr = null;
         // 管理的班组
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<String> teamIdList = iSysBaseAPI.getUserSysDepart(sysUser.getId()).stream().map(teamId -> teamId.getId()).collect(Collectors.toList());
+        List<String> teamIdList = iSysBaseAPI.getUserSysDepart(sysUser.getId()).stream().map(teamId -> teamId.getOrgCode()).collect(Collectors.toList());
 
 
         // 如果是按站点查，直接用站点的id,如果是按人员查，就是人员的位置信息和哪个站点离得最近，就取那个站点的id
