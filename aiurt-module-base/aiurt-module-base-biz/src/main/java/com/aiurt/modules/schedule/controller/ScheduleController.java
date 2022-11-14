@@ -1,11 +1,16 @@
 package com.aiurt.modules.schedule.controller;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.ExportParams;
+import cn.afterturn.easypoi.excel.entity.params.ExcelExportEntity;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.modules.schedule.entity.*;
 import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
+import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.model.ScheduleUser;
 import com.aiurt.modules.schedule.service.*;
 import com.aiurt.modules.schedule.util.ImportExcelUtil;
@@ -18,6 +23,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -32,6 +38,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -250,8 +257,8 @@ public class ScheduleController {
      * @param request
      * @param response
      */
-   // @RequestMapping(value = "/exportXls")
-   /* public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response,Schedule schedule) {
+   @RequestMapping(value = "/exportXls")
+   public void exportXls(HttpServletRequest request, HttpServletResponse response, Schedule schedule) {
         Page<Schedule> page = new Page<Schedule>(1, 10000);
         IPage<Schedule> pageList = scheduleService.getList(schedule, page);
         List<Schedule> records = pageList.getRecords();
@@ -275,7 +282,13 @@ public class ScheduleController {
 
         }
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(schedule.getDate());
+       if (schedule.getDate() == null) {
+           try {
+               calendar.setTime(DateUtils.parseDate(DateUtils.formatDate(), "yyyy-MM"));
+           } catch (ParseException e) {
+               e.printStackTrace();
+           }
+       }else {calendar.setTime(schedule.getDate());}
         int maximum = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         //配置ExcelExportEntity集合如下：
@@ -294,11 +307,23 @@ public class ScheduleController {
         for (int i = 0; i < maximum; i++) {
             String format = String.format("%02d", i + 1);
             ExcelExportEntity e = new ExcelExportEntity(format,"day" + i + 1);
+            entityList.add(e);
         }
-
-
-        return mv;
-    }*/
+       //调用ExcelExportUtil.exportExcel方法生成workbook
+       Workbook wb = ExcelExportUtil.exportExcel(new ExportParams(null, "sheetName"),entityList,dataList);
+       String fileName = "排班表";
+       try {
+           response.setHeader("Content-Disposition",
+                   "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+           response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+           BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+           wb.write(bufferedOutPut);
+           bufferedOutPut.flush();
+           bufferedOutPut.close();
+       } catch (IOException e) {
+           e.printStackTrace();
+       }
+    }
 
     @RequestMapping(value = "/exportXls1")
     public void exportXls2(HttpServletRequest request, HttpServletResponse response) {

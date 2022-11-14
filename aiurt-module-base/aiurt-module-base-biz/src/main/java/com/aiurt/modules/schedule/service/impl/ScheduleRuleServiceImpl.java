@@ -1,5 +1,6 @@
 package com.aiurt.modules.schedule.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import com.aiurt.modules.schedule.entity.ScheduleRule;
 import com.aiurt.modules.schedule.entity.ScheduleRuleItem;
 import com.aiurt.modules.schedule.mapper.ScheduleRuleMapper;
@@ -32,7 +33,7 @@ public class ScheduleRuleServiceImpl extends ServiceImpl<ScheduleRuleMapper, Sch
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         wrapper.eq(ScheduleRule::getDelFlag, 0);
         //只能看到自己创建的规则
-        wrapper.eq(ScheduleRule::getCreateBy, user.getId());
+        wrapper.eq(ScheduleRule::getCreateBy, user.getUsername());
         List<ScheduleRule> rules = this.baseMapper.selectList(wrapper);
         rules.forEach(rule -> {
             List<ScheduleRuleItem> detailRuleItems = scheduleRuleItemService.getDetailRuleItems(rule.getId());
@@ -43,12 +44,12 @@ public class ScheduleRuleServiceImpl extends ServiceImpl<ScheduleRuleMapper, Sch
                         temp += "|";
                     }
                     StringBuilder stringBuffer = new StringBuilder();
-                    stringBuffer.append("(").append(item.getStartTime()).append("-");
+                    stringBuffer.append("(").append(DateUtil.format(item.getStartTime(), "HH:mm")).append("-");
                     String nextDay = "1";
                     if (nextDay.equals(item.getTimeId())) {
                         stringBuffer.append("次日");
                     }
-                    stringBuffer.append(item.getEndTime()).append(")");
+                    stringBuffer.append(DateUtil.format(item.getEndTime(), "HH:mm")).append(")");
                     temp += item.getItemName()+"-"+stringBuffer.toString();
                 }
             }
