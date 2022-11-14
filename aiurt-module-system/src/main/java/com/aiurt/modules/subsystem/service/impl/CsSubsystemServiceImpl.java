@@ -414,8 +414,9 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 else
                 {
                     successLines =0;
-                    String s = importErrorExcel(response, csSubsystemDTOList,type);
+                    String s = importErrorExcel(csSubsystemDTOList,type);
                     url =s;
+                    return imporReturnRes(errorLines, successLines, errorMessage,true,url);
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());
@@ -427,13 +428,13 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                     log.error(e.getMessage(), e);
                 }
             }
-        return imporReturnRes(errorLines, successLines, errorMessage,true,url);
+            return null;
     }
 
 
 
     /**校验,如果导入出错怎返回错误报告*/
-    public String importErrorExcel(HttpServletResponse response,List<CsSubsystemImportDTO> scheduleDate,String type) {
+    public String importErrorExcel(List<CsSubsystemImportDTO> scheduleDate,String type) {
         //创建导入失败错误报告,进行模板导出
         URL resource = DlownTemplateUtil.class.getResource("/templates/csSubsystemImportDTO.xlsx");
         String path = resource.getPath();

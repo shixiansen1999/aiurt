@@ -162,6 +162,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                     successLines = 0;
                     String s = importErrorExcel(response, csMajorList,type);
                     url =s;
+                    return imporReturnRes(errorLines, successLines, errorMessage,true,url);
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());
@@ -174,7 +175,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                 }
             }
         }
-        return imporReturnRes(errorLines, successLines, errorMessage, true,url);
+        return null;
     }
 
 
