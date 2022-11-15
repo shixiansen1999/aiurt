@@ -37,7 +37,7 @@
         select id,realname as name,username  from sys_user
         <where>
             <if test="teamChild.size()>0">
-                team_id in
+                org_id in
                 <foreach collection="teamChild" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>

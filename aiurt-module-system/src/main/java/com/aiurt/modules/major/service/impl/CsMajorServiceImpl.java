@@ -31,7 +31,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -160,8 +159,27 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
 
                 } else {
                     successLines = 0;
-                    String s = importErrorExcel(response, csMajorList,type);
-                    url =s;
+                    URL resource = DlownTemplateUtil.class.getResource("/templates/csMajorImportVO.xlsx");
+                    String path = resource.getPath();
+                    TemplateExportParams exportParams = new TemplateExportParams(path);
+                    Map<String, Object> errorMap = new HashMap<String, Object>();
+                    errorMap.put("title", "专业信息导入错误清单");
+                    List<Map<String, Object>> listMap = new ArrayList<>();
+                    for (CsMajorImportVO dto : csMajorList) {
+                        //获取一条排班记录
+                        Map<String, Object> lm = new HashMap<String, Object>();
+                        //错误报告获取信息
+                        lm.put("majorcode", dto.getMajorCode());
+                        lm.put("majorname", dto.getMajorName());
+                        lm.put("mistake", dto.getWrongReason());
+                        listMap.add(lm);
+                    }
+                    errorMap.put("maplist", listMap);
+                    Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
+                    String filename = "专业信息导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
+                    FileOutputStream out = new FileOutputStream(filepath+ File.separator+filename);
+                    url =filename;
+                    workbook.write(out);
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());
@@ -257,38 +275,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
     }
     public String importErrorExcel(HttpServletResponse response, List<CsMajorImportVO> scheduleDate, String type) {
         //创建导入失败错误报告,进行模板导出
-        URL resource = DlownTemplateUtil.class.getResource("/templates/csMajorImportVO.xlsx");
-        String path = resource.getPath();
-        TemplateExportParams exportParams = new TemplateExportParams(path);
-        Map<String, Object> errorMap = new HashMap<String, Object>();
-        errorMap.put("title", "专业信息导入失败错误清单");
-        List<Map<String, Object>> listMap = new ArrayList<>();
-        for (CsMajorImportVO dto : scheduleDate) {
-            //获取一条排班记录
-            Map<String, Object> lm = new HashMap<String, Object>();
-            //错误报告获取信息
-            lm.put("majorcode", dto.getMajorCode());
-            lm.put("majorname", dto.getMajorName());
-            lm.put("mistake", dto.getWrongReason());
-            listMap.add(lm);
-        }
-        errorMap.put("maplist", listMap);
-        for (Map<String, Object> map : listMap) {
-            Object mistake = map.get("mistake");
-            if (ObjectUtil.isNotNull(mistake)) {
-                Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
-                String fileName = "专业信息导入失败错误清单"+ "_" + System.currentTimeMillis()+"."+type;
-                try {
-                    FileOutputStream out = new FileOutputStream(filepath+ File.separator+fileName);
-                    workbook.write(out);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return fileName;
-            }
-        }
+
 
         return null;
     }

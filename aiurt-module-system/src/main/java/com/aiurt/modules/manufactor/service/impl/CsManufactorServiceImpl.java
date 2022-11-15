@@ -12,12 +12,15 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
+import org.jeecgframework.poi.excel.export.ExcelExportServer;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,7 +192,11 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                     model.addObject(NormalExcelConstants.DATA_LIST, csManuFactorList);
                     Map<String, Object> model1 = model.getModel();
                     // 生成错误excel
-                    Workbook workbook = ExcelExportUtil.exportExcel((ExportParams)model1.get("params"), (Class)model1.get("entity"), (Collection)model1.get("data"));
+                    ExportParams params1 = (ExportParams) model1.get("params");
+                    params1.setType(ExcelType.XSSF);
+                    Workbook workbook = new XSSFWorkbook();
+                    new ExcelExportServer().createSheet(workbook, params1, (Class) model1.get("entity"), (Collection) model1.get("data"),null);
+//                    Workbook workbook = ExcelExportUtil.exportExcel((ExportParams)model1.get("params"), (Class)model1.get("entity"), (Collection)model1.get("data"));
                     // 写到文件中
                     String filename = "厂商信息导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
                     FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+filename);
