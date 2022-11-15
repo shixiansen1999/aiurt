@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: schedule_rule
@@ -39,6 +40,8 @@ public class ScheduleRuleServiceImpl extends ServiceImpl<ScheduleRuleMapper, Sch
             List<ScheduleRuleItem> detailRuleItems = scheduleRuleItemService.getDetailRuleItems(rule.getId());
             String temp = "";
             if (detailRuleItems != null && detailRuleItems.size() > 0) {
+                List<Integer> collect = detailRuleItems.stream().map(ScheduleRuleItem::getItemId).collect(Collectors.toList());
+                rule.setItemIds(collect);
                 for (ScheduleRuleItem item : detailRuleItems) {
                     if (StringUtils.isNotEmpty(temp)) {
                         temp += "|";
