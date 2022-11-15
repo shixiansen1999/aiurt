@@ -10,6 +10,10 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.maplocation.constant.BdMapConstant;
 import com.aiurt.modules.maplocation.dto.*;
 import com.aiurt.modules.maplocation.service.IBdMapListService;
+import com.aiurt.modules.position.entity.CsLine;
+import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.mapper.CsLineMapper;
+import com.aiurt.modules.position.mapper.CsStationMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
@@ -40,9 +44,9 @@ public class BdMapController {
     @Autowired
     private IBdMapListService bdMapListService;
     @Autowired
-    private BdStationMapper bdStationMapper;
+    private CsStationMapper bdStationMapper;
     @Autowired
-    private BdLineMapper bdLineMapper;
+    private CsLineMapper bdLineMapper;
 
     /**
      * 查询人员的位置信息
@@ -139,22 +143,23 @@ public class BdMapController {
     @GetMapping(value = "/getStationPosition")
     public Result<?> getStationPosition() {
         List<StationDTO> stationList = new ArrayList<>();
-        LambdaQueryWrapper<BdLine> lineLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lineLambdaQueryWrapper.in(BdLine::getName, Arrays.asList(BdMapConstant.THREELINE, BdMapConstant.FOURLINE, BdMapConstant.EIGHTLINE));
-        List<BdLine> bdLineList = bdLineMapper.selectList(lineLambdaQueryWrapper);
+        LambdaQueryWrapper<CsLine> lineLambdaQueryWrapper = new LambdaQueryWrapper<CsLine>();
+        lineLambdaQueryWrapper.in(CsLine::getLineName, Arrays.asList(BdMapConstant.THREELINE, BdMapConstant.FOURLINE, BdMapConstant.EIGHTLINE));
+        lineLambdaQueryWrapper.eq(CsLine::getDelFlag,0);
+        List<CsLine> bdLineList = bdLineMapper.selectList(lineLambdaQueryWrapper);
         if (CollUtil.isNotEmpty(bdLineList)) {
-            List<Integer> lineList = bdLineList.stream().map(bdLine -> bdLine.getId()).collect(Collectors.toList());
-            LambdaQueryWrapper<BdStation> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.in(BdStation::getLineId, lineList);
-            List<BdStation> bdStationList = bdStationMapper.selectList(queryWrapper);
+            List<String> lineList = bdLineList.stream().map(bdLine -> bdLine.getLineCode()).collect(Collectors.toList());
+            LambdaQueryWrapper<CsStation> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(CsStation::getLineCode, lineList);
+            List<CsStation> bdStationList = bdStationMapper.selectList(queryWrapper);
             if (CollUtil.isNotEmpty(bdStationList)) {
                 bdStationList.forEach(bdStation -> {
-                    if (ObjectUtil.isNotEmpty(bdStation) && bdStation.getPositionX() != null && bdStation.getPositionY() != null) {
+                    if (ObjectUtil.isNotEmpty(bdStation) && bdStation.getLongitude() != null && bdStation.getLatitude() != null) {
                         StationDTO stationDTO = new StationDTO();
                         stationDTO.setStationId(bdStation.getId());
-                        stationDTO.setPositionX(bdStation.getPositionX());
-                        stationDTO.setPositionY(bdStation.getPositionY());
-                        stationDTO.setStationName(bdStation.getName());
+                        stationDTO.setPositionX(bdStation.getLongitude());
+                        stationDTO.setPositionY(bdStation.getLatitude());
+                        stationDTO.setStationName(bdStation.getStationName());
                         stationList.add(stationDTO);
                     }
                 });
