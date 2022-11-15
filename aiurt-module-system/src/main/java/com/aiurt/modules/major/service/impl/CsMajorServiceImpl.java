@@ -163,7 +163,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                     String path = resource.getPath();
                     TemplateExportParams exportParams = new TemplateExportParams(path);
                     Map<String, Object> errorMap = new HashMap<String, Object>();
-                    errorMap.put("title", "专业信息导入失败错误清单");
+                    errorMap.put("title", "专业信息导入错误清单");
                     List<Map<String, Object>> listMap = new ArrayList<>();
                     for (CsMajorImportVO dto : csMajorList) {
                         //获取一条排班记录
@@ -179,10 +179,10 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                         Object mistake = map.get("mistake");
                         if (ObjectUtil.isNotNull(mistake)) {
                             Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
-                            String fileName = "专业信息导入失败错误清单"+ "_" + System.currentTimeMillis()+"."+type;
-                            FileOutputStream out = new FileOutputStream(filepath+ File.separator+fileName);
-                            url =fileName;
+                            String filename = "专业信息导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
+                            FileOutputStream out = new FileOutputStream(filepath+ File.separator+filename);
                             workbook.write(out);
+                            url =filename;
 
                         }
                     }
