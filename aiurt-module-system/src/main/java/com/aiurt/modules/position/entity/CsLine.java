@@ -1,20 +1,22 @@
 package com.aiurt.modules.position.entity;
 
-import java.io.Serializable;
-import java.util.Date;
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * @Description: cs_line
@@ -46,6 +48,14 @@ public class CsLine implements Serializable {
 	@Excel(name = "线路描述", width = 15)
     @ApiModelProperty(value = "线路描述")
     private String description;
+    /**经度*/
+    @Excel(name = "经度", width = 15)
+    @ApiModelProperty(value = "经度")
+    private BigDecimal longitude;
+    /**纬度*/
+    @Excel(name = "纬度", width = 15)
+    @ApiModelProperty(value = "纬度")
+    private BigDecimal latitude;
 	/**删除标志*/
 	@Excel(name = "删除标志", width = 15)
     @ApiModelProperty(value = "删除标志")

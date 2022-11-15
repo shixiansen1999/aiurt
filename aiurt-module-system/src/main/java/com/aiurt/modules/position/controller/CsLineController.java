@@ -1,10 +1,9 @@
 package com.aiurt.modules.position.controller;
 
 
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.position.entity.CsLine;
@@ -13,20 +12,14 @@ import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.position.service.ICsLineService;
 import com.aiurt.modules.position.service.ICsStationService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
-
-import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
  /**
  * @Description: cs_line
@@ -85,6 +78,8 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 		csLine.setLineType(position.getPositionType());
 		csLine.setLineCode(position.getPositionCode());
 		csLine.setLineName(position.getPositionName());
+		csLine.setLongitude(position.getLongitude());
+		csLine.setLatitude(position.getLatitude());
 		csLine.setSort(position.getSort());
 		csLine.setLevel(position.getLevel());
 		return csLine;

@@ -78,6 +78,8 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
          csStation.setStationCode(position.getPositionCode());
          csStation.setStationName(position.getPositionName());
          csStation.setLineCode(position.getLineCode());
+         csStation.setLongitude(position.getLongitude());
+         csStation.setLatitude(position.getLatitude());
          csStation.setLineName(position.getLineName());
          csStation.setSort(position.getSort());
          csStation.setLevel(position.getLevel());

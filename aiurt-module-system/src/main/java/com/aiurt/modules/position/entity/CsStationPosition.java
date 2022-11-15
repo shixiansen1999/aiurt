@@ -15,6 +15,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -66,6 +67,14 @@ public class CsStationPosition implements Serializable {
     @ApiModelProperty(value = "线路名称")
     @TableField(exist = false)
     private String lineName;
+    /**经度*/
+    @Excel(name = "经度", width = 15)
+    @ApiModelProperty(value = "经度")
+    private BigDecimal longitude;
+    /**纬度*/
+    @Excel(name = "纬度", width = 15)
+    @ApiModelProperty(value = "纬度")
+    private BigDecimal latitude;
 	/**上级节点*/
 	@Excel(name = "上级节点", width = 15)
     @ApiModelProperty(value = "上级节点")
