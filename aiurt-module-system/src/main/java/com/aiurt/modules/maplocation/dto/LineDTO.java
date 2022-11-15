@@ -10,6 +10,6 @@ import java.util.List;
 public class LineDTO {
     String id;
     String lineCode;
-    String lineName;
+    String title;
     List<CsStation> children ;
 }

@@ -1,6 +1,6 @@
 package com.aiurt.boot.weeklyplan.dto;
 
-import com.aiurt.boot.weeklyplan.entity.BdLine;
+import com.aiurt.modules.position.entity.CsLine;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -68,7 +68,7 @@ public class QueryPagesParams {
     @ApiModelProperty(value = "作业内容")
     private String taskContent;
 
-    private List<BdLine> bdLineList;
+    private List<CsLine> bdLineList;
 
     @ApiModelProperty(value = "管辖班组id集合")
     private List<String> teamIdList;

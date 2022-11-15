@@ -117,7 +117,7 @@ public interface BdOperatePlanDeclarationFormMapper extends BaseMapper<BdOperate
      * @param parseId
      * @return
      */
-    String queryStationNamesById(@Param("parseID")String[] parseId);
+    String queryStationNamesById(@Param("parseId")String[] parseId);
 
     /**
      * 查找施工信息

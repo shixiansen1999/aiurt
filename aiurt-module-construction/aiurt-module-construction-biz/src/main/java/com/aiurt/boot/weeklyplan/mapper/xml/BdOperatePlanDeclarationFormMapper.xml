@@ -284,7 +284,8 @@
                 </if>
                 <choose>
                     <when test="queryPagesParams.lineID==null or queryPagesParams.lineID=='0'.toString() or queryPagesParams.lineID==''">
-                        AND cl1.id in ('1','1542420008938577921','1542710958252453889','1542716994245894146','1544551872243822594')
+                        <!--todo 暂时注释-->
+                        <!--AND cl1.id in ('1','1542420008938577921','1542710958252453889','1542716994245894146','1544551872243822594')-->
                     </when>
                     <otherwise>
                         AND cl1.id = #{queryPagesParams.lineID}

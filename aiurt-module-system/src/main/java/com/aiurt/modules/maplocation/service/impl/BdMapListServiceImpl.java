@@ -289,15 +289,15 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
         LineDTO lineDTO8 = new LineDTO();
         CsLine csLine3 = csLineService.getOne(new LambdaQueryWrapper<CsLine>().eq(CsLine::getLineName,BdMapConstant.THREELINE).eq(CsLine::getDelFlag,0));
         lineDTO3.setId(csLine3.getId());
-        lineDTO3.setLineName(csLine3.getLineName());
+        lineDTO3.setTitle(csLine3.getLineName());
         lineDTO3.setLineCode(csLine3.getLineCode());
         CsLine csLine4 = csLineService.getOne(new LambdaQueryWrapper<CsLine>().eq(CsLine::getLineName,BdMapConstant.FOURLINE).eq(CsLine::getDelFlag,0));
         lineDTO4.setId(csLine4.getId());
-        lineDTO4.setLineName(csLine4.getLineName());
+        lineDTO4.setTitle(csLine4.getLineName());
         lineDTO4.setLineCode(csLine4.getLineCode());
         CsLine csLine8 = csLineService.getOne(new LambdaQueryWrapper<CsLine>().eq(CsLine::getLineName,BdMapConstant.EIGHTLINE).eq(CsLine::getDelFlag,0));
         lineDTO8.setId(csLine8.getId());
-        lineDTO8.setLineName(csLine8.getLineName());
+        lineDTO8.setTitle(csLine8.getLineName());
         lineDTO8.setLineCode(csLine8.getLineCode());
         lineDTO3.setChildren(csStationService.list(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .eq(CsStation::getLineName,BdMapConstant.THREELINE)));
@@ -305,6 +305,9 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                 .eq(CsStation::getLineName,BdMapConstant.FOURLINE)));
         lineDTO8.setChildren(csStationService.list(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .eq(CsStation::getLineName,BdMapConstant.EIGHTLINE)));
+        lineDTO3.getChildren().stream().forEach(s->{s.setTitle(s.getStationName());});
+        lineDTO4.getChildren().stream().forEach(s->{s.setTitle(s.getStationName());});
+        lineDTO8.getChildren().stream().forEach(s->{s.setTitle(s.getStationName());});
         List<LineDTO>list = new ArrayList<>();
         list.add(lineDTO3);list.add(lineDTO4);list.add(lineDTO8);
         return list;

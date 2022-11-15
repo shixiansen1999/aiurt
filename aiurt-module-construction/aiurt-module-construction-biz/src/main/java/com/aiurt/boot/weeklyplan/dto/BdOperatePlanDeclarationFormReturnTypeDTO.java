@@ -123,7 +123,7 @@ public class BdOperatePlanDeclarationFormReturnTypeDTO {
     private String remark;
 
     @ApiModelProperty(value = "线路")
-    private Integer lineID;
+    private String lineID;
 
     @ApiModelProperty(value = "planChange")
     private Integer planChange;
@@ -191,7 +191,7 @@ public class BdOperatePlanDeclarationFormReturnTypeDTO {
     private String identityNumber;
 
     @ApiModelProperty(value = "工区id")
-    private Integer siteId;
+    private String siteId;
     @ApiModelProperty(value = "工区名称")
     private String siteName;
 
