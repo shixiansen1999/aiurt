@@ -418,7 +418,7 @@ public class ScheduleRecordController {
                 scheduleCalendarVo.setStartTime(recordModel.getStartTime());
                 scheduleCalendarVo.setEndTime(recordModel.getEndTime());
                 scheduleCalendarVo.setTimeId(recordModel.getTimeId());
-                scheduleCalendarVo.setOrgName(recordModel.getOrgName());
+                scheduleCalendarVo.setOrgName(loginUser.getOrgName());
                 scheduleCalendarVo.setDate(recordModel.getDate());
                 scheduleCalendarVo.setContent(recordModel.getItemName() + "-" + recordModel.getUserName());
                 list.get(index).getVoList().add(scheduleCalendarVo);
