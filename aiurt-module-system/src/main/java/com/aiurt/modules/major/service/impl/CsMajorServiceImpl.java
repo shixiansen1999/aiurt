@@ -13,6 +13,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
@@ -23,6 +24,8 @@ import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -159,8 +163,19 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
 
                 } else {
                     successLines = 0;
-                    URL resource = DlownTemplateUtil.class.getResource("/templates/csmajorexcel.xlsx");
-                    String path = resource.getPath();
+                    //1.获取文件流
+                    Resource resource = new ClassPathResource("/templates/csmajorexcel.xlsx");
+                    InputStream resourceAsStream = resource.getInputStream();
+
+                    //2.获取临时文件
+                    File fileTemp= new File("/templates/csmajorexcel.xlsx");
+                    try {
+                        //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+                        FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                    }
+                    String path = fileTemp.getAbsolutePath();
                     TemplateExportParams exportParams = new TemplateExportParams(path);
                     Map<String, Object> errorMap = new HashMap<String, Object>();
                     errorMap.put("title", "专业信息导入错误清单");
