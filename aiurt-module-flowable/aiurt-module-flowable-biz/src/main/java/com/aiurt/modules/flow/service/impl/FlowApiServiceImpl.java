@@ -208,17 +208,17 @@ public class FlowApiServiceImpl implements FlowApiService {
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
 
         // 设置办理人
-        task.setAssignee(loginName);
+        taskService.setAssignee(task.getId(), loginName);
 
         // 保存数据
         if (Objects.nonNull(busData)) {
             saveData(task, busData, processInstance.getProcessInstanceId(), task.getId(), processInstance);
         }
-
         // 完成流程启动后的第一个任务
-        if (Objects.nonNull(startBpmnDTO.getFlowTaskCompleteDTO())) {
+        FlowTaskCompleteCommentDTO flowTaskCompleteDTO = startBpmnDTO.getFlowTaskCompleteDTO();
+        if (Objects.nonNull(flowTaskCompleteDTO) &&  StrUtil.equalsAnyIgnoreCase(flowTaskCompleteDTO.getApprovalType(), FlowApprovalType.AGREE)) {
             // 按照规则，调用该方法的用户，就是第一个任务的assignee，因此默认会自动执行complete。
-            ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(startBpmnDTO.getFlowTaskCompleteDTO(), ActCustomTaskComment.class);
+            ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(flowTaskCompleteDTO, ActCustomTaskComment.class);
             if (ObjectUtil.isNotEmpty(flowTaskComment)) {
                 flowTaskComment.fillWith(task);
             }
