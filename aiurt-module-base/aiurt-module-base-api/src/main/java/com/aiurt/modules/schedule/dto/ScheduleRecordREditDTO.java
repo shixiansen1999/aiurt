@@ -39,4 +39,7 @@ public class ScheduleRecordREditDTO {
     @ApiModelProperty(value = "排班记录id")
     private Integer scheduleRecordId;
 
+    @ApiModelProperty(value = "清空标记")
+    private Boolean deleteFlag;
+
 }
