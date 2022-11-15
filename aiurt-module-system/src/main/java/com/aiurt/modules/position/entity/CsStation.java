@@ -143,4 +143,9 @@ public class CsStation implements Serializable {
     @TableField(exist = false)
     private String teamName;
 
+    /**工区id*/
+    @ApiModelProperty(value = "站点名字")
+    @TableField(exist = false)
+    private String title;
+
 }
