@@ -10,6 +10,8 @@
             t.line_code position_code,
             t.line_name position_name,
             t.line_type position_type,
+            t.longitude longitude,
+            t.latitude latitude,
             '-' pUrl
         FROM
             cs_line t
@@ -27,6 +29,8 @@
             t1.station_code position_code,
             t1.station_name position_name,
             t1.station_type position_type,
+            t1.longitude longitude,
+            t1.latitude latitude,
             t.line_name pUrl
         FROM
             cs_station t1
@@ -45,6 +49,8 @@
             t2.position_code,
             t2.position_name,
             t2.position_type,
+            t2.longitude,
+            t2.latitude,
             t.station_name pUrl
         FROM
             cs_station_position t2

@@ -1,10 +1,5 @@
 package com.aiurt.modules.position.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
@@ -16,17 +11,20 @@ import com.aiurt.modules.position.service.ICsLineService;
 import com.aiurt.modules.position.service.ICsStationPositionService;
 import com.aiurt.modules.position.service.ICsStationService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.api.ISysBaseAPI;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
-
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
  /**
  * @Description: cs_station_position
@@ -71,19 +69,19 @@ public class CsStationPositionController  {
 		 //循环一级
 		 lineList.forEach(line -> {
 		 	String codeCc1 = line.getLineCode();
-			 CsStationPosition onePosition = setEntity(line.getId(),1,line.getSort(),line.getLineCode(),line.getLineName(),null,null,codeCc1,line.getLineType(),"");
+			 CsStationPosition onePosition = setEntity(line.getId(),1,line.getSort(),line.getLineCode(),line.getLineName(),null,null,codeCc1,line.getLineType(),"",line.getLongitude(),line.getLatitude());
 			 List<CsStation> twoStationList = stationList.stream().filter(station-> station.getLineCode().equals(line.getLineCode())).collect(Collectors.toList());
 			 List<CsStationPosition> twoList = new ArrayList<>();
 			 //循环二级
 			 twoStationList.forEach(two->{
 				 String codeCc2 = line.getLineCode()+"/"+two.getStationCode();
-				 CsStationPosition twoPosition = setEntity(two.getId(),2,two.getSort(),two.getStationCode(),two.getStationName(),line.getLineCode(),line.getLineName(),codeCc2,two.getStationType(),"");
+				 CsStationPosition twoPosition = setEntity(two.getId(),2,two.getSort(),two.getStationCode(),two.getStationName(),line.getLineCode(),line.getLineName(),codeCc2,two.getStationType(),"",two.getLongitude(),two.getLatitude());
 				 List<CsStationPosition> threeStationList = positionList.stream().filter(position-> position.getStaionCode().equals(two.getStationCode())).collect(Collectors.toList());
 				 List<CsStationPosition> threeList = new ArrayList<>();
 				 //循环三级
 				 threeStationList.forEach(three->{
 					 String codeCc3 = line.getLineCode()+"/"+two.getStationCode()+"/"+three.getPositionCode();
-					 CsStationPosition threePosition = setEntity(three.getId(),3,three.getSort(),three.getPositionCode(),three.getPositionName(),two.getStationCode(),two.getStationName(),codeCc3,three.getPositionType(),three.getLength());
+					 CsStationPosition threePosition = setEntity(three.getId(),3,three.getSort(),three.getPositionCode(),three.getPositionName(),two.getStationCode(),two.getStationName(),codeCc3,three.getPositionType(),three.getLength(),three.getLongitude(),three.getLatitude());
 					 threeList.add(threePosition);
 				 });
 				 twoPosition.setChildren(threeList);
@@ -105,13 +103,15 @@ public class CsStationPositionController  {
 	  * @param positionName
 	  * @return
 	  */
-	 public CsStationPosition setEntity(String id,Integer level,Integer sort,String positionCode,String positionName,String pCode,String pName,String codeCc,Integer positionType,String length){
+	 public CsStationPosition setEntity(String id, Integer level, Integer sort, String positionCode, String positionName, String pCode, String pName, String codeCc, Integer positionType, String length, BigDecimal longitude,BigDecimal latitude){
 		 CsStationPosition position = new CsStationPosition();
 		 position.setId(id);
 		 position.setLevel(level);
 		 position.setSort(sort);
 		 position.setPositionCode(positionCode);
 		 position.setPositionName(positionName);
+		 position.setLongitude(longitude);
+		 position.setLatitude(latitude);
 		 position.setPCode(pCode);
 		 position.setPUrl(pName);
 		 position.setCodeCc(codeCc);
