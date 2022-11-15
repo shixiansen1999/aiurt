@@ -320,34 +320,62 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         for (ScheduleRecordREditDTO scheduleRecordREditDTO : scheduleRecordREditDTOList) {
             String item = "0";
             if (item.equals(scheduleRecordREditDTO.getSchedulingMethod())) {
-                ScheduleRecord scheduleRecordEntity = this.getById(scheduleRecordREditDTO.getScheduleRecordId());
-                if (scheduleRecordEntity == null) {
-                    result.onnull("未找到对应实体");
-                } else {
-                    ScheduleItem oldItem = itemService.getById(scheduleRecordEntity.getItemId());
-                    ScheduleItem newItem = itemService.getById(scheduleRecordREditDTO.getScheduleItemId());
-                    scheduleRecordEntity.setItemId(newItem.getId());
-                    scheduleRecordEntity.setColor(newItem.getColor());
-                    scheduleRecordEntity.setItemName(newItem.getName());
-                    scheduleRecordEntity.setStartTime(newItem.getStartTime());
-                    scheduleRecordEntity.setEndTime(newItem.getEndTime());
+                if (ObjectUtil.isNotEmpty(scheduleRecordREditDTO.getScheduleRecordId())) {
+                    ScheduleRecord scheduleRecordEntity = this.getById(scheduleRecordREditDTO.getScheduleRecordId());
+                    if (scheduleRecordEntity == null) {
+                        result.onnull("未找到对应实体");
+                    } else {
+                        ScheduleItem oldItem = itemService.getById(scheduleRecordEntity.getItemId());
+                        ScheduleItem newItem = itemService.getById(scheduleRecordREditDTO.getScheduleItemId());
+                        scheduleRecordEntity.setItemId(newItem.getId());
+                        scheduleRecordEntity.setColor(newItem.getColor());
+                        scheduleRecordEntity.setItemName(newItem.getName());
+                        scheduleRecordEntity.setStartTime(newItem.getStartTime());
+                        scheduleRecordEntity.setEndTime(newItem.getEndTime());
 
-                    this.updateById(scheduleRecordEntity);
+                        this.updateById(scheduleRecordEntity);
+
+                        ScheduleLog log = new ScheduleLog();
+                        log.setDate(scheduleRecordEntity.getDate());
+                        log.setRecordId(scheduleRecordEntity.getId());
+                        log.setDelFlag(0);
+                        log.setSourceItemId(oldItem.getId());
+                        log.setSourceItemName(oldItem.getName());
+                        log.setTargetItemId(newItem.getId());
+                        log.setTargetItemName(newItem.getName());
+                        log.setUserId(scheduleRecordEntity.getUserId());
+//            LoginUser user = new LoginUser();
+                        LoginUser user = userService.getUserById(log.getUserId());
+                        log.setUserName(user.getRealname());
+                        logService.save(log);
+                    }
+                }else {
+                    ScheduleItem newItem = itemService.getById(scheduleRecordREditDTO.getScheduleItemId());
+                    ScheduleRecord record = ScheduleRecord.builder()
+                            .userId(scheduleRecordREditDTO.getUserId())
+                            .date(scheduleRecordREditDTO.getStartTime())
+                            .itemId(newItem.getId())
+                            .itemName(newItem.getName())
+                            .startTime(newItem.getStartTime())
+                            .endTime(newItem.getEndTime())
+                            .color(newItem.getColor())
+                            .delFlag(0)
+                            .build();
+                    this.save(record);
 
                     ScheduleLog log = new ScheduleLog();
-                    log.setDate(scheduleRecordEntity.getDate());
-                    log.setRecordId(scheduleRecordEntity.getId());
+                    log.setDate(record.getDate());
+                    log.setRecordId(record.getId());
                     log.setDelFlag(0);
-                    log.setSourceItemId(oldItem.getId());
-                    log.setSourceItemName(oldItem.getName());
                     log.setTargetItemId(newItem.getId());
                     log.setTargetItemName(newItem.getName());
-                    log.setUserId(scheduleRecordEntity.getUserId());
+                    log.setUserId(record.getUserId());
 //            LoginUser user = new LoginUser();
                     LoginUser user = userService.getUserById(log.getUserId());
                     log.setUserName(user.getRealname());
                     logService.save(log);
                 }
+
             } else {
                 Calendar start = Calendar.getInstance();
                 start.setTime(scheduleRecordREditDTO.getStartTime());

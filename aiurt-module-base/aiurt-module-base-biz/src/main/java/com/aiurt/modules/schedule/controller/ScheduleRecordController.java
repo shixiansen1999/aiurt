@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.constant.RoleConstant;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.schedule.dto.*;
@@ -308,18 +307,17 @@ public class ScheduleRecordController {
 
         List<String> orgList = new ArrayList<>();
 
-        if (StringUtils.isBlank(orgId) && !roleCodeList.contains(RoleConstant.DIRECTOR) && !roleCodeList.contains(RoleConstant.ADMIN)) {
-            //当前登录用户所管辖的班组
-            List<SysDepartModel> userSysDepart = iSysBaseApi.getUserSysDepart(loginUser.getId());
-            if (CollUtil.isNotEmpty(userSysDepart)) {
-                List<String> collect = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
-                orgList.addAll(collect);
-            }else {
-                result.setResult(new ArrayList<>());
-                result.setSuccess(true);
-                return result;
-            }
+        //当前登录用户所管辖的班组
+        List<SysDepartModel> userSysDepart = iSysBaseApi.getUserSysDepart(loginUser.getId());
+        if (CollUtil.isNotEmpty(userSysDepart)) {
+            List<String> collect = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+            orgList.addAll(collect);
+        }else {
+            result.setResult(new ArrayList<>());
+            result.setSuccess(true);
+            return result;
         }
+
 
         if (StringUtils.isEmpty(date)) {
             date = DateUtil.format(new Date(), "yyyy-MM");

@@ -14,6 +14,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: schedule_log
@@ -145,4 +146,7 @@ public class ScheduleLog {
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@ApiModelProperty(value = "结束日期")
 	private Date endDate;
+
+	@TableField(exist = false)
+	private List<String> orgList;
 }

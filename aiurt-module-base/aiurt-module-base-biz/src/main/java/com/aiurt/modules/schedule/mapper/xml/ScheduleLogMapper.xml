@@ -15,6 +15,15 @@
     <if test="scheduleLog.endDate!=null ">
     and sl.date &lt;= #{scheduleLog.endDate}
     </if>
+    <if test="scheduleLog.userId!=null and scheduleLog.userId!=''">
+        and sl.user_id = #{scheduleLog.userId}
+    </if>
+    <if test="scheduleLog.orgList != null and scheduleLog.orgList.size() != 0">
+        and su.org_id in
+        <foreach collection="scheduleLog.orgList" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </if>
     order by sl.create_time desc
     </select>
 </mapper>
