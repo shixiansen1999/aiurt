@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.monthlyplan.mapper.BdOperatePlanDeclarationFormMonthMapper;
 import com.aiurt.boot.weeklyplan.dto.*;
 import com.aiurt.boot.weeklyplan.entity.*;
 import com.aiurt.boot.weeklyplan.mapper.BdLineMapper;
@@ -22,6 +23,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,8 +55,8 @@ public class BdOperatePlanDeclarationFormServiceImpl
     private BdTeamMapper bdTeamMapper;
     @Autowired
     private BdOperatePlanDeclarationFormMapper bdOperatePlanDeclarationFormMapper;
-//    @Autowired
-//    private BdOperatePlanDeclarationFormMonthMapper bdOperatePlanDeclarationFormMonthMapper;
+    @Autowired
+    private BdOperatePlanDeclarationFormMonthMapper bdOperatePlanDeclarationFormMonthMapper;
     @Autowired
     private IBdSiteService bdSiteService;
     @Autowired
@@ -230,9 +232,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
         //转换辅站id->names
         if (result != null && result.getAssistStationName() != null) {
 
-            // fixme 还原
-//            List<BdStationCopyDTO> stationInfoResult = bdOperatePlanDeclarationFormMonthMapper.queryAllStationInfo();
-            List<BdStationCopyDTO> stationInfoResult = new ArrayList<>();
+            List<BdStationCopyDTO> stationInfoResult = bdOperatePlanDeclarationFormMonthMapper.queryAllStationInfo();
 
             List<String> assistStationIdList = Arrays.asList(result.getAssistStationName().split(","));
             String assistStationName = assistStationIdList.stream().filter(assistStationId -> {
@@ -389,9 +389,12 @@ public class BdOperatePlanDeclarationFormServiceImpl
         //查询当前登录账号的角色是否为“调度员”、“生产调度”
         roleList = roleList.stream().filter(s -> s.contains("dispatch") || s.contains("production_scheduling") ).collect(Collectors.toList());
         if(roleList.isEmpty()){
-            String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
-            List<BdTeam> bdTeamList = bdTeamMapper.queryManagedTeam(teamId);
-            queryPagesParams.setTeamIdList(bdTeamList.stream().map(s -> s.getId()).collect(Collectors.toList()));
+//            String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
+//            List<BdTeam> bdTeamList = bdTeamMapper.queryManagedTeam(teamId);
+//            queryPagesParams.setTeamIdList(bdTeamList.stream().map(s -> s.getId()).collect(Collectors.toList()));
+            // 获取当前用户的部门权限
+            List<CsUserDepartModel> teamList = sysBaseApi.getDepartByUserId(sysUser.getId());
+            queryPagesParams.setTeamIdList(teamList.stream().map(s -> s.getId()).collect(Collectors.toList()));
         }else{
             queryPagesParams.setRoleId(null);
             queryPagesParams.setStaffID(null);
