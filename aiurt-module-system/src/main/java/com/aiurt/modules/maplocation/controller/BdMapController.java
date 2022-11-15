@@ -179,7 +179,17 @@ public class BdMapController {
         List<AssignUserDTO> list = bdMapListService.getUserStateByTeamId(teamId);
         return Result.OK(list);
     }
-
+    /**
+     * 站点下拉框
+     *
+     * @return
+     */
+    @ApiOperation(value = "站点下拉框", notes = "站点下拉框")
+    @GetMapping(value = "/getStation")
+    public Result<List<LineDTO>> getStation() {
+        List<LineDTO> list = bdMapListService.getStation();
+        return Result.OK(list);
+    }
     /**
      * 发送消息给对应的用户
      *

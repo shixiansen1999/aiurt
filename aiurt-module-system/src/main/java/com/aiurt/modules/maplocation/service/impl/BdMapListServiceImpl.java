@@ -4,17 +4,20 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.weeklyplan.entity.BdStation;
+import com.aiurt.boot.weeklyplan.mapper.BdStationMapper;
 import com.aiurt.boot.weeklyplan.service.IBdStationService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.api.vo.TreeNode;
 import com.aiurt.common.util.RedisUtil;
 import com.aiurt.modules.common.service.ICommonService;
+import com.aiurt.modules.maplocation.constant.BdMapConstant;
 import com.aiurt.modules.maplocation.dto.*;
 import com.aiurt.modules.maplocation.mapper.BdMapListMapper;
 import com.aiurt.modules.maplocation.service.IBdMapListService;
 import com.aiurt.modules.maplocation.utils.MapDistance;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.service.ICsStationService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -268,6 +271,25 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
         } else {
             throw new JeecgBootException("发送失败");
         }
+    }
+
+    @Override
+    public List<LineDTO> getStation() {
+        LineDTO lineDTO3 = new LineDTO();
+        LineDTO lineDTO4 = new LineDTO();
+        LineDTO lineDTO8 = new LineDTO();
+        lineDTO3.setLineName(BdMapConstant.THREELINE);
+        lineDTO4.setLineName(BdMapConstant.FOURLINE);
+        lineDTO8.setLineName(BdMapConstant.EIGHTLINE);
+        lineDTO3.setStation(csStationService.list(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(CsStation::getLineName,BdMapConstant.THREELINE)));
+        lineDTO4.setStation(csStationService.list(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(CsStation::getLineName,BdMapConstant.FOURLINE)));
+        lineDTO8.setStation(csStationService.list(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(CsStation::getLineName,BdMapConstant.EIGHTLINE)));
+        List<LineDTO>list = new ArrayList<>();
+        list.add(lineDTO3);list.add(lineDTO4);list.add(lineDTO8);
+        return list;
     }
 
     /**

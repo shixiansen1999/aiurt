@@ -1,11 +1,8 @@
 package com.aiurt.modules.maplocation.service;
 
 
-import com.aiurt.modules.maplocation.dto.AssignUserDTO;
-import com.aiurt.modules.maplocation.dto.CurrentTeamPosition;
-import com.aiurt.modules.maplocation.dto.EquipmentHistoryDTO;
+import com.aiurt.modules.maplocation.dto.*;
 
-import com.aiurt.modules.maplocation.dto.UserInfo;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -43,4 +40,10 @@ public interface IBdMapListService extends IService<CurrentTeamPosition> {
      * @return
      */
     void sendSysAnnouncement(String username, String msg);
+
+    /**
+     * 站点下拉框
+     * @return
+     */
+    List<LineDTO> getStation();
 }
