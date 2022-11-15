@@ -175,18 +175,11 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                         listMap.add(lm);
                     }
                     errorMap.put("maplist", listMap);
-                    for (Map<String, Object> map : listMap) {
-                        Object mistake = map.get("mistake");
-                        if (ObjectUtil.isNotNull(mistake)) {
-                            Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
-                            String filename = "专业信息导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
-                            FileOutputStream out = new FileOutputStream(filepath+ File.separator+filename);
-                            workbook.write(out);
-                            url =filename;
-
-                        }
-                    }
-
+                    Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
+                    String filename = "专业信息导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
+                    FileOutputStream out = new FileOutputStream(filepath+ File.separator+filename);
+                    url =filename;
+                    workbook.write(out);
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());
