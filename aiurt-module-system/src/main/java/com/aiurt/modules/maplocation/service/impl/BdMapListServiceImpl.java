@@ -13,6 +13,8 @@ import com.aiurt.modules.maplocation.dto.*;
 import com.aiurt.modules.maplocation.mapper.BdMapListMapper;
 import com.aiurt.modules.maplocation.service.IBdMapListService;
 import com.aiurt.modules.maplocation.utils.MapDistance;
+import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.service.ICsStationService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -44,6 +46,8 @@ import java.util.stream.Collectors;
 public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTeamPosition> implements IBdMapListService {
     @Autowired
     private IBdStationService bdStationService;
+    @Autowired
+    private ICsStationService csStationService;
     @Autowired
     private ICommonService commonService;
     @Autowired
@@ -177,10 +181,10 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
         // 如果是按站点查，直接用站点的id,如果是按人员查，就是人员的位置信息和哪个站点离得最近，就取那个站点的id
         if (StrUtil.isNotEmpty(id)) {
             UserStationDTO userStation = baseMapper.getStationId(id);
-            QueryWrapper<BdStation> bdStationQueryWrapper = new QueryWrapper<>();
-            bdStationQueryWrapper.lambda().isNotNull(BdStation::getPositionX);
-            bdStationQueryWrapper.lambda().isNotNull(BdStation::getPositionY);
-            List<BdStation> bdStationList = bdStationService.getBaseMapper().selectList(bdStationQueryWrapper);
+            QueryWrapper<CsStation> bdStationQueryWrapper = new QueryWrapper<>();
+            bdStationQueryWrapper.lambda().isNotNull(CsStation::getLongitude);
+            bdStationQueryWrapper.lambda().isNotNull(CsStation::getLatitude);
+            List<CsStation> bdStationList = csStationService.getBaseMapper().selectList(bdStationQueryWrapper);
             if (ObjectUtil.isNotEmpty(userStation)
                     && userStation.getPositionX() != null
                     && userStation.getPositionY() != null
@@ -188,8 +192,8 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
 
                 GlobalCoordinates userDistance = new GlobalCoordinates(userStation.getPositionY(), userStation.getPositionX());
                 double distance = 2000.0d; // 2000米范围内
-                for (BdStation bdStation : bdStationList) {
-                    GlobalCoordinates stationDistance = new GlobalCoordinates(bdStation.getPositionY(), bdStation.getPositionX());
+                for (CsStation bdStation : bdStationList) {
+                    GlobalCoordinates stationDistance = new GlobalCoordinates(Double.valueOf(bdStation.getLatitude()), Double.valueOf(bdStation.getLongitude()));
                     double meter = MapDistance.getDistanceMeter(userDistance, stationDistance, Ellipsoid.Sphere);
                     if (meter <= distance) {
                         stationIdStr = bdStation.getId();
@@ -200,7 +204,8 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
         }
 
         if (StrUtil.isNotEmpty(stationId)) {
-            stationIdStr = stationId;
+            CsStation csStation = csStationService.getBaseMapper().selectById(stationId);
+            stationIdStr = csStation.getStationCode();
         }
 
         if (StrUtil.isEmpty(stationIdStr)) {

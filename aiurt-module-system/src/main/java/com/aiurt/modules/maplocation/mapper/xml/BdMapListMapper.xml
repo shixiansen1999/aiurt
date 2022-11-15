@@ -69,7 +69,7 @@
         device bda
         LEFT JOIN device_type bdt ON bdt.code = bda.device_type_code
         <where>
-            bda.station_id = #{stationIdStr}
+            bda.station_code = #{stationIdStr}
             and bda.del_flag = 0 and bdt.del_flag = 0
             <if test="teamIdList.size()>0">
                 and (
