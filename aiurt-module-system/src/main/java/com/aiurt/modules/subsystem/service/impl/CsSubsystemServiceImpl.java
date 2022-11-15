@@ -17,13 +17,13 @@ import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.mapper.CsUserSubsystemMapper;
 import com.aiurt.modules.system.service.ISysUserService;
-import com.aiurt.modules.train.utils.DlownTemplateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -43,6 +43,8 @@ import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,9 +53,11 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -414,8 +418,45 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 else
                 {
                     successLines =0;
-                    String s = importErrorExcel(csSubsystemDTOList,type);
-                    url =s;
+                    //1.获取文件流
+                    Resource resource = new ClassPathResource("/templates/csSubsystemImportDTO.xlsx");
+                    InputStream resourceAsStream = resource.getInputStream();
+
+                    //2.获取临时文件
+                    File fileTemp= new File("/templates/csmajorexcel.xlsx");
+                    try {
+                        //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+                        FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                    }
+                    String path = fileTemp.getAbsolutePath();
+                    TemplateExportParams exportParams = new TemplateExportParams(path);
+                    Map<String, Object> errorMap = new HashMap<String, Object>();
+                    errorMap.put("title", "子系统导入失败错误清单");
+                    List<Map<String, Object>> listMap = new ArrayList<>();
+                    for (CsSubsystemImportDTO dto : csSubsystemDTOList) {
+                        //获取一条排班记录
+                        Map<String, Object> lm = new HashMap<String, Object>();
+                        CsMajor csMajor = csMajorService.getBaseMapper().selectOne(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getMajorCode, dto.getMajorCode()).eq(CsMajor::getDelFlag, 0));
+                        //错误报告获取信息
+                        lm.put("major", csMajor.getMajorName());
+                        lm.put("systemcode", dto.getSystemCode());
+                        lm.put("systemname", dto.getSystemName());
+                        lm.put("systemusername", dto.getSystemUserName());
+                        lm.put("generalsituation", dto.getGeneralSituation());
+                        lm.put("mistake", dto.getWrongReason());
+                        listMap.add(lm);
+                    }
+                    errorMap.put("maplist", listMap);
+                    Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
+                    List<CsMajor> scheduleItems = csMajorService.getBaseMapper().selectList(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag, 0));
+                    List<String> names = scheduleItems.stream().map(CsMajor::getMajorName).collect(Collectors.toList());
+                    ExcelSelectListUtil.selectList(workbook, 1, 1, names);
+                    String fileName = "子系统导入失败错误清单"+ "_" + System.currentTimeMillis()+"."+type;
+                    FileOutputStream out = new FileOutputStream(filepath+ File.separator+fileName);
+                    url =fileName;
+                    workbook.write(out);
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());
@@ -429,59 +470,6 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             }
         return imporReturnRes(errorLines, successLines, errorMessage,true,url);
     }
-
-
-
-    /**校验,如果导入出错怎返回错误报告*/
-    public String importErrorExcel(List<CsSubsystemImportDTO> scheduleDate,String type) {
-        //创建导入失败错误报告,进行模板导出
-        URL resource = DlownTemplateUtil.class.getResource("/templates/csSubsystemImportDTO.xlsx");
-        String path = resource.getPath();
-        TemplateExportParams exportParams = new TemplateExportParams(path);
-        Map<String, Object> errorMap = new HashMap<String, Object>();
-        errorMap.put("title", "子系统导入失败错误清单");
-        List<Map<String, Object>> listMap = new ArrayList<>();
-        for (CsSubsystemImportDTO dto : scheduleDate) {
-            //获取一条排班记录
-            Map<String, Object> lm = new HashMap<String, Object>();
-             CsMajor csMajor = csMajorService.getBaseMapper().selectOne(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getMajorCode, dto.getMajorCode()).eq(CsMajor::getDelFlag, 0));
-            //错误报告获取信息
-            lm.put("major", csMajor.getMajorName());
-            lm.put("systemcode", dto.getSystemCode());
-            lm.put("systemname", dto.getSystemName());
-            lm.put("systemusername", dto.getSystemUserName());
-            lm.put("generalsituation", dto.getGeneralSituation());
-            lm.put("mistake", dto.getWrongReason());
-            listMap.add(lm);
-        }
-        errorMap.put("maplist", listMap);
-        for (Map<String, Object> map : listMap) {
-            Object mistake = map.get("mistake");
-            if (ObjectUtil.isNotNull(mistake)) {
-                Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
-                List<CsMajor> scheduleItems = csMajorService.getBaseMapper().selectList(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag, 0));
-                List<String> names = scheduleItems.stream().map(CsMajor::getMajorName).collect(Collectors.toList());
-                ExcelSelectListUtil.selectList(workbook, 1, 1, names);
-                String fileName = "子系统导入失败错误清单"+ "_" + System.currentTimeMillis()+"."+type;
-                try {
-                    FileOutputStream out = new FileOutputStream(filepath+ File.separator+fileName);
-                    workbook.write(out);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return fileName;
-            }
-        }
-
-        return null;
-    }
-
-
-
-
-
 
     public static final class ExcelSelectListUtil {
         /**
@@ -531,10 +519,10 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         else if (csSubsystemDTO.getMajorCode() == null && csSubsystemDTO.getSystemName() != null && csSubsystemDTO.getSystemCode()==null) {
             CsSubsystem csSubsystem = csSubsystemMapper.selectOne(new QueryWrapper<CsSubsystem>().lambda().eq(CsSubsystem::getSystemName, csSubsystemDTO.getSystemName()).eq(CsSubsystem::getDelFlag, 0));
             if (csSubsystem != null&&size==0) {
-                return "必填字段为空;系统名称重复;技术员不存在";
+                return "必填字段为空;子系统名称重复;技术员不存在";
             }
             if (csSubsystem != null&&size!=0) {
-                return "必填字段为空;系统名称重复";
+                return "必填字段为空;子系统名称重复";
             }
             if (csSubsystem == null&&size!=0)
             {
@@ -544,10 +532,10 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         else if (csSubsystemDTO.getMajorCode() == null && csSubsystemDTO.getSystemName() == null && csSubsystemDTO.getSystemCode()!=null) {
             CsSubsystem csSubsystem = csSubsystemMapper.selectOne(new QueryWrapper<CsSubsystem>().lambda().eq(CsSubsystem::getSystemCode, csSubsystemDTO.getSystemCode()).eq(CsSubsystem::getDelFlag, 0));
             if (csSubsystem != null&&size==0) {
-                return "必填字段为空;系统编码重复;技术员不存在";
+                return "必填字段为空;子系统编码重复;技术员不存在";
             }
             if (csSubsystem != null&&size!=0) {
-                return "必填字段为空;系统编码重复";
+                return "必填字段为空;子系统编码重复";
             }
             if (csSubsystem == null&&size!=0)
             {
@@ -559,22 +547,22 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             CsSubsystem csSubsystemCode = csSubsystemMapper.selectOne(new QueryWrapper<CsSubsystem>().lambda().eq(CsSubsystem::getSystemCode, csSubsystemDTO.getSystemCode()).eq(CsSubsystem::getDelFlag, 0));
 
             if (csSubsystemName != null&&csSubsystemCode!=null&&size!=0) {
-                return "系统编码重复;系统名称重复";
+                return "子系统编码重复;子系统名称重复";
             }
             if (csSubsystemName != null&&csSubsystemCode!=null&&size==0) {
-                return "系统编码重复;系统名称重复;技术员不存在";
+                return "子系统编码重复;子系统名称重复;技术员不存在";
             }
             if (csSubsystemCode != null&&csSubsystemName==null&&size!=0) {
-                return "系统编码重复";
+                return "子系统编码重复";
             }
             if (csSubsystemCode != null&&csSubsystemName==null&&size==0) {
-                return "系统编码重复;技术员不存在";
+                return "子系统编码重复;技术员不存在";
             }
             if (csSubsystemCode == null&&csSubsystemName!=null&&size!=0) {
-                return "系统名称重复";
+                return "子系统名称重复";
             }
             if (csSubsystemCode == null&&csSubsystemName!=null&&size==0) {
-                return "系统名称重复;技术员不存在";
+                return "子系统名称重复;技术员不存在";
             }
         }
         return null;
