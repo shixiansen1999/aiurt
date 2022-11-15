@@ -62,8 +62,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     private IScheduleRuleItemService ruleItemService;
     @Autowired
     private IScheduleItemService ItemService;
-    @Autowired
-    private IScheduleRecordService scheduleRecordService;
+
 
     @Override
     public List<ScheduleRecord> getScheduleRecordBySchedule(Integer scheduleId) {
@@ -340,7 +339,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                             LoginUser user = userService.getUserById(log.getUserId());
                             log.setUserName(user.getRealname());
                             logService.save(log);
-                            scheduleRecordService.removeById(scheduleRecordREditDTO.getScheduleRecordId());
+                            this.removeById(scheduleRecordREditDTO.getScheduleRecordId());
                         } else {
                             updateRecordByItem(scheduleRecordEntity, scheduleRecordREditDTO);
                         }
@@ -385,7 +384,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                             LoginUser user = userService.getUserById(log.getUserId());
                             log.setUserName(user.getRealname());
                             logService.save(log);
-                            scheduleRecordService.removeById(one.getId());
+                            this.removeById(one.getId());
                         }else { updateRecordByRule(one, ruleItemId);}
 
                     } else {

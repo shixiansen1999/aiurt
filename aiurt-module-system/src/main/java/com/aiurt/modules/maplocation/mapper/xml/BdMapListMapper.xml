@@ -106,7 +106,7 @@
             <if test="id!=null and id !=''">
                 and su.id = #{id}
             </if>
-            GROUP BY sy.id
+            GROUP BY su.id
             ORDER BY sp.upload_time desc
         </where>
     </select>
