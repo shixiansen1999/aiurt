@@ -157,8 +157,8 @@ public class BdMapController {
                     if (ObjectUtil.isNotEmpty(bdStation) && bdStation.getLongitude() != null && bdStation.getLatitude() != null) {
                         StationDTO stationDTO = new StationDTO();
                         stationDTO.setStationId(bdStation.getId());
-                        stationDTO.setPositionX(bdStation.getLongitude());
-                        stationDTO.setPositionY(bdStation.getLatitude());
+                        stationDTO.setPositionX(bdStation.getLongitude().toString());
+                        stationDTO.setPositionY(bdStation.getLatitude().toString());
                         stationDTO.setStationName(bdStation.getStationName());
                         stationList.add(stationDTO);
                     }
