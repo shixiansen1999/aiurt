@@ -362,33 +362,35 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                 }
                 int i = 0;
                 while (!start.getTime().after(scheduleRecordREditDTO.getEndTime())) {
+
                     LambdaQueryWrapper<ScheduleRecord> queryWrapper = new LambdaQueryWrapper<>();
                     queryWrapper.eq(ScheduleRecord::getDelFlag, "0");
                     queryWrapper.eq(ScheduleRecord::getUserId, scheduleRecordREditDTO.getUserId());
                     queryWrapper.eq(ScheduleRecord::getDate, start.getTime());
                     ScheduleRecord one = this.getOne(queryWrapper);
-                    int index = (i % itemSize == 0 ? itemSize : i % itemSize);
-                    Integer ruleItemId = scheduleRuleItemMap.get(index);
 
-                    if (ObjectUtil.isNotEmpty(one)) {
-                        if (scheduleRecordREditDTO.getDeleteFlag()) {
-                            ScheduleItem oldItem = itemService.getById(one.getItemId());
-                            ScheduleLog log = new ScheduleLog();
-                            log.setDate(one.getDate());
-                            log.setRecordId(one.getId());
-                            log.setDelFlag(0);
-                            log.setSourceItemId(oldItem.getId());
-                            log.setSourceItemName(oldItem.getName());
-                            log.setUserId(one.getUserId());
+                    if (scheduleRecordREditDTO.getDeleteFlag() && ObjectUtil.isNotEmpty(one)) {
+                        ScheduleItem oldItem = itemService.getById(one.getItemId());
+                        ScheduleLog log = new ScheduleLog();
+                        log.setDate(one.getDate());
+                        log.setRecordId(one.getId());
+                        log.setDelFlag(0);
+                        log.setSourceItemId(oldItem.getId());
+                        log.setSourceItemName(oldItem.getName());
+                        log.setUserId(one.getUserId());
 //            LoginUser user = new LoginUser();
-                            LoginUser user = userService.getUserById(log.getUserId());
-                            log.setUserName(user.getRealname());
-                            logService.save(log);
-                            this.removeById(one.getId());
-                        }else { updateRecordByRule(one, ruleItemId);}
-
+                        LoginUser user = userService.getUserById(log.getUserId());
+                        log.setUserName(user.getRealname());
+                        logService.save(log);
+                        this.removeById(one.getId());
                     } else {
-                        insertRecordByRule(scheduleRecordREditDTO, ruleItemId, start);
+                        int index = (i % itemSize == 0 ? itemSize : i % itemSize);
+                        Integer ruleItemId = scheduleRuleItemMap.get(index);
+                        if (ObjectUtil.isNotEmpty(one)) {
+                            updateRecordByRule(one, ruleItemId);
+                        } else {
+                            insertRecordByRule(scheduleRecordREditDTO, ruleItemId, start);
+                        }
                     }
                     start.add(Calendar.DAY_OF_YEAR, 1);
                     i++;
