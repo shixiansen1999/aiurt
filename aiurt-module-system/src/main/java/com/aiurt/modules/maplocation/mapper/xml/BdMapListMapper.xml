@@ -19,6 +19,8 @@
             <foreach collection="userIdList" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
+            GROUP BY sy.id
+            ORDER BY sp.upload_time desc
         </where>
     </select>
     <select id="getUserList" parameterType="string" resultType="com.aiurt.modules.maplocation.dto.UserInfo">
@@ -31,6 +33,8 @@
             <if test="id!=null and id!=''">
                sy.id = #{id}
             </if>
+            GROUP BY sy.id
+            ORDER BY sp.upload_time desc
         </where>
     </select>
     <select id="getUserByTeamIdList" parameterType="list" resultType="com.aiurt.modules.maplocation.dto.UserInfo">
@@ -102,6 +106,8 @@
             <if test="id!=null and id !=''">
                 and su.id = #{id}
             </if>
+            GROUP BY sy.id
+            ORDER BY sp.upload_time desc
         </where>
     </select>
 </mapper>
