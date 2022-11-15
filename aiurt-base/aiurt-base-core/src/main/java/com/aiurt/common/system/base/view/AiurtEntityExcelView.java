@@ -191,21 +191,21 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
                 DataValidation validation = dvHelper.createValidation(constraint, cellRangeAddressList);
                 //  对sheet页生效
                 sheet.addValidationData(validation);
+            }
 
-                String rk = exportEntity.getRemark();
-                if (StrUtil.isNotBlank(rk)) {
-                    Drawing draw = sheet.createDrawingPatriarch();
-                    Comment comment = draw.createCellComment(new XSSFClientAnchor(0, 0, 0, 0, rowListIndex, exportEntity.getIndex(), 9, 7));
-                    comment.setString(new XSSFRichTextString(rk));//设置批注内容
-                    cell.setCellComment(comment);
-                }
-                // 批注， 必填处理
-                if (exportEntity.getIsRequired()) {
-                    CellStyle cellStyle = workbook.createCellStyle();
-                    cellStyle.setFillForegroundColor(IndexedColors.RED.getIndex()); // 背景色
-                    cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-                    cell.setCellStyle(cellStyle);
-                }
+            String rk = exportEntity.getRemark();
+            if (StrUtil.isNotBlank(rk)) {
+                Drawing draw = sheet.createDrawingPatriarch();
+                Comment comment = draw.createCellComment(new XSSFClientAnchor(0, 0, 0, 0, rowListIndex, exportEntity.getIndex(), 9, 7));
+                comment.setString(new XSSFRichTextString(rk));//设置批注内容
+                cell.setCellComment(comment);
+            }
+            // 批注， 必填处理
+            if (exportEntity.getIsRequired()) {
+                CellStyle cellStyle = workbook.createCellStyle();
+                cellStyle.setFillForegroundColor(IndexedColors.RED.getIndex()); // 背景色
+                cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                cell.setCellStyle(cellStyle);
             }
         }
 
