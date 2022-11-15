@@ -423,6 +423,11 @@ public class ScheduleRecordController {
                 scheduleCalendarVo.setContent(recordModel.getItemName() + "-" + recordModel.getUserName());
                 list.get(index).getVoList().add(scheduleCalendarVo);
             }
+        }else {
+            int index = calendar.get(Calendar.DAY_OF_MONTH) - 1;
+            ScheduleCalendarVo scheduleCalendarVo = new ScheduleCalendarVo();
+            scheduleCalendarVo.setOrgName(loginUser.getOrgName());
+            list.get(index).getVoList().add(scheduleCalendarVo);
         }
         List<ScheduleHolidays> holidaysList = holidaysService.getListByMonth(date);
         if (holidaysList != null && holidaysList.size() > 0) {
