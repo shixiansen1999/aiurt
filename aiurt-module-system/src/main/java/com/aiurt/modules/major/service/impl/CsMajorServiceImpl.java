@@ -8,7 +8,6 @@ import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.system.controller.SysDictController;
-import com.aiurt.modules.train.utils.DlownTemplateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -37,7 +36,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -287,11 +285,5 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
             return res;
         }
 
-    }
-    public String importErrorExcel(HttpServletResponse response, List<CsMajorImportVO> scheduleDate, String type) {
-        //创建导入失败错误报告,进行模板导出
-
-
-        return null;
     }
 }
