@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -200,11 +201,15 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                 GlobalCoordinates userDistance = new GlobalCoordinates(userStation.getPositionY(), userStation.getPositionX());
                 double distance = 2000.0d; // 2000米范围内
                 for (CsStation bdStation : bdStationList) {
-                    GlobalCoordinates stationDistance = new GlobalCoordinates(Double.valueOf(bdStation.getLatitude()), Double.valueOf(bdStation.getLongitude()));
-                    double meter = MapDistance.getDistanceMeter(userDistance, stationDistance, Ellipsoid.Sphere);
-                    if (meter <= distance) {
-                        stationIdStr = bdStation.getId();
-                        distance = meter;
+                    BigDecimal latitude = bdStation.getLatitude();
+                    BigDecimal longitude = bdStation.getLongitude();
+                    if (Objects.nonNull(latitude) && Objects.nonNull(longitude)) {
+                        GlobalCoordinates stationDistance = new GlobalCoordinates(latitude.doubleValue(), longitude.doubleValue());
+                        double meter = MapDistance.getDistanceMeter(userDistance, stationDistance, Ellipsoid.Sphere);
+                        if (meter <= distance) {
+                            stationIdStr = bdStation.getId();
+                            distance = meter;
+                        }
                     }
                 }
             }
