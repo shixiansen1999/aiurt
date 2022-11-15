@@ -159,7 +159,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
 
                 } else {
                     successLines = 0;
-                    URL resource = DlownTemplateUtil.class.getResource("/templates/csMajorImportVO.xlsx");
+                    URL resource = DlownTemplateUtil.class.getResource("/templates/csmajorexcel.xlsx");
                     String path = resource.getPath();
                     TemplateExportParams exportParams = new TemplateExportParams(path);
                     Map<String, Object> errorMap = new HashMap<String, Object>();
