@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -35,81 +36,97 @@ public class SysPermission implements Serializable {
 	/**
 	 * 父id
 	 */
+	@ApiModelProperty("父id")
 	private String parentId;
 
 	/**
 	 * 菜单名称
 	 */
+	@ApiModelProperty("名称")
 	private String name;
 
 	/**
 	 * 菜单权限编码，例如：“sys:schedule:list,sys:schedule:info”,多个逗号隔开
 	 */
+	@ApiModelProperty("菜单权限编码")
 	private String perms;
 	/**
 	 * 权限策略1显示2禁用
 	 */
+	@ApiModelProperty("权限策略1显示2禁用")
 	private String permsType;
 
 	/**
 	 * 菜单图标
 	 */
+	@ApiModelProperty("菜单图标")
 	private String icon;
 
 	/**
 	 * 组件
 	 */
+	@ApiModelProperty("组件")
 	private String component;
 
 	/**
 	 * 组件名字
 	 */
+	@ApiModelProperty("组件名字")
 	private String componentName;
 
 	/**
 	 * 路径
 	 */
+	@ApiModelProperty("路径")
 	private String url;
 	/**
 	 * 一级菜单跳转地址
 	 */
+	@ApiModelProperty("跳转地址")
 	private String redirect;
 
 	/**
 	 * 菜单排序
 	 */
+	@ApiModelProperty("菜单排序")
 	private Double sortNo;
 
 	/**
 	 * 类型（0：一级菜单；1：子菜单 ；2：按钮权限）
 	 */
+	@ApiModelProperty("类型（0：模块；1：子菜单 ；2：按钮权限）")
 	@Dict(dicCode = "menu_type")
 	private Integer menuType;
 
 	/**
 	 * 是否叶子节点: 1:是  0:不是
 	 */
+	@ApiModelProperty("是否叶子节点: 1:是  0:不是")
 	@TableField(value="is_leaf")
 	private boolean leaf;
 
 	/**
 	 * 是否路由菜单: 0:不是  1:是（默认值1）
 	 */
+	@ApiModelProperty("是否路由菜单: 0:不是  1:是（默认值1）")
 	@TableField(value="is_route")
 	private boolean route;
 	/**
 	 * 是否导航栏: 0:不是  1:是
 	 */
+	@ApiModelProperty("是否导航栏: 0:不是  1:是")
 	@TableField(value="is_navBar")
 	private boolean isNavBar ;
 	/**
 	 * 是否筛选器: 0:不是  1:是
 	 */
+	@ApiModelProperty("是否筛选器: 0:不是  1:是")
 	@TableField(value="is_filter")
 	private boolean isFilter ;
 	/**
 	 * 是否快捷搜索: 0:不是  1:是
 	 */
+	@ApiModelProperty("是否快捷搜索: 0:不是  1:是")
 	@TableField(value="is_search")
 	private boolean isSearch ;
 
@@ -117,12 +134,14 @@ public class SysPermission implements Serializable {
 	/**
 	 * 是否缓存页面: 0:不是  1:是（默认值1）
 	 */
+	@ApiModelProperty("是否缓存页面: 0:不是  1:是（默认值1）")
 	@TableField(value="keep_alive")
 	private boolean keepAlive;
 
 	/**
 	 * 描述
 	 */
+	@ApiModelProperty("描述")
 	private String description;
 
 	/**
@@ -143,16 +162,19 @@ public class SysPermission implements Serializable {
 	/**
 	 * 是否隐藏路由菜单: 0否,1是（默认值0）
 	 */
+	@ApiModelProperty("是否停用 0否,1是（默认值0）")
 	private boolean hidden;
 
 	/**
 	 * 是否隐藏Tab: 0否,1是（默认值0）
 	 */
+	@ApiModelProperty("是否隐藏Tab: 0否,1是（默认值0）")
 	private boolean hideTab;
 
 	/**
 	 * 是否为手机app(1是,0否)
 	 */
+	@ApiModelProperty("是否为移动端(1是,0否)")
 	private Integer isApp;
 
 	/**
@@ -171,6 +193,7 @@ public class SysPermission implements Serializable {
 	private Date updateTime;
 
 	/**按钮权限状态(0无效1有效)*/
+	@ApiModelProperty("按钮权限状态(0无效1有效)")
 	private java.lang.String status;
 
 	/**alwaysShow*/
