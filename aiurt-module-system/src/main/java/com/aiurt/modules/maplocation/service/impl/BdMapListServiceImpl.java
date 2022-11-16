@@ -235,8 +235,8 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
      * @return
      */
     @Override
-    public List<AssignUserDTO> getUserStateByTeamId(String teamId) {
-        List<AssignUserDTO> result = new LinkedList<>();
+    public List<AssignUserDTO> getUserStateByTeamId(String teamId,String userId) {
+        List<AssignUserDTO> result = new ArrayList<>();
         // 获取登录人员
         Set<String> userNameSet = getUserInfo();
 
@@ -248,7 +248,7 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                 assign.setRealname(entity.getName());
                 assign.setId(entity.getId());
                 if (userNameSet.contains(entity.getUserName())) {
-                    assign.setStatus("已登录");
+                    assign.setStatus("已登录"); assign.setNum(1);
                     UserStationDTO userStation = baseMapper.getStationId(entity.getId());
                     QueryWrapper<CsStation> bdStationQueryWrapper = new QueryWrapper<>();
                     bdStationQueryWrapper.lambda().isNotNull(CsStation::getLongitude);
@@ -275,12 +275,17 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                         }
                     }
                 } else {
-                    assign.setStatus("未登录");
+                    assign.setStatus("未登录");assign.setNum(2);
                 }
                 result.add(assign);
             });
         }
-        result.stream().sorted(Comparator.comparing(l -> "已登录".equals(l.getStatus()))).collect(Collectors.toList());
+        if (StrUtil.isNotEmpty(userId)){
+            List<AssignUserDTO> list = new ArrayList<>();
+         list =  result.stream().filter(l->l.getId().equals(userId)).collect(Collectors.toList());
+         return list;
+        }
+        result.stream().sorted(Comparator.comparing(AssignUserDTO::getNum)).collect(Collectors.toList());
         return result;
     }
 

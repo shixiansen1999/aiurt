@@ -29,9 +29,10 @@ public interface IBdMapListService extends IService<CurrentTeamPosition> {
     /**
      * 根据机构获取机构下的人员状态
      * @param teamId
+     * @param userId
      * @return
      */
-    List<AssignUserDTO> getUserStateByTeamId(String teamId);
+    List<AssignUserDTO> getUserStateByTeamId(String teamId,String userId);
     /**
      * 发送消息给对应的用户
      *

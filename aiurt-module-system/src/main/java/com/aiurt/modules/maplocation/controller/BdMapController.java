@@ -176,8 +176,9 @@ public class BdMapController {
      */
     @ApiOperation(value = "根据机构获取机构下的人员状态", notes = "根据机构获取机构下的人员状态")
     @GetMapping(value = "/getUserStateByTeamId")
-    public Result<List<AssignUserDTO>> getUserStateByTeamId(@ApiParam(required = true, value = "班组id", name = "teamId") String teamId) {
-        List<AssignUserDTO> list = bdMapListService.getUserStateByTeamId(teamId);
+    public Result<List<AssignUserDTO>> getUserStateByTeamId(@ApiParam(required = true, value = "班组id", name = "teamId") String teamId,
+                                                            @ApiParam(required = false, value = "人员id", name = "userId") String userId) {
+        List<AssignUserDTO> list = bdMapListService.getUserStateByTeamId(teamId,userId);
         return Result.OK(list);
     }
     /**
