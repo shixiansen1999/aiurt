@@ -12,7 +12,9 @@ import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -107,6 +109,17 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 				bdOperatePlanDeclarationFormService.getStaffsByRoleName(roleName, deptId);
 		return Result.OK("通过角色类型和专业获取用户成功", resultBuffer);
 	}
+	/**
+	 * 通过角色标识获取用户
+	 */
+	@AutoLog(value = "周计划表-通过角色标识获取用户",operateType = 1,operateTypeAlias = "查询",permissionUrl = "/production/plan")
+    @ApiOperation(value = "周计划表-通过角色标识获取用户")
+    @GetMapping(value = "/getStaffsByRoleCode")
+    public Result<List<BdStaffInfoReturnTypeDTO>> getStaffsByRoleId(@ApiParam(name = "roleCode", value = "角色标识")
+                                                                      @RequestParam(name = "roleCode") String roleCode) {
+        List<BdStaffInfoReturnTypeDTO> resultBuffer = bdOperatePlanDeclarationFormService.getStaffsByRoleCode(roleCode);
+        return Result.OK(resultBuffer);
+    }
 
 
 	 /**

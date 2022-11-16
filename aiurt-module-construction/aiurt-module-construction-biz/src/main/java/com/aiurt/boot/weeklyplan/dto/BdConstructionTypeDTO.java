@@ -12,7 +12,7 @@ import lombok.Data;
 public class BdConstructionTypeDTO {
 
     @ApiModelProperty(value = "ID")
-    private Integer id;
+    private String id;
 
     @ApiModelProperty(value = "类型名称")
     private String name;

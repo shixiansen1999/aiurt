@@ -168,6 +168,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private ICsMajorService majorService;
     @Autowired
     private CsLineMapper lineMapper;
+    @Autowired
+    private SysRoleMapper sysRoleMapper;
 
 
     @Override
@@ -1800,6 +1802,21 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             }
         }
         return "";
+    }
+
+    @Override
+    public List<SysUserRoleModel> getUserByRoleId(String roleId) {
+        List<SysUserRoleModel> list = sysUserRoleMapper.getUserByRoleId(roleId);
+        return list;
+    }
+
+    @Override
+    public String getRoleIdByCode(String roleCode) {
+        QueryWrapper<SysRole> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(SysRole::getRoleCode,roleCode).last("limit 1");
+        SysRole sysRole = sysRoleMapper.selectOne(wrapper);
+        String roleId = sysRole.getId();
+        return roleId;
     }
 
     private String escapeUrl(String remoteFileUrl) throws UnsupportedEncodingException {

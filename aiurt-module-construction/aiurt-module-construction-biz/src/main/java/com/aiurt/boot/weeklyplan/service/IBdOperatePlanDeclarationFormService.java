@@ -220,4 +220,11 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
      * @return
      */
     List<BdOperatePlanDeclarationReturnDTO> queryListByDate(String taskDate);
+
+    /**
+     * 通过角色标识获取用户
+     * @param roleCode
+     * @return
+     */
+    List<BdStaffInfoReturnTypeDTO> getStaffsByRoleCode(String roleCode);
 }

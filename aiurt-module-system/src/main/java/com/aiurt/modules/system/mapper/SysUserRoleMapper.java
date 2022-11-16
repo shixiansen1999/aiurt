@@ -4,6 +4,7 @@ import com.aiurt.modules.system.entity.SysUserRole;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.jeecg.common.system.vo.SysUserRoleModel;
 
 import java.util.List;
 
@@ -57,4 +58,13 @@ public interface SysUserRoleMapper extends BaseMapper<SysUserRole> {
 	@Select("select role_name from sys_role where id in (select role_id from sys_user_role where user_id = #{userId})")
 	List<String> getRoleName(@Param("userId") String userId);
 
+	/**
+	 * 获取对应角色Id的所有用户
+	 * @param roleId
+	 * @return
+	 */
+	@Select("SELECT sur.*,su.realname as userName,sr.role_code,sr.role_name FROM sys_user_role sur " +
+			"JOIN sys_user su ON sur.user_id = su.id AND su.del_flag =0 " +
+			"join sys_role sr on sur.role_id = sr.id where sur.role_id = #{roleId} ")
+    List<SysUserRoleModel> getUserByRoleId(String roleId);
 }

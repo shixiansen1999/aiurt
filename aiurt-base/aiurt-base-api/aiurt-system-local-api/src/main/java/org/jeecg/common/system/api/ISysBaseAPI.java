@@ -7,7 +7,6 @@ import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
-import io.swagger.util.Json;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.vo.*;
 
@@ -623,4 +622,18 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String remoteUploadLocal(String remoteFileUrl, String bizPath);
+
+    /**
+     * 获取对应角色编码的用户
+     *
+     * @param roleId
+     */
+    List<SysUserRoleModel> getUserByRoleId(String roleId);
+
+    /**
+     * 根据角色编码获取角色id
+     * @param roleCode
+     * @return
+     */
+    String getRoleIdByCode(String roleCode);
 }

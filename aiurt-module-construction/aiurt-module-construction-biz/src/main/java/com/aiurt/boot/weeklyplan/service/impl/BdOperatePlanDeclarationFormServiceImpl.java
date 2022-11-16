@@ -25,10 +25,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.CsUserStationModel;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -526,6 +524,24 @@ public class BdOperatePlanDeclarationFormServiceImpl
     public List<BdOperatePlanDeclarationReturnDTO> queryListByDate(String taskDate) {
         //查询
         List<BdOperatePlanDeclarationReturnDTO> list = bdOperatePlanDeclarationFormMapper.queryListByDate(taskDate);
+        return list;
+    }
+
+    @Override
+    public List<BdStaffInfoReturnTypeDTO> getStaffsByRoleCode(String roleCode) {
+        String roleId = sysBaseApi.getRoleIdByCode(roleCode);
+        List<SysUserRoleModel> userList = sysBaseApi.getUserByRoleId(roleId);
+        List<BdStaffInfoReturnTypeDTO> list = new ArrayList<>();
+        for (SysUserRoleModel sysUserRoleModel : userList) {
+            LoginUser loginUser = sysBaseApi.getUserById(sysUserRoleModel.getUserId());
+            BdStaffInfoReturnTypeDTO bdStaffInfoReturnType = new BdStaffInfoReturnTypeDTO();
+            bdStaffInfoReturnType.setId(sysUserRoleModel.getUserId());
+            bdStaffInfoReturnType.setName(sysUserRoleModel.getUserName());
+            bdStaffInfoReturnType.setRoleId(sysUserRoleModel.getRoleId());
+            bdStaffInfoReturnType.setPhoneNo(loginUser.getPhone());
+            bdStaffInfoReturnType.setTeamId(loginUser.getOrgId());
+            list.add(bdStaffInfoReturnType);
+        }
         return list;
     }
 
