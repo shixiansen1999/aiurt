@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -23,6 +24,7 @@ import java.util.Date;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
+@ApiModel(value="SysPermission", description="菜单实体")
 public class SysPermission implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -152,11 +154,13 @@ public class SysPermission implements Serializable {
 	/**
 	 * 删除状态 0正常 1已删除
 	 */
+	@ApiModelProperty("删除状态 0正常 1已删除")
 	private Integer delFlag;
 
 	/**
 	 * 是否配置菜单的数据权限 1是0否 默认0
 	 */
+	@ApiModelProperty("是否配置菜单的数据权限 1是0否 默认0")
 	private Integer ruleFlag;
 
 	/**
