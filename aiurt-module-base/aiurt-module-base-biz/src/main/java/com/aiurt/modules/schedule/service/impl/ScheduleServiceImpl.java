@@ -24,6 +24,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -40,14 +41,13 @@ import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -233,7 +233,18 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         String url = null;
 
         //创建导入失败错误报告,进行模板导出
+        Resource resource = new ClassPathResource("/templates/scheduleErrorReport.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+
+        //2.获取临时文件
         File fileTemp= new File("/templates/scheduleErrorReport.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
         String path = fileTemp.getAbsolutePath();
         log.info("path:{}", path);
         TemplateExportParams exportParams = new TemplateExportParams(path);
