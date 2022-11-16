@@ -394,7 +394,6 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                     }
 
                     list.add(csSubsystem);
-                    successLines++;
                 }
 
                 if(errorLines==0)
@@ -414,10 +413,11 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
 
                         }
                     }
+                    successLines =csSubsystemDTOList.size();
                 }
                 else
                 {
-                    successLines =0;
+                    successLines =csSubsystemDTOList.size()-errorLines;
                     //1.获取文件流
                     Resource resource = new ClassPathResource("/templates/csSubsystemImportDTO.xlsx");
                     InputStream resourceAsStream = resource.getInputStream();
@@ -440,12 +440,21 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                         Map<String, Object> lm = new HashMap<String, Object>();
                         CsMajor csMajor = csMajorService.getBaseMapper().selectOne(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getMajorCode, dto.getMajorCode()).eq(CsMajor::getDelFlag, 0));
                         //错误报告获取信息
-                        lm.put("major", csMajor.getMajorName());
+                        if(ObjectUtil.isNotEmpty(csMajor))
+                        {
+                            lm.put("major", csMajor.getMajorName());
+                            lm.put("mistake", dto.getWrongReason());
+                        }
+                        else
+                        {
+                            lm.put("major", dto.getMajorCode());
+                            lm.put("mistake", dto.getWrongReason()==null?"所属专业不存在":dto.getWrongReason()+";所属专业不存在");
+                        }
                         lm.put("systemcode", dto.getSystemCode());
                         lm.put("systemname", dto.getSystemName());
                         lm.put("systemusername", dto.getSystemUserName());
                         lm.put("generalsituation", dto.getGeneralSituation());
-                        lm.put("mistake", dto.getWrongReason());
+
                         listMap.add(lm);
                     }
                     errorMap.put("maplist", listMap);
@@ -512,12 +521,17 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     }
     private String decideIsNull(CsSubsystemImportDTO csSubsystemDTO) {
         List<SysUser> nUllUsers = new ArrayList<>();
+        Integer size= 0;
         if(ObjectUtil.isNotEmpty(csSubsystemDTO.getSystemUserName()))
         {
 
              nUllUsers = isNUllUsers(csSubsystemDTO.getSystemUserName());
         }
-         Integer size = nUllUsers.size();
+        if(CollUtil.isNotEmpty(nUllUsers))
+        {
+
+            size = nUllUsers.size();
+        }
         if (csSubsystemDTO.getMajorCode() == null && csSubsystemDTO.getSystemName() == null && csSubsystemDTO.getSystemCode()==null) {
             return "必填字段为空";
         }

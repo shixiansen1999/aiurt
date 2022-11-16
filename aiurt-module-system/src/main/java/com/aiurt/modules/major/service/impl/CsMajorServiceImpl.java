@@ -151,7 +151,6 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                     CsMajor csMajor = new CsMajor();
                     BeanUtils.copyProperties(csMajorImportVO, csMajor);
                     list.add(csMajor);
-                    successLines++;
 
                 }
                 if (errorLines == 0) {
@@ -160,7 +159,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                     }
 
                 } else {
-                    successLines = 0;
+                    successLines = csMajorList.size()-errorLines;
                     //1.获取文件流
                     Resource resource = new ClassPathResource("/templates/csmajorexcel.xlsx");
                     InputStream resourceAsStream = resource.getInputStream();
