@@ -317,9 +317,9 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             start.setTime(startTime);
             Date end = DateUtil.endOfMonth(start.getTime());
             while (!start.getTime().after(end)) {
-                if (StrUtil.isNotEmpty(scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+3))) {
+                if (StrUtil.isNotEmpty(scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+2))) {
                     ScheduleItem scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
-                            .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+3)).eq(ScheduleItem::getDelFlag,0));
+                            .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+2)).eq(ScheduleItem::getDelFlag,0));
                     if (ObjectUtil.isEmpty(scheduleItem)){
                         errorList.add(DateUtil.format(start.getTime(),"dd")+"号存在系统中未包含的班次名称");
                     }
@@ -375,9 +375,9 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             Date end = DateUtil.endOfMonth(start.getTime());
             //遍历本月所有的天数
             while (!start.getTime().after(end)) {
-                if (StrUtil.isNotEmpty(scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+3))) {
+                if (StrUtil.isNotEmpty(scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+2))) {
                     ScheduleItem scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
-                            .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+3)).eq(ScheduleItem::getDelFlag,0));
+                            .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+2)).eq(ScheduleItem::getDelFlag,0));
                     ScheduleRecord record = ScheduleRecord.builder()
                             .scheduleId(null)
                             .userId(user.getId())
