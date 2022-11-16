@@ -90,8 +90,8 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 			params.setNeedSave(true);
 			try {
 				List<StockLevel2InfoVo> slList = ExcelImportUtil.importExcel(file.getInputStream(), StockLevel2InfoVo.class, params);
-				List<StockLevel2InfoVo> stockLevel2InfoList = slList.stream()
-						.filter(item -> existFieldNotEmpty(item))
+				List<StockLevel2InfoVo> stockLevel2InfoList = slList.parallelStream()
+						.filter(c->c.getWarehouseCode()!=null||c.getWarehouseName()!=null||c.getOrganizationId()!=null||c.getStatus()!=null||c.getRemark() !=null)
 						.collect(Collectors.toList());
 
 				List<StockLevel2Info> list = new ArrayList<>();
@@ -100,15 +100,15 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 					boolean error = true;
 					StringBuffer sb = new StringBuffer();
 					if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseCode())) {
-						errorMessage.add("仓库编码为必填项，忽略导入");
-						sb.append("仓库编码为必填项;");
+						errorMessage.add("二级库编码为必填项，忽略导入");
+						sb.append("二级库编码为必填项;");
 						errorLines++;
 						error = false;
 					} else {
 						StockLevel2Info stockLevel2Info = stockLevel2InfoMapper.selectOne(new QueryWrapper<StockLevel2Info>().lambda().eq(StockLevel2Info::getWarehouseCode, stockLevel2InfoVo.getWarehouseCode()).eq(StockLevel2Info::getDelFlag, 0));
 						if (stockLevel2Info != null) {
-							errorMessage.add(stockLevel2InfoVo.getWarehouseCode() + "仓库编码已经存在，忽略导入");
-							sb.append("仓库编码已经存在;");
+							errorMessage.add(stockLevel2InfoVo.getWarehouseCode() + "二级库编码已经存在，忽略导入");
+							sb.append("二级库编码已经存在;");
 							if (error) {
 								errorLines++;
 								error = false;
@@ -116,8 +116,8 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 						}
 					}
 					if (ObjectUtil.isNull(stockLevel2InfoVo.getWarehouseName())) {
-						errorMessage.add("仓库名称为必填项，忽略导入");
-						sb.append("仓库名称为必填项;");
+						errorMessage.add("二级库名称为必填项，忽略导入");
+						sb.append("二级库名称为必填项;");
 						if(error){
 							errorLines++;
 							error = false;
@@ -125,8 +125,8 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 					} else {
 						StockLevel2Info stockLevel2Info = stockLevel2InfoMapper.selectOne(new QueryWrapper<StockLevel2Info>().lambda().eq(StockLevel2Info::getWarehouseName, stockLevel2InfoVo.getWarehouseName()).eq(StockLevel2Info::getDelFlag, 0));
 						if (stockLevel2Info != null) {
-							errorMessage.add(stockLevel2InfoVo.getWarehouseCode() + "仓库名称已经存在，忽略导入");
-							sb.append("仓库名称已经存在;");
+							errorMessage.add(stockLevel2InfoVo.getWarehouseCode() + "二级库名称已经存在，忽略导入");
+							sb.append("二级库名称已经存在;");
 							if (error) {
 								errorLines++;
 								error =false;
@@ -134,8 +134,8 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 						}
 					}
 					if(ObjectUtil.isNull(stockLevel2InfoVo.getOrganizationId())){
-						errorMessage.add("组织机构ID为必填项，忽略导入");
-						sb.append("组织机构ID为必填项;");
+						errorMessage.add("组织机构为必填项，忽略导入");
+						sb.append("组织机构为必填项;");
 						if(error){
 							errorLines++;
 							error = false;
@@ -199,11 +199,11 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 							departName = dto.getOrganizationId();
 						}
 						//错误报告获取信息
-						lm.put("WarehouseName", dto.getWarehouseName());
 						lm.put("WarehouseCode", dto.getWarehouseCode());
-						lm.put("remark", dto.getRemark());
+						lm.put("WarehouseName", dto.getWarehouseName());
 						lm.put("OrganizationId", departName);
 						lm.put("status", statu);
+						lm.put("remark", dto.getRemark());
 						lm.put("mistake", dto.getErrorCause());
 						listMap.add(lm);
 					}
@@ -228,29 +228,6 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 		return imporReturnRes(errorLines, successLines, errorMessage, true,url);
 	}
 
-	/**
-	 * 校验字段属性是否存在不为空字段
-	 *
-	 * @param
-	 * @return
-	 */
-	private static <T> boolean existFieldNotEmpty(T t) {
-		if (ObjectUtil.isEmpty(t)) {
-			return false;
-		}
-		try {
-			Field[] fields = t.getClass().getDeclaredFields();
-			for (Field field : fields) {
-				field.setAccessible(true);
-				if (ObjectUtil.isNotEmpty(field.get(t))) {
-					return true;
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
 
 	public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage,boolean isType,String failReportUrl) throws IOException {
 		if(isType)

@@ -160,7 +160,9 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
             params.setNeedSave(true);
             try {
                 List<CsManuFactorImportVo> csList = ExcelImportUtil.importExcel(file.getInputStream(), CsManuFactorImportVo.class, params);
-                List<CsManuFactorImportVo> csManuFactorList = csList.stream().filter(item -> existFieldNotEmpty(item)).collect(Collectors.toList());
+                List<CsManuFactorImportVo> csManuFactorList = csList.parallelStream()
+                        .filter(c->c.getName()!=null||c.getLevel()!=null||c.getLinkPhoneNo()!=null||c.getLinkAddress()!=null||c.getLinkPerson() !=null||c.getFilePath() !=null)
+                        .collect(Collectors.toList());;
 
                 List<CsManufactor> list = new ArrayList<>();
                 for (int i = 0; i < csManuFactorList.size(); i++) {

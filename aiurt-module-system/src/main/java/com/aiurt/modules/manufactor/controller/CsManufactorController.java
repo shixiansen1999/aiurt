@@ -15,6 +15,7 @@ import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.service.IDeviceService;
+import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.manufactor.service.ICsManufactorService;
 import com.aiurt.modules.material.entity.MaterialBase;
@@ -182,7 +183,21 @@ public class CsManufactorController extends BaseController<CsManufactor,ICsManuf
 	@ApiOperation(value="厂商信息-导出excel", notes="厂商信息-导出excel")
 	@RequestMapping(value = "/exportXls")
 	public ModelAndView exportXls(HttpServletRequest request, CsManufactor csManufactor) {
-		return super.exportXls(request, csManufactor, CsManufactor.class, "厂商信息");
+		// Step.1 组装查询条件
+		QueryWrapper<CsManufactor> queryWrapper = QueryGenerator.initQueryWrapper(csManufactor, request.getParameterMap());
+		queryWrapper.lambda().eq(CsManufactor::getDelFlag, CommonConstant.DEL_FLAG_0);
+		//Step.2 AutoPoi 导出Excel
+		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+		List<CsManufactor> pageList = csManufactorService.list(queryWrapper);
+		//导出文件名称
+		mv.addObject(NormalExcelConstants.FILE_NAME, "厂商信息导出");
+		//excel注解对象Class
+		mv.addObject(NormalExcelConstants.CLASS, CsManufactor.class);
+		//自定义表格参数
+		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("厂商信息导出", "厂商信息导出"));
+		//导出数据列表
+		mv.addObject(NormalExcelConstants.DATA_LIST, pageList);
+		return mv;
 	}
 
 	/**

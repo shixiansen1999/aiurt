@@ -35,29 +35,25 @@ public class StockLevel2Info extends DictEntity {
 	@JsonSerialize(using = ToStringSerializer.class)
 	private  String  id;
 
-	/**仓库名称*/
-	@Excel(name = "仓库名称",width = 15)
-	@ExcelExtend(isRequired = true)
-	@ApiModelProperty(value = "仓库名称")
-	private  String  warehouseName;
-
 	/**仓库编号*/
-	@Excel(name = "仓库编号",width = 15)
+	@Excel(name = "二级库编号",width = 15)
 	@ExcelExtend(isRequired = true)
 	@ApiModelProperty(value = "仓库编号")
 	private  String  warehouseCode;
 
-	/**备注*/
-	@Excel(name = "备注",width = 15)
-	@ApiModelProperty(value = "备注")
-	private  String  remark;
+	/**仓库名称*/
+	@Excel(name = "二级库名称",width = 15)
+	@ExcelExtend(isRequired = true)
+	@ApiModelProperty(value = "仓库名称")
+	private  String  warehouseName;
+
 
 	/**所属部门*/
 	@ApiModelProperty(value = "所属部门")
 	@DeptFilterColumn
 	private String orgCode;
 	/**组织机构id*/
-	@Excel(name = "组织机构id",width = 15,dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
+	@Excel(name = "组织机构",width = 15,dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
 	@ExcelExtend(isRequired = true)
 	@ApiModelProperty(value = "组织机构id")
 	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
@@ -73,6 +69,11 @@ public class StockLevel2Info extends DictEntity {
     @ApiModelProperty(value = "二级库状态：0停用 1启用")
 	@Dict(dicCode = "stock_level2_info_status")
 	private  Integer  status;
+
+	/**备注*/
+	@Excel(name = "备注",width = 15)
+	@ApiModelProperty(value = "备注")
+	private  String  remark;
 
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
