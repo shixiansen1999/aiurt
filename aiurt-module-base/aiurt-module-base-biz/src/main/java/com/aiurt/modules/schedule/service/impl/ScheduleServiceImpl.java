@@ -317,12 +317,13 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             start.setTime(startTime);
             Date end = DateUtil.endOfMonth(start.getTime());
             while (!start.getTime().after(end)) {
-                ScheduleItem scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
-                        .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+3)).eq(ScheduleItem::getDelFlag,0));
-                if (ObjectUtil.isEmpty(scheduleItem)){
-                    errorList.add(DateUtil.format(start.getTime(),"dd")+"号存在系统中未包含的班次名称");
+                if (StrUtil.isNotEmpty(scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+3))) {
+                    ScheduleItem scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
+                            .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+3)).eq(ScheduleItem::getDelFlag,0));
+                    if (ObjectUtil.isEmpty(scheduleItem)){
+                        errorList.add(DateUtil.format(start.getTime(),"dd")+"号存在系统中未包含的班次名称");
+                    }
                 }
-
                 start.add(Calendar.DAY_OF_YEAR, 1);
             }
             String error = null;
@@ -360,7 +361,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             }
         }
         //没有错误就添加数据
-        for (int i = 2; i < scheduleDate.size(); i++) {
+        for (int i = 3; i < scheduleDate.size(); i++) {
             //获取一条排班记录
             Map<Integer, String> scheduleMap = scheduleDate.get(i);
             LoginUser user = scheduleMapper.getUser(scheduleMap.get(1),scheduleMap.get(2));
@@ -374,20 +375,23 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             Date end = DateUtil.endOfMonth(start.getTime());
             //遍历本月所有的天数
             while (!start.getTime().after(end)) {
-                ScheduleItem scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
-                        .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+3)).eq(ScheduleItem::getDelFlag,0));
-                ScheduleRecord record = ScheduleRecord.builder()
-                        .scheduleId(null)
-                        .userId(user.getId())
-                        .date(start.getTime())
-                        .itemId(scheduleItem.getId())
-                        .itemName(scheduleItem.getName())
-                        .startTime(scheduleItem.getStartTime())
-                        .endTime(scheduleItem.getEndTime())
-                        .color(scheduleItem.getColor())
-                        .delFlag(0)
-                        .build();
-                // recordService.save(record);
+                if (StrUtil.isNotEmpty(scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+3))) {
+                    ScheduleItem scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
+                            .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+3)).eq(ScheduleItem::getDelFlag,0));
+                    ScheduleRecord record = ScheduleRecord.builder()
+                            .scheduleId(null)
+                            .userId(user.getId())
+                            .date(start.getTime())
+                            .itemId(scheduleItem.getId())
+                            .itemName(scheduleItem.getName())
+                            .startTime(scheduleItem.getStartTime())
+                            .endTime(scheduleItem.getEndTime())
+                            .color(scheduleItem.getColor())
+                            .delFlag(0)
+                            .build();
+                     recordService.save(record);
+
+                }
                 start.add(Calendar.DAY_OF_YEAR, 1);
             }
 
