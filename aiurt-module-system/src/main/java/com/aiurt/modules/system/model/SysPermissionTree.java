@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.model;
 
 import com.aiurt.modules.system.entity.SysPermission;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,89 +27,107 @@ public class SysPermissionTree implements Serializable {
 	/**
 	 * 父id
 	 */
+	@ApiModelProperty("父id")
 	private String parentId;
 
 	/**
 	 * 菜单名称
 	 */
+	@ApiModelProperty("菜单名称")
 	private String name;
 
 	/**
-	 * 菜单权限编码
+	 *
 	 */
+	@ApiModelProperty("菜单权限编码")
 	private String perms;
 	/**
 	 * 权限策略1显示2禁用
 	 */
+	@ApiModelProperty("权限策略1显示2禁用")
 	private String permsType;
 
 	/**
 	 * 菜单图标
 	 */
+	@ApiModelProperty("菜单图标")
 	private String icon;
 
 	/**
 	 * 组件
 	 */
+	@ApiModelProperty("组件")
 	private String component;
 
 	/**
 	 * 跳转网页链接
 	 */
+	@ApiModelProperty("跳转网页链接")
 	private String url;
 
 	/**
 	 * 一级菜单跳转地址
 	 */
+	@ApiModelProperty("一级菜单跳转地址")
 	private String redirect;
 
 	/**
 	 * 菜单排序
 	 */
+	@ApiModelProperty("菜单排序")
 	private Double sortNo;
 
 	/**
 	 * 类型（0：一级菜单；1：子菜单 ；2：按钮权限）
 	 */
+	@ApiModelProperty("类型（0：模块；1：子菜单 ；2：按钮权限）")
 	private Integer menuType;
 
 	/**
 	 * 是否叶子节点: 1:是 0:不是
 	 */
+	@ApiModelProperty("是否叶子节点: 1:是 0:不是")
 	private boolean isLeaf;
 
 	/**
 	 * 是否路由菜单: 0:不是  1:是（默认值1）
 	 */
+	@ApiModelProperty("是否路由菜单: 0:不是  1:是（默认值1）")
 	private boolean route;
 
 
 	/**
 	 * 是否路缓存页面: 0:不是  1:是（默认值1）
 	 */
+	@ApiModelProperty("是否路缓存页面: 0:不是  1:是（默认值1）")
 	private boolean keepAlive;
 
 	/**
 	 * 是否导航栏: 0:不是  1:是
 	 */
+	@ApiModelProperty("是否导航栏: 0:不是  1:是")
 	private boolean isNavBar ;
 	/**
 	 * 是否筛选器: 0:不是  1:是
 	 */
+	@ApiModelProperty("是否筛选器: 0:不是  1:是")
 	private boolean isFilter ;
 	/**
 	 * 是否快捷搜索: 0:不是  1:是
 	 */
+	@ApiModelProperty("是否快捷搜索: 0:不是  1:是")
 	private boolean isSearch ;
 
 	/**
 	 * 描述
 	 */
+	@ApiModelProperty("描述")
 	private String description;
 
 	/**
 	 * 删除状态 0正常 1已删除
 	 */
+	@ApiModelProperty("删除状态 0正常 1已删除")
 	private Integer delFlag;
 
 	/**
@@ -134,13 +153,16 @@ public class SysPermissionTree implements Serializable {
 	/**alwaysShow*/
     private boolean alwaysShow;
     /**是否隐藏路由菜单: 0否,1是（默认值0）*/
+	@ApiModelProperty("是否启用菜单: 0否,1是（默认值0）")
     private boolean hidden;
 
     /**按钮权限状态(0无效1有效)*/
+	@ApiModelProperty("按钮权限状态(0无效1有效)")
 	private java.lang.String status;
 
 	/*update_begin author:wuxianquan date:20190908 for:model增加字段 */
 	/** 外链菜单打开方式 0/内部打开 1/外部打开 */
+	@ApiModelProperty("外链菜单打开方式 0/内部打开 1/外部打开")
 	private boolean internalOrExternal;
 	/*update_end author:wuxianquan date:20190908 for:model增加字段 */
 

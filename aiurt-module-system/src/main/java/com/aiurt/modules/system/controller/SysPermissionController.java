@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
@@ -21,6 +22,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -80,15 +83,14 @@ public class SysPermissionController {
      *
      * @return
      */
+    @ApiImplicitParam(name = "isApp", value = "是否为移动端（1是，0否）", required = false, dataTypeClass = Integer.class)
+    @ApiOperation(value = "加载所有菜单数据节点", notes = "加载所有菜单数据节点")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public Result<List<SysPermissionTree>> list(@RequestParam(name = "isApp", required = false) Integer isApp) {
+    public Result<List<SysPermissionTree>> list(@RequestParam(name = "isApp", required = false, defaultValue = "0") Integer isApp) {
         long start = System.currentTimeMillis();
         Result<List<SysPermissionTree>> result = new Result<>();
         try {
             LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
-            if (ObjectUtil.isEmpty(isApp)) {
-                isApp = 0;
-            }
             query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SysPermission::getIsApp, isApp);
             query.orderByAsc(SysPermission::getSortNo);
             List<SysPermission> list = sysPermissionService.list(query);
@@ -110,15 +112,33 @@ public class SysPermissionController {
      *
      * @return
      */
+    @ApiOperation(value = "查询系统模块", notes = "查询系统模块")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "isApp", value = "是否是移动端模块（1是，0否）", required = false, dataTypeClass = Integer.class),
+            @ApiImplicitParam(name = "name", value = "模块名称", required = false, dataTypeClass = String.class),
+            @ApiImplicitParam(name = "hidden", value = "模块是否启用（0否,1是（默认值0））", required = false, dataTypeClass = Integer.class)
+    })
     @RequestMapping(value = "/getSystemMenuList", method = RequestMethod.GET)
-    public Result<List<SysPermissionTree>> getSystemMenuList() {
+    public Result<List<SysPermissionTree>> getSystemMenuList(@RequestParam(name = "isApp", required = false) Integer isApp,
+                                                             @RequestParam(name = "name", required = false) String name,
+                                                             @RequestParam(name = "hidden", required = false) Integer hidden) {
         long start = System.currentTimeMillis();
         Result<List<SysPermissionTree>> result = new Result<>();
         try {
-            LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
-            query.eq(SysPermission::getMenuType, CommonConstant.MENU_TYPE_0);
-            query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
-            query.orderByAsc(SysPermission::getSortNo);
+            QueryWrapper<SysPermission> query = new QueryWrapper<SysPermission>();
+            query.eq("menu_type", CommonConstant.MENU_TYPE_0);
+            query.eq("del_flag", CommonConstant.DEL_FLAG_0);
+            // 兼容同时查询pc端和移动端的查询
+            if (ObjectUtil.isNotEmpty(isApp)) {
+                query.eq("is_app", isApp);
+            }
+            if (StrUtil.isNotEmpty(name)) {
+                query.like("name", name);
+            }
+            if (ObjectUtil.isNotEmpty(hidden)) {
+                query.eq("hidden", hidden);
+            }
+            query.orderByAsc("sort_no");
             List<SysPermission> list = sysPermissionService.list(query);
             List<SysPermissionTree> sysPermissionTreeList = new ArrayList<SysPermissionTree>();
             for (SysPermission sysPermission : list) {
@@ -137,14 +157,24 @@ public class SysPermissionController {
     /**
      * 查询子菜单
      *
-     * @param parentId
+     * @param parentId 父id
+     * @param menuType 菜单类型
      * @return
      */
     @RequestMapping(value = "/getSystemSubmenu", method = RequestMethod.GET)
-    public Result<List<SysPermissionTree>> getSystemSubmenu(@RequestParam("parentId") String parentId) {
+    @ApiOperation(value = "查询子菜单", notes = "查询子菜单")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "parentId", value = "父id", required = true, dataTypeClass = String.class),
+            @ApiImplicitParam(name = "menuType", value = "菜单类型（0：模块；1：子菜单 ；2：按钮权限）", required = false, dataTypeClass = Integer.class)
+    })
+    public Result<List<SysPermissionTree>> getSystemSubmenu(@RequestParam("parentId") String parentId,
+                                                            @RequestParam(name = "menuType") Integer menuType) {
         Result<List<SysPermissionTree>> result = new Result<>();
         try {
             LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
+            if (ObjectUtil.isNotEmpty(menuType)) {
+                query.eq(SysPermission::getMenuType, menuType);
+            }
             query.eq(SysPermission::getParentId, parentId);
             query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
             query.orderByAsc(SysPermission::getSortNo);
@@ -344,6 +374,7 @@ public class SysPermissionController {
      * @param permission
      * @return
      */
+    @ApiOperation(value = "添加菜单或模块", notes = "添加菜单或模块")
     @AutoLog(value = "菜单管理-添加菜单")
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public Result<SysPermission> add(@RequestBody SysPermission permission) {
@@ -365,6 +396,7 @@ public class SysPermissionController {
      * @param permission
      * @return
      */
+    @ApiOperation(value = "编辑菜单或模块", notes = "编辑菜单或模块")
     @AutoLog(value = "菜单管理-编辑菜单")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<SysPermission> edit(@RequestBody SysPermission permission) {
@@ -386,8 +418,10 @@ public class SysPermissionController {
      * @param id
      * @return
      */
+    @ApiOperation(value = "删除菜单或模块", notes = "删除菜单或模块")
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
-    public Result<SysPermission> delete(@RequestParam(name = "id", required = true) String id) {
+    @ApiImplicitParam(name = "id", value = "菜单id", required = true,  dataTypeClass = String.class)
+    public Result<SysPermission> delete(@RequestParam(name = "id") String id) {
         Result<SysPermission> result = new Result<>();
         try {
             sysPermissionService.deletePermission(id);
@@ -435,8 +469,7 @@ public class SysPermissionController {
         List<String> ids = new ArrayList<>();
         try {
             LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
-            if(ObjectUtil.isEmpty(isApp))
-            {
+            if (ObjectUtil.isEmpty(isApp)) {
                 isApp = 0;
             }
             query.eq(SysPermission::getIsApp, isApp);
