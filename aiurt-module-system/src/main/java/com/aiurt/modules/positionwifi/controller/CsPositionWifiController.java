@@ -5,6 +5,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.positionwifi.entity.CsPositionWifi;
 import com.aiurt.modules.positionwifi.service.ICsPositionWifiService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -66,7 +67,12 @@ public class CsPositionWifiController extends BaseController<CsPositionWifi, ICs
 			String lineName = sysBaseAPI.getPosition(record.getLineCode());
 			String stationName = sysBaseAPI.getPosition(record.getStationCode());
 			String positionName = sysBaseAPI.getPosition(record.getPositionCode());
-			String position = lineName+stationName+positionName;
+			String position = null;
+			if(ObjectUtil.isNull(positionName)){
+				 position = lineName+stationName;
+			}else{
+				position = lineName+stationName+positionName;
+			}
 			record.setPosition(position);
 		}
 		return Result.OK(pageList);
