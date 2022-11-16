@@ -468,6 +468,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             });
             return arrayList;
         } else {
+            //同行人的判断
             if (ObjectUtil.isNull(orgCode.getIdentity())) {
                 arrayList.stream().forEach(e -> {
                     List<String> userIdList = patrolTaskUsers.stream().map(PatrolTaskUser::getUserId).collect(Collectors.toList());

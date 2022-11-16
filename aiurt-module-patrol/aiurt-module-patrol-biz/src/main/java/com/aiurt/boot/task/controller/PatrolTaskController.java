@@ -442,8 +442,12 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @PostMapping(value = "/patrolTaskAppointSelect")
     public Result<?> patrolTaskAppointSelect(@RequestBody PatrolOrgDTO orgCoed, HttpServletRequest req) {
         List<PatrolTaskUserDTO> patrolTaskUserDto = patrolTaskService.getPatrolTaskAppointSelect(orgCoed);
-        patrolTaskUserDto = Optional.ofNullable(patrolTaskUserDto).orElseGet(Collections::emptyList).stream()
-                .filter(l -> ObjectUtil.isNotEmpty(l.getUserList())).collect(Collectors.toList());
+        //同行人没有排班限制
+        if(ObjectUtil.isNotEmpty(orgCoed.getIdentity()))
+        {
+            patrolTaskUserDto = Optional.ofNullable(patrolTaskUserDto).orElseGet(Collections::emptyList).stream()
+                    .filter(l -> ObjectUtil.isNotEmpty(l.getUserList())).collect(Collectors.toList());
+        }
         if(ObjectUtil.isEmpty(patrolTaskUserDto)){
             throw new AiurtBootException("您没有指派当前任务人员的权限或当前暂无排班人员!");
         }
