@@ -440,11 +440,16 @@
     </select>
 
     <select id="queryLineStaff" resultType="com.aiurt.boot.weeklyplan.dto.BdStaffInfoReturnTypeDTO">
-        select a.id, a.realname as name, d.line_id as lineId
+<!--        select a.id, a.realname as name, d.line_id as lineId-->
+<!--        from sys_user a-->
+<!--                 inner join sys_user_role b on a.id = b.user_id-->
+<!--                 inner join sys_role c on c.id = b.role_id-->
+<!--                 inner join sys_depart d on d.id = a.org_id-->
+<!--        where c.role_code = 'line_people'-->
+        select a.id, a.realname as name
         from sys_user a
                  inner join sys_user_role b on a.id = b.user_id
                  inner join sys_role c on c.id = b.role_id
-                 inner join sys_depart d on d.id = a.org_id
         where c.role_code = 'line_people'
     </select>
 

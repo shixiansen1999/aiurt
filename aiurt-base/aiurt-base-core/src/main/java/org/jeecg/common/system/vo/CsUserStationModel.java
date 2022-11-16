@@ -43,4 +43,7 @@ public class CsUserStationModel {
 
     @ApiModelProperty(value = "线路")
     private String lineCode;
+    /**线路ID**/
+    @ApiModelProperty(value = "线路ID")
+    private String lineId;
 }

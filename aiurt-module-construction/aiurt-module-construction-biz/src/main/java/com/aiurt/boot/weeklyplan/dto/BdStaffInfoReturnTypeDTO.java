@@ -3,6 +3,8 @@ package com.aiurt.boot.weeklyplan.dto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author Lai W.
  * @version 1.0
@@ -33,6 +35,7 @@ public class BdStaffInfoReturnTypeDTO {
 //    private Double positionY;
 
     @ApiModelProperty(value = "线路id")
-    private String lineId;
+//    private String lineId;
+    private List<String> lineIds;
 
 }

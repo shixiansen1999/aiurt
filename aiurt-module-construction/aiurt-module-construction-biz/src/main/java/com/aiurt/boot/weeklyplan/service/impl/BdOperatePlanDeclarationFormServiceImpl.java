@@ -1,9 +1,11 @@
 package com.aiurt.boot.weeklyplan.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.monthlyplan.dto.BdStationCopyDTO;
 import com.aiurt.boot.monthlyplan.mapper.BdOperatePlanDeclarationFormMonthMapper;
 import com.aiurt.boot.weeklyplan.dto.*;
@@ -24,7 +26,9 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.CsUserStationModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -773,34 +777,65 @@ public class BdOperatePlanDeclarationFormServiceImpl
         }
     }
 
+//    @Override
+//    public List<BdStaffInfoReturnTypeDTO> queryLineStaff() {
+//        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+//        //查询当前登录人班组
+//        String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
+//        TeamByIdDTO teamByIdDTO = bdTeamMapper.queryTeamById(Convert.toStr(teamId));
+//
+//        //当前登录人线路集合
+//        List<String> myLineList = new ArrayList<>();
+//        if (ObjectUtil.isNotEmpty(teamByIdDTO.getLineId())) {
+//            myLineList = Arrays.asList(teamByIdDTO.getLineId().split(","));
+//        }
+//
+//        //查询所有线路负责人
+//        List<BdStaffInfoReturnTypeDTO> lineList = bdOperatePlanDeclarationFormMapper.queryLineStaff();
+//
+//        //按线路查询
+//        List<String> finalMyLineList = myLineList;
+//        lineList = lineList.stream().filter(s -> {
+//            if (ObjectUtil.isNotEmpty(s.getLineId())) {
+//                long coun = Arrays.asList(s.getLineId().split(",")).stream()
+//                        .filter(lineId -> finalMyLineList.stream().filter(myLineId -> myLineId.equals(lineId)).count() > 0).count();
+//                return coun > 0;
+//            }
+//            return false;
+//        }).collect(Collectors.toList());
+//
+//        return lineList;
+//    }
     @Override
     public List<BdStaffInfoReturnTypeDTO> queryLineStaff() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //查询当前登录人班组
-        String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
-        TeamByIdDTO teamByIdDTO = bdTeamMapper.queryTeamById(Convert.toStr(teamId));
-
-        //当前登录人线路集合
-        List<String> myLineList = new ArrayList<>();
-        if (ObjectUtil.isNotEmpty(teamByIdDTO.getLineId())) {
-            myLineList = Arrays.asList(teamByIdDTO.getLineId().split(","));
-        }
+        //当前登录人站所找到对应的线路集合
+        List<CsUserStationModel> stationInfo = sysBaseApi.getStationByUserId(sysUser.getId());
+        List<String> myLineList = stationInfo.stream().map(CsUserStationModel::getLineId).distinct().collect(Collectors.toList());
 
         //查询所有线路负责人
         List<BdStaffInfoReturnTypeDTO> lineList = bdOperatePlanDeclarationFormMapper.queryLineStaff();
+        lineList.stream().forEach(l->{
+            if(StrUtil.isNotEmpty(l.getId())) {
+                List<CsUserStationModel> stationByUserId = sysBaseApi.getStationByUserId(l.getId());
+                List<String> lineIds = stationByUserId.stream().map(CsUserStationModel::getLineId).distinct().collect(Collectors.toList());
+                l.setLineIds(lineIds);
+
+            }
+        });
 
         //按线路查询
-        List<String> finalMyLineList = myLineList;
-        lineList = lineList.stream().filter(s -> {
-            if (ObjectUtil.isNotEmpty(s.getLineId())) {
-                long coun = Arrays.asList(s.getLineId().split(",")).stream()
-                        .filter(lineId -> finalMyLineList.stream().filter(myLineId -> myLineId.equals(lineId)).count() > 0).count();
-                return coun > 0;
+        List<BdStaffInfoReturnTypeDTO> collect = lineList.stream().filter(l -> {
+            List<String> lineIds = l.getLineIds();
+            if (CollectionUtil.isNotEmpty(lineIds)) {
+                Collection<String> intersection = CollectionUtil.intersection(lineIds, myLineList);
+                if (CollectionUtil.isNotEmpty(intersection)) {
+                    return true;
+                }
             }
             return false;
         }).collect(Collectors.toList());
-
-        return lineList;
+        return collect;
     }
 
     /**
