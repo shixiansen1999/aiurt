@@ -361,7 +361,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                 for (ScheduleRuleItem scheduleRuleItem : itemList) {
                     scheduleRuleItemMap.put(scheduleRuleItem.getSort(), scheduleRuleItem.getItemId());
                 }
-                int i = 0;
+                int i = 1;
                 while (!start.getTime().after(scheduleRecordREditDTO.getEndTime())) {
 
                     LambdaQueryWrapper<ScheduleRecord> queryWrapper = new LambdaQueryWrapper<>();
