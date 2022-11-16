@@ -233,7 +233,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         String url = null;
 
         //创建导入失败错误报告,进行模板导出
-        File fileTemp= new File("/templates/csmajorexcel.xlsx");
+        File fileTemp= new File("/templates/scheduleErrorReport.xlsx");
         String path = fileTemp.getAbsolutePath();
         log.info("path:{}", path);
         TemplateExportParams exportParams = new TemplateExportParams(path);
