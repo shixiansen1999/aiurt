@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ import java.util.Map;
 public interface IScheduleService extends IService<Schedule> {
     public IPage<Schedule> getList(Schedule schedule, Page<Schedule> page);
 
-    Result<?> importScheduleExcel(List<Map<Integer, String>> scheduleDate, HttpServletResponse response);
+    Result<?> importScheduleExcel(List<Map<Integer, String>> scheduleDate, HttpServletResponse response) throws IOException;
 
     Result<Schedule> add(Schedule schedule);
 }

@@ -18,6 +18,7 @@ import com.aiurt.modules.schedule.service.IScheduleRecordService;
 import com.aiurt.modules.schedule.service.IScheduleRuleItemService;
 import com.aiurt.modules.schedule.service.IScheduleService;
 import com.aiurt.modules.train.utils.DlownTemplateUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -164,50 +165,8 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result<?> importScheduleExcel(List<Map<Integer, String>> scheduleDate, HttpServletResponse response) {
-        //校验
-        Boolean aBoolean = importErrorExcel(response, scheduleDate);
-        if (aBoolean) {
-            return Result.OK("文件导入失败");
-        }
-        //从表头获取时间
-        String title = scheduleDate.get(1).get(3);
-        String date = StrUtil.removeSuffix(title, "排班表");
-        Date startTime = DateUtil.parse(date, "yyyy年M月d日");
-
-        for (int i = 2; i < scheduleDate.size(); i++) {
-            //获取一条排班记录
-            Map<Integer, String> scheduleMap = scheduleDate.get(i);
-            LoginUser user = scheduleMapper.getUser(scheduleMap.get(1),scheduleMap.get(2));
-            //生成排班月份中每天的排班记录
-            //获取排班月份的第一天和最后一天
-            Calendar start = Calendar.getInstance();
-            //从表头获取时间
-            //calendar的月份从0开始，1月是0
-            start.setTime(startTime);
-
-            Date end = DateUtil.endOfMonth(start.getTime());
-            //遍历本月所有的天数
-            while (!start.getTime().after(end)) {
-                ScheduleItem scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
-                        .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+3)).eq(ScheduleItem::getDelFlag,0));
-                ScheduleRecord record = ScheduleRecord.builder()
-                        .scheduleId(null)
-                        .userId(user.getId())
-                        .date(start.getTime())
-                        .itemId(scheduleItem.getId())
-                        .itemName(scheduleItem.getName())
-                        .startTime(scheduleItem.getStartTime())
-                        .endTime(scheduleItem.getEndTime())
-                        .color(scheduleItem.getColor())
-                        .delFlag(0)
-                        .build();
-               // recordService.save(record);
-                start.add(Calendar.DAY_OF_YEAR, 1);
-            }
-
-        }
-        return Result.ok("文件导入成功！");
+    public Result<?> importScheduleExcel(List<Map<Integer, String>> scheduleDate, HttpServletResponse response) throws IOException {
+        return importErrorExcel(response, scheduleDate);
     }
 
     @Override
@@ -266,10 +225,16 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         return result;
     }
 
-    /**校验,如果导入出错怎返回错误报告*/
-    public Boolean importErrorExcel(HttpServletResponse response,List<Map<Integer, String>> scheduleDate) {
-        //创建导入失败错误报告,进行模板导出
+    /**校验,如果导入出错怎返回错误报告
+     * @return*/
+    public Result<?> importErrorExcel(HttpServletResponse response, List<Map<Integer, String>> scheduleDate)throws IOException {
 
+        // 错误信息
+        List<String> errorMessage = new ArrayList<>();
+        int successLines = 0, errorLines = 0;
+        String url = null;
+
+        //创建导入失败错误报告,进行模板导出
         URL resource = DlownTemplateUtil.class.getResource("/templates/scheduleErrorReport.xlsx");
         String path = resource.getPath();
         log.info("path:{}", path);
@@ -356,11 +321,12 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                 error = StrUtil.join(";", errorList);
             }
             lm.put("mistake", error);
+            errorLines++;
             listMap.add(lm);
         }
         errorMap.put("maplist", listMap);
 
-        //如果有错误则生成错误报告
+        //如果有一个错误则生成错误报告
         for (Map<String, Object> map : listMap) {
             Object mistake = map.get("mistake");
             if (ObjectUtil.isNotNull(mistake)) {
@@ -372,22 +338,95 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                 }
 
                 try {
-                    String fileName = "排班表导入失败错误报告";
-                    FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName+".xlsx");
-                    System.out.println("路径："+upLoadPath+File.separator+fileName+".xlsx");
-                    System.out.println("下载成功");
+                    String fileName = "排班表导入错误清单"+"_" + System.currentTimeMillis()+".xlsx";
+                    FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
+                    url = fileName;
                     workbook.write(out);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                return true;
+                return imporReturnRes(errorLines, successLines, errorMessage,true,url);
             }
         }
-        return false;
+        //没有错误就添加数据
+        for (int i = 2; i < scheduleDate.size(); i++) {
+            //获取一条排班记录
+            Map<Integer, String> scheduleMap = scheduleDate.get(i);
+            LoginUser user = scheduleMapper.getUser(scheduleMap.get(1),scheduleMap.get(2));
+            //生成排班月份中每天的排班记录
+            //获取排班月份的第一天和最后一天
+            Calendar start = Calendar.getInstance();
+            //从表头获取时间
+            //calendar的月份从0开始，1月是0
+            start.setTime(startTime);
+
+            Date end = DateUtil.endOfMonth(start.getTime());
+            //遍历本月所有的天数
+            while (!start.getTime().after(end)) {
+                ScheduleItem scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
+                        .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+3)).eq(ScheduleItem::getDelFlag,0));
+                ScheduleRecord record = ScheduleRecord.builder()
+                        .scheduleId(null)
+                        .userId(user.getId())
+                        .date(start.getTime())
+                        .itemId(scheduleItem.getId())
+                        .itemName(scheduleItem.getName())
+                        .startTime(scheduleItem.getStartTime())
+                        .endTime(scheduleItem.getEndTime())
+                        .color(scheduleItem.getColor())
+                        .delFlag(0)
+                        .build();
+                // recordService.save(record);
+                start.add(Calendar.DAY_OF_YEAR, 1);
+            }
+
+        }
+        return Result.ok("文件导入成功！");
     }
 
+    public static Result<?> imporReturnRes(int errorLines, int successLines, List<String> errorMessage, boolean isType,String failReportUrl ) throws IOException {
+        if (isType) {
+            if (errorLines != 0) {
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", false);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                result.put("failReportUrl", failReportUrl);
+                Result res = Result.ok(result);
+                res.setMessage("文件失败，数据有错误。");
+                res.setCode(200);
+                return res;
+            } else {
+                //是否成功
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", true);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                Result res = Result.ok(result);
+                res.setMessage("文件导入成功！");
+                res.setCode(200);
+                return res;
+            }
+        } else {
+            JSONObject result = new JSONObject(5);
+            result.put("isSucceed", false);
+            result.put("errorCount", errorLines);
+            result.put("successCount", successLines);
+            int totalCount = successLines + errorLines;
+            result.put("totalCount", totalCount);
+            Result res = Result.ok(result);
+            res.setMessage("导入失败，文件类型不对。");
+            res.setCode(200);
+            return res;
+        }
+
+    }
     /**excel 下拉框*/
     public static final class ExcelSelectListUtil {
         /**
