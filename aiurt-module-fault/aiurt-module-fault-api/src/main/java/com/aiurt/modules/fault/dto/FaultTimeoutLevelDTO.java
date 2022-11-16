@@ -61,6 +61,7 @@ public class FaultTimeoutLevelDTO {
     private String teamUser;
 
     @ApiModelProperty("维修负责人")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
     private String appointUserName;
 
     /**专业子系统编码*/
