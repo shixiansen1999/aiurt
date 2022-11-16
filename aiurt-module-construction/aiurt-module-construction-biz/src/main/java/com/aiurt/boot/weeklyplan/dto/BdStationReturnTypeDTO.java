@@ -21,7 +21,7 @@ public class BdStationReturnTypeDTO {
     private String name;
 
     @ApiModelProperty(value = "所属线路ID")
-    private Integer lineId;
+    private String lineId;
 
     @ApiModelProperty (value = "序号")
     private Integer indexId;

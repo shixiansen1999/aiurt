@@ -25,7 +25,7 @@ public class QueryPagesParams {
     private String staffID;
 
     @ApiModelProperty(value = "线路")
-    private Integer lineID;
+    private String lineID;
 
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "开始日期")
@@ -42,7 +42,7 @@ public class QueryPagesParams {
     private String chargeStaffId;
 
     @ApiModelProperty(value = "销点车站")
-    private Integer secondStationId;
+    private String secondStationId;
 
     @ApiModelProperty(value = "周计划申请状态")
     private Integer formStatus = -1;

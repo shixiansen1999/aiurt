@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.monthlyplan.dto.BdStationCopyDTO;
 import com.aiurt.boot.monthlyplan.mapper.BdOperatePlanDeclarationFormMonthMapper;
 import com.aiurt.boot.weeklyplan.dto.*;
 import com.aiurt.boot.weeklyplan.entity.*;
@@ -16,7 +17,6 @@ import com.aiurt.boot.weeklyplan.util.ExportExcelUtil;
 import com.aiurt.boot.weeklyplan.util.ImportExcelUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
-import com.aiurt.boot.monthlyplan.dto.BdStationCopyDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -133,18 +133,18 @@ public class BdOperatePlanDeclarationFormServiceImpl
         if (ObjectUtil.isNull(declarationForm.getAssistStationManagerNames())
                 || ("").equals(declarationForm.getAssistStationManagerNames())
                 && ObjectUtil.isNotNull(declarationForm.getAssistStationManagerIds())) {
-            if(!"".equals(declarationForm.getAssistStationManagerIds())){
+            if (!"".equals(declarationForm.getAssistStationManagerIds())) {
                 declarationForm.setAssistStationManagerNames(getNamesByIds(declarationForm.getAssistStationManagerIds()));
             }
         } else if (ObjectUtil.isNull(declarationForm.getAssistStationManagerNames())
                 || ("").equals(declarationForm.getAssistStationManagerNames())
-                && ObjectUtil.isNull(declarationForm.getAssistStationManagerIds())){
+                && ObjectUtil.isNull(declarationForm.getAssistStationManagerIds())) {
             declarationForm.setAssistStationManagerNames("无");
         }
         this.save(declarationForm);
 
         //发送消息,草稿保存不发送消息
-        if(ObjectUtil.isNotEmpty(declarationForm.getFormStatus()) && declarationForm.getFormStatus() != num){
+        if (ObjectUtil.isNotEmpty(declarationForm.getFormStatus()) && declarationForm.getFormStatus() != num) {
             if (declarationForm.getPlanChange() == 0) {
                 this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getLineStaffId(),
                         "你有新的待审批周计划", 13, 1, true);
@@ -161,12 +161,13 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
     /**
      * 发送消息
-     * @param afterStatus 2状态不发送
+     *
+     * @param afterStatus     2状态不发送
      * @param isLineallpeople 是否是总线路负责人，true是false否
      */
-    private void sendMessage(String busId, String fromUser, String toUserId, String content, int typeId, int afterStatus, boolean isLineallpeople){
+    private void sendMessage(String busId, String fromUser, String toUserId, String content, int typeId, int afterStatus, boolean isLineallpeople) {
         int num = 2;
-        if(ObjectUtil.isNotEmpty(toUserId) && afterStatus != num){
+        if (ObjectUtil.isNotEmpty(toUserId) && afterStatus != num) {
             //发送消息
             BusMessageDTO busMessageDTO = new BusMessageDTO();
             busMessageDTO.setBusType(SysAnnmentTypeEnum.BDOPERATEPLANDECLARATIONFORM.getType());
@@ -180,10 +181,10 @@ public class BdOperatePlanDeclarationFormServiceImpl
             busMessageDTO.setAnnouncementTypeId(typeId);
             sysBaseApi.sendBusAnnouncement(busMessageDTO);
 
-            if(isLineallpeople){
+            if (isLineallpeople) {
                 //发送给所有总线路负责人
                 List<String> lineallpeopleList = bdOperatePlanDeclarationFormMapper.queryUsernameByLineallpeople();
-                for (String username: lineallpeopleList) {
+                for (String username : lineallpeopleList) {
                     busMessageDTO.setToUser(username);
                     sysBaseApi.sendBusAnnouncement(busMessageDTO);
                 }
@@ -193,6 +194,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
     /**
      * Helper function to query AssistStationManager Names.
+     *
      * @param assistStationManagerIds A string of ids.
      * @return A string of names.
      */
@@ -207,19 +209,19 @@ public class BdOperatePlanDeclarationFormServiceImpl
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
         List<Integer> idList = new ArrayList<>();
-        if(ObjectUtil.isNotEmpty(teamId)){
+        if (ObjectUtil.isNotEmpty(teamId)) {
             List<BdTeam> teamList = bdTeamMapper.queryManagedTeam(teamId);
-           if(CollUtil.isNotEmpty(teamList)){
-             teamList.forEach(s -> {
-                 if(ObjectUtil.isNotEmpty(s.getLineId())){
-                     List<String> ids = Arrays.asList(s.getLineId().split(","));
-                     if(CollUtil.isNotEmpty(ids)){
-                         ids.forEach(id -> idList.add(Convert.toInt(id)));
-                     }
-                 }
+            if (CollUtil.isNotEmpty(teamList)) {
+                teamList.forEach(s -> {
+                    if (ObjectUtil.isNotEmpty(s.getLineId())) {
+                        List<String> ids = Arrays.asList(s.getLineId().split(","));
+                        if (CollUtil.isNotEmpty(ids)) {
+                            ids.forEach(id -> idList.add(Convert.toInt(id)));
+                        }
+                    }
 
-             });
-           }
+                });
+            }
         }
         List<BdLineDTO> result = baseMapper.queryLines(idList.stream().distinct().collect(Collectors.toList()));
 
@@ -227,7 +229,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
     }
 
     @Override
-    public BdOperatePlanDeclarationFormReturnTypeDTO getFormInfoById (Integer id) {
+    public BdOperatePlanDeclarationFormReturnTypeDTO getFormInfoById(Integer id) {
         BdOperatePlanDeclarationFormReturnTypeDTO result = baseMapper.queryFormInfoById(id);
         //转换辅站id->names
         if (result != null && result.getAssistStationName() != null) {
@@ -237,13 +239,13 @@ public class BdOperatePlanDeclarationFormServiceImpl
             List<String> assistStationIdList = Arrays.asList(result.getAssistStationName().split(","));
             String assistStationName = assistStationIdList.stream().filter(assistStationId -> {
                 long count = stationInfoResult.stream().filter(station -> station.getId().equals(assistStationId)).count();
-                if(count > 0){
+                if (count > 0) {
                     return true;
                 }
                 return false;
             }).map(assistStationId -> {
                 Optional<BdStationCopyDTO> stationCopyDtoOptional = stationInfoResult.stream().filter(station -> station.getId().equals(assistStationId)).collect(Collectors.toList()).stream().findAny();
-                if(stationCopyDtoOptional.isPresent()){
+                if (stationCopyDtoOptional.isPresent()) {
                     return stationCopyDtoOptional.get().getName();
                 }
                 return null;
@@ -252,47 +254,47 @@ public class BdOperatePlanDeclarationFormServiceImpl
         }
 
         //李想要求，这俩字段如果是 null 就改成0，普通计划不改
-        if(result.getPlanChange() != null && result.getPlanChange() != 0){
-            if(result.getDirectorFormStatus() == null){
+        if (result.getPlanChange() != null && result.getPlanChange() != 0) {
+            if (result.getDirectorFormStatus() == null) {
                 result.setDirectorFormStatus(0);
             }
-            if(result.getManagerFormStatus() == null){
+            if (result.getManagerFormStatus() == null) {
                 result.setManagerFormStatus(0);
             }
         }
 
         //请点车站和销点车站 拼接线路
-        List<BdStationReturnTypeDTO> list =  baseMapper.queryAllStations(null,null);
+        List<BdStationReturnTypeDTO> list = baseMapper.queryAllStations(null, null);
         list.forEach(s -> {
-            if(result.getFirstStationId().equals(s.getId())){
+            if (result.getFirstStationId().equals(s.getId())) {
                 result.setFirstStationName(s.getLineName() + "--" + s.getName());
             }
-            if(result.getSecondStationId().equals(s.getId())){
+            if (result.getSecondStationId().equals(s.getId())) {
                 result.setSecondStationName(s.getLineName() + "--" + s.getName());
             }
-            if(null!=result.getSubstationId() && result.getSubstationId().equals(s.getId())){
+            if (null != result.getSubstationId() && result.getSubstationId().equals(s.getId())) {
                 result.setSubstationName(s.getLineName() + "--" + s.getName());
             }
         });
 
         //判断这条计划是否可以结束
-        if(result.getFormStatus() == 0 && ObjectUtil.isNotEmpty(result.getDispatchFormStatus()) &&
+        if (result.getFormStatus() == 0 && ObjectUtil.isNotEmpty(result.getDispatchFormStatus()) &&
                 ObjectUtil.isNotEmpty(result.getManagerFormStatus()) && ObjectUtil.isNotEmpty(result.getDirectorFormStatus()) &&
                 ObjectUtil.isNotEmpty(result.getLineFormStatus()) &&
                 result.getDispatchFormStatus() == 1 && result.getManagerFormStatus() == 1 &&
-                result.getDirectorFormStatus() == 1 && result.getLineFormStatus() == 1 && result.getPlanChange() != 0){
+                result.getDirectorFormStatus() == 1 && result.getLineFormStatus() == 1 && result.getPlanChange() != 0) {
             result.setIsCanEnd(1);
-        }else if(result.getFormStatus() == 0 && ObjectUtil.isNotEmpty(result.getDispatchFormStatus()) &&
+        } else if (result.getFormStatus() == 0 && ObjectUtil.isNotEmpty(result.getDispatchFormStatus()) &&
                 ObjectUtil.isNotEmpty(result.getLineFormStatus()) && result.getDispatchFormStatus() == 1 &&
                 result.getLineFormStatus() == 1 &&
-            result.getPlanChange() == 0){
+                result.getPlanChange() == 0) {
             result.setIsCanEnd(1);
-        }else{
+        } else {
             result.setIsCanEnd(0);
         }
 
         //图片路径有逗号去掉
-        if(ObjectUtil.isNotEmpty(result.getPicture())){
+        if (ObjectUtil.isNotEmpty(result.getPicture())) {
             result.setPicture(result.getPicture().replace(",", ""));
         }
 
@@ -303,9 +305,28 @@ public class BdOperatePlanDeclarationFormServiceImpl
     }
 
 
+//    @Override
+//    public List<BdUserInfoDTO> getUserInfo(String id) {
+//        return baseMapper.queryUserInfo(id);
+//    }
     @Override
-    public List<BdUserInfoDTO> getUserInfo(String id) {
-        return baseMapper.queryUserInfo(id);
+    public BdUserInfoDTO getUserInfo() {
+        //获取当前用户
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        // 根据用户id获取部门权限信息
+        List<CsUserDepartModel> departInfo = sysBaseApi.getDepartByUserId(sysUser.getId());
+        String departIds = departInfo.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.joining(","));
+        String departNames = departInfo.stream().map(CsUserDepartModel::getDepartName).collect(Collectors.joining(","));
+        BdUserInfoDTO userInfoDTO = new BdUserInfoDTO();
+        userInfoDTO.setId(sysUser.getId());
+        userInfoDTO.setName(sysUser.getRealname());
+        userInfoDTO.setRoleID(sysUser.getRoleIds());
+        userInfoDTO.setRoleName(sysUser.getRoleNames());
+        userInfoDTO.setTeamID(departIds);
+        userInfoDTO.setTeamName(departNames);
+        userInfoDTO.setDeptID(sysUser.getOrgId());
+        userInfoDTO.setDeptName(sysUser.getOrgName());
+        return userInfoDTO;
     }
 
 
@@ -323,26 +344,26 @@ public class BdOperatePlanDeclarationFormServiceImpl
         //管辖站点
         List<String> positionList = new ArrayList<>();
         siteList.forEach(s -> {
-            if(ObjectUtil.isNotEmpty(s.getPosition())){
+            if (ObjectUtil.isNotEmpty(s.getPosition())) {
                 positionList.addAll(Arrays.asList(s.getPosition().split(",")));
             }
         });
         List<BdStation> newStationList = new ArrayList<>();
         //查询当前登录用户的站点
-        List<BdStationReturnTypeDTO> nowList =  baseMapper.queryAllStations(positionList.stream().distinct().collect(Collectors.toList()),null);
+        List<BdStationReturnTypeDTO> nowList = baseMapper.queryAllStations(positionList.stream().distinct().collect(Collectors.toList()), null);
         //查询所有站点
-        List<BdStation> allStationList =  bdStationService.list();
+        List<BdStation> allStationList = bdStationService.list();
 
-        allStationList.forEach(all->{
-            List<BdStationReturnTypeDTO> bdStation = nowList.stream().filter(station->null!=station.getPid() &&station.getPid().equals(all.getId()) ).collect(Collectors.toList());
-            if(!bdStation.isEmpty()){
+        allStationList.forEach(all -> {
+            List<BdStationReturnTypeDTO> bdStation = nowList.stream().filter(station -> null != station.getPid() && station.getPid().equals(all.getId())).collect(Collectors.toList());
+            if (!bdStation.isEmpty()) {
                 newStationList.add(all);
             }
         });
         newStationList.forEach(station -> {
             //添加线路名称
-            List<BdLine> line = lineList.stream().filter(l-> l.getId().equals(station.getLineId())).collect(Collectors.toList());
-            if(!line.isEmpty()){
+            List<BdLine> line = lineList.stream().filter(l -> l.getId().equals(station.getLineId())).collect(Collectors.toList());
+            if (!line.isEmpty()) {
                 station.setName(line.get(0).getName() + "--" + station.getName());
             }
             station.setChildren(allStationList.stream().filter(all -> station.getId().equals(all.getPid())).collect(Collectors.toList()));
@@ -366,7 +387,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
     public Boolean checkFormIfEdited(BdOperatePlanDeclarationForm declarationForm) {
         Integer changeCorrelation = declarationForm.getChangeCorrelation();
         try {
-            String result =  baseMapper.checkFormIfEdited(changeCorrelation).toString();
+            String result = baseMapper.checkFormIfEdited(changeCorrelation).toString();
             return !(result == null || ("").equals(result));
         } catch (Exception e) {
             return false;
@@ -378,7 +399,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
     public Page<BdOperatePlanDeclarationFormReturnTypeDTO> queryPages(
             QueryPagesParams queryPagesParams, Integer pageNo, Integer pageSize, String busId) {
         //init page
-        Integer currentIndex = (pageNo-1) * pageSize;
+        Integer currentIndex = (pageNo - 1) * pageSize;
         List<BdOperatePlanDeclarationFormReturnTypeDTO> temp;
         List<BdOperatePlanDeclarationFormReturnTypeDTO> record;
         Page<BdOperatePlanDeclarationFormReturnTypeDTO> resultPage = new Page<>();
@@ -387,21 +408,21 @@ public class BdOperatePlanDeclarationFormServiceImpl
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> roleList = sysBaseApi.getRolesByUsername(sysUser.getUsername());
         //查询当前登录账号的角色是否为“调度员”、“生产调度”
-        roleList = roleList.stream().filter(s -> s.contains("dispatch") || s.contains("production_scheduling") ).collect(Collectors.toList());
-        if(roleList.isEmpty()){
+        roleList = roleList.stream().filter(s -> s.contains("dispatch") || s.contains("production_scheduling")).collect(Collectors.toList());
+        if (roleList.isEmpty()) {
 //            String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
 //            List<BdTeam> bdTeamList = bdTeamMapper.queryManagedTeam(teamId);
 //            queryPagesParams.setTeamIdList(bdTeamList.stream().map(s -> s.getId()).collect(Collectors.toList()));
             // 获取当前用户的部门权限
             List<CsUserDepartModel> teamList = sysBaseApi.getDepartByUserId(sysUser.getId());
             queryPagesParams.setTeamIdList(teamList.stream().map(s -> s.getId()).collect(Collectors.toList()));
-        }else{
+        } else {
             queryPagesParams.setRoleId(null);
             queryPagesParams.setStaffID(null);
         }
         //查询
         List<String> formStatusesList = new ArrayList<>();
-        if(ObjectUtil.isNotEmpty(queryPagesParams.getFormStatuses())){
+        if (ObjectUtil.isNotEmpty(queryPagesParams.getFormStatuses())) {
             formStatusesList = Arrays.asList(queryPagesParams.getFormStatuses().split(","));
         }
         queryPagesParams.setFormStatusList(formStatusesList);
@@ -424,7 +445,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
             s.setTimeFormat(formatTaskTime(s.getTaskTime()));
             return s;
         }).collect(Collectors.toList());*/
-        for(BdOperatePlanDeclarationFormReturnTypeDTO dto: temp){
+        for (BdOperatePlanDeclarationFormReturnTypeDTO dto : temp) {
             dto.setTimeFormat(formatTaskTime(dto.getTaskTime()));
         }
         resultPage.setRecords(temp);
@@ -447,22 +468,22 @@ public class BdOperatePlanDeclarationFormServiceImpl
     }
 
     private List<BdOperatePlanDeclarationFormReturnTypeDTO>
-        changeableSorter(List<BdOperatePlanDeclarationFormReturnTypeDTO> record) {
+    changeableSorter(List<BdOperatePlanDeclarationFormReturnTypeDTO> record) {
         List<BdOperatePlanDeclarationFormReturnTypeDTO> listTemp = new ArrayList<>();
         List<BdOperatePlanDeclarationFormReturnTypeDTO> list = new ArrayList<>();
         //排序
         List<BdOperatePlanDeclarationFormReturnTypeDTO> addlist = new ArrayList<>();
-        for(BdOperatePlanDeclarationFormReturnTypeDTO objs : record) {
-            if(objs.getChangeCorrelation()!=null&&objs.getChangeCorrelation()!=0) {
+        for (BdOperatePlanDeclarationFormReturnTypeDTO objs : record) {
+            if (objs.getChangeCorrelation() != null && objs.getChangeCorrelation() != 0) {
                 addlist.add(objs);
-            }else {
+            } else {
                 listTemp.add(objs);
             }
         }
-        for(BdOperatePlanDeclarationFormReturnTypeDTO objs : listTemp) {
+        for (BdOperatePlanDeclarationFormReturnTypeDTO objs : listTemp) {
             list.add(objs);
-            for(BdOperatePlanDeclarationFormReturnTypeDTO os:addlist) {
-                if(objs.getId()==os.getChangeCorrelation().intValue()) {
+            for (BdOperatePlanDeclarationFormReturnTypeDTO os : addlist) {
+                if (objs.getId() == os.getChangeCorrelation().intValue()) {
                     list.add(os);
                 }
             }
@@ -472,7 +493,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
     @Override
     public List<BdOperatePlanDeclarationFormReturnTypeDTO> getListByQuery(QueryPagesParams queryPagesParams) {
-        if(queryPagesParams.getIsChange() == 0){
+        if (queryPagesParams.getIsChange() == 0) {
             //管辖班组
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
@@ -488,7 +509,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
         //按时间升序排列， 辅站为空，替换成无
         record = record.stream().map(s -> {
-            if(ObjectUtil.isEmpty(s.getAssistStationName())){
+            if (ObjectUtil.isEmpty(s.getAssistStationName())) {
                 s.setAssistStationName("无");
             }
             s.setTaskTime(formatTaskTime(s.getTaskTime()));
@@ -504,38 +525,39 @@ public class BdOperatePlanDeclarationFormServiceImpl
         return list;
     }
 
-    public String stringNoNull(String str){
-        if(ObjectUtil.isEmpty(str)){
-           return "";
+    public String stringNoNull(String str) {
+        if (ObjectUtil.isEmpty(str)) {
+            return "";
         }
         return str;
     }
 
     /**
      * taskTime 字段特殊处理
+     *
      * @param taskTime
      * @return
      */
-    public String formatTaskTime(String taskTime){
+    public String formatTaskTime(String taskTime) {
         try {
             //字符串截取
             List<String> timeList = Arrays.asList(taskTime.split(","));
             Date datea = DateUtil.parse(timeList.get(0), "yyyy-MM-dd HH:mm");
             Date dateb = DateUtil.parse(timeList.get(1), "yyyy-MM-dd HH:mm");
             //判断是否是次日
-            if(DateUtil.year(datea) == DateUtil.year(dateb) &&
+            if (DateUtil.year(datea) == DateUtil.year(dateb) &&
                     DateUtil.month(datea) == DateUtil.month(dateb) &&
-                    DateUtil.dayOfMonth(datea) == DateUtil.dayOfMonth(dateb)){
+                    DateUtil.dayOfMonth(datea) == DateUtil.dayOfMonth(dateb)) {
                 //当日
                 return DateUtil.format(datea, "HH:mm") + " - " + DateUtil.format(dateb, "HH:mm");
-            }else{
+            } else {
                 //次日
                 return DateUtil.format(datea, "HH:mm") + " -次日 " + DateUtil.format(dateb, "HH:mm");
             }
-        }catch (Exception e){
-            if(taskTime.contains(MagicWords.NEXT_DAY)){
+        } catch (Exception e) {
+            if (taskTime.contains(MagicWords.NEXT_DAY)) {
                 return taskTime;
-            }else{
+            } else {
                 return "";
             }
         }
@@ -545,8 +567,8 @@ public class BdOperatePlanDeclarationFormServiceImpl
     public void exportExcel(List<BdOperatePlanDeclarationFormReturnTypeDTO> record,
                             HttpServletResponse response, QueryPagesParams queryPagesParams) {
         String[] titleRow =
-                {"序号","作业性质","作业类别","作业单位","作业时间","线路作业范围","供电要求","作业内容",
-                        "防护措施","施工负责人","配合部门","请点车站","销点车站","辅站","作业人数","大中型器具"};
+                {"序号", "作业性质", "作业类别", "作业单位", "作业时间", "线路作业范围", "供电要求", "作业内容",
+                        "防护措施", "施工负责人", "配合部门", "请点车站", "销点车站", "辅站", "作业人数", "大中型器具"};
 
         String newTitle = "施工计划表.xls";
         String sheetName = "运营施工及行车计划申报表";
@@ -556,9 +578,9 @@ public class BdOperatePlanDeclarationFormServiceImpl
             /**/
             String lineNames = "";
             //todo 1234
-            if(queryPagesParams.getLineID().equals(0)){
+            if (queryPagesParams.getLineID().equals(0)) {
                 lineNames = "3号线,4号线,8号线";
-            }else{
+            } else {
                 lineNames = bdLineList.stream().filter(s -> s.getId().equals(queryPagesParams.getLineID())).map(s -> s.getName()).collect(Collectors.joining(","));
             }
             newTitle = lineNames + "施工计划表.xls";
@@ -574,8 +596,8 @@ public class BdOperatePlanDeclarationFormServiceImpl
     public void exportExcelChangeable(List<BdOperatePlanDeclarationFormReturnTypeDTO> record,
                                       HttpServletResponse response, QueryPagesParams queryPagesParams) {
         String[] titleRow =
-                {"序号","作业性质","作业类别","作业单位","作业时间","线路作业范围","供电要求","作业内容",
-                        "防护措施","施工负责人","配合部门","请点车站","销点车站","辅站","作业人数","大中型器具"};
+                {"序号", "作业性质", "作业类别", "作业单位", "作业时间", "线路作业范围", "供电要求", "作业内容",
+                        "防护措施", "施工负责人", "配合部门", "请点车站", "销点车站", "辅站", "作业人数", "大中型器具"};
 
         String newTitle = "变更计划表.xls";
         String sheetName = "变更计划表";
@@ -590,7 +612,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
     @Override
     public List<BdOperatePlanDeclarationForm> importExcel(MultipartFile excel) {
         try {
-           return importExcelUtil.importToExcelOperate(new MultipartFile[]{excel});
+            return importExcelUtil.importToExcelOperate(new MultipartFile[]{excel});
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -629,10 +651,10 @@ public class BdOperatePlanDeclarationFormServiceImpl
         //根据roleType判断是谁在审批
         String content = "";
         int typeId = 0;
-        if(declarationForm.getPlanChange().equals(0)){
+        if (declarationForm.getPlanChange().equals(0)) {
             content = "你有新的待审批周计划";
             typeId = 14;
-        }else{
+        } else {
             content = "你有新的待审批补充计划/变更计划";
             typeId = 46;
         }
@@ -680,8 +702,8 @@ public class BdOperatePlanDeclarationFormServiceImpl
             }
         } else {
             Integer status = 1;
-            if (  status.equals(declarationForm.getLineFormStatus()) &&  status.equals(declarationForm.getDispatchFormStatus())
-                    &&  status.equals(declarationForm.getManagerFormStatus()) &&   status.equals(declarationForm.getDirectorFormStatus())) {
+            if (status.equals(declarationForm.getLineFormStatus()) && status.equals(declarationForm.getDispatchFormStatus())
+                    && status.equals(declarationForm.getManagerFormStatus()) && status.equals(declarationForm.getDirectorFormStatus())) {
                 //declarationForm.setFormStatus(1);
                 /*sysBaseAPI.sendSysAnnouncement(new MessageDTO("管理员",
                         sysBaseAPI.getUserById(declarationForm.getApplyStaffId()).getUsername(),
@@ -696,10 +718,10 @@ public class BdOperatePlanDeclarationFormServiceImpl
         return Result.OK();
     }
 
-    public void readMessage(String busId, String busType, String username){
+    public void readMessage(String busId, String busType, String username) {
         //修改之前状态为已读
         List<String> idList = bdOperatePlanDeclarationFormMapper.queryBusAnnouncement(busId, busType, username);
-        if(!ObjectUtil.isEmpty(idList)){
+        if (!ObjectUtil.isEmpty(idList)) {
             bdOperatePlanDeclarationFormMapper.updateBusAnnouncement(idList);
         }
     }
@@ -723,15 +745,15 @@ public class BdOperatePlanDeclarationFormServiceImpl
         //修改
         bdOperatePlanDeclarationFormMapper.updateById(bdOperatePlanDeclarationForm);
 
-        if( !MagicWords.STATUS_3.equals(bdOperatePlanDeclarationForm.getFormStatus())){
+        if (!MagicWords.STATUS_3.equals(bdOperatePlanDeclarationForm.getFormStatus())) {
             //1是申请计划，2修改，不传,驳回也不传
-            if(ObjectUtil.isNotEmpty(bdOperatePlanDeclarationForm.getIsApply())){
-                if(bdOperatePlanDeclarationForm.getIsApply() == 1){
+            if (ObjectUtil.isNotEmpty(bdOperatePlanDeclarationForm.getIsApply())) {
+                if (bdOperatePlanDeclarationForm.getIsApply() == 1) {
                     //申请计划
                     LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                     this.sendMessage(String.valueOf(bdOperatePlanDeclarationForm.getId()), sysUser.getUsername(), bdOperatePlanDeclarationForm.getLineStaffId(),
                             "你有新的待审批周计划", 13, 1, true);
-                }else if( MagicWords.STATUS_2.equals(bdOperatePlanDeclarationForm.getIsApply())){
+                } else if (MagicWords.STATUS_2.equals(bdOperatePlanDeclarationForm.getIsApply())) {
                     //修改主页消息提醒
                     readMessage(Convert.toStr(bdOperatePlanDeclarationForm.getId()), SysAnnmentTypeEnum.BDOPERATEPLANDECLARATIONFORM.getType(), null);
                     //申请计划
@@ -739,15 +761,15 @@ public class BdOperatePlanDeclarationFormServiceImpl
                     this.sendMessage(String.valueOf(bdOperatePlanDeclarationForm.getId()), sysUser.getUsername(), bdOperatePlanDeclarationForm.getLineStaffId(),
                             "你有新的待审批周计划", 13, 1, true);
                 }
-            }else{
+            } else {
                 //修改主页消息提醒
                 readMessage(Convert.toStr(bdOperatePlanDeclarationForm.getId()), SysAnnmentTypeEnum.BDOPERATEPLANDECLARATIONFORM.getType(), null);
             }
         }
         //点击“取消计划”按钮
-        if(MagicWords.STATUS_4.equals(bdOperatePlanDeclarationForm.getFormStatus())){
+        if (MagicWords.STATUS_4.equals(bdOperatePlanDeclarationForm.getFormStatus())) {
             //取消检修任务
-            bdOverhaulReportService.cancelTask(bdOperatePlanDeclarationForm.getId()+"");
+            bdOverhaulReportService.cancelTask(bdOperatePlanDeclarationForm.getId() + "");
         }
     }
 
@@ -760,7 +782,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
         //当前登录人线路集合
         List<String> myLineList = new ArrayList<>();
-        if(ObjectUtil.isNotEmpty(teamByIdDTO.getLineId())){
+        if (ObjectUtil.isNotEmpty(teamByIdDTO.getLineId())) {
             myLineList = Arrays.asList(teamByIdDTO.getLineId().split(","));
         }
 
@@ -770,7 +792,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
         //按线路查询
         List<String> finalMyLineList = myLineList;
         lineList = lineList.stream().filter(s -> {
-            if(ObjectUtil.isNotEmpty(s.getLineId())){
+            if (ObjectUtil.isNotEmpty(s.getLineId())) {
                 long coun = Arrays.asList(s.getLineId().split(",")).stream()
                         .filter(lineId -> finalMyLineList.stream().filter(myLineId -> myLineId.equals(lineId)).count() > 0).count();
                 return coun > 0;
@@ -783,6 +805,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
     /**
      * 审批冲突检测
+     *
      * @param declarationForm 周计划表.
      * @return Result.
      */
@@ -798,20 +821,20 @@ public class BdOperatePlanDeclarationFormServiceImpl
         } else {//todo 1234
             if (MagicWords.NUM_1.equals(planStateChange.getRoleId())) {
                 if (declarationForm.getDispatchFormStatus() != null
-                        &&  !falseStatus.equals(declarationForm.getDispatchFormStatus())) {
+                        && !falseStatus.equals(declarationForm.getDispatchFormStatus())) {
                     return Result.error(600, "生产调度已审批，不可二次操作");
                 }
             } else if (MagicWords.NUM_3.equals(planStateChange.getRoleId())) {
                 if (declarationForm.getLineFormStatus() == null
-                        ||  !trueStatus.equals(declarationForm.getLineFormStatus())) {
+                        || !trueStatus.equals(declarationForm.getLineFormStatus())) {
                     return Result.error(600, "线路负责人未同意，不可继续审批");
                 } else if (declarationForm.getDirectorFormStatus() != null
-                        &&  !falseStatus.equals(declarationForm.getDirectorFormStatus())) {
+                        && !falseStatus.equals(declarationForm.getDirectorFormStatus())) {
                     return Result.error(600, "分部主任已审批，不可二次操作");
                 }
             } else if (MagicWords.NUM_4.equals(planStateChange.getRoleId())) {
                 if (declarationForm.getDispatchFormStatus() == null
-                        ||  !trueStatus.equals(declarationForm.getDispatchFormStatus())) {
+                        || !trueStatus.equals(declarationForm.getDispatchFormStatus())) {
                     return Result.error(600, "生产调度未同意，不可继续审批");
                 }
                 /*else if (declarationForm.getDispatchFormStatus() != null
@@ -820,7 +843,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
                 }*/
             } else if (MagicWords.NUM_5.equals(planStateChange.getRoleId())) {
                 if (declarationForm.getDispatchFormStatus() == null
-                        ||  !trueStatus.equals(declarationForm.getDirectorFormStatus())) {
+                        || !trueStatus.equals(declarationForm.getDirectorFormStatus())) {
                     return Result.error(600, "分部主任未同意，不可继续审批");
                 }
             }
@@ -831,10 +854,11 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
     /**
      * Helper Function to get Assist Station's names.
+     *
      * @param record List of Declaration Form.
      */
     private void getAssistStationName(List<BdOperatePlanDeclarationFormReturnTypeDTO> record) {
-        for (BdOperatePlanDeclarationFormReturnTypeDTO item: record) {
+        for (BdOperatePlanDeclarationFormReturnTypeDTO item : record) {
             if (ObjectUtil.isNotEmpty(item.getAssistStationName())) {
                 String[] parseId = item.getAssistStationName().split(",");
                 String concatName = baseMapper.queryStationNamesById(parseId);
@@ -845,6 +869,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
     /**
      * Helper function to init line table.
+     *
      * @param range the range of line to init.
      * @return A hash table contain Integer-String pair of station's line.
      */
@@ -858,13 +883,14 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
     /**
      * 重新申请
+     *
      * @param id
      */
     @Override
     public void reapply(Integer id) {
         BdOperatePlanDeclarationForm operatePlanDeclarationForm = bdOperatePlanDeclarationFormMapper.selectById(id);
         //不是草稿保存状态，才修改
-        if(!MagicWords.STATUS_3.equals(operatePlanDeclarationForm.getFormStatus())){
+        if (!MagicWords.STATUS_3.equals(operatePlanDeclarationForm.getFormStatus())) {
             operatePlanDeclarationForm.setFormStatus(0);
             operatePlanDeclarationForm.setDispatchFormStatus(0);
             operatePlanDeclarationForm.setLineFormStatus(0);
@@ -889,6 +915,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
     /**
      * 周计划表-是否有权限审批
+     *
      * @param id
      * @return
      */
@@ -899,9 +926,9 @@ public class BdOperatePlanDeclarationFormServiceImpl
         BdOperatePlanDeclarationForm operatePlanDeclarationForm = bdOperatePlanDeclarationFormMapper.selectById(id);
 
         //是否进入流程
-        if(ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getFormStatus()) && operatePlanDeclarationForm.getFormStatus() == 0){
+        if (ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getFormStatus()) && operatePlanDeclarationForm.getFormStatus() == 0) {
             isApproveDTO.setIsBegin(1);
-        }else{
+        } else {
             isApproveDTO.setIsBegin(0);
         }
 
@@ -912,38 +939,38 @@ public class BdOperatePlanDeclarationFormServiceImpl
         List<String> roleList = sysBaseApi.getRolesByUsername(sysUser.getUsername());
         long count = roleList.stream().filter(s -> ("line_all_people").equals(s)).count();
         //总线路负责人 有权限审批线路下所有的
-        if((ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getLineStaffId()) && operatePlanDeclarationForm.getLineStaffId().equals(sysUser.getId())) ||
-                (count > 0 && ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getLineStaffId()) && operatePlanDeclarationForm.getLineFormStatus() == 0)){
+        if ((ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getLineStaffId()) && operatePlanDeclarationForm.getLineStaffId().equals(sysUser.getId())) ||
+                (count > 0 && ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getLineStaffId()) && operatePlanDeclarationForm.getLineFormStatus() == 0)) {
             //线路
             isApproveDTO.setIsApprove(1);
-        }else if(ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getDispatchStaffId()) && operatePlanDeclarationForm.getDispatchStaffId().equals(sysUser.getId())){
+        } else if (ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getDispatchStaffId()) && operatePlanDeclarationForm.getDispatchStaffId().equals(sysUser.getId())) {
             //调度
             //线路审批通过
-            if(ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getLineFormStatus()) && operatePlanDeclarationForm.getLineFormStatus() == 1){
+            if (ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getLineFormStatus()) && operatePlanDeclarationForm.getLineFormStatus() == 1) {
                 isApproveDTO.setIsApprove(1);
-            }else{
+            } else {
                 isApproveDTO.setIsApprove(0);
             }
-        }else if(ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getDirectorStaffId()) && operatePlanDeclarationForm.getDirectorStaffId().equals(sysUser.getId())){
+        } else if (ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getDirectorStaffId()) && operatePlanDeclarationForm.getDirectorStaffId().equals(sysUser.getId())) {
             //主任
             //线路、调度审批通过
-            if(ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getLineFormStatus()) && operatePlanDeclarationForm.getLineFormStatus() == 1 &&
-                    ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getDispatchFormStatus()) && operatePlanDeclarationForm.getDispatchFormStatus() == 1){
+            if (ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getLineFormStatus()) && operatePlanDeclarationForm.getLineFormStatus() == 1 &&
+                    ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getDispatchFormStatus()) && operatePlanDeclarationForm.getDispatchFormStatus() == 1) {
                 isApproveDTO.setIsApprove(1);
-            }else{
+            } else {
                 isApproveDTO.setIsApprove(0);
             }
-        }else if(ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getManagerStaffId()) && operatePlanDeclarationForm.getManagerStaffId().equals(sysUser.getId())){
+        } else if (ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getManagerStaffId()) && operatePlanDeclarationForm.getManagerStaffId().equals(sysUser.getId())) {
             //经理
             //线路、调度、主任审批通过
-            if(ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getLineFormStatus()) && operatePlanDeclarationForm.getLineFormStatus() == 1 &&
+            if (ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getLineFormStatus()) && operatePlanDeclarationForm.getLineFormStatus() == 1 &&
                     ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getDispatchFormStatus()) && operatePlanDeclarationForm.getDispatchFormStatus() == 1 &&
-                    ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getDirectorFormStatus()) && operatePlanDeclarationForm.getDirectorFormStatus() == 1){
+                    ObjectUtil.isNotEmpty(operatePlanDeclarationForm.getDirectorFormStatus()) && operatePlanDeclarationForm.getDirectorFormStatus() == 1) {
                 isApproveDTO.setIsApprove(1);
-            }else{
+            } else {
                 isApproveDTO.setIsApprove(0);
             }
-        }else{
+        } else {
             isApproveDTO.setIsApprove(0);
         }
 
