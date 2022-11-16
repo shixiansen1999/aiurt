@@ -9,6 +9,7 @@ import com.aiurt.common.constant.enums.RoleIndexConfigEnum;
 import com.aiurt.common.util.Md5Util;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.JeeccgBaseConfig;
+import com.aiurt.modules.system.dto.SysPermissionDTO;
 import com.aiurt.modules.system.entity.SysDepartPermission;
 import com.aiurt.modules.system.entity.SysPermission;
 import com.aiurt.modules.system.entity.SysPermissionDataRule;
@@ -28,7 +29,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.modules.base.service.BaseCommonService;
@@ -420,7 +420,7 @@ public class SysPermissionController {
      */
     @ApiOperation(value = "删除菜单或模块", notes = "删除菜单或模块")
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
-    @ApiImplicitParam(name = "id", value = "菜单id", required = true,  dataTypeClass = String.class)
+    @ApiImplicitParam(name = "id", value = "菜单id", required = true, dataTypeClass = String.class)
     public Result<SysPermission> delete(@RequestParam(name = "id") String id) {
         Result<SysPermission> result = new Result<>();
         try {
@@ -995,5 +995,20 @@ public class SysPermissionController {
             log.error(e.getMessage(), e);
         }
         return result;
+    }
+
+
+    /**
+     * 批量启停用菜单
+     *
+     * @param condition
+     * @return
+     */
+    @ApiOperation(value = "批量启停用菜单", notes = "批量启停用菜单")
+    @AutoLog(value = "批量启停用菜单")
+    @PostMapping(value = "/batchStartDisable")
+    public Result<?> batchStartDisable(@RequestBody List<SysPermissionDTO> condition) {
+        sysPermissionService.batchStartDisable(condition);
+        return Result.ok("修改成功！");
     }
 }
