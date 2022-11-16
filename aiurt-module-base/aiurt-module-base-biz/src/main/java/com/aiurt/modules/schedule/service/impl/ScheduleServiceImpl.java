@@ -17,7 +17,6 @@ import com.aiurt.modules.schedule.service.IScheduleItemService;
 import com.aiurt.modules.schedule.service.IScheduleRecordService;
 import com.aiurt.modules.schedule.service.IScheduleRuleItemService;
 import com.aiurt.modules.schedule.service.IScheduleService;
-import com.aiurt.modules.train.utils.DlownTemplateUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -49,7 +48,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -235,8 +233,8 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         String url = null;
 
         //创建导入失败错误报告,进行模板导出
-        URL resource = DlownTemplateUtil.class.getResource("/templates/scheduleErrorReport.xlsx");
-        String path = resource.getPath();
+        File fileTemp= new File("/templates/csmajorexcel.xlsx");
+        String path = fileTemp.getAbsolutePath();
         log.info("path:{}", path);
         TemplateExportParams exportParams = new TemplateExportParams(path);
         Map<String, Object> errorMap = new HashMap<String, Object>();
