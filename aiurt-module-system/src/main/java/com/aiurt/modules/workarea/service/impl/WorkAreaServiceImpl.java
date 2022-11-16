@@ -4,6 +4,9 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.weeklyplan.entity.BdSite;
+import com.aiurt.boot.weeklyplan.entity.BdTeam;
+import com.aiurt.boot.weeklyplan.mapper.BdSiteMapper;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.major.entity.CsMajor;
@@ -29,6 +32,8 @@ import com.aiurt.modules.workarea.mapper.WorkAreaOrgMapper;
 import com.aiurt.modules.workarea.mapper.WorkAreaStationMapper;
 import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.swagger.annotations.ApiOperation;
@@ -78,6 +83,8 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
     private CsUserMajorMapper csUserMajorMapper;
     @Autowired
     private SysUserMapper sysUserMapper;
+    @Autowired
+    private BdSiteMapper bdSiteMapper;
 
     @Override
     public Page<WorkAreaDTO> getWorkAreaList(Page<WorkAreaDTO> pageList, WorkAreaDTO workArea) {
@@ -372,5 +379,21 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         List<SysUser> sysUserList = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getOrgId, orgIdSet).eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         return sysUserList;
+    }
+
+    @Override
+    public IPage<BdSite> querySiteByTeam(Page<BdSite> page) {
+
+        //查询登录人
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String teamId = workAreaMapper.queryByUserId(sysUser.getId());
+        List<BdTeam> bdTeamList = workAreaMapper.queryManagedTeam(teamId);
+        bdTeamList = bdTeamList.stream().distinct().collect(Collectors.toList());
+        List<String> teamIdList = bdTeamList.stream().map(s -> s.getId()).collect(Collectors.toList());
+
+        //按管辖班组查询用户表
+        QueryWrapper<BdSite> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("team_id", teamIdList);
+        return bdSiteMapper.selectPage(page, queryWrapper);
     }
 }

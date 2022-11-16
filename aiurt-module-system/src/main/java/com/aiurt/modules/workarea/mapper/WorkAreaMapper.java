@@ -1,5 +1,6 @@
 package com.aiurt.modules.workarea.mapper;
 
+import com.aiurt.boot.weeklyplan.entity.BdTeam;
 import com.aiurt.modules.workarea.dto.MajorDTO;
 import com.aiurt.modules.workarea.dto.MajorUserDTO;
 import com.aiurt.modules.workarea.dto.SubSystem;
@@ -81,4 +82,20 @@ public interface WorkAreaMapper extends BaseMapper<WorkArea> {
      * @return
      */
     List<SysDepartModel> getTeamBylineAndMajors(@Param("lineCodeList") List<String> lineCodeList,@Param("majorList") List<String> majorList);
+
+
+    /**
+     * 管辖班组列表
+     * @param id
+     * @return
+     */
+    List<BdTeam> queryManagedTeam(String id);
+
+
+    /**
+     * 根据用户查询班组id
+     * @param userId
+     * @return
+     */
+    String queryByUserId(String userId);
 }

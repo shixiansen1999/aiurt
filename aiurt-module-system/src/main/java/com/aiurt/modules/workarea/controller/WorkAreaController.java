@@ -1,5 +1,6 @@
 package com.aiurt.modules.workarea.controller;
 
+import com.aiurt.boot.weeklyplan.entity.BdSite;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.position.entity.CsStation;
@@ -163,5 +164,20 @@ public class WorkAreaController extends BaseController<WorkArea, IWorkAreaServic
 	public Result<List<SysUser>> queryOriginUser(@RequestParam(value = "param", required = true, defaultValue = "1") String param) {
 		List<SysUser> list = workAreaService.queryOriginUser(param);
 		return Result.OK(list);
+	}
+
+	/**
+	 * 获取当前用户管辖班组下工区
+	 * @param pageNo
+	 * @param pageSize
+	 * @return
+	 */
+	@AutoLog(value = "工区-获取当前用户管辖班组下工区")
+	@ApiOperation(value = "工区-获取当前用户管辖班组下工区", notes = "工区-获取当前用户管辖班组下工区")
+	@GetMapping(value = "/querySiteByTeam")
+	public Result<?> querySiteByTeam(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+									 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+		IPage<BdSite> bdSiteIpage = workAreaService.querySiteByTeam(new Page<BdSite>(pageNo, pageSize));
+		return Result.OK(bdSiteIpage);
 	}
 }

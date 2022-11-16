@@ -103,4 +103,18 @@ where cm.major_code = #{majorCode} and cs.del_flag = 0
             </if>
         </where>
     </select>
+    <select id="queryManagedTeam" resultType="com.aiurt.boot.weeklyplan.entity.BdTeam">
+        select *
+        from sys_depart t
+        where find_in_set(id,#{id})&gt;0
+        union all
+		select *
+        from sys_depart t where t.depart_name='外委单位'
+        order by id
+    </select>
+
+    <select id="queryByUserId" resultType="string">
+        select org_id from sys_user
+        where id = #{userId}
+    </select>
 </mapper>

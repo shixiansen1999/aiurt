@@ -15,7 +15,7 @@ import java.io.Serializable;
 @ApiModel(value = "作业类别下拉框对象" ,description = "下拉框内容")
 public class BdWorkTypeDTO implements Serializable {
     @ApiModelProperty(value = "类别id")
-    private Integer id;
+    private String id;
     @ApiModelProperty(value = "类别名称")
     private String name;
 

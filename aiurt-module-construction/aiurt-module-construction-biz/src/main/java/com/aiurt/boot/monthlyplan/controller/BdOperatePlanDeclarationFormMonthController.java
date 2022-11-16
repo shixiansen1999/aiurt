@@ -72,6 +72,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
         // 当前登录用户id
         // staffID = TokenUtils.getLoginUser().getId();
         // 配置分页
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        staffID = loginUser.getId();
         Page<BdOperatePlanDeclarationFormMonth> page = new Page<>(pageNo, pageSize);
         return Result.OK(bdOperatePlanDeclarationFormMonthService.listByDate(start_time,
                 end_time, line_id, pageNo, pageSize, page,

@@ -428,8 +428,8 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	 * @param pageSize
 	 * @return
 	 */
-	@AutoLog(value = "获取当前用户管辖班组下工区")
-	@ApiOperation(value = "获取当前用户管辖班组下工区", notes = "获取当前用户管辖班组下工区")
+	@AutoLog(value = "周计划表-获取当前用户管辖班组下工区")
+	@ApiOperation(value = "周计划表-获取当前用户管辖班组下工区", notes = "周计划表-获取当前用户管辖班组下工区")
 	@GetMapping(value = "/querySiteByTeam")
 	public Result<?> querySiteByTeam(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
 									 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
