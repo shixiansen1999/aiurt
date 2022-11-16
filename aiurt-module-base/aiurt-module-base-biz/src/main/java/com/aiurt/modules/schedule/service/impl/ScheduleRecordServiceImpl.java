@@ -354,6 +354,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                 start.setTime(scheduleRecordREditDTO.getStartTime());
                 QueryWrapper wrapper = new QueryWrapper();
                 wrapper.eq("rule_id", scheduleRecordREditDTO.getScheduleRuleId());
+                wrapper.orderByDesc("id");
                 List<ScheduleRuleItem> itemList = ruleItemService.list(wrapper);
                 int itemSize = itemList.size();
                 Map<Integer, Integer> scheduleRuleItemMap = new HashMap<>(itemSize);

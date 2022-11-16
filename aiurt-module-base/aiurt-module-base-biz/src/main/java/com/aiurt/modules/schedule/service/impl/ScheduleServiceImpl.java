@@ -221,6 +221,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                 start.setTime(schedule.getStartDate());
                 QueryWrapper wrapper = new QueryWrapper();
                 wrapper.eq("rule_id", schedule.getRuleId());
+                wrapper.orderByDesc("id");
                 List<ScheduleRuleItem> itemList = ruleItemService.list(wrapper);
                 int itemSize = itemList.size();
                 Map<Integer, Integer> scheduleRuleItemMap = new HashMap<>(itemSize);
@@ -235,6 +236,9 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                     int index = (i % itemSize == 0 ? itemSize : i % itemSize);
                     Integer ruleItemId = scheduleRuleItemMap.get(index);
                     ScheduleItem scheduleItem = ItemService.getById(ruleItemId);
+                    if(CollUtil.isEmpty(scheduleRuleItem.getUserIds())){
+                        result.error500("操作失败");
+                    }
                     for (String userId : scheduleRuleItem.getUserIds()) {
                         ScheduleRecord record = ScheduleRecord.builder()
                                 .scheduleId(schedule.getId())
@@ -252,12 +256,13 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                     start.add(Calendar.DAY_OF_YEAR, 1);
                     i++;
                 }
-                result.success("添加成功！");
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 result.error500("操作失败");
+                return result;
             }
         }
+        result.success("添加成功！");
         return result;
     }
 
