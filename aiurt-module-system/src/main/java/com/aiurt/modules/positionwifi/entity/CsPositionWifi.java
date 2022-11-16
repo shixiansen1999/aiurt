@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -73,13 +74,22 @@ public class CsPositionWifi implements Serializable {
 	/**线路编码*/
 	@Excel(name = "线路编码", width = 15)
     @ApiModelProperty(value = "线路编码")
+    @Dict(dictTable ="cs_line",dicText = "line_name",dicCode = "line_code")
     private String lineCode;
 	/**站点编码*/
 	@Excel(name = "站点编码", width = 15)
     @ApiModelProperty(value = "站点编码")
+    @Dict(dictTable ="cs_station",dicText = "station_name",dicCode = "station_code")
     private String stationCode;
 	/**站点位置编码*/
 	@Excel(name = "站点位置编码", width = 15)
     @ApiModelProperty(value = "站点位置编码")
+    @Dict(dictTable ="cs_station_position",dicText = "position_name",dicCode = "position_code")
     private String positionCode;
+
+    /**位置*/
+    @Excel(name = "位置", width = 15)
+    @ApiModelProperty(value = "位置")
+    @TableField(exist = false)
+    private String position;
 }

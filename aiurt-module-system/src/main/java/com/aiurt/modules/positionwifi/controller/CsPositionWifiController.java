@@ -2,39 +2,25 @@ package com.aiurt.modules.positionwifi.controller;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.positionwifi.entity.CsPositionWifi;
 import com.aiurt.modules.positionwifi.service.ICsPositionWifiService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.common.util.oConvertUtils;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import com.aiurt.common.system.base.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -52,6 +38,9 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class CsPositionWifiController extends BaseController<CsPositionWifi, ICsPositionWifiService> {
 	@Autowired
 	private ICsPositionWifiService csPositionWifiService;
+
+	@Autowired
+	private ISysBaseAPI sysBaseAPI;
 
 	/**
 	 * 分页列表查询
@@ -72,7 +61,16 @@ public class CsPositionWifiController extends BaseController<CsPositionWifi, ICs
 		QueryWrapper<CsPositionWifi> queryWrapper = QueryGenerator.initQueryWrapper(csPositionWifi, req.getParameterMap());
 		Page<CsPositionWifi> page = new Page<CsPositionWifi>(pageNo, pageSize);
 		IPage<CsPositionWifi> pageList = csPositionWifiService.page(page, queryWrapper);
+		List<CsPositionWifi> records = pageList.getRecords();
+		for (CsPositionWifi record : records) {
+			String lineName = sysBaseAPI.getPosition(record.getLineCode());
+			String stationName = sysBaseAPI.getPosition(record.getStationCode());
+			String positionName = sysBaseAPI.getPosition(record.getPositionCode());
+			String position = lineName+stationName+positionName;
+			record.setPosition(position);
+		}
 		return Result.OK(pageList);
+
 	}
 
 	/**
