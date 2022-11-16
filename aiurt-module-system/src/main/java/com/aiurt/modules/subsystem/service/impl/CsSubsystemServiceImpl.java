@@ -511,7 +511,12 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         }
     }
     private String decideIsNull(CsSubsystemImportDTO csSubsystemDTO) {
-        List<SysUser> nUllUsers = isNUllUsers(csSubsystemDTO.getSystemUserName());
+        List<SysUser> nUllUsers = new ArrayList<>();
+        if(ObjectUtil.isNotEmpty(csSubsystemDTO.getSystemUserName()))
+        {
+
+             nUllUsers = isNUllUsers(csSubsystemDTO.getSystemUserName());
+        }
          Integer size = nUllUsers.size();
         if (csSubsystemDTO.getMajorCode() == null && csSubsystemDTO.getSystemName() == null && csSubsystemDTO.getSystemCode()==null) {
             return "必填字段为空";
