@@ -6,8 +6,8 @@
     select sl.*,su.work_no  from schedule_log sl left join sys_user su on sl.user_id = su.id
     where sl.del_flag = 0
     <if test="scheduleLog.text != null and scheduleLog.text != ''">
-        AND su.realname like CONCAT( '%', #{scheduleLog.text}, '%' )
-        or su.work_no like CONCAT( '%', #{scheduleLog.text}, '%' )
+        AND (su.realname like CONCAT( '%', #{scheduleLog.text}, '%' )
+        or su.work_no like CONCAT( '%', #{scheduleLog.text}, '%' ))
     </if>
     <if test="scheduleLog.startDate!=null ">
     and sl.date &gt;= #{scheduleLog.startDate}

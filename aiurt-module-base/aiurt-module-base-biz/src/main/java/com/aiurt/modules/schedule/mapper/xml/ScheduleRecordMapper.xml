@@ -61,8 +61,8 @@
             #{item}
         </foreach>
         <if test="text != null and text != ''">
-            AND su.realname like CONCAT( '%', #{text}, '%' )
-            or su.work_no like CONCAT( '%', #{text}, '%' )
+            AND( su.realname like CONCAT( '%', #{text}, '%' )
+            or su.work_no like CONCAT( '%', #{text}, '%' ))
         </if>
         group by sr.user_id
     </select>
@@ -129,8 +129,8 @@
             #{item}
         </foreach>
         <if test="text != null and text != ''">
-            AND su.realname like CONCAT( '%', #{text}, '%' )
-            or su.work_no like CONCAT( '%', #{text}, '%' )
+            AND(su.realname like CONCAT( '%', #{text}, '%' )
+            or su.work_no like CONCAT( '%', #{text}, '%' ))
         </if>
         order by sr.date, sr.item_id
     </select>
