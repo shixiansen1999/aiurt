@@ -2,6 +2,7 @@ package com.aiurt.modules.maplocation.controller;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.weeklyplan.entity.BdLine;
 import com.aiurt.boot.weeklyplan.entity.BdStation;
 import com.aiurt.boot.weeklyplan.mapper.BdLineMapper;
@@ -178,6 +179,38 @@ public class BdMapController {
     public Result<List<AssignUserDTO>> getUserStateByTeamId(@ApiParam(required = true, value = "班组id", name = "teamId") String teamId) {
         List<AssignUserDTO> list = bdMapListService.getUserStateByTeamId(teamId);
         return Result.OK(list);
+    }
+    /**
+     * 根据站点id查询站点信息
+     *
+     * @return
+     */
+    @ApiOperation(value = "根据站点id查询站点信息", notes = "根据站点id查询站点信息")
+    @GetMapping(value = "/getStationById")
+    public Result<List<StationDTO>> getStationById(@ApiParam(required = false, value = "线路Id", name = "lineCode") String lineCode,
+                                                  @RequestParam @ApiParam(name = "stationId", required = false, value = "站点Id") String stationId) {
+        List<StationDTO> stationList = new ArrayList<>();
+        LambdaQueryWrapper<CsStation> queryWrapper = new LambdaQueryWrapper<>();
+        if (StrUtil.isNotEmpty(lineCode)){
+            queryWrapper.eq(CsStation::getLineCode, lineCode);
+        }else if (StrUtil.isNotEmpty(stationId)){
+            queryWrapper.eq(CsStation::getId, stationId);
+        }
+            queryWrapper.eq(CsStation::getDelFlag,0);
+        List<CsStation> list = bdStationMapper.selectList(queryWrapper);
+        if (CollUtil.isNotEmpty(list)) {
+            list.forEach(bdStation -> {
+                if (ObjectUtil.isNotEmpty(bdStation) && bdStation.getLongitude() != null && bdStation.getLatitude() != null) {
+                    StationDTO stationDTO = new StationDTO();
+                    stationDTO.setStationId(bdStation.getId());
+                    stationDTO.setPositionX(bdStation.getLongitude().toString());
+                    stationDTO.setPositionY(bdStation.getLatitude().toString());
+                    stationDTO.setStationName(bdStation.getStationName());
+                    stationList.add(stationDTO);
+                }
+            });
+        }
+        return Result.OK(stationList);
     }
     /**
      * 站点下拉框

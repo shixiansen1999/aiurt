@@ -99,7 +99,7 @@
         sp.longitude as positionX,
         sp.latitude as positionY
         from sys_user su
-        left sys_user_position sp on sp.create_by = su.username
+        LEFT JOIN sys_user_position sp on sp.create_by = su.username
         <where>
             sp.longitude IS NOT NULL
             AND sp.latitude IS NOT NULL
