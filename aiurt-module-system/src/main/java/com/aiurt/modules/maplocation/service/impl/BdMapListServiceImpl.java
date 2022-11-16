@@ -236,7 +236,7 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
      */
     @Override
     public List<AssignUserDTO> getUserStateByTeamId(String teamId) {
-        List<AssignUserDTO> result = new ArrayList<>();
+        List<AssignUserDTO> result = new LinkedList<>();
         // 获取登录人员
         Set<String> userNameSet = getUserInfo();
 
@@ -249,13 +249,38 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                 assign.setId(entity.getId());
                 if (userNameSet.contains(entity.getUserName())) {
                     assign.setStatus("已登录");
+                    UserStationDTO userStation = baseMapper.getStationId(entity.getId());
+                    QueryWrapper<CsStation> bdStationQueryWrapper = new QueryWrapper<>();
+                    bdStationQueryWrapper.lambda().isNotNull(CsStation::getLongitude);
+                    bdStationQueryWrapper.lambda().isNotNull(CsStation::getLatitude);
+                    List<CsStation> bdStationList = csStationService.getBaseMapper().selectList(bdStationQueryWrapper);
+                    if (ObjectUtil.isNotEmpty(userStation)
+                            && userStation.getPositionX() != null
+                            && userStation.getPositionY() != null
+                            && CollUtil.isNotEmpty(bdStationList)) {
+
+                        GlobalCoordinates userDistance = new GlobalCoordinates(userStation.getPositionY(), userStation.getPositionX());
+                        double distance = 2000.0d; // 2000米范围内
+                        for (CsStation bdStation : bdStationList) {
+                            BigDecimal latitude = bdStation.getLatitude();
+                            BigDecimal longitude = bdStation.getLongitude();
+                            if (Objects.nonNull(latitude) && Objects.nonNull(longitude)) {
+                                GlobalCoordinates stationDistance = new GlobalCoordinates(latitude.doubleValue(), longitude.doubleValue());
+                                double meter = MapDistance.getDistanceMeter(userDistance, stationDistance, Ellipsoid.Sphere);
+                                if (meter <= distance) {
+                                    assign.setStationName(bdStation.getStationName());
+                                    distance = meter;
+                                }
+                            }
+                        }
+                    }
                 } else {
                     assign.setStatus("未登录");
                 }
                 result.add(assign);
             });
         }
-
+        result.stream().sorted(Comparator.comparing(l -> "已登录".equals(l.getStatus()))).collect(Collectors.toList());
         return result;
     }
 

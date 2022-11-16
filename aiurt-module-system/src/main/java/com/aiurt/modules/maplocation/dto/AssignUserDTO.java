@@ -26,6 +26,9 @@ public class AssignUserDTO implements Serializable {
 
     @ApiModelProperty(value = "班组")
     private String teamName;
-
+    private Integer num;
     private String name;
+    @ApiModelProperty(value = "附近站点位置")
+    private String stationName;
+
 }
