@@ -15,6 +15,6 @@ import java.io.Serializable;
 public class BdStationCopyDTO implements Serializable {
     private String id;
     private String name;
-    private Integer lineId;
+    private String lineId;
     private String lineName;
 }

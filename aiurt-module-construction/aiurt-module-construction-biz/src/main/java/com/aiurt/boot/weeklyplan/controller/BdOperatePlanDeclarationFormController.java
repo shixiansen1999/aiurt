@@ -142,12 +142,13 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	@GetMapping(value = "/getUserInfo")
 	public Result<?> getUserInfo() {
 		//获取当前用户
-		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		List<BdUserInfoDTO> resultBuffer = bdOperatePlanDeclarationFormService.getUserInfo(sysUser.getId());
-		if(null != resultBuffer && resultBuffer.size() >0){
-			return  Result.OK("获取登录用户信息成功", resultBuffer.get(0));
+//		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+//		List<BdUserInfoDTO> resultBuffer = bdOperatePlanDeclarationFormService.getUserInfo(sysUser.getId());
+		BdUserInfoDTO resultBuffer = bdOperatePlanDeclarationFormService.getUserInfo();
+		if (null != resultBuffer) {
+			return Result.OK("获取登录用户信息成功", resultBuffer);
 		}
-		return  Result.error("未查询到用户信息");
+		return Result.error("未查询到用户信息");
 	}
 
 	/**

@@ -81,7 +81,8 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
      * @param id the ID of the User.
      * @return BdUserInfoDTO.
      */
-    List<BdUserInfoDTO> getUserInfo(String id);
+//    List<BdUserInfoDTO> getUserInfo(String id);
+    BdUserInfoDTO getUserInfo();
 
     /**
      * 获取所有车站.
