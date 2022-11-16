@@ -1,30 +1,46 @@
 package com.aiurt.modules.manufactor.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.system.base.view.AiurtEntityExcelView;
+import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
 import com.aiurt.modules.manufactor.entity.vo.CsManuFactorImportVo;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.manufactor.mapper.CsManufactorMapper;
 import com.aiurt.modules.manufactor.service.ICsManufactorService;
+import com.aiurt.modules.subsystem.service.impl.CsSubsystemServiceImpl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
 import org.jeecgframework.poi.excel.export.ExcelExportServer;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -38,6 +54,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,6 +69,11 @@ import java.util.stream.Collectors;
 public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsManufactor> implements ICsManufactorService {
     @Autowired
     private CsManufactorMapper csManufactorMapper;
+    @Autowired
+    @Lazy
+    private ICsManufactorService csManufactorService;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
 
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
@@ -180,28 +202,47 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                     }
                 } else {
                     successLines =0;
-                    List<CsManuFactorImportVo> exportList =new ArrayList<>();
-                    ModelAndView model = new ModelAndView(new JeecgEntityExcelView());
-                    model.addObject(NormalExcelConstants.FILE_NAME, "下载错误模板");
-                    //excel注解对象Class
-                    model.addObject(NormalExcelConstants.CLASS, CsManuFactorImportVo.class);
-                    //自定义表格参数
-                    ExportParams  exportParams =new ExportParams("错误清单模板", "错误清单模板");
-                    model.addObject(NormalExcelConstants.PARAMS,exportParams );
-                    //导出数据列表
-                    model.addObject(NormalExcelConstants.DATA_LIST, csManuFactorList);
-                    Map<String, Object> model1 = model.getModel();
-                    // 生成错误excel
-                    ExportParams params1 = (ExportParams) model1.get("params");
-                    params1.setType(ExcelType.XSSF);
-                    Workbook workbook = new XSSFWorkbook();
-                    new ExcelExportServer().createSheet(workbook, params1, (Class) model1.get("entity"), (Collection) model1.get("data"),null);
-//                    Workbook workbook = ExcelExportUtil.exportExcel((ExportParams)model1.get("params"), (Class)model1.get("entity"), (Collection)model1.get("data"));
-                    // 写到文件中
+                    //1.获取文件流
+                    Resource resource = new ClassPathResource("/templates/csManuFactorExcel.xlsx");
+                    InputStream resourceAsStream = resource.getInputStream();
+
+                    //2.获取临时文件
+                    File fileTemp= new File("/templates/csManuFactorExcel.xlsx");
+                    try {
+                        //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+                        FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                    }
+                    String path = fileTemp.getAbsolutePath();
+                    TemplateExportParams exportParams = new TemplateExportParams(path);
+                    Map<String, Object> errorMap = new HashMap<String, Object>();
+                    errorMap.put("title", "厂商信息导入错误清单");
+                    List<Map<String, Object>> listMap = new ArrayList<>();
+                    for (CsManuFactorImportVo dto : csManuFactorList) {
+                        //获取一条排班记录
+                        Map<String, Object> lm = new HashMap<String, Object>();
+                        //等级字典值翻译
+                        List<DictModel> manufactor_level = sysBaseApi.getDictItems("manufactor_level");
+                        manufactor_level= manufactor_level.stream().filter(f -> (String.valueOf(dto.getLevel())).equals(f.getValue())).collect(Collectors.toList());
+                        String level = manufactor_level.stream().map(DictModel::getText).collect(Collectors.joining());
+                        //错误报告获取信息
+                        lm.put("code", dto.getCode());
+                        lm.put("name", dto.getName());
+                        lm.put("level", level);
+                        lm.put("linkPerson", dto.getLinkPerson());
+                        lm.put("link", dto.getLinkPhoneNo());
+                        lm.put("linkPhoneNo", dto.getLinkAddress());
+                        lm.put("filePath", dto.getFilePath());
+                        lm.put("mistake", dto.getErrorCause());
+                        listMap.add(lm);
+                    }
+                    errorMap.put("maplist", listMap);
+                    Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
                     String filename = "厂商信息导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
                     FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+filename);
-                    workbook.write(out);
                     url =filename;
+                    workbook.write(out);
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());

@@ -1,6 +1,7 @@
 package com.aiurt.modules.manufactor.entity.vo;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.system.base.annotation.ExcelExtend;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -37,10 +38,12 @@ public class CsManuFactorImportVo implements Serializable {
     private String code;
 	/**厂商名称*/
 	@Excel(name = "厂商名称", width = 15)
+    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "厂商名称")
     private String name;
 	/**厂商等级(1:较好/2:良好/3:较差)*/
 	@Excel(name = "厂商等级", width = 15,dicCode = "manufactor_level")
+    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "厂商等级")
     @Dict(dicCode = "manufactor_level")
     private Integer level;

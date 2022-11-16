@@ -307,6 +307,6 @@ public class StockLevel2InfoController extends BaseController<StockLevel2Info,IS
     @ApiOperation(value="二级仓库管理导入模板下载", notes="二级仓库管理导入模板下载")
     @RequestMapping(value = "/exportTemplateXls")
     public ModelAndView exportTemplateXl() {
-        return super.exportTemplateXls("",StockLevel2Info.class, "二级仓库管理导入模板");
+        return super.exportTemplateXls("",StockLevel2Info.class, "二级仓库管理导入模板","");
     }
 }

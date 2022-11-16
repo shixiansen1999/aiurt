@@ -1,5 +1,6 @@
 package com.aiurt.modules.stock.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.util.ImportExcelUtil;
@@ -13,21 +14,28 @@ import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
 import org.jeecgframework.poi.excel.export.ExcelExportServer;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -38,6 +46,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -57,6 +66,8 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 	private SysBaseApiImpl sysBaseApi;
 	@Value("${jeecg.path.upload}")
 	private String upLoadPath;
+	@Autowired
+	private ISysBaseAPI sysBaseAPI;
 
 	@Override
 	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -150,26 +161,58 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 					}
 				} else {
 					successLines = 0;
-					ModelAndView model = new ModelAndView(new JeecgEntityExcelView());
-					model.addObject(NormalExcelConstants.FILE_NAME, "下载错误模板");
-					//excel注解对象Class
-					model.addObject(NormalExcelConstants.CLASS, StockLevel2InfoVo.class);
-					//自定义表格参数
-					model.addObject(NormalExcelConstants.PARAMS, new ExportParams("错误清单模板", "错误清单模板"));
-					//导出数据列表
-					model.addObject(NormalExcelConstants.DATA_LIST, stockLevel2InfoList);
-					Map<String, Object> model1 = model.getModel();
-					// 生成错误excel
-					ExportParams params1 = (ExportParams) model1.get("params");
-					params1.setType(ExcelType.XSSF);
-					Workbook workbook = new XSSFWorkbook();
-					new ExcelExportServer().createSheet(workbook, params1, (Class) model1.get("entity"), (Collection) model1.get("data"),null);
-//					Workbook workbook = ExcelExportUtil.exportExcel((ExportParams)model1.get("params"), (Class)model1.get("entity"), (Collection)model1.get("data"));
-					// 写到文件中
+					//1.获取文件流
+					Resource resource = new ClassPathResource("/templates/stockLevel2Info.xlsx");
+					InputStream resourceAsStream = resource.getInputStream();
+
+					//2.获取临时文件
+					File fileTemp= new File("/templates/stockLevel2Info.xlsx");
+					try {
+						//将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+						FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+					} catch (Exception e) {
+						log.error(e.getMessage());
+					}
+					String path = fileTemp.getAbsolutePath();
+					TemplateExportParams exportParams = new TemplateExportParams(path);
+					Map<String, Object> errorMap = new HashMap<String, Object>();
+					errorMap.put("title", "二级仓库管理错误清单");
+					List<Map<String, Object>> listMap = new ArrayList<>();
+					for (StockLevel2InfoVo dto : stockLevel2InfoList) {
+						//获取一条排班记录
+						Map<String, Object> lm = new HashMap<String, Object>();
+						//状态字典值翻译
+						List<DictModel> status = sysBaseApi.getDictItems("stock_level2_info_status");
+						status= status.stream().filter(f -> (String.valueOf(dto.getStatus())).equals(f.getValue())).collect(Collectors.toList());
+						String statu = null;
+						if(CollUtil.isNotEmpty(status)){
+							 statu = status.stream().map(DictModel::getText).collect(Collectors.joining());
+						}else{
+							statu ="";
+						}
+						//组织机构字典值翻译
+						String departName = null;
+						if(ObjectUtil.isNotNull(dto.getOrganizationId())){
+							SysDepartModel sysDepartModel = sysBaseApi.selectAllById(dto.getOrganizationId());
+							 departName= sysDepartModel.getDepartName();
+						}else{
+							departName = dto.getOrganizationId();
+						}
+						//错误报告获取信息
+						lm.put("WarehouseName", dto.getWarehouseName());
+						lm.put("WarehouseCode", dto.getWarehouseCode());
+						lm.put("remark", dto.getRemark());
+						lm.put("OrganizationId", departName);
+						lm.put("status", statu);
+						lm.put("mistake", dto.getErrorCause());
+						listMap.add(lm);
+					}
+					errorMap.put("maplist", listMap);
+					Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
 					String filename = "二级仓库管理错误清单"+"_" + System.currentTimeMillis()+"."+type;
 					FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+filename);
-					workbook.write(out);
 					url =filename;
+					workbook.write(out);
 				}
 			} catch (Exception e) {
 				errorMessage.add("发生异常：" + e.getMessage());
