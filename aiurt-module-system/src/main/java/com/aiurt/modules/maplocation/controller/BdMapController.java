@@ -192,7 +192,7 @@ public class BdMapController {
                                                   @RequestParam @ApiParam(name = "stationId", required = false, value = "站点Id") String stationId) {
         List<StationDTO> stationList = new ArrayList<>();
         LambdaQueryWrapper<CsStation> queryWrapper = new LambdaQueryWrapper<>();
-        if (StrUtil.isNotEmpty(lineCode)){
+        if (StrUtil.isNotEmpty(lineCode) && !StrUtil.isNotEmpty(stationId)){
             queryWrapper.eq(CsStation::getLineCode, lineCode);
         }else if (StrUtil.isNotEmpty(stationId)){
             queryWrapper.eq(CsStation::getId, stationId);

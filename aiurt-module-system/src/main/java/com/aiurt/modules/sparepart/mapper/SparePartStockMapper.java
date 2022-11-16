@@ -80,4 +80,12 @@ public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
                       @Param("startDate") Date startDate,
                       @Param("endDate") Date endDate);
 
+    /**
+     *
+     * @param page
+     * @param orgId
+     * @param text
+     * @return
+     */
+    List<SparePartStock> selectAppList(Page<SparePartStock> page, @Param("orgId") String orgId,@Param("text") String text);
 }

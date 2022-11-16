@@ -57,4 +57,13 @@ public interface ISparePartStockService extends IService<SparePartStock> {
      * @return
      */
     ModelAndView reportExport(HttpServletRequest request, SparePartStatistics sparePartStatistics);
+
+    /**
+     * app查询列表
+     * @param page
+     * @param orgId
+     * @param text
+     * @return
+     */
+    List<SparePartStock> selectAppList(Page<SparePartStock> page, String orgId, String text);
 }

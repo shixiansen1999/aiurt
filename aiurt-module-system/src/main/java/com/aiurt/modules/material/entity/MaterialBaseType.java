@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.sparepart.entity.dto.SparePartConsume;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -15,6 +16,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import org.jeecgframework.poi.excel.annotation.ExcelCollection;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.List;
@@ -30,7 +32,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @ApiModel(value="物资分类", description="物资分类")
-public class MaterialBaseType {
+public class MaterialBaseType extends DictEntity {
 
 	/**主键id*/
 	@TableId(type= IdType.ASSIGN_ID)

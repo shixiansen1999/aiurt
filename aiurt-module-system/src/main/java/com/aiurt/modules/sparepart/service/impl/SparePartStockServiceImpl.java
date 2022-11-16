@@ -616,4 +616,9 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
         return mv;
     }
 
+    @Override
+    public List<SparePartStock> selectAppList(Page<SparePartStock> page, String orgId, String text) {
+        return sparePartStockMapper.selectAppList(page,orgId,text);
+    }
+
 }

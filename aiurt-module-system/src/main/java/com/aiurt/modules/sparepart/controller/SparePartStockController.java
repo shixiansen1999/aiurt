@@ -76,6 +76,31 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 		return Result.OK(page);
 	}
 	 /**
+	  * APP-分页列表查询
+	  *
+	  * @param sparePartStock
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "APP-列表查询",operateType = 1,operateTypeAlias = "App备件库存信息分页列表查询",permissionUrl = "/sparepart/sparePartStock/list")
+	 @ApiOperation(value="spare_part_stock-app分页列表查询", notes="spare_part_stock-app分页列表查询")
+	 @GetMapping(value = "/appList")
+	 @PermissionData(pageComponent = "sparePartsFor/SparePartStockAppList")
+	 public Result<IPage<SparePartStock>> appQueryPageList(@RequestParam(name="text",required=false) String text,
+														@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+														@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+														HttpServletRequest req) {
+		 LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+		 Page<SparePartStock> page = new Page<SparePartStock>(pageNo, pageSize);
+		 List<SparePartStock> list = sparePartStockService.selectAppList(page, user.getOrgId(),text);
+		 list = list.stream().distinct().collect(Collectors.toList());
+		 page.setRecords(list);
+		 return Result.OK(page);
+	 }
+	 /**
 	  * 备件库存-获取存放仓库查询条件
 	  *
 	  * @param sparePartStock

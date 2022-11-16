@@ -5,6 +5,7 @@ import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
+import com.aiurt.modules.material.dto.MaterialBaseTypeDTO;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.mapper.MaterialBaseMapper;
@@ -79,18 +80,27 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
 
     @Override
     public Result importExcelMaterial(MultipartFile file, ImportParams params, String id) throws Exception {
-        List<MaterialBaseType> listMaterial = ExcelImportUtil.importExcel(file.getInputStream(), MaterialBase.class, params);
+        List<MaterialBaseTypeDTO> listMaterial = ExcelImportUtil.importExcel(file.getInputStream(), MaterialBaseTypeDTO.class, params);
         List<String> errorStrs = new ArrayList<>();
         // 去掉 sql 中的重复数据
         Integer errorLines=0;
         Integer successLines=0;
         for (int i = 0; i < listMaterial.size(); i++) {
             try {
-                MaterialBaseType materialBase = listMaterial.get(i);
-                String finalstr = "";
+                MaterialBaseTypeDTO dto = listMaterial.get(i);
+                MaterialBaseType materialBase = new MaterialBaseType();
+                materialBase.setMajorName(dto.getMajorName());
+                materialBase.setStatus(dto.getStatus());
+                materialBase.setBaseTypeCode(dto.getBaseTypeCode());
+                materialBase.setBaseTypeName(dto.getBaseTypeName());
+                materialBase.setSystemName(dto.getSystemName());
                 materialBase.setDelFlag(0);
                 materialBase.setPid(id);
-                materialBase.setStatus("1");
+                MaterialBaseType materialBaseTyperes = materialBaseTypeMapper.selectById(materialBase.getPid());
+                if (null == materialBaseTyperes){
+                    materialBase.setPid("0");
+                }
+
                 //专业
                 String majorCodeName = materialBase.getMajorName()==null?"":materialBase.getMajorName();
                 if("".equals(majorCodeName)){
