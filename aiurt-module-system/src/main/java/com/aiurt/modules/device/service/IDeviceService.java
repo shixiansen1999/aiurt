@@ -5,6 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 /**
  * @Description: 设备
  * @Author: swsc
@@ -49,4 +53,5 @@ public interface IDeviceService extends IService<Device> {
      */
     QueryWrapper<Device> getQueryWrapper(String stationCode,String positionCodeCc, String temporary, String majorCode, String systemCode, String deviceTypeCode, String code, String name, String status);
 
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

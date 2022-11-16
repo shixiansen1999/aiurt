@@ -1,22 +1,20 @@
 package com.aiurt.modules.device.controller;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.device.Model.DeviceModel;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.entity.DeviceCompose;
-import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceComposeService;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
-import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
-import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -29,12 +27,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @Description: 设备
@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 @Api(tags = "设备管理-设备主数据/设备台账（system）")
 @RestController
 @RequestMapping("/device/device")
-public class DeviceController {
+public class DeviceController extends BaseController<Device, IDeviceService> {
     @Autowired
     private IDeviceService deviceService;
     @Autowired
@@ -398,5 +398,31 @@ public class DeviceController {
             result.success("删除成功!");
         }
         return result;
+    }
+
+
+    /**
+     * 导出excel
+     *
+     */
+    @AutoLog(value = "设备主数据模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "")
+    @ApiOperation(value="设备主数据模板下载", notes="设备主数据模板下载")
+    @RequestMapping(value = "/exportTemplateXls")
+    public ModelAndView exportTemplateXl() {
+        return super.exportTemplateXls("", DeviceModel  .class, "设备主数据模板");
+    }
+
+    /**
+     * 通过excel导入数据
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    @ApiOperation(value = "用户管理-导入excel", notes = "用户管理-导入excel")
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+       return deviceService.importExcel(request,response);
     }
 }
