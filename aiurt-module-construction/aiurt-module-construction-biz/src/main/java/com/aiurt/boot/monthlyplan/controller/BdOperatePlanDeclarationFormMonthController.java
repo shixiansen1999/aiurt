@@ -1,5 +1,7 @@
 package com.aiurt.boot.monthlyplan.controller;
 
+import com.aiurt.boot.weeklyplan.dto.BdStaffInfoReturnTypeDTO;
+import com.aiurt.boot.weeklyplan.service.IBdOperatePlanDeclarationFormService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.boot.monthlyplan.entity.BdOperatePlanDeclarationFormMonth;
@@ -21,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: 控制器 中的代码是 生产计划管理 中的 月计划 相关功能.
@@ -43,6 +46,9 @@ import java.util.Date;
 public class BdOperatePlanDeclarationFormMonthController extends BaseController<BdOperatePlanDeclarationFormMonth, IBdOperatePlanDeclarationFormMonthService> {
     @Autowired
     private IBdOperatePlanDeclarationFormMonthService bdOperatePlanDeclarationFormMonthService;
+
+    @Autowired
+    private IBdOperatePlanDeclarationFormService bdOperatePlanDeclarationFormService;
     @Autowired
     private ISysBaseAPI sysBaseAPI;
 
@@ -231,26 +237,26 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
     /**
      * 生产计划管理-月施工计划定制-添加下月任务-施工负责人-下拉框接口
      *
-     * @param request 获取了传入的team_id,这种写法,在生成javadoc注释的时候,是不会自动生成参数的.
+     * @param  teamId 获取了传入的team_id,这种写法,在生成javadoc注释的时候,是不会自动生成参数的.
      * @return 施工负责人-下拉框接口
      */
+    @AutoLog(value = "月计划-施工负责人查询", operateType =  1, operateTypeAlias = "月计划-施工负责人查询", permissionUrl = "")
+    @ApiOperation(value="月计划-施工负责人查询", notes="月计划-施工负责人查询")
     @GetMapping("/queryStaffByTeamId")
-    public Result<?> queryByTeamIdStaff(HttpServletRequest request) {
-        String team_id = request.getParameter("team_id");
-        return Result.OK(bdOperatePlanDeclarationFormMonthService.queryByTeamIdStaff(team_id));
+    public Result<?> queryByTeamIdStaff(@RequestParam(value = "team_id", defaultValue = "-1") String teamId) {
+        return Result.OK(bdOperatePlanDeclarationFormMonthService.queryByTeamIdStaff(teamId));
     }
 
     /**
-     * 生产计划管理-月施工计划定制-添加下月任务-线路负责人-下拉框接口
-     *
-     * @param roleType 角色类型
-     * @param deptId   ?
-     * @return 返回线路负责人信息.包含id和名字.
+     * 周/月计划表-查询线路负责人
+     * @return
      */
-    @GetMapping("/queryStaffsByRoleType")
-    public Result<?> queryStaffsByRoleType(@RequestParam(value = "roleType", defaultValue = "-1") String roleType,
-                                           @RequestParam(value = "deptId", defaultValue = "0") String deptId) {
-        return Result.OK(bdOperatePlanDeclarationFormMonthService.queryStaffsByRoleType(roleType, deptId));
+    @AutoLog(value = "月计划-查询线路负责人",operateType = 1,operateTypeAlias = "月计划-查询线路负责人",permissionUrl = "/production/plan")
+    @ApiOperation(value = "月计划-查询线路负责人", notes = "月计划-查询线路负责人")
+    @RequestMapping(value = "/queryLineStaff", method = RequestMethod.GET)
+    public Result<?> queryLineStaff() {
+        List<BdStaffInfoReturnTypeDTO> list = bdOperatePlanDeclarationFormService.queryLineStaff();
+        return Result.OK(list);
     }
 
 
@@ -259,6 +265,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      *
      * @return 查询所有车站id, name, line_id
      */
+    @AutoLog(value = "月计划-查询所有车站",operateType = 1,operateTypeAlias = "月计划-查询所有车站",permissionUrl = "/production/plan")
+    @ApiOperation(value = "月计划-查询所有车站", notes = "月计划-查询所有车站")
     @GetMapping("/queryAllStationInfo")
     public Result<?> queryAllStationInfo() {
         return Result.OK(bdOperatePlanDeclarationFormMonthService.queryAllStationInfo());
@@ -283,6 +291,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      *
      * @return 返回线路信息中站点名, 站点id两个字段
      */
+    @AutoLog(value = "月计划-查询线路信息中站点名",operateType = 1,operateTypeAlias = "月计划-查询线路信息中站点名",permissionUrl = "/production/plan")
+    @ApiOperation(value = "月计划-查询线路信息中站点名", notes = "月计划-查询线路信息中站点名")
     @GetMapping("/getLineInfo")
     public Result<?> getLineInfo() {
         return Result.OK(bdOperatePlanDeclarationFormMonthService.getLineInfo());

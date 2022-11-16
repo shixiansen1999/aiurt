@@ -29,7 +29,7 @@
         month.plan_change as planChange,
         month.weekday as weekDay,
         month.task_date as taskDate,
-        month.task_time taskTime,
+        month.task_time as  taskTime,
         month.task_range as taskRange,
         month.task_content as taskContent,
         month.department_id as departmentId,
@@ -151,7 +151,7 @@
         and del_flag = '0'
 
         <if test="deptId.toString() != '0'.toString()">
-            and depart_ids in(
+            and org_id in(
             select dep_id from sys_user_depart where dep_id = #{deptId}
             );
 
