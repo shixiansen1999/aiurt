@@ -194,7 +194,8 @@ public class BdMapController {
         LambdaQueryWrapper<CsStation> queryWrapper = new LambdaQueryWrapper<>();
         if (StrUtil.isNotEmpty(lineCode) && !StrUtil.isNotEmpty(stationId)){
             queryWrapper.eq(CsStation::getLineCode, lineCode);
-        }else if (StrUtil.isNotEmpty(stationId)){
+        }
+        if (StrUtil.isNotEmpty(stationId)){
             queryWrapper.eq(CsStation::getId, stationId);
         }
             queryWrapper.eq(CsStation::getDelFlag,0);
