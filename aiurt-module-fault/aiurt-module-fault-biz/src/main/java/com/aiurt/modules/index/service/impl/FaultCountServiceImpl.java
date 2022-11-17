@@ -62,7 +62,14 @@ public class FaultCountServiceImpl implements IFaultCountService {
         LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.ge(Fault::getApprovalPassTime, DateUtil.beginOfDay(startDate));
         queryWrapper.le(Fault::getApprovalPassTime, DateUtil.beginOfDay(endDate));
-        List<Fault> faultList = faultCountMapper.queryFaultCount(startDate,endDate);
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
+        if(CollUtil.isEmpty(departByUserId))
+        {
+            return faultIndexDTO;
+        }
+        List<String> ordId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+        List<Fault> faultList = faultCountMapper.queryFaultCount(startDate,endDate,ordId);
 
         //故障总数
         faultIndexDTO.setSum(CollUtil.isNotEmpty(faultList)?faultList.size():0L);

@@ -1,9 +1,6 @@
 package com.aiurt.modules.index.mapper;
 
 import cn.hutool.core.date.DateTime;
-import com.aiurt.boot.index.dto.TaskDetailsDTO;
-import com.aiurt.boot.index.dto.TaskDetailsReq;
-import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -26,7 +23,7 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @param endDate
      * @return
      */
-    List<Fault> queryFaultCount(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+    List<Fault> queryFaultCount(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("ordList") List<String> ordList);
 
 
     /**
