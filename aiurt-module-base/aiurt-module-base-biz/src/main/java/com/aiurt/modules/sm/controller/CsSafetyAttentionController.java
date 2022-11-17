@@ -1,5 +1,7 @@
 package com.aiurt.modules.sm.controller;
 
+import java.io.BufferedOutputStream;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +11,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.system.base.view.AiurtEntityExcelView;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
@@ -27,6 +33,7 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import com.aiurt.common.system.base.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -66,7 +73,26 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		QueryWrapper<CsSafetyAttention> queryWrapper = QueryGenerator.initQueryWrapper(csSafetyAttention, req.getParameterMap());
+		LambdaQueryWrapper<CsSafetyAttention> queryWrapper = new LambdaQueryWrapper();
+		if (StrUtil.isNotEmpty(csSafetyAttention.getMajorCode())){
+		queryWrapper.eq(CsSafetyAttention::getMajorCode,csSafetyAttention.getMajorCode());
+		}
+		if (csSafetyAttention.getState()!=null){
+			queryWrapper.eq(CsSafetyAttention::getMajorCode,csSafetyAttention.getState());
+		}
+		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionMeasures())){
+			queryWrapper.like(CsSafetyAttention::getAttentionMeasures,csSafetyAttention.getAttentionMeasures());
+		}
+		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionContent())){
+			queryWrapper.like(CsSafetyAttention::getAttentionContent,csSafetyAttention.getAttentionContent());
+		}
+		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionType())){
+			queryWrapper.eq(CsSafetyAttention::getAttentionType,csSafetyAttention.getAttentionType());
+		}
+		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionTypeCode())){
+			queryWrapper.eq(CsSafetyAttention::getAttentionTypeCode,csSafetyAttention.getAttentionTypeCode());
+		}
+		queryWrapper.eq(CsSafetyAttention::getDelFlag,0);
 		Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);
 		IPage<CsSafetyAttention> pageList = csSafetyAttentionService.page(page, queryWrapper);
 		return Result.OK(pageList);
@@ -110,7 +136,10 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	@ApiOperation(value="安全事项-通过id删除", notes="安全事项-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		csSafetyAttentionService.removeById(id);
+		CsSafetyAttention csSafetyAttention = new CsSafetyAttention();
+		csSafetyAttention.setId(id);
+		csSafetyAttention.setDelFlag(1);
+		csSafetyAttentionService.updateById(csSafetyAttention);
 		return Result.OK("删除成功!");
 	}
 
@@ -124,7 +153,10 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	@ApiOperation(value="安全事项-批量删除", notes="安全事项-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.csSafetyAttentionService.removeByIds(Arrays.asList(ids.split(",")));
+		List<String> list =Arrays.asList(ids.split(","));
+		list.forEach(id->{
+			this.delete(id);
+		});
 		return Result.OK("批量删除成功!");
 	}
 
@@ -138,7 +170,9 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	@ApiOperation(value="安全事项-通过id查询", notes="安全事项-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<CsSafetyAttention> queryById(@RequestParam(name="id",required=true) String id) {
-		CsSafetyAttention csSafetyAttention = csSafetyAttentionService.getById(id);
+		CsSafetyAttention csSafetyAttention = csSafetyAttentionService.getOne(new LambdaQueryWrapper<CsSafetyAttention>()
+		                                                                      .eq(CsSafetyAttention::getId,id)
+		                                                                      .eq(CsSafetyAttention::getDelFlag,0));
 		if(csSafetyAttention==null) {
 			return Result.error("未找到对应数据");
 		}
@@ -149,13 +183,33 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
     * 导出excel
     *
     * @param request
-    * @param csSafetyAttention
     */
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, CsSafetyAttention csSafetyAttention) {
-        return super.exportXls(request, csSafetyAttention, CsSafetyAttention.class, "安全事项");
+    public ModelAndView exportXls(HttpServletRequest request,String ids) {
+        return csSafetyAttentionService.exportXls(request, ids);
     }
-
+	 /**
+	  * 下载导入模板
+	  *
+	  * @param response
+	  * @param request
+	  * @throws IOException
+	  */
+	 @AutoLog(value = "下载导入模板")
+	 @ApiOperation(value = "下载导入模板", notes = "下载导入模板")
+	 @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
+	 public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		 //获取输入流，原始模板位置
+		 ClassPathResource classPathResource =  new ClassPathResource("templates/csSafetyAttention.xlsx");
+		 InputStream bis = classPathResource.getInputStream();
+		 BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+		 int len = 0;
+		 while ((len = bis.read()) != -1) {
+			 out.write(len);
+			 out.flush();
+		 }
+		 out.close();
+	 }
     /**
       * 通过excel导入数据
     *

@@ -32,4 +32,6 @@ public class UserInfo
     private String identityNumber;
     @ApiModelProperty(value = "工号")
     private String workNo;
+    @ApiModelProperty(value = "职位")
+    private String post;
 }

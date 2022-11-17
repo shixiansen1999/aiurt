@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -57,7 +58,13 @@ public class CsSafetyAttention implements Serializable {
 	/**专业编码*/
 	@Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码")
+    @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private java.lang.String majorCode;
+    /**专业编码*/
+    @Excel(name = "专业", width = 15)
+    @ApiModelProperty(value = "专业")
+    @TableField(exist = false)
+    private java.lang.String majorName;
 	/**事项分类编码*/
 	@Excel(name = "事项分类编码", width = 15)
     @ApiModelProperty(value = "事项分类编码")

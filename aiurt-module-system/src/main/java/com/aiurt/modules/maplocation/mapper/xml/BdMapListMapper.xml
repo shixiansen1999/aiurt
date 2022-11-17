@@ -49,7 +49,7 @@
         </where>
     </select>
     <select id="getUserById" parameterType="string" resultType="com.aiurt.modules.maplocation.dto.UserInfo">
-        select sy.id,sy.username as userName,sy.realname as name,sy.work_no, sy.phone from sys_user sy
+        select sy.id,sy.username as userName,sy.realname as name,sy.work_no, sy.phone ,sy.post from sys_user sy
         where sy.id=#{id}
     </select>
     <select id="getAllEquipmentList" resultType="com.aiurt.modules.maplocation.dto.EquipmentDTO">

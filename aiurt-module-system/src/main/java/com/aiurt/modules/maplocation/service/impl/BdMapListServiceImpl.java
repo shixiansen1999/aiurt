@@ -281,7 +281,7 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                 result.add(assign);
             });
         }
-        if (StrUtil.isNotEmpty(userId)){
+        if (StrUtil.isNotEmpty(userId)&&stateId==null){
             List<AssignUserDTO> list = new ArrayList<>();
          list =  result.stream().filter(l->l.getId().equals(userId)).collect(Collectors.toList());
          return list;
