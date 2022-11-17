@@ -179,4 +179,8 @@ public class BdOperatePlanDeclarationFormMonth implements Serializable {
     @TableField(value = "change_reason")
     private String rejectedReason;
 
+    /*工区id*/
+    @ApiModelProperty(value = "site_id")
+    private String siteId;
+
     }

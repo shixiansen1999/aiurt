@@ -11,6 +11,8 @@ import lombok.Data;
  */
 @Data
 public class SiteModel {
+    @ApiModelProperty("工区id")
+    private String siteId;
     @ApiModelProperty("工区名称")
     private String siteName;
     @ApiModelProperty("工区位置")

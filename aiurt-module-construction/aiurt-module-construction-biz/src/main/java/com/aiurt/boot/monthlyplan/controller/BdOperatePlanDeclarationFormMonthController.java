@@ -182,6 +182,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      *
      * @param bdOperatePlanDeclarationFormMonth 一个实体,用于接收参数的
      */
+    @AutoLog(value = "月计划-导出")
+    @ApiOperation(value = "月计划-导出", notes = "月计划-导出")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(BdOperatePlanDeclarationFormMonth bdOperatePlanDeclarationFormMonth,
                                   @RequestParam(name = "lineID", defaultValue = "1") String line_id,
