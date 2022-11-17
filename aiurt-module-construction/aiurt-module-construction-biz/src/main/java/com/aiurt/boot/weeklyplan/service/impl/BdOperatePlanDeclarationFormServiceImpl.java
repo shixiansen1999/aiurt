@@ -146,17 +146,17 @@ public class BdOperatePlanDeclarationFormServiceImpl
         this.save(declarationForm);
 
         //发送消息,草稿保存不发送消息
-        if (ObjectUtil.isNotEmpty(declarationForm.getFormStatus()) && declarationForm.getFormStatus() != num) {
-            if (declarationForm.getPlanChange() == 0) {
-                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getLineStaffId(),
-                        "你有新的待审批周计划", 13, 1, true);
-            } else { //如果是补充计划, 设置补充计划专属字段
-                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getLineStaffId(),
-                        "你有新的待审批补充计划/变更计划", 45, 1, false);
-                declarationForm.setManagerFormStatus(0);
-                declarationForm.setDirectorFormStatus(0);
-            }
-        }
+//        if (ObjectUtil.isNotEmpty(declarationForm.getFormStatus()) && declarationForm.getFormStatus() != num) {
+//            if (declarationForm.getPlanChange() == 0) {
+//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getLineStaffId(),
+//                        "你有新的待审批周计划", 13, 1, true);
+//            } else { //如果是补充计划, 设置补充计划专属字段
+//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getLineStaffId(),
+//                        "你有新的待审批补充计划/变更计划", 45, 1, false);
+//                declarationForm.setManagerFormStatus(0);
+//                declarationForm.setDirectorFormStatus(0);
+//            }
+//        }
 
         return declarationForm;
     }

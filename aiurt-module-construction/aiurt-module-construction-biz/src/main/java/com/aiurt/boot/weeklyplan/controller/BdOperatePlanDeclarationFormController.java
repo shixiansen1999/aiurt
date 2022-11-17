@@ -121,19 +121,19 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
         return Result.OK(resultBuffer);
     }
 
-
-	 /**
+/*   // 用月计划的获取站点的接口
+	 *//**
 	  * 获取请点车站和销点车站.
 	  * 目前是获取所有车站.
 	  * @return A list of Station DTO.
-	  */
+	  *//*
 	@AutoLog(value = "周计划表-获取车站列表",operateType = 1,operateTypeAlias = "查询",permissionUrl = "/production/plan")
 	@ApiOperation(value = "周计划表-获取车站列表", notes = "周计划表-获取车站列表-请点销点车站")
 	@GetMapping(value = "/getStations")
 	public Result<List<BdStation>> getStationList() {
 		List<BdStation> resultBuffer = bdOperatePlanDeclarationFormService.getStations();
 		return Result.OK("获取车站列表成功", resultBuffer);
-	}
+	}*/
 	 /**
 	  * 获取所有地铁线路.
 	  * @return A list of lines.
