@@ -30,8 +30,8 @@ public class DeviceModel implements Serializable {
 
 
     /**子系统*/
-    @Excel(name = "子系统", width = 15)
-    @ApiModelProperty(value = "子系统")
+    @Excel(name = "子系统编号", width = 15)
+    @ApiModelProperty(value = "子系统编号")
     @SystemFilterColumn
     private  String  systemCode;
 
@@ -47,8 +47,8 @@ public class DeviceModel implements Serializable {
     private  String  code;
 
     /**设备类型*/
-    @Excel(name = "设备类型", width = 15)
-    @ApiModelProperty(value = "设备类型")
+    @Excel(name = "设备类型编码", width = 15)
+    @ApiModelProperty(value = "设备类型编码")
     private  String  deviceTypeCode;
 
 
@@ -111,6 +111,7 @@ public class DeviceModel implements Serializable {
     private  String  factoryDate;
 
     /**设备等级(字典值)*/
+    @Excel(name = "设备等级", width = 15)
     @ApiModelProperty(value = "设备等级(字典值)")
     private  String  deviceLevel;
 

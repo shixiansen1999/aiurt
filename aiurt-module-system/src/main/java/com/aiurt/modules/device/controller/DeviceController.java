@@ -10,8 +10,6 @@ import com.aiurt.common.system.base.view.AiurtEntityExcelView;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.device.Model.DeviceModel;
 import com.aiurt.modules.device.entity.Device;
-import com.aiurt.modules.device.entity.DeviceAssembly;
-import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceComposeService;
 import com.aiurt.modules.device.service.IDeviceService;
@@ -246,70 +244,7 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
     @ApiOperation(value = "设备管理-设备主数据-添加", notes = "设备管理-设备主数据-添加")
     @PostMapping(value = "/add")
     public Result<Device> add(@RequestBody Device device) {
-        Result<Device> result = new Result<Device>();
-        try {
-            String deviceTypeCodeCc = device.getDeviceTypeCodeCc()==null?"":device.getDeviceTypeCodeCc();
-            String deviceTypeCode = deviceService.getCodeByCc(deviceTypeCodeCc);
-            device.setDeviceTypeCode(deviceTypeCode);
-            String positionCodeCc = device.getPositionCodeCc()==null?"":device.getPositionCodeCc();
-            if(!"".equals(positionCodeCc)){
-                if(positionCodeCc.contains(CommonConstant.SYSTEM_SPLIT_STR)){
-                    String[] split = positionCodeCc.split(CommonConstant.SYSTEM_SPLIT_STR);
-                    int length = split.length;
-                    switch (length){
-                        case 2:
-                            device.setLineCode(split[0]);
-                            device.setStationCode(split[1]);
-                            break;
-                        case 3:
-                            device.setLineCode(split[0]);
-                            device.setStationCode(split[1]);
-                            device.setPositionCode(split[2]);
-                            break;
-                        default:
-                            device.setLineCode(positionCodeCc);
-                            device.setStationCode("");
-                            device.setPositionCode("");
-                    }
-                }else{
-                    device.setLineCode(positionCodeCc);
-                }
-            }
-            deviceService.save(device);
-            List<DeviceCompose> deviceComposeList = iDeviceCompostService.list(new QueryWrapper<DeviceCompose>().eq("device_type_code",deviceTypeCode));
-            if(deviceComposeList != null && deviceComposeList.size()>0){
-                for(DeviceCompose deviceCompose : deviceComposeList){
-                    DeviceAssembly deviceAssemblyOld = iDeviceAssemblyService.getOne(new LambdaQueryWrapper<DeviceAssembly>().likeRight(DeviceAssembly::getCode, deviceCompose.getMaterialCode())
-                            .eq(DeviceAssembly::getDelFlag, 0).orderByDesc(DeviceAssembly::getCreateTime).last("limit 1"));
-                    String code = deviceCompose.getMaterialCode();
-                    String format = "";
-                    if(deviceAssemblyOld != null){
-                        String codeold = deviceAssemblyOld.getCode();
-                        String numstr = codeold.substring(codeold.length()-3);
-                        format = String.format("%03d", Long.parseLong(numstr) + 1);
-                    }else{
-                        format = "001";
-                    }
-                    DeviceAssembly deviceAssembly = new DeviceAssembly();
-                    deviceAssembly.setDeviceCode(device.getCode());
-                    deviceAssembly.setMaterialCode(deviceCompose.getMaterialCode());
-                    deviceAssembly.setCode(code + format);
-                    deviceAssembly.setMaterialName(deviceCompose.getMaterialName());
-                    deviceAssembly.setBaseTypeCode(deviceCompose.getBaseTypeCode());
-                    deviceAssembly.setSpecifications(deviceCompose.getSpecifications());
-                    deviceAssembly.setUnit(deviceCompose.getUnit()==null?"":deviceCompose.getUnit());
-                    deviceAssembly.setManufactorCode(deviceCompose.getManufacturer()==null?"":deviceCompose.getManufacturer());
-                    deviceAssembly.setPrice(deviceCompose.getPrice()==null?null:deviceCompose.getPrice().toString());
-                    deviceAssembly.setDeviceTypeCode(deviceCompose.getDeviceTypeCode());
-                    iDeviceAssemblyService.save(deviceAssembly);
-                }
-            }
-            result.success("添加成功！");
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            result.error500("操作失败");
-        }
-        return result;
+        return deviceService.add(device);
     }
 
     /**
@@ -419,7 +354,7 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
      */
     @AutoLog(value = "设备主数据模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "")
     @ApiOperation(value="设备主数据模板下载", notes="设备主数据模板下载")
-    @RequestMapping(value = "/exportTemplateXls")
+    @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
     public ModelAndView exportTemplateXl() {
         // Step.1 AutoPoi 导出Excel
         ModelAndView mv = new ModelAndView(new AiurtEntityExcelView());
@@ -457,7 +392,7 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
      */
     @AutoLog(value = "设备主数据导出")
     @ApiOperation(value = "设备主数据导出", notes = "设备主数据导出")
-    @RequestMapping(value = "/exportXls")
+    @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
     public ModelAndView exportXls(Device device, HttpServletRequest request) {
         // Step.1 组装查询条件
         QueryWrapper<Device> queryWrapper = QueryGenerator.initQueryWrapper(device, request.getParameterMap());

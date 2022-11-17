@@ -54,4 +54,6 @@ public interface IDeviceService extends IService<Device> {
     QueryWrapper<Device> getQueryWrapper(String stationCode,String positionCodeCc, String temporary, String majorCode, String systemCode, String deviceTypeCode, String code, String name, String status);
 
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
+
+    Result<Device> add(Device device);
 }

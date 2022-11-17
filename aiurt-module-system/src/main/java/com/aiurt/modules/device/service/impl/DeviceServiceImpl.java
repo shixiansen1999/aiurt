@@ -2,6 +2,7 @@ package com.aiurt.modules.device.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
@@ -10,10 +11,13 @@ import com.aiurt.modules.device.Model.DeviceErrorModel;
 import com.aiurt.modules.device.Model.DeviceModel;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
+import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceAssemblyMapper;
 import com.aiurt.modules.device.mapper.DeviceMapper;
 import com.aiurt.modules.device.mapper.DeviceTypeMapper;
+import com.aiurt.modules.device.service.IDeviceAssemblyService;
+import com.aiurt.modules.device.service.IDeviceComposeService;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
@@ -30,6 +34,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
@@ -85,6 +90,13 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 
 	@Autowired
 	private ICsManufactorService csManufactorService;
+
+	@Autowired
+	@Lazy
+	private IDeviceAssemblyService iDeviceAssemblyService;
+
+	@Autowired
+	private IDeviceComposeService iDeviceCompostService;
 
 	@Value("${jeecg.path.upload}")
 	private String upLoadPath;
@@ -255,9 +267,11 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			params.setHeadRows(1);
 			params.setNeedSave(true);
 			List<DeviceErrorModel> deviceErrorModels = new ArrayList<DeviceErrorModel>();
+			List<Device> deviceList = new ArrayList<Device>();
 			try {
 				List<DeviceModel> list = ExcelImportUtil.importExcel(file.getInputStream(), DeviceModel.class, params);
 				for (DeviceModel deviceModel : list) {
+					Device device = new Device();
 					if (ObjectUtil.isNotEmpty(deviceModel)) {
 						StringBuilder stringBuilder = new StringBuilder();
 
@@ -267,7 +281,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 						String code = deviceModel.getCode();
 						String name = deviceModel.getName();
 						String status = deviceModel.getStatus();
-						if (StrUtil.isNotEmpty(majorCode)&&StrUtil.isNotEmpty(deviceTypeCode) &&StrUtil.isNotEmpty(code) && StrUtil.isNotEmpty(name)&& StrUtil.isNotEmpty(status) ) {
+						if (StrUtil.isNotEmpty(majorCode) && StrUtil.isNotEmpty(deviceTypeCode) && StrUtil.isNotEmpty(code) && StrUtil.isNotEmpty(name) && StrUtil.isNotEmpty(status)) {
 							JSONObject csMajor = iSysBaseAPI.getCsMajorByCode(majorCode);
 							if (ObjectUtil.isNotEmpty(csMajor)) {
 								QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
@@ -276,7 +290,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 
 								if (ObjectUtil.isNotEmpty(systemCode)) {
 									LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
-									wrapper.eq(CsSubsystem::getSystemCode,systemCode).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
+									wrapper.eq(CsSubsystem::getSystemCode, systemCode).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
 									CsSubsystem subsystem = csSubsystemService.getOne(wrapper);
 									if (ObjectUtil.isNotEmpty(subsystem)) {
 										deviceTypeQueryWrapper.eq("system_code", systemCode);
@@ -290,10 +304,19 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 									if (CollUtil.isNotEmpty(typeList)) {
 										String codeCc = this.getCodeByCc(deviceTypeCode);
 										String str = majorCode + systemCode + codeCc;
-										Device device = this.getOne(new LambdaQueryWrapper<Device>().likeRight(Device::getCode, str)
+										Device device1 = this.getOne(new LambdaQueryWrapper<Device>().likeRight(Device::getCode, str)
 												.eq(Device::getDelFlag, 0).orderByDesc(Device::getCreateTime).last("limit 1"));
-										if (ObjectUtil.isEmpty(device) || device.getCode().equals(code)) {
-											stringBuilder.append("系统不存在该设备类型的设备编号，");
+										String format = "";
+										if (device1 != null) {
+											String code1 = device1.getCode();
+											String numstr = code1.substring(code1.length() - 5);
+											format = String.format("%05d", Long.parseLong(numstr) + 1);
+										} else {
+											format = "00001";
+										}
+										String deviceCode = str + format;
+										if (!deviceCode.equals(code)) {
+											stringBuilder.append("该设备类型的设备编号不符合规范，");
 										}
 									} else {
 										stringBuilder.append("系统不存在该专业子系统的设备类型，设备编号，");
@@ -302,67 +325,97 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 									stringBuilder.append("系统不存在该专业子系统的设备类型，设备编号，");
 								}
 
-							}else {
+							} else {
 								stringBuilder.append("系统不存在该专业，");
 							}
 
 							List<DictModel> deviceStatus = sysDictMapper.queryDictItemsByCode("device_status");
-							List<DictModel> models = Optional.ofNullable(deviceStatus).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(status)).collect(Collectors.toList());
-							if (CollUtil.isEmpty(models)) {
+							DictModel model = Optional.ofNullable(deviceStatus).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(status)).findFirst().orElse(null);
+							if (model != null) {
+								device.setStatus(Convert.toInt(model.getValue()));
+							} else {
 								stringBuilder.append("系统不存在该设备状态，");
+
 							}
 
-						}else {
+						} else {
 							stringBuilder.append("所属专业,设备类型，设备编号，设备名称，设备状态不能为空，");
 						}
 
-
+						String lineCode = deviceModel.getLineCode();
+						String stationCode = deviceModel.getStationCode();
 						String positionCode = deviceModel.getPositionCode();
 						String manageUserName = deviceModel.getManageUserName();
 						String deviceLevel = deviceModel.getDeviceLevel();
 						String temporary = deviceModel.getTemporary();
-						if (StrUtil.isNotEmpty(positionCode) && StrUtil.isNotEmpty(manageUserName) && StrUtil.isNotEmpty(deviceLevel) && StrUtil.isNotEmpty(temporary)) {
+						if (StrUtil.isNotEmpty(lineCode)) {
+							String position = iSysBaseAPI.getPosition(lineCode);
+							if (StrUtil.isEmpty(position)) {
+								stringBuilder.append("系统不存在该线路，");
+							}
+						}
+						if (StrUtil.isNotEmpty(stationCode)) {
+							String position = iSysBaseAPI.getPosition(stationCode);
+							if (StrUtil.isEmpty(position)) {
+								stringBuilder.append("系统不存在该站点，");
+							}
+						}
+						if (StrUtil.isNotEmpty(positionCode)) {
 							String position = iSysBaseAPI.getPosition(positionCode);
 							if (StrUtil.isEmpty(position)) {
 								stringBuilder.append("系统不存在该位置，");
 							}
-
-							String userName = iSysBaseAPI.getUserName(manageUserName);
-							if (StrUtil.isEmpty(userName)) {
+						}
+						if (StrUtil.isNotEmpty(manageUserName) && StrUtil.isNotEmpty(deviceLevel) && StrUtil.isNotEmpty(temporary)) {
+							LoginUser loginUser = iSysBaseAPI.queryUser(manageUserName);
+							if (ObjectUtil.isEmpty(loginUser)) {
 								stringBuilder.append("系统不存在该用户，");
 							}
-
 							List<DictModel> deviceLevels = sysDictMapper.queryDictItemsByCode("device_level");
-							List<DictModel> models1 = Optional.ofNullable(deviceLevels).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(deviceLevel)).collect(Collectors.toList());
-							if (CollUtil.isEmpty(models1)) {
+							DictModel levelmodel = Optional.ofNullable(deviceLevels).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(deviceLevel)).findFirst().orElse(null);
+							if (levelmodel != null) {
+								device.setDeviceLevel(levelmodel.getValue());
+							} else {
 								stringBuilder.append("系统不存在该设备等级，");
+
 							}
 
 							List<DictModel> temporarys = sysDictMapper.queryDictItemsByCode("device_temporary");
-							List<DictModel> models2 = Optional.ofNullable(temporarys).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(temporary)).collect(Collectors.toList());
-							if (CollUtil.isEmpty(models2)) {
+							DictModel model = Optional.ofNullable(temporarys).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(temporary)).findFirst().orElse(null);
+							if (model != null) {
+								device.setTemporary(model.getValue());
+							} else {
 								stringBuilder.append("系统不存在该临时设备状态，");
+
 							}
 
 						} else {
-							stringBuilder.append("设备位置，设备管理员，设备等级，临时设备不能为空，");
+							stringBuilder.append("设备管理员，设备等级，临时设备不能为空，");
 						}
 
 						String orgCode = deviceModel.getOrgCode();
 						String picture = deviceModel.getPicturePath();
-
+						String reuseType = deviceModel.getReuseType();
 						String manufactorCode = deviceModel.getManufactorCode();
 						String productionDate = deviceModel.getProductionDate();
 						String factoryDate = deviceModel.getFactoryDate();
 						String startDate = deviceModel.getStartDate();
 
 						if (StrUtil.isNotEmpty(orgCode)) {
-							SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(orgCode);
-							if (ObjectUtil.isEmpty(departByOrgCode)) {
+							SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(orgCode);
+							if (ObjectUtil.isEmpty(sysDepartModel)) {
 								stringBuilder.append("系统不存在该班组，");
 							}
 						}
-
+						if (StrUtil.isNotEmpty(reuseType)) {
+							List<DictModel> deviceLevels = sysDictMapper.queryDictItemsByCode("device_reuse_type");
+							DictModel reuseTypeModel = Optional.ofNullable(deviceLevels).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(reuseType)).findFirst().orElse(null);
+							if (reuseTypeModel != null) {
+								device.setDeviceLevel(reuseTypeModel.getValue());
+							} else {
+								stringBuilder.append("系统不存在该设备复用类型，");
+							}
+						}
 						if (StrUtil.isNotEmpty(manufactorCode)) {
 							LambdaQueryWrapper<CsManufactor> wrapper = new LambdaQueryWrapper<>();
 							CsManufactor csManufactor = csManufactorService.getOne(wrapper.eq(CsManufactor::getDelFlag, CommonConstant.DEL_FLAG_0).eq(CsManufactor::getCode, manufactorCode));
@@ -397,8 +450,11 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 							errorLines++;
 						}
 						DeviceErrorModel deviceErrorModel = new DeviceErrorModel();
-						BeanUtil.copyProperties(deviceModel,deviceErrorModel);
+						BeanUtil.copyProperties(deviceModel, deviceErrorModel);
 						deviceErrorModels.add(deviceErrorModel);
+						String[] str = {"status","temporary","deviceLevel"};
+						BeanUtil.copyProperties(deviceModel,device,str);
+						deviceList.add(device);
 					}
 				}
 
@@ -414,7 +470,9 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 					}
 					return imporReturnRes(errorLines, successLines, errorMessage,true,url);
 				}
-
+				for (Device device : deviceList) {
+					this.add(device);
+				}
 				return Result.ok("文件导入成功！");
 
 			} catch (Exception e) {
@@ -434,6 +492,74 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			}
 		}
 		return Result.ok("文件导入失败！");
+	}
+
+	@Override
+	public Result<Device> add(Device device){
+		Result<Device> result = new Result<Device>();
+		try {
+			String deviceTypeCodeCc = device.getDeviceTypeCodeCc()==null?"":device.getDeviceTypeCodeCc();
+			String deviceTypeCode = this.getCodeByCc(deviceTypeCodeCc);
+			device.setDeviceTypeCode(deviceTypeCode);
+			String positionCodeCc = device.getPositionCodeCc()==null?"":device.getPositionCodeCc();
+			if(!"".equals(positionCodeCc)){
+				if(positionCodeCc.contains(CommonConstant.SYSTEM_SPLIT_STR)){
+					String[] split = positionCodeCc.split(CommonConstant.SYSTEM_SPLIT_STR);
+					int length = split.length;
+					switch (length){
+						case 2:
+							device.setLineCode(split[0]);
+							device.setStationCode(split[1]);
+							break;
+						case 3:
+							device.setLineCode(split[0]);
+							device.setStationCode(split[1]);
+							device.setPositionCode(split[2]);
+							break;
+						default:
+							device.setLineCode(positionCodeCc);
+							device.setStationCode("");
+							device.setPositionCode("");
+					}
+				}else{
+					device.setLineCode(positionCodeCc);
+				}
+			}
+			this.save(device);
+			List<DeviceCompose> deviceComposeList = iDeviceCompostService.list(new QueryWrapper<DeviceCompose>().eq("device_type_code",deviceTypeCode));
+			if(deviceComposeList != null && deviceComposeList.size()>0){
+				for(DeviceCompose deviceCompose : deviceComposeList){
+					DeviceAssembly deviceAssemblyOld = iDeviceAssemblyService.getOne(new LambdaQueryWrapper<DeviceAssembly>().likeRight(DeviceAssembly::getCode, deviceCompose.getMaterialCode())
+							.eq(DeviceAssembly::getDelFlag, 0).orderByDesc(DeviceAssembly::getCreateTime).last("limit 1"));
+					String code = deviceCompose.getMaterialCode();
+					String format = "";
+					if(deviceAssemblyOld != null){
+						String codeold = deviceAssemblyOld.getCode();
+						String numstr = codeold.substring(codeold.length()-3);
+						format = String.format("%03d", Long.parseLong(numstr) + 1);
+					}else{
+						format = "001";
+					}
+					DeviceAssembly deviceAssembly = new DeviceAssembly();
+					deviceAssembly.setDeviceCode(device.getCode());
+					deviceAssembly.setMaterialCode(deviceCompose.getMaterialCode());
+					deviceAssembly.setCode(code + format);
+					deviceAssembly.setMaterialName(deviceCompose.getMaterialName());
+					deviceAssembly.setBaseTypeCode(deviceCompose.getBaseTypeCode());
+					deviceAssembly.setSpecifications(deviceCompose.getSpecifications());
+					deviceAssembly.setUnit(deviceCompose.getUnit()==null?"":deviceCompose.getUnit());
+					deviceAssembly.setManufactorCode(deviceCompose.getManufacturer()==null?"":deviceCompose.getManufacturer());
+					deviceAssembly.setPrice(deviceCompose.getPrice()==null?null:deviceCompose.getPrice().toString());
+					deviceAssembly.setDeviceTypeCode(deviceCompose.getDeviceTypeCode());
+					iDeviceAssemblyService.save(deviceAssembly);
+				}
+			}
+			result.success("添加成功！");
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			result.error500("操作失败");
+		}
+		return result;
 	}
 
 	/**
