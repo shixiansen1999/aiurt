@@ -61,7 +61,7 @@
 
     <select id="selectEquipment" resultType="com.aiurt.modules.maplocation.dto.EquipmentHistoryDTO">
         SELECT
-        bda.device_code,
+        bda.code,
         bdt.NAME AS typeName,
         bda.position_code,
         bda.NAME AS deviceName

@@ -1,11 +1,9 @@
 package com.aiurt.modules.maplocation.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.lang.intern.InternUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.weeklyplan.entity.BdStation;
-import com.aiurt.boot.weeklyplan.mapper.BdStationMapper;
 import com.aiurt.boot.weeklyplan.service.IBdStationService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.api.vo.TreeNode;
@@ -185,8 +183,6 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
         // 管理的班组
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> teamIdList = iSysBaseAPI.getUserSysDepart(sysUser.getId()).stream().map(teamId -> teamId.getOrgCode()).collect(Collectors.toList());
-
-
         // 如果是按站点查，直接用站点的id,如果是按人员查，就是人员的位置信息和哪个站点离得最近，就取那个站点的id
         if (StrUtil.isNotEmpty(id)) {
             UserStationDTO userStation = baseMapper.getStationId(id);
