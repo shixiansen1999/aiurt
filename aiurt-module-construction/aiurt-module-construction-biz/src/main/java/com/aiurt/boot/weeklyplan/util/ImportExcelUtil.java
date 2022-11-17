@@ -14,7 +14,9 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.CsWorkAreaModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,6 +39,8 @@ import java.util.regex.Pattern;
 public class ImportExcelUtil {
 
     @Autowired
+    private ISysBaseAPI iSysBaseApi;
+    @Autowired
     private BdStationMapper bdStationMapper;
     @Autowired
     private BdOperatePlanDeclarationFormMapper bdOperatePlanDeclarationFormMapper;
@@ -57,8 +61,8 @@ public class ImportExcelUtil {
     public List<BdOperatePlanDeclarationForm> importToExcelOperate(MultipartFile[] importExcel) throws Exception {
         try {
             //查询工区
-            List<BdSite> siteList = bdSiteMapper.selectList(new LambdaQueryWrapper<BdSite>());
-
+//            List<BdSite> siteList = bdSiteMapper.selectList(new LambdaQueryWrapper<>());
+           List<CsWorkAreaModel> workAreaModels =  iSysBaseApi.getWorkAreaInfo();
             int line = -1;
             List<CsLine> lineList = bdLineMapper.selectList(new LambdaQueryWrapper<CsLine>());
             int lineId = 0;
@@ -185,9 +189,14 @@ public class ImportExcelUtil {
                         case 16:
                             if(!ObjectUtil.isEmpty(cellText)){
                                 String finalCellText = cellText;
-                                Optional<BdSite> siteOptional = siteList.stream().filter(s -> finalCellText.equals(s.getName())).findFirst();
+//                                Optional<BdSite> siteOptional = siteList.stream().filter(s -> finalCellText.equals(s.getName())).findFirst();
+//                                if(siteOptional.isPresent()){
+//                                    BdSite bdSite = siteOptional.get();
+//                                    newOp.setSiteId(bdSite.getId());
+//                                }
+                                Optional<CsWorkAreaModel> siteOptional = workAreaModels.stream().filter(s -> finalCellText.equals(s.getName())).findFirst();
                                 if(siteOptional.isPresent()){
-                                    BdSite bdSite = siteOptional.get();
+                                    CsWorkAreaModel bdSite = siteOptional.get();
                                     newOp.setSiteId(bdSite.getId());
                                 }
                             }
