@@ -258,7 +258,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			try {
 				List<DeviceModel> list = ExcelImportUtil.importExcel(file.getInputStream(), DeviceModel.class, params);
 				for (DeviceModel deviceModel : list) {
-					if (ObjectUtil.isNotNull(deviceModel)) {
+					if (ObjectUtil.isNotEmpty(deviceModel)) {
 						StringBuilder stringBuilder = new StringBuilder();
 
 						String majorCode = deviceModel.getMajorCode();
@@ -266,8 +266,8 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 						String deviceTypeCode = deviceModel.getDeviceTypeCode();
 						String code = deviceModel.getCode();
 						String name = deviceModel.getName();
-						Integer status = deviceModel.getStatus();
-						if (StrUtil.isNotEmpty(majorCode)&&StrUtil.isNotEmpty(deviceTypeCode) &&StrUtil.isNotEmpty(code) && StrUtil.isNotEmpty(name)&& ObjectUtil.isNotEmpty(status) ) {
+						String status = deviceModel.getStatus();
+						if (StrUtil.isNotEmpty(majorCode)&&StrUtil.isNotEmpty(deviceTypeCode) &&StrUtil.isNotEmpty(code) && StrUtil.isNotEmpty(name)&& StrUtil.isNotEmpty(status) ) {
 							JSONObject csMajor = iSysBaseAPI.getCsMajorByCode(majorCode);
 							if (ObjectUtil.isNotEmpty(csMajor)) {
 								QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
@@ -349,7 +349,8 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 						}
 
 						String orgCode = deviceModel.getOrgCode();
-						String picture = deviceModel.getPicture();
+						String picture = deviceModel.getPicturePath();
+
 						String manufactorCode = deviceModel.getManufactorCode();
 						String productionDate = deviceModel.getProductionDate();
 						String factoryDate = deviceModel.getFactoryDate();

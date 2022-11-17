@@ -6,6 +6,8 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.system.base.view.AiurtEntityExcelView;
+import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.device.Model.DeviceModel;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
@@ -24,8 +26,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -35,6 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 设备
@@ -61,7 +72,8 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
     private ICsSubsystemService csSubsystemService;
     @Autowired
     private ICsMajorService csMajorService;
-
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
     /**
      * 分页列表查询
      *
@@ -409,7 +421,17 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
     @ApiOperation(value="设备主数据模板下载", notes="设备主数据模板下载")
     @RequestMapping(value = "/exportTemplateXls")
     public ModelAndView exportTemplateXl() {
-        return super.exportTemplateXls("", DeviceModel  .class, "设备主数据模板");
+        // Step.1 AutoPoi 导出Excel
+        ModelAndView mv = new ModelAndView(new AiurtEntityExcelView());
+        //此处设置的filename无效 ,前端会重更新设置一下
+        mv.addObject(NormalExcelConstants.CLASS, DeviceModel.class);
+        // 自定义导出列
+        mv.addObject(NormalExcelConstants.EXPORT_FIELDS, "");
+        ExportParams exportParams = new ExportParams();
+        exportParams.setTitle("设备主数据模板");
+        exportParams.setImageBasePath(upLoadPath);
+        mv.addObject(NormalExcelConstants.PARAMS, exportParams);
+        return mv;
     }
 
     /**
@@ -419,10 +441,52 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
      * @param response
      * @return
      */
-    @ApiOperation(value = "用户管理-导入excel", notes = "用户管理-导入excel")
+    @ApiOperation(value = "通过excel导入数据", notes = "通过excel导入数据")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
        return deviceService.importExcel(request,response);
+    }
+
+    /**
+     * 专业导出
+     *
+     * @param device
+     * @param request
+     * @return
+     */
+    @AutoLog(value = "设备主数据导出")
+    @ApiOperation(value = "设备主数据导出", notes = "设备主数据导出")
+    @RequestMapping(value = "/exportXls")
+    public ModelAndView exportXls(Device device, HttpServletRequest request) {
+        // Step.1 组装查询条件
+        QueryWrapper<Device> queryWrapper = QueryGenerator.initQueryWrapper(device, request.getParameterMap());
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        // Step.2 获取导出数据
+        List<Device> pageList = service.list(queryWrapper);
+        List<Device> exportList = null;
+
+        // 过滤选中数据
+        String selections = request.getParameter("selections");
+        if (oConvertUtils.isNotEmpty(selections)) {
+            List<String> selectionList = Arrays.asList(selections.split(","));
+            exportList = pageList.stream().filter(item -> selectionList.contains(item.getId())).collect(Collectors.toList());
+        } else {
+            exportList = pageList;
+        }
+        String title = "设备主数据";
+        // Step.3 AutoPoi 导出Excel
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        //此处设置的filename无效 ,前端会重更新设置一下
+        mv.addObject(NormalExcelConstants.FILE_NAME, title);
+        mv.addObject(NormalExcelConstants.CLASS, Device.class);
+        //update-begin--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置--------------------
+        ExportParams  exportParams=new ExportParams(title + "报表", "导出人:" + sysUser.getRealname(),ExcelType.XSSF);
+        exportParams.setImageBasePath(upLoadPath);
+        //update-end--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置----------------------
+        mv.addObject(NormalExcelConstants.PARAMS,exportParams);
+        mv.addObject(NormalExcelConstants.DATA_LIST, exportList);
+        return mv;
     }
 }
