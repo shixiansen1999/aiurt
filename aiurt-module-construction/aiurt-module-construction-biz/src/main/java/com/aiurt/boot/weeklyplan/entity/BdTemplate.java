@@ -26,7 +26,7 @@ import java.io.Serializable;
 public class BdTemplate implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "周计划模板表")
     private String id;
 
