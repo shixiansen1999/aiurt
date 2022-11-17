@@ -6,8 +6,8 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.ConstructtionRoleConstant;
 import com.aiurt.boot.monthlyplan.dto.BdStationCopyDTO;
-import com.aiurt.boot.monthlyplan.dto.ExcelExportDTO;
 import com.aiurt.boot.monthlyplan.mapper.BdOperatePlanDeclarationFormMonthMapper;
 import com.aiurt.boot.weeklyplan.dto.*;
 import com.aiurt.boot.weeklyplan.entity.*;
@@ -27,20 +27,18 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.*;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
+import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.CsUserStationModel;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysUserRoleModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -549,6 +547,20 @@ public class BdOperatePlanDeclarationFormServiceImpl
             list.add(bdStaffInfoReturnType);
         }
         return list;
+    }
+
+    @Override
+    public List<SysUserRoleModel> queryUserByTeamRole() {
+        List<String> list = Arrays.asList(ConstructtionRoleConstant.FOREMAN, ConstructtionRoleConstant.ON_DUTY_ENGINEER, ConstructtionRoleConstant.CONSCIENTIOUS);
+        List<SysUserRoleModel> userRoleModels = new ArrayList<>();
+        list.forEach(roleCode -> {
+            String roleId = sysBaseApi.getRoleIdByCode(roleCode);
+            List<SysUserRoleModel> userByRoleId = sysBaseApi.getUserByRoleId(roleId);
+            List<String> collect = userByRoleId.stream().map(SysUserRoleModel::getId).collect(Collectors.toList());
+            List<SysUserRoleModel> result = userByRoleId.stream().filter(l -> !collect.contains(l.getUserId())).collect(Collectors.toList());
+            userRoleModels.addAll(result);
+        });
+        return userRoleModels;
     }
 
     public String stringNoNull(String str) {

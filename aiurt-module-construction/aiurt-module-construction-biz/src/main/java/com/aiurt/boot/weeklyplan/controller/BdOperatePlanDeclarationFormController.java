@@ -4,7 +4,6 @@ import com.aiurt.boot.weeklyplan.dto.*;
 import com.aiurt.boot.weeklyplan.entity.BdOperatePlanDeclarationForm;
 import com.aiurt.boot.weeklyplan.entity.BdOperatePlanStateChange;
 import com.aiurt.boot.weeklyplan.entity.BdSite;
-import com.aiurt.boot.weeklyplan.entity.BdStation;
 import com.aiurt.boot.weeklyplan.service.IBdOperatePlanDeclarationFormService;
 import com.aiurt.boot.weeklyplan.service.IBdSiteService;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -12,7 +11,6 @@ import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
@@ -20,11 +18,11 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysUserRoleModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -384,7 +382,18 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 		return bdOperatePlanDeclarationFormService.updateOperateForm(voice, picture, bdOperatePlanStateChange);
 	}
 
-
+	/**
+	 * 查询 角色是 工班长、助班工程师、工作负责人 的人员
+	 *
+	 * @return
+	 */
+	@AutoLog(value = "查询 角色是 工班长、助班工程师、工作负责人 的人员")
+	@ApiOperation(value = "查询 角色是 工班长、助班工程师、工作负责人 的人员", notes = "查询 角色是 工班长、助班工程师、工作负责人 的人员")
+	@GetMapping(value = "/queryUserByTeamRole")
+	public Result<?> queryUserByTeamRole() {
+		List<SysUserRoleModel> userList = bdOperatePlanDeclarationFormService.queryUserByTeamRole();
+		return Result.OK(userList);
+	}
 
 
 	/**
