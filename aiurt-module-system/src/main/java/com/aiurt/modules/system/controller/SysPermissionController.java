@@ -1011,4 +1011,17 @@ public class SysPermissionController {
         sysPermissionService.batchStartDisable(condition);
         return Result.ok("修改成功！");
     }
+
+    /**
+     * 递归查询所有子菜单
+     *
+     * @param parentId 父id
+     * @return
+     */
+    @RequestMapping(value = "/getSystemSubmenuRecursive", method = RequestMethod.GET)
+    @ApiOperation(value = "递归查询所有子菜单", notes = "递归查询所有子菜单")
+    public Result<List<SysPermissionTree>> getSystemSubmenu(@RequestParam(value = "parentId", required = true) String parentId) {
+        List<SysPermissionTree> result = sysPermissionService.getSystemSubmenuRecursive(parentId);
+        return Result.OK(result);
+    }
 }

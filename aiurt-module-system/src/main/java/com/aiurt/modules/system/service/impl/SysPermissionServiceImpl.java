@@ -2,10 +2,12 @@ package com.aiurt.modules.system.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.api.vo.TreeEntity;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.sm.entity.CsSafetyAttentionType;
 import com.aiurt.modules.system.dto.SysPermissionDTO;
 import com.aiurt.modules.system.entity.SysPermission;
 import com.aiurt.modules.system.entity.SysPermissionDataRule;
@@ -13,6 +15,7 @@ import com.aiurt.modules.system.mapper.SysDepartPermissionMapper;
 import com.aiurt.modules.system.mapper.SysDepartRolePermissionMapper;
 import com.aiurt.modules.system.mapper.SysPermissionMapper;
 import com.aiurt.modules.system.mapper.SysRolePermissionMapper;
+import com.aiurt.modules.system.model.SysPermissionTree;
 import com.aiurt.modules.system.model.TreeModel;
 import com.aiurt.modules.system.service.ISysPermissionDataRuleService;
 import com.aiurt.modules.system.service.ISysPermissionService;
@@ -27,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -291,4 +295,27 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
         this.updateBatchById(arr);
     }
 
+    @Override
+    public List<SysPermissionTree> getSystemSubmenuRecursive(String parentId) {
+        List<SysPermissionTree> all = baseMapper.getAllSystemSubmenu();
+        List<SysPermissionTree> treeChildIds = this.getChildrens(parentId, all);
+        return treeChildIds;
+    }
+
+    /**
+     * 递归查询所有子节点
+     * @param pidVal
+     * @return
+     */
+    private List<SysPermissionTree> getChildrens(String pidVal,List<SysPermissionTree> all){
+
+        List<SysPermissionTree> children = all.stream().filter(treeEntity -> {
+            return treeEntity.getParentId().equals(pidVal);
+        }).map(treeEntity -> {
+            //1、找到子菜单
+            treeEntity.setChildren(ObjectUtil.isNotEmpty(getChildrens(treeEntity.getId(), all))?getChildrens(treeEntity.getId(), all):new ArrayList<>());
+            return treeEntity;
+        }).collect(Collectors.toList());
+        return children;
+    }
 }

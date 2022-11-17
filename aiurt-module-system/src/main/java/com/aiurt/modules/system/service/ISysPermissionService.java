@@ -3,6 +3,7 @@ package com.aiurt.modules.system.service;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.system.dto.SysPermissionDTO;
 import com.aiurt.modules.system.entity.SysPermission;
+import com.aiurt.modules.system.model.SysPermissionTree;
 import com.aiurt.modules.system.model.TreeModel;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -96,4 +97,10 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	 */
     void batchStartDisable(List<SysPermissionDTO> condition);
 
+	/**
+	 * 递归查询所有子菜单
+	 * @param parentId
+	 * @return
+	 */
+	List<SysPermissionTree> getSystemSubmenuRecursive(String parentId);
 }

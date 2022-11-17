@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.mapper;
 
 import com.aiurt.modules.system.entity.SysPermission;
+import com.aiurt.modules.system.model.SysPermissionTree;
 import com.aiurt.modules.system.model.TreeModel;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
@@ -58,6 +59,6 @@ public interface SysPermissionMapper extends BaseMapper<SysPermission> {
 	 */
 	public int queryCountByUsername(@Param("username") String username, @Param("permission") SysPermission sysPermission);
 
-
+    List<SysPermissionTree> getAllSystemSubmenu();
 
 }
