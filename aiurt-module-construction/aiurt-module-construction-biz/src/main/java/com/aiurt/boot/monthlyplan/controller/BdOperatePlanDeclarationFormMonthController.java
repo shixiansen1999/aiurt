@@ -328,6 +328,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      * @param remark       并没有传入值.
      * @return 返回的数据与分页查询类似.
      */
+    @AutoLog(value = "月计划-审核按钮",operateType = 1,operateTypeAlias = "月计划-审核按钮",permissionUrl = "/production/plan")
+    @ApiOperation(value = "月计划-审核按钮", notes = "月计划-审核按钮")
     @GetMapping("/auditButton")
     public Result<?> auditButton(
             @RequestParam(value = "id", defaultValue = "0") String id,
@@ -417,6 +419,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
     ) {
 
         // staffID = TokenUtils.getLoginUser().getId();
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        staffID = loginUser.getId();
         Page<BdOperatePlanDeclarationFormMonth> page = new Page<>(pageNo, pageSize);
         return Result.OK(bdOperatePlanDeclarationFormMonthService.ApproveQuery(start_time,
                 end_time, line_id, pageNo, pageSize, page,
@@ -431,6 +435,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      * @param formStatus 审核状态 0,1,2,3,4
      * @return 返回取消是否成功.
      */
+    @AutoLog(value = "月计划-驳回")
+    @ApiOperation(value = "月计划-驳回", notes = "月计划-驳回")
     @GetMapping(value = "/cancelButton")
     public Result<?> cancelButton(@RequestParam(value = "id", defaultValue = "0") String id,
                                   @RequestParam(value = "formStatus", defaultValue = "0") int formStatus,
