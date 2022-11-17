@@ -697,21 +697,45 @@ public class BdOperatePlanDeclarationFormServiceImpl
             content = "你有新的待审批补充计划/变更计划";
             typeId = 46;
         }
+//        try {//todo 1234
+//            if ((MagicWords.NUM_1).equals(bdOperatePlanStateChange.getRoleId()) || (MagicWords.NUM_2).equals(bdOperatePlanStateChange.getRoleId())) {
+//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDispatchStaffId(),
+//                        content, typeId, afterStatus, false);
+//                declarationForm.setLineFormStatus(afterStatus);
+//                declarationForm.setActualLineStaffId(sysUser.getId());
+//            } else if ((MagicWords.NUM_3).equals(bdOperatePlanStateChange.getRoleId())) {
+//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDirectorStaffId(),
+//                        content, 43, afterStatus, false);
+//                declarationForm.setDispatchFormStatus(afterStatus);
+//            } else if ((MagicWords.NUM_4).equals(bdOperatePlanStateChange.getRoleId())) {
+//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getManagerStaffId(),
+//                        content, 44, afterStatus, false);
+//                declarationForm.setDirectorFormStatus(afterStatus);
+//            } else if ((MagicWords.NUM_5).equals(bdOperatePlanStateChange.getRoleId())) {
+//                declarationForm.setManagerFormStatus(afterStatus);
+//            } else {
+//                return Result.error(600, "请检查账户角色和部门，没有权限审批！");
+//            }
+//        } catch (NullPointerException e) {
+//            return Result.error(500, "roleId不能为空");
+//        }
         try {//todo 1234
-            if ((MagicWords.NUM_1).equals(bdOperatePlanStateChange.getRoleId()) || (MagicWords.NUM_2).equals(bdOperatePlanStateChange.getRoleId())) {
-                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDispatchStaffId(),
-                        content, typeId, afterStatus, false);
+            String roleId = bdOperatePlanStateChange.getRoleId();
+            List<String> roleIds = StrUtil.split(roleId, ',');
+            if (roleIds.contains(MagicWords.NUM_1) || roleIds.contains(MagicWords.NUM_2)) {
+//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDispatchStaffId(),
+//                        content, typeId, afterStatus, false);
                 declarationForm.setLineFormStatus(afterStatus);
                 declarationForm.setActualLineStaffId(sysUser.getId());
-            } else if ((MagicWords.NUM_3).equals(bdOperatePlanStateChange.getRoleId())) {
-                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDirectorStaffId(),
-                        content, 43, afterStatus, false);
+            } else if (roleIds.contains(MagicWords.NUM_3)) {
+//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDirectorStaffId(),
+//                        content, 43, afterStatus, false);
                 declarationForm.setDispatchFormStatus(afterStatus);
-            } else if ((MagicWords.NUM_4).equals(bdOperatePlanStateChange.getRoleId())) {
-                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getManagerStaffId(),
-                        content, 44, afterStatus, false);
+            } else if (roleIds.contains(MagicWords.NUM_4)) {
+//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getManagerStaffId(),
+//                        content, 44, afterStatus, false);
                 declarationForm.setDirectorFormStatus(afterStatus);
-            } else if ((MagicWords.NUM_5).equals(bdOperatePlanStateChange.getRoleId())) {
+            } else if (roleIds.contains(MagicWords.NUM_5)) {
                 declarationForm.setManagerFormStatus(afterStatus);
             } else {
                 return Result.error(600, "请检查账户角色和部门，没有权限审批！");
