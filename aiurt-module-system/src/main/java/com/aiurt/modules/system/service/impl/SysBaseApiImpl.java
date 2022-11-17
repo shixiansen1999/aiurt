@@ -35,6 +35,7 @@ import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.util.SecurityUtil;
+import com.aiurt.modules.workarea.entity.WorkArea;
 import com.aiurt.modules.workarea.mapper.WorkAreaMapper;
 import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.alibaba.fastjson.JSON;
@@ -1817,6 +1818,18 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         SysRole sysRole = sysRoleMapper.selectOne(wrapper);
         String roleId = sysRole.getId();
         return roleId;
+    }
+
+    @Override
+    public List<CsWorkAreaModel> getWorkAreaInfo() {
+        List<WorkArea> workAreas = workAreaMapper.selectList(new QueryWrapper<>());
+        List<CsWorkAreaModel> list = new ArrayList<>();
+        for (WorkArea workArea : workAreas) {
+            CsWorkAreaModel workAreaModel = new CsWorkAreaModel();
+            BeanUtils.copyProperties(workArea, workAreaModel);
+            list.add(workAreaModel);
+        }
+        return list;
     }
 
     private String escapeUrl(String remoteFileUrl) throws UnsupportedEncodingException {

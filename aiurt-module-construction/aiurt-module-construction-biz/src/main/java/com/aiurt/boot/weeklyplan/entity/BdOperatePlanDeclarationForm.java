@@ -225,7 +225,7 @@ public class BdOperatePlanDeclarationForm implements Serializable {
 
     /**工区id*/
     @ApiModelProperty(value = "工区id")
-    private Integer siteId;
+    private String siteId;
     @ApiModelProperty("取消原因")
     private String reason;
 

@@ -636,4 +636,10 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getRoleIdByCode(String roleCode);
+
+    /**
+     * 获取所有工区信息
+     * @return
+     */
+    List<CsWorkAreaModel> getWorkAreaInfo();
 }
