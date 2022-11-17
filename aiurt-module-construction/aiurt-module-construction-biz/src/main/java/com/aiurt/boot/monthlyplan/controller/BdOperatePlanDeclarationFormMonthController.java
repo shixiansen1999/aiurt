@@ -186,14 +186,16 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
     @ApiOperation(value = "月计划-导出", notes = "月计划-导出")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(BdOperatePlanDeclarationFormMonth bdOperatePlanDeclarationFormMonth,
-                                  @RequestParam(name = "lineID", defaultValue = "1") String line_id,
-                                  @RequestParam(name = "beginDate", defaultValue = "1990-01-01") String start_time,
-                                  @RequestParam(name = "endDate", defaultValue = "2099-01-01") String end_time,
+                                  @RequestParam(name = "line_id", defaultValue = "-1") String line_id,
+                                  @RequestParam(name = "start_time", defaultValue = "1990-01-01") String start_time,
+                                  @RequestParam(name = "end_time", defaultValue = "2099-01-01") String end_time,
                                   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                   @RequestParam(name = "pageSize", defaultValue = "20") Integer pageSize,
-                                  @RequestParam(name = "roleType", defaultValue = "-1") String roleType,
+                                  @RequestParam(name = "roleType", defaultValue = "5") String roleType,
                                   @RequestParam(name = "staffID", defaultValue = "-1") String staffID
     ) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        staffID = loginUser.getId();
 
         //前端如果传入的开始时间为空字符,会覆盖掉defaultValue的默认值.所以在这里判断是否为空值,如果为空,并且赋值
         Boolean startTimeIsEmpty = start_time.equals("") || start_time.isEmpty();
