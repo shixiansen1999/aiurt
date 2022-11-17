@@ -151,6 +151,7 @@
         repair_task t1
         LEFT JOIN repair_task_device_rel t2 ON t1.id = t2.repair_task_id
         LEFT JOIN repair_task_standard_rel t3 ON t2.task_standard_rel_id = t3.id
+        LEFT JOIN repair_task_station_rel t4 ON t4.repair_task_code = t1.code
         <where>
             t1.del_flag = 0
             AND t2.del_flag = 0
@@ -158,7 +159,7 @@
                 AND t1.id = #{taskId}
             </if>
             <if test="stationCode !=null ">
-                AND t2.station_code = #{stationCode}
+                AND t4.station_code = #{stationCode}
             </if>
         </where>
         order by t2.update_time desc,t2.create_time desc
