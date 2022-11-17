@@ -1,6 +1,7 @@
 package com.aiurt.boot.weeklyplan.service;
 
 import com.aiurt.boot.weeklyplan.entity.BdLine;
+import com.aiurt.modules.position.entity.CsLine;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -9,7 +10,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Date:   2021-03-26
  * @Version: V1.0
  */
-public interface IBdLineService extends IService<BdLine> {
+public interface IBdLineService extends IService<CsLine> {
     /**
      * 查询线路站点
      * @return

@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -345,11 +346,11 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
     public void exportXls(QueryPagesParams queryPagesParams, HttpServletResponse response) {
 		if (queryPagesParams.getIsChange() == 0) {
 			List<BdOperatePlanDeclarationFormReturnTypeDTO> record = bdOperatePlanDeclarationFormService.getListByQuery(queryPagesParams);
-			bdOperatePlanDeclarationFormService.exportExcel(record, response, queryPagesParams);
+			 bdOperatePlanDeclarationFormService.exportExcel(record, response, queryPagesParams);
 		} else {
 			List<BdOperatePlanDeclarationFormReturnTypeDTO> record =
 					bdOperatePlanDeclarationFormService.queryPages(queryPagesParams, 1, 100000, null).getRecords();
-			bdOperatePlanDeclarationFormService.exportExcelChangeable(record, response, queryPagesParams);
+			 bdOperatePlanDeclarationFormService.exportExcelChangeable(record, response, queryPagesParams);
 		}
 	}
 

@@ -7,6 +7,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.monthlyplan.dto.BdStationCopyDTO;
+import com.aiurt.boot.monthlyplan.dto.ExcelExportDTO;
 import com.aiurt.boot.monthlyplan.mapper.BdOperatePlanDeclarationFormMonthMapper;
 import com.aiurt.boot.weeklyplan.dto.*;
 import com.aiurt.boot.weeklyplan.entity.*;
@@ -19,6 +20,7 @@ import com.aiurt.boot.weeklyplan.util.ExportExcelUtil;
 import com.aiurt.boot.weeklyplan.util.ImportExcelUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.position.entity.CsLine;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -26,10 +28,14 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.*;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
@@ -337,7 +343,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //当前用户管辖班组
         String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
-        List<BdLine> lineList = bdLineService.list();
+        List<CsLine> lineList = bdLineService.list();
         // 查询当前班组关联的工区信息
         LambdaQueryWrapper<BdSite> queryWrapper = new LambdaQueryWrapper();
         queryWrapper.apply(Objects.nonNull(teamId), "FIND_IN_SET({0}, team_id) >0", teamId);
@@ -364,9 +370,9 @@ public class BdOperatePlanDeclarationFormServiceImpl
         });
         newStationList.forEach(station -> {
             //添加线路名称
-            List<BdLine> line = lineList.stream().filter(l -> l.getId().equals(station.getLineId())).collect(Collectors.toList());
+            List<CsLine> line = lineList.stream().filter(l -> l.getId().equals(station.getLineId())).collect(Collectors.toList());
             if (!line.isEmpty()) {
-                station.setName(line.get(0).getName() + "--" + station.getName());
+                station.setName(line.get(0).getLineName() + "--" + station.getName());
             }
             station.setChildren(allStationList.stream().filter(all -> station.getId().equals(all.getPid())).collect(Collectors.toList()));
         });
@@ -592,16 +598,17 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
         String newTitle = "施工计划表.xls";
         String sheetName = "运营施工及行车计划申报表";
+        LambdaQueryWrapper<CsLine> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<CsLine> bdLineList = lineMapper.selectList(objectLambdaQueryWrapper);
         try {
-            List<BdLine> bdLineList = lineMapper.selectList(new LambdaQueryWrapper<BdLine>());
             //获取线路名称
             /**/
             String lineNames = "";
             //todo 1234
-            if (queryPagesParams.getLineID().equals(0)) {
+            if (ObjectUtil.isNull(queryPagesParams.getLineID())) {
                 lineNames = "3号线,4号线,8号线";
             } else {
-                lineNames = bdLineList.stream().filter(s -> s.getId().equals(queryPagesParams.getLineID())).map(s -> s.getName()).collect(Collectors.joining(","));
+                lineNames = bdLineList.stream().filter(s -> s.getId().equals(queryPagesParams.getLineID())).map(s -> s.getLineName()).collect(Collectors.joining(","));
             }
             newTitle = lineNames + "施工计划表.xls";
             sheetName = lineNames + "运营施工及行车计划申报表";

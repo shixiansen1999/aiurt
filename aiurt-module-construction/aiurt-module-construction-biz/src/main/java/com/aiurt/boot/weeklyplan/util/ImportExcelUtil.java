@@ -7,6 +7,7 @@ import com.aiurt.boot.weeklyplan.mapper.BdLineMapper;
 import com.aiurt.boot.weeklyplan.mapper.BdOperatePlanDeclarationFormMapper;
 import com.aiurt.boot.weeklyplan.mapper.BdSiteMapper;
 import com.aiurt.boot.weeklyplan.mapper.BdStationMapper;
+import com.aiurt.modules.position.entity.CsLine;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.poi.xssf.usermodel.XSSFCell;
@@ -59,7 +60,7 @@ public class ImportExcelUtil {
             List<BdSite> siteList = bdSiteMapper.selectList(new LambdaQueryWrapper<BdSite>());
 
             int line = -1;
-            List<BdLine> lineList = bdLineMapper.selectList(new LambdaQueryWrapper<BdLine>());
+            List<CsLine> lineList = bdLineMapper.selectList(new LambdaQueryWrapper<CsLine>());
             int lineId = 0;
 
             String lineName = "";
@@ -83,8 +84,8 @@ public class ImportExcelUtil {
                             line = Integer.parseInt(cellText.replace("号线运营施工及行车计划申报表", ""));
                             lineName = cellText.replace("运营施工及行车计划申报表", "");
                             for(int i = 0; i < lineList.size(); i++){
-                                if(!ObjectUtil.isEmpty(lineName) && lineName.equals(lineList.get(i).getName())){
-                                    lineId = lineList.get(i).getId();
+                                if(!ObjectUtil.isEmpty(lineName) && lineName.equals(lineList.get(i).getLineName())){
+                                    lineId = Integer.parseInt(lineList.get(i).getId());
                                 }
                             }
                             System.out.println("线路为："+line);

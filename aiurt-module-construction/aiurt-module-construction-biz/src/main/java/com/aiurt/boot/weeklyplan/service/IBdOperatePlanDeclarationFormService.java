@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
@@ -137,7 +138,7 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
      * @param queryPagesParams
      */
     void exportExcel(List<BdOperatePlanDeclarationFormReturnTypeDTO> record,
-                     HttpServletResponse response, QueryPagesParams queryPagesParams);
+                             HttpServletResponse response, QueryPagesParams queryPagesParams);
 
     /**
      * 导出变更计划表.
