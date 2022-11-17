@@ -189,15 +189,15 @@ public class BdMapController {
      */
     @ApiOperation(value = "根据站点id查询站点信息", notes = "根据站点id查询站点信息")
     @GetMapping(value = "/getStationById")
-    public Result<List<StationDTO>> getStationById(@ApiParam(required = false, value = "线路Id", name = "lineCode") String lineCode,
-                                                  @RequestParam @ApiParam(name = "stationId", required = false, value = "站点Id") String stationId) {
+    public Result<List<StationDTO>> getStationById(@ApiParam(required = false, value = "线路Code", name = "lineCode") String lineCode,
+                                                  @ApiParam(name = "stationCode", required = false, value = "站点Code") String stationCode) {
         List<StationDTO> stationList = new ArrayList<>();
         LambdaQueryWrapper<CsStation> queryWrapper = new LambdaQueryWrapper<>();
-        if (StrUtil.isNotEmpty(lineCode) && !StrUtil.isNotEmpty(stationId)){
+        if (StrUtil.isNotEmpty(lineCode) && !StrUtil.isNotEmpty(stationCode)){
             queryWrapper.eq(CsStation::getLineCode, lineCode);
         }
-        if (StrUtil.isNotEmpty(stationId)){
-            queryWrapper.eq(CsStation::getId, stationId);
+        if (StrUtil.isNotEmpty(stationCode)){
+            queryWrapper.eq(CsStation::getStationCode, stationCode);
         }
             queryWrapper.eq(CsStation::getDelFlag,0);
         List<CsStation> list = bdStationMapper.selectList(queryWrapper);
