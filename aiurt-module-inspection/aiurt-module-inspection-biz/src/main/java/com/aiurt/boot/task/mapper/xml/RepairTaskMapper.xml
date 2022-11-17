@@ -179,7 +179,7 @@
         rtdr.code as resultCode,
         rtdr.fault_code as faultCode,
         rtdr.repair_task_id as taskId,
-        rtdr.station_code as stationCode,
+        rts.station_code as stationCode,
         rtdr.CODE as resultCode,
         rtsr.id as standardId,
         rtsr.major_code as majorCode,
@@ -192,6 +192,7 @@
                 LEFT JOIN repair_task rt ON rt.id = rtdr.repair_task_id
                 LEFT JOIN repair_task_standard_rel rtsr on rtsr.id = rtdr.task_standard_rel_id
                  LEFT JOIN repair_task_result rtr on rtr.task_device_rel_id = rtdr.id
+                 LEFT JOIN repair_task_station_rel  rts on rts.repair_task_code = rt.code
         <where>
             rtdr.del_flag = 0
             AND rt.del_flag = 0
@@ -199,7 +200,7 @@
                 AND rtdr.repair_task_id = #{taskId}
             </if>
             <if test="stationCode !=null ">
-                AND rtdr.station_code = #{stationCode}
+                AND rts.station_code = #{stationCode}
             </if>
             <if test="deviceId !=null ">
                 AND rtdr.id = #{deviceId}
