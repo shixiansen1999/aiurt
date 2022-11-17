@@ -1832,6 +1832,21 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return list;
     }
 
+    @Override
+    public List<CsStation> getStationInfoByNameAndLineId(String cellText, String line) {
+        QueryWrapper<CsLine> lineWrapper = new QueryWrapper<>();
+        lineWrapper.lambda().eq(CsLine::getId, line).last("limit 1");
+        CsLine csLine = lineMapper.selectOne(lineWrapper);
+        if (ObjectUtil.isEmpty(csLine) || ObjectUtil.isEmpty(csLine.getLineCode())) {
+            return Collections.emptyList();
+        }
+        QueryWrapper<CsStation> stationWrapper = new QueryWrapper<>();
+        stationWrapper.lambda().eq(CsStation::getLineCode, csLine.getLineCode())
+                .eq(CsStation::getStationName, cellText);
+        List<CsStation> stations = csStationMapper.selectList(stationWrapper);
+        return stations;
+    }
+
     private String escapeUrl(String remoteFileUrl) throws UnsupportedEncodingException {
         // 先替换空格
         remoteFileUrl = remoteFileUrl.replaceAll(" ", "%20");

@@ -642,4 +642,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<CsWorkAreaModel> getWorkAreaInfo();
+
+    /**
+     * 根据站点名称和线路id获取站点信息
+     * 施工计划导入模块使用，其余慎用！
+     * @param cellText
+     * @param line
+     */
+    List<CsStation> getStationInfoByNameAndLineId( String cellText,String line);
 }

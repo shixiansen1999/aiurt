@@ -1,5 +1,6 @@
 package com.aiurt.boot.weeklyplan.util;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.weeklyplan.entity.*;
@@ -8,8 +9,10 @@ import com.aiurt.boot.weeklyplan.mapper.BdOperatePlanDeclarationFormMapper;
 import com.aiurt.boot.weeklyplan.mapper.BdSiteMapper;
 import com.aiurt.boot.weeklyplan.mapper.BdStationMapper;
 import com.aiurt.modules.position.entity.CsLine;
+import com.aiurt.modules.position.entity.CsStation;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -266,21 +269,28 @@ public class ImportExcelUtil {
         return w;
     }
 
+
     /**
      * 根据站点名字、线路 查站点id
      * @param cellText
      * @return
      */
     private String getStationIdByLineId(String cellText, int line) {
-        BdStation b = new BdStation();
-        QueryWrapper<BdStation> queryWrapper = QueryGenerator.initQueryWrapper(b, new HashMap<>(32));
-        queryWrapper.eq("name",cellText);
-        queryWrapper.eq("line_id", line);
-        List<BdStation> bdStations = bdStationMapper.selectList(queryWrapper);
-        if(bdStations != null && bdStations.size()>0){
-            return bdStations.get(0).getId();
+//        BdStation b = new BdStation();
+//        QueryWrapper<BdStation> queryWrapper = QueryGenerator.initQueryWrapper(b, new HashMap<>(32));
+//        queryWrapper.eq("name",cellText);
+//        queryWrapper.eq("line_id", line);
+//        List<BdStation> bdStations = bdStationMapper.selectList(queryWrapper);
+//        if(bdStations != null && bdStations.size()>0){
+//            return bdStations.get(0).getId();
+//        } else {
+//            return  "";
+//        }
+        List<CsStation> list = iSysBaseApi.getStationInfoByNameAndLineId(cellText, String.valueOf(line));
+        if (CollectionUtil.isNotEmpty(list)) {
+            return list.get(0).getId();
         } else {
-            return  "";
+            return "";
         }
     }
 
@@ -579,11 +589,11 @@ public class ImportExcelUtil {
 
 
     private String getValue(XSSFCell cell){
-//        if(cell.getCellType()==CellType.BOOLEAN){
-//            return String.valueOf(cell.getBooleanCellValue());
-//        }else if(cell.getCellType()==CellType.NUMERIC){
-//            return String.valueOf(cell.getNumericCellValue());
-//        }
+        if(cell.getCellType()== CellType.BOOLEAN){
+            return String.valueOf(cell.getBooleanCellValue());
+        }else if(cell.getCellType()==CellType.NUMERIC){
+            return String.valueOf(cell.getNumericCellValue());
+        }
         return String.valueOf(cell.getStringCellValue());
     }
 
