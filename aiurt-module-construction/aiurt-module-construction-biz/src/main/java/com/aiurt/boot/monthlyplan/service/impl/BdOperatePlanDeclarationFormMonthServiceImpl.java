@@ -305,7 +305,8 @@ public class BdOperatePlanDeclarationFormMonthServiceImpl extends ServiceImpl<Bd
         }
         //只有线路负责人可以审核,并且只需要线路负责人可以审核,新版流程图标注
         if (roleType.equals("1392313109028872194")) {
-            return bdMapper.updateBd_operate_plan_declaration_form_monthByID(formStatus, formStatus, voice, picture, PlanChange, id, changeReason).toString();
+            bdMapper.updateBd_operate_plan_declaration_form_monthByID(formStatus, formStatus, voice, picture, PlanChange, id, changeReason).toString();
+            return "审核成功！";
         }
 
         //如果账户没有设置角色类型,则提示如下.
