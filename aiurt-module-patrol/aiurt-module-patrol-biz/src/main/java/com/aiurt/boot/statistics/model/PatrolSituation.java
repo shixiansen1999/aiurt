@@ -34,6 +34,11 @@ public class PatrolSituation implements Serializable {
     @ApiModelProperty(value = "未巡视数")
     private Long unfinish;
     /**
+     * 检修中数
+     */
+    @ApiModelProperty(value = "巡视中数")
+    private Long overhaul;
+    /**
      * 异常数
      */
     @ApiModelProperty(value = "异常数")

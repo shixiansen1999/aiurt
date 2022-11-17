@@ -98,6 +98,8 @@ public class IndexPlanService {
         result.setFinish(CollUtil.isNotEmpty(repairPoolList) ? repairPoolList.stream().filter(re -> InspectionConstant.COMPLETED.equals(re.getStatus())).count() : 0L);
         // 未检修数量
         result.setUnfinish(CollUtil.isNotEmpty(repairPoolList) ? repairPoolList.stream().filter(re -> !InspectionConstant.COMPLETED.equals(re.getStatus())).count() : 0L);
+        //检修中的数量
+        result.setOverhaul(CollUtil.isNotEmpty(repairPoolList) ? repairPoolList.stream().filter(re -> !InspectionConstant.COMPLETED.equals(re.getStatus())&&!InspectionConstant.TO_BE_ASSIGNED.equals(re.getStatus())).count() : 0L);
         // 已检修率
         if (result.getSum() <= 0 || result.getFinish() <= 0) {
             result.setFinishRate("0%");

@@ -81,6 +81,7 @@ public class PatrolStatisticsService {
         long finish = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
         long unfinish = sum - finish;
         long abnormal = list.stream().filter(l -> PatrolConstant.TASK_ABNORMAL.equals(l.getAbnormalState())).count();
+        long overhaul = list.stream().filter(l -> !PatrolConstant.TASK_COMPLETE.equals(l.getStatus())&&!PatrolConstant.TASK_INIT.equals(l.getStatus())).count();
         long omit = 0L;
         String omitRate = String.format("%.2f", 0F);
 
@@ -106,6 +107,7 @@ public class PatrolStatisticsService {
         situation.setSum(sum);
         situation.setFinish(finish);
         situation.setUnfinish(unfinish);
+        situation.setOverhaul(overhaul);
         situation.setAbnormal(abnormal);
         situation.setOmit(omit);
         situation.setOmitRate(omitRate);
