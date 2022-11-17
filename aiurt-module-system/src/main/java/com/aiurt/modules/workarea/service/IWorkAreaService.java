@@ -90,8 +90,7 @@ public interface IWorkAreaService extends IService<WorkArea> {
 
     /**
      * 获取当前用户管辖班组下工区
-     * @param page
      * @return
      */
-    IPage<BdSite> querySiteByTeam(Page<BdSite> page);
+    List<SiteModel>querySiteByTeam();
 }

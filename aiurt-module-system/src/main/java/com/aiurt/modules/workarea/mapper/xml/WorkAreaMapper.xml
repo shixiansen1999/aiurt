@@ -103,7 +103,7 @@ where cm.major_code = #{majorCode} and cs.del_flag = 0
             </if>
         </where>
     </select>
-    <select id="queryManagedTeam" resultType="com.aiurt.boot.weeklyplan.entity.BdTeam">
+    <select id="queryManagedTeam" resultType="com.aiurt.modules.system.entity.SysDepart">
         select *
         from sys_depart t
         where find_in_set(id,#{id})&gt;0

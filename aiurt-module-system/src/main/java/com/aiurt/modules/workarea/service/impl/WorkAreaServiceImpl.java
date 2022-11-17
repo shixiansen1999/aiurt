@@ -382,18 +382,24 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
     }
 
     @Override
-    public IPage<BdSite> querySiteByTeam(Page<BdSite> page) {
+    public List<SiteModel> querySiteByTeam() {
 
         //查询登录人
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String teamId = workAreaMapper.queryByUserId(sysUser.getId());
-        List<BdTeam> bdTeamList = workAreaMapper.queryManagedTeam(teamId);
-        bdTeamList = bdTeamList.stream().distinct().collect(Collectors.toList());
-        List<String> teamIdList = bdTeamList.stream().map(s -> s.getId()).collect(Collectors.toList());
+        List<SysDepart> sysDeparts = workAreaMapper.queryManagedTeam(teamId);
+        sysDeparts = sysDeparts.stream().distinct().collect(Collectors.toList());
+        List<String> collect = sysDeparts.stream().map(s -> s.getOrgCode()).collect(Collectors.toList());
 
         //按管辖班组查询用户表
-        QueryWrapper<BdSite> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in("team_id", teamIdList);
-        return bdSiteMapper.selectPage(page, queryWrapper);
+//        QueryWrapper<BdSite> queryWrapper = new QueryWrapper<>();
+//        queryWrapper.in("team_id", teamIdList);
+        List<SiteModel> modelList = new ArrayList<>();
+        collect.forEach(e->{
+            List<SiteModel> siteByOrgCode = baseMapper.getSiteByOrgCode(e);
+            modelList.addAll(siteByOrgCode);
+        });
+
+        return modelList;
     }
 }

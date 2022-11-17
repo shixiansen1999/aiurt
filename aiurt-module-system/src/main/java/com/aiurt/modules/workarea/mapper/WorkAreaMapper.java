@@ -1,6 +1,7 @@
 package com.aiurt.modules.workarea.mapper;
 
 import com.aiurt.boot.weeklyplan.entity.BdTeam;
+import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.workarea.dto.MajorDTO;
 import com.aiurt.modules.workarea.dto.MajorUserDTO;
 import com.aiurt.modules.workarea.dto.SubSystem;
@@ -89,7 +90,7 @@ public interface WorkAreaMapper extends BaseMapper<WorkArea> {
      * @param id
      * @return
      */
-    List<BdTeam> queryManagedTeam(String id);
+    List<SysDepart> queryManagedTeam(String id);
 
 
     /**

@@ -11,6 +11,6 @@ import lombok.Data;
 @Data
 @ApiModel("线路信息DTO")
 public class BdLineInfoDTO {
-    private Integer id;
-    private String name;
+    private String id;
+    private String lineName;
 }

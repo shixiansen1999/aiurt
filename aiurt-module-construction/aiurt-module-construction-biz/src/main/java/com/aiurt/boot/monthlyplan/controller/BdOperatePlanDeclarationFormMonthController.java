@@ -291,8 +291,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      *
      * @return 返回线路信息中站点名, 站点id两个字段
      */
-    @AutoLog(value = "月计划-查询线路信息中站点名",operateType = 1,operateTypeAlias = "月计划-查询线路信息中站点名",permissionUrl = "/production/plan")
-    @ApiOperation(value = "月计划-查询线路信息中站点名", notes = "月计划-查询线路信息中站点名")
+    @AutoLog(value = "月计划-查询线路信息",operateType = 1,operateTypeAlias = "月计划-查询线路信息",permissionUrl = "/production/plan")
+    @ApiOperation(value = "月计划-查询线路信息", notes = "月计划-查询线路信息")
     @GetMapping("/getLineInfo")
     public Result<?> getLineInfo() {
         return Result.OK(bdOperatePlanDeclarationFormMonthService.getLineInfo());

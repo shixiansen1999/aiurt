@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.SiteModel;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -168,16 +169,13 @@ public class WorkAreaController extends BaseController<WorkArea, IWorkAreaServic
 
 	/**
 	 * 获取当前用户管辖班组下工区
-	 * @param pageNo
-	 * @param pageSize
 	 * @return
 	 */
 	@AutoLog(value = "工区-获取当前用户管辖班组下工区")
 	@ApiOperation(value = "工区-获取当前用户管辖班组下工区", notes = "工区-获取当前用户管辖班组下工区")
 	@GetMapping(value = "/querySiteByTeam")
-	public Result<?> querySiteByTeam(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-									 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
-		IPage<BdSite> bdSiteIpage = workAreaService.querySiteByTeam(new Page<BdSite>(pageNo, pageSize));
-		return Result.OK(bdSiteIpage);
+	public Result<?> querySiteByTeam() {
+		List<SiteModel> modelList = workAreaService.querySiteByTeam();
+		return Result.OK(modelList);
 	}
 }
