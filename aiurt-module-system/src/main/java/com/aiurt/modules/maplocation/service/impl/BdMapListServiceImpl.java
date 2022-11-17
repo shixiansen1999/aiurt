@@ -1,6 +1,7 @@
 package com.aiurt.modules.maplocation.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.intern.InternUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.weeklyplan.entity.BdStation;
@@ -235,7 +236,7 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
      * @return
      */
     @Override
-    public List<AssignUserDTO> getUserStateByTeamId(String teamId,String userId) {
+    public List<AssignUserDTO> getUserStateByTeamId(String teamId,String userId,Integer stateId) {
         List<AssignUserDTO> result = new ArrayList<>();
         // 获取登录人员
         Set<String> userNameSet = getUserInfo();
@@ -284,6 +285,15 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
             List<AssignUserDTO> list = new ArrayList<>();
          list =  result.stream().filter(l->l.getId().equals(userId)).collect(Collectors.toList());
          return list;
+        }
+        if (1 == stateId){
+            List<AssignUserDTO> list1 = new ArrayList<>();
+            list1 =  result.stream().filter(l->l.getNum()==2).collect(Collectors.toList());
+            return list1;
+        }else if (0==stateId){
+            List<AssignUserDTO> list2 = new ArrayList<>();
+            list2 =  result.stream().filter(l->l.getNum()==1).collect(Collectors.toList());
+            return list2;
         }
         result.stream().sorted(Comparator.comparing(AssignUserDTO::getNum)).collect(Collectors.toList());
         return result;
