@@ -4,15 +4,12 @@ import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.hibernate.validator.constraints.Length;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
@@ -50,6 +47,9 @@ public class FaultTimeoutLevelDTO {
 
     @ApiModelProperty("超时时长")
     private String timeoutDuration;
+
+    @ApiModelProperty("app-超时时长")
+    private String appTimeoutDuration;
 
     @ApiModelProperty("超时类型")
     private String timeoutType;

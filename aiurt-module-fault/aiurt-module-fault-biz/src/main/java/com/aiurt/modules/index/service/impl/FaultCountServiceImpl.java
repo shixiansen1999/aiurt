@@ -14,12 +14,18 @@ import com.aiurt.modules.index.service.IFaultCountService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 首页故障统计
@@ -35,6 +41,8 @@ public class FaultCountServiceImpl implements IFaultCountService {
 
    @Autowired
    private IFaultDeviceService faultDeviceService;
+    @Resource
+    private ISysBaseAPI sysBaseApi;
 
     /**
      * 首页统计故障概况
@@ -185,6 +193,14 @@ public class FaultCountServiceImpl implements IFaultCountService {
         }
         // 分页数据
         Page<FaultTimeoutLevelDTO> page = new Page<>(faultTimeoutLevelReq.getPageNo(), faultTimeoutLevelReq.getPageSize());
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
+        if(CollUtil.isEmpty(departByUserId))
+        {
+            return result;
+        }
+         List<String> ordCode = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+        faultTimeoutLevelReq.setOrgList(ordCode);
         List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultTimeoutLevelDTO faultDatum : faultData) {
@@ -201,19 +217,27 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 long min=DateUtil.between(faultDatum.getHappenTime(),new Date(), DateUnit.MINUTE);
                 int m = ((new Double(min % 60))).intValue();
                 String time = hour + "h" + m + "min";
-
+                long appHour =hour;
+                if(m>0)
+                {
+                    appHour=appHour+1;
+                }
+                String appTime = appHour + "h";
                 if (faultTimeoutLevelReq.getLevel() == 1) {
                     faultDatum.setTimeoutDuration(time);
+                    faultDatum.setAppTimeoutDuration(appTime);
                     if (hour >= 48 && !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("一级超时");
                     }
                 } else if (faultTimeoutLevelReq.getLevel() == 2) {
                     faultDatum.setTimeoutDuration(time);
+                    faultDatum.setAppTimeoutDuration(appTime);
                     if (hour >= 24 && hour <= 48 & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("二级超时");
                     }
                 } else if (faultTimeoutLevelReq.getLevel() == 3) {
                     faultDatum.setTimeoutDuration(time);
+                    faultDatum.setAppTimeoutDuration(appTime);
                     if (hour >= 12 && hour <= 24 & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("三级超时");
                     }

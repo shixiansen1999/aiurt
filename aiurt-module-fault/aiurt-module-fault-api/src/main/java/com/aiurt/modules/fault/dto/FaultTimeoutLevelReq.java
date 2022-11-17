@@ -6,9 +6,9 @@ import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 功能描述
@@ -43,6 +43,8 @@ public class FaultTimeoutLevelReq {
 
     @ApiModelProperty(value = "维修负责人")
     private String appointUserName;
+    @ApiModelProperty(value = "维修负责人")
+    private List<String> orgList;
 
     @ApiModelProperty(value = "报修方式")
     @Dict(dicCode = "fault_mode_code")
