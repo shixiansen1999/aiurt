@@ -295,10 +295,10 @@ public class BdOperatePlanDeclarationFormMonthServiceImpl extends ServiceImpl<Bd
 
 
         int PlanChange = 0;
-        List<BdOperatePlanDeclarationFormMonth> operatePlanNew = queryAllInfoByID(id);
-        if (operatePlanNew.get(0).getLineFormStatus().toString().equals("1")) {
-            return "线路负责人已审核,请勿重新审核,操作错误代码:514";
-        }
+//        List<BdOperatePlanDeclarationFormMonth> operatePlanNew = queryAllInfoByID(id);
+//        if (operatePlanNew.get(0).getLineFormStatus().toString().equals("1")) {
+//            return "线路负责人已审核,请勿重新审核,操作错误代码:514";
+//        }
         //只能线路负责人审核.或者访问时,没传入roleType
         if (!roleType.equals("1392313109028872194")) {
             return "只能线路负责人来审核月计划.请您更换用户账号后操作,操作错误代码:516";
