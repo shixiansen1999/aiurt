@@ -21,5 +21,12 @@
 			</foreach>
 		</if>
 	</select>
+    <select id="queryTreeList" resultType="com.aiurt.common.api.vo.TreeNode">
+    select id as value,id,name,name as label,pid,major_code as extendedField
+    from cs_safety_attention_type where del_flag = 0 order by sort desc
+	</select>
+	<select id="queryAllMajor" resultType="com.aiurt.common.api.vo.TreeNode">
+		select major_code as value,major_code as id,major_name as name,major_name as label from cs_major where del_flag = 0
+	</select>
 
 </mapper>

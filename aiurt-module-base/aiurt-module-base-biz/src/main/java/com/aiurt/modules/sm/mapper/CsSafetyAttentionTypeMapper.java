@@ -1,5 +1,6 @@
 package com.aiurt.modules.sm.mapper;
 
+import com.aiurt.common.api.vo.TreeNode;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.SelectTreeModel;
@@ -31,5 +32,17 @@ public interface CsSafetyAttentionTypeMapper extends BaseMapper<CsSafetyAttentio
 	 * @return
 	 */
 	List<SelectTreeModel> queryListByPid(@Param("pid") String pid, @Param("query") Map<String, String> query);
+
+	/**
+	 * 查询所有的安全事项类型
+	 * @return
+	 */
+    List<TreeNode> queryTreeList();
+
+	/**
+	 * 查询所有的专业信息
+	 * @return
+	 */
+	List<TreeNode> queryAllMajor();
 
 }

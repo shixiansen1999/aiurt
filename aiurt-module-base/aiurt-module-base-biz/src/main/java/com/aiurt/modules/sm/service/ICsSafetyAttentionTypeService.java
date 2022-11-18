@@ -1,5 +1,6 @@
 package com.aiurt.modules.sm.service;
 
+import com.aiurt.common.api.vo.TreeNode;
 import com.aiurt.modules.sm.dto.SafetyAttentionTypeTreeDTO;
 import org.jeecg.common.system.vo.SelectTreeModel;
 import com.aiurt.modules.sm.entity.CsSafetyAttentionType;
@@ -76,6 +77,6 @@ public interface ICsSafetyAttentionTypeService extends IService<CsSafetyAttentio
 	 * 查询数据 查出所有安全事项类型,并以树结构数据格式响应给前端
 	 * @return
 	 */
-    List<SelectTreeModel> queryTreeList();
+    List<TreeNode> queryTreeList();
 
 }

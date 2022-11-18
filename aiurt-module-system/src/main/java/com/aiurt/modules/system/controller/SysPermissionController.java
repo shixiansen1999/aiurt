@@ -116,7 +116,7 @@ public class SysPermissionController {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "isApp", value = "是否是移动端模块（1是，0否）", required = false, dataTypeClass = Integer.class),
             @ApiImplicitParam(name = "name", value = "模块名称", required = false, dataTypeClass = String.class),
-            @ApiImplicitParam(name = "hidden", value = "模块是否启用（false否true是（默认值0））", required = false, dataTypeClass = Boolean.class)
+            @ApiImplicitParam(name = "hidden", value = "模块是否启用（false否true是）", required = false, dataTypeClass = Boolean.class)
     })
     @RequestMapping(value = "/getSystemMenuList", method = RequestMethod.GET)
     public Result<List<SysPermissionTree>> getSystemMenuList(@RequestParam(name = "isApp", required = false) Integer isApp,

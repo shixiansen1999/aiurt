@@ -10,6 +10,7 @@ import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.common.api.vo.TreeNode;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.sm.dto.SafetyAttentionTypeTreeDTO;
 import org.jeecg.common.api.vo.Result;
@@ -61,10 +62,10 @@ public class CsSafetyAttentionTypeController extends BaseController<CsSafetyAtte
 	  */
 	 @ApiOperation(value="安全事项管理-查询所有安全事项类型", notes="安全事项管理-查询所有安全事项类型")
 	 @RequestMapping(value = "/queryTreeList", method = RequestMethod.GET)
-	 public Result<List<SelectTreeModel>> queryTreeList() {
-		 Result<List<SelectTreeModel>> result = new Result<>();
+	 public Result<List<TreeNode>> queryTreeList() {
+		 Result<List<TreeNode>> result = new Result<>();
 		 try {
-			 List<SelectTreeModel> selectTreeModels = csSafetyAttentionTypeService.queryTreeList();
+			 List<TreeNode> selectTreeModels = csSafetyAttentionTypeService.queryTreeList();
 			 result.setResult(selectTreeModels);
 			 result.setSuccess(true);
 		 } catch (Exception e) {
@@ -72,43 +73,7 @@ public class CsSafetyAttentionTypeController extends BaseController<CsSafetyAtte
 		 }
 		 return result;
 	 }
-	/**
-	 * 分页列表查询
-	 *
-	 * @param csSafetyAttentionType
-	 * @param pageNo
-	 * @param pageSize
-	 * @param req
-	 * @return
-	 */
-	//@AutoLog(value = "安全事项类型表-分页列表查询")
-	@ApiOperation(value="安全事项类型表-分页列表查询", notes="安全事项类型表-分页列表查询")
-	@GetMapping(value = "/rootList")
-	public Result<IPage<CsSafetyAttentionType>> queryPageList(CsSafetyAttentionType csSafetyAttentionType,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		String hasQuery = req.getParameter("hasQuery");
-        if(hasQuery != null && "true".equals(hasQuery)){
-            QueryWrapper<CsSafetyAttentionType> queryWrapper =  QueryGenerator.initQueryWrapper(csSafetyAttentionType, req.getParameterMap());
-            List<CsSafetyAttentionType> list = csSafetyAttentionTypeService.queryTreeListNoPage(queryWrapper);
-            IPage<CsSafetyAttentionType> pageList = new Page<>(1, 10, list.size());
-            pageList.setRecords(list);
-            return Result.OK(pageList);
-        }else{
-            String parentId = csSafetyAttentionType.getPid();
-            if (oConvertUtils.isEmpty(parentId)) {
-                parentId = "0";
-            }
-            csSafetyAttentionType.setPid(null);
-            QueryWrapper<CsSafetyAttentionType> queryWrapper = QueryGenerator.initQueryWrapper(csSafetyAttentionType, req.getParameterMap());
-            // 使用 eq 防止模糊查询
-            queryWrapper.eq("pid", parentId);
-            Page<CsSafetyAttentionType> page = new Page<CsSafetyAttentionType>(pageNo, pageSize);
-            IPage<CsSafetyAttentionType> pageList = csSafetyAttentionTypeService.page(page, queryWrapper);
-            return Result.OK(pageList);
-        }
-	}
+
 
 	 /**
 	  * 【vue3专用】加载节点的子数据
@@ -235,7 +200,7 @@ public class CsSafetyAttentionTypeController extends BaseController<CsSafetyAtte
 	 */
 	@AutoLog(value = "安全事项类型表-编辑")
 	@ApiOperation(value="安全事项类型表-编辑", notes="安全事项类型表-编辑")
-	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+	@PostMapping(value = "/edit")
 	public Result<String> edit(@RequestBody CsSafetyAttentionType csSafetyAttentionType) {
 		csSafetyAttentionTypeService.updateCsSafetyAttentionType(csSafetyAttentionType);
 		return Result.OK("编辑成功!");
@@ -255,19 +220,6 @@ public class CsSafetyAttentionTypeController extends BaseController<CsSafetyAtte
 		return Result.OK("删除成功!");
 	}
 
-	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	@AutoLog(value = "安全事项类型表-批量删除")
-	@ApiOperation(value="安全事项类型表-批量删除", notes="安全事项类型表-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.csSafetyAttentionTypeService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功！");
-	}
 
 	/**
 	 * 通过id查询
@@ -275,7 +227,7 @@ public class CsSafetyAttentionTypeController extends BaseController<CsSafetyAtte
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "安全事项类型表-通过id查询")
+	@AutoLog(value = "安全事项类型表-通过id查询")
 	@ApiOperation(value="安全事项类型表-通过id查询", notes="安全事项类型表-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<CsSafetyAttentionType> queryById(@RequestParam(name="id",required=true) String id) {
@@ -286,27 +238,5 @@ public class CsSafetyAttentionTypeController extends BaseController<CsSafetyAtte
 		return Result.OK(csSafetyAttentionType);
 	}
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param csSafetyAttentionType
-    */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, CsSafetyAttentionType csSafetyAttentionType) {
-		return super.exportXls(request, csSafetyAttentionType, CsSafetyAttentionType.class, "安全事项类型表");
-    }
-
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-		return super.importExcel(request, response, CsSafetyAttentionType.class);
-    }
 
 }
