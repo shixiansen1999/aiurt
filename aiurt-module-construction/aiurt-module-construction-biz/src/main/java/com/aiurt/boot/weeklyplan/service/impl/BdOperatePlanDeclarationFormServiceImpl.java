@@ -818,34 +818,40 @@ public class BdOperatePlanDeclarationFormServiceImpl
         declarationForm.setPicture(picture);
 
         Integer afterStatus = bdOperatePlanStateChange.getAfterStatus();
-
-        // 修改上一个消息状态为已读
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //readMessage(Convert.toStr(declarationForm.getId()), SysAnnmentTypeEnum.BDOPERATEPLANDECLARATIONFORM.getType(), sysUser.getUsername());
-        readMessage(Convert.toStr(declarationForm.getId()), SysAnnmentTypeEnum.BDOPERATEPLANDECLARATIONFORM.getType(), null);
-
-        //根据roleType判断是谁在审批
-        String content = "";
-        int typeId = 0;
-        if (declarationForm.getPlanChange().equals(0)) {
-            content = "你有新的待审批周计划";
-            typeId = 14;
-        } else {
-            content = "你有新的待审批补充计划/变更计划";
-            typeId = 46;
-        }
         try {//todo 1234
             String roleId = bdOperatePlanStateChange.getRoleId();
             List<String> roleIds = StrUtil.split(roleId, ',');
-            if (roleIds.contains(MagicWords.NUM_1) || roleIds.contains(MagicWords.NUM_2)) {
-
+            // 检查用户是否有权限审批
+            List<String> roleCodes = Arrays.asList(ConstructtionRoleConstant.LINE_PEOPLE,
+                    ConstructtionRoleConstant.LINE_ALL_PEOPLE, ConstructtionRoleConstant.PRODUCTION,
+                    ConstructtionRoleConstant.DIRECTOR, ConstructtionRoleConstant.MANAGER);
+            Map<String, String> roleIdsMap = new HashMap<>();
+            roleCodes.forEach(code -> {
+                String roleIdByCode = sysBaseApi.getRoleIdByCode(code);
+                if (StrUtil.isNotEmpty(roleIdByCode)) {
+                    roleIdsMap.put(code, roleIdByCode);
+                }
+            });
+            List<String> approvRoleIds = roleIdsMap.values().stream().collect(Collectors.toList());
+            List<String> intersection = CollectionUtil.intersection(roleIds, approvRoleIds).stream().collect(Collectors.toList());
+            if (CollectionUtil.isEmpty(intersection)) {
+                Result.error(600, "请检查账户角色和部门，没有权限审批！");
+            }
+            if (Integer.valueOf(1).compareTo(declarationForm.getLineFormStatus()) != 0
+                    && (roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.LINE_PEOPLE))
+                    || roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.LINE_ALL_PEOPLE)))) {
+                // 线路负责人或总线路负责人
                 declarationForm.setLineFormStatus(afterStatus);
                 declarationForm.setActualLineStaffId(sysUser.getId());
-            } else if (roleIds.contains(MagicWords.NUM_3)) {
+            } else if (roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.PRODUCTION))) {
+                //生产调度
                 declarationForm.setDispatchFormStatus(afterStatus);
-            } else if (roleIds.contains(MagicWords.NUM_4)) {
+            } else if (roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.DIRECTOR))) {
+                // 分部主任
                 declarationForm.setDirectorFormStatus(afterStatus);
-            } else if (roleIds.contains(MagicWords.NUM_5)) {
+            } else if (roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.MANAGER))) {
+                // 公司经理
                 declarationForm.setManagerFormStatus(afterStatus);
             } else {
                 return Result.error(600, "请检查账户角色和部门，没有权限审批！");
@@ -879,7 +885,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
         } else {
             stateChangeMapper.updateById(bdOperatePlanStateChange);
         }
-        return Result.OK();
+        return Result.OK("审批成功！");
     }
 
     public void readMessage(String busId, String busType, String username) {
