@@ -165,8 +165,7 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
      * @param bdOperatePlanStateChange 变更计划表
      * @return Result.
      */
-    Result<?> updateOperateForm(String voice,
-                                String picture, BdOperatePlanStateChange bdOperatePlanStateChange);
+    Result<?> updateOperateForm(String voice, String picture, BdOperatePlanStateChange bdOperatePlanStateChange);
 
     /**
      * 获取可能的状态信息.

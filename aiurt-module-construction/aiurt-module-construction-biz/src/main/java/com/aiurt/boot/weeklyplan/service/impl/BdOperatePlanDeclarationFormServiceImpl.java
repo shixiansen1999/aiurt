@@ -19,6 +19,7 @@ import com.aiurt.boot.weeklyplan.service.*;
 import com.aiurt.boot.weeklyplan.util.ExportExcelUtil;
 import com.aiurt.boot.weeklyplan.util.ImportExcelUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.position.entity.CsLine;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -660,11 +661,145 @@ public class BdOperatePlanDeclarationFormServiceImpl
         return null;
     }
 
+//    @Override
+//    public Result<?> updateOperateForm(String voice, String picture, BdOperatePlanStateChange bdOperatePlanStateChange) {
+//        BdOperatePlanDeclarationForm declarationForm = this.getById(bdOperatePlanStateChange.getBdOperatePlanDeclarationFormId());
+//        //检查审批状态
+//        Result<?> result = checkUpdateConflict(declarationForm, bdOperatePlanStateChange);
+//        int num = 600;
+//        if (result.getErrCode() != null && result.getErrCode() == num) {
+//            return result;
+//        }
+//
+//        //补充字段
+//        bdOperatePlanStateChange.setId(declarationForm.getId().toString());
+//        bdOperatePlanStateChange.setForwardLineStatus(declarationForm.getLineFormStatus());
+//        bdOperatePlanStateChange.setForwardDispatchStatus((declarationForm.getDispatchFormStatus()));
+//        bdOperatePlanStateChange.setForwardDirectorStatus(declarationForm.getDirectorFormStatus());
+//        bdOperatePlanStateChange.setForwardManagerStatus(declarationForm.getManagerFormStatus());
+//
+//        declarationForm.setVoice(voice);
+//        declarationForm.setPicture(picture);
+//
+//        Integer afterStatus = bdOperatePlanStateChange.getAfterStatus();
+//
+//        // 修改上一个消息状态为已读
+//        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+//        //readMessage(Convert.toStr(declarationForm.getId()), SysAnnmentTypeEnum.BDOPERATEPLANDECLARATIONFORM.getType(), sysUser.getUsername());
+//        readMessage(Convert.toStr(declarationForm.getId()), SysAnnmentTypeEnum.BDOPERATEPLANDECLARATIONFORM.getType(), null);
+//
+//        //根据roleType判断是谁在审批
+//        String content = "";
+//        int typeId = 0;
+//        if (declarationForm.getPlanChange().equals(0)) {
+//            content = "你有新的待审批周计划";
+//            typeId = 14;
+//        } else {
+//            content = "你有新的待审批补充计划/变更计划";
+//            typeId = 46;
+//        }
+////        try {//todo 1234
+////            if ((MagicWords.NUM_1).equals(bdOperatePlanStateChange.getRoleId()) || (MagicWords.NUM_2).equals(bdOperatePlanStateChange.getRoleId())) {
+////                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDispatchStaffId(),
+////                        content, typeId, afterStatus, false);
+////                declarationForm.setLineFormStatus(afterStatus);
+////                declarationForm.setActualLineStaffId(sysUser.getId());
+////            } else if ((MagicWords.NUM_3).equals(bdOperatePlanStateChange.getRoleId())) {
+////                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDirectorStaffId(),
+////                        content, 43, afterStatus, false);
+////                declarationForm.setDispatchFormStatus(afterStatus);
+////            } else if ((MagicWords.NUM_4).equals(bdOperatePlanStateChange.getRoleId())) {
+////                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getManagerStaffId(),
+////                        content, 44, afterStatus, false);
+////                declarationForm.setDirectorFormStatus(afterStatus);
+////            } else if ((MagicWords.NUM_5).equals(bdOperatePlanStateChange.getRoleId())) {
+////                declarationForm.setManagerFormStatus(afterStatus);
+////            } else {
+////                return Result.error(600, "请检查账户角色和部门，没有权限审批！");
+////            }
+////        } catch (NullPointerException e) {
+////            return Result.error(500, "roleId不能为空");
+////        }
+//        try {//todo 1234
+//            String roleId = bdOperatePlanStateChange.getRoleId();
+//            List<String> roleIds = StrUtil.split(roleId, ',');
+//            if (roleIds.contains(MagicWords.NUM_1) || roleIds.contains(MagicWords.NUM_2)) {
+////                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDispatchStaffId(),
+////                        content, typeId, afterStatus, false);
+//                declarationForm.setLineFormStatus(afterStatus);
+//                declarationForm.setActualLineStaffId(sysUser.getId());
+//            } else if (roleIds.contains(MagicWords.NUM_3)) {
+////                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDirectorStaffId(),
+////                        content, 43, afterStatus, false);
+//                declarationForm.setDispatchFormStatus(afterStatus);
+//            } else if (roleIds.contains(MagicWords.NUM_4)) {
+////                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getManagerStaffId(),
+////                        content, 44, afterStatus, false);
+//                declarationForm.setDirectorFormStatus(afterStatus);
+//            } else if (roleIds.contains(MagicWords.NUM_5)) {
+//                declarationForm.setManagerFormStatus(afterStatus);
+//            } else {
+//                return Result.error(600, "请检查账户角色和部门，没有权限审批！");
+//            }
+//        } catch (NullPointerException e) {
+//            return Result.error(500, "roleId不能为空");
+//        }
+//
+//        //一人拒绝则直接驳回
+//        if (MagicWords.STATUS_2.equals(afterStatus)) {
+//            declarationForm.setFormStatus(2);
+//            declarationForm.setRejectedReason(bdOperatePlanStateChange.getChangeReason());
+//            /*sysBaseAPI.sendSysAnnouncement(new MessageDTO(
+//                    sysBaseAPI.getUserById(bdOperatePlanStateChange.getChangeStaffId()).getRealname(),
+//                    sysBaseAPI.getUserById(declarationForm.getApplyStaffId()).getUsername(),
+//                    "你有申请中的的周计划被驳回",
+//                    "你有申请中的的周计划被驳回, 原因：" + bdOperatePlanStateChange.getChangeReason(), "1"));*/
+//        }
+//        //所有人同意则通过
+//        if (declarationForm.getPlanChange() == 0) {
+//            if (declarationForm.getLineFormStatus() == 1 && declarationForm.getDispatchFormStatus() == 1) {
+//                declarationForm.setFormStatus(1);
+//                /*String username = sysBaseAPI.getUserById(declarationForm.getApplyStaffId()).getUsername();
+//                sysBaseAPI.sendSysAnnouncement(new MessageDTO("管理员",
+//                        username,
+//                        "你的周计划已通过申请", "你的周计划已通过申请", "1"));*/
+//            }
+//        } else {
+//            Integer status = 1;
+//            if (status.equals(declarationForm.getLineFormStatus()) && status.equals(declarationForm.getDispatchFormStatus())
+//                    && status.equals(declarationForm.getManagerFormStatus()) && status.equals(declarationForm.getDirectorFormStatus())) {
+//                //declarationForm.setFormStatus(1);
+//                /*sysBaseAPI.sendSysAnnouncement(new MessageDTO("管理员",
+//                        sysBaseAPI.getUserById(declarationForm.getApplyStaffId()).getUsername(),
+//                        "你的周计划已通过申请", "你的周计划已通过申请", "1"));*/
+//            }
+//        }
+//
+//        //更新表
+//        this.updateById(declarationForm);
+//        stateChangeMapper.insert(bdOperatePlanStateChange);
+//
+//        return Result.OK();
+//    }
+
+    /**
+     * 上面注释的是原来的代码，以下是根据理解进行修改的版本
+     * @param voice 录音路径
+     * @param picture 图片路径
+     * @param bdOperatePlanStateChange 变更计划表
+     * @return
+     */
     @Override
-    public Result<?> updateOperateForm(String voice,
-                                       String picture, BdOperatePlanStateChange bdOperatePlanStateChange) {
-        BdOperatePlanDeclarationForm declarationForm =
-                this.getById(bdOperatePlanStateChange.getBdOperatePlanDeclarationFormId());
+    public Result<?> updateOperateForm(String voice, String picture, BdOperatePlanStateChange bdOperatePlanStateChange) {
+        // 查找是否有对应记录
+        if (ObjectUtil.isEmpty(bdOperatePlanStateChange) || ObjectUtil.isEmpty(bdOperatePlanStateChange.getBdOperatePlanDeclarationFormId())) {
+            return Result.error("对应计划令ID为空！");
+        }
+        String declarationFormId = bdOperatePlanStateChange.getBdOperatePlanDeclarationFormId();
+        BdOperatePlanDeclarationForm declarationForm = this.getById(declarationFormId);
+        if (ObjectUtil.isEmpty(declarationForm)) {
+            return Result.error("未找到id为【" + declarationFormId + "】的周计划令记录！");
+        }
         //检查审批状态
         Result<?> result = checkUpdateConflict(declarationForm, bdOperatePlanStateChange);
         int num = 600;
@@ -699,43 +834,16 @@ public class BdOperatePlanDeclarationFormServiceImpl
             content = "你有新的待审批补充计划/变更计划";
             typeId = 46;
         }
-//        try {//todo 1234
-//            if ((MagicWords.NUM_1).equals(bdOperatePlanStateChange.getRoleId()) || (MagicWords.NUM_2).equals(bdOperatePlanStateChange.getRoleId())) {
-//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDispatchStaffId(),
-//                        content, typeId, afterStatus, false);
-//                declarationForm.setLineFormStatus(afterStatus);
-//                declarationForm.setActualLineStaffId(sysUser.getId());
-//            } else if ((MagicWords.NUM_3).equals(bdOperatePlanStateChange.getRoleId())) {
-//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDirectorStaffId(),
-//                        content, 43, afterStatus, false);
-//                declarationForm.setDispatchFormStatus(afterStatus);
-//            } else if ((MagicWords.NUM_4).equals(bdOperatePlanStateChange.getRoleId())) {
-//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getManagerStaffId(),
-//                        content, 44, afterStatus, false);
-//                declarationForm.setDirectorFormStatus(afterStatus);
-//            } else if ((MagicWords.NUM_5).equals(bdOperatePlanStateChange.getRoleId())) {
-//                declarationForm.setManagerFormStatus(afterStatus);
-//            } else {
-//                return Result.error(600, "请检查账户角色和部门，没有权限审批！");
-//            }
-//        } catch (NullPointerException e) {
-//            return Result.error(500, "roleId不能为空");
-//        }
         try {//todo 1234
             String roleId = bdOperatePlanStateChange.getRoleId();
             List<String> roleIds = StrUtil.split(roleId, ',');
             if (roleIds.contains(MagicWords.NUM_1) || roleIds.contains(MagicWords.NUM_2)) {
-//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDispatchStaffId(),
-//                        content, typeId, afterStatus, false);
+
                 declarationForm.setLineFormStatus(afterStatus);
                 declarationForm.setActualLineStaffId(sysUser.getId());
             } else if (roleIds.contains(MagicWords.NUM_3)) {
-//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDirectorStaffId(),
-//                        content, 43, afterStatus, false);
                 declarationForm.setDispatchFormStatus(afterStatus);
             } else if (roleIds.contains(MagicWords.NUM_4)) {
-//                this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getManagerStaffId(),
-//                        content, 44, afterStatus, false);
                 declarationForm.setDirectorFormStatus(afterStatus);
             } else if (roleIds.contains(MagicWords.NUM_5)) {
                 declarationForm.setManagerFormStatus(afterStatus);
@@ -750,36 +858,27 @@ public class BdOperatePlanDeclarationFormServiceImpl
         if (MagicWords.STATUS_2.equals(afterStatus)) {
             declarationForm.setFormStatus(2);
             declarationForm.setRejectedReason(bdOperatePlanStateChange.getChangeReason());
-            /*sysBaseAPI.sendSysAnnouncement(new MessageDTO(
-                    sysBaseAPI.getUserById(bdOperatePlanStateChange.getChangeStaffId()).getRealname(),
-                    sysBaseAPI.getUserById(declarationForm.getApplyStaffId()).getUsername(),
-                    "你有申请中的的周计划被驳回",
-                    "你有申请中的的周计划被驳回, 原因：" + bdOperatePlanStateChange.getChangeReason(), "1"));*/
         }
         //所有人同意则通过
         if (declarationForm.getPlanChange() == 0) {
             if (declarationForm.getLineFormStatus() == 1 && declarationForm.getDispatchFormStatus() == 1) {
-                //declarationForm.setFormStatus(1);
-                /*String username = sysBaseAPI.getUserById(declarationForm.getApplyStaffId()).getUsername();
-                sysBaseAPI.sendSysAnnouncement(new MessageDTO("管理员",
-                        username,
-                        "你的周计划已通过申请", "你的周计划已通过申请", "1"));*/
+                declarationForm.setFormStatus(1);
             }
         } else {
             Integer status = 1;
             if (status.equals(declarationForm.getLineFormStatus()) && status.equals(declarationForm.getDispatchFormStatus())
                     && status.equals(declarationForm.getManagerFormStatus()) && status.equals(declarationForm.getDirectorFormStatus())) {
-                //declarationForm.setFormStatus(1);
-                /*sysBaseAPI.sendSysAnnouncement(new MessageDTO("管理员",
-                        sysBaseAPI.getUserById(declarationForm.getApplyStaffId()).getUsername(),
-                        "你的周计划已通过申请", "你的周计划已通过申请", "1"));*/
+                declarationForm.setFormStatus(1);
             }
         }
-
         //更新表
         this.updateById(declarationForm);
-        stateChangeMapper.insert(bdOperatePlanStateChange);
-
+        BdOperatePlanStateChange stateChange = stateChangeMapper.selectById(bdOperatePlanStateChange.getId());
+        if (ObjectUtil.isEmpty(stateChange)) {
+            stateChangeMapper.insert(bdOperatePlanStateChange);
+        } else {
+            stateChangeMapper.updateById(bdOperatePlanStateChange);
+        }
         return Result.OK();
     }
 
