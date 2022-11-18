@@ -73,6 +73,11 @@ public class CsSafetyAttention implements Serializable {
 	@Excel(name = "事项分类id", width = 15)
     @ApiModelProperty(value = "事项分类id")
     private java.lang.String attentionType;
+    /**事项分类id*/
+    @Excel(name = "安全事项分类", width = 15)
+    @ApiModelProperty(value = "安全事项分类")
+    @TableField(exist = false)
+    private java.lang.String attentionTypeName;
 	/**安全事项内容*/
 	@Excel(name = "安全事项内容", width = 15)
     @ApiModelProperty(value = "安全事项内容")
@@ -86,6 +91,9 @@ public class CsSafetyAttention implements Serializable {
 	@Dict(dicCode = "event _status")
     @ApiModelProperty(value = "事项状态（0，1启用）")
     private java.lang.Integer state;
+    @Excel(name = "事项状态", width = 15)
+    @TableField(exist = false)
+    private java.lang.String stateName;
 	/**删除标记 0，未删除，1已删除*/
 	@Excel(name = "删除标记 0，未删除，1已删除", width = 15)
     @ApiModelProperty(value = "删除标记 0，未删除，1已删除")

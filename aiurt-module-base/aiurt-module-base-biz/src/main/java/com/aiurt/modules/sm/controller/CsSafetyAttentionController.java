@@ -210,16 +210,38 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		 }
 		 out.close();
 	 }
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, CsSafetyAttention.class);
-    }
-
+	 /**
+	  * 通过excel导入数据
+	  * @param request
+	  * @param response
+	  * @return
+	  */
+	 @AutoLog(value = "导入")
+	 @ApiOperation(value = "导入", notes = "导入")
+	 @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+	 public Result importExcel(HttpServletRequest request, HttpServletResponse response) {
+		 MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		 Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+		 for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+			 // 获取上传文件对象
+			 MultipartFile file = entity.getValue();
+			 ImportParams params = new ImportParams();
+			 params.setTitleRows(2);
+			 params.setHeadRows(1);
+			 params.setNeedSave(true);
+			 try {
+				 return csSafetyAttentionService.importExcelMaterial(file, params);
+			 } catch (Exception e) {
+				 log.error(e.getMessage(), e);
+				 return Result.error("文件导入失败:" + e.getMessage());
+			 } finally {
+				 try {
+					 file.getInputStream().close();
+				 } catch (IOException e) {
+					 log.error(e.getMessage(), e);
+				 }
+			 }
+		 }
+		 return Result.error("文件导入失败！");
+	 }
 }

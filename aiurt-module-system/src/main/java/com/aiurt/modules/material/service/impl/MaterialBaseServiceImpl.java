@@ -1,5 +1,6 @@
 package com.aiurt.modules.material.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.major.entity.CsMajor;
@@ -204,6 +205,12 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 					}else{
 						errorStrs.add("第 " + i + " 行：无法根据物资单位找到对应数据，忽略导入。");
 						continue;
+					}
+				}
+				if(StrUtil.isNotEmpty(materialBase.getConsumablesName())){
+					//是否为易耗品 默认为否 在为是的时候修改状态
+					if ("是".equals(materialBase.getConsumablesName())){
+						materialBase.setConsumablesType(1);
 					}
 				}
 				LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();

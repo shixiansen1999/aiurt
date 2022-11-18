@@ -138,6 +138,7 @@ public class MaterialBase extends DictEntity {
 	private java.lang.Integer consumablesType = 0;
 
 	@TableField(exist = false)
+	@Excel(name = "易耗品", width = 15)
 	@ApiModelProperty(value = "是否是易耗品名称")
 	private java.lang.String consumablesName;
 

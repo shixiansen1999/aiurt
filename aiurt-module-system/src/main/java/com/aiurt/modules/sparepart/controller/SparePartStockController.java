@@ -78,7 +78,6 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 	 /**
 	  * APP-分页列表查询
 	  *
-	  * @param sparePartStock
 	  * @param pageNo
 	  * @param pageSize
 	  * @param req
