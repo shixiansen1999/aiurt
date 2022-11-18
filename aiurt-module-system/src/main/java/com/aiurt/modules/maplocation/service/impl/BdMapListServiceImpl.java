@@ -16,7 +16,9 @@ import com.aiurt.modules.maplocation.service.IBdMapListService;
 import com.aiurt.modules.maplocation.utils.MapDistance;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.position.service.ICsLineService;
+import com.aiurt.modules.position.service.ICsStationPositionService;
 import com.aiurt.modules.position.service.ICsStationService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -53,6 +55,8 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
     private IBdStationService bdStationService;
     @Autowired
     private ICsStationService csStationService;
+    @Autowired
+    private ICsStationPositionService csStationPositionService;
     @Autowired
     private ICsLineService csLineService;
     @Autowired
@@ -222,6 +226,14 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
         }
 
         List<EquipmentHistoryDTO> equipmentHistoryDTOS = baseMapper.selectEquipment(pageList, teamIdList, stationIdStr);
+        equipmentHistoryDTOS.forEach(s->{
+            if (s.getPositionCode()!=null){
+                CsStationPosition stationPosition = csStationPositionService.getOne(new LambdaQueryWrapper<CsStationPosition>()
+                        .eq(CsStationPosition::getPositionCode,s.getPositionCode()).eq(CsStationPosition::getDelFlag,0));
+               s.setPosition(stationPosition.getPositionName());
+            }
+        });
+
         return pageList.setRecords(equipmentHistoryDTOS);
     }
 

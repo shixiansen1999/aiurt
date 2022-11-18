@@ -23,6 +23,8 @@ public class EquipmentHistoryDTO {
     private String stationName;
     @ApiModelProperty(value = "位置")
     private String position;
+    @ApiModelProperty(value = "位置code")
+    private String positionCode;
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "时间")

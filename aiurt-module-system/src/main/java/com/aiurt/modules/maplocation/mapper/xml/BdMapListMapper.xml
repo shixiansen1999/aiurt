@@ -61,10 +61,11 @@
 
     <select id="selectEquipment" resultType="com.aiurt.modules.maplocation.dto.EquipmentHistoryDTO">
         SELECT
-        bda.code,
+        bda.code as deviceCode,
         bdt.NAME AS typeName,
         bda.position_code,
-        bda.NAME AS deviceName
+        bda.NAME AS deviceName,
+        bda.status as state
         FROM
         device bda
         LEFT JOIN device_type bdt ON bdt.code = bda.device_type_code
