@@ -937,10 +937,10 @@ public class BdOperatePlanDeclarationFormServiceImpl
             }
         }
         //点击“取消计划”按钮
-        if (MagicWords.STATUS_4.equals(bdOperatePlanDeclarationForm.getFormStatus())) {
-            //取消检修任务
-            bdOverhaulReportService.cancelTask(bdOperatePlanDeclarationForm.getId() + "");
-        }
+//        if (MagicWords.STATUS_4.equals(bdOperatePlanDeclarationForm.getFormStatus())) {
+//            //取消检修任务
+//            bdOverhaulReportService.cancelTask(bdOperatePlanDeclarationForm.getId() + "");
+//        }
     }
 
 //    @Override
