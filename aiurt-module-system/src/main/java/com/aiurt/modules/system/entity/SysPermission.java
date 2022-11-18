@@ -103,32 +103,32 @@ public class SysPermission implements Serializable {
 	/**
 	 * 是否叶子节点: 1:是  0:不是
 	 */
-	@ApiModelProperty("是否叶子节点: 1:是  0:不是")
+	@ApiModelProperty("是否叶子节点: true:是  false:不是")
 	@TableField(value="is_leaf")
 	private boolean leaf;
 
 	/**
 	 * 是否路由菜单: 0:不是  1:是（默认值1）
 	 */
-	@ApiModelProperty("是否路由菜单: 0:不是  1:是（默认值1）")
+	@ApiModelProperty("是否路由菜单: false:不是  true:是（默认值true）")
 	@TableField(value="is_route")
 	private boolean route;
 	/**
 	 * 是否导航栏: 0:不是  1:是
 	 */
-	@ApiModelProperty("是否导航栏: 0:不是  1:是")
+	@ApiModelProperty("是否导航栏: false:不是  true:是")
 	@TableField(value="is_navBar")
 	private boolean isNavBar ;
 	/**
 	 * 是否筛选器: 0:不是  1:是
 	 */
-	@ApiModelProperty("是否筛选器: 0:不是  1:是")
+	@ApiModelProperty("是否筛选器: false:不是  true:是")
 	@TableField(value="is_filter")
 	private boolean isFilter ;
 	/**
 	 * 是否快捷搜索: 0:不是  1:是
 	 */
-	@ApiModelProperty("是否快捷搜索: 0:不是  1:是")
+	@ApiModelProperty("是否快捷搜索: false:不是  true:是")
 	@TableField(value="is_search")
 	private boolean isSearch ;
 
@@ -136,7 +136,7 @@ public class SysPermission implements Serializable {
 	/**
 	 * 是否缓存页面: 0:不是  1:是（默认值1）
 	 */
-	@ApiModelProperty("是否缓存页面: 0:不是  1:是（默认值1）")
+	@ApiModelProperty("是否缓存页面: false:不是  true:是（默认值true）")
 	@TableField(value="keep_alive")
 	private boolean keepAlive;
 
@@ -166,13 +166,13 @@ public class SysPermission implements Serializable {
 	/**
 	 * 是否隐藏路由菜单: 0否,1是（默认值0）
 	 */
-	@ApiModelProperty("是否停用 0否,1是（默认值0）")
+	@ApiModelProperty("是否停用 false否,true是")
 	private boolean hidden;
 
 	/**
 	 * 是否隐藏Tab: 0否,1是（默认值0）
 	 */
-	@ApiModelProperty("是否隐藏Tab: 0否,1是（默认值0）")
+	@ApiModelProperty("是否隐藏Tab: false否,true是（默认值false）")
 	private boolean hideTab;
 
 	/**

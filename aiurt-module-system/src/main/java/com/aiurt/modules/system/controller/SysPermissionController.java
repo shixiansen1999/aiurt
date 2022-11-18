@@ -121,7 +121,7 @@ public class SysPermissionController {
     @RequestMapping(value = "/getSystemMenuList", method = RequestMethod.GET)
     public Result<List<SysPermissionTree>> getSystemMenuList(@RequestParam(name = "isApp", required = false) Integer isApp,
                                                              @RequestParam(name = "name", required = false) String name,
-                                                             @RequestParam(name = "hidden", required = false) Integer hidden) {
+                                                             @RequestParam(name = "hidden", required = false) Boolean hidden) {
         long start = System.currentTimeMillis();
         Result<List<SysPermissionTree>> result = new Result<>();
         try {
@@ -136,7 +136,7 @@ public class SysPermissionController {
                 query.like("name", name);
             }
             if (ObjectUtil.isNotEmpty(hidden)) {
-                query.eq("hidden", hidden);
+                query.eq("hidden", hidden ? "1" : "0");
             }
             query.orderByAsc("sort_no");
             List<SysPermission> list = sysPermissionService.list(query);

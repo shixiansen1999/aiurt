@@ -86,36 +86,36 @@ public class SysPermissionTree implements Serializable {
 	/**
 	 * 是否叶子节点: 1:是 0:不是
 	 */
-	@ApiModelProperty("是否叶子节点: 1:是 0:不是")
+	@ApiModelProperty("是否叶子节点: true:是 false:不是")
 	private boolean isLeaf;
 
 	/**
 	 * 是否路由菜单: 0:不是  1:是（默认值1）
 	 */
-	@ApiModelProperty("是否路由菜单: 0:不是  1:是（默认值1）")
+	@ApiModelProperty("是否路由菜单: false:不是  true:是（默认值true）")
 	private boolean route;
 
 
 	/**
 	 * 是否路缓存页面: 0:不是  1:是（默认值1）
 	 */
-	@ApiModelProperty("是否路缓存页面: 0:不是  1:是（默认值1）")
+	@ApiModelProperty("是否路缓存页面: false:不是  true:是（默认值true）")
 	private boolean keepAlive;
 
 	/**
 	 * 是否导航栏: 0:不是  1:是
 	 */
-	@ApiModelProperty("是否导航栏: 0:不是  1:是")
+	@ApiModelProperty("是否导航栏: false:不是  true:是")
 	private boolean isNavBar ;
 	/**
 	 * 是否筛选器: 0:不是  1:是
 	 */
-	@ApiModelProperty("是否筛选器: 0:不是  1:是")
+	@ApiModelProperty("是否筛选器: false:不是  true:是")
 	private boolean isFilter ;
 	/**
 	 * 是否快捷搜索: 0:不是  1:是
 	 */
-	@ApiModelProperty("是否快捷搜索: 0:不是  1:是")
+	@ApiModelProperty("是否快捷搜索: false:不是  true:是")
 	private boolean isSearch ;
 
 	/**
@@ -153,7 +153,7 @@ public class SysPermissionTree implements Serializable {
 	/**alwaysShow*/
     private boolean alwaysShow;
     /**是否隐藏路由菜单: 0否,1是（默认值0）*/
-	@ApiModelProperty("是否启用菜单: 0否,1是（默认值0）")
+	@ApiModelProperty("是否启用菜单: false否,true是")
     private boolean hidden;
 
     /**按钮权限状态(0无效1有效)*/
