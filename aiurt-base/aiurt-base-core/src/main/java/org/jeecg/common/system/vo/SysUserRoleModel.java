@@ -2,6 +2,7 @@ package org.jeecg.common.system.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
@@ -10,6 +11,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
  * 用户角色model
  */
 @Data
+@ApiModel(value="", description="SysUserRoleModel")
 public class SysUserRoleModel {
     /**主键*/
     @TableId(type = IdType.ASSIGN_ID)

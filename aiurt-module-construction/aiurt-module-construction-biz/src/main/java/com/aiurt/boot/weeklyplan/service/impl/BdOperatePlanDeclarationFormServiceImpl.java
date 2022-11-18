@@ -556,9 +556,11 @@ public class BdOperatePlanDeclarationFormServiceImpl
         list.forEach(roleCode -> {
             String roleId = sysBaseApi.getRoleIdByCode(roleCode);
             List<SysUserRoleModel> userByRoleId = sysBaseApi.getUserByRoleId(roleId);
-            List<String> collect = userByRoleId.stream().map(SysUserRoleModel::getId).collect(Collectors.toList());
+            List<String> collect = userRoleModels.stream().map(SysUserRoleModel::getUserId).collect(Collectors.toList());
             List<SysUserRoleModel> result = userByRoleId.stream().filter(l -> !collect.contains(l.getUserId())).collect(Collectors.toList());
-            userRoleModels.addAll(result);
+            if (CollectionUtil.isNotEmpty(result)) {
+                userRoleModels.addAll(result);
+            }
         });
         return userRoleModels;
     }

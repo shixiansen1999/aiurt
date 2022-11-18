@@ -390,7 +390,7 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	@AutoLog(value = "查询 角色是 工班长、助班工程师、工作负责人 的人员")
 	@ApiOperation(value = "查询 角色是 工班长、助班工程师、工作负责人 的人员", notes = "查询 角色是 工班长、助班工程师、工作负责人 的人员")
 	@GetMapping(value = "/queryUserByTeamRole")
-	public Result<?> queryUserByTeamRole() {
+	public Result<List<SysUserRoleModel>> queryUserByTeamRole() {
 		List<SysUserRoleModel> userList = bdOperatePlanDeclarationFormService.queryUserByTeamRole();
 		return Result.OK(userList);
 	}
