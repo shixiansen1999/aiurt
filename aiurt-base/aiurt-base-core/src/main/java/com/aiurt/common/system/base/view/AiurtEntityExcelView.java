@@ -163,7 +163,13 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
             String name = exportEntity.getName();
             int length = name.getBytes().length;
             RichTextString rText = new XSSFRichTextString(name);
-            rText.applyFont(font);
+            if (exportEntity.getIsRequired()) {
+                CellStyle cellStyle = workbook.createCellStyle();
+                cellStyle.setFillForegroundColor(IndexedColors.RED.getIndex()); // 背景色
+                cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                rText.applyFont(font);
+                cell.setCellStyle(cellStyle);
+            }
 
             sheet.setColumnWidth(exportEntity.getIndex(), length*256);
 
@@ -208,10 +214,7 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
             }
             // 批注， 必填处理
             if (exportEntity.getIsRequired()) {
-                CellStyle cellStyle = workbook.createCellStyle();
-                cellStyle.setFillForegroundColor(IndexedColors.RED.getIndex()); // 背景色
-                cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-                cell.setCellStyle(cellStyle);
+
             }
         }
 
