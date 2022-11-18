@@ -121,7 +121,8 @@ public class BdOperatePlanDeclarationFormServiceImpl
         }*/
 
         //默认值.
-        declarationForm.setDateTime(new Timestamp(applyDate.getTime()));
+//        declarationForm.setDateTime(new Timestamp(applyDate.getTime()));
+        declarationForm.setDateTime(new Date());
         declarationForm.setApplyFormStatus(0);
         declarationForm.setLineFormStatus(0);
         declarationForm.setDispatchFormStatus(0);
@@ -141,7 +142,17 @@ public class BdOperatePlanDeclarationFormServiceImpl
                 || ("").equals(declarationForm.getAssistStationManagerNames())
                 && ObjectUtil.isNotNull(declarationForm.getAssistStationManagerIds())) {
             if (!"".equals(declarationForm.getAssistStationManagerIds())) {
-                declarationForm.setAssistStationManagerNames(getNamesByIds(declarationForm.getAssistStationManagerIds()));
+//                declarationForm.setAssistStationManagerNames(getNamesByIds(declarationForm.getAssistStationManagerIds()));
+                String stationManagerIds = declarationForm.getAssistStationManagerIds();
+                if (StrUtil.isNotEmpty(stationManagerIds)) {
+                    List<String> stationManagerIdList = StrUtil.split(stationManagerIds, ',');
+                    List<String> userNames = new LinkedList<>();
+                    stationManagerIdList.forEach(l -> {
+                        LoginUser loginUser = sysBaseApi.getUserById(l);
+                        userNames.add(loginUser.getRealname());
+                    });
+                    declarationForm.setAssistStationManagerNames(userNames.stream().collect(Collectors.joining(",")));
+                }
             }
         } else if (ObjectUtil.isNull(declarationForm.getAssistStationManagerNames())
                 || ("").equals(declarationForm.getAssistStationManagerNames())

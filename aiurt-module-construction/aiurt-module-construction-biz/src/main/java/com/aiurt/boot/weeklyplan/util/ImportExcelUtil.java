@@ -71,7 +71,7 @@ public class ImportExcelUtil {
             int lineId = 0;
 
             String lineName = "";
-            StringBuilder newDate = new StringBuilder();
+            String newDate = "";
             int startI = 0;
             List<BdOperatePlanDeclarationForm> resultFinal = new ArrayList<>();
             InputStream ips = importExcel[0].getInputStream();
@@ -111,14 +111,14 @@ public class ImportExcelUtil {
                             int dayb = cellText.indexOf("日");
 
                             if((monthb-yearb)==2) {
-                                newDate =newDate.append(cellText.substring(0, 4)+"-0"+cellText.substring(yearb+1, monthb)) ;
+                                newDate = cellText.substring(0, 4)+"-0"+cellText.substring(yearb+1, monthb);
                             }else {
-                                newDate = newDate.append(cellText.substring(0, 4)+"-"+cellText.substring(yearb+1, monthb));
+                                newDate = cellText.substring(0, 4)+"-"+cellText.substring(yearb+1, monthb);
                             }
                             if((dayb-monthb)==2) {
-                                newDate =newDate.append(newDate+"-0"+cellText.substring(monthb+1, dayb)) ;
+                                newDate = newDate+"-0"+cellText.substring(monthb+1, dayb);
                             }else {
-                                newDate =newDate.append(newDate+"-"+cellText.substring(monthb+1, dayb)) ;
+                                newDate = newDate+"-"+cellText.substring(monthb+1, dayb);
                             }
                             break;
                         }
