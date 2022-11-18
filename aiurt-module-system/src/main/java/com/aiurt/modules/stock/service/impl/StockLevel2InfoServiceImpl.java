@@ -50,6 +50,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @Description:
@@ -85,7 +86,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 				return imporReturnRes(errorLines, successLines, errorMessage, false,url);
 			}
 			ImportParams params = new ImportParams();
-			params.setTitleRows(1);
+			params.setTitleRows(2);
 			params.setHeadRows(1);
 			params.setNeedSave(true);
 			try {
@@ -141,22 +142,41 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 							error = false;
 						}
 					}
-					if (ObjectUtil.isNull(stockLevel2InfoVo.getStatus())) {
-						errorMessage.add("状态为必填项，忽略导入");
-						sb.append("状态为必填项;");
-						if(error){
-							errorLines++;
-							error = false;
-						}
-					}
-					stockLevel2InfoVo.setErrorCause(String.valueOf(sb));
 					StockLevel2Info stockLevel2Info = new StockLevel2Info();
 					BeanUtils.copyProperties(stockLevel2InfoVo, stockLevel2Info);
 					list.add(stockLevel2Info);
+					if(list.size()>1){
+						if(ObjectUtil.isNotNull(stockLevel2Info.getWarehouseCode())){
+							List<StockLevel2Info> codeList = list.stream().filter(f -> f.getWarehouseCode() != null).collect(Collectors.toList());
+							Map<Object, Long> mapGroup = codeList.stream().collect(Collectors.groupingBy(StockLevel2Info::getWarehouseCode, Collectors.counting()));
+							if(mapGroup.size() != codeList.size()){
+								errorMessage.add("二级库编号重复，忽略导入");
+								sb.append("二级库编号重复；");
+								if(error){
+									errorLines++;
+									error = false;
+								}
+							}
+						}
+						if(ObjectUtil.isNotNull(stockLevel2Info.getWarehouseName())){
+							List<StockLevel2Info> nameList = list.stream().filter(f -> f.getWarehouseName() != null).collect(Collectors.toList());
+							Map<Object, Long> mapGroup2 = nameList.stream().collect(Collectors.groupingBy(StockLevel2Info::getWarehouseName, Collectors.counting()));
+							if(mapGroup2.size() != nameList.size()){
+								errorMessage.add("二级库名称重复，忽略导入");
+								sb.append("二级库名称重复；");
+								if(error){
+									errorLines++;
+									error = false;
+								}
+							}
+						}
+					}
+					stockLevel2InfoVo.setErrorCause(String.valueOf(sb));
 					successLines++;
 				}
 				if (errorLines == 0) {
 					for (StockLevel2Info stockLevel2Info : list) {
+						stockLevel2Info.setStatus(1);
 						stockLevel2InfoMapper.insert(stockLevel2Info);
 					}
 				} else {
@@ -182,14 +202,14 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 						//获取一条排班记录
 						Map<String, Object> lm = new HashMap<String, Object>();
 						//状态字典值翻译
-						List<DictModel> status = sysBaseApi.getDictItems("stock_level2_info_status");
-						status= status.stream().filter(f -> (String.valueOf(dto.getStatus())).equals(f.getValue())).collect(Collectors.toList());
-						String statu = null;
-						if(CollUtil.isNotEmpty(status)){
-							 statu = status.stream().map(DictModel::getText).collect(Collectors.joining());
-						}else{
-							statu ="";
-						}
+//						List<DictModel> status = sysBaseApi.getDictItems("stock_level2_info_status");
+//						status= status.stream().filter(f -> (String.valueOf(dto.getStatus())).equals(f.getValue())).collect(Collectors.toList());
+//						String statu = null;
+//						if(CollUtil.isNotEmpty(status)){
+//							 statu = status.stream().map(DictModel::getText).collect(Collectors.joining());
+//						}else{
+//							statu ="";
+//						}
 						//组织机构字典值翻译
 						String departName = null;
 						if(ObjectUtil.isNotNull(dto.getOrganizationId())){
@@ -202,7 +222,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 						lm.put("WarehouseCode", dto.getWarehouseCode());
 						lm.put("WarehouseName", dto.getWarehouseName());
 						lm.put("OrganizationId", departName);
-						lm.put("status", statu);
+//						lm.put("status", statu);
 						lm.put("remark", dto.getRemark());
 						lm.put("mistake", dto.getErrorCause());
 						listMap.add(lm);

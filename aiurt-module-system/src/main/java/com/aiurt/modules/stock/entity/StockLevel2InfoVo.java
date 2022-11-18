@@ -38,13 +38,13 @@ public class StockLevel2InfoVo extends DictEntity {
 
 	/**仓库编号*/
 	@Excel(name = "二级库编号",width = 15)
-	@ExcelExtend(isRequired = true)
+	@ExcelExtend(isRequired = true,remark = "必填字段，且不能重复，支持数字，英文字母，符号等")
 	@ApiModelProperty(value = "仓库编号")
 	private  String  warehouseCode;
 	/**仓库名称*/
 
 	@Excel(name = "二级库名称",width = 15)
-	@ExcelExtend(isRequired = true)
+	@ExcelExtend(isRequired = true,remark = "必填字段，不能重复")
 	@ApiModelProperty(value = "仓库名称")
 	private  String  warehouseName;
 
@@ -55,7 +55,7 @@ public class StockLevel2InfoVo extends DictEntity {
 	private String orgCode;
 	/**组织机构id*/
 	@Excel(name = "组织机构",width = 15,dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
-	@ExcelExtend(isRequired = true)
+	@ExcelExtend(isRequired = true,remark = "必填字段，且与系统下拉项保持一致")
 	@ApiModelProperty(value = "组织机构id")
 	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
 	private  String  organizationId;
@@ -65,14 +65,13 @@ public class StockLevel2InfoVo extends DictEntity {
 	private  String  organizationIdName;
 
 	/**二级库状态：0停用 1启用*/
-	@Excel(name = "二级库状态",width = 15,dicCode = "stock_level2_info_status")
-	@ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "二级库状态：0停用 1启用")
 	@Dict(dicCode = "stock_level2_info_status")
 	private  Integer  status;
 
 	/**备注*/
 	@Excel(name = "备注")
+	@ExcelExtend(remark = "选填字段")
 	@ApiModelProperty(value = "备注")
 	private  String  remark;
 

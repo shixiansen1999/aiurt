@@ -155,7 +155,7 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                 return imporReturnRes(errorLines, successLines, errorMessage,false,url);
             }
             ImportParams params = new ImportParams();
-            params.setTitleRows(1);
+            params.setTitleRows(2);
             params.setHeadRows(1);
             params.setNeedSave(true);
             try {
@@ -174,16 +174,6 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                         sb.append("厂商名称为必填项;");
                         errorLines++;
                         error = false;
-                    }else {
-                        CsManufactor csManufactor = csManufactorMapper.selectOne(new QueryWrapper<CsManufactor>().lambda().eq(CsManufactor::getCode, csManuFactorImportVo.getCode()).eq(CsManufactor::getDelFlag, 0));
-                        if (csManufactor != null) {
-                            errorMessage.add(csManuFactorImportVo.getCode() + "厂商编码已经存在，忽略导入");
-                            sb.append("厂商编码已经存在;");
-                            if(error) {
-                                errorLines++;
-                                error=false;
-                            }
-                        }
                     }
                     if (ObjectUtil.isNull(csManuFactorImportVo.getLevel())) {
                         errorMessage.add("厂商等级为必填项，忽略导入");
@@ -229,7 +219,6 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                         manufactor_level= manufactor_level.stream().filter(f -> (String.valueOf(dto.getLevel())).equals(f.getValue())).collect(Collectors.toList());
                         String level = manufactor_level.stream().map(DictModel::getText).collect(Collectors.joining());
                         //错误报告获取信息
-                        lm.put("code", dto.getCode());
                         lm.put("name", dto.getName());
                         lm.put("level", level);
                         lm.put("linkPerson", dto.getLinkPerson());

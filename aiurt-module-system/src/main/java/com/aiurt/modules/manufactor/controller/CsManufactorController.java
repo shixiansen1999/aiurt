@@ -222,7 +222,16 @@ public class CsManufactorController extends BaseController<CsManufactor,ICsManuf
 	@ApiOperation(value="厂商信息导入模板下载", notes="厂商信息导入模板下载")
 	@RequestMapping(value = "/exportTemplateXls")
 	public ModelAndView exportTemplateXl() {
-		return super.exportTemplateXls("", CsManufactor.class,"厂商信息","");
+		String remark = "厂商信息导入模板\n" +
+				"填写须知：\n" +
+				"1.请勿增加、删除、或修改表格中的字段顺序、字段名称；\n" +
+				"2.请严格按照数据规范填写，并填写完所有必填项，红底白字列为必填项；\n" +
+				"字段说明：\n" +
+				"1.厂商名称：必填字段；\n" +
+				"2.厂商等级：必填字段，且与系统下拉项保持一致；\n" +
+				"3.联系电话：选填字段，11位数的手机号码；\n" +
+				"4.企业资质文件：支持PNG、JP图片格式；pdf请在系统中直接上传；";
+		return super.exportTemplateXls("", CsManufactor.class,"厂商信息导入模板",remark);
 	}
 
 

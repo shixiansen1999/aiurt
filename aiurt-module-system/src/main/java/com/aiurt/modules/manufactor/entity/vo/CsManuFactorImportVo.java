@@ -33,34 +33,37 @@ public class CsManuFactorImportVo implements Serializable {
     @ApiModelProperty(value = "主键id")
     private String id;
 	/**厂家编码*/
-	@Excel(name = "厂家编码", width = 15)
     @ApiModelProperty(value = "厂家编码")
     private String code;
 	/**厂商名称*/
 	@Excel(name = "厂商名称", width = 15)
-    @ExcelExtend(isRequired = true)
+    @ExcelExtend(isRequired = true,remark = "必填字段")
     @ApiModelProperty(value = "厂商名称")
     private String name;
 	/**厂商等级(1:较好/2:良好/3:较差)*/
 	@Excel(name = "厂商等级", width = 15,dicCode = "manufactor_level")
-    @ExcelExtend(isRequired = true)
+    @ExcelExtend(isRequired = true,remark = "必填字段，且与系统下拉项保持一致")
     @ApiModelProperty(value = "厂商等级")
     @Dict(dicCode = "manufactor_level")
     private Integer level;
 	/**联系人*/
 	@Excel(name = "联系人", width = 15)
+    @ExcelExtend(remark = "选填字段")
     @ApiModelProperty(value = "联系人")
     private String linkPerson;
 	/**联系电话*/
 	@Excel(name = "联系电话", width = 15)
+    @ExcelExtend(remark = "选填字段，11位数的手机号码")
     @ApiModelProperty(value = "联系电话")
     private String linkPhoneNo;
 	/**联系地址*/
 	@Excel(name = "联系地址", width = 15)
+    @ExcelExtend(remark = "选填字段")
     @ApiModelProperty(value = "联系地址")
     private String linkAddress;
 	/**企业资质文件*/
 	@Excel(name = "企业资质文件", width = 15)
+    @ExcelExtend(remark = "选填字段，支持PNG，JP图片格式；pdf请在系统中直接上传")
     @ApiModelProperty(value = "企业资质文件")
     private String filePath;
 
