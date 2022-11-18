@@ -62,9 +62,9 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
 
         Sheet sheet = null;
         try {
-            sheet  = workbook.createSheet(entity.getSheetName());
+            sheet  = workbook.createSheet(codedFileName);
         } catch (Exception e) {
-            sheet = workbook.createSheet();
+            sheet = workbook.createSheet(codedFileName);
         }
 
         // 获取所有的字段
@@ -152,16 +152,22 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
             rowListIndex = 2;
         }
 
+        // 设置字体颜色
+        Font font = workbook.createFont();
+        font.setColor(IndexedColors.WHITE.getIndex());
+
+
         Row row = sheet.createRow(rowListIndex);
         for (ExcelTemplateExportEntity exportEntity : list) {
             Cell cell = row.createCell(exportEntity.getIndex());
             String name = exportEntity.getName();
             int length = name.getBytes().length;
-            RichTextString Rtext = new XSSFRichTextString(name);
+            RichTextString rText = new XSSFRichTextString(name);
+            rText.applyFont(font);
 
             sheet.setColumnWidth(exportEntity.getIndex(), length*256);
 
-            cell.setCellValue(Rtext);
+            cell.setCellValue(rText);
            // cell.getCellStyle.set(CellType.STRING);
             List<DictModel> modelList = exportEntity.getDictModelList();
             if (CollectionUtil.isNotEmpty(modelList)) {
