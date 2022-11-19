@@ -99,7 +99,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                     majorDTO.setChildren(selectTableDTOList);
                 } else {
                     //获取子节点
-                    List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getMajorCode().equals(majorDTO.getMajorCode())).filter(f->f.getSystemCode().isEmpty()).collect(Collectors.toList());
+                    List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getMajorCode().equals(majorDTO.getMajorCode())).filter(f-> "0".equals(f.getSystemCode())).collect(Collectors.toList());
                     if (CollectionUtils.isNotEmpty(baseTypeList)) {
                         List<SelectTableDTO> childrenTress = getDetail(majorDTO, baseTypeList);
                         List<SelectTableDTO> treeRes = getTreeRes(childrenTress, "0");
