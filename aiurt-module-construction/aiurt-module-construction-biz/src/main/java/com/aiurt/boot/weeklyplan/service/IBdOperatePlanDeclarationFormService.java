@@ -77,7 +77,7 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
      * @param id id.
      * @return Bd return type DTO.
      */
-    BdOperatePlanDeclarationFormReturnTypeDTO getFormInfoById (Integer id);
+    BdOperatePlanDeclarationFormReturnTypeDTO getFormInfoById (String id);
 
     /**
      * 根据id查询用户信息

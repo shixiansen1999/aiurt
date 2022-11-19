@@ -315,7 +315,7 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	@GetMapping(value = "/queryById")
 	public Result<?> queryById(@RequestParam(name="id",required=true) String id) {
 		BdOperatePlanDeclarationFormReturnTypeDTO result =
-				bdOperatePlanDeclarationFormService.getFormInfoById(Integer.parseInt(id));
+				bdOperatePlanDeclarationFormService.getFormInfoById(id);
 		if (result == null) {
 			return Result.error("未找到对应数据");
 		}

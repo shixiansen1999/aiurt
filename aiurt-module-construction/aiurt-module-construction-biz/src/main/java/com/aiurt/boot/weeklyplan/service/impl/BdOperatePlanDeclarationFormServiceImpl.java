@@ -247,7 +247,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
     }
 
     @Override
-    public BdOperatePlanDeclarationFormReturnTypeDTO getFormInfoById(Integer id) {
+    public BdOperatePlanDeclarationFormReturnTypeDTO getFormInfoById(String id) {
         BdOperatePlanDeclarationFormReturnTypeDTO result = baseMapper.queryFormInfoById(id);
         //转换辅站id->names
         if (result != null && result.getAssistStationName() != null) {

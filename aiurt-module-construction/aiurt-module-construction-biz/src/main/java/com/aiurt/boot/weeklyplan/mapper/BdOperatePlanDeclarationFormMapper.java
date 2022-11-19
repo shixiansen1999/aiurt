@@ -124,7 +124,7 @@ public interface BdOperatePlanDeclarationFormMapper extends BaseMapper<BdOperate
      * @param id
      * @return
      */
-    BdOperatePlanDeclarationFormReturnTypeDTO queryFormInfoById(Integer id);
+    BdOperatePlanDeclarationFormReturnTypeDTO queryFormInfoById(String id);
 
     /**
      * 查询人员名字
