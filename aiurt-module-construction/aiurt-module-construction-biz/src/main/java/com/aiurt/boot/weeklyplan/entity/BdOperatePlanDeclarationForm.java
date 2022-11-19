@@ -164,7 +164,7 @@ public class BdOperatePlanDeclarationForm implements Serializable {
 	/**变更关联的已通过计划令*/
 	@Excel(name = "变更关联的已通过计划令", width = 15)
     @ApiModelProperty(value = "变更关联的已通过计划令")
-    private Integer changeCorrelation;
+    private String changeCorrelation;
 	/**code*/
 	@Excel(name = "code", width = 15)
     @ApiModelProperty(value = "code")

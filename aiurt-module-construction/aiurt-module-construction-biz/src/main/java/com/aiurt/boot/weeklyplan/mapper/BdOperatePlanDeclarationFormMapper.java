@@ -100,7 +100,7 @@ public interface BdOperatePlanDeclarationFormMapper extends BaseMapper<BdOperate
      * @param changeCorrelation
      * @return
      */
-    Integer checkFormIfEdited(Integer changeCorrelation);
+    String checkFormIfEdited(String changeCorrelation);
 
     /**
      * 分页查询

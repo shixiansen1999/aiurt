@@ -109,7 +109,8 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
         //检查计划是否已经被更改过.
         int num = 3;
-        if (declarationForm.getPlanChange() == num && declarationForm.getChangeCorrelation() != 0) {
+//        if (declarationForm.getPlanChange() == num && declarationForm.getChangeCorrelation() != 0) {
+        if (declarationForm.getPlanChange() == num && !"0".equals(declarationForm.getChangeCorrelation())) {
             if (checkFormIfEdited(declarationForm)) {
                 throw new RuntimeException("Alrightly Edited");
             }
@@ -403,9 +404,10 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
     @Override
     public Boolean checkFormIfEdited(BdOperatePlanDeclarationForm declarationForm) {
-        Integer changeCorrelation = declarationForm.getChangeCorrelation();
+//        Integer changeCorrelation = declarationForm.getChangeCorrelation();
+        String changeCorrelation = declarationForm.getChangeCorrelation();
         try {
-            String result = baseMapper.checkFormIfEdited(changeCorrelation).toString();
+            String result = baseMapper.checkFormIfEdited(changeCorrelation);
             return !(result == null || ("").equals(result));
         } catch (Exception e) {
             return false;
@@ -492,7 +494,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
         //排序
         List<BdOperatePlanDeclarationFormReturnTypeDTO> addlist = new ArrayList<>();
         for (BdOperatePlanDeclarationFormReturnTypeDTO objs : record) {
-            if (objs.getChangeCorrelation() != null && objs.getChangeCorrelation() != 0) {
+            if (objs.getChangeCorrelation() != null && !"0".equals(objs.getChangeCorrelation())) {
                 addlist.add(objs);
             } else {
                 listTemp.add(objs);
@@ -504,7 +506,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
 //                if (objs.getId() == os.getChangeCorrelation().intValue()) {
 //                    list.add(os);
 //                }
-                if (objs.getId().equals( os.getChangeCorrelation().intValue())) {
+                if (objs.getId().equals(os.getChangeCorrelation())) {
                     list.add(os);
                 }
             }

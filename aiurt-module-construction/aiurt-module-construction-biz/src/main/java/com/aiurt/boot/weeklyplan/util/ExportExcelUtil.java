@@ -425,7 +425,8 @@ public class ExportExcelUtil {
                         cell = newRow.createCell(0);
                         cell.setCellValue(orderNum);
                         cell.setCellStyle(styleData);
-                        if(returnTypeDTO.getChangeCorrelation() == null || returnTypeDTO.getChangeCorrelation() == 0) {
+//                        if(returnTypeDTO.getChangeCorrelation() == null || returnTypeDTO.getChangeCorrelation() == 0) {
+                        if(returnTypeDTO.getChangeCorrelation() == null || "0".equals(returnTypeDTO.getChangeCorrelation())) {
                             cell = newRow.createCell(1);
                             cell.setCellValue("变更前");
                             cell.setCellStyle(styleData);

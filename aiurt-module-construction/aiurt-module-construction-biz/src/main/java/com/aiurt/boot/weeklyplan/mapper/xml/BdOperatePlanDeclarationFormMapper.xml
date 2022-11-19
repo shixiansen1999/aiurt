@@ -139,7 +139,7 @@
         LIMIT 1
     </select>
 
-    <select id="checkFormIfEdited" resultType="java.lang.Integer">
+    <select id="checkFormIfEdited" resultType="java.lang.String">
         SELECT id AS id FROM bd_operate_plan_declaration_form
         WHERE change_correlation=#{changeCorrelation}
         LIMIT 1
