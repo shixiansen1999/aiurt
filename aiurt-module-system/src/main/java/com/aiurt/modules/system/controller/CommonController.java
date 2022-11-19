@@ -239,19 +239,42 @@ public class CommonController {
             fileName = sysAttachment.getFileName();
         }
         // minio存储
-        String m = "minio";
-        if (StrUtil.equalsIgnoreCase(m, sysAttachment.getType())) {
-            try (
-                    InputStream inputStream1 = MinioUtil.getMinioFile("platform", sysAttachment.getFilePath());
-                    OutputStream outputStream1 = response.getOutputStream()) {
-
+        if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
+            try {
+                inputStream = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
+                if (Objects.isNull(inputStream)) {
+                    log.error("预览文件失败");
+                    response.setContentType("application/json;charset=UTF-8");
+                    throw new AiurtBootException("文件下载失败！文件不存在或已经被删除。");
+                }
+                outputStream = response.getOutputStream();
+                if (Objects.isNull(outputStream)) {
+                    log.error("预览文件失败");
+                    response.setContentType("application/json;charset=UTF-8");
+                    throw new AiurtBootException("文件下载失败！文件不存在或已经被删除。");
+                }
                 response.setContentType("application/force-download");
                 response.addHeader("Content-Disposition", "attachment;fileName=" + new String(fileName.getBytes("UTF-8"), "iso-8859-1"));
-                IoUtil.copy(inputStream1, outputStream1, IoUtil.DEFAULT_BUFFER_SIZE);
+                IoUtil.copy(inputStream, outputStream, IoUtil.DEFAULT_BUFFER_SIZE);
             } catch (IOException e) {
                 log.error("预览文件失败" + e.getMessage());
                 response.setContentType("application/json;charset=UTF-8");
                 throw new AiurtBootException("文件下载失败！文件不存在或已经被删除。");
+            }finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+                if (outputStream != null) {
+                    try {
+                        outputStream.close();
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
             }
         } else {
             try {
