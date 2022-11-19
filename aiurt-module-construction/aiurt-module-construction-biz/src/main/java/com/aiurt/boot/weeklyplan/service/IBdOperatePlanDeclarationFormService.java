@@ -181,7 +181,7 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
      * @param applyFormStatus 流程状态.
      * @return Result.
      */
-    Result<?> setApplyFormStatus(Integer id, Integer applyFormStatus);
+    Result<?> setApplyFormStatus(String id, Integer applyFormStatus);
 
 
     /**

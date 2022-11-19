@@ -298,7 +298,7 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	@AutoLog(value = "周计划表-确认流程结束",operateType = 3,operateTypeAlias = "编辑",permissionUrl = "/production/plan")
 	@ApiOperation(value = "周计划表-确认流程结束", notes = "周计划表-确认流程结束")
 	@GetMapping(value = "/setApplyFormStatus")
-	public Result<?> setApplyFormStatus(@RequestParam(name = "id") Integer id,
+	public Result<?> setApplyFormStatus(@RequestParam(name = "id") String id,
 										@RequestParam(name = "applyFormStatus") Integer applyFormStatus) {
 		return bdOperatePlanDeclarationFormService.setApplyFormStatus(id, applyFormStatus);
 	}

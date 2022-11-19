@@ -501,7 +501,10 @@ public class BdOperatePlanDeclarationFormServiceImpl
         for (BdOperatePlanDeclarationFormReturnTypeDTO objs : listTemp) {
             list.add(objs);
             for (BdOperatePlanDeclarationFormReturnTypeDTO os : addlist) {
-                if (objs.getId() == os.getChangeCorrelation().intValue()) {
+//                if (objs.getId() == os.getChangeCorrelation().intValue()) {
+//                    list.add(os);
+//                }
+                if (objs.getId().equals( os.getChangeCorrelation().intValue())) {
                     list.add(os);
                 }
             }
@@ -913,7 +916,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
     }
 
     @Override
-    public Result<?> setApplyFormStatus(Integer formId, Integer applyFormStatus) {
+    public Result<?> setApplyFormStatus(String formId, Integer applyFormStatus) {
         BdOperatePlanDeclarationForm buff = new BdOperatePlanDeclarationForm();
         buff.setApplyFormStatus(applyFormStatus);
         buff.setId(formId);

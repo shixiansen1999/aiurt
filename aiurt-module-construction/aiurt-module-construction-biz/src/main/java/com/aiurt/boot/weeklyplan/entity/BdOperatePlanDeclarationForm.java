@@ -31,9 +31,9 @@ public class BdOperatePlanDeclarationForm implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**计划令表*/
-	@TableId(type = IdType.AUTO)
+	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "计划令表")
-    private Integer id;
+    private String id;
     @Excel(name = "作业性质", width = 10)
     @ApiModelProperty(value = "作业性质")
     private String nature;

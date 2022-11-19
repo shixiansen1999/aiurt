@@ -19,7 +19,7 @@ public class BdOperatePlanDeclarationFormReturnTypeDTO {
 
     @Excel(name = "Id")
     @ApiModelProperty(value = "计划令表id")
-    private Integer id;
+    private String id;
 
     @ApiModelProperty(value = "0申请中 1 同意 2驳回 3草稿保存（apply_form_status为0可以修改申请条目与状态）")
     private Integer formStatus;
