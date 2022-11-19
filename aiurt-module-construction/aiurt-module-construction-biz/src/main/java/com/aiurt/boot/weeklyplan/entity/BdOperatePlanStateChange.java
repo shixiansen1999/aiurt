@@ -26,7 +26,7 @@ import java.io.Serializable;
 public class BdOperatePlanStateChange implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "计划令变更计划表")
     private String id;
 

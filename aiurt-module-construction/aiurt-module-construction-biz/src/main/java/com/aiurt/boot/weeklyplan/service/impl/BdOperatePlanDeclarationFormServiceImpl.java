@@ -858,13 +858,16 @@ public class BdOperatePlanDeclarationFormServiceImpl
                 // 线路负责人或总线路负责人
                 declarationForm.setLineFormStatus(afterStatus);
                 declarationForm.setActualLineStaffId(sysUser.getId());
-            } else if (roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.PRODUCTION))) {
+            } else if (Integer.valueOf(1).compareTo(declarationForm.getDispatchFormStatus()) != 0
+                    && roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.PRODUCTION))) {
                 //生产调度
                 declarationForm.setDispatchFormStatus(afterStatus);
-            } else if (roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.DIRECTOR))) {
+            } else if (Integer.valueOf(1).compareTo(declarationForm.getDirectorFormStatus()) != 0
+                    && roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.DIRECTOR))) {
                 // 分部主任
                 declarationForm.setDirectorFormStatus(afterStatus);
-            } else if (roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.MANAGER))) {
+            } else if (Integer.valueOf(1).compareTo(declarationForm.getManagerFormStatus()) != 0
+                    && roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.MANAGER))) {
                 // 公司经理
                 declarationForm.setManagerFormStatus(afterStatus);
             } else {
