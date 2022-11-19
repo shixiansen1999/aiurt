@@ -862,11 +862,13 @@ public class BdOperatePlanDeclarationFormServiceImpl
                     && roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.PRODUCTION))) {
                 //生产调度
                 declarationForm.setDispatchFormStatus(afterStatus);
-            } else if (Integer.valueOf(1).compareTo(declarationForm.getDirectorFormStatus()) != 0
+            } else if ((ObjectUtil.isEmpty(declarationForm.getDirectorFormStatus())
+                    || Integer.valueOf(1).compareTo(declarationForm.getDirectorFormStatus()) != 0)
                     && roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.DIRECTOR))) {
                 // 分部主任
                 declarationForm.setDirectorFormStatus(afterStatus);
-            } else if (Integer.valueOf(1).compareTo(declarationForm.getManagerFormStatus()) != 0
+            } else if ((ObjectUtil.isEmpty(declarationForm.getManagerFormStatus())
+                    || Integer.valueOf(1).compareTo(declarationForm.getManagerFormStatus()) != 0)
                     && roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.MANAGER))) {
                 // 公司经理
                 declarationForm.setManagerFormStatus(afterStatus);
