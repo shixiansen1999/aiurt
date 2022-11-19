@@ -101,6 +101,8 @@ public class ShiroConfig {
 
         filterChainDefinitionMap.put("/", "anon");
         filterChainDefinitionMap.put("/doc.html", "anon");
+        filterChainDefinitionMap.put("/faultknowledgebase/faultKnowledgeBase/test", "anon");
+        filterChainDefinitionMap.put("/proxy/**", "anon");
         filterChainDefinitionMap.put("/**/*.js", "anon");
         filterChainDefinitionMap.put("/**/*.css", "anon");
         filterChainDefinitionMap.put("/**/*.html", "anon");

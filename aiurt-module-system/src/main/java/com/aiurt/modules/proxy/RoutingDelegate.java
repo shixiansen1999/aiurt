@@ -1,4 +1,4 @@
-package com.aiurt.modules.faultknowledgebase.service;
+package com.aiurt.modules.proxy;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.util.RedisUtil;
@@ -18,10 +18,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 public class RoutingDelegate {
@@ -41,7 +38,12 @@ public class RoutingDelegate {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        JSONObject resultToken = restTemplate.getForObject(url, JSONObject.class);
+        HttpHeaders header = new HttpHeaders();
+        header.add("Content-Type", "application/json;charset=UTF-8");
+
+        HttpEntity httpEntity = new HttpEntity(new HashMap<>(), header);
+
+        JSONObject resultToken = restTemplate.postForObject(url, httpEntity,JSONObject.class);
 
         if (Objects.isNull(resultToken)) {
             return "";
