@@ -1,6 +1,7 @@
 package com.aiurt.modules.subsystem.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.system.entity.SysUser;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -11,7 +12,6 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -23,7 +23,7 @@ import java.util.List;
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-public class CsSubsystemImportDTO implements Serializable {
+public class CsSubsystemImportDTO extends DictEntity {
 
     /**所属专业*/
     @Excel(name = "所属专业", width = 15, dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
@@ -41,7 +41,7 @@ public class CsSubsystemImportDTO implements Serializable {
 	@Excel(name = "子系统名称", width = 15)
     @ApiModelProperty(value = "子系统名称")
     private String systemName;
-	/**编号*/
+	/**子系统编号*/
 	@Excel(name = "子系统编号", width = 15)
     @ApiModelProperty(value = "子系统编号")
     private String systemCode;

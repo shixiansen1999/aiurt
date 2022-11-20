@@ -2,6 +2,7 @@ package com.aiurt.modules.major.entity;
 
 import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.system.base.annotation.ExcelExtend;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
@@ -43,10 +44,12 @@ public class CsMajor implements Serializable {
 	/**专业编码*/
 	@Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码")
+    @ExcelExtend(isRequired = true,remark = "必填字段，且在系统中存在该专业；")
     @MajorFilterColumn
     private String majorCode;
 	/**专业名称*/
 	@Excel(name = "专业名称", width = 15)
+    @ExcelExtend(isRequired = true,remark = "必填字段，且不能重复，支持数字、英文字母、符号等；")
     @ApiModelProperty(value = "专业名称")
     private String majorName;
 	/**说明*/

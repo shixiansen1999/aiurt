@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Description: cs_major
@@ -134,7 +135,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                 return imporReturnRes(errorLines, successLines, errorMessage, false,url);
             }
             ImportParams params = new ImportParams();
-            params.setTitleRows(1);
+            params.setTitleRows(2);
             params.setHeadRows(1);
             params.setNeedSave(true);
             try {
@@ -142,11 +143,47 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                 List<CsMajor> list = new ArrayList<>();
                 for (int i = 0; i < csMajorList.size(); i++) {
                     CsMajorImportVO csMajorImportVO = csMajorList.get(i);
+                    List<CsMajorImportVO>csMajorCodes= csMajorList.stream().filter(c->c.getMajorCode().equals(csMajorImportVO.getMajorCode())).collect(Collectors.toList());
+                    List<CsMajorImportVO>csMajorNames= csMajorList.stream().filter(c->c.getMajorName().equals(csMajorImportVO.getMajorName())).collect(Collectors.toList());
                     String s = decideIsNull(csMajorImportVO);
                     if(ObjectUtil.isNotEmpty(s))
                     {
-                        csMajorImportVO.setWrongReason(s);
+                        if(csMajorCodes.size()==1&&csMajorNames.size()==1)
+                        {
+                            csMajorImportVO.setWrongReason(s);
+                        }
+                        if(csMajorCodes.size()!=1&&csMajorNames.size()==1)
+                        {
+                            csMajorImportVO.setWrongReason(s+",专业编码重复");
+                        }
+                        if(csMajorCodes.size()!=1&&csMajorNames.size()!=1)
+                        {
+                            csMajorImportVO.setWrongReason(s+",专业编码和专业名称重复");
+                        }
+                        if(csMajorCodes.size()==1&&csMajorNames.size()!=1)
+                        {
+                            csMajorImportVO.setWrongReason(s+",专业名称重复");
+                        }
                         errorLines++;
+                    }
+                    else
+                    {
+                        if(csMajorCodes.size()==1||csMajorNames.size()!=1)
+                        {
+                            if(csMajorCodes.size()!=1&&csMajorNames.size()==1)
+                            {
+                                csMajorImportVO.setWrongReason("专业编码重复");
+                            }
+                            if(csMajorCodes.size()!=1&&csMajorNames.size()!=1)
+                            {
+                                csMajorImportVO.setWrongReason("专业编码和专业名称重复");
+                            }
+                            if(csMajorCodes.size()==1&&csMajorNames.size()!=1)
+                            {
+                                csMajorImportVO.setWrongReason("专业名称重复");
+                            }
+                            errorLines++;
+                        }
                     }
                     CsMajor csMajor = new CsMajor();
                     BeanUtils.copyProperties(csMajorImportVO, csMajor);
@@ -215,7 +252,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
         } else if (csMajorImportVO.getMajorCode() != null && csMajorImportVO.getMajorName() == null) {
             CsMajor csMajor = csMajorMapper.selectOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorCode, csMajorImportVO.getMajorCode()).eq(CsMajor::getDelFlag, 0));
             if (csMajor != null) {
-                return "必填字段为空;专业编码重复";
+                return "必填字段为空;专业编码已存在";
             } else {
                 return "必填字段为空";
             }
@@ -223,7 +260,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
         else if (csMajorImportVO.getMajorCode() == null && csMajorImportVO.getMajorName() != null) {
             CsMajor csMajor = csMajorMapper.selectOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorName, csMajorImportVO.getMajorName()).eq(CsMajor::getDelFlag, 0));
             if (csMajor != null) {
-                return "必填字段为空;专业名称重复";
+                return "必填字段为空;专业名称已存在";
             } else {
                 return "必填字段为空";
             }
@@ -232,13 +269,13 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
             CsMajor csMajorCode = csMajorMapper.selectOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorName, csMajorImportVO.getMajorName()).eq(CsMajor::getDelFlag, 0));
             CsMajor csMajorName = csMajorMapper.selectOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorCode, csMajorImportVO.getMajorCode()).eq(CsMajor::getDelFlag, 0));
             if (csMajorCode != null&&csMajorName!=null) {
-                return "专业编码重复;专业名称重复";
+                return "专业编码已存在;专业名称已存在";
             }
             if (csMajorCode != null&&csMajorName==null) {
-                return "专业编码重复";
+                return "专业编码已存在";
             }
             if (csMajorCode == null&&csMajorName!=null) {
-                return "专业名称重复";
+                return "专业名称已存在";
             }
         }
         return null;

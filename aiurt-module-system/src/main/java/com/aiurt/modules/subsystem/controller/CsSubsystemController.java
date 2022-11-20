@@ -7,7 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.system.base.view.AiurtEntityExcelView;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.major.entity.CsMajor;
@@ -59,7 +59,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/subsystem")
 @Slf4j
-public class CsSubsystemController  {
+public class CsSubsystemController extends BaseController<CsSubsystem, ICsSubsystemService> {
 	@Autowired
 	private ICsSubsystemService csSubsystemService;
 	@Autowired
@@ -369,11 +369,17 @@ public class CsSubsystemController  {
 	@ApiOperation(value = "下载子系统导入模板", notes = "下载子系统导入模板")
 	@RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
 	public ModelAndView downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
-		ModelAndView mv = new ModelAndView(new AiurtEntityExcelView());
-		mv.addObject(NormalExcelConstants.CLASS, CsSubsystemDTO.class);
-		ExportParams  exportParams=new ExportParams("子系统导入模板","0");
-		mv.addObject(NormalExcelConstants.PARAMS, exportParams);
-		return mv;
+		String remark ="子系统信息导入模板\n" +
+				"填写须知：\n" +
+				"1.请勿增加、删除、或修改表格中的字段顺序、字段名称；\n" +
+				"2.请严格按照数据规范填写，并填写完所有必填项，红底白字列为必填项；\n" +
+				"3.单次最多导入10000条数据；\n" +
+				"字段说明：\n" +
+				"1.所属专业：必填字段，且在系统中存在该专业；\n" +
+				"2.子系统编号：必填字段，且不能重复，支持数字、英文字母、符号等；\n" +
+				"3.子系统名称：必填字段，且不能重复，支持数字、英文字母、符号等；\n" +
+				"4.技术员：支持有多个人名，用英文“;”分隔，且在系统用户管理中存在技术员名字；";
+		return super.exportTemplateXls("", CsSubsystemDTO.class, "子系统导入模板",remark);
 	}
 	/**
 	 * 子系统导出

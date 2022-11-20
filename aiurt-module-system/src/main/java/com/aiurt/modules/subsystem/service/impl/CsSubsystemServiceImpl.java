@@ -370,7 +370,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 return imporReturnRes(errorLines, successLines, errorMessage,false,null);
             }
             ImportParams params = new ImportParams();
-            params.setTitleRows(1);
+            params.setTitleRows(2);
             params.setHeadRows(1);
             params.setNeedSave(true);
             try {
@@ -379,12 +379,48 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 List<CsSubsystem> list = new ArrayList<>();
                 for (int i = 0; i < csSubsystemDTOList.size(); i++) {
                     CsSubsystemImportDTO csSubsystemDTO = csSubsystemDTOList.get(i);
+                    List<CsSubsystemImportDTO> csSubsystemCodes = csSubsystemDTOList.stream().filter(c -> c.getSystemCode().equals(csSubsystemDTO.getSystemCode())).collect(Collectors.toList());
+                    List<CsSubsystemImportDTO> csSubsystemNames = csSubsystemDTOList.stream().filter(c -> c.getSystemName().equals(csSubsystemDTO.getSystemName())).collect(Collectors.toList());
                     CsSubsystem csSubsystem = new CsSubsystem();
                      String s = decideIsNull(csSubsystemDTO);
                     if(ObjectUtil.isNotEmpty(s))
                     {
+                        if(csSubsystemCodes.size()==1&&csSubsystemNames.size()==1)
+                        {
+                            csSubsystemDTO.setWrongReason(s);
+                        }
+                        if(csSubsystemCodes.size()!=1&&csSubsystemNames.size()==1)
+                        {
+                            csSubsystemDTO.setWrongReason(s+",子系统编码重复");
+                        }
+                        if(csSubsystemCodes.size()!=1&&csSubsystemNames.size()!=1)
+                        {
+                            csSubsystemDTO.setWrongReason(s+",子系统编码和子系统名称重复");
+                        }
+                        if(csSubsystemCodes.size()==1&&csSubsystemNames.size()!=1)
+                        {
+                            csSubsystemDTO.setWrongReason(s+",子系统名称重复");
+                        }
                         errorLines++;
-                        csSubsystemDTO.setWrongReason(s);
+                    }
+                    else
+                    {
+                        if(csSubsystemCodes.size()!=1||csSubsystemNames.size()!=1)
+                        {
+                            if(csSubsystemCodes.size()!=1&&csSubsystemNames.size()==1)
+                            {
+                                csSubsystemDTO.setWrongReason("子系统编码重复");
+                            }
+                            if(csSubsystemCodes.size()!=1&&csSubsystemNames.size()!=1)
+                            {
+                                csSubsystemDTO.setWrongReason("子系统编码和子系统名称重复");
+                            }
+                            if(csSubsystemCodes.size()==1&&csSubsystemNames.size()!=1)
+                            {
+                                csSubsystemDTO.setWrongReason("子系统名称重复");
+                            }
+                            errorLines++;
+                        }
                     }
                     BeanUtils.copyProperties(csSubsystemDTO, csSubsystem);
                     if(ObjectUtil.isNotEmpty(csSubsystemDTO.getSystemUserName()))
