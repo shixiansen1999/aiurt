@@ -116,8 +116,13 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
     public Result<?> update(CsManufactor csManufactor) {
         CsManufactor manufactor = getById(csManufactor.getId());
         //如果附件修改了，则删除附件表
-        if(null!=csManufactor.getFilePath() && !manufactor.getFilePath().equals(csManufactor.getFilePath())){
-            //删除附件表 todo
+        if(null!=csManufactor.getFilePath()  ){
+            if(StrUtil.isNotEmpty(manufactor.getFilePath())){
+                if (!manufactor.getFilePath().equals(csManufactor.getFilePath())){
+                    //删除附件表 todo
+                }
+            }
+
         }
         //判断厂商编码是否重复
         LambdaQueryWrapper<CsManufactor> queryWrapper = new LambdaQueryWrapper<>();
