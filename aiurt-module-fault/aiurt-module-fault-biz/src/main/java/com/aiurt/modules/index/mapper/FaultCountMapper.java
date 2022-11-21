@@ -42,7 +42,7 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @param faultCountInfoReq
      * @return
      */
-    List<FaultCountInfoDTO> getFaultCountInfo(@Param("type") Integer type, @Param("page") Page<FaultCountInfoDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq);
+    List<FaultCountInfoDTO> getFaultCountInfo(@Param("type") Integer type, @Param("page") Page<FaultCountInfoDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq,@Param("ordList") List<String> ordList);
 
     /**
      *故障概况统计详情(未解决和挂起)分页
@@ -51,7 +51,7 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @param faultCountInfoReq
      * @return
      */
-    List<FaultCountInfosDTO> getFaultCountInfos(@Param("type") Integer type, @Param("page") Page<FaultCountInfosDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq);
+    List<FaultCountInfosDTO> getFaultCountInfos(@Param("type") Integer type, @Param("page") Page<FaultCountInfosDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq,@Param("ordList") List<String> ordList);
 
 
 

@@ -18,7 +18,7 @@
     </select>
 
     <select id="getFaultCountInfo" resultType="com.aiurt.modules.fault.dto.FaultCountInfoDTO">
-        select * from fault
+        select r.*from (select t.*,(select org_id from sys_user where t.appoint_user_name = username)as orgId from fault t) as r
         <where>
             <if test="faultCountInfoReq.type == 1">
                 AND 1 = 1
@@ -42,11 +42,17 @@
             <if test="faultCountInfoReq.faultModeCode != null">
                 and fault_mode_code  = #{faultCountInfoReq.faultModeCode}
             </if>
+            <if test="ordList != null and ordList.size() != 0">
+                AND  r.orgId in
+                <foreach collection="ordList" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
     <select id="getFaultCountInfos" resultType="com.aiurt.modules.fault.dto.FaultCountInfosDTO">
-        select * from fault
+        select r.*from (select t.*,(select org_id from sys_user where t.appoint_user_name = username)as orgId from fault t) as r
         <where>
             <if test="faultCountInfoReq.type == 3">
                 AND status &lt;&gt; 12
@@ -69,6 +75,12 @@
             </if>
             <if test="faultCountInfoReq.faultModeCode != null">
                 and fault_mode_code  = #{faultCountInfoReq.faultModeCode}
+            </if>
+            <if test="ordList != null and ordList.size() != 0">
+                AND  r.orgId in
+                <foreach collection="ordList" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>

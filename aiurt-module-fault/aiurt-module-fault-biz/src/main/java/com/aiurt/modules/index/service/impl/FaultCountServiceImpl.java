@@ -136,7 +136,15 @@ public class FaultCountServiceImpl implements IFaultCountService {
         }
         // 分页数据
         Page<FaultCountInfoDTO> page = new Page<>(faultCountInfoReq.getPageNo(), faultCountInfoReq.getPageSize());
-        List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq);
+        //权限控制
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
+        if(CollUtil.isEmpty(departByUserId))
+        {
+            return result;
+        }
+        List<String> ordId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+        List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq,ordId);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultCountInfoDTO faultDatum : faultData) {
                 //查找设备编码
@@ -168,7 +176,15 @@ public class FaultCountServiceImpl implements IFaultCountService {
         }
         // 分页数据
         Page<FaultCountInfosDTO> page = new Page<>(faultCountInfoReq.getPageNo(), faultCountInfoReq.getPageSize());
-        List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq);
+        //权限控制
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
+        if(CollUtil.isEmpty(departByUserId))
+        {
+            return result;
+        }
+        List<String> ordId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+        List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq,ordId);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultCountInfosDTO faultDatum : faultData) {
                 //查找设备编码
