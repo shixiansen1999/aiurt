@@ -1096,7 +1096,20 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
         }
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) && repairTask.getIsReceipt().equals(InspectionConstant.NO_IS_EFFECT)) {
+            repairTask1.setId(examineDTO.getId());
+            repairTask1.setErrorContent(examineDTO.getContent());
+            repairTask1.setConfirmTime(new Date());
+            repairTask1.setConfirmUserId(loginUser.getId());
+            repairTask1.setConfirmUserName(realName);
             repairTask1.setStatus(InspectionConstant.COMPLETED);
+            repairTaskMapper.updateById(repairTask1);
+
+            // 修改对应检修计划状态
+            RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
+            if (ObjectUtil.isNotEmpty(repairPool)) {
+                repairPool.setStatus(InspectionConstant.COMPLETED);
+                repairPoolMapper.updateById(repairPool);
+            }
         }
     }
 
