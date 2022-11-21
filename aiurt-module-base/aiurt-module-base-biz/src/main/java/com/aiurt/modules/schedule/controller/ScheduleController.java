@@ -431,7 +431,7 @@ public class ScheduleController {
     @RequestMapping(value = "/downloadScheduleExcel", method = RequestMethod.GET)
     public void downloadScheduleExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
         //获取输入流，原始模板位置
-        ClassPathResource classPathResource =  new ClassPathResource("templates/排班表导入模板.xlsx");
+        ClassPathResource classPathResource =  new ClassPathResource("templates/schedule.xlsx");
         InputStream bis = classPathResource.getInputStream();
         //设置发送到客户端的响应的内容类型
         response.setContentType("tapplication/vnd.ms-excel;charset=utf-8");
