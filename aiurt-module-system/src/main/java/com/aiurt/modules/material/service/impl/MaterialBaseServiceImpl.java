@@ -158,6 +158,16 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 						}else{
 							materialBase.setBaseTypeCode(materialBaseType.getBaseTypeCode());
 						}
+						if (StrUtil.isNotEmpty(materialBaseType.getBaseTypeName())){
+							List<MaterialBaseType> materialBaseTypes = materialBaseTypeService.list(new LambdaQueryWrapper<MaterialBaseType>()
+									.eq(MaterialBaseType::getBaseTypeName,materialBaseType.getBaseTypeName())
+									.eq(MaterialBaseType::getMajorCode,materialBaseType.getMajorCode())
+									.eq(MaterialBaseType::getDelFlag,0));
+							if (materialBaseTypes.size()>1){
+								errorStrs.add("第 " + i + " 行：在同一专业下相同的物资分类，忽略导入。");
+								continue;
+							}
+						}
 						MaterialBaseType materialBaseTypefinal = materialBaseTypeService.getOne(new QueryWrapper<MaterialBaseType>().lambda()
 								                             .eq(MaterialBaseType::getBaseTypeCode,materialBaseType.getBaseTypeCode())
 								                             .eq(MaterialBaseType::getMajorCode,materialBaseType.getMajorCode())
