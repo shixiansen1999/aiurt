@@ -158,7 +158,10 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 						}else{
 							materialBase.setBaseTypeCode(materialBaseType.getBaseTypeCode());
 						}
-						MaterialBaseType materialBaseTypefinal = materialBaseTypeService.getOne(new QueryWrapper<MaterialBaseType>().eq("base_type_code",materialBaseType.getBaseTypeCode()));
+						MaterialBaseType materialBaseTypefinal = materialBaseTypeService.getOne(new QueryWrapper<MaterialBaseType>().lambda()
+								                             .eq(MaterialBaseType::getBaseTypeCode,materialBaseType.getBaseTypeCode())
+								                             .eq(MaterialBaseType::getMajorCode,materialBaseType.getMajorCode())
+								                             .eq(MaterialBaseType::getDelFlag,0));
 						String typeCodeCc = materialBaseTypeService.getCcStr(materialBaseTypefinal);
 						materialBase.setBaseTypeCodeCc(typeCodeCc);
 					}
