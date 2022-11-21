@@ -236,4 +236,28 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "检修任务状态")
     @TableField(exist = false)
     private Integer maintenanceTaskStatus;
+
+    /**站所编号*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "站所编号")
+    private java.lang.String stationCode;
+    /**线路编号*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "线路编号")
+    private java.lang.String lineCode;
+    /**位置编号*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "位置编号")
+    private java.lang.String positionCode;
+
+    /**具体位置*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "具体位置")
+    private java.lang.String specificLocation;
+
+
+    /**检修位置*/
+    @ApiModelProperty(value = "检修位置")
+    @TableField(exist = false)
+    private String maintenancePosition;
 }

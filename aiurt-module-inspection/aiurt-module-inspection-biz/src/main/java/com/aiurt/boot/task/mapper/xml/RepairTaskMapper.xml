@@ -68,6 +68,10 @@
                t2.start_time as startTime,
                t2.is_submit as isSubmit,
                t2.staff_id as overhaulId,
+               t2.station_code as stationCode,
+               t2.line_code as lineCode,
+               t2.position_code as positionCode,
+               t2.specific_location as specificLocation,
                t3.title as overhaulStandardName,
                t3.is_appoint_device as isAppointDevice,
                t1.status as maintenanceTaskStatus
