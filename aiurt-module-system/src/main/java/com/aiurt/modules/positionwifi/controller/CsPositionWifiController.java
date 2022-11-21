@@ -41,7 +41,7 @@ public class CsPositionWifiController extends BaseController<CsPositionWifi, ICs
 	private ICsPositionWifiService csPositionWifiService;
 
 	@Autowired
-	private ISysBaseAPI sysBaseAPI;
+	private ISysBaseAPI sysBaseApi;
 
 	/**
 	 * 分页列表查询
@@ -52,7 +52,6 @@ public class CsPositionWifiController extends BaseController<CsPositionWifi, ICs
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "wiif位置管理-分页列表查询")
 	@ApiOperation(value="wifi位置管理-分页列表查询", notes="wifi位置管理-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<CsPositionWifi>> queryPageList(CsPositionWifi csPositionWifi,
@@ -64,9 +63,9 @@ public class CsPositionWifiController extends BaseController<CsPositionWifi, ICs
 		IPage<CsPositionWifi> pageList = csPositionWifiService.page(page, queryWrapper);
 		List<CsPositionWifi> records = pageList.getRecords();
 		for (CsPositionWifi record : records) {
-			String lineName = sysBaseAPI.getPosition(record.getLineCode());
-			String stationName = sysBaseAPI.getPosition(record.getStationCode());
-			String positionName = sysBaseAPI.getPosition(record.getPositionCode());
+			String lineName = sysBaseApi.getPosition(record.getLineCode());
+			String stationName = sysBaseApi.getPosition(record.getStationCode());
+			String positionName = sysBaseApi.getPosition(record.getPositionCode());
 			String position = null;
 			if(ObjectUtil.isNull(positionName)){
 				 position = lineName+stationName;
@@ -153,7 +152,6 @@ public class CsPositionWifiController extends BaseController<CsPositionWifi, ICs
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "wifi位置管理-通过id查询")
 	@ApiOperation(value="wifi位置管理-通过id查询", notes="wifi位置管理-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<CsPositionWifi> queryById(@RequestParam(name="id",required=true) String id) {

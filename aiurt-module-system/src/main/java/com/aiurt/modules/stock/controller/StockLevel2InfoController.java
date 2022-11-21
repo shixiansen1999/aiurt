@@ -307,7 +307,7 @@ public class StockLevel2InfoController extends BaseController<StockLevel2Info,IS
     @ApiOperation(value="二级仓库管理导入模板下载", notes="二级仓库管理导入模板下载")
     @RequestMapping(value = "/exportTemplateXls")
     public ModelAndView exportTemplateXl() {
-        String remark = "二级仓库管理导入模板\n" +
+        String remark = "二级库导入模板\n" +
                 "填写须知：\n" +
                 "1.请勿增加、删除、或修改表格中的字段顺序、字段名称；\n" +
                 "2.请严格按照数据规范填写，并填写完所有必填项，红底白字列为必填项；\n" +
@@ -315,6 +315,6 @@ public class StockLevel2InfoController extends BaseController<StockLevel2Info,IS
                 "1.二级库编号：必填字段；\n" +
                 "2.二级库名称：必填字段；\n" +
                 "3.组织机构：必填字段，且与系统下拉项保持一致；\n";
-        return super.exportTemplateXls("",StockLevel2Info.class, "二级仓库管理导入模板",remark);
+        return super.exportTemplateXls("",StockLevel2Info.class, "二级库导入模板",remark);
     }
 }

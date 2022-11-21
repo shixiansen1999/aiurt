@@ -208,16 +208,16 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                     }
                     String path = fileTemp.getAbsolutePath();
                     TemplateExportParams exportParams = new TemplateExportParams(path);
-                    Map<String, Object> errorMap = new HashMap<String, Object>();
+                    Map<String, Object> errorMap = new HashMap<String, Object>(32);
                     errorMap.put("title", "厂商信息导入错误清单");
                     List<Map<String, Object>> listMap = new ArrayList<>();
                     for (CsManuFactorImportVo dto : csManuFactorList) {
                         //获取一条排班记录
-                        Map<String, Object> lm = new HashMap<String, Object>();
+                        Map<String, Object> lm = new HashMap<String, Object>(32);
                         //等级字典值翻译
-                        List<DictModel> manufactor_level = sysBaseApi.getDictItems("manufactor_level");
-                        manufactor_level= manufactor_level.stream().filter(f -> (String.valueOf(dto.getLevel())).equals(f.getValue())).collect(Collectors.toList());
-                        String level = manufactor_level.stream().map(DictModel::getText).collect(Collectors.joining());
+                        List<DictModel> manuFactorLevel = sysBaseApi.getDictItems("manufactor_level");
+                        manuFactorLevel= manuFactorLevel.stream().filter(f -> (String.valueOf(dto.getLevel())).equals(f.getValue())).collect(Collectors.toList());
+                        String level = manuFactorLevel.stream().map(DictModel::getText).collect(Collectors.joining());
                         //错误报告获取信息
                         lm.put("name", dto.getName());
                         lm.put("level", level);
@@ -247,33 +247,9 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
             }
 
         }
-
         return imporReturnRes(errorLines, successLines, errorMessage,true,url);
     }
 
-    /**
-     * 校验字段属性是否存在不为空字段
-     *
-     * @param
-     * @return
-     */
-    private static <T> boolean existFieldNotEmpty(T t) {
-        if (ObjectUtil.isEmpty(t)) {
-            return false;
-        }
-        try {
-            Field[] fields = t.getClass().getDeclaredFields();
-            for (Field field : fields) {
-                field.setAccessible(true);
-                if (ObjectUtil.isNotEmpty(field.get(t))) {
-                    return true;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
 
 
     public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage,boolean isType,String failReportUrl) throws IOException {

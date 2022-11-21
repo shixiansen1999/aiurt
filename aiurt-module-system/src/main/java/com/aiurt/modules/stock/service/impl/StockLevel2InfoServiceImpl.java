@@ -67,8 +67,6 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 	private SysBaseApiImpl sysBaseApi;
 	@Value("${jeecg.path.upload}")
 	private String upLoadPath;
-	@Autowired
-	private ISysBaseAPI sysBaseAPI;
 
 	@Override
 	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -144,7 +142,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 					}
 					StockLevel2Info stockLevel2Info = new StockLevel2Info();
 					BeanUtils.copyProperties(stockLevel2InfoVo, stockLevel2Info);
-					list.add(stockLevel2Info);
+					//判断填写的数据中是否有重复数据
 					if(list.size()>1){
 						if(ObjectUtil.isNotNull(stockLevel2Info.getWarehouseCode())){
 							List<StockLevel2Info> codeList = list.stream().filter(f -> f.getWarehouseCode() != null).collect(Collectors.toList());
@@ -195,21 +193,11 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 					}
 					String path = fileTemp.getAbsolutePath();
 					TemplateExportParams exportParams = new TemplateExportParams(path);
-					Map<String, Object> errorMap = new HashMap<String, Object>();
+					Map<String, Object> errorMap = new HashMap<String, Object>(32);
 					errorMap.put("title", "二级仓库管理错误清单");
 					List<Map<String, Object>> listMap = new ArrayList<>();
 					for (StockLevel2InfoVo dto : stockLevel2InfoList) {
-						//获取一条排班记录
-						Map<String, Object> lm = new HashMap<String, Object>();
-						//状态字典值翻译
-//						List<DictModel> status = sysBaseApi.getDictItems("stock_level2_info_status");
-//						status= status.stream().filter(f -> (String.valueOf(dto.getStatus())).equals(f.getValue())).collect(Collectors.toList());
-//						String statu = null;
-//						if(CollUtil.isNotEmpty(status)){
-//							 statu = status.stream().map(DictModel::getText).collect(Collectors.joining());
-//						}else{
-//							statu ="";
-//						}
+						Map<String, Object> lm = new HashMap<String, Object>(32);
 						//组织机构字典值翻译
 						String departName = null;
 						if(ObjectUtil.isNotNull(dto.getOrganizationId())){
@@ -222,7 +210,6 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 						lm.put("WarehouseCode", dto.getWarehouseCode());
 						lm.put("WarehouseName", dto.getWarehouseName());
 						lm.put("OrganizationId", departName);
-//						lm.put("status", statu);
 						lm.put("remark", dto.getRemark());
 						lm.put("mistake", dto.getErrorCause());
 						listMap.add(lm);
