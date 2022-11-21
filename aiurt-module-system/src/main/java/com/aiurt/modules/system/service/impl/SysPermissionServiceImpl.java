@@ -280,8 +280,8 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
                 continue;
             }
 
-            if (ObjectUtil.isNotEmpty(sysPermissionDTO.getHidden())) {
-                sysPermission.setHidden(sysPermissionDTO.getHidden());
+            if (ObjectUtil.isNotEmpty(sysPermissionDTO.getRoute())) {
+                sysPermission.setRoute(sysPermissionDTO.getRoute());
             }
             arr.add(sysPermission);
         }

@@ -13,5 +13,5 @@ public class SysPermissionDTO {
     @ApiModelProperty("菜单id")
     private String id;
     @ApiModelProperty("是否停用（false否,true是）")
-    private Boolean hidden;
+    private Boolean route;
 }

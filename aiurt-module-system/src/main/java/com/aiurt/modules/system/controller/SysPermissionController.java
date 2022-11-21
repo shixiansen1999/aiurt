@@ -115,13 +115,11 @@ public class SysPermissionController {
     @ApiOperation(value = "查询系统模块", notes = "查询系统模块")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "isApp", value = "是否是移动端模块（1是，0否）", required = false, dataTypeClass = Integer.class),
-            @ApiImplicitParam(name = "name", value = "模块名称", required = false, dataTypeClass = String.class),
-            @ApiImplicitParam(name = "hidden", value = "模块是否启用（false否true是）", required = false, dataTypeClass = Boolean.class)
+            @ApiImplicitParam(name = "name", value = "模块名称", required = false, dataTypeClass = String.class)
     })
     @RequestMapping(value = "/getSystemMenuList", method = RequestMethod.GET)
     public Result<List<SysPermissionTree>> getSystemMenuList(@RequestParam(name = "isApp", required = false) Integer isApp,
-                                                             @RequestParam(name = "name", required = false) String name,
-                                                             @RequestParam(name = "hidden", required = false) Boolean hidden) {
+                                                             @RequestParam(name = "name", required = false) String name) {
         long start = System.currentTimeMillis();
         Result<List<SysPermissionTree>> result = new Result<>();
         try {
@@ -134,9 +132,6 @@ public class SysPermissionController {
             }
             if (StrUtil.isNotEmpty(name)) {
                 query.like("name", name);
-            }
-            if (ObjectUtil.isNotEmpty(hidden)) {
-                query.eq("hidden", hidden ? "1" : "0");
             }
             query.orderByAsc("sort_no");
             List<SysPermission> list = sysPermissionService.list(query);
