@@ -1,5 +1,6 @@
 package com.aiurt.modules.material.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.major.entity.CsMajor;
@@ -125,6 +126,26 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                         }
                         String typeCodeCc = this.getCcStr(materialBase);
                         materialBase.setTypeCodeCc(typeCodeCc);
+                    }
+                }
+                if(StrUtil.isNotEmpty(materialBase.getBaseTypeCode())){
+                   List<MaterialBaseType>  materialBaseType = this.list(new LambdaQueryWrapper<MaterialBaseType>()
+                           .eq(MaterialBaseType::getBaseTypeCode,materialBase.getBaseTypeCode())
+                           .eq(MaterialBaseType::getMajorCode,majorCodeName)
+                           .eq(MaterialBaseType::getDelFlag,0));
+                   if (materialBaseType.size()>0){
+                       errorStrs.add("第 " + i + " 行：分类编码相同，忽略导入。");
+                       continue;
+                   }
+                }
+                if(StrUtil.isNotEmpty(materialBase.getBaseTypeName())){
+                    List<MaterialBaseType>  materialBaseType = this.list(new LambdaQueryWrapper<MaterialBaseType>()
+                            .eq(MaterialBaseType::getBaseTypeName,materialBase.getBaseTypeName())
+                            .eq(MaterialBaseType::getMajorCode,majorCodeName)
+                            .eq(MaterialBaseType::getDelFlag,0));
+                    if (materialBaseType.size()>0){
+                        errorStrs.add("第 " + i + " 行：分类名称相同，忽略导入。");
+                        continue;
                     }
                 }
                 if ("".equals(materialBase.getStatus())){
