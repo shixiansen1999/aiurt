@@ -2,6 +2,7 @@ package com.aiurt.modules.flow.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * @author wgp
@@ -17,4 +18,8 @@ public class FlowTaskReqDTO {
     private String processDefinitionName;
     @ApiModelProperty("任务名称")
     private String taskName;
+
+
+    private Integer pageNo;
+    private Integer pageSize;
 }
