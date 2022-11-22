@@ -128,8 +128,8 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 		LambdaQueryWrapper<ActCustomVariable> wrapper = new LambdaQueryWrapper();
 		wrapper.eq(ActCustomVariable::getModelId, modelId).eq(ActCustomVariable::getVariableName, variableName);
 		long count = actCustomVariableService.count(wrapper);
-		if (count>1) {
-			throw new AiurtBootException("流程标识已存在，请重新填写");
+		if (count >= 1) {
+			throw new AiurtBootException("流程标识已存在，请重新填写!");
 		}
 		return Result.OK();
 
