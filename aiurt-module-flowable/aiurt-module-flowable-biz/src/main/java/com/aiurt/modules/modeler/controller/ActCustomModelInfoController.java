@@ -2,6 +2,7 @@ package com.aiurt.modules.modeler.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.flow.service.FlowApiService;
@@ -109,6 +110,15 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	@ApiOperation(value="flowable流程模板定义信息-编辑", notes="flowable流程模板定义信息-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody ActCustomModelInfo actCustomModelInfo) {
+
+		ActCustomModelInfo one = actCustomModelInfoService.getById(actCustomModelInfo.getId());
+		if (Objects.isNull(one)) {
+			throw new AiurtBootException("流程模板不存在，无法修改");
+		}
+
+		if (StrUtil.equals(one.getModelKey(), actCustomModelInfo.getModelKey())) {
+			throw new AiurtBootException("流程标识不能修改！");
+		}
 		actCustomModelInfoService.updateById(actCustomModelInfo);
 		return Result.OK("编辑成功!");
 	}
