@@ -1094,16 +1094,24 @@ public class FlowApiServiceImpl implements FlowApiService {
             query.startedBefore(dateTime);
         }
 
+        Set<String> processInstanceIdSet = new HashSet<>();
         if (StrUtil.isNotBlank(reqDTO.getLoginName())) {
-            List<String> userName = flowUserService.getUserName(reqDTO.getLoginName());
-           /* userName.stream().forEach(name->{
-                query.(name);
-            });*/
+            List<String> userNameList = flowUserService.getUserName(reqDTO.getLoginName());
+            userNameList.stream().forEach(name->{
+                HistoricProcessInstanceQuery instanceQuery = historyService.createHistoricProcessInstanceQuery();
+                List<HistoricProcessInstance> list = instanceQuery.startedBy(name).list();
+                Set<String> set = list.stream().map(HistoricProcessInstance::getId).collect(Collectors.toSet());
+                processInstanceIdSet.addAll(set);
+            });
 
         }
 
         if (StrUtil.isNotBlank(reqDTO.getProcessDefinitionName())) {
             query.processInstanceNameLike( "%" + reqDTO.getProcessDefinitionName() + "%");
+        }
+
+        if (CollectionUtil.isNotEmpty(processInstanceIdSet)) {
+            query.processInstanceIds(processInstanceIdSet);
         }
 
 
