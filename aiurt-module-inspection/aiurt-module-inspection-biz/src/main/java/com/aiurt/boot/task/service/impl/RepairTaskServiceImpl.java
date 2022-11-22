@@ -1062,19 +1062,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (ObjectUtil.isEmpty(repairTask)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
-        // 是任务的检修人才可以审核
-        List<RepairTaskUser> repairTaskUserss = repairTaskUserMapper.selectList(
-                new LambdaQueryWrapper<RepairTaskUser>()
-                        .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
-                        .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
-        if (CollUtil.isEmpty(repairTaskUserss)) {
-            throw new AiurtBootException("该任务没有对应的检修人");
-        } else {
-            List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
-            if (!userList.contains(manager.checkLogin().getId())) {
-                throw new AiurtBootException("只有该任务的检修人才能审核");
-            }
-        }
         LoginUser loginUser = manager.checkLogin();
         String realName = repairTaskMapper.getRealName(loginUser.getId());
         RepairTask repairTask1 = new RepairTask();
@@ -1211,19 +1198,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
         if (ObjectUtil.isEmpty(repairTask)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
-        }
-        // 是任务的检修人才可以验收
-        List<RepairTaskUser> repairTaskUserss = repairTaskUserMapper.selectList(
-                new LambdaQueryWrapper<RepairTaskUser>()
-                        .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
-                        .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
-        if (CollUtil.isEmpty(repairTaskUserss)) {
-            throw new AiurtBootException("该任务没有对应的检修人");
-        } else {
-            List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
-            if (!userList.contains(manager.checkLogin().getId())) {
-                throw new AiurtBootException("只有该任务的检修人才能验收");
-            }
         }
         RepairTask repairTask1 = new RepairTask();
         LoginUser loginUser = manager.checkLogin();
