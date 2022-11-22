@@ -64,7 +64,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 	@Autowired
 	private StockLevel2InfoMapper stockLevel2InfoMapper;
 	@Autowired
-	private SysBaseApiImpl sysBaseApi;
+	private ISysBaseAPI sysBaseApi;
 	@Value("${jeecg.path.upload}")
 	private String upLoadPath;
 
@@ -132,22 +132,36 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 							}
 						}
 					}
-					if(ObjectUtil.isNull(stockLevel2InfoVo.getOrganizationId())){
+
+					if (ObjectUtil.isNull(stockLevel2InfoVo.getOrganizationId())) {
 						errorMessage.add("组织机构为必填项，忽略导入");
 						sb.append("组织机构为必填项;");
 						if(error){
 							errorLines++;
 							error = false;
 						}
+					}else{
+						List<SysDepartModel> allSysDepart = sysBaseApi.getAllSysDepart();
+						List<String> collect = allSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+						if(!collect.contains(stockLevel2InfoVo.getOrganizationId())){
+							errorMessage.add("组织机构不是下拉框内的内容，忽略导入");
+							sb.append("组织机构不是下拉框内的内容;");
+							if(error){
+								errorLines++;
+								error = false;
+							}
+						}
 					}
 					StockLevel2Info stockLevel2Info = new StockLevel2Info();
 					BeanUtils.copyProperties(stockLevel2InfoVo, stockLevel2Info);
+					list.add(stockLevel2Info);
 					//判断填写的数据中是否有重复数据
 					if(list.size()>1){
 						if(ObjectUtil.isNotNull(stockLevel2Info.getWarehouseCode())){
 							List<StockLevel2Info> codeList = list.stream().filter(f -> f.getWarehouseCode() != null).collect(Collectors.toList());
 							Map<Object, Long> mapGroup = codeList.stream().collect(Collectors.groupingBy(StockLevel2Info::getWarehouseCode, Collectors.counting()));
-							if(mapGroup.size() != codeList.size()){
+							List<Object> collect = mapGroup.keySet().stream().filter(key -> mapGroup.get(key) > 1).collect(Collectors.toList());
+							if(collect.contains(stockLevel2Info.getWarehouseCode())){
 								errorMessage.add("二级库编号重复，忽略导入");
 								sb.append("二级库编号重复；");
 								if(error){
@@ -159,7 +173,8 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 						if(ObjectUtil.isNotNull(stockLevel2Info.getWarehouseName())){
 							List<StockLevel2Info> nameList = list.stream().filter(f -> f.getWarehouseName() != null).collect(Collectors.toList());
 							Map<Object, Long> mapGroup2 = nameList.stream().collect(Collectors.groupingBy(StockLevel2Info::getWarehouseName, Collectors.counting()));
-							if(mapGroup2.size() != nameList.size()){
+							List<Object> collect = mapGroup2.keySet().stream().filter(key -> mapGroup2.get(key) > 1).collect(Collectors.toList());
+							if(collect.contains(stockLevel2Info.getWarehouseName())){
 								errorMessage.add("二级库名称重复，忽略导入");
 								sb.append("二级库名称重复；");
 								if(error){
@@ -201,8 +216,13 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 						//组织机构字典值翻译
 						String departName = null;
 						if(ObjectUtil.isNotNull(dto.getOrganizationId())){
-							SysDepartModel sysDepartModel = sysBaseApi.selectAllById(dto.getOrganizationId());
-							 departName= sysDepartModel.getDepartName();
+							List<SysDepartModel> allSysDepart = sysBaseApi.getAllSysDepart();
+							if(allSysDepart.contains(dto.getOrganizationId())){
+								SysDepartModel sysDepartModel = sysBaseApi.selectAllById(dto.getOrganizationId());
+								departName= sysDepartModel.getDepartName();
+							}else{
+								departName=dto.getOrganizationId();
+							}
 						}else{
 							departName = dto.getOrganizationId();
 						}
