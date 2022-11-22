@@ -27,6 +27,7 @@ import com.aiurt.modules.online.businessdata.entity.ActCustomBusinessData;
 import com.aiurt.modules.online.businessdata.service.IActCustomBusinessDataService;
 import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
+import com.aiurt.modules.user.service.IFlowUserService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -113,6 +114,9 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private IActCustomBusinessDataService businessDataService;
+
+    @Autowired
+    private IFlowUserService flowUserService;
 
 
     /**
@@ -1089,9 +1093,19 @@ public class FlowApiServiceImpl implements FlowApiService {
             DateTime dateTime = DateUtil.endOfDay(reqDTO.getEndTime());
             query.startedBefore(dateTime);
         }
+
         if (StrUtil.isNotBlank(reqDTO.getLoginName())) {
-            query.startedBy(reqDTO.getLoginName());
+            List<String> userName = flowUserService.getUserName(reqDTO.getLoginName());
+           /* userName.stream().forEach(name->{
+                query.(name);
+            });*/
+
         }
+
+        if (StrUtil.isNotBlank(reqDTO.getProcessDefinitionName())) {
+            query.processInstanceNameLike( "%" + reqDTO.getProcessDefinitionName() + "%");
+        }
+
 
         query.orderByProcessInstanceStartTime().desc();
 

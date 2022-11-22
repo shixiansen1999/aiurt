@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.boot.weeklyplan.mapper.ConstructionTemplateMapper">
+    <select id="queryPageList" resultType="com.aiurt.boot.weeklyplan.vo.ConstructionTemplateVO">
+        select ct.*
+        from construction_template ct
+        <where>
+            <if test="condition.title != null and condition.title != ''">
+                and ct.title like concat('%', #{condition.title}, '%')
+            </if>
+            <if test="condition.content != null and condition.content != ''">
+                and ct.content like concat('%', #{condition.content}, '%')
+            </if>
+            <if test="condition.userId != null and condition.userId != ''">
+                and ct.user_id = #{condition.userId}
+            </if>
+        </where>
+    </select>
+</mapper>

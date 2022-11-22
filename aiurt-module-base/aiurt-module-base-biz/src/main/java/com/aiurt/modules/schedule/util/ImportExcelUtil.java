@@ -8,7 +8,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -123,14 +123,14 @@ public class ImportExcelUtil {
     private static String getCellFormatValue(Cell cell) {
         String cellvalue = "";
         if (cell != null) {
-            if(cell.getCellType() != Cell.CELL_TYPE_STRING){
-                cell.setCellType(Cell.CELL_TYPE_STRING);
+            if(cell.getCellType() != CellType.STRING){
+                cell.setCellType(CellType.STRING);
             }
             // 判断当前Cell的Type
             switch (cell.getCellType()) {
                 // 如果当前Cell的Type为NUMERIC
-                case XSSFCell.CELL_TYPE_NUMERIC:
-                case XSSFCell.CELL_TYPE_FORMULA: {
+                case NUMERIC:
+                case FORMULA: {
                     // 判断当前的cell是否为Date
                     if (HSSFDateUtil.isCellDateFormatted(cell)) {
                         Date date = cell.getDateCellValue();
@@ -142,7 +142,7 @@ public class ImportExcelUtil {
                     break;
                 }
                 // 如果当前Cell的Type为STRING
-                case XSSFCell.CELL_TYPE_STRING:
+                case STRING:
                     // 取得当前的Cell字符串
                     cellvalue = cell.getRichStringCellValue().getString();
                     break;

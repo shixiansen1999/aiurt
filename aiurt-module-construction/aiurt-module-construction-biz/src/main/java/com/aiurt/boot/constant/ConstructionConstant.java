@@ -1,0 +1,31 @@
+package com.aiurt.boot.constant;
+
+/**
+ * 施工模块常量
+ */
+public interface ConstructionConstant {
+    /**
+     * 周计划令待提审状态
+     */
+    Integer FORM_STATUS_0 = 0;
+    /**
+     * 周计划令待审核状态
+     */
+    Integer FORM_STATUS_1 = 1;
+    /**
+     * 周计划令审核中状态
+     */
+    Integer FORM_STATUS_2 = 2;
+    /**
+     * 周计划令已驳回状态
+     */
+    Integer FORM_STATUS_3 = 3;
+    /**
+     * 周计划令已取消状态
+     */
+    Integer FORM_STATUS_4 = 4;
+    /**
+     * 周计划令已通过状态
+     */
+    Integer FORM_STATUS_5 = 5;
+}

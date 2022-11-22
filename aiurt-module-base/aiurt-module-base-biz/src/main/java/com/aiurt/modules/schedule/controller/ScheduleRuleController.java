@@ -74,30 +74,27 @@ public class ScheduleRuleController {
                                                      HttpServletRequest req) {
         //获取用户
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //根据登录用户的账号的查询条件筛选数据
         scheduleRule.setCreateBy(user.getUsername());
         Result<IPage<ScheduleRule>> result = new Result<IPage<ScheduleRule>>();
         QueryWrapper<ScheduleRule> queryWrapper = QueryGenerator.initQueryWrapper(scheduleRule, req.getParameterMap());
         Page<ScheduleRule> page = new Page<ScheduleRule>(pageNo, pageSize);
         IPage<ScheduleRule> pageList = scheduleRuleService.page(page, queryWrapper);
+        //数据处理
         pageList.getRecords().forEach(temp -> {
             List<ScheduleRuleItem> scheduleRuleItems = scheduleRuleItemService.getByRuleId(temp.getId());
             temp.setNames(scheduleRuleItems.stream().map(ScheduleRuleItem::getItemId).toArray(Integer[]::new));
             Integer[] keys = new Integer[scheduleRuleItems.size()];
             String way = "";
             for (int i = 0; i < scheduleRuleItems.size(); i++) {
+                keys[i] = i;
+                String format1 = DateUtil.format(scheduleRuleItems.get(i).getStartTime(), "HH:mm");
+                String format2 = DateUtil.format(scheduleRuleItems.get(i).getEndTime(), "HH:mm");
+                String string = StrUtil.isNotBlank(scheduleRuleItems.get(i).getTimeId()) ? scheduleRuleItems.get(i).getTimeId() : "0";
+                String string1 = "1".equals(string) ? "次日" : "";
                 if (i<scheduleRuleItems.size()-1){
-                    keys[i] = i;
-                    String format1 = DateUtil.format(scheduleRuleItems.get(i).getStartTime(), "HH:mm");
-                    String format2 = DateUtil.format(scheduleRuleItems.get(i).getEndTime(), "HH:mm");
-                    String string = StrUtil.isNotBlank(scheduleRuleItems.get(i).getTimeId()) ? scheduleRuleItems.get(i).getTimeId() : "0";
-                    String string1 = "1".equals(string) ? "次日" : "";
                     way = way + scheduleRuleItems.get(i).getItemName() + "（"+format1+"-"+ string1 +format2+"）"+ " |  ";
                 }else {
-                    keys[i] = i;
-                    String format1 = DateUtil.format(scheduleRuleItems.get(i).getStartTime(), "HH:mm");
-                    String format2 = DateUtil.format(scheduleRuleItems.get(i).getEndTime(), "HH:mm");
-                    String string = StrUtil.isNotBlank(scheduleRuleItems.get(i).getTimeId()) ? scheduleRuleItems.get(i).getTimeId() : "0";
-                    String string1 = "1".equals(string) ? "次日" : "";
                     way = way + scheduleRuleItems.get(i).getItemName() + "（"+format1+"-"+ string1 +format2+"）";
                 }
             }

@@ -3,12 +3,12 @@
 <mapper namespace="com.aiurt.modules.stock.mapper.StockLevel2Mapper">
 
     <select id="pageList" resultType="com.aiurt.modules.stock.entity.StockLevel2">
-        select stock_level2.*,mb.`name` materialName, stock_level2i.organization_id, mb.unit, mb.`type`
+        select DISTINCT stock_level2.*,mb.`name` materialName, stock_level2i.organization_id, mb.unit, mb.`type`
         from stock_level2 stock_level2
         left join material_base mb on stock_level2.material_code=mb.code
-        left join stock_level2_info stock_level2i on stock_level2.warehouse_code = stock_level2i.warehouse_code and stock_level2i.del_flag = 0
-        left join cs_major cm on mb.major_code = cm.major_code and cm.del_flag = 0
-        left join cs_subsystem cs on mb.system_code = cs.system_code and cs.del_flag = 0
+        left join stock_level2_info stock_level2i on (stock_level2.warehouse_code = stock_level2i.warehouse_code and stock_level2i.del_flag = 0)
+        left join cs_major cm on (mb.major_code = cm.major_code and cm.del_flag = 0)
+        left join cs_subsystem cs on (mb.system_code = cs.system_code and cs.del_flag = 0)
 		<where>
 		    and stock_level2.del_flag = 0
             <if test="condition.selectMaterialType != null and condition.selectMaterialType != ''">
