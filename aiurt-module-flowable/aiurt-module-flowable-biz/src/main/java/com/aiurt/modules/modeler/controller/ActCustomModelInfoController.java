@@ -121,7 +121,7 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 			throw new AiurtBootException("流程模板不存在，无法修改");
 		}
 
-		if (StrUtil.equals(one.getModelKey(), actCustomModelInfo.getModelKey())) {
+		if (!StrUtil.equals(one.getModelKey(), actCustomModelInfo.getModelKey())) {
 			throw new AiurtBootException("流程标识不能修改！");
 		}
 		actCustomModelInfoService.updateById(actCustomModelInfo);
