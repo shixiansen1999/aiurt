@@ -1103,8 +1103,15 @@ public class FlowApiServiceImpl implements FlowApiService {
                 Set<String> set = list.stream().map(HistoricProcessInstance::getId).collect(Collectors.toSet());
                 processInstanceIdSet.addAll(set);
             });
-
         }
+
+        if (StrUtil.isNotBlank(reqDTO.getLoginName()) && CollectionUtil.isEmpty(processInstanceIdSet)) {
+            pages.setCurrent(reqDTO.getPageNo());
+            pages.setRecords(Collections.emptyList());
+            pages.setTotal(0);
+            return pages;
+        }
+
 
         if (StrUtil.isNotBlank(reqDTO.getProcessDefinitionName())) {
             query.processInstanceNameLike( "%" + reqDTO.getProcessDefinitionName() + "%");
