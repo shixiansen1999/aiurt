@@ -163,7 +163,7 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 									.eq(MaterialBase::getCode,materialBase.getCode())
 									.eq(MaterialBase::getMajorCode,materialBase.getMajorCode())
 									.eq(MaterialBase::getDelFlag,0));
-							if (materialBase1.size()>1){
+							if (materialBase1.size()>0){
 								errorStrs.add("第 " + i + " 行：在同一专业下相同的物资编号，忽略导入。");
 								continue;
 							}

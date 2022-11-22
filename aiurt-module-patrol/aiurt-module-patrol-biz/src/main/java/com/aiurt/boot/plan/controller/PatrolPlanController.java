@@ -154,9 +154,11 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
     public Result<String> modify(@RequestParam(name = "id") String id,
                                  @RequestParam(name = "status") Integer status) {
         int modefy = patrolPlanService.modefy(id, status);
-        if (modefy > 0) {
-            return Result.OK("修改成功！");
-        } else {
+        if (modefy > 0 && status==0) {
+            return Result.OK(" 计划生效已开启！");
+        } else if (modefy > 0 && status==1){
+            return Result.OK(" 计划生效已关闭！");
+        }else  {
             return Result.error("修改失败!");
         }
     }
