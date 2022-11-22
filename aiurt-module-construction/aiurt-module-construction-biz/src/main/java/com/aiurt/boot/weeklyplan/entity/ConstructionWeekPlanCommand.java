@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
+import java.util.List;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -45,9 +47,9 @@ public class ConstructionWeekPlanCommand implements Serializable {
 	@Excel(name = "作业类别(1:A1、2:A2、3:A3、4:B1、5::C1、6:C2)", width = 15)
     @ApiModelProperty(value = "作业类别(1:A1、2:A2、3:A3、4:B1、5::C1、6:C2)")
     private Integer type;
-    /**计划类型(0正常计划 1计划补修 2日计划补充 3施工变更 4 施工取消*/
-    @Excel(name = "计划类型(0正常计划 1计划补修 2日计划补充 3施工变更 4 施工取消", width = 15)
-    @ApiModelProperty(value = "计划类型(0正常计划 1计划补修 2日计划补充 3施工变更 4 施工取消")
+    /**计划类型(1正常计划 2日补充计划 3临时补修计划*/
+    @Excel(name = "计划类型(1正常计划 2日补充计划 3临时补修计划", width = 15)
+    @ApiModelProperty(value = "计划类型(1正常计划 2日补充计划 3临时补修计划")
 	private Integer planChange;
 	/**作业单位ID*/
 	@Excel(name = "作业单位ID", width = 15)
@@ -189,6 +191,22 @@ public class ConstructionWeekPlanCommand implements Serializable {
 	@Excel(name = "中心经理驳回原因", width = 15)
     @ApiModelProperty(value = "中心经理驳回原因")
     private String managerReason;
+    /**生产调度审核意见*/
+    @Excel(name = "生产调度审核意见", width = 15)
+    @ApiModelProperty(value = "生产调度审核意见")
+    private String dispatchOpinion;
+    /**线路负责人审核意见*/
+    @Excel(name = "线路负责人审核意见", width = 15)
+    @ApiModelProperty(value = "线路负责人审核意见")
+    private String lineOpinion;
+    /**分部主任审核意见*/
+    @Excel(name = "分部主任审核意见", width = 15)
+    @ApiModelProperty(value = "分部主任审核意见")
+    private String directorOpinion;
+    /**中心经理驳回原因*/
+    @Excel(name = "中心经理审核意见", width = 15)
+    @ApiModelProperty(value = "中心经理审核意见")
+    private String managerOpinion;
 	/**取消用户ID*/
 	@Excel(name = "取消用户ID", width = 15)
     @ApiModelProperty(value = "取消用户ID")
@@ -205,6 +223,11 @@ public class ConstructionWeekPlanCommand implements Serializable {
 	@Excel(name = "作业性质(1:施工作业、2:巡检作业)", width = 15)
     @ApiModelProperty(value = "作业性质(1:施工作业、2:巡检作业)")
     private Integer nature;
+    /**辅站信息*/
+    @Excel(name = "辅站信息", width = 15)
+    @ApiModelProperty(value = "辅站信息")
+    @TableField(exist = false)
+    private List<ConstructionCommandAssist> constructionAssist;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

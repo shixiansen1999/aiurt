@@ -1,24 +1,27 @@
 package com.aiurt.boot.weeklyplan.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanCommandDTO;
+import com.aiurt.boot.weeklyplan.entity.ConstructionCommandAssist;
 import com.aiurt.boot.weeklyplan.entity.ConstructionWeekPlanCommand;
+import com.aiurt.boot.weeklyplan.service.IConstructionCommandAssistService;
 import com.aiurt.boot.weeklyplan.service.IConstructionWeekPlanCommandService;
 import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Description: construction_week_plan_command
@@ -33,6 +36,8 @@ import java.util.Arrays;
 public class ConstructionWeekPlanCommandController extends BaseController<ConstructionWeekPlanCommand, IConstructionWeekPlanCommandService> {
     @Autowired
     private IConstructionWeekPlanCommandService constructionWeekPlanCommandService;
+    @Autowired
+    private IConstructionCommandAssistService constructionCommandAssistService;
 
     /**
      * 施工周计划列表查询
@@ -55,33 +60,79 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
         return Result.OK(pageList);
     }
 
-//    /**
-//     * 添加
-//     *
-//     * @param constructionWeekPlanCommand
-//     * @return
-//     */
-//    @AutoLog(value = "construction_week_plan_command-添加")
-//    @ApiOperation(value = "construction_week_plan_command-添加", notes = "construction_week_plan_command-添加")
-//    @PostMapping(value = "/add")
-//    public Result<String> add(@RequestBody ConstructionWeekPlanCommand constructionWeekPlanCommand) {
-//        constructionWeekPlanCommandService.save(constructionWeekPlanCommand);
-//        return Result.OK("添加成功！");
-//    }
-//
-//    /**
-//     * 编辑
-//     *
-//     * @param constructionWeekPlanCommand
-//     * @return
-//     */
-//    @AutoLog(value = "construction_week_plan_command-编辑")
-//    @ApiOperation(value = "construction_week_plan_command-编辑", notes = "construction_week_plan_command-编辑")
-//    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-//    public Result<String> edit(@RequestBody ConstructionWeekPlanCommand constructionWeekPlanCommand) {
-//        constructionWeekPlanCommandService.updateById(constructionWeekPlanCommand);
-//        return Result.OK("编辑成功!");
-//    }
+    /**
+     * 施工周计划申报
+     *
+     * @param constructionWeekPlanCommand
+     * @return
+     */
+    @AutoLog(value = "施工周计划申报")
+    @ApiOperation(value = "施工周计划申报", notes = "施工周计划申报")
+    @PostMapping(value = "/declaration")
+    public Result<String> declaration(@RequestBody ConstructionWeekPlanCommand constructionWeekPlanCommand) {
+        String id = constructionWeekPlanCommandService.declaration(constructionWeekPlanCommand);
+        return Result.OK("添加成功！记录id为：【" + id + "】");
+    }
+
+    /**
+     * 施工周计划-编辑
+     *
+     * @param constructionWeekPlanCommand
+     * @return
+     */
+    @AutoLog(value = "施工周计划-编辑")
+    @ApiOperation(value = "施工周计划-编辑", notes = "施工周计划-编辑")
+    @RequestMapping(value = "/edit", method = {RequestMethod.POST})
+    public Result<String> edit(@RequestBody ConstructionWeekPlanCommand constructionWeekPlanCommand) {
+        constructionWeekPlanCommandService.edit(constructionWeekPlanCommand);
+        return Result.OK("编辑成功!");
+    }
+
+    /**
+     * 施工周计划-取消计划
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "施工周计划-取消计划")
+    @ApiOperation(value = "施工周计划-取消计划", notes = "施工周计划-取消计划")
+    @RequestMapping(value = "/cancel", method = {RequestMethod.POST})
+    public Result<String> cancel(@ApiParam(name = "id", value = "记录主键ID") @RequestParam("id") String id,
+                                 @ApiParam(name = "reason", value = "取消原因") @RequestParam("reason") String reason) {
+        constructionWeekPlanCommandService.cancel(id, reason);
+        return Result.OK("计划已成功取消!");
+    }
+
+    /**
+     * 施工周计划-计划提审
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "施工周计划-计划提审")
+    @ApiOperation(value = "施工周计划-计划提审", notes = "施工周计划-计划提审")
+    @RequestMapping(value = "/submit", method = {RequestMethod.POST})
+    public Result<String> submit(@ApiParam(name = "id", value = "记录主键ID") @RequestParam("id") String id) {
+        constructionWeekPlanCommandService.submit(id);
+        return Result.OK("计划提审成功!");
+    }
+
+    /**
+     * 施工周计划-计划审核
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "施工周计划-计划审核")
+    @ApiOperation(value = "施工周计划-计划审核", notes = "施工周计划-计划审核")
+    @RequestMapping(value = "/audit", method = {RequestMethod.POST})
+    public Result<String> audit(@ApiParam(name = "id", value = "记录主键ID")
+                                @RequestParam("id") String id,
+                                @ApiParam(name = "status", value = "审批状态：0未审批、1同意、2驳回")
+                                @RequestParam("status") Integer status) {
+        constructionWeekPlanCommandService.audit(id);
+        return Result.OK("计划审核成功!");
+    }
 //
 //    /**
 //     * 通过id删除
@@ -111,22 +162,29 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
 //        return Result.OK("批量删除成功!");
 //    }
 //
-//    /**
-//     * 通过id查询
-//     *
-//     * @param id
-//     * @return
-//     */
-//    //@AutoLog(value = "construction_week_plan_command-通过id查询")
-//    @ApiOperation(value = "construction_week_plan_command-通过id查询", notes = "construction_week_plan_command-通过id查询")
-//    @GetMapping(value = "/queryById")
-//    public Result<ConstructionWeekPlanCommand> queryById(@RequestParam(name = "id", required = true) String id) {
-//        ConstructionWeekPlanCommand constructionWeekPlanCommand = constructionWeekPlanCommandService.getById(id);
-//        if (constructionWeekPlanCommand == null) {
-//            return Result.error("未找到对应数据");
-//        }
-//        return Result.OK(constructionWeekPlanCommand);
-//    }
+
+    /**
+     * 施工周计划-根据ID查询计划信息
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "施工周计划-根据ID查询计划信息")
+    @ApiOperation(value = "施工周计划-根据ID查询计划信息", notes = "施工周计划-根据ID查询计划信息")
+    @GetMapping(value = "/queryById")
+    public Result<ConstructionWeekPlanCommand> queryById(@RequestParam(name = "id", required = true) String id) {
+        ConstructionWeekPlanCommand constructionWeekPlanCommand = constructionWeekPlanCommandService.getById(id);
+        if (constructionWeekPlanCommand == null) {
+            return Result.error("未找到对应数据");
+        }
+        QueryWrapper<ConstructionCommandAssist> assistWrapper = new QueryWrapper<>();
+        assistWrapper.lambda().eq(ConstructionCommandAssist::getPlanId, id);
+        List<ConstructionCommandAssist> assists = constructionCommandAssistService.list(assistWrapper);
+        if (CollectionUtil.isNotEmpty(assists)) {
+            constructionWeekPlanCommand.setConstructionAssist(assists);
+        }
+        return Result.OK(constructionWeekPlanCommand);
+    }
 //
 //    /**
 //     * 导出excel

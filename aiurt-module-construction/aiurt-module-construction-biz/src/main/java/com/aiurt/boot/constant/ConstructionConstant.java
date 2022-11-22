@@ -28,4 +28,16 @@ public interface ConstructionConstant {
      * 周计划令已通过状态
      */
     Integer FORM_STATUS_5 = 5;
+    /**
+     * 角色未审批状态
+     */
+    Integer APPROVE_STATUS_0 = 0;
+    /**
+     * 角色同意状态
+     */
+    Integer APPROVE_STATUS_1 = 1;
+    /**
+     * 角色驳回状态
+     */
+    Integer APPROVE_STATUS_2 = 2;
 }
