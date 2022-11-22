@@ -1001,7 +1001,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         queryWrapper.eq(SysUser::getUsername, username);
         SysUser sysUser = userMapper.selectOne(queryWrapper);
         LoginUser loginUser = new LoginUser();
-        BeanUtils.copyProperties(sysUser, loginUser);
+        if (ObjectUtil.isNotEmpty(sysUser)) {
+            BeanUtils.copyProperties(sysUser, loginUser);
+        }
         return loginUser;
     }
 

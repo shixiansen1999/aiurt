@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import org.jeecgframework.poi.excel.annotation.ExcelCollection;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.List;
@@ -330,6 +331,7 @@ public class Device extends DictEntity {
     @ApiModelProperty(value = "修改时间 根据当前时间戳更新")
 	private  java.util.Date  updateTime;
 
+	@ExcelCollection(name = "组件")
 	@ApiModelProperty(value = "设备组件")
 	@TableField(exist = false)
 	private List<DeviceAssembly> deviceAssemblyList;
@@ -361,5 +363,4 @@ public class Device extends DictEntity {
 	@ApiModelProperty(value = "检修标准Code")
 	@TableField(exist = false)
 	private  String  inspectionCode;
-
 }
