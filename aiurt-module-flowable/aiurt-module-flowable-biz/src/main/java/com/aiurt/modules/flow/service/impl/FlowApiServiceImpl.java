@@ -307,6 +307,9 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 流程业务数据状态更改
         String approvalType = comment.getApprovalType();
 
+        Map<String, Object> variableData = new HashMap<>(16);
+        variableData.put("operationType", approvalType);
+
         // 判断使保存还是提交
         if (StrUtil.equalsIgnoreCase(FlowApprovalType.SAVE, approvalType)) {
 
@@ -321,19 +324,19 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
         }else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE, FlowApprovalType.REFUSE)) {
             if (Objects.nonNull(busData)) {
-               busData.put("operationType", approvalType);
+               //busData.put("operationType", approvalType);
                flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
             // 完成任务
-            taskService.complete(taskId, busData);
+            taskService.complete(taskId, variableData);
             // 驳回
         }else if (StrUtil.equalsIgnoreCase(FlowApprovalType.REJECT, approvalType)) {
             if (Objects.nonNull(busData)) {
-                busData.put("operationType", approvalType);
+                // busData.put("operationType", approvalType);
                 flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
             // 完成任务
-            taskService.complete(taskId, busData);
+            taskService.complete(taskId, variableData);
         } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.CANCEL, approvalType)) {
 
             // 作废
