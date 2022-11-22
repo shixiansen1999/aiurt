@@ -244,7 +244,7 @@
             or t1.warehouse_name like concat('%',  #{text}, '%'))
         </if>
         <if test="orgId!=null and orgId!=''">
-            and spare_part_stock.org_id =  #{orgId}
+            and spare_part_stock.org_id = #{orgId}
         </if>
         order by spare_part_stock.create_time desc
     </select>
