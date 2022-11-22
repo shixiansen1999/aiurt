@@ -45,7 +45,7 @@ public class CsManuFactorImportVo implements Serializable {
     @ExcelExtend(isRequired = true,remark = "必填字段，且与系统下拉项保持一致")
     @ApiModelProperty(value = "厂商等级")
     @Dict(dicCode = "manufactor_level")
-    private Integer level;
+    private String level;
 	/**联系人*/
 	@Excel(name = "联系人", width = 15)
     @ExcelExtend(remark = "选填字段")

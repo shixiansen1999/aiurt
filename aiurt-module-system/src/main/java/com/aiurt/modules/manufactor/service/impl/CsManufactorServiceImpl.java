@@ -11,6 +11,7 @@ import com.aiurt.modules.manufactor.entity.vo.CsManuFactorImportVo;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.manufactor.mapper.CsManufactorMapper;
 import com.aiurt.modules.manufactor.service.ICsManufactorService;
+import com.aiurt.modules.stock.entity.StockLevel2Info;
 import com.aiurt.modules.subsystem.service.impl.CsSubsystemServiceImpl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -179,18 +180,56 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                         sb.append("厂商名称为必填项;");
                         errorLines++;
                         error = false;
+                    }else {
+                        CsManufactor csManufactor = csManufactorMapper.selectOne(new QueryWrapper<CsManufactor>().lambda().eq(CsManufactor::getName, csManuFactorImportVo.getName()).eq(CsManufactor::getDelFlag, 0));
+                        if (csManufactor != null) {
+                            errorMessage.add(csManuFactorImportVo.getName() + "厂商名称已经存在，忽略导入");
+                            sb.append("厂商名称已经存在;");
+                            if (error) {
+                                errorLines++;
+                                error =false;
+                            }
+                        }
                     }
                     if (ObjectUtil.isNull(csManuFactorImportVo.getLevel())) {
                         errorMessage.add("厂商等级为必填项，忽略导入");
-                        sb.append("厂商等级为必填项");
+                        sb.append("厂商等级为必填项;");
                         if(error){
                             errorLines++;
                         }
+                     }else{
+                        List<DictModel> manuFactorLevel = sysBaseApi.getDictItems("manufactor_level");
+                        List<String> collect = manuFactorLevel.stream().map(DictModel::getValue).collect(Collectors.toList());
+                        if(!collect.contains(csManuFactorImportVo.getLevel())){
+                            errorMessage.add("厂商等级不是下拉框内的内容，忽略导入");
+                            sb.append("格式错误，厂商等级输入了额外的码值或其他的字符;");
+                            if(error){
+                                errorLines++;
+                                error = false;
+                            }
+                        }
                     }
-                    csManuFactorImportVo.setErrorCause(String.valueOf(sb));
+
                     CsManufactor csManufactor = new CsManufactor();
                     BeanUtils.copyProperties(csManuFactorImportVo, csManufactor);
                     list.add(csManufactor);
+                    //判断填写的数据中是否有重复数据
+                    if(list.size()>1){
+                        if(ObjectUtil.isNotNull(csManufactor.getName())){
+                            List<CsManufactor> nameList = list.stream().filter(f -> f.getName() != null).collect(Collectors.toList());
+                            Map<Object, Long> mapGroup2 = nameList.stream().collect(Collectors.groupingBy(CsManufactor::getName, Collectors.counting()));
+                            List<Object> collect = mapGroup2.keySet().stream().filter(key -> mapGroup2.get(key) > 1).collect(Collectors.toList());
+                            if(collect.contains(csManufactor.getName())){
+                                errorMessage.add("厂商名称重复，忽略导入");
+                                sb.append("厂商名称重复；");
+                                if(error){
+                                    errorLines++;
+                                    error = false;
+                                }
+                            }
+                        }
+                    }
+                    csManuFactorImportVo.setErrorCause(String.valueOf(sb));
                     successLines++;
                 }
                 if(errorLines==0) {
@@ -220,9 +259,20 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                         //获取一条排班记录
                         Map<String, Object> lm = new HashMap<String, Object>(32);
                         //等级字典值翻译
-                        List<DictModel> manuFactorLevel = sysBaseApi.getDictItems("manufactor_level");
-                        manuFactorLevel= manuFactorLevel.stream().filter(f -> (String.valueOf(dto.getLevel())).equals(f.getValue())).collect(Collectors.toList());
-                        String level = manuFactorLevel.stream().map(DictModel::getText).collect(Collectors.joining());
+                        String level = null;
+                        if(ObjectUtil.isNotNull(dto.getLevel())){
+                            List<DictModel> manuFactorLevel = sysBaseApi.getDictItems("manufactor_level");
+                            List<String> collect = manuFactorLevel.stream().map(DictModel::getValue).collect(Collectors.toList());
+                            if(collect.contains(dto.getLevel())){
+                                manuFactorLevel= manuFactorLevel.stream().filter(f -> (String.valueOf(dto.getLevel())).equals(f.getValue())).collect(Collectors.toList());
+                                level = manuFactorLevel.stream().map(DictModel::getText).collect(Collectors.joining());
+                            }else{
+                                level = String.valueOf(dto.getLevel());
+                            }
+                        }else{
+                            level = null;
+                        }
+
                         //错误报告获取信息
                         lm.put("name", dto.getName());
                         lm.put("level", level);
