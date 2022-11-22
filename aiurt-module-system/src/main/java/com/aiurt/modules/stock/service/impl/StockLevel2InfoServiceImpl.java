@@ -145,7 +145,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 						List<String> collect = allSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
 						if(!collect.contains(stockLevel2InfoVo.getOrganizationId())){
 							errorMessage.add("组织机构不是下拉框内的内容，忽略导入");
-							sb.append("组织机构不是下拉框内的内容;");
+							sb.append("格式错误，组织机构输入了额外的码值或其他的字符;");
 							if(error){
 								errorLines++;
 								error = false;
@@ -163,7 +163,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 							List<Object> collect = mapGroup.keySet().stream().filter(key -> mapGroup.get(key) > 1).collect(Collectors.toList());
 							if(collect.contains(stockLevel2Info.getWarehouseCode())){
 								errorMessage.add("二级库编号重复，忽略导入");
-								sb.append("二级库编号重复；");
+								sb.append("二级库编号重复;");
 								if(error){
 									errorLines++;
 									error = false;
@@ -176,7 +176,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 							List<Object> collect = mapGroup2.keySet().stream().filter(key -> mapGroup2.get(key) > 1).collect(Collectors.toList());
 							if(collect.contains(stockLevel2Info.getWarehouseName())){
 								errorMessage.add("二级库名称重复，忽略导入");
-								sb.append("二级库名称重复；");
+								sb.append("二级库名称重复;");
 								if(error){
 									errorLines++;
 									error = false;
@@ -217,7 +217,8 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 						String departName = null;
 						if(ObjectUtil.isNotNull(dto.getOrganizationId())){
 							List<SysDepartModel> allSysDepart = sysBaseApi.getAllSysDepart();
-							if(allSysDepart.contains(dto.getOrganizationId())){
+							List<String> collect = allSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+							if(collect.contains(dto.getOrganizationId())){
 								SysDepartModel sysDepartModel = sysBaseApi.selectAllById(dto.getOrganizationId());
 								departName= sysDepartModel.getDepartName();
 							}else{

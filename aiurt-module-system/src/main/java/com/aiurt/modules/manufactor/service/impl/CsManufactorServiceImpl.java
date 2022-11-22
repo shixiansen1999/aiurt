@@ -202,7 +202,7 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                         List<String> collect = manuFactorLevel.stream().map(DictModel::getValue).collect(Collectors.toList());
                         if(!collect.contains(csManuFactorImportVo.getLevel())){
                             errorMessage.add("厂商等级不是下拉框内的内容，忽略导入");
-                            sb.append("厂商等级不是下拉框内的内容;");
+                            sb.append("格式错误，厂商等级输入了额外的码值或其他的字符;");
                             if(error){
                                 errorLines++;
                                 error = false;
