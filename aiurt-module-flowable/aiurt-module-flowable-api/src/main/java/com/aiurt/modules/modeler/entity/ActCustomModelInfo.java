@@ -14,6 +14,8 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
@@ -43,10 +45,12 @@ public class ActCustomModelInfo implements Serializable {
 	/**流程名称*/
 	@Excel(name = "流程名称", width = 15)
     @ApiModelProperty(value = "流程名称")
+    @NotBlank(message = "流程名称不允许为空！")
     private String name;
 	/**流程标识*/
 	@Excel(name = "流程标识", width = 15)
     @ApiModelProperty(value = "流程标识")
+    @Pattern(regexp = "^\\w+$", message = "流程标识只能由数字、26个英文字母或者下划线组成")
     private String modelKey;
 	/**模型key*/
 	@Excel(name = "模型key", width = 15)

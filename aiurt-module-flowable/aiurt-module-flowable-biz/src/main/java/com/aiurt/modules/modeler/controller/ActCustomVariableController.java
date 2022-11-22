@@ -1,6 +1,8 @@
 package com.aiurt.modules.modeler.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.modeler.entity.ActCustomVariable;
 import com.aiurt.modules.modeler.service.IActCustomVariableService;
@@ -32,15 +34,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ActCustomVariableController extends BaseController<ActCustomVariable, IActCustomVariableService> {
 
-	/**
-	 * 内置的流程变量 startUserName
-	 */
-	private static final String  STAR_USER_NAME = "startUserName";
 
-	/**
-	 * 内置的流程变量 operationType
-	 */
-	private static final String OPERATION_TYPE = "operationType";
 
 	@Autowired
 	private IActCustomVariableService actCustomVariableService;
@@ -58,37 +52,16 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 			@ApiImplicitParam(dataTypeClass = String.class, name = "modelId", value = "流程模板id", required = true, paramType = "query"),
 			@ApiImplicitParam(dataTypeClass = Integer.class, name = "variableType", value = "变量类型（1：变量，0：状态）", required = true, paramType = "query")
 	})
-	public Result<List<ActCustomVariable>> queryPageList(@RequestParam(value = "modelId") String modelId,  @RequestParam(value = "variableType")Integer variableType) {
+	public Result<List<ActCustomVariable>> queryPageList(@RequestParam(value = "modelId",required = false) String modelId,  @RequestParam(value = "variableType")Integer variableType) {
+
+		if (StrUtil.isBlank(modelId)) {
+			throw new AiurtBootException("缺失请求参数！");
+		}
 		LambdaQueryWrapper<ActCustomVariable> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(ActCustomVariable::getModelId, modelId).eq(ActCustomVariable::getVariableType,
 				variableType);
 		// 需要默认添加两个变量
 		List<ActCustomVariable> list = actCustomVariableService.list(wrapper);
-		// list
-		Set<String> variableNameSet = list.stream().map(ActCustomVariable::getVariableName).collect(Collectors.toSet());
-		if (variableType == 1) {
-			if (!variableNameSet.contains(OPERATION_TYPE)) {
-				ActCustomVariable actCustomVariable = new ActCustomVariable();
-				actCustomVariable.setVariableName(OPERATION_TYPE);
-				actCustomVariable.setShowName("审批类型");
-				actCustomVariable.setVariableType(1);
-				actCustomVariable.setModelId(modelId);
-				actCustomVariable.setType("1");
-				actCustomVariableService.save(actCustomVariable);
-				list.add(actCustomVariable);
-			}
-
-			if (!variableNameSet.contains(STAR_USER_NAME)) {
-				ActCustomVariable actCustomVariable = new ActCustomVariable();
-				actCustomVariable.setVariableName(STAR_USER_NAME);
-				actCustomVariable.setShowName("流程启动用户");
-				actCustomVariable.setVariableType(1);
-				actCustomVariable.setModelId(modelId);
-				actCustomVariable.setType("1");
-				actCustomVariableService.save(actCustomVariable);
-				list.add(actCustomVariable);
-			}
-		}
 		return Result.OK(list);
 	}
 
@@ -146,6 +119,20 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.actCustomVariableService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
+	}
+
+
+	@ApiOperation(value = "流程变量唯一标识校验")
+	@GetMapping(value = "/checkOnly")
+	public Result<?> checkOnly(@RequestParam(value = "modelId") String modelId, @RequestParam(value = "variableName") String variableName) {
+		LambdaQueryWrapper<ActCustomVariable> wrapper = new LambdaQueryWrapper();
+		wrapper.eq(ActCustomVariable::getModelId, modelId).eq(ActCustomVariable::getVariableName, variableName);
+		long count = actCustomVariableService.count(wrapper);
+		if (count>1) {
+			throw new AiurtBootException("流程标识已存在，请重新填写");
+		}
+		return Result.OK();
+
 	}
 
 

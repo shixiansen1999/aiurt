@@ -8,6 +8,7 @@ import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
+import com.aiurt.modules.modeler.service.IActCustomVariableService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -22,6 +23,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -45,6 +47,9 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	@Lazy
 	@Autowired
 	private FlowApiService flowApiService;
+
+	@Autowired
+	private IActCustomVariableService customVariableService;
 
 	/**
 	 * 分页列表查询
@@ -95,7 +100,7 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	@AutoLog(value = "flowable流程模板定义信息-添加")
 	@ApiOperation(value="flowable流程模板定义信息-添加", notes="flowable流程模板定义信息-添加")
 	@PostMapping(value = "/add")
-	public Result<ActCustomModelInfo> add(@RequestBody ActCustomModelInfo actCustomModelInfo) {
+	public Result<ActCustomModelInfo> add(@RequestBody @Valid ActCustomModelInfo actCustomModelInfo) {
 		ActCustomModelInfo a = actCustomModelInfoService.add(actCustomModelInfo);
 		return Result.OK("添加成功", a);
 	}

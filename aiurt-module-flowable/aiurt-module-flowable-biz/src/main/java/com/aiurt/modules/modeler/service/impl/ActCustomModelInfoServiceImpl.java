@@ -2,9 +2,11 @@ package com.aiurt.modules.modeler.service.impl;
 
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
+import com.aiurt.modules.modeler.entity.ActCustomVariable;
 import com.aiurt.modules.modeler.enums.ModelFormStatusEnum;
 import com.aiurt.modules.modeler.mapper.ActCustomModelInfoMapper;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
+import com.aiurt.modules.modeler.service.IActCustomVariableService;
 import com.aiurt.modules.modeler.service.IFlowableBpmnService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -34,12 +36,25 @@ import java.util.Objects;
 @Service
 public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInfoMapper, ActCustomModelInfo> implements IActCustomModelInfoService {
 
+    /**
+     * 内置的流程变量 startUserName
+     */
+    private static final String  STAR_USER_NAME = "startUserName";
+
+    /**
+     * 内置的流程变量 operationType
+     */
+    private static final String OPERATION_TYPE = "operationType";
+
     @Lazy
     @Autowired
     private IFlowableBpmnService flowableBpmnService;
 
     @Autowired
     private ModelService modelService;
+
+    @Autowired
+    private IActCustomVariableService customVariableService;
 
     /**
      * 添加模板
@@ -58,6 +73,26 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
         actCustomModelInfo.setModelId(model.getId());
         actCustomModelInfo.setStatus(ModelFormStatusEnum.CG.getStatus());
         saveOrUpdate(actCustomModelInfo);
+
+        // 初始化变量
+        if (Objects.nonNull(model)) {
+            ActCustomVariable actCustomVariable = new ActCustomVariable();
+            actCustomVariable.setVariableName(OPERATION_TYPE);
+            actCustomVariable.setShowName("审批类型");
+            actCustomVariable.setVariableType(1);
+            actCustomVariable.setModelId(model.getId());
+            actCustomVariable.setType("1");
+            customVariableService.save(actCustomVariable);
+
+            actCustomVariable = new ActCustomVariable();
+            actCustomVariable.setVariableName(STAR_USER_NAME);
+            actCustomVariable.setShowName("流程启动用户");
+            actCustomVariable.setVariableType(1);
+            actCustomVariable.setModelId(model.getId());
+            actCustomVariable.setType("1");
+            customVariableService.save(actCustomVariable);
+        }
+
         return actCustomModelInfo;
     }
 
