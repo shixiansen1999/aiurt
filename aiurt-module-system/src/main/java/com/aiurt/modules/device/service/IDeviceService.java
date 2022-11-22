@@ -4,6 +4,7 @@ import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -56,4 +57,6 @@ public interface IDeviceService extends IService<Device> {
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 
     Result<Device> add(Device device);
+
+    ModelAndView exportXls(Device device, HttpServletRequest request);
 }
