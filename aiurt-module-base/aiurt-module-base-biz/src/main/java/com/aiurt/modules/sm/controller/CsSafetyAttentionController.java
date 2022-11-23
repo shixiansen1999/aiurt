@@ -14,7 +14,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.system.base.view.AiurtEntityExcelView;
+import com.aiurt.modules.sm.entity.CsSafetyAttentionType;
+import com.aiurt.modules.sm.mapper.CsSafetyAttentionTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
@@ -56,6 +59,8 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class CsSafetyAttentionController extends BaseController<CsSafetyAttention, ICsSafetyAttentionService> {
 	@Autowired
 	private ICsSafetyAttentionService csSafetyAttentionService;
+	 @Autowired
+	 private CsSafetyAttentionTypeMapper csSafetyAttentionTypeMapper;
 
 	/**
 	 * 分页列表查询
@@ -108,6 +113,13 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	@ApiOperation(value="安全事项-添加", notes="安全事项-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody CsSafetyAttention csSafetyAttention) {
+		CsSafetyAttentionType csSafetyAttentionType = csSafetyAttentionTypeMapper
+				             .selectOne(new LambdaUpdateWrapper<CsSafetyAttentionType>()
+							 .eq(CsSafetyAttentionType::getId,csSafetyAttention.getAttentionType())
+							 .eq(CsSafetyAttentionType::getDelFlag,0));
+		if (csSafetyAttentionType!=null){
+		   csSafetyAttention.setAttentionTypeCode(csSafetyAttentionType.getCode());
+		}
 		csSafetyAttentionService.save(csSafetyAttention);
 		return Result.OK("添加成功！");
 	}
