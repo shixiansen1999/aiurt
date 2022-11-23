@@ -1,5 +1,6 @@
 package com.aiurt.boot.standard.entity;
 
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -41,6 +42,7 @@ public class PatrolStandard implements Serializable {
 	/**专业code*/
 	@Excel(name = "专业code", width = 15)
     @ApiModelProperty(value = "专业code")
+    @MajorFilterColumn
     private java.lang.String professionCode;
 	/**适用系统code*/
 	@Excel(name = "适用系统code", width = 15)

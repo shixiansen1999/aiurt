@@ -5,6 +5,7 @@ import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -47,6 +48,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 */
 	@AutoLog(value = "巡检标准表-分页列表查询", operateType =  1, operateTypeAlias = "列表查询", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准表-分页列表查询", notes="巡检标准表-分页列表查询")
+	@PermissionData(pageComponent = "standard/PatrolList")
 	@GetMapping(value = "/list")
 	public Result<IPage<PatrolStandardDto>> queryPageList(PatrolStandardDto patrolStandard,
 														  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,

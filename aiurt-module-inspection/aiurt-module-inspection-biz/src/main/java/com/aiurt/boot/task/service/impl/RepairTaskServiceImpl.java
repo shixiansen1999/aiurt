@@ -373,6 +373,25 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //已提交的数量
             long count3 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getIsSubmit() != null && repairTaskDTO.getIsSubmit().equals(InspectionConstant.IS_EFFECT)).count();
             e.setSubmitted((int) count3);
+
+            //检修位置
+            if (e.getSpecificLocation() != null) {
+                List<StationDTO> stationDTOList = new ArrayList<>();
+                stationDTOList.forEach(q -> {
+                    q.setStationCode(e.getStationCode());
+                    q.setLineCode(e.getLineCode());
+                    q.setPositionCode(e.getPositionCode());
+                });
+                String station = manager.translateStation(stationDTOList);
+                if (station != null) {
+                    String string = e.getSpecificLocation() + station;
+                    e.setMaintenancePosition(string);
+                } else {
+                    e.setMaintenancePosition(e.getSpecificLocation());
+                }
+
+            }
+
         });
         return repairTasks;
     }
