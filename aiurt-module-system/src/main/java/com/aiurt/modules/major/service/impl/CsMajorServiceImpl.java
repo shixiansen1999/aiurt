@@ -168,7 +168,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                     }
                     else
                     {
-                        if(csMajorCodes.size()==1||csMajorNames.size()!=1)
+                        if(csMajorCodes.size()!=1||csMajorNames.size()!=1)
                         {
                             if(csMajorCodes.size()!=1&&csMajorNames.size()==1)
                             {
