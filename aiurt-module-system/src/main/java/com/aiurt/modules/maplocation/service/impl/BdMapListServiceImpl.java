@@ -184,16 +184,15 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
     @Override
     public Page<EquipmentHistoryDTO> getEquipmentByUserId(String id, String stationId, Page<EquipmentHistoryDTO> pageList) {
         String stationIdStr = null;
-        // 管理的班组
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<String> teamIdList = iSysBaseAPI.getUserSysDepart(sysUser.getId()).stream().map(teamId -> teamId.getOrgCode()).collect(Collectors.toList());
+        // 管理的班组  暂时不启用查询自己管理班组的设备 默认查询所有
+        //  LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        // List<String> teamIdList = iSysBaseAPI.getUserSysDepart(sysUser.getId()).stream().map(teamId -> teamId.getOrgCode()).collect(Collectors.toList());
         // 如果是按站点查，直接用站点的id,如果是按人员查，就是人员的位置信息和哪个站点离得最近，就取那个站点的id
         if (StrUtil.isNotEmpty(id)) {
             UserStationDTO userStation = baseMapper.getStationId(id);
-            QueryWrapper<CsStation> bdStationQueryWrapper = new QueryWrapper<>();
-            bdStationQueryWrapper.lambda().isNotNull(CsStation::getLongitude);
-            bdStationQueryWrapper.lambda().isNotNull(CsStation::getLatitude);
-            List<CsStation> bdStationList = csStationService.getBaseMapper().selectList(bdStationQueryWrapper);
+            List<CsStation> bdStationList = csStationService.getBaseMapper().selectList(new LambdaQueryWrapper<CsStation>()
+                                            .isNotNull(CsStation::getLongitude)
+                                            .isNotNull(CsStation::getLatitude));
             if (ObjectUtil.isNotEmpty(userStation)
                     && userStation.getPositionX() != null
                     && userStation.getPositionY() != null
@@ -208,7 +207,7 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                         GlobalCoordinates stationDistance = new GlobalCoordinates(latitude.doubleValue(), longitude.doubleValue());
                         double meter = MapDistance.getDistanceMeter(userDistance, stationDistance, Ellipsoid.Sphere);
                         if (meter <= distance) {
-                            stationIdStr = bdStation.getId();
+                            stationIdStr = bdStation.getStationCode();
                             distance = meter;
                         }
                     }
@@ -225,7 +224,7 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
             return pageList.setRecords(new ArrayList<>());
         }
 
-        List<EquipmentHistoryDTO> equipmentHistoryDTOS = baseMapper.selectEquipment(pageList, teamIdList, stationIdStr);
+        List<EquipmentHistoryDTO> equipmentHistoryDTOS = baseMapper.selectEquipment(pageList, null, stationIdStr);
         equipmentHistoryDTOS.forEach(s->{
             if (s.getPositionCode()!=null){
                 CsStationPosition stationPosition = csStationPositionService.getOne(new LambdaQueryWrapper<CsStationPosition>()
