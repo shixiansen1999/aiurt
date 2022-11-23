@@ -61,12 +61,18 @@ public class ConstructionWeekPlanCommand implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "作业日期")
     private Date taskDate;
-	/**作业时间*/
-	@Excel(name = "作业时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "作业时间")
-    private Date taskTime;
+	/**作业开始时间*/
+	@Excel(name = "作业开始时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "作业开始时间")
+    private Date taskStartTime;
+    /**作业结束时间*/
+    @Excel(name = "作业时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "作业结束时间")
+    private Date taskEndTime;
 	/**作业范围*/
 	@Excel(name = "作业范围", width = 15)
     @ApiModelProperty(value = "作业范围")
@@ -146,7 +152,7 @@ public class ConstructionWeekPlanCommand implements Serializable {
 	/**线路负责人ID*/
 	@Excel(name = "线路负责人ID", width = 15)
     @ApiModelProperty(value = "线路负责人ID")
-    private String lineId;
+    private String lineUserId;
 	/**调度人ID*/
 	@Excel(name = "调度人ID", width = 15)
     @ApiModelProperty(value = "调度人ID")

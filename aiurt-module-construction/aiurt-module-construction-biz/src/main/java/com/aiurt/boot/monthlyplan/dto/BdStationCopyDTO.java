@@ -17,4 +17,5 @@ public class BdStationCopyDTO implements Serializable {
     private String name;
     private String lineId;
     private String lineName;
+    private String stationCode;
 }

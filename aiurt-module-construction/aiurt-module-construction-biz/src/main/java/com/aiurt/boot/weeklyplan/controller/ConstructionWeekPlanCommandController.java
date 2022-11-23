@@ -172,18 +172,9 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
     @AutoLog(value = "施工周计划-根据ID查询计划信息")
     @ApiOperation(value = "施工周计划-根据ID查询计划信息", notes = "施工周计划-根据ID查询计划信息")
     @GetMapping(value = "/queryById")
-    public Result<ConstructionWeekPlanCommand> queryById(@RequestParam(name = "id", required = true) String id) {
-        ConstructionWeekPlanCommand constructionWeekPlanCommand = constructionWeekPlanCommandService.getById(id);
-        if (constructionWeekPlanCommand == null) {
-            return Result.error("未找到对应数据");
-        }
-        QueryWrapper<ConstructionCommandAssist> assistWrapper = new QueryWrapper<>();
-        assistWrapper.lambda().eq(ConstructionCommandAssist::getPlanId, id);
-        List<ConstructionCommandAssist> assists = constructionCommandAssistService.list(assistWrapper);
-        if (CollectionUtil.isNotEmpty(assists)) {
-            constructionWeekPlanCommand.setConstructionAssist(assists);
-        }
-        return Result.OK(constructionWeekPlanCommand);
+    public Result<ConstructionWeekPlanCommandVO> queryById(@RequestParam(name = "id", required = true) String id) {
+        ConstructionWeekPlanCommandVO constructionWeekPlanCommandVO =  constructionWeekPlanCommandService.queryById(id);
+        return Result.OK(constructionWeekPlanCommandVO);
     }
 //
 //    /**

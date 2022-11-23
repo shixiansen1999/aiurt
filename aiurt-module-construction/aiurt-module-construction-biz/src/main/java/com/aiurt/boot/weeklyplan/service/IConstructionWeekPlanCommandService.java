@@ -58,4 +58,11 @@ public interface IConstructionWeekPlanCommandService extends IService<Constructi
      * @param id
      */
     void audit(String id);
+
+    /**
+     * 施工周计划-根据ID查询计划信息
+     * @param id
+     * @return
+     */
+    ConstructionWeekPlanCommandVO queryById(String id);
 }
