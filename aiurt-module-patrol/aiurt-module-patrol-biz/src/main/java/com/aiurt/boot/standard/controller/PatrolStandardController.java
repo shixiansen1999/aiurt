@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.boot.utils.PatrolCodeUtil;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.boot.standard.entity.PatrolStandard;
@@ -49,6 +50,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 */
 	@AutoLog(value = "巡检标准表-分页列表查询", operateType =  1, operateTypeAlias = "列表查询", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准表-分页列表查询", notes="巡检标准表-分页列表查询")
+	@PermissionData(pageComponent = "standard/PatrolList")
 	@GetMapping(value = "/list")
 	public Result<IPage<PatrolStandardDto>> queryPageList(PatrolStandardDto patrolStandard,
 														  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
