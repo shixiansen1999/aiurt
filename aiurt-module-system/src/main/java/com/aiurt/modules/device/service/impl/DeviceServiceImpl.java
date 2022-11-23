@@ -565,7 +565,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 
 		if (CollUtil.isNotEmpty(exportList)) {
 			for (Device d : exportList) {
-				Device devicefinal = translate(device);
+				Device devicefinal = translate(d);
 				//设备组件
 				List<DeviceAssembly> deviceAssemblyList = deviceAssemblyMapper.selectList(new QueryWrapper<DeviceAssembly>().eq("device_code", device.getCode()));
 				for(DeviceAssembly deviceAssembly : deviceAssemblyList){
