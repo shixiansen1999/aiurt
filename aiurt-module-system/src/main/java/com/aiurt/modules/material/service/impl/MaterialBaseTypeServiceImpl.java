@@ -19,21 +19,28 @@ import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.InputStream;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +58,8 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
     private ICsMajorService csMajorService;
     @Autowired
     private ICsSubsystemService csSubsystemService;
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
 
     @Override
     public List<MaterialBaseType> treeList(List<MaterialBaseType> materialBaseTypeList, String id) {
@@ -86,6 +95,7 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
         // 去掉 sql 中的重复数据
         Integer errorLines=0;
         Integer successLines=0;
+        List<MaterialBaseType> list = new ArrayList<>();
         for (int i = 0; i < listMaterial.size(); i++) {
             try {
                 MaterialBaseTypeDTO dto = listMaterial.get(i);
@@ -106,11 +116,13 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                 String majorCodeName = materialBase.getMajorName()==null?"":materialBase.getMajorName();
                 if("".equals(majorCodeName)){
                     errorStrs.add("第 " + i + " 行：专业名称为空，忽略导入。");
+                    list.add(materialBase);
                     continue;
                 }
                 CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().eq("major_name",majorCodeName).eq("del_flag",0));
                 if(csMajor == null){
                     errorStrs.add("第 " + i + " 行：无法根据专业名称找到对应数据，忽略导入。");
+                    list.add(materialBase);
                     continue;
                 }else{
                     materialBase.setMajorCode(csMajor.getMajorCode());
@@ -119,6 +131,7 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                     CsSubsystem csSubsystem = csSubsystemService.getOne(new QueryWrapper<CsSubsystem>().eq("major_code",csMajor.getMajorCode()).eq("system_name",systemCodeName).eq("del_flag",0));
                     if(!"".equals(systemCodeName) && csSubsystem == null){
                         errorStrs.add("第 " + i + " 行：无法根据子系统名称找到对应数据，忽略导入。");
+                        list.add(materialBase);
                         continue;
                     }else{
                         if(csSubsystem != null){
@@ -135,6 +148,7 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                            .eq(MaterialBaseType::getDelFlag,0));
                    if (materialBaseType.size()>0){
                        errorStrs.add("第 " + i + " 行：分类编码相同，忽略导入。");
+                       list.add(materialBase);
                        continue;
                    }
                 }
@@ -145,11 +159,13 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                             .eq(MaterialBaseType::getDelFlag,0));
                     if (materialBaseType.size()>0){
                         errorStrs.add("第 " + i + " 行：分类名称相同，忽略导入。");
+                        list.add(materialBase);
                         continue;
                     }
                 }
                 if ("".equals(materialBase.getStatus())){
                     errorStrs.add("第 " + i + " 行：没输入分类状态，忽略导入。");
+                    list.add(materialBase);
                     continue;
                 }else {
                     if ("启用".equals(materialBase.getStatus())){
@@ -158,6 +174,7 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                         materialBase.setStatus("2");
                     }else {
                         errorStrs.add("第 " + i + " 行：分类状态输入错误只有启用和停用，忽略导入。");
+                        list.add(materialBase);
                         continue;
                     }
                 }
@@ -170,6 +187,41 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+        if (list.size()>0){
+            //创建导入失败错误报告,进行模板导出
+            Resource resource = new ClassPathResource("/templates/materialBaseTypeError.xlsx");
+            InputStream resourceAsStream = resource.getInputStream();
+            //2.获取临时文件
+            File fileTemp= new File("/templates/materialBaseTypeError.xlsx");
+            try {
+                //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+                FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+            String path = fileTemp.getAbsolutePath();
+            TemplateExportParams exportParams = new TemplateExportParams(path);
+            List<Map<String, Object>> mapList = new ArrayList<>();
+            list.forEach(l->{
+                Map<String, Object> lm = new HashMap<String, Object>();
+                lm.put("majorName",l.getMajorName());
+                lm.put("status",l.getStatus());
+                lm.put("baseTypeCode",l.getBaseTypeCode());
+                lm.put("baseTypeName",l.getBaseTypeName());
+                lm.put("systemName",l.getSystemName());
+                mapList.add(lm);
+            });
+            Map<String, Object> errorMap = new HashMap<String, Object>();
+            errorMap.put("maplist", mapList);
+            Workbook workbook = ExcelExportUtil.exportExcel(exportParams,errorMap);
+            String fileName = "物资分类错误模板"+"_" + System.currentTimeMillis()+".xlsx";
+            FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
+            String  url = fileName;
+            workbook.write(out);
+            errorLines+=errorStrs.size();
+            successLines+=(listMaterial.size()-errorLines);
+            return ImportExcelUtil.imporReturnRes(errorLines,successLines,errorStrs,url);
         }
         errorLines+=errorStrs.size();
         successLines+=(listMaterial.size()-errorLines);
