@@ -28,7 +28,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,6 +75,14 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 patrolPlan.setSiteCode(String.join("|",strings));
             }
         }
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到未登录，请登录后操作！");
+        }
+        // 按照专业过滤
+        List<CsUserMajorModel> majorInfo = sysBaseApi.getMajorByUserId(loginUser.getId());
+        List<String> majorCodes = majorInfo.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+        patrolPlan.setMajorCodes(majorCodes);
         IPage<PatrolPlanDto> list = baseMapper.list(page, patrolPlan);
         List <PatrolPlanDto> list1 =list.getRecords();
         list1.forEach(l->{

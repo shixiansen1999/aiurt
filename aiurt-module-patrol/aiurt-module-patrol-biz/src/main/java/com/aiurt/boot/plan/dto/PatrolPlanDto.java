@@ -110,4 +110,10 @@ public class PatrolPlanDto  extends PatrolPlan {
    @Excel(name = "月检选择的哪天集合", width = 15)
    @ApiModelProperty(value = "月检选择的哪天集合")
    List<Integer> number;
+   /**
+    * 专业编码
+    */
+   @Excel(name = "专业编码", width = 15)
+   @ApiModelProperty(value = "专业编码")
+   List<String> majorCodes;
 }

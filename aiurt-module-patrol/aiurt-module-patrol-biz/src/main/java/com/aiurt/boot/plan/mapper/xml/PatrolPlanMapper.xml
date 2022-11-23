@@ -126,6 +126,12 @@
         <if test="patrolPlan.siteCode!=null ">
             AND siteCode REGEXP #{patrolPlan.siteCode}
         </if>
+        <if test="patrolPlan.majorCodes != null and patrolPlan.majorCodes.size() != 0">
+            and professionCode in
+            <foreach collection="patrolPlan.majorCodes" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
         ORDER BY create_time DESC
     </select>
     <select id="getMajorInfoByPlanId" resultType="java.lang.String">
