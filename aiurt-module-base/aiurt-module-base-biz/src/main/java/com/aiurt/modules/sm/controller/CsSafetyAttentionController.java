@@ -100,6 +100,13 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		queryWrapper.eq(CsSafetyAttention::getDelFlag,0);
 		Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);
 		IPage<CsSafetyAttention> pageList = csSafetyAttentionService.page(page, queryWrapper);
+		pageList.getRecords().forEach(l->{
+			CsSafetyAttentionType csSafetyAttentionType =  csSafetyAttentionTypeMapper
+					        .selectOne(new LambdaUpdateWrapper<CsSafetyAttentionType>()
+							.eq(CsSafetyAttentionType::getId,l.getAttentionType())
+							.eq(CsSafetyAttentionType::getDelFlag,0));
+			l.setAttentionTypeName(csSafetyAttentionType.getName());
+		});
 		return Result.OK(pageList);
 	}
 
@@ -137,7 +144,35 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		csSafetyAttentionService.updateById(csSafetyAttention);
 		return Result.OK("编辑成功!");
 	}
-
+	 /**
+	  *  修改状态
+	  *
+	  * @param id
+	  * @param status
+	  * @return
+	  */
+	 @AutoLog(value = "安全事项-修改状态")
+	 @ApiOperation(value="安全事项-修改状态", notes="安全事项-修改状态")
+	 @RequestMapping(value = "/edit", method = {RequestMethod.POST})
+	 public Result<String> edit(@RequestParam(name = "id") String id,
+								@RequestParam(name = "status") Integer state) {
+	 	CsSafetyAttention csSafetyAttention = new CsSafetyAttention();
+	 	csSafetyAttention.setId(id);
+	 	if (state==0){
+			csSafetyAttention.setState(1);
+		}
+		 if (state==1){
+			 csSafetyAttention.setState(0);
+		 }
+		 csSafetyAttentionService.updateById(csSafetyAttention);
+		 if (state==0) {
+			 return Result.OK(" 事项已开启！");
+		 } else if ( state==1){
+			 return Result.OK(" 事项已关闭！");
+		 }else  {
+			 return Result.error("修改失败!");
+		 }
+	 }
 	/**
 	 *   通过id删除
 	 *

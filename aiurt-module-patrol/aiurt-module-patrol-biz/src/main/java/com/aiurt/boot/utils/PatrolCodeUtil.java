@@ -49,6 +49,15 @@ public class PatrolCodeUtil {
         String code = getCommonCode("XD");
         return code;
     }
+    /**
+     * 获取安全事项编号
+     *
+     * @return
+     */
+    public static String getSafetyCode() {
+        String code = getCommonCode("AQ");
+        return code;
+    }
 
     /**
      * 自定义前缀获取编号
