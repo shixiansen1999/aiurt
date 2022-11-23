@@ -1,28 +1,26 @@
 package com.aiurt.boot.standard.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.aiurt.boot.standard.dto.PatrolStandardDto;
-import com.aiurt.boot.utils.PatrolCodeUtil;
-import com.aiurt.common.constant.enums.ModuleType;
-import org.jeecg.common.api.vo.Result;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
-
+import com.aiurt.boot.utils.PatrolCodeUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.List;
 
  /**
  * @Description: patrol_standard
@@ -198,10 +196,10 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
     * @param request
     * @param patrolStandard
     */
-//    @RequestMapping(value = "/exportXls")
-//    public ModelAndView exportXls(HttpServletRequest request, PatrolStandard patrolStandard) {
-//        return super.exportXls(request, patrolStandard, PatrolStandard.class, "patrol_standard");
-//    }
+    @RequestMapping(value = "/exportXls")
+    public ModelAndView exportXls(HttpServletRequest request, PatrolStandard patrolStandard) {
+        return super.exportXls(request, patrolStandard, PatrolStandard.class, "patrol_standard");
+    }
 
     /**
       * 通过excel导入数据
@@ -210,9 +208,9 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
     * @param response
     * @return
     */
-//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-//        return super.importExcel(request, response, PatrolStandard.class);
-//    }
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        return super.importExcel(request, response, PatrolStandard.class);
+    }
 
 }

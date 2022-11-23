@@ -68,7 +68,7 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 	 @ApiOperation(value = "app巡检-检查项-检查结果备注-保存", notes = "app巡检-检查项-检查结果备注-保存")
 	 @PostMapping(value = "/patrolTaskCheckResult")
 	 public Result<?> patrolTaskCheckResult(@RequestParam(name ="id")String id,
-											@RequestParam(name="checkResult") String checkResult,
+											@RequestParam(name="checkResult") Integer checkResult,
 											@RequestParam(name="remark") String remark,
 											HttpServletRequest req) {
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -77,8 +77,16 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 		 String a ="null";
 		 if(!a.equals(checkResult)&&ObjectUtil.isNotEmpty(checkResult))
 		 {
-			 updateWrapper.set(PatrolCheckResult::getCheckResult,checkResult).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,id);
+			if(!checkResult.equals(PatrolConstant.RESULT_NORMAL)&&!checkResult.equals(PatrolConstant.RESULT_EXCEPTION))
+			{
 
+				updateWrapper.set(PatrolCheckResult::getCheckResult,null).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,id);
+			}
+			else
+			{
+				updateWrapper.set(PatrolCheckResult::getCheckResult,checkResult).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,id);
+
+			}
 		 }
 		 if(ObjectUtil.isNotNull(remark))
 		 {
