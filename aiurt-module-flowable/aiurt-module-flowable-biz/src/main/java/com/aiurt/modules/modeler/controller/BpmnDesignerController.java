@@ -57,7 +57,7 @@ public class BpmnDesignerController {
      * @param modelKey
      * @return
      */
-    @GetMapping(value = "/getBpmnByModelId/{modelId}")
+    @GetMapping(value = "/getBpmnByModelKey/{modelId}")
     @ApiOperation("根据流程标识 查询bpmn xml")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "modelKey", value = "流程标识", required = true, paramType = "path")
