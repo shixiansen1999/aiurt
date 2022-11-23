@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -385,7 +384,7 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
     @AutoLog(value = "设备主数据导出")
     @ApiOperation(value = "设备主数据导出", notes = "设备主数据导出")
     @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
-    public ModelAndView exportXls(Device device, HttpServletRequest request) {
-        return  deviceService.exportXls(device,request);
+    public void exportXls(Device device, HttpServletRequest request, HttpServletResponse response) {
+          deviceService.exportXls(device,request,response);
     }
 }

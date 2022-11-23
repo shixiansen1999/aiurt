@@ -1,7 +1,11 @@
 package com.aiurt.modules.device.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ExportParams;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.afterturn.easypoi.util.PoiMergeCellUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
@@ -55,12 +59,6 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -69,7 +67,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -291,10 +288,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
 		// 错误信息
-		List<String> errorMessage = new ArrayList<>();
-		int successLines = 0, errorLines = 0;
-		String url = null;
-
+		int  errorLines = 0;
 		for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
 			// 获取上传文件对象
 			MultipartFile file = entity.getValue();
@@ -346,7 +340,6 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 							deviceModel.setDeviceMistake(stringBuilder.toString());
 							errorLines++;
 						}
-
 						List<DeviceAssembly> deviceAssemblies = new ArrayList<>();
 						if (CollUtil.isNotEmpty(deviceAssemblyModels)) {
 							for (DeviceAssemblyModel deviceAssemblyModel : deviceAssemblyModels) {
@@ -375,76 +368,9 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 						}
 					}
 				}
-
 				if (errorLines > 0) {
-					//创建导入失败错误报告,进行模板导出
-					Resource resource = new ClassPathResource("/templates/deviceError.xlsx");
-					InputStream resourceAsStream = resource.getInputStream();
-
-					//2.获取临时文件
-					File fileTemp= new File("/templates/deviceError.xlsx");
-					try {
-						//将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
-						FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
-					} catch (Exception e) {
-						log.error(e.getMessage());
-					}
-
-					String path = fileTemp.getAbsolutePath();
-					TemplateExportParams exportParams = new TemplateExportParams(path);
-					Map<String, Object> errorMap = new HashMap<String, Object>();
-					List<Map<String, String>> listMap = new ArrayList<>();
-					for (int i = 0; i < deviceAssemblyErrorModels.size(); i++) {
-						DeviceAssemblyErrorModel deviceAssemblyErrorModel = deviceAssemblyErrorModels.get(i);
-						Map<String, String> lm = new HashMap<>();
-						//错误报告获取信息
-						lm.put("majorCodeName",deviceAssemblyErrorModel.getMajorCodeName());
-						lm.put("systemCodeName",deviceAssemblyErrorModel.getSystemCodeName());
-						lm.put("deviceTypeCodeName",deviceAssemblyErrorModel.getDeviceTypeCodeName());
-						lm.put("code",deviceAssemblyErrorModel.getCode());
-						lm.put("majorConamedeName",deviceAssemblyErrorModel.getName());
-						lm.put("status",deviceAssemblyErrorModel.getStatus());
-						lm.put("lineCodeName",deviceAssemblyErrorModel.getLineCodeName());
-						lm.put("stationCodeName",deviceAssemblyErrorModel.getStationCodeName());
-						lm.put("orgCodeName",deviceAssemblyErrorModel.getPositionCodeName());
-						lm.put("manageUserName",deviceAssemblyErrorModel.getManageUserName());
-						lm.put("deviceLevel",deviceAssemblyErrorModel.getDeviceLevel());
-						lm.put("temporary",deviceAssemblyErrorModel.getTemporary());
-
-						lm.put("baseTypeCodeName",deviceAssemblyErrorModel.getBaseTypeCodeName());
-						lm.put("assemblyStatus",deviceAssemblyErrorModel.getAssemblyStatus());
-						lm.put("assemblyCode",deviceAssemblyErrorModel.getAssemblyCode());
-						lm.put("materialName",deviceAssemblyErrorModel.getMaterialName());
-						lm.put("materialCode",deviceAssemblyErrorModel.getMaterialCode());
-						lm.put("mistake",deviceAssemblyErrorModel.getMistake());
-						lm.put("deviceMistake",deviceAssemblyErrorModel.getDeviceMistake());
-						listMap.add(lm);
-					}
-					errorMap.put("maplist", listMap);
-					Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
-					sheetsMap.put(0, errorMap);
-					Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
-					int size = 4;
-					for (DeviceModel deviceModel : list) {
-						for (int i = 0; i <= 12; i++) {
-							//合并单元格
-							PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0),size,size + deviceModel.getDeviceAssemblyModelList().size()-1,i,i);
-						}
-						PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0),size,size + deviceModel.getDeviceAssemblyModelList().size()-1,19,19);
-						size = size + deviceModel.getDeviceAssemblyModelList().size();
-					}
-
-					try {
-						String fileName = "设备主数据导入错误清单"+"_" + System.currentTimeMillis()+".xlsx";
-						FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
-						url = fileName;
-						workbook.write(out);
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					return imporReturnRes(errorLines, successLines, errorMessage,true,url);
+					//错误报告下载
+					return getErrorExcel(errorLines,list,deviceAssemblyErrorModels);
 				}
 
 				for (Device device : deviceList) {
@@ -544,7 +470,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 	}
 
 	@Override
-	public ModelAndView exportXls(Device device, HttpServletRequest request) {
+	public void exportXls(Device device, HttpServletRequest request, HttpServletResponse response) {
 		// Step.1 组装查询条件
 		QueryWrapper<Device> queryWrapper = QueryGenerator.initQueryWrapper(device, request.getParameterMap());
 		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -580,18 +506,21 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			}
 		}
 		String title = "设备主数据";
-		// Step.3 AutoPoi 导出Excel
-		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-		//此处设置的filename无效 ,前端会重更新设置一下
-		mv.addObject(NormalExcelConstants.FILE_NAME, title);
-		mv.addObject(NormalExcelConstants.CLASS, Device.class);
-		//update-begin--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置--------------------
 		ExportParams exportParams=new ExportParams(title + "报表", "导出人:" + sysUser.getRealname(), ExcelType.XSSF);
-		exportParams.setImageBasePath(upLoadPath);
-		//update-end--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置----------------------
-		mv.addObject(NormalExcelConstants.PARAMS,exportParams);
-		mv.addObject(NormalExcelConstants.DATA_LIST, deviceList);
-		return mv;
+		//调用ExcelExportUtil.exportExcel方法生成workbook
+		Workbook wb = ExcelExportUtil.exportExcel(exportParams,Device.class,deviceList);
+		String fileName = "设备主数据";
+		try {
+			response.setHeader("Content-Disposition",
+					"attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+			response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+			BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+			wb.write(bufferedOutPut);
+			bufferedOutPut.flush();
+			bufferedOutPut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void baseMassageCheck(DeviceModel deviceModel,Device device,StringBuilder stringBuilder) {
@@ -795,6 +724,82 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		}
 	}
 
+	private Result<?> getErrorExcel(int errorLines,List<DeviceModel> list,List<DeviceAssemblyErrorModel> deviceAssemblyErrorModels ) throws IOException {
+
+		List<String> errorMessage = new ArrayList<>();
+		int successLines = 0;
+		String url = null;
+
+		//创建导入失败错误报告,进行模板导出
+		Resource resource = new ClassPathResource("/templates/deviceError.xlsx");
+		InputStream resourceAsStream = resource.getInputStream();
+
+		//2.获取临时文件
+		File fileTemp= new File("/templates/deviceError.xlsx");
+		try {
+			//将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+			FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
+
+		String path = fileTemp.getAbsolutePath();
+		TemplateExportParams exportParams = new TemplateExportParams(path);
+		Map<String, Object> errorMap = new HashMap<String, Object>();
+		List<Map<String, String>> listMap = new ArrayList<>();
+		for (int i = 0; i < deviceAssemblyErrorModels.size(); i++) {
+			DeviceAssemblyErrorModel deviceAssemblyErrorModel = deviceAssemblyErrorModels.get(i);
+			Map<String, String> lm = new HashMap<>();
+			//错误报告获取信息
+			lm.put("majorCodeName",deviceAssemblyErrorModel.getMajorCodeName());
+			lm.put("systemCodeName",deviceAssemblyErrorModel.getSystemCodeName());
+			lm.put("deviceTypeCodeName",deviceAssemblyErrorModel.getDeviceTypeCodeName());
+			lm.put("code",deviceAssemblyErrorModel.getCode());
+			lm.put("majorConamedeName",deviceAssemblyErrorModel.getName());
+			lm.put("status",deviceAssemblyErrorModel.getStatus());
+			lm.put("lineCodeName",deviceAssemblyErrorModel.getLineCodeName());
+			lm.put("stationCodeName",deviceAssemblyErrorModel.getStationCodeName());
+			lm.put("orgCodeName",deviceAssemblyErrorModel.getPositionCodeName());
+			lm.put("manageUserName",deviceAssemblyErrorModel.getManageUserName());
+			lm.put("deviceLevel",deviceAssemblyErrorModel.getDeviceLevel());
+			lm.put("temporary",deviceAssemblyErrorModel.getTemporary());
+
+			lm.put("baseTypeCodeName",deviceAssemblyErrorModel.getBaseTypeCodeName());
+			lm.put("assemblyStatus",deviceAssemblyErrorModel.getAssemblyStatus());
+			lm.put("assemblyCode",deviceAssemblyErrorModel.getAssemblyCode());
+			lm.put("materialName",deviceAssemblyErrorModel.getMaterialName());
+			lm.put("materialCode",deviceAssemblyErrorModel.getMaterialCode());
+			lm.put("mistake",deviceAssemblyErrorModel.getMistake());
+			lm.put("deviceMistake",deviceAssemblyErrorModel.getDeviceMistake());
+			listMap.add(lm);
+		}
+		errorMap.put("maplist", listMap);
+		Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+		sheetsMap.put(0, errorMap);
+		Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+		int size = 4;
+		for (DeviceModel deviceModel : list) {
+			for (int i = 0; i <= 12; i++) {
+				//合并单元格
+				PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0),size,size + deviceModel.getDeviceAssemblyModelList().size()-1,i,i);
+			}
+			PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0),size,size + deviceModel.getDeviceAssemblyModelList().size()-1,19,19);
+			size = size + deviceModel.getDeviceAssemblyModelList().size();
+		}
+
+		try {
+			String fileName = "设备主数据导入错误清单"+"_" + System.currentTimeMillis()+".xlsx";
+			FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
+			url = fileName;
+			workbook.write(out);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return imporReturnRes(errorLines, successLines, errorMessage,true,url);
+	}
+
 	private List<DeviceAssemblyModel> deviceAssemblyCheck(DeviceModel deviceModel,int errorLines) {
 		List<DeviceAssemblyModel> deviceAssemblyList = deviceModel.getDeviceAssemblyModelList();
 		if (CollUtil.isNotEmpty(deviceAssemblyList)) {
@@ -814,6 +819,8 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 					queryWrapper.eq("code", deviceAssembly.getMaterialCode());
 					queryWrapper.like("name", deviceAssembly.getMaterialName());
 					MaterialBase one = iMaterialBaseService.getOne(queryWrapper);
+					deviceAssembly.setSpecifications(one.getSpecifications());
+					deviceAssembly.setBaseTypeCode(one.getBaseTypeCode());
 
 					if (ObjectUtil.isEmpty(one)) {
 						stringBuilder.append("系统不存在该组件,");
