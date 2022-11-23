@@ -324,14 +324,14 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 						auxiliaryMassageCheck(deviceModel, device, stringBuilder);
 
 						//重复数据校验
-						String s = duplicateData.get(device.getCode());
+						String s = duplicateData.get(deviceModel.getCode());
 						if (StrUtil.isEmpty(s)) {
-							duplicateData.put(device.getCode(), device.getName());
+							duplicateData.put(deviceModel.getCode(), deviceModel.getName());
 						} else {
 							stringBuilder.append("该数据存在相同数据,");
 						}
 
-						QueryWrapper<Device> queryWrapper = this.getQueryWrapper(device.getStationCode(),device.getPositionCodeCc(),device.getTemporary(),device.getMajorCode(),device.getSystemCode(),device.getDeviceTypeCode(),device.getCode(),device.getName(), String.valueOf(device.getStatus()));
+						QueryWrapper<Device> queryWrapper = this.getQueryWrapper(device.getStationCode(),device.getPositionCodeCc(),device.getTemporary(),device.getMajorCode(),device.getSystemCode(),device.getDeviceTypeCode(),deviceModel.getCode(),deviceModel.getName(), String.valueOf(device.getStatus()));
 						Device one = this.getOne(queryWrapper);
 						if (ObjectUtil.isNotEmpty(one)) {
 							stringBuilder.append("数据库已存在该数据,");
@@ -360,6 +360,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 									//生成添加的组件信息
 									DeviceAssembly deviceAssembly = new DeviceAssembly();
 									BeanUtil.copyProperties(deviceAssemblyModel, deviceAssembly);
+									deviceAssembly.setCode(deviceAssemblyModel.getAssemblyCode());
 									deviceAssembly.setStatus(deviceAssemblyModel.getAssemblyStatus());
 									deviceAssemblies.add(deviceAssembly);
 								}
@@ -567,7 +568,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			for (Device d : exportList) {
 				Device devicefinal = translate(d);
 				//设备组件
-				List<DeviceAssembly> deviceAssemblyList = deviceAssemblyMapper.selectList(new QueryWrapper<DeviceAssembly>().eq("device_code", device.getCode()));
+				List<DeviceAssembly> deviceAssemblyList = deviceAssemblyMapper.selectList(new QueryWrapper<DeviceAssembly>().eq("device_code", d.getCode()));
 				for(DeviceAssembly deviceAssembly : deviceAssemblyList){
 					String statusAssembly = deviceAssembly.getStatus()==null?"":deviceAssembly.getStatus();
 					String baseTypeCode = deviceAssembly.getBaseTypeCode()==null?"":deviceAssembly.getBaseTypeCode();
@@ -585,7 +586,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		mv.addObject(NormalExcelConstants.FILE_NAME, title);
 		mv.addObject(NormalExcelConstants.CLASS, Device.class);
 		//update-begin--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置--------------------
-		ExportParams  exportParams=new ExportParams(title + "报表", "导出人:" + sysUser.getRealname(), ExcelType.XSSF);
+		ExportParams exportParams=new ExportParams(title + "报表", "导出人:" + sysUser.getRealname(), ExcelType.XSSF);
 		exportParams.setImageBasePath(upLoadPath);
 		//update-end--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置----------------------
 		mv.addObject(NormalExcelConstants.PARAMS,exportParams);
@@ -683,6 +684,8 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			} else {
 				device.setLineCode(one.getLineCode());
 			}
+		}else {
+			stringBuilder.append("设备位置不能为空，");
 		}
 		if (StrUtil.isNotEmpty(stationCodeName)) {
 			LambdaQueryWrapper<CsStation> csStationWrapper = new LambdaQueryWrapper<>();
@@ -794,7 +797,6 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 
 	private List<DeviceAssemblyModel> deviceAssemblyCheck(DeviceModel deviceModel,int errorLines) {
 		List<DeviceAssemblyModel> deviceAssemblyList = deviceModel.getDeviceAssemblyModelList();
-		List<DeviceAssemblyModel> assemblyModelList = new ArrayList<>();
 		if (CollUtil.isNotEmpty(deviceAssemblyList)) {
 			Map<Object, Integer> duplicateData = new HashMap<>();
 			int i = 0;
@@ -844,12 +846,11 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 					deviceAssembly.setMistake(stringBuilder.toString());
 					errorLines++;
 				}
-				assemblyModelList.add(deviceAssembly);
-
+				deviceAssembly.setDeviceCode(deviceModel.getCode());
 				i++;
 			}
 		}
-		return assemblyModelList;
+		return deviceAssemblyList;
 	}
 	/**
 	 * 判断时间格式 格式必须为“YYYY-MM-dd”
