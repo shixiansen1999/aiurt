@@ -48,14 +48,7 @@ public class ImportExcelUtil {
             int totalCount = successLines + errorLines;
             result.put("totalCount", totalCount);
             result.put("errorCount", errorLines);
-            result.put("successCount", successLines);
-            result.put("msg", "总上传行数：" + totalCount + "，已导入行数：" + successLines + "，错误行数：" + errorLines);
-            String fileUrl = PmsUtil.saveErrorTxtByList(errorMessage, "userImportExcelErrorLog");
-            int lastIndex = fileUrl.lastIndexOf(File.separator);
-            String fileName = fileUrl.substring(lastIndex + 1);
-            result.put("errorMessage",errorMessage);
-            result.put("fileUrl", "/sys/common/static/" + fileUrl);
-            result.put("fileName", fileName);
+            result.put("isSucceed",false);
             result.put("failReportUrl", url);
             Result res = Result.ok(result);
             res.setCode(201);

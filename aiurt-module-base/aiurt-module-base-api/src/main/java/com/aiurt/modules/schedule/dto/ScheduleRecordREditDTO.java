@@ -42,4 +42,8 @@ public class ScheduleRecordREditDTO {
     @ApiModelProperty(value = "清空标记")
     private Boolean deleteFlag;
 
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "排班日期")
+    private  Date  date;
 }

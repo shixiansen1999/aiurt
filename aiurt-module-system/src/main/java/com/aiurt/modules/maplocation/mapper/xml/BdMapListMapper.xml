@@ -70,16 +70,8 @@
         device bda
         LEFT JOIN device_type bdt ON bdt.code = bda.device_type_code
         <where>
-            bda.station_code = #{stationIdStr}
-            and bda.del_flag = 0 and bdt.del_flag = 0
-            <if test="teamIdList.size()>0">
-                and (
-                bda.use_deprt_code in
-                <foreach collection="teamIdList" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-             )
-            </if>
+            bda.del_flag = 0 and bdt.del_flag = 0
+            and  bda.station_code = #{stationIdStr}
         </where>
     </select>
     <select id="getAllTeam" resultType="com.aiurt.common.api.vo.TreeNode">

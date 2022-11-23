@@ -52,6 +52,24 @@ public class BpmnDesignerController {
         return Result.ok(modelInfoVo);
     }
 
+    /**
+     * 根据流程标识 查询bpmn xml, 可以预览图片 (修改或者编辑中使用)
+     * @param modelKey
+     * @return
+     */
+    @GetMapping(value = "/getBpmnByModelKey/{modelKey}")
+    @ApiOperation("根据流程标识 查询bpmn xml")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "modelKey", value = "流程标识", required = true, paramType = "path")
+    })
+    public Result<ModelInfoVo> getBpmnByModelKey(@PathVariable String modelKey) {
+        if (StrUtil.isNullOrUndefined(modelKey)) {
+            throw new AiurtBootException("请求参数有误!");
+        }
+        ModelInfoVo modelInfoVo = flowableBpmnService.loadBpmnXmlByModelKey(modelKey);
+        return Result.ok(modelInfoVo);
+    }
+
 
     /**
      * 保存bpmn模型

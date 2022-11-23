@@ -58,4 +58,11 @@ public interface IFlowableBpmnService {
      * @return
      */
     BpmnModel getBpmnModelByDefinitionId(String processDefinitionId);
+
+    /**
+     * 根据流程标识
+     * @param modelKey
+     * @return
+     */
+    ModelInfoVo loadBpmnXmlByModelKey(String modelKey);
 }

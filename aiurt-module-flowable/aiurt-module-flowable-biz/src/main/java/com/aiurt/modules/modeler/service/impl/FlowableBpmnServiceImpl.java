@@ -395,4 +395,39 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         return null;
     }
 
+    /**
+     * 根据流程标识
+     *
+     * @param modelKey
+     * @return
+     */
+    @Override
+    public ModelInfoVo loadBpmnXmlByModelKey(String modelKey) {
+
+        ActCustomModelInfo one = modelInfoService.getOne(new LambdaQueryWrapper<ActCustomModelInfo>().eq(ActCustomModelInfo::getModelKey, modelKey).last("limit 1"));
+
+        if (Objects.isNull(one)) {
+            throw new AiurtBootException("系统中不存在该流程模型，请刷新尝试！");
+        }
+
+        String modelId = one.getModelId();
+        if (StrUtil.isBlank(modelId)) {
+            throw new AiurtBootException("系统中不存在该流程模型，请刷新尝试！");
+        }
+        ModelInfoVo modelInfoVo = null;
+        try {
+            Model model = modelService.getModel(modelId);
+            byte[] bpmnXML = modelService.getBpmnXML(model);
+            String streamStr = new String(bpmnXML);
+            modelInfoVo = new ModelInfoVo();
+            modelInfoVo.setModelId(modelId);
+            modelInfoVo.setModelName(model.getName());
+            modelInfoVo.setModelKey(model.getKey());
+            modelInfoVo.setFileName(model.getName());
+            modelInfoVo.setModelXml(streamStr);
+        } catch (Exception e) {
+            throw new AiurtBootException("系统中不存在该流程模型，请刷新尝试！");
+        }
+        return modelInfoVo;
+    }
 }

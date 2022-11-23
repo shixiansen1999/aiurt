@@ -14,7 +14,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.system.base.view.AiurtEntityExcelView;
+import com.aiurt.modules.sm.entity.CsSafetyAttentionType;
+import com.aiurt.modules.sm.mapper.CsSafetyAttentionTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
@@ -56,6 +59,8 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class CsSafetyAttentionController extends BaseController<CsSafetyAttention, ICsSafetyAttentionService> {
 	@Autowired
 	private ICsSafetyAttentionService csSafetyAttentionService;
+	 @Autowired
+	 private CsSafetyAttentionTypeMapper csSafetyAttentionTypeMapper;
 
 	/**
 	 * 分页列表查询
@@ -78,7 +83,7 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		queryWrapper.eq(CsSafetyAttention::getMajorCode,csSafetyAttention.getMajorCode());
 		}
 		if (csSafetyAttention.getState()!=null){
-			queryWrapper.eq(CsSafetyAttention::getMajorCode,csSafetyAttention.getState());
+			queryWrapper.eq(CsSafetyAttention::getState,csSafetyAttention.getState());
 		}
 		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionMeasures())){
 			queryWrapper.like(CsSafetyAttention::getAttentionMeasures,csSafetyAttention.getAttentionMeasures());
@@ -95,6 +100,13 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		queryWrapper.eq(CsSafetyAttention::getDelFlag,0);
 		Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);
 		IPage<CsSafetyAttention> pageList = csSafetyAttentionService.page(page, queryWrapper);
+		pageList.getRecords().forEach(l->{
+			CsSafetyAttentionType csSafetyAttentionType =  csSafetyAttentionTypeMapper
+					        .selectOne(new LambdaUpdateWrapper<CsSafetyAttentionType>()
+							.eq(CsSafetyAttentionType::getId,l.getAttentionType())
+							.eq(CsSafetyAttentionType::getDelFlag,0));
+			l.setAttentionTypeName(csSafetyAttentionType.getName());
+		});
 		return Result.OK(pageList);
 	}
 
@@ -108,6 +120,13 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	@ApiOperation(value="安全事项-添加", notes="安全事项-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody CsSafetyAttention csSafetyAttention) {
+		CsSafetyAttentionType csSafetyAttentionType = csSafetyAttentionTypeMapper
+				             .selectOne(new LambdaUpdateWrapper<CsSafetyAttentionType>()
+							 .eq(CsSafetyAttentionType::getId,csSafetyAttention.getAttentionType())
+							 .eq(CsSafetyAttentionType::getDelFlag,0));
+		if (csSafetyAttentionType!=null){
+		   csSafetyAttention.setAttentionTypeCode(csSafetyAttentionType.getCode());
+		}
 		csSafetyAttentionService.save(csSafetyAttention);
 		return Result.OK("添加成功！");
 	}
@@ -125,7 +144,35 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		csSafetyAttentionService.updateById(csSafetyAttention);
 		return Result.OK("编辑成功!");
 	}
-
+	 /**
+	  *  修改状态
+	  *
+	  * @param id
+	  * @param
+	  * @return
+	  */
+	 @AutoLog(value = "安全事项-修改状态")
+	 @ApiOperation(value="安全事项-修改状态", notes="安全事项-修改状态")
+	 @RequestMapping(value = "/edit", method = {RequestMethod.POST})
+	 public Result<String> edit(@RequestParam(name = "id") String id,
+								@RequestParam(name = "status") Integer state) {
+	 	CsSafetyAttention csSafetyAttention = new CsSafetyAttention();
+	 	csSafetyAttention.setId(id);
+	 	if (state==0){
+			csSafetyAttention.setState(1);
+		}
+		 if (state==1){
+			 csSafetyAttention.setState(0);
+		 }
+		 csSafetyAttentionService.updateById(csSafetyAttention);
+		 if (state==0) {
+			 return Result.OK(" 事项已开启！");
+		 } else if ( state==1){
+			 return Result.OK(" 事项已关闭！");
+		 }else  {
+			 return Result.error("修改失败!");
+		 }
+	 }
 	/**
 	 *   通过id删除
 	 *
