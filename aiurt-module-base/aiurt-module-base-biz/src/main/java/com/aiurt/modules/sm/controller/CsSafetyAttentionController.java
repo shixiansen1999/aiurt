@@ -83,7 +83,7 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		queryWrapper.eq(CsSafetyAttention::getMajorCode,csSafetyAttention.getMajorCode());
 		}
 		if (csSafetyAttention.getState()!=null){
-			queryWrapper.eq(CsSafetyAttention::getMajorCode,csSafetyAttention.getState());
+			queryWrapper.eq(CsSafetyAttention::getState,csSafetyAttention.getState());
 		}
 		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionMeasures())){
 			queryWrapper.like(CsSafetyAttention::getAttentionMeasures,csSafetyAttention.getAttentionMeasures());
@@ -148,7 +148,7 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	  *  修改状态
 	  *
 	  * @param id
-	  * @param status
+	  * @param
 	  * @return
 	  */
 	 @AutoLog(value = "安全事项-修改状态")
