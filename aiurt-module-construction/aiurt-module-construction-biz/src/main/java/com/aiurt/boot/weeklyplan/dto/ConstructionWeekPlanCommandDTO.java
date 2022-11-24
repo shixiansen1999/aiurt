@@ -2,11 +2,9 @@ package com.aiurt.boot.weeklyplan.dto;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.models.auth.In;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
@@ -54,7 +52,7 @@ public class ConstructionWeekPlanCommandDTO {
      * 周计划查询列表传；1待审核、2审核中、3已驳回、4已取消、5已通过
      * 周计划申报列表传：0待提审、3已驳回、4已取消状态值；
      * 周计划审核列表传：0待审核、2审核中状态值；
-     * 周计划变更列表传：0待提审、3已驳回、已取消状态值；
+     * 周计划变更列表传：0待提审、3已驳回、4已取消状态值；
      */
     @ApiModelProperty(value = "周计划查询列表传；1待审核、2审核中、3已驳回、4已取消、5已通过" +
             "周计划申报列表传：0待提审、3已驳回、4已取消状态值；" +
