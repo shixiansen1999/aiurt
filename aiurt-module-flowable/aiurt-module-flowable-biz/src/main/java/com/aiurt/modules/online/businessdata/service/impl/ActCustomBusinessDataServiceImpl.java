@@ -1,5 +1,6 @@
 package com.aiurt.modules.online.businessdata.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.online.businessdata.entity.ActCustomBusinessData;
 import com.aiurt.modules.online.businessdata.mapper.ActCustomBusinessDataMapper;
 import com.aiurt.modules.online.businessdata.service.IActCustomBusinessDataService;
@@ -25,7 +26,11 @@ public class ActCustomBusinessDataServiceImpl extends ServiceImpl<ActCustomBusin
     @Override
     public ActCustomBusinessData queryByProcessInstanceId(String processInstanceId, String taskId) {
         LambdaQueryWrapper<ActCustomBusinessData> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(ActCustomBusinessData::getProcessInstanceId, processInstanceId).eq(ActCustomBusinessData::getTaksId, taskId);
+        lambdaQueryWrapper.eq(ActCustomBusinessData::getProcessInstanceId, processInstanceId);
+
+        if (StrUtil.isNotBlank(taskId)) {
+            lambdaQueryWrapper.eq(ActCustomBusinessData::getTaksId, taskId);
+        }
 
         boolean exists = baseMapper.exists(lambdaQueryWrapper);
 

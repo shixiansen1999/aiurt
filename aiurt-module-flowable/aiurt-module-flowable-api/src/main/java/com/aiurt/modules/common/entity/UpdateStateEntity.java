@@ -27,6 +27,11 @@ public class UpdateStateEntity implements Serializable {
     private String username;
 
     /**
+     * 用户id
+     */
+    private String userId;
+
+    /**
      * 驳回理由
      */
     private String reason;
