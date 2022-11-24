@@ -50,8 +50,9 @@ public class ImportExcelUtil {
             result.put("errorCount", errorLines);
             result.put("isSucceed",false);
             result.put("failReportUrl", url);
+            result.put("successCount", successLines);
             Result res = Result.ok(result);
-            res.setCode(201);
+            res.setCode(200);
             res.setMessage("文件导入成功，但有错误。");
             return res;
         }
