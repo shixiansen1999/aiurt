@@ -233,7 +233,7 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
     */
 	@AutoLog(value = "导出excel")
 	@ApiOperation(value = "导出excel", notes = "导出excel")
-    @RequestMapping(value = "/exportXls")
+    @RequestMapping(value = "/exportXls", method = RequestMethod.GET)
     public ModelAndView exportXls(HttpServletRequest request,
 								  @RequestParam(name="ids",required=false) String ids,
 								  @RequestParam(name="majorCode",required=false) String majorCodes) {

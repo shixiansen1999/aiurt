@@ -56,9 +56,9 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                 .eq(CsSafetyAttention::getDelFlag,0));
             safetyAttentions.addAll(safetyAttentions1);
         }
-        if (StrUtil.isNotEmpty(majorCodes)){
+        if (StrUtil.isNotEmpty(ids)){
             List<CsSafetyAttention>safetyAttentions1 = baseMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>()
-                    .in(CsSafetyAttention::getMajorCode,Arrays.asList(majorCodes.split(",")))
+                    .in(CsSafetyAttention::getMajorCode,Arrays.asList(ids.split(",")))
                     .eq(CsSafetyAttention::getDelFlag,0));
             safetyAttentions.addAll(safetyAttentions1);
         }
