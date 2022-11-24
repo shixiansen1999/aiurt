@@ -16,6 +16,8 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="ConstructionWeekPlanCommandVO对象", description="ConstructionWeekPlanCommandVO对象")
 public class ConstructionWeekPlanCommandVO  extends ConstructionWeekPlanCommand {
+
+    private static final long serialVersionUID = -8071884430619763636L;
     /**作业类别字典名*/
     @Excel(name = "作业类别字典名", width = 15)
     @ApiModelProperty(value = "作业类别字典名")
@@ -104,5 +106,8 @@ public class ConstructionWeekPlanCommandVO  extends ConstructionWeekPlanCommand 
     @Excel(name = "作业性质字典名", width = 15)
     @ApiModelProperty(value = "作业性质字典名")
     private String natureDictName;
+
+    @ApiModelProperty(value = "实例id")
+    private String processInstanceId;
 
 }

@@ -53,67 +53,77 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         List<String> dictCodes = Arrays.asList(ConstructionDictConstant.WEEK, ConstructionDictConstant.APPROVE, ConstructionDictConstant.CATEGORY,
                 ConstructionDictConstant.PLAN_TYPE, ConstructionDictConstant.NATURE, ConstructionDictConstant.STATUS);
         Map<String, List<DictModel>> dictItems = iSysBaseApi.getManyDictItems(dictCodes);
-        pageList.getRecords().forEach(command -> {
-            conversion(command, dictItems);
-        });
+        List<ConstructionWeekPlanCommandVO> records = pageList.getRecords();
+        conversion(records, dictItems);
         return pageList;
     }
 
     /**
      * 人员，站点，字典信息转换
      */
-    public void conversion(ConstructionWeekPlanCommandVO command, Map<String, List<DictModel>> dictItems) {
+    public void conversion(List<ConstructionWeekPlanCommandVO> records, Map<String, List<DictModel>> dictItems) {
+        Map<String, String> categoryMap = dictItems.get(ConstructionDictConstant.CATEGORY).stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (t1, t2) -> t1));
+        Map<String, String> planTypeMap = dictItems.get(ConstructionDictConstant.PLAN_TYPE).stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (t1, t2) -> t1));
+        Map<String, String> weekMap = dictItems.get(ConstructionDictConstant.WEEK).stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (t1, t2) -> t1));
+        Map<String, String> statusMap = dictItems.get(ConstructionDictConstant.STATUS).stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (t1, t2) -> t1));
+        Map<String, String> approveMap = dictItems.get(ConstructionDictConstant.APPROVE).stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (t1, t2) -> t1));
+        Map<String, String> natureMap = dictItems.get(ConstructionDictConstant.NATURE).stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (t1, t2) -> t1));
+
         // 字典
-        String typeDictName = dictItems.get(ConstructionDictConstant.CATEGORY).stream().filter(l -> command.getType().equals(l.getValue())).map(DictModel::getText).findFirst().get();
-        String planChangeDictName = dictItems.get(ConstructionDictConstant.PLAN_TYPE).stream().filter(l -> command.getPlanChange().equals(l.getValue())).map(DictModel::getText).findFirst().get();
-        String weekdayDictName = dictItems.get(ConstructionDictConstant.WEEK).stream().filter(l -> command.getWeekday().equals(l.getValue())).map(DictModel::getText).findFirst().get();
-        String formStatus = dictItems.get(ConstructionDictConstant.STATUS).stream().filter(l -> command.getFormStatus().equals(l.getValue())).map(DictModel::getText).findFirst().get();
+       /* String typeDictName = dictItems.get(ConstructionDictConstant.CATEGORY).stream().filter(l -> StrUtil.equalsIgnoreCase(String.valueOf(command.getType()), l.getValue())).map(DictModel::getText).findFirst().get();
+        String planChangeDictName = dictItems.get(ConstructionDictConstant.PLAN_TYPE).stream().filter(l -> StrUtil.equalsIgnoreCase(String.valueOf(command.getPlanChange()), l.getValue())).map(DictModel::getText).findFirst().get();
+        String weekdayDictName = dictItems.get(ConstructionDictConstant.WEEK).stream().filter(l -> StrUtil.equalsIgnoreCase(l.getValue(), String.valueOf(command.getWeekday()))).map(DictModel::getText).findFirst().get();
+        String formStatus = dictItems.get(ConstructionDictConstant.STATUS).stream().filter(l -> StrUtil.equalsIgnoreCase(l.getValue(), String.valueOf(command.getFormStatus()))).map(DictModel::getText).findFirst().get();
         List<DictModel> approveList = dictItems.get(ConstructionDictConstant.APPROVE);
-        String natureName = dictItems.get(ConstructionDictConstant.NATURE).stream().filter(l -> command.getNature().equals(l.getValue())).map(DictModel::getText).findFirst().get();
+        String natureName = dictItems.get(ConstructionDictConstant.NATURE).stream().filter(l -> StrUtil.equalsIgnoreCase(String.valueOf(command.getNature()), l.getValue())).map(DictModel::getText).findFirst().get();
 
-        // 字典名称
-        command.setTypeDictName(typeDictName);
-        command.setPlanChangeDictName(planChangeDictName);
-        command.setWeekdayDictName(weekdayDictName);
-        command.setFormStatusDictName(formStatus);
-        command.setDispatchStatusDictName(approveList.stream().filter(l -> command.getDispatchStatus().equals(l.getValue())).map(DictModel::getText).findFirst().get());
-        command.setLineStatusDictName(approveList.stream().filter(l -> command.getLineStatus().equals(l.getValue())).map(DictModel::getText).findFirst().get());
-        command.setDirectorStatusDictName(approveList.stream().filter(l -> command.getDirectorStatus().equals(l.getValue())).map(DictModel::getText).findFirst().get());
-        command.setManagerStatusDictName(approveList.stream().filter(l -> command.getManagerStatus().equals(l.getValue())).map(DictModel::getText).findFirst().get());
-        command.setNatureDictName(natureName);
+      */
+        records.stream().forEach(command->{
 
-        // 组织机构名称
-        String orgCode = command.getOrgCode();
-        String coordinationDepartmentCode = command.getCoordinationDepartmentCode();
-        command.setOrgName(ObjectUtil.isEmpty(orgCode) ? null : Optional.ofNullable(iSysBaseApi.getDepartByOrgCode(orgCode))
-                .orElseGet(SysDepartModel::new).getDepartName());
-        command.setCoordinationDepartmentName(ObjectUtil.isEmpty(coordinationDepartmentCode) ? null : Optional
-                .ofNullable(iSysBaseApi.getDepartByOrgCode(coordinationDepartmentCode)).orElseGet(SysDepartModel::new).getDepartName());
+            // 字典名称
+            command.setTypeDictName(categoryMap.get(String.valueOf(command.getType())));
+            command.setPlanChangeDictName(planTypeMap.get(String.valueOf(command.getPlanChange())));
+            command.setWeekdayDictName(weekMap.get(command.getWeekday()));
+            command.setFormStatusDictName(statusMap.get(command.getFormStatus()));
+            command.setDispatchStatusDictName( approveMap.get(String.valueOf(command.getDispatchStatus())));
+            command.setLineStatusDictName(approveMap.get(String.valueOf(command.getLineStatus())));
+            command.setDirectorStatusDictName(approveMap.get(String.valueOf(command.getDirectorStatus())));
+            command.setManagerStatusDictName(approveMap.get(String.valueOf(command.getManagerStatus())));
+            command.setNatureDictName(natureMap.get(String.valueOf(command.getNature())));
 
-        // 站点名称
-        String firstStationCode = command.getFirstStationCode();
-        String secondStationCode = command.getSecondStationCode();
-        command.setFirstStationName(ObjectUtil.isEmpty(firstStationCode) ? null : iSysBaseApi.getStationNameByCode(Arrays.asList(firstStationCode)).get(firstStationCode));
-        command.setSecondStationName(ObjectUtil.isEmpty(secondStationCode) ? null : iSysBaseApi.getStationNameByCode(Arrays.asList(secondStationCode)).get(secondStationCode));
+            // 组织机构名称
+            String orgCode = command.getOrgCode();
+            String coordinationDepartmentCode = command.getCoordinationDepartmentCode();
+            command.setOrgName(ObjectUtil.isEmpty(orgCode) ? null : Optional.ofNullable(iSysBaseApi.getDepartByOrgCode(orgCode))
+                    .orElseGet(SysDepartModel::new).getDepartName());
+            command.setCoordinationDepartmentName(ObjectUtil.isEmpty(coordinationDepartmentCode) ? null : Optional
+                    .ofNullable(iSysBaseApi.getDepartByOrgCode(coordinationDepartmentCode)).orElseGet(SysDepartModel::new).getDepartName());
 
-        // 线路名称
-        command.setLineName(ObjectUtil.isEmpty(command.getLineCode()) ? null : iSysBaseApi.getLineNameByCode(Arrays.asList(command.getLineCode())).get(command.getLineCode()));
-        // 工区
+            // 站点名称
+            String firstStationCode = command.getFirstStationCode();
+            String secondStationCode = command.getSecondStationCode();
+            command.setFirstStationName(ObjectUtil.isEmpty(firstStationCode) ? null : iSysBaseApi.getStationNameByCode(Arrays.asList(firstStationCode)).get(firstStationCode));
+            command.setSecondStationName(ObjectUtil.isEmpty(secondStationCode) ? null : iSysBaseApi.getStationNameByCode(Arrays.asList(secondStationCode)).get(secondStationCode));
+
+            // 线路名称
+            command.setLineName(ObjectUtil.isEmpty(command.getLineCode()) ? null : iSysBaseApi.getLineNameByCode(Arrays.asList(command.getLineCode())).get(command.getLineCode()));
+            // 工区
 //        command.setSiteName(ObjectUtil.isEmpty(command.getChargeStaffId()) ? null :);
 
-        // 人员名称
-        command.setChargeStaffName(ObjectUtil.isEmpty(command.getChargeStaffId()) ? null :
-                Optional.ofNullable(iSysBaseApi.getUserById(command.getChargeStaffId())).orElseGet(LoginUser::new).getRealname());
-        command.setApplyName(ObjectUtil.isNotEmpty(command.getApplyId()) ? null :
-                Optional.ofNullable(iSysBaseApi.getUserById(command.getApplyId())).orElseGet(LoginUser::new).getRealname());
-        command.setLineUserName(ObjectUtil.isEmpty(command.getLineUserId()) ? null :
-                Optional.ofNullable(iSysBaseApi.getUserById(command.getLineUserId())).orElseGet(LoginUser::new).getRealname());
-        command.setDispatchName(ObjectUtil.isEmpty(command.getDispatchId()) ? null :
-                Optional.ofNullable(iSysBaseApi.getUserById(command.getDispatchId())).orElseGet(LoginUser::new).getRealname());
-        command.setDirectorName(ObjectUtil.isEmpty(command.getDirectorId()) ? null :
-                Optional.ofNullable(iSysBaseApi.getUserById(command.getDirectorId())).orElseGet(LoginUser::new).getRealname());
-        command.setManagerName(ObjectUtil.isEmpty(command.getManagerId()) ? null :
-                Optional.ofNullable(iSysBaseApi.getUserById(command.getManagerId())).orElseGet(LoginUser::new).getRealname());
+            // 人员名称
+            command.setChargeStaffName(ObjectUtil.isEmpty(command.getChargeStaffId()) ? null :
+                    Optional.ofNullable(iSysBaseApi.getUserById(command.getChargeStaffId())).orElseGet(LoginUser::new).getRealname());
+            command.setApplyName(ObjectUtil.isNotEmpty(command.getApplyId()) ? null :
+                    Optional.ofNullable(iSysBaseApi.getUserById(command.getApplyId())).orElseGet(LoginUser::new).getRealname());
+            command.setLineUserName(ObjectUtil.isEmpty(command.getLineUserId()) ? null :
+                    Optional.ofNullable(iSysBaseApi.getUserById(command.getLineUserId())).orElseGet(LoginUser::new).getRealname());
+            command.setDispatchName(ObjectUtil.isEmpty(command.getDispatchId()) ? null :
+                    Optional.ofNullable(iSysBaseApi.getUserById(command.getDispatchId())).orElseGet(LoginUser::new).getRealname());
+            command.setDirectorName(ObjectUtil.isEmpty(command.getDirectorId()) ? null :
+                    Optional.ofNullable(iSysBaseApi.getUserById(command.getDirectorId())).orElseGet(LoginUser::new).getRealname());
+            command.setManagerName(ObjectUtil.isEmpty(command.getManagerId()) ? null :
+                    Optional.ofNullable(iSysBaseApi.getUserById(command.getManagerId())).orElseGet(LoginUser::new).getRealname());
+        });
     }
 
     @Override
@@ -217,7 +227,8 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         List<String> dictCodes = Arrays.asList(ConstructionDictConstant.WEEK, ConstructionDictConstant.APPROVE, ConstructionDictConstant.CATEGORY,
                 ConstructionDictConstant.PLAN_TYPE, ConstructionDictConstant.NATURE, ConstructionDictConstant.STATUS);
         Map<String, List<DictModel>> dictItems = iSysBaseApi.getManyDictItems(dictCodes);
-        this.conversion(commandVO, dictItems);
-        return commandVO;
+        List<ConstructionWeekPlanCommandVO> planCommandVOS = Collections.singletonList(commandVO);
+        this.conversion(planCommandVOS, dictItems);
+        return planCommandVOS.get(0);
     }
 }
