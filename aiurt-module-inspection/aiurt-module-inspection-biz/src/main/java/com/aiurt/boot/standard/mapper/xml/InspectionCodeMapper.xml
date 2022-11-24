@@ -33,6 +33,9 @@
         <if test="inspectionCodeDTO.deviceTypeCode !=null ">
             AND a.device_type_code = #{inspectionCodeDTO.deviceTypeCode}
         </if>
+        <if test="inspectionCodeDTO.deviceTypeName !=null and inspectionCodeDTO.deviceTypeName !=''">
+            AND b.`name` LIKE CONCAT ('%', #{inspectionCodeDTO.deviceTypeName}, '%')
+        </if>
         ORDER BY  a.create_time DESC
     </select>
     <select id="pageLists" resultType="com.aiurt.boot.manager.dto.InspectionCodeDTO">

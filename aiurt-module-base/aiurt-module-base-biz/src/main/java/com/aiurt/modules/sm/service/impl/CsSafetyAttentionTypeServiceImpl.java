@@ -343,9 +343,11 @@ public class CsSafetyAttentionTypeServiceImpl extends ServiceImpl<CsSafetyAttent
             throw new AiurtBootException("安全事项分类编码重复");
         }
 
+        // 同一专业下分类名称不允许重复
         LambdaQueryWrapper<CsSafetyAttentionType> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(CsSafetyAttentionType::getName, csSafetyAttentionType.getName());
         lambdaQueryWrapper.eq(CsSafetyAttentionType::getDelFlag, CommonConstant.DEL_FLAG_0);
+        lambdaQueryWrapper.eq(CsSafetyAttentionType::getMajorCode,csSafetyAttentionType.getMajorCode());
         // 兼容修改时的验证
         if (StrUtil.isNotEmpty(csSafetyAttentionType.getId())) {
             lambdaQueryWrapper.ne(CsSafetyAttentionType::getId, csSafetyAttentionType.getId());
