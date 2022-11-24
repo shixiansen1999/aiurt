@@ -20,7 +20,9 @@ import com.aiurt.modules.flow.mapper.ActCustomTaskCommentMapper;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
+import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
+import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.online.businessdata.entity.ActCustomBusinessData;
 import com.aiurt.modules.online.businessdata.service.IActCustomBusinessDataService;
@@ -64,6 +66,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -114,6 +117,10 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private IFlowUserService flowUserService;
+
+    @Autowired
+    @Lazy
+    private IActCustomModelInfoService modelInfoService;
 
 
     /**
@@ -306,9 +313,11 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         // 流程业务数据状态更改
         String approvalType = comment.getApprovalType();
+        String commentStr = comment.getComment();
 
         Map<String, Object> variableData = new HashMap<>(16);
         variableData.put("operationType", approvalType);
+        variableData.put("comment", commentStr);
 
         // 判断使保存还是提交
         if (StrUtil.equalsIgnoreCase(FlowApprovalType.SAVE, approvalType)) {
@@ -428,9 +437,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (task == null || Objects.isNull(processInstance)) {
             throw new AiurtBootException("数据验证失败，指定的任务Id，请刷新后重试！");
         }
-        if (!this.isAssigneeOrCandidate(task)) {
-            throw new AiurtBootException("数据验证失败，当前用户不是指派人也不是候选人之一！");
-        }
+
         if (StrUtil.isBlank(processDefinitionId)) {
             processDefinitionId = task.getProcessDefinitionId();
         }
@@ -438,7 +445,8 @@ public class FlowApiServiceImpl implements FlowApiService {
         ActCustomTaskExt flowTaskExt =
                 customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, task.getTaskDefinitionKey());
         if (flowTaskExt != null) {
-            if (StrUtil.isNotBlank(flowTaskExt.getOperationListJson())) {
+            // 判断为办理人才返回操作按钮
+            if (StrUtil.isNotBlank(flowTaskExt.getOperationListJson()) && this.isAssigneeOrCandidate(task)){
                 taskInfoDTO.setOperationList(JSON.parseArray(flowTaskExt.getOperationListJson(), JSONObject.class));
             }
             if (StrUtil.isNotBlank(flowTaskExt.getVariableListJson())) {
@@ -1631,6 +1639,71 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         return historicTaskInfoList;
 
+    }
+
+    /**
+     * 根据ProcessInstanceId 获取流程实例状态
+     *
+     * @param processInstanceId 流程实例id
+     * @return
+     */
+    @Override
+    public ProcessInstanceStateResult getProcessInstanceState(String processInstanceId) {
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+
+        if (Objects.isNull(historicProcessInstance)) {
+            throw new AiurtBootException("不存在该流程记录");
+        }
+
+        Date endTime = historicProcessInstance.getEndTime();
+
+        ProcessInstanceStateResult result = new ProcessInstanceStateResult();
+        result.setProcessStates(0);
+        if (Objects.nonNull(endTime)) {
+            result.setProcessStates(1);
+        }
+        result.setProcessInstanceId(processInstanceId);
+
+        return result;
+    }
+
+    /**
+     * 任务已结束的流程表单信息
+     *
+     * @param processInstanceId
+     * @return
+     */
+    @Override
+    public TaskInfoDTO viewEndProcessTaskInfo(String processInstanceId) {
+        TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+        // 流程实例
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+
+        if (Objects.isNull(historicProcessInstance)) {
+            throw new AiurtBootException("不存在该流程记录");
+        }
+
+        String definitionId = historicProcessInstance.getProcessDefinitionId();
+
+        // 流程定义信息
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(definitionId).singleResult();
+
+        // 流程模板信息
+        LambdaQueryWrapper<ActCustomModelInfo> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ActCustomModelInfo::getModelKey, processDefinition.getKey()).last("limit 1");
+        ActCustomModelInfo one = modelInfoService.getOne(queryWrapper);
+
+        // 默认的首页地址
+
+        // 业务数据
+        ActCustomBusinessData actCustomBusinessData = businessDataService.queryByProcessInstanceId(processInstanceId, null);
+
+        taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
+        // 判断是否是表单设计器，
+        taskInfoDTO.setRouterName(one.getRouterName());
+
+        taskInfoDTO.setBusData(actCustomBusinessData.getData());
+        return taskInfoDTO;
     }
 
     private List<FlowElement> getChildUserTaskList(

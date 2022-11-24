@@ -20,6 +20,10 @@ public class ImportExcelUtil {
 
     public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage) throws IOException {
         if (errorLines == 0) {
+            if (successLines==0){
+                Result res = Result.error(200,"请输入数据再导入!");
+                return  res;
+            }
             return Result.ok("共" + successLines + "行数据全部导入成功！");
         } else {
             JSONObject result = new JSONObject(5);
@@ -42,6 +46,10 @@ public class ImportExcelUtil {
     }
     public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage,String url) throws IOException {
         if (errorLines == 0) {
+            if (successLines==0){
+                Result res = Result.error(200,"请输入数据再导入!");
+                return  res;
+            }
             return Result.ok("共" + successLines + "行数据全部导入成功！");
         } else {
             JSONObject result = new JSONObject(5);

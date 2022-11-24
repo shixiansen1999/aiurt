@@ -2,10 +2,12 @@ package com.aiurt.modules.listener;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.utils.ReflectionService;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.model.ExtensionElement;
 import org.flowable.bpmn.model.FlowElement;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
@@ -13,12 +15,14 @@ import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.delegate.event.impl.FlowableSequenceFlowTakenEventImpl;
 import org.flowable.engine.runtime.ProcessInstance;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 流向线监听事件
@@ -35,6 +39,8 @@ public class SequenceFlowTakenListener implements FlowableEventListener {
         if (!(event instanceof FlowableSequenceFlowTakenEventImpl)) {
             return;
         }
+
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
         FlowableSequenceFlowTakenEventImpl activitiEntityEvent = (FlowableSequenceFlowTakenEventImpl) event;
 
@@ -83,7 +89,16 @@ public class SequenceFlowTakenListener implements FlowableEventListener {
                         // 封装数据
                         JSONObject data = new JSONObject();
                         data.put("businessKey", processInstance.getBusinessKey());
-                        data.put("states", Integer.valueOf(value));
+                        data.put("businessKey", processInstance.getBusinessKey());
+                        data.put("modelKey", processInstance.getProcessDefinitionKey());
+                        data.put("states", value);
+                        if (Objects.nonNull(loginUser)) {
+                            data.put("username", loginUser.getUsername());
+                            data.put("userId", loginUser.getId());
+                        }
+                        String comment = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
+                                .getVariable(processInstanceId, "comment", String.class);
+                        data.put("reason", comment);
                         // 更新状态
                         reflectionService.invokeService(className, list.get(1), data);
                     } catch (Exception exception) {
