@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -39,4 +41,12 @@ public interface IPatrolStandardService extends IService<PatrolStandard> {
      */
     List<InspectionStandardDto> lists(String professionCode, String subsystemCode);
 
+    /**
+     * 巡检标准导出
+     * @param request
+     * @param response
+     * @param patrolStandard
+     * @return
+     */
+    void exportXls(HttpServletRequest request, HttpServletResponse response, PatrolStandard patrolStandard);
 }

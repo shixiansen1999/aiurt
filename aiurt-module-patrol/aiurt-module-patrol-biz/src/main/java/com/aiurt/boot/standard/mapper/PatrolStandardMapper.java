@@ -62,4 +62,11 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      * @return
      */
     Integer number1(@Param("id") String id);
+
+    /**
+     * 查询标准表
+     * @param patrolStandard
+     * @return
+     */
+    List<PatrolStandard> getList(@Param("patrolStandard")PatrolStandard patrolStandard);
 }

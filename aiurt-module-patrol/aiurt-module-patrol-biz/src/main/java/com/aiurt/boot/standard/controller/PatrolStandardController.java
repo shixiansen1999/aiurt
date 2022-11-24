@@ -15,11 +15,14 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -199,9 +202,31 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
     * @param patrolStandard
     */
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, PatrolStandard patrolStandard) {
-        return super.exportXls(request, patrolStandard, PatrolStandard.class, "patrol_standard");
+    public void exportXls(HttpServletRequest request, HttpServletResponse response, PatrolStandard patrolStandard) {
+          patrolStandardService.exportXls(request,response, patrolStandard);
     }
+	 /**
+	  * 导出excel
+	  *
+	  */
+	 @AutoLog(value = "巡检标准表模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "")
+	 @ApiOperation(value="巡检标准表模板下载", notes="巡检标准表模板下载")
+	 @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
+	 public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		 //获取输入流，原始模板位置
+		 ClassPathResource classPathResource =  new ClassPathResource("templates/patrolstandard.xlsx");
+		 InputStream bis = classPathResource.getInputStream();
+		 //设置发送到客户端的响应的内容类型
+		 response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		 response.setHeader("Content-Disposition", "attachment;filename="+"巡检标准表模板下载.xlsx");
+		 BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+		 int len = 0;
+		 while ((len = bis.read()) != -1) {
+			 out.write(len);
+			 out.flush();
+		 }
+		 out.close();
+	 }
 
     /**
       * 通过excel导入数据
