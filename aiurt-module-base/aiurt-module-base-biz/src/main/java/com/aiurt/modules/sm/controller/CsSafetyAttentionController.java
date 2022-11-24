@@ -166,9 +166,9 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		 }
 		 csSafetyAttentionService.updateById(csSafetyAttention);
 		 if (state==0) {
-			 return Result.OK(" 事项已开启！");
+			 return Result.OK(" 事项已生效！");
 		 } else if ( state==1){
-			 return Result.OK(" 事项已关闭！");
+			 return Result.OK(" 事项已失效！");
 		 }else  {
 			 return Result.error("修改失败!");
 		 }

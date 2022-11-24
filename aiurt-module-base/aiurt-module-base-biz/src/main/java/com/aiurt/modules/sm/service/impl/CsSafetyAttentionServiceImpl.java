@@ -73,6 +73,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
         // 去掉 sql 中的重复数据
         Integer errorLines = 0;
         Integer successLines = 0;
+
         for (int i = 0; i < listMaterial.size(); i++) {
             try {
                 CsSafetyAttention csSafetyAttention = listMaterial.get(i);
@@ -121,9 +122,9 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                     if ("".equals(stateName)){
                         errorStrs.add("第 " + i + " 行：安全状态为空，忽略导入。");
                         continue;
-                    }else  if("启用".equals(stateName)){
+                    }else  if("有效".equals(stateName)){
                         csSafetyAttention.setState(1);
-                    }else if ("停用".equals(stateName)){
+                    }else if ("失效".equals(stateName)){
                         csSafetyAttention.setState(0);
                     }else {
                         errorStrs.add("第 " + i + " 行：安全状态识别不出，忽略导入。");
