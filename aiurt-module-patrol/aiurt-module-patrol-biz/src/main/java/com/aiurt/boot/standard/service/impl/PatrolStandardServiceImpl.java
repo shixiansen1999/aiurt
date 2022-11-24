@@ -5,6 +5,7 @@ import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +30,13 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     @Override
     public IPage<PatrolStandardDto> pageList(Page page, PatrolStandard patrolStandard) {
         List<PatrolStandardDto> page1 = patrolStandardMapper.pageList(page,patrolStandard);
+        // 以下包含的代码权限拦截局部过滤
+        boolean filter = GlobalThreadLocal.setDataFilter(false);
         page1.forEach(a->{
             a.setNumber(baseMapper.number(a.getCode()));
         });
+        // 以上包含的代码权限拦截局部过滤
+        GlobalThreadLocal.setDataFilter(filter);
         return page.setRecords(page1);
     }
 
