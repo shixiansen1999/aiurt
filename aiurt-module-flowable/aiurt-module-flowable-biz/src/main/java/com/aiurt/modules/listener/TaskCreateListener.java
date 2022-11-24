@@ -6,6 +6,7 @@ import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.user.service.IFlowUserService;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
@@ -64,6 +65,12 @@ public class TaskCreateListener implements FlowableEventListener {
             ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, loginUser.getUsername());
         }
         String groupType = taskExt.getGroupType();
+        if (StrUtil.isBlank(groupType)) {
+            String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
+                    .getVariable(taskEntity.getProcessInstanceId(), FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
+            ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, initiator);
+            return;
+        }
         IFlowUserService flowUserService = SpringContextUtils.getBean(IFlowUserService.class);
         List<String> userNameList = new ArrayList<>();
         switch (groupType) {

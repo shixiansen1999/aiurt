@@ -125,35 +125,6 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
         constructionWeekPlanCommandService.audit(id);
         return Result.OK("计划审核成功!");
     }
-//
-//    /**
-//     * 通过id删除
-//     *
-//     * @param id
-//     * @return
-//     */
-//    @AutoLog(value = "construction_week_plan_command-通过id删除")
-//    @ApiOperation(value = "construction_week_plan_command-通过id删除", notes = "construction_week_plan_command-通过id删除")
-//    @DeleteMapping(value = "/delete")
-//    public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
-//        constructionWeekPlanCommandService.removeById(id);
-//        return Result.OK("删除成功!");
-//    }
-//
-//    /**
-//     * 批量删除
-//     *
-//     * @param ids
-//     * @return
-//     */
-//    @AutoLog(value = "construction_week_plan_command-批量删除")
-//    @ApiOperation(value = "construction_week_plan_command-批量删除", notes = "construction_week_plan_command-批量删除")
-//    @DeleteMapping(value = "/deleteBatch")
-//    public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
-//        this.constructionWeekPlanCommandService.removeByIds(Arrays.asList(ids.split(",")));
-//        return Result.OK("批量删除成功!");
-//    }
-//
 
     /**
      * 施工周计划-根据ID查询计划信息
@@ -168,28 +139,12 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
         ConstructionWeekPlanCommand constructionWeekPlanCommand = constructionWeekPlanCommandService.queryById(id);
         return Result.OK(constructionWeekPlanCommand);
     }
-//
-//    /**
-//     * 导出excel
-//     *
-//     * @param request
-//     * @param constructionWeekPlanCommand
-//     */
-//    @RequestMapping(value = "/exportXls")
-//    public ModelAndView exportXls(HttpServletRequest request, ConstructionWeekPlanCommand constructionWeekPlanCommand) {
-//        return super.exportXls(request, constructionWeekPlanCommand, ConstructionWeekPlanCommand.class, "construction_week_plan_command");
-//    }
-//
-//    /**
-//     * 通过excel导入数据
-//     *
-//     * @param request
-//     * @param response
-//     * @return
-//     */
-//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-//        return super.importExcel(request, response, ConstructionWeekPlanCommand.class);
-//    }
+
+    @ApiOperation(value = "周计划审核", notes = "周计划审核")
+    @GetMapping(value = "/queryWorkToDo")
+    public Result<IPage<ConstructionWeekPlanCommandVO>> queryWorkToDo() {
+
+        return Result.OK();
+    }
 
 }
