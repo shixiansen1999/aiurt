@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultknowledgebase.entity;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
@@ -14,7 +15,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;

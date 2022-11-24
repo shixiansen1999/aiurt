@@ -1,10 +1,15 @@
 package com.aiurt.modules.faultknowledgebase.controller;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.ExportParams;
+import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
@@ -14,6 +19,7 @@ import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -24,8 +30,12 @@ import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +46,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -225,8 +236,41 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@AutoLog(value = "故障知识库-故障知识库分页列表-导出excel", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识库-导出excel", notes="故障知识库-导出excel")
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, FaultKnowledgeBase faultKnowledgeBase) {
-        return super.exportXls(request, faultKnowledgeBase, FaultKnowledgeBase.class, "故障知识库");
+    public void exportXls(HttpServletRequest request, HttpServletResponse response, FaultKnowledgeBase faultKnowledgeBase) {
+		// Step.1 组装查询条件
+		QueryWrapper<FaultKnowledgeBase> queryWrapper = QueryGenerator.initQueryWrapper(faultKnowledgeBase, request.getParameterMap());
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		queryWrapper.lambda().eq(FaultKnowledgeBase::getDelFlag, CommonConstant.DEL_FLAG_0);
+		// Step.2 获取导出数据
+		List<FaultKnowledgeBase> pageList = service.list(queryWrapper);
+		List<FaultKnowledgeBase> exportList = null;
+
+		// 过滤选中数据
+		String selections = request.getParameter("selections");
+		if (oConvertUtils.isNotEmpty(selections)) {
+			List<String> selectionList = Arrays.asList(selections.split(","));
+			exportList = pageList.stream().filter(item -> selectionList.contains(item.getId())).collect(Collectors.toList());
+		} else {
+			exportList = pageList;
+		}
+
+		String title = "故障知识库";
+		ExportParams exportParams=new ExportParams(title + "报表", "导出人:" + sysUser.getRealname(), ExcelType.XSSF);
+		//调用ExcelExportUtil.exportExcel方法生成workbook
+		Workbook wb = ExcelExportUtil.exportExcel(exportParams, FaultKnowledgeBase.class,exportList);
+		String fileName = "设备主数据";
+		try {
+			response.setHeader("Content-Disposition",
+					"attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+			//xlsx格式设置
+			response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+			BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+			wb.write(bufferedOutPut);
+			bufferedOutPut.flush();
+			bufferedOutPut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
 
     /**
