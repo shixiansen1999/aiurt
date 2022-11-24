@@ -117,6 +117,11 @@
             <artifactId>easypoi-annotation</artifactId>
             <version>4.3.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-model</artifactId>
+            <version>3.6.3</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -204,9 +209,37 @@
                     <target>8</target>
                 </configuration>
             </plugin>
+
+
+            <!--打包获取git信息 -->
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>4.0.0</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includeOnlyProperties>
+                        <includeOnlyProperty>^git.build.time$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.commit.id.abbrev$</includeOnlyProperty>
+                    </includeOnlyProperties>
+                    <dateFormat>yyyyMMddHHmmss</dateFormat>
+                    <dateFormatTimeZone>Asia/Shanghai</dateFormatTimeZone>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                    <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
+                </configuration>
+            </plugin>
         </plugins>
 
-        <finalName>${project.artifactId}-${project.version}</finalName>
+        <finalName>${project.artifactId}-${project.version}-${git.commit.id.abbrev}-${git.build.time}</finalName>
+
     </build>
 
     <profiles>
