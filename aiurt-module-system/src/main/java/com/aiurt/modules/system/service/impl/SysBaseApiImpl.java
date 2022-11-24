@@ -1494,6 +1494,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public SysDepartModel getDepartByOrgCode(String orgCode) {
         SysDepart sysDepart = departMapper.queryDepartByOrgCode(orgCode);
+        if (Objects.isNull(sysDepart)) {
+            return  null;
+        }
         SysDepartModel sysDepartModel = new SysDepartModel();
         BeanUtils.copyProperties(sysDepart, sysDepartModel);
         return sysDepartModel;

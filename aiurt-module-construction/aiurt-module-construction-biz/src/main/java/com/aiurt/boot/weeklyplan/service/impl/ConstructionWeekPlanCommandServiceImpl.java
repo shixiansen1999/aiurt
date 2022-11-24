@@ -2,7 +2,6 @@ package com.aiurt.boot.weeklyplan.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.ConstructionConstant;
 import com.aiurt.boot.constant.ConstructionDictConstant;
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanCommandDTO;
@@ -13,12 +12,16 @@ import com.aiurt.boot.weeklyplan.service.IConstructionCommandAssistService;
 import com.aiurt.boot.weeklyplan.service.IConstructionWeekPlanCommandService;
 import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
+import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
+import com.aiurt.modules.common.entity.UpdateStateEntity;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
@@ -37,8 +40,9 @@ import java.util.stream.Collectors;
  * @Date: 2022-11-22
  * @Version: V1.0
  */
+@Slf4j
 @Service
-public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<ConstructionWeekPlanCommandMapper, ConstructionWeekPlanCommand> implements IConstructionWeekPlanCommandService {
+public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<ConstructionWeekPlanCommandMapper, ConstructionWeekPlanCommand> implements IConstructionWeekPlanCommandService, IFlowableBaseUpdateStatusService {
     @Autowired
     private ISysBaseAPI iSysBaseApi;
     @Autowired
@@ -230,5 +234,25 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         List<ConstructionWeekPlanCommandVO> planCommandVOS = Collections.singletonList(commandVO);
         this.conversion(planCommandVOS, dictItems);
         return planCommandVOS.get(0);
+    }
+
+    /**
+     * 驳回第一个节点
+     *
+     * @param entity
+     */
+    @Override
+    public void rejectFirstUserTaskEvent(RejectFirstUserTaskEntity entity) {
+
+    }
+
+    /**
+     * 更新状态
+     *
+     * @param updateStateEntity
+     */
+    @Override
+    public void updateState(UpdateStateEntity updateStateEntity) {
+        log.info("更新状态参数：{}", JSONObject.toJSONString(updateStateEntity));
     }
 }

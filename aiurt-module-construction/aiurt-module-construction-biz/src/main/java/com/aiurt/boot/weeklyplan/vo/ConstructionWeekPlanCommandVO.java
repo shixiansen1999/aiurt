@@ -110,4 +110,10 @@ public class ConstructionWeekPlanCommandVO  extends ConstructionWeekPlanCommand 
     @ApiModelProperty(value = "实例id")
     private String processInstanceId;
 
+    @ApiModelProperty(value = "任务id")
+    private String taskId;
+
+    @ApiModelProperty(value = "任务名称")
+    private String taskName;
+
 }

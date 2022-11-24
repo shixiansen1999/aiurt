@@ -34,7 +34,7 @@ public class UpdateStateEntity implements Serializable {
     /**
      * 主键id
      */
-    private String id;
+    private String businessKey;
 
     /**
      * 流程标识
@@ -44,6 +44,6 @@ public class UpdateStateEntity implements Serializable {
     /**
      * 状态
      */
-    Integer state;
+    private Integer states;
 
 }
