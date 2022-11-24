@@ -2,7 +2,6 @@ package com.aiurt.boot.weeklyplan.service;
 
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanCommandDTO;
 import com.aiurt.boot.weeklyplan.entity.ConstructionWeekPlanCommand;
-import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -21,7 +20,7 @@ public interface IConstructionWeekPlanCommandService extends IService<Constructi
      * @param constructionWeekPlanCommandDTO
      * @return
      */
-    IPage<ConstructionWeekPlanCommandVO> queryPageList(Page<ConstructionWeekPlanCommandVO> page, ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO);
+    IPage<ConstructionWeekPlanCommand> queryPageList(Page<ConstructionWeekPlanCommand> page, ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO);
 
     /**
      * 施工周计划申报
@@ -64,5 +63,5 @@ public interface IConstructionWeekPlanCommandService extends IService<Constructi
      * @param id
      * @return
      */
-    ConstructionWeekPlanCommandVO queryById(String id);
+    ConstructionWeekPlanCommand queryById(String id);
 }

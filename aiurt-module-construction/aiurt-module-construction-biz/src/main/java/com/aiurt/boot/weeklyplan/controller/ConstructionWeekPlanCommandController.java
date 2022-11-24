@@ -1,15 +1,10 @@
 package com.aiurt.boot.weeklyplan.controller;
 
-import cn.hutool.core.collection.CollectionUtil;
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanCommandDTO;
-import com.aiurt.boot.weeklyplan.entity.ConstructionCommandAssist;
 import com.aiurt.boot.weeklyplan.entity.ConstructionWeekPlanCommand;
-import com.aiurt.boot.weeklyplan.service.IConstructionCommandAssistService;
 import com.aiurt.boot.weeklyplan.service.IConstructionWeekPlanCommandService;
-import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -21,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * @Description: construction_week_plan_command
@@ -36,8 +30,6 @@ import java.util.List;
 public class ConstructionWeekPlanCommandController extends BaseController<ConstructionWeekPlanCommand, IConstructionWeekPlanCommandService> {
     @Autowired
     private IConstructionWeekPlanCommandService constructionWeekPlanCommandService;
-    @Autowired
-    private IConstructionCommandAssistService constructionCommandAssistService;
 
     /**
      * 施工周计划列表查询
@@ -51,12 +43,12 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
     @AutoLog(value = "施工周计划列表查询")
     @ApiOperation(value = "施工周计划列表查询", notes = "施工周计划列表查询")
     @GetMapping(value = "/list")
-    public Result<IPage<ConstructionWeekPlanCommandVO>> queryPageList(ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO,
-                                                                      @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                                      HttpServletRequest req) {
-        Page<ConstructionWeekPlanCommandVO> page = new Page<>(pageNo, pageSize);
-        IPage<ConstructionWeekPlanCommandVO> pageList = constructionWeekPlanCommandService.queryPageList(page, constructionWeekPlanCommandDTO);
+    public Result<IPage<ConstructionWeekPlanCommand>> queryPageList(ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO,
+                                                                    @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                    @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                    HttpServletRequest req) {
+        Page<ConstructionWeekPlanCommand> page = new Page<>(pageNo, pageSize);
+        IPage<ConstructionWeekPlanCommand> pageList = constructionWeekPlanCommandService.queryPageList(page, constructionWeekPlanCommandDTO);
         return Result.OK(pageList);
     }
 
@@ -172,9 +164,9 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
     @AutoLog(value = "施工周计划-根据ID查询计划信息")
     @ApiOperation(value = "施工周计划-根据ID查询计划信息", notes = "施工周计划-根据ID查询计划信息")
     @GetMapping(value = "/queryById")
-    public Result<ConstructionWeekPlanCommandVO> queryById(@RequestParam(name = "id", required = true) String id) {
-        ConstructionWeekPlanCommandVO constructionWeekPlanCommandVO =  constructionWeekPlanCommandService.queryById(id);
-        return Result.OK(constructionWeekPlanCommandVO);
+    public Result<ConstructionWeekPlanCommand> queryById(@RequestParam(name = "id", required = true) String id) {
+        ConstructionWeekPlanCommand constructionWeekPlanCommand = constructionWeekPlanCommandService.queryById(id);
+        return Result.OK(constructionWeekPlanCommand);
     }
 //
 //    /**
