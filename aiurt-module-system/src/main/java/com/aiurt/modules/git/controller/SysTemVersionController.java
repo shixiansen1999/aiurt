@@ -1,22 +1,14 @@
 package com.aiurt.modules.git.controller;
 
-import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.git.config.GitProperties;
 import com.aiurt.modules.git.entity.SysTemVersionInfo;
-import com.aiurt.modules.major.entity.CsMajor;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * @author fgw
@@ -40,7 +32,7 @@ public class SysTemVersionController {
         String version = GitProperties.getVersion();
         SysTemVersionInfo versionInfo = SysTemVersionInfo.builder()
                 .buildTime(buildTime)
-                .projectVersion(version)
+                .projectVersion("3.2.0")
                 .gitCommitId(commitId).build();
         return Result.OK(versionInfo);
     }

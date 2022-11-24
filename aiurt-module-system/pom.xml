@@ -238,7 +238,7 @@
             </plugin>
         </plugins>
 
-        <finalName>${project.artifactId}-${project.version}-${git.commit.id.abbrev}-${git.build.time}</finalName>
+        <finalName>${project.artifactId}-${project.version}</finalName>
 
     </build>
 
