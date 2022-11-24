@@ -10,5 +10,6 @@ FROM
 	LEFT JOIN sys_depart sd ON wao.org_code = sd.org_code
 WHERE
 	wao.work_area_code =  #{code}
+	and sd.del_flag = 0
 </select>
 </mapper>

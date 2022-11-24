@@ -36,9 +36,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.swagger.annotations.ApiOperation;
 import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SiteModel;
@@ -46,7 +44,6 @@ import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -100,7 +97,7 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
             List<String> orgCodeList = workAreaOrgList.stream().map(WorkAreaOrg::getOrgCode).collect(Collectors.toList());
             List<SysDepart> sysDepartList = new ArrayList<>();
             for (String orgCode : orgCodeList) {
-                SysDepart sysDepart = sysDepartMapper.selectOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode, orgCode));
+                SysDepart sysDepart = sysDepartMapper.selectOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode, orgCode).eq(SysDepart::getDelFlag,0));
                 if(ObjectUtil.isNotEmpty(sysDepart))
                 {
                     sysDepartList.add(sysDepart);
@@ -146,7 +143,7 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         workAreaMapper.insert(workArea);
         //保存线路和站点
         for (String stationCode : workAreaDTO.getStationCodeList()) {
-            CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, stationCode));
+            CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, stationCode).eq(CsStation::getDelFlag,0));
             WorkAreaLine areaLine = workAreaLineMapper.selectOne(new LambdaQueryWrapper<WorkAreaLine>()
                     .eq(WorkAreaLine::getWorkAreaCode, workArea.getCode()).eq(WorkAreaLine::getLineCode, csStation.getLineCode()));
             if (ObjectUtil.isEmpty(areaLine)) {
@@ -202,7 +199,7 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
 
     @Override
     public Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorCode, String name, String orgId) {
-        CsMajor csMajor = csMajorMapper.selectOne(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getMajorCode, majorCode));
+        CsMajor csMajor = csMajorMapper.selectOne(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getMajorCode, majorCode).eq(CsMajor::getDelFlag,0));
         //查询该专业下的所有用户
         List<MajorUserDTO> majorUserDTOList = workAreaMapper.getMajorAllUser(pageList, csMajor.getId(), name, orgId);
         for (MajorUserDTO majorUserDTO : majorUserDTOList) {

@@ -11,5 +11,5 @@ LEFT JOIN
 cs_station cs
             on was.station_code = cs.station_code
 where
-was.work_area_code =  #{code}
+was.work_area_code =  #{code} and cs.del_flag= 0
 </select></mapper>
