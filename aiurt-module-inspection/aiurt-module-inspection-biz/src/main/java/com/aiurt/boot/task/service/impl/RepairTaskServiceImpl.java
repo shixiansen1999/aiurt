@@ -1274,6 +1274,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void confirmedDelete(ExamineDTO examineDTO) {
+        if(StrUtil.isBlank(examineDTO.getContent())){
+            throw new AiurtBootException("退回理由不能为空！");
+        }
         RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
         if (ObjectUtil.isEmpty(repairTask)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
