@@ -142,7 +142,7 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
 
     @ApiOperation(value = "周计划审核", notes = "周计划审核")
     @GetMapping(value = "/queryWorkToDo")
-    public Result<IPage<ConstructionWeekPlanCommandVO>> queryWorkToDo() {
+    public Result<IPage<ConstructionWeekPlanCommand>> queryWorkToDo() {
 
         return Result.OK();
     }
