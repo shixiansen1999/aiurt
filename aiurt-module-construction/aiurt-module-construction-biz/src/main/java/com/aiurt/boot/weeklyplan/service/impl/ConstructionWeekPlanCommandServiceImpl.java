@@ -102,6 +102,9 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         if (ObjectUtil.isEmpty(command)) {
             throw new AiurtBootException("未找到对应数据！");
         }
+        if (ConstructionConstant.FORM_STATUS_5.equals(command.getFormStatus())) {
+            throw new AiurtBootException("已通过的任务不能取消！");
+        }
         command.setFormStatus(ConstructionConstant.FORM_STATUS_4);
         command.setCancelReason(reason);
         command.setCancelId(loginUser.getId());
@@ -123,13 +126,19 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         if (ConstructionConstant.FORM_STATUS_4.equals(formStatus)) {
             throw new AiurtBootException("该周计划已经取消！");
         }
-        // 只有为待提审状态的计划才可以提审
-        if (!ConstructionConstant.APPROVE_STATUS_0.equals(formStatus)) {
+        // 只有为待提审状态或者已驳回状态的计划才可以提审
+        if (!ConstructionConstant.FORM_STATUS_0.equals(formStatus)
+                && !ConstructionConstant.FORM_STATUS_3.equals(formStatus)) {
             throw new AiurtBootException("该周计划已在审批中或已完成审批！");
         }
         command.setApplyId(loginUser.getId());
         // 修改状态为待审核
         command.setFormStatus(ConstructionConstant.FORM_STATUS_1);
+        // 初始化各个角色的审批状态
+        command.setLineStatus(ConstructionConstant.APPROVE_STATUS_0);
+        command.setDirectorStatus(ConstructionConstant.APPROVE_STATUS_0);
+        command.setDispatchStatus(ConstructionConstant.APPROVE_STATUS_0);
+        command.setManagerStatus(ConstructionConstant.APPROVE_STATUS_0);
         this.updateById(command);
     }
 
@@ -144,6 +153,7 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             throw new AiurtBootException("未找到对应数据！");
         }
         // todo 审批逻辑
+
     }
 
     @Override
@@ -180,7 +190,21 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
      */
     @Override
     public void rejectFirstUserTaskEvent(RejectFirstUserTaskEntity entity) {
-
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = loginUser.getId();
+        if (ObjectUtil.isEmpty(loginUser) || ObjectUtil.isEmpty(userId)) {
+            throw new AiurtBootException("检测到未登录，请登录后操作！");
+        }
+        ConstructionWeekPlanCommand command = this.getById(entity.getId());
+        if (ObjectUtil.isEmpty(command)) {
+            throw new AiurtBootException("未找到对应数据！");
+        }
+        // 更新为已驳回状态，此时可以再次提审
+        command.setFormStatus(ConstructionConstant.FORM_STATUS_3);
+        command.setRejectId(loginUser.getId());
+        command.setRejectReason(entity.getReason());
+        this.updateById(command);
+        log.info("流程ID为：【{}】的流程驳回成功！", entity.getProcessInstanceId());
     }
 
     /**
@@ -191,5 +215,44 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
     @Override
     public void updateState(UpdateStateEntity updateStateEntity) {
         log.info("更新状态参数：{}", JSONObject.toJSONString(updateStateEntity));
+        String businessKey = updateStateEntity.getBusinessKey();
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = loginUser.getId();
+        if (ObjectUtil.isEmpty(loginUser) || ObjectUtil.isEmpty(userId)) {
+            throw new AiurtBootException("检测到未登录，请登录后操作！");
+        }
+        ConstructionWeekPlanCommand command = this.getById(businessKey);
+        if (ObjectUtil.isEmpty(command)) {
+            throw new AiurtBootException("未找到对应数据！");
+        }
+        if (userId.equals(command.getLineUserId())) {
+            // 线路负责人审批
+            command.setLineStatus(ConstructionConstant.APPROVE_STATUS_1);
+            command.setLineOpinion(updateStateEntity.getReason());
+        } else if (userId.equals(command.getDispatchId())) {
+            // 生产调度审批
+            command.setDispatchStatus(ConstructionConstant.APPROVE_STATUS_1);
+            command.setDispatchOpinion(updateStateEntity.getReason());
+        } else if (userId.equals(command.getDirectorId())) {
+            // 分部主任审批
+            command.setDirectorStatus(ConstructionConstant.APPROVE_STATUS_1);
+            command.setDirectorOpinion(updateStateEntity.getReason());
+        } else if (userId.equals(command.getManagerId())) {
+            // 中心经理审批
+            command.setManagerStatus(ConstructionConstant.APPROVE_STATUS_1);
+            command.setManagerOpinion(updateStateEntity.getReason());
+        } else {
+            throw new AiurtBootException("你没有权限审批或你不是节点的审批人！");
+        }
+        boolean lineUser = ConstructionConstant.APPROVE_STATUS_1.equals(command.getLineStatus());
+        boolean dispatchUser = ConstructionConstant.APPROVE_STATUS_1.equals(command.getDispatchStatus());
+        boolean directorUser = ConstructionConstant.APPROVE_STATUS_1.equals(command.getDirectorStatus());
+        boolean managerUser = ConstructionConstant.APPROVE_STATUS_1.equals(command.getManagerStatus());
+
+        // 更新计划令审批状态为已通过
+        if (lineUser && dispatchUser && directorUser && managerUser) {
+            command.setFormStatus(ConstructionConstant.FORM_STATUS_5);
+        }
+        this.updateById(command);
     }
 }

@@ -203,22 +203,14 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     @ApiModelProperty(value = "中心经理审批状态(0:未审批、1:通过、2:驳回)")
     @Dict(dicCode =ConstructionDictConstant.APPROVE)
     private Integer managerStatus;
-	/**生产调度驳回原因*/
-	@Excel(name = "生产调度驳回原因", width = 15)
-    @ApiModelProperty(value = "生产调度驳回原因")
-    private String dispatchReason;
-	/**线路负责人驳回原因*/
-	@Excel(name = "线路负责人驳回原因", width = 15)
-    @ApiModelProperty(value = "线路负责人驳回原因")
-    private String lineReason;
-	/**分部主任驳回原因*/
-	@Excel(name = "分部主任驳回原因", width = 15)
-    @ApiModelProperty(value = "分部主任驳回原因")
-    private String directorReason;
-	/**中心经理驳回原因*/
-	@Excel(name = "中心经理驳回原因", width = 15)
-    @ApiModelProperty(value = "中心经理驳回原因")
-    private String managerReason;
+	/**驳回原因*/
+	@Excel(name = "驳回原因", width = 15)
+    @ApiModelProperty(value = "驳回原因")
+    private String rejectReason;
+	/**驳回用户ID*/
+	@Excel(name = "驳回用户ID", width = 15)
+    @ApiModelProperty(value = "驳回用户ID")
+    private String rejectId;
     /**生产调度审核意见*/
     @Excel(name = "生产调度审核意见", width = 15)
     @ApiModelProperty(value = "生产调度审核意见")
