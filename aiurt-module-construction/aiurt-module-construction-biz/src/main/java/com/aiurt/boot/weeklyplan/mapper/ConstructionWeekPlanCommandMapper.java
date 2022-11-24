@@ -8,8 +8,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
-
 /**
  * @Description: construction_week_plan_command
  * @Author: aiurt
@@ -24,6 +22,6 @@ public interface ConstructionWeekPlanCommandMapper extends BaseMapper<Constructi
      * @param constructionWeekPlanCommandDTO
      * @return
      */
-    IPage<ConstructionWeekPlanCommandVO> queryPageList(@Param("page") Page<ConstructionWeekPlanCommandVO> page,
+    IPage<ConstructionWeekPlanCommandVO> queryPageList(@Param("page") Page<ConstructionWeekPlanCommandVO> page, @Param("userId") String userId,
                                                        @Param("condition") ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO);
 }

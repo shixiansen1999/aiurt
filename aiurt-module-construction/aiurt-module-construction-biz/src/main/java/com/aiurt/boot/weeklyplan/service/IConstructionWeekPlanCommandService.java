@@ -64,5 +64,5 @@ public interface IConstructionWeekPlanCommandService extends IService<Constructi
      * @param id
      * @return
      */
-    ConstructionWeekPlanCommandVO queryById(String id);
+    ConstructionWeekPlanCommand queryById(String id);
 }

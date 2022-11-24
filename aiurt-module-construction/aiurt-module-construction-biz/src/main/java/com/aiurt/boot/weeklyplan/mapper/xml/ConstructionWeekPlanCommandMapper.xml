@@ -3,7 +3,7 @@
 <mapper namespace="com.aiurt.boot.weeklyplan.mapper.ConstructionWeekPlanCommandMapper">
     <select id="queryPageList" resultType="com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO">
         select cwpc.*, ahp.PROC_INST_ID_ as process_instance_id, ara.ID_ as task_id, ara.NAME_ as task_name
-        from construction_week_plan_command cwpc
+from construction_week_plan_command cwpc
         Left JOIN  act_hi_procinst ahp ON  ahp.BUSINESS_KEY_ = cwpc.id
         LEFT join act_ru_task ara ON  ara.ID_ = ahp.PROC_INST_ID_
         where cwpc.del_flag = 0
@@ -20,6 +20,10 @@
         </if>
         <if test="condition.formStatus != null">
             and cwpc.form_status = #{condition.formStatus}
+        </if>
+        <if test="userId != null and userId != ''">
+            and (cwpc.apply_id = #{userId} or cwpc.line_user_id = #{userId} or cwpc.dispatch_id = #{userId} or
+                 cwpc.director_id = #{userId} or cwpc.manager_id = #{userId})
         </if>
         <if test="condition.formStatusList != null and condition.formStatusList.size() != 0">
             and cwpc.form_status in

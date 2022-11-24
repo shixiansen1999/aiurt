@@ -166,9 +166,9 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		 }
 		 csSafetyAttentionService.updateById(csSafetyAttention);
 		 if (state==0) {
-			 return Result.OK(" 事项已开启！");
+			 return Result.OK(" 事项已生效！");
 		 } else if ( state==1){
-			 return Result.OK(" 事项已关闭！");
+			 return Result.OK(" 事项已失效！");
 		 }else  {
 			 return Result.error("修改失败!");
 		 }
@@ -231,9 +231,13 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
     *
     * @param request
     */
+	@AutoLog(value = "导出excel")
+	@ApiOperation(value = "导出excel", notes = "导出excel")
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request,String ids) {
-        return csSafetyAttentionService.exportXls(request, ids);
+    public ModelAndView exportXls(HttpServletRequest request,
+								  @RequestParam(name="ids",required=false) String ids,
+								  @RequestParam(name="majorCode",required=false) String majorCodes) {
+        return csSafetyAttentionService.exportXls(request, ids,majorCodes);
     }
 	 /**
 	  * 下载导入模板

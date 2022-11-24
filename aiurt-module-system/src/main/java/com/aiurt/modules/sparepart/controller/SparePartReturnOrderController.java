@@ -65,8 +65,8 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件退库分页列表查询",permissionUrl = "/sparepart/sparePartReturnOrder/list")
-	@ApiOperation(value="spare_part_return_order-分页列表查询", notes="spare_part_return_order-分页列表查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件退库-分页列表查询",permissionUrl = "/sparepart/sparePartReturnOrder/list")
+	@ApiOperation(value="备件退库-分页列表查询", notes="备件退库-分页列表查询")
 	@GetMapping(value = "/list")
 	@PermissionData(pageComponent = "sparePartsFor/back")
 	public Result<IPage<SparePartReturnOrder>> queryPageList(SparePartReturnOrder sparePartReturnOrder,

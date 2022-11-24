@@ -6,6 +6,8 @@ import java.util.Date;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.aiurt.boot.constant.ConstructionDictConstant;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -31,7 +33,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="construction_week_plan_command对象", description="construction_week_plan_command")
-public class ConstructionWeekPlanCommand implements Serializable {
+public class ConstructionWeekPlanCommand extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
@@ -46,14 +48,17 @@ public class ConstructionWeekPlanCommand implements Serializable {
 	/**作业类别(1:A1、2:A2、3:A3、4:B1、5::C1、6:C2)*/
 	@Excel(name = "作业类别(1:A1、2:A2、3:A3、4:B1、5::C1、6:C2)", width = 15)
     @ApiModelProperty(value = "作业类别(1:A1、2:A2、3:A3、4:B1、5::C1、6:C2)")
+    @Dict(dicCode = ConstructionDictConstant.CATEGORY)
     private Integer type;
     /**计划类型(1正常计划 2日补充计划 3临时补修计划*/
     @Excel(name = "计划类型(1正常计划 2日补充计划 3临时补修计划", width = 15)
     @ApiModelProperty(value = "计划类型(1正常计划 2日补充计划 3临时补修计划")
+    @Dict(dicCode = ConstructionDictConstant.PLAN_TYPE)
 	private Integer planChange;
 	/**作业单位ID*/
 	@Excel(name = "作业单位ID", width = 15)
     @ApiModelProperty(value = "作业单位ID")
+    @Dict(dictTable = "sys_depart", dicText = "depart_name", dicCode = "org_code")
     private String orgCode;
 	/**作业日期*/
 	@Excel(name = "作业日期", width = 15, format = "yyyy-MM-dd")
@@ -80,6 +85,7 @@ public class ConstructionWeekPlanCommand implements Serializable {
     /**作业线路编码*/
     @Excel(name = "作业线路编码", width = 15)
     @ApiModelProperty(value = "作业线路编码")
+    @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
 	private String lineCode;
 	/**供电要求ID*/
 	@Excel(name = "供电要求ID", width = 15)
@@ -99,23 +105,28 @@ public class ConstructionWeekPlanCommand implements Serializable {
     private String protectiveMeasure;
 	/**施工负责人ID*/
 	@Excel(name = "施工负责人ID", width = 15)
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     @ApiModelProperty(value = "施工负责人ID")
     private String chargeStaffId;
 	/**配合部门编码*/
 	@Excel(name = "配合部门编码", width = 15)
     @ApiModelProperty(value = "配合部门编码")
+    @Dict(dictTable = "sys_depart", dicText = "depart_name", dicCode = "org_code")
     private String coordinationDepartmentCode;
 	/**请点车站编码*/
 	@Excel(name = "请点车站编码", width = 15)
     @ApiModelProperty(value = "请点车站编码")
+    @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
     private String firstStationCode;
 	/**变电所编码*/
 	@Excel(name = "变电所编码", width = 15)
     @ApiModelProperty(value = "变电所编码")
+    @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
     private String substationCode;
 	/**销点车站编码*/
 	@Excel(name = "销点车站编码", width = 15)
     @ApiModelProperty(value = "销点车站编码")
+    @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
     private String secondStationCode;
 	/**作业人数*/
 	@Excel(name = "作业人数", width = 15)
@@ -132,6 +143,7 @@ public class ConstructionWeekPlanCommand implements Serializable {
 	/**星期(1:星期一、2:星期二、3:星期三、4:星期四、5:星期五、6:星期六、7:星期日)*/
 	@Excel(name = "星期(1:星期一、2:星期二、3:星期三、4:星期四、5:星期五、6:星期六、7:星期日)", width = 15)
     @ApiModelProperty(value = "星期(1:星期一、2:星期二、3:星期三、4:星期四、5:星期五、6:星期六、7:星期日)")
+    @Dict(dicCode = ConstructionDictConstant.WEEK)
     private Integer weekday;
 	/**计划令图片*/
 	@Excel(name = "计划令图片", width = 15)
@@ -144,42 +156,52 @@ public class ConstructionWeekPlanCommand implements Serializable {
 	/**计划令状态(0待提审、1待审核、2审核中、3已驳回、4已取消、5已通过)*/
 	@Excel(name = "计划令状态(0待提审、1待审核、2审核中、3已驳回、4已取消、5已通过)", width = 15)
     @ApiModelProperty(value = "计划令状态(0待提审、1待审核、2审核中、3已驳回、4已取消、5已通过)")
+    @Dict(dicCode =ConstructionDictConstant.STATUS)
     private Integer formStatus;
 	/**申请人ID*/
 	@Excel(name = "申请人ID", width = 15)
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     @ApiModelProperty(value = "申请人ID")
     private String applyId;
 	/**线路负责人ID*/
 	@Excel(name = "线路负责人ID", width = 15)
     @ApiModelProperty(value = "线路负责人ID")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private String lineUserId;
 	/**调度人ID*/
 	@Excel(name = "调度人ID", width = 15)
     @ApiModelProperty(value = "调度人ID")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private String dispatchId;
 	/**分部主任ID*/
 	@Excel(name = "分部主任ID", width = 15)
     @ApiModelProperty(value = "分部主任ID")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private String directorId;
 	/**中心经理ID*/
 	@Excel(name = "中心经理ID", width = 15)
     @ApiModelProperty(value = "中心经理ID")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private String managerId;
 	/**生产调度审批状态(0:未审批、1:通过、2:驳回)*/
 	@Excel(name = "生产调度审批状态(0:未审批、1:通过、2:驳回)", width = 15)
     @ApiModelProperty(value = "生产调度审批状态(0:未审批、1:通过、2:驳回)")
+    @Dict(dicCode =ConstructionDictConstant.APPROVE)
     private Integer dispatchStatus;
 	/**线路负责人审批状态(0:未审批、1:通过、2:驳回)*/
 	@Excel(name = "线路负责人审批状态(0:未审批、1:通过、2:驳回)", width = 15)
     @ApiModelProperty(value = "线路负责人审批状态(0:未审批、1:通过、2:驳回)")
+    @Dict(dicCode =ConstructionDictConstant.APPROVE)
     private Integer lineStatus;
 	/**分部主任审批状态(0:未审批、1:通过、2:驳回)*/
 	@Excel(name = "分部主任审批状态(0:未审批、1:通过、2:驳回)", width = 15)
     @ApiModelProperty(value = "分部主任审批状态(0:未审批、1:通过、2:驳回)")
+    @Dict(dicCode =ConstructionDictConstant.APPROVE)
     private Integer directorStatus;
 	/**中心经理审批状态(0:未审批、1:通过、2:驳回)*/
 	@Excel(name = "中心经理审批状态(0:未审批、1:通过、2:驳回)", width = 15)
     @ApiModelProperty(value = "中心经理审批状态(0:未审批、1:通过、2:驳回)")
+    @Dict(dicCode =ConstructionDictConstant.APPROVE)
     private Integer managerStatus;
 	/**生产调度驳回原因*/
 	@Excel(name = "生产调度驳回原因", width = 15)
@@ -216,6 +238,7 @@ public class ConstructionWeekPlanCommand implements Serializable {
 	/**取消用户ID*/
 	@Excel(name = "取消用户ID", width = 15)
     @ApiModelProperty(value = "取消用户ID")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private String cancelId;
 	/**取消原因*/
 	@Excel(name = "取消原因", width = 15)
@@ -228,6 +251,7 @@ public class ConstructionWeekPlanCommand implements Serializable {
 	/**作业性质(1:施工作业、2:巡检作业)*/
 	@Excel(name = "作业性质(1:施工作业、2:巡检作业)", width = 15)
     @ApiModelProperty(value = "作业性质(1:施工作业、2:巡检作业)")
+    @Dict(dicCode =ConstructionDictConstant.NATURE)
     private Integer nature;
     /**辅站信息*/
     @Excel(name = "辅站信息", width = 15)
