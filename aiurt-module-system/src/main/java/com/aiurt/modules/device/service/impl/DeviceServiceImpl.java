@@ -141,14 +141,18 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
     	Device devicefinal = translate(device);
 		//设备组件
 		List<DeviceAssembly> deviceAssemblyList = deviceAssemblyMapper.selectList(new QueryWrapper<DeviceAssembly>().eq("device_code", device.getCode()));
+		assemblyList(deviceAssemblyList);
+		devicefinal.setDeviceAssemblyList(deviceAssemblyList);
+		return Result.ok(devicefinal);
+	}
+
+	private void assemblyList(List<DeviceAssembly> deviceAssemblyList) {
 		for(DeviceAssembly deviceAssembly : deviceAssemblyList){
 			String statusAssembly = deviceAssembly.getStatus()==null?"":deviceAssembly.getStatus();
 			String baseTypeCode = deviceAssembly.getBaseTypeCode()==null?"":deviceAssembly.getBaseTypeCode();
 			deviceAssembly.setStatusName(sysBaseApi.translateDict("device_assembly_status",statusAssembly)==null?"":sysBaseApi.translateDict("device_assembly_status",statusAssembly));
 			deviceAssembly.setBaseTypeCodeName(sysBaseApi.translateDictFromTable("material_base_type", "base_type_name", "base_type_code", baseTypeCode));
 		}
-		devicefinal.setDeviceAssemblyList(deviceAssemblyList);
-		return Result.ok(devicefinal);
 	}
 
 	/**
@@ -504,12 +508,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				Device devicefinal = translate(d);
 				//设备组件
 				List<DeviceAssembly> deviceAssemblyList = deviceAssemblyMapper.selectList(new QueryWrapper<DeviceAssembly>().eq("device_code", d.getCode()));
-				for(DeviceAssembly deviceAssembly : deviceAssemblyList){
-					String statusAssembly = deviceAssembly.getStatus()==null?"":deviceAssembly.getStatus();
-					String baseTypeCode = deviceAssembly.getBaseTypeCode()==null?"":deviceAssembly.getBaseTypeCode();
-					deviceAssembly.setStatusName(sysBaseApi.translateDict("device_assembly_status",statusAssembly)==null?"":sysBaseApi.translateDict("device_assembly_status",statusAssembly));
-					deviceAssembly.setBaseTypeCodeName(sysBaseApi.translateDictFromTable("material_base_type", "base_type_name", "base_type_code", baseTypeCode));
-				}
+				assemblyList(deviceAssemblyList);
 				devicefinal.setDeviceAssemblyList(deviceAssemblyList);
 				deviceList.add(devicefinal);
 			}
