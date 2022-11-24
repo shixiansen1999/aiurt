@@ -321,4 +321,38 @@ public class FlowOperationController {
         List<HistoricTaskInfo> result = flowApiService.getHistoricLogByProcessInstanceId(processInstanceId);
         return Result.OK(result);
     }
+
+    /**
+     *
+     * @param processInstanceId 流程实例id
+     * @return
+     */
+    @GetMapping("/getProcessInstanceState")
+    @ApiOperation(value = "根据ProcessInstanceId 获取流程实例状态", notes = "根据ProcessInstanceId 获取流程实例状态")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "processInstanceId", value = "流程实例id", required = true, paramType = "query")
+    })
+    public Result<ProcessInstanceStateResult> getProcessInstanceState(@RequestParam(value = "processInstanceId") String processInstanceId) {
+        ProcessInstanceStateResult result = flowApiService.getProcessInstanceState(processInstanceId);
+        return Result.OK(result);
+    }
+
+
+    /**
+     * 获取流程运行时指定任务的信息。
+     *
+     * @param processInstanceId   流程引擎的实例Id。
+     * @return 任务节点的自定义对象数据。
+     */
+    @GetMapping("/viewEndProcessTaskInfo")
+    @ApiOperation(value = "获取结束流程指定任务的信息", notes = "获取结束流程指定任务的信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "processInstanceId", value = "流程实例id", required = true, paramType = "query")
+    })
+    public Result<TaskInfoDTO> viewEndProcessTaskInfo(@RequestParam(value = "processInstanceId") String processInstanceId){
+        TaskInfoDTO taskInfoVo = flowApiService.viewEndProcessTaskInfo(processInstanceId);
+        return Result.OK(taskInfoVo);
+    }
+
+
 }

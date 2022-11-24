@@ -73,15 +73,6 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         Map<String, String> approveMap = dictItems.get(ConstructionDictConstant.APPROVE).stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (t1, t2) -> t1));
         Map<String, String> natureMap = dictItems.get(ConstructionDictConstant.NATURE).stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (t1, t2) -> t1));
 
-        // 字典
-       /* String typeDictName = dictItems.get(ConstructionDictConstant.CATEGORY).stream().filter(l -> StrUtil.equalsIgnoreCase(String.valueOf(command.getType()), l.getValue())).map(DictModel::getText).findFirst().get();
-        String planChangeDictName = dictItems.get(ConstructionDictConstant.PLAN_TYPE).stream().filter(l -> StrUtil.equalsIgnoreCase(String.valueOf(command.getPlanChange()), l.getValue())).map(DictModel::getText).findFirst().get();
-        String weekdayDictName = dictItems.get(ConstructionDictConstant.WEEK).stream().filter(l -> StrUtil.equalsIgnoreCase(l.getValue(), String.valueOf(command.getWeekday()))).map(DictModel::getText).findFirst().get();
-        String formStatus = dictItems.get(ConstructionDictConstant.STATUS).stream().filter(l -> StrUtil.equalsIgnoreCase(l.getValue(), String.valueOf(command.getFormStatus()))).map(DictModel::getText).findFirst().get();
-        List<DictModel> approveList = dictItems.get(ConstructionDictConstant.APPROVE);
-        String natureName = dictItems.get(ConstructionDictConstant.NATURE).stream().filter(l -> StrUtil.equalsIgnoreCase(String.valueOf(command.getNature()), l.getValue())).map(DictModel::getText).findFirst().get();
-
-      */
         records.stream().forEach(command->{
 
             // 字典名称
@@ -111,8 +102,6 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
 
             // 线路名称
             command.setLineName(ObjectUtil.isEmpty(command.getLineCode()) ? null : iSysBaseApi.getLineNameByCode(Arrays.asList(command.getLineCode())).get(command.getLineCode()));
-            // 工区
-//        command.setSiteName(ObjectUtil.isEmpty(command.getChargeStaffId()) ? null :);
 
             // 人员名称
             command.setChargeStaffName(ObjectUtil.isEmpty(command.getChargeStaffId()) ? null :

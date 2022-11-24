@@ -276,4 +276,18 @@ public interface FlowApiService {
      * @return
      */
     List<HistoricTaskInfo> getHistoricLogByProcessInstanceId(String processInstanceId);
+
+    /**
+     * 根据ProcessInstanceId 获取流程实例状态
+     * @param processInstanceId 流程实例id
+     * @return
+     */
+    ProcessInstanceStateResult getProcessInstanceState(String processInstanceId);
+
+    /**
+     * 任务已结束的流程表单信息
+     * @param processInstanceId
+     * @return
+     */
+    TaskInfoDTO viewEndProcessTaskInfo(String processInstanceId);
 }
