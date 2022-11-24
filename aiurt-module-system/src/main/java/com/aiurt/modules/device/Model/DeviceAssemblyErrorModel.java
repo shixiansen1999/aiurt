@@ -1,9 +1,9 @@
 package com.aiurt.modules.device.Model;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.jeecgframework.poi.excel.annotation.Excel;
 
 @Data
 public class DeviceAssemblyErrorModel {

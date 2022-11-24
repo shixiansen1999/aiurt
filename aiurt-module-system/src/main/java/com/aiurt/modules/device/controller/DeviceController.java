@@ -351,7 +351,8 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
         ClassPathResource classPathResource =  new ClassPathResource("templates/device.xlsx");
         InputStream bis = classPathResource.getInputStream();
         //设置发送到客户端的响应的内容类型
-        response.setContentType("tapplication/vnd.ms-excel;charset=utf-8");
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment;filename="+"设备主数据导入模板.xlsx");
         BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
         int len = 0;
         while ((len = bis.read()) != -1) {

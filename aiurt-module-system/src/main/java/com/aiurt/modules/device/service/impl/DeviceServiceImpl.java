@@ -52,6 +52,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -287,11 +288,19 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+
+		List<String> errorMessage = new ArrayList<>();
+		int successLines = 0;
+		String url = null;
 		// 错误信息
 		int  errorLines = 0;
 		for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
 			// 获取上传文件对象
 			MultipartFile file = entity.getValue();
+			String type = FilenameUtils.getExtension(file.getOriginalFilename());
+			if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+				return imporReturnRes(errorLines, successLines, errorMessage, false, null);
+			}
 			ImportParams params = new ImportParams();
 			params.setTitleRows(2);
 			params.setHeadRows(2);
@@ -325,7 +334,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 							stringBuilder.append("该数据存在相同数据,");
 						}
 
-						QueryWrapper<Device> queryWrapper = this.getQueryWrapper(device.getStationCode(),device.getPositionCodeCc(),device.getTemporary(),device.getMajorCode(),device.getSystemCode(),device.getDeviceTypeCode(),deviceModel.getCode(),deviceModel.getName(), String.valueOf(device.getStatus()));
+						QueryWrapper<Device> queryWrapper = this.getQueryWrapper(null,null,null,device.getMajorCode(),device.getSystemCode(),device.getDeviceTypeCode(),deviceModel.getCode(),deviceModel.getName(), String.valueOf(device.getStatus()));
 						Device one = this.getOne(queryWrapper);
 						if (ObjectUtil.isNotEmpty(one)) {
 							stringBuilder.append("数据库已存在该数据,");
@@ -370,7 +379,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				}
 				if (errorLines > 0) {
 					//错误报告下载
-					return getErrorExcel(errorLines,list,deviceAssemblyErrorModels);
+					return getErrorExcel(errorLines,list,deviceAssemblyErrorModels,errorMessage,successLines,url, type);
 				}
 
 				for (Device device : deviceList) {
@@ -513,7 +522,8 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		try {
 			response.setHeader("Content-Disposition",
 					"attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
-			response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+			//xlsx格式设置
+			response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 			BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
 			wb.write(bufferedOutPut);
 			bufferedOutPut.flush();
@@ -724,12 +734,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		}
 	}
 
-	private Result<?> getErrorExcel(int errorLines,List<DeviceModel> list,List<DeviceAssemblyErrorModel> deviceAssemblyErrorModels ) throws IOException {
-
-		List<String> errorMessage = new ArrayList<>();
-		int successLines = 0;
-		String url = null;
-
+	private Result<?> getErrorExcel(int errorLines,List<DeviceModel> list,List<DeviceAssemblyErrorModel> deviceAssemblyErrorModels,List<String> errorMessage,int successLines ,String url,String type) throws IOException {
 		//创建导入失败错误报告,进行模板导出
 		Resource resource = new ClassPathResource("/templates/deviceError.xlsx");
 		InputStream resourceAsStream = resource.getInputStream();
@@ -788,7 +793,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		}
 
 		try {
-			String fileName = "设备主数据导入错误清单"+"_" + System.currentTimeMillis()+".xlsx";
+			String fileName = "设备主数据导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
 			FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
 			url = fileName;
 			workbook.write(out);
@@ -819,12 +824,13 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 					queryWrapper.eq("code", deviceAssembly.getMaterialCode());
 					queryWrapper.like("name", deviceAssembly.getMaterialName());
 					MaterialBase one = iMaterialBaseService.getOne(queryWrapper);
-					deviceAssembly.setSpecifications(one.getSpecifications());
-					deviceAssembly.setBaseTypeCode(one.getBaseTypeCode());
+
 
 					if (ObjectUtil.isEmpty(one)) {
 						stringBuilder.append("系统不存在该组件,");
 					} else {
+						deviceAssembly.setSpecifications(one.getSpecifications());
+						deviceAssembly.setBaseTypeCode(one.getBaseTypeCode());
 						deviceAssembly.setDeviceTypeCode(one.getBaseTypeCode());
 					}
 
