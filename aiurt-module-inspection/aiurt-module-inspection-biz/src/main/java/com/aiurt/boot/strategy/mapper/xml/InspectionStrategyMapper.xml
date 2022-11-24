@@ -234,4 +234,154 @@
         select item_text from sys_dict_item c left join sys_dict a on a.id =c.dict_id
         where  a.del_flag=0 and a.dict_code = 'device_temporary' and c.item_value = #{temporary}
     </select>
+    <select id="selectListNoPage" resultType="com.aiurt.boot.strategy.dto.InspectionStrategyExcelDTO">
+        SELECT
+        *
+        FROM
+        (
+        SELECT
+        isy.*,
+        (
+        SELECT
+        GROUP_CONCAT( e.depart_name)
+        FROM
+        inspection_str_org_rel inor
+        LEFT JOIN sys_depart e ON inor.org_code = e.org_code
+        WHERE
+        isy.`code` = inor.inspection_str_code
+        AND inor.del_flag = 0
+        ) AS orgName,
+        (
+        SELECT
+        GROUP_CONCAT( e.org_code )
+        FROM
+        inspection_str_org_rel inor
+        LEFT JOIN sys_depart e ON inor.org_code = e.org_code
+        WHERE
+        isy.`code` = inor.inspection_str_code
+        AND inor.del_flag = 0
+        ) AS mechanismCode,
+        (
+        SELECT
+        GROUP_CONCAT( f.station_name )
+        FROM
+        inspection_str_sta_rel inssr
+        LEFT JOIN cs_station f ON inssr.station_code = f.station_code
+        WHERE
+        isy.`code` = inssr.inspection_str_code
+        AND f.del_flag = 0
+        AND inssr.del_flag = 0
+        ) AS stationName,
+        (
+        SELECT
+        GROUP_CONCAT( f.station_code )
+        FROM
+        inspection_str_sta_rel inssr
+        LEFT JOIN cs_station f ON inssr.station_code = f.station_code
+        WHERE
+        isy.`code` = inssr.inspection_str_code
+        AND f.del_flag = 0
+        AND inssr.del_flag = 0
+        ) AS sationCode,
+        (
+        SELECT
+        GROUP_CONCAT( DISTINCT ic.major_code )
+        FROM
+        inspection_str_rel insr
+        LEFT JOIN inspection_code ic ON ic.`code` = insr.inspection_sta_code
+        LEFT JOIN cs_major csm ON ic.major_code = csm.major_code
+        WHERE
+        insr.inspection_str_code = isy.`code`
+        AND ic.del_flag = 0
+        AND csm.del_flag = 0
+        ) AS professionCode,
+        (
+        SELECT
+        GROUP_CONCAT( DISTINCT csm.major_name )
+        FROM
+        inspection_str_rel insr
+        LEFT JOIN inspection_code ic ON ic.`code` = insr.inspection_sta_code
+        LEFT JOIN cs_major csm ON ic.major_code = csm.major_code
+        WHERE
+        insr.inspection_str_code = isy.`code`
+        AND ic.del_flag = 0
+        AND csm.del_flag = 0
+        ) AS professionName,
+        (
+        SELECT
+        GROUP_CONCAT( DISTINCT ic.subsystem_code )
+        FROM
+        inspection_str_rel insr
+        LEFT JOIN inspection_code ic ON ic.`code` = insr.inspection_sta_code
+        LEFT JOIN cs_subsystem css ON ic.subsystem_code = css.system_code
+        WHERE
+        insr.inspection_str_code = isy.`code`
+        AND ic.del_flag = 0
+        AND css.del_flag = 0
+        ) AS subsystemCode,
+        (
+        SELECT
+        GROUP_CONCAT( DISTINCT css.system_name )
+        FROM
+        inspection_str_rel insr
+        LEFT JOIN inspection_code ic ON ic.`code` = insr.inspection_sta_code
+        LEFT JOIN cs_subsystem css ON ic.subsystem_code = css.system_code
+        WHERE
+        insr.inspection_str_code = isy.`code`
+        AND ic.del_flag = 0
+        AND css.del_flag = 0
+        ) AS subsystemName
+        FROM
+        inspection_strategy isy
+        WHERE
+        isy.del_flag = 0
+        ) AS abc
+        WHERE
+        1 = 1
+        <if test="inspectionStrategyDTO.name !=null ">
+            AND name LIKE CONCAT ('%', #{inspectionStrategyDTO.name}, '%')
+        </if>
+        <if test="inspectionStrategyDTO.professionCode !=null ">
+            and FIND_IN_SET(#{inspectionStrategyDTO.professionCode},professionCode)>0
+        </if>
+        <if test="inspectionStrategyDTO.subsystemCode !=null ">
+        and FIND_IN_SET(#{inspectionStrategyDTO.subsystemCode},subsystemCode)>0
+        </if>
+        <if test="inspectionStrategyDTO.code !=null ">
+            AND code LIKE CONCAT ('%', #{inspectionStrategyDTO.code}, '%')
+        </if>
+        <if test="inspectionStrategyDTO.status !=null ">
+            AND status = #{inspectionStrategyDTO.status}
+        </if>
+        <if test="inspectionStrategyDTO.year !=null ">
+            AND year = #{inspectionStrategyDTO.year}
+        </if>
+        <if test="inspectionStrategyDTO.type !=null ">
+            AND type = #{inspectionStrategyDTO.type}
+        </if>
+        <if test="inspectionStrategyDTO.tactics !=null ">
+            AND tactics = #{inspectionStrategyDTO.tactics}
+        </if>
+        <if test="inspectionStrategyDTO.mechanismCode !=null ">
+            AND  FIND_IN_SET(#{inspectionStrategyDTO.mechanismCode},mechanismCode)>0
+        </if>
+        <if test="inspectionStrategyDTO.siteCode!=null ">
+            and siteCode REGEXP #{inspectionStrategyDTO.siteCode}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+    <select id="selectInspectionCode" resultType="com.aiurt.boot.strategy.dto.InspectionExcelDTO">
+    SELECT
+    ins.id,inc.code,inc.title
+    FROM
+	inspection_str_rel ins
+	left join inspection_code  inc on inc.code = ins.inspection_sta_code
+	where ins.inspection_str_code =#{code} and ins.del_flag = 0 and inc.del_flag = 0
+    </select>
+    <select id="selectDevice" resultType="com.aiurt.boot.strategy.dto.DeviceExcelDTO">
+    SELECT d.code,d.name
+    FROM inspection_str_device_rel isdr
+	left join device  d on d.code = isdr.device_code
+	where isdr.inspection_str_rel_id = #{id}
+    </select>
 </mapper>

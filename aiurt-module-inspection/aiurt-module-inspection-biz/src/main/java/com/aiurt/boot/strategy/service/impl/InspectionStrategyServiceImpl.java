@@ -1,5 +1,9 @@
 package com.aiurt.boot.strategy.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ExportParams;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
@@ -14,7 +18,10 @@ import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.mapper.InspectionCodeMapper;
+import com.aiurt.boot.strategy.dto.DeviceExcelDTO;
+import com.aiurt.boot.strategy.dto.InspectionExcelDTO;
 import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
+import com.aiurt.boot.strategy.dto.InspectionStrategyExcelDTO;
 import com.aiurt.boot.strategy.entity.*;
 import com.aiurt.boot.strategy.mapper.*;
 import com.aiurt.boot.strategy.service.IInspectionStrategyService;
@@ -30,15 +37,24 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+
+
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -77,11 +93,11 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
     @Override
     public IPage<InspectionStrategyDTO> pageList(Page<InspectionStrategyDTO> page, InspectionStrategyDTO inspectionStrategyDTO) {
-        if (Objects.nonNull(inspectionStrategyDTO.getSiteCode())){
-         List<String> strings = baseMapper.selectBySite(inspectionStrategyDTO.getSiteCode());
-         if (CollUtil.isNotEmpty(strings)){
-             inspectionStrategyDTO.setSiteCode(String.join("|",strings));
-         }
+        if (Objects.nonNull(inspectionStrategyDTO.getSiteCode())) {
+            List<String> strings = baseMapper.selectBySite(inspectionStrategyDTO.getSiteCode());
+            if (CollUtil.isNotEmpty(strings)) {
+                inspectionStrategyDTO.setSiteCode(String.join("|", strings));
+            }
         }
 
         IPage<InspectionStrategyDTO> list = baseMapper.selectPageList(page, inspectionStrategyDTO);
@@ -200,20 +216,20 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
         List<InspectionCodeDTO> inspectionCodeDto = inspectionStrategyDTO.getInspectionCodeDtoList();
         if (CollUtil.isNotEmpty(inspectionCodeDto)) {
-        // 跟设备类型相关的是否选择了设备
-        inspectionCodeDto.forEach(re -> {
-            InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
-                    new LambdaQueryWrapper<InspectionCode>()
-                            .eq(InspectionCode::getCode, re.getCode())
-                            .eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
-            if (ObjectUtil.isEmpty(inspectionCode)) {
-                throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
-            }
-            if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && CollUtil.isEmpty(re.getDevices())) {
-                throw new AiurtBootException(String.format("名字为%s需要指定设备", ObjectUtil.isNotEmpty(inspectionCode) ? inspectionCode.getTitle() : ""));
-            }
-        });
-      }
+            // 跟设备类型相关的是否选择了设备
+            inspectionCodeDto.forEach(re -> {
+                InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
+                        new LambdaQueryWrapper<InspectionCode>()
+                                .eq(InspectionCode::getCode, re.getCode())
+                                .eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+                if (ObjectUtil.isEmpty(inspectionCode)) {
+                    throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+                }
+                if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && CollUtil.isEmpty(re.getDevices())) {
+                    throw new AiurtBootException(String.format("名字为%s需要指定设备", ObjectUtil.isNotEmpty(inspectionCode) ? inspectionCode.getTitle() : ""));
+                }
+            });
+        }
     }
 
     @Override
@@ -417,29 +433,29 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                     List<Device> devices = new ArrayList<>();
                     //查询对应设备
                     inspectionStrDeviceRels.stream().forEach(f -> {
-                      Device device=  baseMapper.viewDetail(f.getId());
-                                //线路
-                                String lineCode = device.getLineCode() == null ? "" : device.getLineCode();
-                                //站点
-                                String stationCode = device.getStationCode() == null ? "" : device.getStationCode();
-                                //位置
-                                String positionCode = device.getPositionCode() == null ? "" : device.getPositionCode();
-                                String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
-                                String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
-                                String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
-                                String positionCodeCcName = lineCodeName;
-                                if (stationCodeName != null && !"".equals(stationCodeName)) {
-                                    positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + stationCodeName;
-                                }
-                                if (!"".equals(positionCodeName) && positionCodeName != null) {
-                                    positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
-                                }
-                      device.setPositionCodeCcName(positionCodeCcName);
-                      device.setStatusDesc(baseMapper.statusDesc(device.getStatus()));
-                      device.setTemporaryName(baseMapper.temporaryName(device.getTemporary()));
-                      device.setMajorCodeName(baseMapper.translateMajor(device.getMajorCode()));
-                      device.setSystemCodeName(baseMapper.systemCodeName(device.getSystemCode()));
-                      device.setDeviceTypeCodeName(baseMapper.deviceTypeCodeName(device.getDeviceTypeCode()));
+                        Device device = baseMapper.viewDetail(f.getId());
+                        //线路
+                        String lineCode = device.getLineCode() == null ? "" : device.getLineCode();
+                        //站点
+                        String stationCode = device.getStationCode() == null ? "" : device.getStationCode();
+                        //位置
+                        String positionCode = device.getPositionCode() == null ? "" : device.getPositionCode();
+                        String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
+                        String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
+                        String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
+                        String positionCodeCcName = lineCodeName;
+                        if (stationCodeName != null && !"".equals(stationCodeName)) {
+                            positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + stationCodeName;
+                        }
+                        if (!"".equals(positionCodeName) && positionCodeName != null) {
+                            positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
+                        }
+                        device.setPositionCodeCcName(positionCodeCcName);
+                        device.setStatusDesc(baseMapper.statusDesc(device.getStatus()));
+                        device.setTemporaryName(baseMapper.temporaryName(device.getTemporary()));
+                        device.setMajorCodeName(baseMapper.translateMajor(device.getMajorCode()));
+                        device.setSystemCodeName(baseMapper.systemCodeName(device.getSystemCode()));
+                        device.setDeviceTypeCodeName(baseMapper.deviceTypeCodeName(device.getDeviceTypeCode()));
 
                         devices.add(device);
                     });
@@ -689,12 +705,12 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             });
         }
         //根据专业编码查询对应的专业子系统
-        List<MajorDTO> majorDTOList =  repairTaskMapper.translateMajor(majorCodes1);
+        List<MajorDTO> majorDTOList = repairTaskMapper.translateMajor(majorCodes1);
         if (CollectionUtil.isNotEmpty(majorDTOList)) {
-           majorDTOList.forEach(a->{
-               List<SubsystemDTO> subsystemDTOList = baseMapper.translateSubsystem(a.getMajorCode(), systemCode);
-               a.setSubsystemDTOList(subsystemDTOList);
-           });
+            majorDTOList.forEach(a -> {
+                List<SubsystemDTO> subsystemDTOList = baseMapper.translateSubsystem(a.getMajorCode(), systemCode);
+                a.setSubsystemDTOList(subsystemDTOList);
+            });
         }
         return majorDTOList;
     }
@@ -714,5 +730,107 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         EquipmentOverhaulDTO equipmentOverhaulDTO = new EquipmentOverhaulDTO();
         equipmentOverhaulDTO.setOverhaulDTOList(overhaulDTOList);
         return equipmentOverhaulDTO;
+    }
+
+    @Override
+    public void exportXls(HttpServletRequest request, HttpServletResponse response, InspectionStrategyDTO inspectionStrategyDTO) {
+
+        // 封装数据
+        List<InspectionStrategyExcelDTO> pageList = this.getinspectionStrategyList(inspectionStrategyDTO);
+
+        // 封装excel表格
+        Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams("检修策略列表", "检修策略列表"),
+                InspectionStrategyExcelDTO.class, pageList);
+
+        // 从response中获取输出流
+        try (OutputStream os = response.getOutputStream();) {
+            // 文件名
+            String fileName = new String("检修策略列表.xls".getBytes(), "ISO8859-1");
+            // 返回类型
+            response.setContentType("application/octet-stream;charset=ISO8859-1");
+            // 设置响应头
+            response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+            response.addHeader("Pargam", "no-cache");
+            response.addHeader("Cache-Control", "no-cache");
+            workbook.write(os);
+            os.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        // 错误信息
+        List<String> errorMessage = new ArrayList<>();
+        int successLines = 0, errorLines = 0;
+        String url = null;
+
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            ImportParams params = new ImportParams();
+            params.setTitleRows(2);
+            params.setHeadRows(3);
+            params.setNeedSave(true);
+
+//            List<DeviceAssemblyErrorModel> deviceAssemblyErrorModels = new ArrayList<>();
+            List<Device> deviceList = new ArrayList<Device>();
+            List<InspectionStrategyExcelDTO> list = null;
+            try {
+                list = ExcelImportUtil.importExcel(file.getInputStream(), InspectionStrategyExcelDTO.class, params);
+                System.out.println(list);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Map<String, String> duplicateData = new HashMap<>();
+        }
+        return null;
+    }
+
+    /**
+     * 获取excel表格数据
+     *
+     * @param inspectionStrategyDTO
+     * @return
+     */
+    private List<InspectionStrategyExcelDTO> getinspectionStrategyList(InspectionStrategyDTO inspectionStrategyDTO) {
+        if (Objects.nonNull(inspectionStrategyDTO.getSiteCode())) {
+            List<String> strings = baseMapper.selectBySite(inspectionStrategyDTO.getSiteCode());
+            if (CollUtil.isNotEmpty(strings)) {
+                inspectionStrategyDTO.setSiteCode(String.join("|", strings));
+            }
+        }
+        List<InspectionStrategyExcelDTO> result = baseMapper.selectListNoPage(inspectionStrategyDTO);
+        if (CollUtil.isEmpty(result)) {
+            return result;
+        }
+
+        // 检修标准
+        for (InspectionStrategyExcelDTO inspectionStrategyExcelDTO : result) {
+            if (ObjectUtil.isEmpty(inspectionStrategyDTO)) {
+                continue;
+            }
+
+            List<InspectionExcelDTO> inspectionExcelDTOList = baseMapper.selectInspectionCode(inspectionStrategyExcelDTO.getCode());
+            if (CollUtil.isEmpty(inspectionExcelDTOList)) {
+                continue;
+            }
+
+            // 所选设备
+            for (InspectionExcelDTO inspectionExcelDTO : inspectionExcelDTOList) {
+                List<DeviceExcelDTO> deviceExcelDTOS = baseMapper.selectDevice(inspectionExcelDTO.getId());
+                if (CollUtil.isNotEmpty(deviceExcelDTOS)) {
+                    inspectionExcelDTO.setDeviceExcelDTOS(deviceExcelDTOS);
+                }
+            }
+
+            inspectionStrategyExcelDTO.setInspectionExcelDTOList(inspectionExcelDTOList);
+        }
+        return result;
     }
 }

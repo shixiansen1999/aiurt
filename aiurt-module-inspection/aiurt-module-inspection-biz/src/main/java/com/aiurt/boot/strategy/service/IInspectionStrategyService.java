@@ -10,7 +10,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
+import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -107,4 +110,20 @@ public interface IInspectionStrategyService extends IService<InspectionStrategy>
      * @return
      */
     EquipmentOverhaulDTO selectEquipmentOverhaulList(String strategyId, String majorCode, String subsystemCode);
+
+    /**
+     * 导出excel
+     * @param request
+     * @param inspectionStrategyDTO
+     * @return
+     */
+    void exportXls(HttpServletRequest request, HttpServletResponse response,  InspectionStrategyDTO inspectionStrategyDTO);
+
+    /**
+     * 导入检修策略
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
 }

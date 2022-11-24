@@ -4,7 +4,10 @@ package com.aiurt.boot.strategy.mapper;
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.manager.dto.SubsystemDTO;
+import com.aiurt.boot.strategy.dto.DeviceExcelDTO;
+import com.aiurt.boot.strategy.dto.InspectionExcelDTO;
 import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
+import com.aiurt.boot.strategy.dto.InspectionStrategyExcelDTO;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -117,4 +120,25 @@ public interface InspectionStrategyMapper extends BaseMapper<InspectionStrategy>
      * @return
      */
     String temporaryName(@Param("temporary")String temporary);
+
+    /**
+     * 按条件查询检修策略
+     * @param inspectionStrategyDTO
+     * @return
+     */
+    List<InspectionStrategyExcelDTO> selectListNoPage(@Param("inspectionStrategyDTO") InspectionStrategyDTO inspectionStrategyDTO);
+
+    /**
+     * 按田间查询
+     * @param code
+     * @return
+     */
+    List<InspectionExcelDTO> selectInspectionCode(String code);
+
+    /**
+     * 查询设备信息
+     * @param id
+     * @return
+     */
+    List<DeviceExcelDTO> selectDevice(String id);
 }
