@@ -163,7 +163,7 @@
     <!--    月计划线路信息查询,使用了DTO-->
     <select id="queryAllStationInfo" resultType="com.aiurt.boot.monthlyplan.dto.BdStationCopyDTO">
 
-        select station.id as id, station.station_name as name, bs.id as lineId, bs.line_name as lineName
+        select station.id as id, station.station_name as name, bs.id as lineId, bs.line_name as lineName,station.station_code
         from cs_station as station
                  left join cs_line bs on station.line_code = bs.line_code
             where station.del_flag = 0 and bs.del_flag = 0
