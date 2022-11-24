@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
@@ -22,8 +23,10 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: spare_part_return_order
@@ -51,7 +54,13 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
      */
     @Override
     public List<SparePartReturnOrder> selectList(Page page, SparePartReturnOrder sparePartReturnOrder){
-        return sparePartReturnOrderMapper.readAll(page,sparePartReturnOrder);
+        List<SparePartReturnOrder> sparePartReturnOrders = sparePartReturnOrderMapper.readAll(page, sparePartReturnOrder);
+        List<SparePartReturnOrder> list = new ArrayList<>();
+        if (CollUtil.isNotEmpty(sparePartReturnOrders)){
+            List<SparePartReturnOrder> collect = sparePartReturnOrders.stream().distinct().collect(Collectors.toList());
+            list.addAll(collect);
+        }
+        return list;
     }
     /**
      * 修改
