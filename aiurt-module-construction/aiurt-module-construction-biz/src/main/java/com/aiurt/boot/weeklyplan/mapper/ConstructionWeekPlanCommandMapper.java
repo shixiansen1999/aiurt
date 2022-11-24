@@ -2,6 +2,7 @@ package com.aiurt.boot.weeklyplan.mapper;
 
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanCommandDTO;
 import com.aiurt.boot.weeklyplan.entity.ConstructionWeekPlanCommand;
+import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -21,6 +22,6 @@ public interface ConstructionWeekPlanCommandMapper extends BaseMapper<Constructi
      * @param constructionWeekPlanCommandDTO
      * @return
      */
-    IPage<ConstructionWeekPlanCommand> queryPageList(@Param("page") Page<ConstructionWeekPlanCommand> page,@Param("userId") String userId,
+    IPage<ConstructionWeekPlanCommandVO> queryPageList(@Param("page") Page<ConstructionWeekPlanCommandVO> page, @Param("userId") String userId,
                                                        @Param("condition") ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO);
 }

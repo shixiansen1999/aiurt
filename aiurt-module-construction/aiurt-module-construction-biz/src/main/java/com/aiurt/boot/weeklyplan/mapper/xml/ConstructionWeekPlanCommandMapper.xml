@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.weeklyplan.mapper.ConstructionWeekPlanCommandMapper">
-    <select id="queryPageList" resultType="com.aiurt.boot.weeklyplan.entity.ConstructionWeekPlanCommand">
+    <select id="queryPageList" resultType="com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO">
         select cwpc.*, ahp.PROC_INST_ID_ as process_instance_id, ara.ID_ as task_id, ara.NAME_ as task_name
 from construction_week_plan_command cwpc
         Left JOIN  act_hi_procinst ahp ON  ahp.BUSINESS_KEY_ = cwpc.id

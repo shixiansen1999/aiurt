@@ -3,6 +3,7 @@ package com.aiurt.boot.weeklyplan.controller;
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanCommandDTO;
 import com.aiurt.boot.weeklyplan.entity.ConstructionWeekPlanCommand;
 import com.aiurt.boot.weeklyplan.service.IConstructionWeekPlanCommandService;
+import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -43,12 +44,12 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
     @AutoLog(value = "施工周计划列表查询")
     @ApiOperation(value = "施工周计划列表查询", notes = "施工周计划列表查询")
     @GetMapping(value = "/list")
-    public Result<IPage<ConstructionWeekPlanCommand>> queryPageList(ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO,
-                                                                    @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                                    @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                                    HttpServletRequest req) {
-        Page<ConstructionWeekPlanCommand> page = new Page<>(pageNo, pageSize);
-        IPage<ConstructionWeekPlanCommand> pageList = constructionWeekPlanCommandService.queryPageList(page, constructionWeekPlanCommandDTO);
+    public Result<IPage<ConstructionWeekPlanCommandVO>> queryPageList(ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO,
+                                                                      @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                      HttpServletRequest req) {
+        Page<ConstructionWeekPlanCommandVO> page = new Page<>(pageNo, pageSize);
+        IPage<ConstructionWeekPlanCommandVO> pageList = constructionWeekPlanCommandService.queryPageList(page, constructionWeekPlanCommandDTO);
         return Result.OK(pageList);
     }
 

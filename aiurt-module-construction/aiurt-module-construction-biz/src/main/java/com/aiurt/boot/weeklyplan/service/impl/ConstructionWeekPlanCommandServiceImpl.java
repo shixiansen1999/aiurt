@@ -2,6 +2,7 @@ package com.aiurt.boot.weeklyplan.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.ConstructionConstant;
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanCommandDTO;
 import com.aiurt.boot.weeklyplan.entity.ConstructionCommandAssist;
@@ -9,6 +10,7 @@ import com.aiurt.boot.weeklyplan.entity.ConstructionWeekPlanCommand;
 import com.aiurt.boot.weeklyplan.mapper.ConstructionWeekPlanCommandMapper;
 import com.aiurt.boot.weeklyplan.service.IConstructionCommandAssistService;
 import com.aiurt.boot.weeklyplan.service.IConstructionWeekPlanCommandService;
+import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
@@ -47,12 +49,12 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
     private IConstructionCommandAssistService constructionCommandAssistService;
 
     @Override
-    public IPage<ConstructionWeekPlanCommand> queryPageList(Page<ConstructionWeekPlanCommand> page, ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO) {
+    public IPage<ConstructionWeekPlanCommandVO> queryPageList(Page<ConstructionWeekPlanCommandVO> page, ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("检测到未登录，请登录后操作！");
         }
-        IPage<ConstructionWeekPlanCommand> pageList = constructionWeekPlanCommandMapper.queryPageList(page, loginUser.getId(), constructionWeekPlanCommandDTO);
+        IPage<ConstructionWeekPlanCommandVO> pageList = constructionWeekPlanCommandMapper.queryPageList(page, loginUser.getId(), constructionWeekPlanCommandDTO);
         return pageList;
     }
 
