@@ -8,7 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
 /**
  * @Description: 安全事项
@@ -20,10 +19,11 @@ public interface ICsSafetyAttentionService extends IService<CsSafetyAttention> {
     /**
      * 导出
      * @param request
+     * @param majorCode
      * @param ids
      * @return
      */
-    ModelAndView exportXls(HttpServletRequest request, String ids);
+    ModelAndView exportXls(HttpServletRequest request, String ids, String majorCode);
 
     /**
      * 导入

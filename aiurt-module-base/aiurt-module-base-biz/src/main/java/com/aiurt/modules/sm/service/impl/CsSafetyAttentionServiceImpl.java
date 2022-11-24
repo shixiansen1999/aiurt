@@ -2,6 +2,7 @@ package com.aiurt.modules.sm.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.ImportExcelUtil;
 
@@ -11,7 +12,6 @@ import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionTypeMapper;
 import com.aiurt.modules.sm.service.ICsSafetyAttentionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.jeecg.common.api.vo.Result;
 
 import org.jeecg.common.system.vo.CsUserMajorModel;
@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -46,11 +47,22 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
     @Autowired
     private CsSafetyAttentionTypeMapper csSafetyAttentionTypeMapper;
     @Override
-    public ModelAndView exportXls(HttpServletRequest request, String ids) {
+    public ModelAndView exportXls(HttpServletRequest request, String ids ,String majorCodes) {
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-        List<CsSafetyAttention>safetyAttentions = baseMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>()
-                .in(CsSafetyAttention::getId,Arrays.asList(ids.split(",")))
+        List<CsSafetyAttention> safetyAttentions = new ArrayList<>();
+        if (StrUtil.isNotEmpty(ids)){
+            List<CsSafetyAttention>safetyAttentions1 = baseMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>()
+                .in(CsSafetyAttention::getAttentionType,Arrays.asList(ids.split(",")))
                 .eq(CsSafetyAttention::getDelFlag,0));
+            safetyAttentions.addAll(safetyAttentions1);
+        }
+        if (StrUtil.isNotEmpty(majorCodes)){
+            List<CsSafetyAttention>safetyAttentions1 = baseMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>()
+                    .in(CsSafetyAttention::getMajorCode,Arrays.asList(majorCodes.split(",")))
+                    .eq(CsSafetyAttention::getDelFlag,0));
+            safetyAttentions.addAll(safetyAttentions1);
+        }
+         safetyAttentions =  safetyAttentions.stream().distinct().collect(Collectors.toList());
         if (CollectionUtil.isNotEmpty(safetyAttentions)) {
             //导出文件名称
             mv.addObject(NormalExcelConstants.FILE_NAME, "安全事项管理");
