@@ -61,6 +61,11 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String declaration(ConstructionWeekPlanCommand constructionWeekPlanCommand) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到未登录，请登录后操作！");
+        }
+        constructionWeekPlanCommand.setApplyId(loginUser.getId());
         this.save(constructionWeekPlanCommand);
         List<ConstructionCommandAssist> constructionAssist = constructionWeekPlanCommand.getConstructionAssist();
         if (CollectionUtil.isNotEmpty(constructionAssist)) {

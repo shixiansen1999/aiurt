@@ -41,9 +41,9 @@ public class ConstructionWeekPlanCommandDTO {
     @ApiModelProperty(value = "所属周的结束日期")
     private Date endDate;
     /**
-     * 计划类型(0正常计划 1计划补修 2日计划补充 3施工变更 4 施工取消
+     * 计划类型(0正常计划 1计划补修 2日计划补充)
      */
-    @ApiModelProperty(value = "计划类型(0正常计划 1计划补修 2日计划补充 3施工变更 4 施工取消")
+    @ApiModelProperty(value = "计划类型(0正常计划 1计划补修 2日计划补充)")
     private Integer planChange;
     /**
      * 审批状态(0待提审、1待审核、2审核中、3已驳回、4已取消、5已通过)
@@ -51,25 +51,18 @@ public class ConstructionWeekPlanCommandDTO {
     @ApiModelProperty(value = "审批状态(0待提审、1待审核、2审核中、3已驳回、4已取消、5已通过)")
     private Integer formStatus;
     /**
-     * 接口标识，1周计划查询列表、2周计划申报列表、3周计划审核列表、4周计划变更列表
-     */
-    @ApiModelProperty(value = "接口标识，1周计划查询、2周计划制定、3周计划审批、4周计划变更")
-    @NotNull
-    private Integer mark;
-
-    /**
-     * 周计划查询列表可以不用传；
+     * 周计划查询列表传；1待审核、2审核中、3已驳回、4已取消、5已通过
      * 周计划申报列表传：0待提审、3已驳回、4已取消状态值；
      * 周计划审核列表传：0待审核、2审核中状态值；
      * 周计划变更列表传：0待提审、3已驳回、已取消状态值；
      */
-    @ApiModelProperty(value = "周计划查询列表可以不用传；" +
+    @ApiModelProperty(value = "周计划查询列表传；1待审核、2审核中、3已驳回、4已取消、5已通过" +
             "周计划申报列表传：0待提审、3已驳回、4已取消状态值；" +
             "周计划审核列表传：0待审核、2审核中状态值；" +
             "周计划变更列表传：0待提审、3已驳回、4已取消状态值")
     private List<Integer> formStatusList;
     /**
-     *周计划变更列表时传：1计划补修 2日计划补充状态值
+     * 周计划变更列表时传：1计划补修 2日计划补充状态值
      */
     @ApiModelProperty(value = "周计划变更列表时传：1计划补修 2日计划补充状态值")
     private List<Integer> planChangeList;
