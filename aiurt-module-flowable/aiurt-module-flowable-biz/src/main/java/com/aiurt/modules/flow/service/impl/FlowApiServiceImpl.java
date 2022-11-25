@@ -220,6 +220,9 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         // 保存数据
         if (Objects.nonNull(busData)) {
+            if (StrUtil.isNotBlank((String) businessKey)) {
+                busData.put("id", businessKey);
+            }
             saveData(task, busData, processInstance.getProcessInstanceId(), task.getId(), processInstance);
         }
         // 完成流程启动后的第一个任务

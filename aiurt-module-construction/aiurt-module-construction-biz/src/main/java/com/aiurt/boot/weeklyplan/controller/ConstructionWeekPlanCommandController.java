@@ -143,7 +143,7 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
 
     @ApiOperation(value = "周计划审核", notes = "周计划审核")
     @GetMapping(value = "/queryWorkToDo")
-    public Result<IPage<ConstructionWeekPlanCommand>> queryWorkToDo(@ApiParam(name = "id", value = "记录主键ID")
+    public Result<IPage<ConstructionWeekPlanCommandVO>> queryWorkToDo(@ApiParam(name = "id", value = "记录主键ID")
                                                                     @RequestParam("id") String id,
                                                                     @ApiParam(name = "status", value = "审批状态：0未审批、1同意、2驳回")
                                                                     @RequestParam("status") Integer status) {
