@@ -21,9 +21,9 @@ import java.util.List;
 @Accessors(chain = true)
 public class ConstructionWeekPlanCommandDTO {
     /**
-     * 作业编码
+     * 作业线路编码
      */
-    @ApiModelProperty(value = "作业编码")
+    @ApiModelProperty(value = "作业线路编码")
     private String lineCode;
     /**
      * 所属周

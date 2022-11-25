@@ -80,9 +80,9 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
 	@Excel(name = "作业范围", width = 15)
     @ApiModelProperty(value = "作业范围")
     private String taskRange;
-    /**作业编码*/
-    @Excel(name = "作业编码", width = 15)
-    @ApiModelProperty(value = "作业编码")
+    /**作业线路编码*/
+    @Excel(name = "作业线路编码", width = 15)
+    @ApiModelProperty(value = "作业线路编码")
     @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
     private String lineCode;
 	/**供电要求ID*/
