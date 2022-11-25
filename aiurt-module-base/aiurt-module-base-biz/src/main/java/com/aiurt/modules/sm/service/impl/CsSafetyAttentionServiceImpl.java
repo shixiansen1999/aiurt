@@ -12,15 +12,22 @@ import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionTypeMapper;
 import com.aiurt.modules.sm.service.ICsSafetyAttentionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 
 import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -29,9 +36,10 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -43,7 +51,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionMapper, CsSafetyAttention> implements ICsSafetyAttentionService {
-
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
     @Autowired
     private CsSafetyAttentionTypeMapper csSafetyAttentionTypeMapper;
     @Override
@@ -91,7 +100,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
         // 去掉 sql 中的重复数据
         Integer errorLines = 0;
         Integer successLines = 0;
-
+        List<CsSafetyAttention> list = new ArrayList<>();
         for (int i = 0; i < listMaterial.size(); i++) {
             try {
                 CsSafetyAttention csSafetyAttention = listMaterial.get(i);
@@ -99,11 +108,13 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                 String majorCodeName = csSafetyAttention.getMajorName() == null ? "" : csSafetyAttention.getMajorName();
                 if ("".equals(majorCodeName)) {
                     errorStrs.add("第 " + i + " 行：专业名称为空，忽略导入。");
+                    list.add(csSafetyAttention);
                     continue;
                 }
                 CsUserMajorModel csMajor = baseMapper.selectCsMajor(majorCodeName);
                 if (csMajor == null) {
                     errorStrs.add("第 " + i + " 行：无法根据专业名称找到对应数据，忽略导入。");
+                    list.add(csSafetyAttention);
                     continue;
                 } else {
                     csSafetyAttention.setMajorCode(csMajor.getMajorCode());
@@ -111,6 +122,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                     String baseTypeCodeName = csSafetyAttention.getAttentionTypeName() == null ? "" : csSafetyAttention.getAttentionTypeName();
                     if ("".equals(baseTypeCodeName)) {
                         errorStrs.add("第 " + i + " 行：安全事项为空，忽略导入。");
+                        list.add(csSafetyAttention);
                         continue;
                     }
                     CsSafetyAttentionType csSafetyAttentionType = csSafetyAttentionTypeMapper.selectOne(new LambdaQueryWrapper<CsSafetyAttentionType>()
@@ -118,6 +130,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                             .eq(CsSafetyAttentionType::getDelFlag, 0));
                     if (csSafetyAttentionType == null) {
                         errorStrs.add("第 " + i + " 行：无法根据安全事项分类找到对应数据，忽略导入。");
+                        list.add(csSafetyAttention);
                         continue;
                     } else {
                         csSafetyAttention.setAttentionTypeCode(csSafetyAttentionType.getCode());
@@ -127,18 +140,21 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                     String attentionContent = csSafetyAttention.getAttentionContent() == null ? "" : csSafetyAttention.getAttentionContent();
                     if ("".equals(attentionContent)) {
                         errorStrs.add("第 " + i + " 行：安全事项内容为空，忽略导入。");
+                        list.add(csSafetyAttention);
                         continue;
                     }
                     //安全事项措施
                     String attentionMeasures = csSafetyAttention.getAttentionMeasures() == null ? "" : csSafetyAttention.getAttentionMeasures();
                     if ("".equals(attentionMeasures)) {
                         errorStrs.add("第 " + i + " 行：安全事项措施为空，忽略导入。");
+                        list.add(csSafetyAttention);
                         continue;
                     }
                     //状态
                     String stateName = csSafetyAttention.getStateName()==null?"": csSafetyAttention.getStateName();
                     if ("".equals(stateName)){
                         errorStrs.add("第 " + i + " 行：安全状态为空，忽略导入。");
+                        list.add(csSafetyAttention);
                         continue;
                     }else  if("有效".equals(stateName)){
                         csSafetyAttention.setState(1);
@@ -146,6 +162,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                         csSafetyAttention.setState(0);
                     }else {
                         errorStrs.add("第 " + i + " 行：安全状态识别不出，忽略导入。");
+                        list.add(csSafetyAttention);
                         continue;
                     }
                     int save = baseMapper.insert(csSafetyAttention);
@@ -156,6 +173,41 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+        if (list.size()>0){
+            //创建导入失败错误报告,进行模板导出
+            Resource resource = new ClassPathResource("templates/csSafetyAttentionError.xlsx");
+            InputStream resourceAsStream = resource.getInputStream();
+            //2.获取临时文件
+            File fileTemp= new File("templates/csSafetyAttentionError.xlsx");
+            try {
+                //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+                FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+            String path = fileTemp.getAbsolutePath();
+            TemplateExportParams exportParams = new TemplateExportParams(path);
+            List<Map<String, Object>> mapList = new ArrayList<>();
+            list.forEach(l->{
+                Map<String, Object> lm = new HashMap<String, Object>();
+                lm.put("majorName",l.getMajorName());
+                lm.put("attentionTypeName",l.getAttentionTypeName());
+                lm.put("attentionContent",l.getAttentionContent());
+                lm.put("attentionMeasures",l.getAttentionMeasures());
+                lm.put("stateName",l.getStateName());
+                mapList.add(lm);
+            });
+            Map<String, Object> errorMap = new HashMap<String, Object>();
+            errorMap.put("maplist", mapList);
+            Workbook workbook = ExcelExportUtil.exportExcel(exportParams,errorMap);
+            String fileName = "安全事项导入错误模板"+"_" + System.currentTimeMillis()+".xlsx";
+            FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
+            String  url = fileName;
+            workbook.write(out);
+            errorLines+=errorStrs.size();
+            successLines+=(listMaterial.size()-errorLines);
+            return ImportExcelUtil.imporReturnRes(errorLines,successLines,errorStrs,url);
         }
             errorLines += errorStrs.size();
             successLines += (listMaterial.size() - errorLines);
