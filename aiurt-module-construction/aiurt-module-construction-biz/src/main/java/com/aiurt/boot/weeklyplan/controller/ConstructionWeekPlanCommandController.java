@@ -143,12 +143,12 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
 
     @ApiOperation(value = "周计划审核", notes = "周计划审核")
     @GetMapping(value = "/queryWorkToDo")
-    public Result<IPage<ConstructionWeekPlanCommand>> queryWorkToDo(@ApiParam(name = "id", value = "记录主键ID")
-                                                                    @RequestParam("id") String id,
-                                                                    @ApiParam(name = "status", value = "审批状态：0未审批、1同意、2驳回")
-                                                                    @RequestParam("status") Integer status) {
-
-        return Result.OK();
+    public Result<IPage<ConstructionWeekPlanCommandVO>> queryWorkToDo(ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO,
+                                                                      @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<ConstructionWeekPlanCommandVO> page = new Page<>(pageNo, pageSize);
+        IPage<ConstructionWeekPlanCommandVO> pageList = constructionWeekPlanCommandService.queryWorkToDo(page, constructionWeekPlanCommandDTO);
+        return Result.OK(pageList);
     }
 
 }

@@ -65,4 +65,12 @@ public interface IConstructionWeekPlanCommandService extends IService<Constructi
      * @return
      */
     ConstructionWeekPlanCommand queryById(String id);
+
+    /**
+     * 查询待办
+     * @param page 分页
+     * @param constructionWeekPlanCommandDTO 请求参数
+     * @return
+     */
+    IPage<ConstructionWeekPlanCommandVO> queryWorkToDo(Page<ConstructionWeekPlanCommandVO> page, ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO);
 }
