@@ -79,12 +79,19 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
         }
          safetyAttentions =  safetyAttentions.stream().distinct().collect(Collectors.toList());
         if (CollectionUtil.isNotEmpty(safetyAttentions)) {
+            safetyAttentions.stream().forEach(s->{
+                CsSafetyAttentionType csSafetyAttentionType = csSafetyAttentionTypeMapper.selectOne(new LambdaQueryWrapper<CsSafetyAttentionType>()
+                        .eq(CsSafetyAttentionType::getId,s.getAttentionType())
+                        .eq(CsSafetyAttentionType::getDelFlag,0));
+                s.setAttentionTypeName(csSafetyAttentionType.getName());
+            });
             //导出文件名称
             mv.addObject(NormalExcelConstants.FILE_NAME, "安全事项管理");
             //excel注解对象Class
             mv.addObject(NormalExcelConstants.CLASS, CsSafetyAttention.class);
-            //自定义导出字段 暂时用不上
-            //mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
+            //自定义导出字段
+            String exportField = "majorCode,attentionTypeName,attentionContent,attentionMeasures,state";
+            mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
             //自定义表格参数
             mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("安全事项管理", "安全事项管理"));
             //导出数据列表
