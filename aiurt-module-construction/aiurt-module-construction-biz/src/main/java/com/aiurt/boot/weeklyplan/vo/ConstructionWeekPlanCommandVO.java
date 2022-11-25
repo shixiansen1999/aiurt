@@ -28,4 +28,7 @@ public class ConstructionWeekPlanCommandVO  extends ConstructionWeekPlanCommand 
     @ApiModelProperty(value = "任务名称")
     private String taskName;
 
+    @ApiModelProperty(value = "模板key，流程标识")
+    private String modelKey;
+
 }
