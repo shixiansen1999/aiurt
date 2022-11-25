@@ -126,6 +126,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
      * @param faultCountInfoReq
      * @return
      */
+    @Override
     public IPage<FaultCountInfoDTO> getFaultCountInfo(FaultCountInfoReq faultCountInfoReq) {
         IPage<FaultCountInfoDTO> result = new Page<>();
         if (ObjectUtil.isEmpty(faultCountInfoReq.getType())
@@ -166,6 +167,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
      * @param faultCountInfoReq
      * @return
      */
+    @Override
     public IPage<FaultCountInfosDTO> getFaultCountInfos(FaultCountInfoReq faultCountInfoReq) {
         IPage<FaultCountInfosDTO> result = new Page<>();
         if (ObjectUtil.isEmpty(faultCountInfoReq.getType())
@@ -206,6 +208,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
      * @param faultTimeoutLevelReq 查询条件
      * @return
      */
+    @Override
     public IPage<FaultTimeoutLevelDTO> getFaultLevelInfo(FaultTimeoutLevelReq faultTimeoutLevelReq) {
         IPage<FaultTimeoutLevelDTO> result = new Page<>();
         if (ObjectUtil.isEmpty(faultTimeoutLevelReq.getLevel())
@@ -280,6 +283,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
      * @param startDate
      * @return
      */
+    @Override
     public IPage<FaultTimeoutLevelDTO> getMainFaultCondition(Page<FaultTimeoutLevelDTO> page, Date startDate){
         List<FaultTimeoutLevelDTO> mainFaultCondition = faultCountMapper.getMainFaultCondition(page, startDate);
         return page.setRecords(mainFaultCondition);

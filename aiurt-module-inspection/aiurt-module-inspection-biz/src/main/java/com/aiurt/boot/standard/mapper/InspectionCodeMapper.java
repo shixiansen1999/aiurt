@@ -2,6 +2,9 @@ package com.aiurt.boot.standard.mapper;
 
 
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
+import com.aiurt.boot.manager.dto.MajorDTO;
+import com.aiurt.boot.manager.dto.SubsystemDTO;
+import com.aiurt.boot.standard.dto.DeviceTypeDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -41,4 +44,34 @@ public interface InspectionCodeMapper extends BaseMapper<InspectionCode> {
      * @return
      */
     Integer number1(@Param("id") String id);
+
+    /**
+     * 查询所有子系统信息
+     * @return
+     */
+    List<SubsystemDTO> getSubsystemCode();
+
+    /**
+     * 查询所有专业
+     * @return
+     */
+    List<MajorDTO> getMajorCode();
+    /**
+     * 根据专业code,获取专业名称
+     * @param majorCode
+     * @return
+     */
+    String getMajorName(String majorCode);
+
+    /**
+     * 查询所有设备类型
+     * @return
+     */
+    List<DeviceTypeDTO> getDeviceTypeInfo();
+    /**
+     * 设备类型名字
+     * @param deviceTypeCode
+     * @return
+     */
+    String deviceTypeCodeName(@Param("deviceTypeCode")String deviceTypeCode);
 }

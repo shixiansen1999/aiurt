@@ -21,6 +21,7 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * 故障统计
      * @param startDate
      * @param endDate
+     * @param ordList
      * @return
      */
     List<Fault> queryFaultCount(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("ordList") List<String> ordList);
@@ -36,19 +37,21 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
     List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level, @Param("page") Page<FaultTimeoutLevelDTO> page, @Param("faultTimeoutLevelReq") FaultTimeoutLevelReq faultTimeoutLevelReq);
 
     /**
-     *故障概况统计详情(总数和已解决)分页
+     * 故障概况统计详情(总数和已解决)分页
      * @param type
      * @param page
      * @param faultCountInfoReq
+     * @param ordList
      * @return
      */
     List<FaultCountInfoDTO> getFaultCountInfo(@Param("type") Integer type, @Param("page") Page<FaultCountInfoDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq,@Param("ordList") List<String> ordList);
 
     /**
-     *故障概况统计详情(未解决和挂起)分页
+     * 故障概况统计详情(未解决和挂起)分页
      * @param type
      * @param page
      * @param faultCountInfoReq
+     * @param ordList
      * @return
      */
     List<FaultCountInfosDTO> getFaultCountInfos(@Param("type") Integer type, @Param("page") Page<FaultCountInfosDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq,@Param("ordList") List<String> ordList);
