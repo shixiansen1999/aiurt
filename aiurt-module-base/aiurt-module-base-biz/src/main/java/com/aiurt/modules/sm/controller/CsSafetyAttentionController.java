@@ -158,26 +158,26 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	  *  修改状态
 	  *
 	  * @param id
-	  * @param
+	  * @param state
 	  * @return
 	  */
 	 @AutoLog(value = "安全事项-修改状态")
 	 @ApiOperation(value="安全事项-修改状态", notes="安全事项-修改状态")
-	 @RequestMapping(value = "/edit", method = {RequestMethod.POST})
-	 public Result<String> edit(@RequestParam(name = "id") String id,
-								@RequestParam(name = "status") String state) {
+	 @RequestMapping(value = "/modify", method = {RequestMethod.POST})
+	 public Result<String> modify(@RequestParam(name = "id") String id,
+								@RequestParam(name = "status") Integer state) {
 	 	CsSafetyAttention csSafetyAttention = new CsSafetyAttention();
 	 	csSafetyAttention.setId(id);
-	 	if (state.equals("0")){
+	 	if (state==0){
 			csSafetyAttention.setState(1);
 		}
-		 if (state.equals("1")){
+		 if (state==1){
 			 csSafetyAttention.setState(0);
 		 }
 		 csSafetyAttentionService.updateById(csSafetyAttention);
-		 if (state.equals("0")) {
+		 if (state==0) {
 			 return Result.OK(" 事项已生效！");
-		 } else if (state.equals("1")){
+		 } else if (state==1){
 			 return Result.OK(" 事项已失效！");
 		 }else  {
 			 return Result.error("修改失败!");
