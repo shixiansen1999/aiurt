@@ -322,4 +322,21 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         }
         this.updateById(command);
     }
+
+    /**
+     * 查询待办
+     *
+     * @param page                           分页
+     * @param constructionWeekPlanCommandDTO 请求参数
+     * @return
+     */
+    @Override
+    public IPage<ConstructionWeekPlanCommandVO> queryWorkToDo(Page<ConstructionWeekPlanCommandVO> page, ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到未登录，请登录后操作！");
+        }
+        IPage<ConstructionWeekPlanCommandVO> pageList = constructionWeekPlanCommandMapper.queryWorkToDo(page, loginUser.getUsername(), constructionWeekPlanCommandDTO);
+        return pageList;
+    }
 }
