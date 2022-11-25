@@ -92,7 +92,17 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 			queryWrapper.like(CsSafetyAttention::getAttentionContent,csSafetyAttention.getAttentionContent());
 		}
 		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionType())){
-			queryWrapper.eq(CsSafetyAttention::getAttentionType,csSafetyAttention.getAttentionType());
+			CsSafetyAttentionType csSafetyAttentionType =  csSafetyAttentionTypeMapper
+					.selectOne(new LambdaUpdateWrapper<CsSafetyAttentionType>()
+							.eq(CsSafetyAttentionType::getId,csSafetyAttention.getAttentionType())
+							.eq(CsSafetyAttentionType::getDelFlag,0));
+			String str = "/"+csSafetyAttentionType.getCode()+"/";
+			List <CsSafetyAttentionType> csSafetyAttentionTypes = csSafetyAttentionTypeMapper
+					.selectList(new LambdaQueryWrapper<CsSafetyAttentionType>()
+							.like(CsSafetyAttentionType::getCodeScc,str));
+			if (csSafetyAttentionTypes.size()>0){
+			queryWrapper.in(CsSafetyAttention::getAttentionType,csSafetyAttentionTypes.stream().map(CsSafetyAttentionType::getId).collect(Collectors.toList()));
+			}
 		}
 		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionTypeCode())){
 			queryWrapper.eq(CsSafetyAttention::getAttentionTypeCode,csSafetyAttention.getAttentionTypeCode());
