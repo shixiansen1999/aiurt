@@ -1,9 +1,11 @@
 package com.aiurt.boot.weeklyplan.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 import java.util.List;
@@ -31,12 +33,16 @@ public class ConstructionWeekPlanCommandDTO {
     /**
      * 所属周的开始日期
      */
-    @ApiModelProperty(value = "所属周的开始日期")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "所属周的开始日期yyyy-MM-dd")
     private Date starDate;
     /**
      * 所属周的结束日期
      */
-    @ApiModelProperty(value = "所属周的结束日期")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "所属周的结束日期yyyy-MM-dd")
     private Date endDate;
     /**
      * 计划类型(0正常计划 1计划补修 2日计划补充)

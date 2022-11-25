@@ -64,27 +64,27 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "作业日期")
     private Date taskDate;
-	/**作业开始时间*/
-	@Excel(name = "作业开始时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "作业开始时间")
+	/**作业开始时间HH:mm:ss*/
+	@Excel(name = "作业开始时间", width = 15, format = "HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "HH:mm:ss")
+    @DateTimeFormat(pattern="HH:mm:ss")
+    @ApiModelProperty(value = "作业开始时间HH:mm:ss")
     private Date taskStartTime;
-    /**作业结束时间*/
-    @Excel(name = "作业时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "作业结束时间")
+    /**作业结束时间HH:mm:ss*/
+    @Excel(name = "作业结束时间", width = 15, format = "HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "HH:mm:ss")
+    @DateTimeFormat(pattern="HH:mm:ss")
+    @ApiModelProperty(value = "作业结束时间HH:mm:ss")
     private Date taskEndTime;
 	/**作业范围*/
 	@Excel(name = "作业范围", width = 15)
     @ApiModelProperty(value = "作业范围")
     private String taskRange;
-    /**作业线路编码*/
-    @Excel(name = "作业线路编码", width = 15)
-    @ApiModelProperty(value = "作业线路编码")
-    @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
-	private String lineCode;
+    /**作业线路(1:1号线、2:2号线、3:3号线、4:4号线、8:8号线)*/
+    @Excel(name = "作业线路(1:1号线、2:2号线、3:3号线、4:4号线、8:8号线)", width = 15)
+    @ApiModelProperty(value = "作业线路(1:1号线、2:2号线、3:3号线、4:4号线、8:8号线)")
+    @Dict(dicCode = ConstructionDictConstant.WORKLINE)
+    private String workline;
 	/**供电要求ID*/
 	@Excel(name = "供电要求ID", width = 15)
     @ApiModelProperty(value = "供电要求ID")

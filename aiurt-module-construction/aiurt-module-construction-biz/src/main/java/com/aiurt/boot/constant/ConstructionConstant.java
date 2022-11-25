@@ -40,4 +40,16 @@ public interface ConstructionConstant {
      * 角色驳回状态
      */
     Integer APPROVE_STATUS_2 = 2;
+    /**
+     * 计划类型-正常计划
+     */
+    Integer PLAN_TYPE_1 = 1;
+    /**
+     * 计划类型-日补充计划
+     */
+    Integer PLAN_TYPE_2 = 2;
+    /**
+     * 计划类型-临时补修计划
+     */
+    Integer PLAN_TYPE_3 = 3;
 }

@@ -1,6 +1,7 @@
 package com.aiurt.boot.weeklyplan.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.ConstructionConstant;
@@ -13,6 +14,7 @@ import com.aiurt.boot.weeklyplan.service.IConstructionCommandAssistService;
 import com.aiurt.boot.weeklyplan.service.IConstructionWeekPlanCommandService;
 import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.RedisUtil;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
@@ -24,6 +26,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,8 +69,48 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("检测到未登录，请登录后操作！");
         }
+
+        // 生成计划令编码
+        StringBuilder code = new StringBuilder();
+        List<DictModel> types = iSysBaseApi.getDictItems(ConstructionDictConstant.CATEGORY);
+        String typeName = types.stream().filter(l -> l.getValue().equals(constructionWeekPlanCommand.getType()))
+                .map(DictModel::getText).findFirst().get();
+
+        // 临时修补计划和日计划
+        if (ConstructionConstant.PLAN_TYPE_2.equals(constructionWeekPlanCommand.getPlanChange())
+                || ConstructionConstant.PLAN_TYPE_3.equals(constructionWeekPlanCommand.getPlanChange())) {
+            code = new StringBuilder("L-");
+        }
+
+        // 获取施工的日期对应的日
+        String day = DateUtil.format(constructionWeekPlanCommand.getTaskDate(), "dd");
+
+        // 构建计划令编号
+        String separator = "-";
+        code.append(constructionWeekPlanCommand.getWorkline()).append(typeName).append(separator).append(day).append(separator);
+
+        // 计划令自增序号，如果是一位或两位数的则保留两位，三位则保留三位，即6->06、66->66,大于99小于1000则保留三位
+        List<ConstructionWeekPlanCommand> codeNumbers = this.lambdaQuery().like(ConstructionWeekPlanCommand::getCode, code.toString())
+                .orderByDesc(ConstructionWeekPlanCommand::getCode)
+                .last("limit 1")
+                .list();
+
+        if (CollectionUtil.isNotEmpty(codeNumbers) && ObjectUtil.isNotEmpty(codeNumbers.get(0).getCode())) {
+            String planCode = codeNumbers.get(0).getCode();
+            Integer serialNumber = Integer.valueOf(planCode.substring(planCode.lastIndexOf(separator) + 1));
+            if (100 > serialNumber) {
+                code.append(String.format("%02d", serialNumber + 1));
+            } else {
+                code.append(serialNumber + 1);
+            }
+        } else {
+            code.append(String.format("%02d", 1));
+        }
+
+        constructionWeekPlanCommand.setCode(code.toString());
         constructionWeekPlanCommand.setApplyId(loginUser.getId());
         this.save(constructionWeekPlanCommand);
+
         List<ConstructionCommandAssist> constructionAssist = constructionWeekPlanCommand.getConstructionAssist();
         if (CollectionUtil.isNotEmpty(constructionAssist)) {
             constructionCommandAssistService.saveBatch(constructionWeekPlanCommand.getConstructionAssist());
