@@ -19,11 +19,10 @@ public interface ICsSafetyAttentionService extends IService<CsSafetyAttention> {
     /**
      * 导出
      * @param request
-     * @param majorCode
      * @param ids
      * @return
      */
-    ModelAndView exportXls(HttpServletRequest request, String ids, String majorCode);
+    ModelAndView exportXls(HttpServletRequest request, String ids);
 
     /**
      * 导入

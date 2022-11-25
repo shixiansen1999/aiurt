@@ -47,7 +47,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
     @Autowired
     private CsSafetyAttentionTypeMapper csSafetyAttentionTypeMapper;
     @Override
-    public ModelAndView exportXls(HttpServletRequest request, String ids ,String majorCodes) {
+    public ModelAndView exportXls(HttpServletRequest request, String ids) {
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
         List<CsSafetyAttention> safetyAttentions = new ArrayList<>();
         if (StrUtil.isNotEmpty(ids)){
@@ -59,6 +59,12 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
         if (StrUtil.isNotEmpty(ids)){
             List<CsSafetyAttention>safetyAttentions1 = baseMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>()
                     .in(CsSafetyAttention::getMajorCode,Arrays.asList(ids.split(",")))
+                    .eq(CsSafetyAttention::getDelFlag,0));
+            safetyAttentions.addAll(safetyAttentions1);
+        }
+        if (StrUtil.isNotEmpty(ids)){
+            List<CsSafetyAttention>safetyAttentions1 = baseMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>()
+                    .in(CsSafetyAttention::getId,Arrays.asList(ids.split(",")))
                     .eq(CsSafetyAttention::getDelFlag,0));
             safetyAttentions.addAll(safetyAttentions1);
         }

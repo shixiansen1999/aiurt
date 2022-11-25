@@ -234,9 +234,8 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	@ApiOperation(value = "导出excel", notes = "导出excel")
     @GetMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request,
-								  @RequestParam(name="ids",required=false) String ids,
-								  @RequestParam(name="majorCode",required=false) String majorCodes) {
-        return csSafetyAttentionService.exportXls(request, ids,majorCodes);
+								  @RequestParam(name="ids",required=true) String ids) {
+        return csSafetyAttentionService.exportXls(request, ids);
     }
 	 /**
 	  * 下载导入模板
