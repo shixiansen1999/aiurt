@@ -83,7 +83,8 @@ public class SysFileTypeController {
 			}
 		}
 		param.setEditIds(editIds);
-		return sysFileTypeService.add(req, param);
+		sysFileTypeService.add(req, param);
+		return Result.ok("添加成功！");
 	}
 
 	/**
@@ -97,7 +98,7 @@ public class SysFileTypeController {
 	@PostMapping(value = "/edit")
 	public Result<?> edit(HttpServletRequest req, @RequestBody @Validated SysFileTypeParam param) {
 		if (param.getId() == null) {
-			return Result.error("id不能为空");
+			return Result.error("修改失败");
 		}
 		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String userId = loginUser.getId();
@@ -108,7 +109,8 @@ public class SysFileTypeController {
 			}
 		}
 		param.setEditIds(editIds);
-		return sysFileTypeService.edit(req, param);
+		sysFileTypeService.edit(req, param);
+		return Result.ok("修改成功！");
 	}
 
 
@@ -146,13 +148,13 @@ public class SysFileTypeController {
 		}
 
 		if (!this.sysFileTypeService.removeByIds(ids)){
-			return Result.error("删除失败");
+			return Result.error("删除失败!");
 		}
 		//为了清空文件和权限所作操作,并不一定有数据,不做判断
 		this.sysFileService.lambdaUpdate().in(SysFile::getTypeId,ids).remove();
 		this.sysFileRoleService.lambdaUpdate().in(SysFileRole::getTypeId, ids).remove();
 
-		return Result.ok();
+		return Result.ok("删除失败!");
 	}
 
 
