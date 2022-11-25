@@ -66,9 +66,9 @@ public class ConstructionWeekPlanCommandDTO {
             "周计划变更列表传：0待提审、3已驳回、4已取消状态值")
     private List<Integer> formStatusList;
     /**
-     * 周计划变更列表时传：1计划补修 2日计划补充状态值
+     * 周计划变更列表时传：2日补充计划 3临时补修计划状态值
      */
-    @ApiModelProperty(value = "周计划变更列表时传：1计划补修 2日计划补充状态值")
+    @ApiModelProperty(value = "周计划变更列表时传：2日补充计划 3临时补修计划状态值")
     private List<Integer> planChangeList;
 
 }

@@ -37,6 +37,12 @@
                 #{item}
             </foreach>
         </if>
+        <if test="condition.planChangeList != null and condition.planChangeList.size() != 0">
+            and cwpc.plan_change in
+            <foreach collection="condition.planChangeList" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
     </select>
 
     <select id="queryWorkToDo" resultType="com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO">
