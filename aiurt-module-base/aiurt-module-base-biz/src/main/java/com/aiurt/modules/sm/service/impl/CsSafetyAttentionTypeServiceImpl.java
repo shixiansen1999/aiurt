@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Struct;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -229,7 +230,7 @@ public class CsSafetyAttentionTypeServiceImpl extends ServiceImpl<CsSafetyAttent
         List<TreeNode> treeNodes = baseMapper.queryTreeList();
         List<TreeNode> nodes = TreeUtils.treeFirst(treeNodes);
         // 拼接专业
-        List<TreeNode> result = baseMapper.queryAllMajor();
+        List<TreeNode> result = baseMapper.queryAllMajor(null);
         if (CollUtil.isNotEmpty(result) && CollUtil.isNotEmpty(nodes)) {
             for (TreeNode treeNode : result) {
                 if (ObjectUtil.isEmpty(treeNode)) {
@@ -247,6 +248,24 @@ public class CsSafetyAttentionTypeServiceImpl extends ServiceImpl<CsSafetyAttent
             }
         }
         return result;
+    }
+
+    @Override
+    public TreeNode queryTreeByMajorCode(String majorCode) {
+        if (StrUtil.isEmpty(majorCode)) {
+            return new TreeNode();
+        }
+        List<TreeNode> treeNodes = baseMapper.queryTreeByMajorCode(majorCode);
+        List<TreeNode> childs = TreeUtils.treeFirst(treeNodes);
+
+        // 拼接专业
+        List<TreeNode> result = baseMapper.queryAllMajor(majorCode);
+        if (CollUtil.isNotEmpty(result)) {
+            TreeNode treeNode = result.get(0);
+            treeNode.setChildList(childs);
+            return treeNode;
+        }
+        return new TreeNode();
     }
 
     /**
@@ -347,7 +366,7 @@ public class CsSafetyAttentionTypeServiceImpl extends ServiceImpl<CsSafetyAttent
         LambdaQueryWrapper<CsSafetyAttentionType> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(CsSafetyAttentionType::getName, csSafetyAttentionType.getName());
         lambdaQueryWrapper.eq(CsSafetyAttentionType::getDelFlag, CommonConstant.DEL_FLAG_0);
-        lambdaQueryWrapper.eq(CsSafetyAttentionType::getMajorCode,csSafetyAttentionType.getMajorCode());
+        lambdaQueryWrapper.eq(CsSafetyAttentionType::getMajorCode, csSafetyAttentionType.getMajorCode());
         // 兼容修改时的验证
         if (StrUtil.isNotEmpty(csSafetyAttentionType.getId())) {
             lambdaQueryWrapper.ne(CsSafetyAttentionType::getId, csSafetyAttentionType.getId());

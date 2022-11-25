@@ -43,6 +43,12 @@ public interface CsSafetyAttentionTypeMapper extends BaseMapper<CsSafetyAttentio
 	 * 查询所有的专业信息
 	 * @return
 	 */
-	List<TreeNode> queryAllMajor();
+	List<TreeNode> queryAllMajor(String majorCode);
 
+	/**
+	 * 根据专业查询节点
+	 * @param majorCode
+	 * @return
+	 */
+	List<TreeNode> queryTreeByMajorCode(@Param("majorCode") String majorCode);
 }

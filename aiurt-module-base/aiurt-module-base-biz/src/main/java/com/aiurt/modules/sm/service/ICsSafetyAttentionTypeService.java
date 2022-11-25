@@ -79,4 +79,10 @@ public interface ICsSafetyAttentionTypeService extends IService<CsSafetyAttentio
 	 */
     List<TreeNode> queryTreeList();
 
+	/**
+	 * 根据专业查询数据节点
+	 * @param majorCode
+	 * @return
+	 */
+	TreeNode queryTreeByMajorCode(String majorCode);
 }

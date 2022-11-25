@@ -237,6 +237,23 @@ public class CsSafetyAttentionTypeController extends BaseController<CsSafetyAtte
 		}
 		return Result.OK(csSafetyAttentionType);
 	}
-
+	 /**
+	  * 根据专业查询所有的节点
+	  *
+	  * @return
+	  */
+	 @ApiOperation(value="安全事项管理-根据专业查询所有的节点", notes="安全事项管理-根据专业查询所有的节点")
+	 @RequestMapping(value = "/queryTreeByMajorCode", method = RequestMethod.GET)
+	 public Result<TreeNode> queryTreeByMajorCode(@RequestParam(name="majorCode",required=true) String majorCode) {
+		 Result<TreeNode> result = new Result<>();
+		 try {
+			 TreeNode selectTreeModels = csSafetyAttentionTypeService.queryTreeByMajorCode(majorCode);
+			 result.setResult(selectTreeModels);
+			 result.setSuccess(true);
+		 } catch (Exception e) {
+			 log.error(e.getMessage(),e);
+		 }
+		 return result;
+	 }
 
 }
