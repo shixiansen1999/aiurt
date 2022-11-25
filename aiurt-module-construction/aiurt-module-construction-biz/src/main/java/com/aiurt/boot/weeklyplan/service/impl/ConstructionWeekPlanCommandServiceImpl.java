@@ -123,9 +123,9 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             }
 
         } else {
-            // 驳回后再次提审时，更新为待审核状态
+            // 驳回后再次提审时，更新为待提审状态
             constructionWeekPlanCommand.setApplyId(loginUser.getId());
-            constructionWeekPlanCommand.setFormStatus(ConstructionConstant.FORM_STATUS_1);
+            constructionWeekPlanCommand.setFormStatus(ConstructionConstant.FORM_STATUS_0);
             this.updateById(constructionWeekPlanCommand);
 
             List<ConstructionCommandAssist> constructionAssist = constructionWeekPlanCommand.getConstructionAssist();
@@ -290,38 +290,39 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         if (ObjectUtil.isEmpty(command)) {
             throw new AiurtBootException("未找到对应数据！");
         }
-        if (1 == updateStateEntity.getStates()) {
+        int states = updateStateEntity.getStates();
+        if (1 == states) {
             // 线路负责人审批
             command.setLineStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setLineOpinion(updateStateEntity.getReason());
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
-        } else if (3 == updateStateEntity.getStates()) {
+        } else if (3 == states) {
             // 生产调度审批
             command.setDispatchStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setDispatchOpinion(updateStateEntity.getReason());
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
-        } else if (5 == updateStateEntity.getStates()) {
+        } else if (5 == states) {
             // 已通过
             command.setFormStatus(ConstructionConstant.FORM_STATUS_5);
-        } else if (6 == updateStateEntity.getStates()) {
+        } else if (6 == states) {
             // 分部主任审批
             command.setDirectorStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setDirectorOpinion(updateStateEntity.getReason());
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
-        } else if (8 == updateStateEntity.getStates()) {
+        } else if (8 == states) {
             // 中心经理审批
             command.setManagerStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setManagerOpinion(updateStateEntity.getReason());
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
-        } else if (2 == updateStateEntity.getStates() || 4 == updateStateEntity.getStates()
-                || 7 == updateStateEntity.getStates() || 9 == updateStateEntity.getStates()) {
+        } else if (2 == states || 4 == states || 7 == states || 9 == states) {
             // 驳回
             command.setRejectId(loginUser.getId());
             command.setRejectReason(updateStateEntity.getReason());
+            command.setFormStatus(ConstructionConstant.FORM_STATUS_3);
         } else {
             throw new AiurtBootException("你没有权限审批或你不是节点的审批人！");
         }
