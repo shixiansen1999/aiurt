@@ -198,6 +198,34 @@
                             </descriptors>
                         </configuration>
                     </execution>
+
+                    <execution>
+                        <id>make-assembly-fat</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <skipAssembly>${skipAssemblyFat}</skipAssembly>
+                            <descriptors>
+                                <descriptor>src/main/assembly/fat/assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>make-assembly-uat</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <skipAssembly>${skipAssemblyUat}</skipAssembly>
+                            <descriptors>
+                                <descriptor>src/main/assembly/uat/assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -237,9 +265,6 @@
                 </configuration>
             </plugin>
         </plugins>
-
-        <finalName>${project.artifactId}-${project.version}</finalName>
-
     </build>
 
     <profiles>
@@ -277,7 +302,12 @@
                 <env.devMode>prod</env.devMode>
                 <skipAssemblyProd>false</skipAssemblyProd>
                 <skipAssemblyTest>true</skipAssemblyTest>
+                <skipAssemblyFat>true</skipAssemblyFat>
+                <skipAssemblyUat>true</skipAssemblyUat>
             </properties>
+            <build>
+                <finalName>${project.artifactId}-${project.version}</finalName>
+            </build>
         </profile>
         <profile>
             <id>test</id>
@@ -288,7 +318,45 @@
                 <env.devMode>test</env.devMode>
                 <skipAssemblyProd>true</skipAssemblyProd>
                 <skipAssemblyTest>false</skipAssemblyTest>
+                <skipAssemblyFat>true</skipAssemblyFat>
+                <skipAssemblyUat>true</skipAssemblyUat>
             </properties>
+            <build>
+                <finalName>${project.artifactId}-${project.version}-test</finalName>
+            </build>
+        </profile>
+        <profile>
+            <id>uat</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <env.devMode>uat</env.devMode>
+                <skipAssemblyProd>false</skipAssemblyProd>
+                <skipAssemblyTest>false</skipAssemblyTest>
+                <skipAssemblyFat>false</skipAssemblyFat>
+                <skipAssemblyUat>true</skipAssemblyUat>
+            </properties>
+            <build>
+                <finalName>${project.artifactId}-${project.version}-uat</finalName>
+            </build>
+        </profile>
+
+        <profile>
+            <id>fat</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <env.devMode>fat</env.devMode>
+                <skipAssemblyProd>false</skipAssemblyProd>
+                <skipAssemblyTest>false</skipAssemblyTest>
+                <skipAssemblyFat>true</skipAssemblyFat>
+                <skipAssemblyUat>false</skipAssemblyUat>
+            </properties>
+            <build>
+                <finalName>${project.artifactId}-${project.version}-fat</finalName>
+            </build>
         </profile>
     </profiles>
 
