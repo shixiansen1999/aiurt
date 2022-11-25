@@ -99,12 +99,12 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 long result=DateUtil.between(fault.getHappenTime(),new Date(), DateUnit.HOUR);
 
                 //三级故障超时(12-24小时)
-                if(result>=12 && result<=24 & !FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
+                if(result>=12 && result<24 & !FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
                     number1++;
                     faultIndexDTO.setLevelThreeNumber(number1);
                 }
                 //二级故障超时(24-48小时)
-                else if(result>=24 && result<=48 & !FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
+                else if(result>=24 && result<48 & !FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
                     number2++;
                     faultIndexDTO.setLevelTwoNumber(number2);
                 }
@@ -258,13 +258,13 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 } else if (faultTimeoutLevelReq.getLevel() == 2) {
                     faultDatum.setTimeoutDuration(time);
                     faultDatum.setAppTimeoutDuration(appTime);
-                    if (hour >= 24 && hour <= 48 & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
+                    if (hour >= 24 && hour < 48 & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("二级超时");
                     }
                 } else if (faultTimeoutLevelReq.getLevel() == 3) {
                     faultDatum.setTimeoutDuration(time);
                     faultDatum.setAppTimeoutDuration(appTime);
-                    if (hour >= 12 && hour <= 24 & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
+                    if (hour >= 12 && hour < 24 & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("三级超时");
                     }
                 }
