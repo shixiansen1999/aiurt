@@ -332,10 +332,10 @@
             </activation>
             <properties>
                 <env.devMode>uat</env.devMode>
-                <skipAssemblyProd>false</skipAssemblyProd>
-                <skipAssemblyTest>false</skipAssemblyTest>
-                <skipAssemblyFat>false</skipAssemblyFat>
-                <skipAssemblyUat>true</skipAssemblyUat>
+                <skipAssemblyProd>true</skipAssemblyProd>
+                <skipAssemblyTest>true</skipAssemblyTest>
+                <skipAssemblyFat>true</skipAssemblyFat>
+                <skipAssemblyUat>false</skipAssemblyUat>
             </properties>
             <build>
                 <finalName>${project.artifactId}-${project.version}-uat</finalName>
@@ -349,10 +349,10 @@
             </activation>
             <properties>
                 <env.devMode>fat</env.devMode>
-                <skipAssemblyProd>false</skipAssemblyProd>
-                <skipAssemblyTest>false</skipAssemblyTest>
-                <skipAssemblyFat>true</skipAssemblyFat>
-                <skipAssemblyUat>false</skipAssemblyUat>
+                <skipAssemblyProd>true</skipAssemblyProd>
+                <skipAssemblyTest>true</skipAssemblyTest>
+                <skipAssemblyFat>false</skipAssemblyFat>
+                <skipAssemblyUat>true</skipAssemblyUat>
             </properties>
             <build>
                 <finalName>${project.artifactId}-${project.version}-fat</finalName>

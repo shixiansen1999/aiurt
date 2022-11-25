@@ -5,7 +5,7 @@ JAVA_OPTIONS_MAX=-Xmx2048M
 
 ##spring boot 打包完成后的jar包名称
 ##spring boot project package jar name
-APP_JAR_NAME=${project.artifactId}-${project.version}-uat.jar
+APP_JAR_NAME=aiurt-module-system-3.2.0-uat.jar
 
 ##应用名称
 ##application name
