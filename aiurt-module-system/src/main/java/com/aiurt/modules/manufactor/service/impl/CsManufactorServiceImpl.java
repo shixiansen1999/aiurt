@@ -1,5 +1,6 @@
 package com.aiurt.modules.manufactor.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -169,7 +170,9 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                 List<CsManuFactorImportVo> csManuFactorList = csList.parallelStream()
                         .filter(c->c.getName()!=null||c.getLevel()!=null||c.getLinkPhoneNo()!=null||c.getLinkAddress()!=null||c.getLinkPerson() !=null||c.getFilePath() !=null)
                         .collect(Collectors.toList());;
-
+                if(CollUtil.isEmpty(csManuFactorList)){
+                    return imporReturnRes(errorLines, successLines, errorMessage,false,url);
+                }
                 List<CsManufactor> list = new ArrayList<>();
                 for (int i = 0; i < csManuFactorList.size(); i++) {
                     CsManuFactorImportVo csManuFactorImportVo = csManuFactorList.get(i);
@@ -342,7 +345,7 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
             int totalCount = successLines + errorLines;
             result.put("totalCount", totalCount);
             Result res = Result.ok(result);
-            res.setMessage("导入失败，文件类型不对。");
+            res.setMessage("导入失败，文件类型不对或文件为空文件。");
             res.setCode(200);
             return res;
         }

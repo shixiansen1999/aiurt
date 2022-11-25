@@ -92,7 +92,10 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 				List<StockLevel2InfoVo> stockLevel2InfoList = slList.parallelStream()
 						.filter(c->c.getWarehouseCode()!=null||c.getWarehouseName()!=null||c.getOrganizationId()!=null||c.getStatus()!=null||c.getRemark() !=null)
 						.collect(Collectors.toList());
-
+				//空文件直接返回
+				if(CollUtil.isEmpty(stockLevel2InfoList)){
+					return imporReturnRes(errorLines, successLines, errorMessage,false,url);
+				}
 				List<StockLevel2Info> list = new ArrayList<>();
 				for (int i = 0; i < stockLevel2InfoList.size(); i++) {
 					StockLevel2InfoVo stockLevel2InfoVo = stockLevel2InfoList.get(i);
@@ -295,7 +298,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 			int totalCount = successLines + errorLines;
 			result.put("totalCount", totalCount);
 			Result res = Result.ok(result);
-			res.setMessage("导入失败，文件类型不对。");
+			res.setMessage("导入失败，文件类型不对或文件为空文件。");
 			res.setCode(200);
 			return res;
 		}
