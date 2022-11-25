@@ -92,7 +92,7 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             String separator = "-";
             // 此处得保证线路编号是数值，比如1号线对应01、2号线对应02这种
             String lineCode = constructionWeekPlanCommand.getLineCode();
-            code.append(lineCode).append(typeName).append(separator).append(day).append(separator);
+            code.append(Integer.valueOf(lineCode)).append(typeName).append(separator).append(day).append(separator);
 
             // 计划令自增序号，如果是一位或两位数的则保留两位，三位则保留三位，即6->06、66->66,大于99小于1000则保留三位
             List<ConstructionWeekPlanCommand> codeNumbers = this.lambdaQuery().like(ConstructionWeekPlanCommand::getCode, code.toString())

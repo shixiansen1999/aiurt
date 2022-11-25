@@ -5,10 +5,6 @@ package com.aiurt.boot.constant;
  */
 public interface ConstructionDictConstant {
     /**
-     * 施工-作业线路字典编码
-     */
-    String WORKLINE = "construction_workline";
-    /**
      * 施工-作业类别字典编码
      */
     String CATEGORY = "construction_category";
