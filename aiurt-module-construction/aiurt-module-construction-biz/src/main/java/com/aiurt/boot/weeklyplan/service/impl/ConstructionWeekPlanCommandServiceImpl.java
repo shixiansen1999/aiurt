@@ -69,51 +69,73 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("检测到未登录，请登录后操作！");
         }
+        QueryWrapper<ConstructionWeekPlanCommand> wrapper = new QueryWrapper<>(constructionWeekPlanCommand);
+        ConstructionWeekPlanCommand planCommand = this.getOne(wrapper);
 
-        // 生成计划令编码
-        StringBuilder code = new StringBuilder();
-        List<DictModel> types = iSysBaseApi.getDictItems(ConstructionDictConstant.CATEGORY);
-        String typeName = types.stream().filter(l -> l.getValue().equals(constructionWeekPlanCommand.getType()))
-                .map(DictModel::getText).findFirst().get();
+        if (ObjectUtil.isEmpty(planCommand)) {
+            // 生成计划令编码
+            StringBuilder code = new StringBuilder();
+            List<DictModel> types = iSysBaseApi.getDictItems(ConstructionDictConstant.CATEGORY);
+            String typeName = types.stream().filter(l -> l.getValue().equals(String.valueOf(constructionWeekPlanCommand.getType())))
+                    .map(DictModel::getText).findFirst().get();
 
-        // 临时修补计划和日计划
-        if (ConstructionConstant.PLAN_TYPE_2.equals(constructionWeekPlanCommand.getPlanChange())
-                || ConstructionConstant.PLAN_TYPE_3.equals(constructionWeekPlanCommand.getPlanChange())) {
-            code = new StringBuilder("L-");
-        }
-
-        // 获取施工的日期对应的日
-        String day = DateUtil.format(constructionWeekPlanCommand.getTaskDate(), "dd");
-
-        // 构建计划令编号
-        String separator = "-";
-        code.append(constructionWeekPlanCommand.getWorkline()).append(typeName).append(separator).append(day).append(separator);
-
-        // 计划令自增序号，如果是一位或两位数的则保留两位，三位则保留三位，即6->06、66->66,大于99小于1000则保留三位
-        List<ConstructionWeekPlanCommand> codeNumbers = this.lambdaQuery().like(ConstructionWeekPlanCommand::getCode, code.toString())
-                .orderByDesc(ConstructionWeekPlanCommand::getCode)
-                .last("limit 1")
-                .list();
-
-        if (CollectionUtil.isNotEmpty(codeNumbers) && ObjectUtil.isNotEmpty(codeNumbers.get(0).getCode())) {
-            String planCode = codeNumbers.get(0).getCode();
-            Integer serialNumber = Integer.valueOf(planCode.substring(planCode.lastIndexOf(separator) + 1));
-            if (100 > serialNumber) {
-                code.append(String.format("%02d", serialNumber + 1));
-            } else {
-                code.append(serialNumber + 1);
+            // 临时修补计划和日计划
+            if (ConstructionConstant.PLAN_TYPE_2.equals(constructionWeekPlanCommand.getPlanChange())
+                    || ConstructionConstant.PLAN_TYPE_3.equals(constructionWeekPlanCommand.getPlanChange())) {
+                code = new StringBuilder("L-");
             }
+
+            // 获取施工的日期对应的日
+            String day = DateUtil.format(constructionWeekPlanCommand.getTaskDate(), "dd");
+
+            // 构建计划令编号
+            String separator = "-";
+            code.append(constructionWeekPlanCommand.getWorkline()).append(typeName).append(separator).append(day).append(separator);
+
+            // 计划令自增序号，如果是一位或两位数的则保留两位，三位则保留三位，即6->06、66->66,大于99小于1000则保留三位
+            List<ConstructionWeekPlanCommand> codeNumbers = this.lambdaQuery().like(ConstructionWeekPlanCommand::getCode, code.toString())
+                    .orderByDesc(ConstructionWeekPlanCommand::getCode)
+                    .last("limit 1")
+                    .list();
+
+            if (CollectionUtil.isNotEmpty(codeNumbers) && ObjectUtil.isNotEmpty(codeNumbers.get(0).getCode())) {
+                String planCode = codeNumbers.get(0).getCode();
+                Integer serialNumber = Integer.valueOf(planCode.substring(planCode.lastIndexOf(separator) + 1));
+                if (100 > serialNumber) {
+                    code.append(String.format("%02d", serialNumber + 1));
+                } else {
+                    code.append(serialNumber + 1);
+                }
+            } else {
+                code.append(String.format("%02d", 1));
+            }
+
+            constructionWeekPlanCommand.setCode(code.toString());
+            constructionWeekPlanCommand.setApplyId(loginUser.getId());
+            this.save(constructionWeekPlanCommand);
+
+            List<ConstructionCommandAssist> constructionAssist = constructionWeekPlanCommand.getConstructionAssist();
+            if (CollectionUtil.isNotEmpty(constructionAssist)) {
+                constructionAssist.forEach(l -> l.setPlanId(constructionWeekPlanCommand.getId()));
+                constructionCommandAssistService.saveBatch(constructionWeekPlanCommand.getConstructionAssist());
+            }
+
         } else {
-            code.append(String.format("%02d", 1));
-        }
+            // 驳回
+            constructionWeekPlanCommand.setRejectId(loginUser.getId());
+            constructionWeekPlanCommand.setRejectReason(constructionWeekPlanCommand.getRejectReason());
+            // 更新为已驳回状态，此时可以再次提审
+            constructionWeekPlanCommand.setFormStatus(ConstructionConstant.FORM_STATUS_3);
+            this.updateById(constructionWeekPlanCommand);
 
-        constructionWeekPlanCommand.setCode(code.toString());
-        constructionWeekPlanCommand.setApplyId(loginUser.getId());
-        this.save(constructionWeekPlanCommand);
-
-        List<ConstructionCommandAssist> constructionAssist = constructionWeekPlanCommand.getConstructionAssist();
-        if (CollectionUtil.isNotEmpty(constructionAssist)) {
-            constructionCommandAssistService.saveBatch(constructionWeekPlanCommand.getConstructionAssist());
+            List<ConstructionCommandAssist> constructionAssist = constructionWeekPlanCommand.getConstructionAssist();
+            QueryWrapper<ConstructionCommandAssist> assistWrapper = new QueryWrapper<>();
+            assistWrapper.lambda().eq(ConstructionCommandAssist::getPlanId, constructionWeekPlanCommand.getId());
+            constructionCommandAssistService.remove(assistWrapper);
+            if (CollectionUtil.isNotEmpty(constructionAssist)) {
+                constructionAssist.forEach(l -> l.setPlanId(constructionWeekPlanCommand.getId()));
+                constructionCommandAssistService.saveBatch(constructionWeekPlanCommand.getConstructionAssist());
+            }
         }
         return constructionWeekPlanCommand.getId();
     }
@@ -268,33 +290,35 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         if (ObjectUtil.isEmpty(command)) {
             throw new AiurtBootException("未找到对应数据！");
         }
-        if (userId.equals(command.getLineUserId())) {
+        if (1 == updateStateEntity.getStates()) {
             // 线路负责人审批
             command.setLineStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setLineOpinion(updateStateEntity.getReason());
-        } else if (userId.equals(command.getDispatchId())) {
+            // 审核中
+            command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
+        } else if (3 == updateStateEntity.getStates()) {
             // 生产调度审批
             command.setDispatchStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setDispatchOpinion(updateStateEntity.getReason());
-        } else if (userId.equals(command.getDirectorId())) {
+            // 审核中
+            command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
+        } else if (5 == updateStateEntity.getStates()) {
+            // 已通过
+            command.setFormStatus(ConstructionConstant.FORM_STATUS_5);
+        } else if (6 == updateStateEntity.getStates()) {
             // 分部主任审批
             command.setDirectorStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setDirectorOpinion(updateStateEntity.getReason());
-        } else if (userId.equals(command.getManagerId())) {
+            // 审核中
+            command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
+        } else if (8 == updateStateEntity.getStates()) {
             // 中心经理审批
             command.setManagerStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setManagerOpinion(updateStateEntity.getReason());
+            // 审核中
+            command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
         } else {
             throw new AiurtBootException("你没有权限审批或你不是节点的审批人！");
-        }
-        boolean lineUser = ConstructionConstant.APPROVE_STATUS_1.equals(command.getLineStatus());
-        boolean dispatchUser = ConstructionConstant.APPROVE_STATUS_1.equals(command.getDispatchStatus());
-        boolean directorUser = ConstructionConstant.APPROVE_STATUS_1.equals(command.getDirectorStatus());
-        boolean managerUser = ConstructionConstant.APPROVE_STATUS_1.equals(command.getManagerStatus());
-
-        // 更新计划令审批状态为已通过
-        if (lineUser && dispatchUser && directorUser && managerUser) {
-            command.setFormStatus(ConstructionConstant.FORM_STATUS_5);
         }
         this.updateById(command);
     }
