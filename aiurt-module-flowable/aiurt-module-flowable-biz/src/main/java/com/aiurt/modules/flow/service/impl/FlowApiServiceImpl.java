@@ -205,12 +205,17 @@ public class FlowApiServiceImpl implements FlowApiService {
         UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(startBpmnDTO.getModelKey());
 
         // 保存中间业务数据，将业务数据id返回
-        Object businessKey = flowElementUtil.saveBusData(result.getId(), userTask.getId(), busData);
+        Object businessKey = null;
+        try {
+            businessKey = flowElementUtil.saveBusData(result.getId(), userTask.getId(), busData);
+        } catch (Exception e) {
+           throw new AiurtBootException("启动失败， 保存业务数据失败。");
+        }
 
         String loginName = loginUser.getUsername();
         Authentication.setAuthenticatedUserId(loginName);
         // 启动流程
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), (String) businessKey, variableData);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), Objects.isNull(businessKey)?null:(String) businessKey, variableData);
 
         // 获取流程启动后的第一个任务。
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
@@ -319,6 +324,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         String commentStr = comment.getComment();
 
         Map<String, Object> variableData = new HashMap<>(16);
+        // todo 中间变量
         variableData.put("operationType", approvalType);
         variableData.put("comment", commentStr);
 
