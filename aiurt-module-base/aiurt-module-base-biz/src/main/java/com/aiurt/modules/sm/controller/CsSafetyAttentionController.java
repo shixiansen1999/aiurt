@@ -165,19 +165,19 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	 @ApiOperation(value="安全事项-修改状态", notes="安全事项-修改状态")
 	 @RequestMapping(value = "/edit", method = {RequestMethod.POST})
 	 public Result<String> edit(@RequestParam(name = "id") String id,
-								@RequestParam(name = "status") Integer state) {
+								@RequestParam(name = "status") String state) {
 	 	CsSafetyAttention csSafetyAttention = new CsSafetyAttention();
 	 	csSafetyAttention.setId(id);
-	 	if (state==0){
+	 	if (state.equals("0")){
 			csSafetyAttention.setState(1);
 		}
-		 if (state==1){
+		 if (state.equals("1")){
 			 csSafetyAttention.setState(0);
 		 }
 		 csSafetyAttentionService.updateById(csSafetyAttention);
-		 if (state==0) {
+		 if (state.equals("0")) {
 			 return Result.OK(" 事项已生效！");
-		 } else if ( state==1){
+		 } else if (state.equals("1")){
 			 return Result.OK(" 事项已失效！");
 		 }else  {
 			 return Result.error("修改失败!");
