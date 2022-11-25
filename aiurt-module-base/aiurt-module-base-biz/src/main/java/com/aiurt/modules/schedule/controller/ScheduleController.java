@@ -33,6 +33,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -65,7 +66,8 @@ public class ScheduleController {
     private IScheduleRecordService recordService;
     @Autowired
     private IScheduleRuleService ruleService;
-
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
     @Autowired
     private IScheduleHolidaysService scheduleHolidaysService;
     @Autowired
@@ -240,13 +242,18 @@ public class ScheduleController {
 
         }
         Calendar calendar = Calendar.getInstance();
+       SysDepartModel sysDepartModel = sysBaseAPI.selectAllById(schedule.getOrgId());
+       String title = null;
        if (schedule.getDate() == null) {
            try {
-               calendar.setTime(DateUtils.parseDate(DateUtils.formatDate(), "yyyy-MM"));
+               calendar.setTime(DateUtils.parseDate(DateUtils.formatDate(), "yyyy年MM"));
+               title = DateUtils.formatDate() + "排班表 — " + sysDepartModel.getDepartName();
            } catch (ParseException e) {
                e.printStackTrace();
            }
-       }else {calendar.setTime(schedule.getDate());}
+       }else {
+           calendar.setTime(schedule.getDate());
+           title = DateUtil.format(schedule.getDate(), "yyyy年MM月") + "排班表 — " + sysDepartModel.getDepartName();}
         int maximum = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         //配置ExcelExportEntity集合如下：
@@ -268,12 +275,12 @@ public class ScheduleController {
             entityList.add(e);
         }
        //调用ExcelExportUtil.exportExcel方法生成workbook
-       Workbook wb = ExcelExportUtil.exportExcel(new ExportParams(null, "sheetName"),entityList,dataList);
+       Workbook wb = ExcelExportUtil.exportExcel(new ExportParams(title, "sheetName"),entityList,dataList);
        String fileName = "排班表";
        try {
            response.setHeader("Content-Disposition",
                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
-           response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+           response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
            wb.write(bufferedOutPut);
            bufferedOutPut.flush();
