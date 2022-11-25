@@ -90,7 +90,9 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
 
             // 构建计划令编号
             String separator = "-";
-            code.append(constructionWeekPlanCommand.getWorkline()).append(typeName).append(separator).append(day).append(separator);
+            // 此处得保证线路编号是数值，比如1号线对应01、2号线对应02这种
+            String lineCode = constructionWeekPlanCommand.getLineCode();
+            code.append(lineCode).append(typeName).append(separator).append(day).append(separator);
 
             // 计划令自增序号，如果是一位或两位数的则保留两位，三位则保留三位，即6->06、66->66,大于99小于1000则保留三位
             List<ConstructionWeekPlanCommand> codeNumbers = this.lambdaQuery().like(ConstructionWeekPlanCommand::getCode, code.toString())
@@ -121,11 +123,9 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             }
 
         } else {
-            // 驳回
-            constructionWeekPlanCommand.setRejectId(loginUser.getId());
-            constructionWeekPlanCommand.setRejectReason(constructionWeekPlanCommand.getRejectReason());
-            // 更新为已驳回状态，此时可以再次提审
-            constructionWeekPlanCommand.setFormStatus(ConstructionConstant.FORM_STATUS_3);
+            // 驳回后再次提审时，更新为待审核状态
+            constructionWeekPlanCommand.setApplyId(loginUser.getId());
+            constructionWeekPlanCommand.setFormStatus(ConstructionConstant.FORM_STATUS_1);
             this.updateById(constructionWeekPlanCommand);
 
             List<ConstructionCommandAssist> constructionAssist = constructionWeekPlanCommand.getConstructionAssist();
@@ -317,6 +317,11 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             command.setManagerOpinion(updateStateEntity.getReason());
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
+        } else if (2 == updateStateEntity.getStates() || 4 == updateStateEntity.getStates()
+                || 7 == updateStateEntity.getStates() || 9 == updateStateEntity.getStates()) {
+            // 驳回
+            command.setRejectId(loginUser.getId());
+            command.setRejectReason(updateStateEntity.getReason());
         } else {
             throw new AiurtBootException("你没有权限审批或你不是节点的审批人！");
         }

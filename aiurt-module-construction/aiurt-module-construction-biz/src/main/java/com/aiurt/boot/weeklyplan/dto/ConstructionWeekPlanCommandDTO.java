@@ -21,10 +21,10 @@ import java.util.List;
 @Accessors(chain = true)
 public class ConstructionWeekPlanCommandDTO {
     /**
-     * 作业线路(1:1号线、2:2号线、3:3号线、4:4号线、8:8号线)
+     * 作业编码
      */
-    @ApiModelProperty(value = "作业线路(1:1号线、2:2号线、3:3号线、4:4号线、8:8号线)")
-    private String workline;
+    @ApiModelProperty(value = "作业编码")
+    private String lineCode;
     /**
      * 所属周
      */
