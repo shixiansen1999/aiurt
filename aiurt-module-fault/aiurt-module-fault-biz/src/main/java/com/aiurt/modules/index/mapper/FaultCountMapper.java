@@ -24,7 +24,7 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @param ordList
      * @return
      */
-    List<Fault> queryFaultCount(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("ordList") List<String> ordList);
+    List<Fault> queryFaultCount(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("ordList") List<String> ordList, @Param("majorByUserId")List<String> majorByUserId,@Param("isDirector")boolean isDirector);
 
 
     /**

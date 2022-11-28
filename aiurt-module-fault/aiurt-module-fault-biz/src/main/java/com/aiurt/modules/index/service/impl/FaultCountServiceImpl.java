@@ -17,6 +17,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,19 @@ public class FaultCountServiceImpl implements IFaultCountService {
      */
     @Override
     public FaultIndexDTO queryFaultCount(Date startDate, Date endDate) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+         String[] split = user.getRoleCodes().split(",");
+        List<String> roleCodes = CollUtil.newArrayList(split);
+        roleCodes = roleCodes.stream().filter(s->s.equals("director")).collect(Collectors.toList());
+        //当前登录人为主任，则根据当前用户所拥有的专业，查询该专业下的故障信息
+        boolean isDirector = false;
+        if(roleCodes.size()>0)
+        {
+            isDirector=true;
+        }
+        List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
+        List<String> majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+        System.out.println(user.getRoleCodes());
         FaultIndexDTO faultIndexDTO = new FaultIndexDTO();
         if (ObjectUtil.isEmpty(startDate) || ObjectUtil.isEmpty(endDate)) {
             return faultIndexDTO;
@@ -62,14 +76,13 @@ public class FaultCountServiceImpl implements IFaultCountService {
         LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.ge(Fault::getApprovalPassTime, DateUtil.beginOfDay(startDate));
         queryWrapper.le(Fault::getApprovalPassTime, DateUtil.beginOfDay(endDate));
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
         if(CollUtil.isEmpty(departByUserId))
         {
             return faultIndexDTO;
         }
         List<String> ordId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
-        List<Fault> faultList = faultCountMapper.queryFaultCount(startDate,endDate,ordId);
+        List<Fault> faultList = faultCountMapper.queryFaultCount(startDate,endDate,ordId,majors,isDirector);
 
         //故障总数
         faultIndexDTO.setSum(CollUtil.isNotEmpty(faultList)?faultList.size():0L);
