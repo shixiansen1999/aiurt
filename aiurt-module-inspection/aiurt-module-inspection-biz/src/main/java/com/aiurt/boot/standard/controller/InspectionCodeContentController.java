@@ -199,10 +199,12 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
     * @param request
     * @param inspectionCodeContent
     */
+	/**
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, InspectionCodeContent inspectionCodeContent) {
 		return super.exportXls(request, inspectionCodeContent, InspectionCodeContent.class, "inspection_code_content");
     }
+	*/
 
     /**
       * 通过excel导入数据
@@ -211,10 +213,13 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
     * @param response
     * @return
     */
+	/**
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
 		return super.importExcel(request, response, InspectionCodeContent.class);
     }
+	 */
+
 	 /**
 	  * 通过检修标准id查看检修项
 	  *
@@ -227,6 +232,38 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 	 public Result<List<InspectionCodeContent>> selectCodeContentList(@RequestParam @ApiParam(name = "id", required = true, value = "检修标准id") String id) {
 		 List<InspectionCodeContent> selectCodeContentList = inspectionCodeContentService.selectCodeContentList(id);
 		 return Result.OK(selectCodeContentList);
+	 }
+
+
+	 @AutoLog(value = "配置检修项-导出excel",  operateType =  4, operateTypeAlias = "导出excel", module = ModuleType.INSPECTION)
+	 @ApiOperation(value="配置检修项-导出excel", notes="配置检修项-导出excel")
+	 @RequestMapping(value = "/exportXls")
+	 public ModelAndView exportXls(HttpServletRequest request,HttpServletResponse response, InspectionCodeContent inspectionCodeContent) {
+		 return inspectionCodeContentService.exportXls(request,response,inspectionCodeContent);
+	 }
+
+
+	 @AutoLog(value = "配置检修项模板下载", operateType =  4, operateTypeAlias = "导出excel", module = ModuleType.INSPECTION)
+	 @ApiOperation(value="配置检修项导入模板下载", notes="配置检修项导入模板下载")
+	 @RequestMapping(value = "/exportTemplateXls")
+	 public ModelAndView exportTemplateXl() {
+//        String remark = "检修标准导入模板\n" +
+//                "填写须知：\n" +
+//                "1.请勿增加、删除、或修改表格中的字段顺序、字段名称；\n" +
+//                "2.请严格按照数据规范填写，并填写完所有必填项，红底白字列为必填项；\n" +
+//                "字段说明：\n" +
+//                "1.厂商名称：必填字段；\n" +
+//                "2.厂商等级：必填字段，且与系统下拉项保持一致；\n" +
+//                "3.联系电话：选填字段，11位数的手机号码；\n" +
+//                "4.企业资质文件：支持PNG、JP图片格式；pdf请在系统中直接上传；";
+		 return super.exportTemplateXls("", InspectionCodeContent.class,"检配置检修项导入模板","");
+	 }
+
+	 @AutoLog(value = "配置检查项-通过excel导入数据", operateType =  6, operateTypeAlias = "通过excel导入数据", module = ModuleType.INSPECTION)
+	 @ApiOperation(value="配置检查项-通过excel导入数据", notes="配置检查项-通过excel导入数据")
+	 @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+	 public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws Exception{
+		 return inspectionCodeContentService.importExcel(request,response);
 	 }
 
 }

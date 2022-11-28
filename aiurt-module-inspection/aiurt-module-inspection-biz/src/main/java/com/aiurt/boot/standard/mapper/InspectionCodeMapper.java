@@ -74,4 +74,11 @@ public interface InspectionCodeMapper extends BaseMapper<InspectionCode> {
      * @return
      */
     String deviceTypeCodeName(@Param("deviceTypeCode")String deviceTypeCode);
+
+    /**
+     * 查询检修表
+     * @param inspectionCode
+     * @return
+     */
+    List<InspectionCode> getList(@Param("inspectionCode")InspectionCode inspectionCode);
 }

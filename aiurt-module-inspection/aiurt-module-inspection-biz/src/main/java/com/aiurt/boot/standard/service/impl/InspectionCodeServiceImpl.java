@@ -17,6 +17,7 @@ import com.aiurt.boot.strategy.mapper.InspectionStrDeviceRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.common.api.CommonAPI;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.entity.BaseImportResult;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -28,14 +29,19 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.entity.TemplateExportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,14 +49,12 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -126,6 +130,37 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         return page.setRecords(inspectionCodeDTOS);
     }
 
+    @Override
+    public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response, InspectionCode inspectionCode) {
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        List<InspectionCode> inspectionCodeList = inspectionCodeMapper.getList(inspectionCode);
+        for (InspectionCode dto : inspectionCodeList) {
+            //检修周期类型
+            List<DictModel> inspectionType = sysBaseApi.getDictItems("inspection_cycle_type");
+            inspectionType= inspectionType.stream().filter(f -> (String.valueOf(dto.getType())).equals(f.getValue())).collect(Collectors.toList());
+            String typeName = inspectionType.stream().map(DictModel::getText).collect(Collectors.joining());
+            dto.setCycleType(typeName);
+            //与设备类型相关
+            List<DictModel> appointDevice = sysBaseApi.getDictItems("is_appoint_device");
+                appointDevice= appointDevice.stream().filter(f -> (String.valueOf(dto.getIsAppointDevice())).equals(f.getValue())).collect(Collectors.toList());
+              String  relatedDevice = appointDevice.stream().map(DictModel::getText).collect(Collectors.joining());
+              dto.setIsRelatedDevice(relatedDevice);
+              //生效状态
+            List<DictModel> takeEffect = sysBaseApi.getDictItems("is_take_effect");
+                takeEffect = takeEffect.stream().filter(f -> (String.valueOf(dto.getStatus())).equals(f.getValue())).collect(Collectors.toList());
+                String effectStatus = takeEffect.stream().map(DictModel::getText).collect(Collectors.joining());
+                dto.setEffectStatus(effectStatus);
+        }
+        //导出文件名称
+        mv.addObject(NormalExcelConstants.FILE_NAME, "检修标准导出");
+        //excel注解对象Class
+        mv.addObject(NormalExcelConstants.CLASS, InspectionCode.class);
+        //自定义表格参数
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("检修标准导出", "检修标准导出"));
+        //导出数据列表
+        mv.addObject(NormalExcelConstants.DATA_LIST, inspectionCodeList);
+        return mv;
+    }
 
     @Override
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -149,7 +184,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
             try {
                 List<InspectionCodeVo> csList = ExcelImportUtil.importExcel(file.getInputStream(), InspectionCodeVo.class, params);
                 List<InspectionCodeVo> inspectionCodeVoList = csList.parallelStream()
-                        .filter(c->c.getTitle()!=null||c.getCode()!=null||c.getType()!=null||c.getMajorCode()!=null||c.getSubsystemCode() !=null||c.getIsAppointDevice() !=null||c.getStatus()!=null)
+                        .filter(c->c.getTitle()!=null||c.getCode()!=null||c.getCycleType()!=null||c.getMajorCode()!=null||c.getSubsystemCode() !=null||c.getIsRelatedDevice() !=null||c.getEffectStatus()!=null)
                         .collect(Collectors.toList());
 
                 List<InspectionCode> list = new ArrayList<>();
@@ -167,24 +202,6 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                         if (inspectionCode != null) {
                             errorMessage.add(inspectionCodeVo.getTitle() + "检修标准表名称已经存在，忽略导入");
                             sb.append("检修标准表名称已经存在;");
-                            if (error) {
-                                errorLines++;
-                                error =false;
-                            }
-                        }
-                    }
-                    if (ObjectUtil.isNull(inspectionCodeVo.getCode())) {
-                        errorMessage.add("检修标准编码为必填项，忽略导入");
-                        sb.append("检修标准编码为必填项;");
-                        if(error){
-                            errorLines++;
-                            error =false;
-                        }
-                    }else {
-                        InspectionCode inspectionCode = inspectionCodeMapper.selectOne(new QueryWrapper<InspectionCode>().lambda().eq(InspectionCode::getCode, inspectionCodeVo.getCode()).eq(InspectionCode::getDelFlag, 0));
-                        if (inspectionCode != null) {
-                            errorMessage.add(inspectionCodeVo.getTitle() + "检修标准表编码已经存在，忽略导入");
-                            sb.append("检修标准表编码已经存在;");
                             if (error) {
                                 errorLines++;
                                 error =false;
@@ -243,18 +260,6 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                                 errorLines++;
                                 error = false;
                             }
-                        }
-                    }
-                    if (ObjectUtil.isNotNull(inspectionCodeVo.getIsRelatedDevice())) {
-                        if("1".equals(inspectionCodeVo.getIsRelatedDevice())){
-                           if(ObjectUtil.isNull(inspectionCodeVo.getDeviceTypeCode())){
-                               errorMessage.add("设备类型为必填项，忽略导入");
-                               sb.append("设备类型为必填项;");
-                               if(error){
-                                   errorLines++;
-                                   error =false;
-                               }
-                           }
                         }
                     }
 
@@ -318,25 +323,14 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                                 }
                             }
                         }
-                        if(ObjectUtil.isNotNull(inspectionCode.getCode())){
-                            List<InspectionCode> nameList = list.stream().filter(f -> f.getTitle() != null).collect(Collectors.toList());
-                            Map<Object, Long> mapGroup2 = nameList.stream().collect(Collectors.groupingBy(InspectionCode::getCode, Collectors.counting()));
-                            List<Object> collect = mapGroup2.keySet().stream().filter(key -> mapGroup2.get(key) > 1).collect(Collectors.toList());
-                            if(collect.contains(inspectionCode.getCode())){
-                                errorMessage.add("检修标准编号重复，忽略导入");
-                                sb.append("检修标准编号重复；");
-                                if(error){
-                                    errorLines++;
-                                    error = false;
-                                }
-                            }
-                        }
                     }
                     inspectionCodeVo.setErrorCause(String.valueOf(sb));
                     successLines++;
                 }
                 if(errorLines==0) {
                     for (InspectionCode inspectionCode : list) {
+                        String code="BZ"+System.currentTimeMillis();
+                        inspectionCode.setCode(code);
                         inspectionCodeMapper.insert(inspectionCode);
                     }
                 } else {

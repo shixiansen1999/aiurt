@@ -40,7 +40,6 @@ public class InspectionCode extends DictEntity implements Serializable {
     private java.lang.String title;
 	/**检修标准编码*/
 	@Excel(name = "检修标准表编码", width = 15)
-    @ExcelExtend(isRequired = true,remark = "必填字段")
     @ApiModelProperty(value = "检修标准编码")
     private java.lang.String code;
 	/**检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)*/
@@ -85,7 +84,6 @@ public class InspectionCode extends DictEntity implements Serializable {
 
     /**设备类型code，关联device_type的code*/
     @Excel(name = "设备类型", width = 15,dictTable = "device_type", dicText = "name", dicCode = "code")
-    @ExcelExtend(isRequired = true,remark = "必填字段")
     @ApiModelProperty(value = "设备类型code，关联device_type的code")
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     @Dict(dictTable = "device_type", dicText = "name", dicCode = "code")

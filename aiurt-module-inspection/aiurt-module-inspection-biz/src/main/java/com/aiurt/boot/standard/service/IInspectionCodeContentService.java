@@ -1,13 +1,19 @@
 package com.aiurt.boot.standard.service;
 
+import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.SelectTreeModel;
+import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -96,4 +102,23 @@ public interface IInspectionCodeContentService extends IService<InspectionCodeCo
      * @param id
      */
     void checkCode(String code, String inspectionCodeId, String id);
+
+	/**
+	 * 配置检查项导出
+	 * @param request
+	 * @param response
+	 * @param inspectionCodeContent
+	 * @return
+	 */
+	ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response, InspectionCodeContent inspectionCodeContent);
+
+	/**
+	 * 配置检查项导入
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws IOException
+	 */
+	Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
+
 }

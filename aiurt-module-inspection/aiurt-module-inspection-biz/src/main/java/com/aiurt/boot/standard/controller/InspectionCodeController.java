@@ -164,28 +164,9 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
         return Result.OK(inspectionCode);
     }
 
-    /**
-     * 导出excel
-     *
-     * @param request
-     * @param inspectionCode
-     */
-//    @RequestMapping(value = "/exportXls")
-//    public ModelAndView exportXls(HttpServletRequest request, InspectionCode inspectionCode) {
-//        return super.exportXls(request, inspectionCode, InspectionCode.class, "inspection_code");
-//    }
 
-    /**
-     * 通过excel导入数据
-     *
-     * @param request
-     * @param response
-     * @return
-     */
-//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-//        return super.importExcel(request, response, InspectionCode.class);
-//    }
+
+
 
     /**
      *  生成检修标准表编号
@@ -209,26 +190,12 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     @AutoLog(value = "检修标准管理-导出excel",  operateType =  4, operateTypeAlias = "导出excel", module = ModuleType.INSPECTION)
     @ApiOperation(value="检修标准管理-导出excel", notes="检修标准管理-导出excel")
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, InspectionCode inspectionCode) {
-        // Step.1 组装查询条件
-        QueryWrapper<InspectionCode> queryWrapper = QueryGenerator.initQueryWrapper(inspectionCode, request.getParameterMap());
-        queryWrapper.lambda().eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0);
-        //Step.2 AutoPoi 导出Excel
-        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-        List<InspectionCode> pageList = inspectionCodeService.list(queryWrapper);
-        //导出文件名称
-        mv.addObject(NormalExcelConstants.FILE_NAME, "检修标准导出");
-        //excel注解对象Class
-        mv.addObject(NormalExcelConstants.CLASS, InspectionCode.class);
-        //自定义表格参数
-        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("检修标准导出", "检修标准导出"));
-        //导出数据列表
-        mv.addObject(NormalExcelConstants.DATA_LIST, pageList);
-        return mv;
+    public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response,InspectionCode inspectionCode) {
+        return inspectionCodeService.exportXls(request,response,inspectionCode);
     }
 
     /**
-     *
+     *检修标准导入模板下载
      * @return
      */
     @AutoLog(value = "检修标准导入模板下载", operateType =  4, operateTypeAlias = "导出excel", module = ModuleType.INSPECTION)
@@ -240,13 +207,18 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
 //                "1.请勿增加、删除、或修改表格中的字段顺序、字段名称；\n" +
 //                "2.请严格按照数据规范填写，并填写完所有必填项，红底白字列为必填项；\n" +
 //                "字段说明：\n" +
-//                "1.厂商名称：必填字段；\n" +
-//                "2.厂商等级：必填字段，且与系统下拉项保持一致；\n" +
-//                "3.联系电话：选填字段，11位数的手机号码；\n" +
-//                "4.企业资质文件：支持PNG、JP图片格式；pdf请在系统中直接上传；";
+//                "1.检修标准名称：必填字段；\n" +
+//                "2.检修标准编码：自动生成，无需填写；\n" ;
         return super.exportTemplateXls("", InspectionCode.class,"检修标准导入模板","");
     }
 
+    /**
+     * 检修标准-通过excel导入数据
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
     @AutoLog(value = "检修标准-通过excel导入数据", operateType =  6, operateTypeAlias = "通过excel导入数据", module = ModuleType.INSPECTION)
     @ApiOperation(value="检修标准-通过excel导入数据", notes="检修标准-通过excel导入数据")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)

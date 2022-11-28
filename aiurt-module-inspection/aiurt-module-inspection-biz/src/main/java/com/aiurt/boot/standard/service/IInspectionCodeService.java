@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -48,5 +49,13 @@ public interface IInspectionCodeService extends IService<InspectionCode> {
      * @throws IOException
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
+
+    /**
+     * 检修标准导出
+     * @param request
+     * @param response
+     * @param inspectionCode
+     */
+    ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response, InspectionCode inspectionCode);
 
 }

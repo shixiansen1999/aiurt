@@ -1,5 +1,6 @@
-package com.aiurt.boot.standard.entity;
+package com.aiurt.boot.standard.dto;
 
+import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.system.base.annotation.ExcelExtend;
 import com.baomidou.mybatisplus.annotation.*;
@@ -22,11 +23,10 @@ import java.util.List;
 @Data
 @TableName("inspection_code_content")
 @ApiModel(value="inspection_code_content对象", description="inspection_code_content")
-public class InspectionCodeContent implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class InspectionCodeContentDTO implements Serializable {
 
-	/**主键id*/
-	@TableId(type = IdType.ASSIGN_ID)
+    /**主键id*/
+    @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
     private java.lang.String id;
 
@@ -43,28 +43,26 @@ public class InspectionCodeContent implements Serializable {
     @ApiModelProperty(value = "父级节点，顶级为0")
     private java.lang.String pid;
 
-
     /**检修项名称*/
     @Excel(name = "检修项内容", width = 15)
     @ExcelExtend(isRequired = true,remark = "必填字段")
     @ApiModelProperty(value = "检修项名称")
     private java.lang.String name;
 
-	/**检查项编号*/
-	@Excel(name = "检查项编号", width = 15)
+    /**检查项编号*/
+    @Excel(name = "检查项编号", width = 15)
     @ExcelExtend(isRequired = true,remark = "必填字段")
     @ApiModelProperty(value = "检查项编号")
     private java.lang.String code;
 
     /**排序编号*/
     @ApiModelProperty(value = "排序编号")
-    private java.lang.Integer sortNo;
+    private java.lang.String sortNo;
 
     /**排序编号*/
     @Excel(name = "排序编号", width = 15)
     @ExcelExtend(isRequired = true,remark = "必填字段")
     @ApiModelProperty(value = "排序编号")
-    @TableField(exist = false)
     private java.lang.String isSortNo;
 
     /**检查项类型，是否是检查项：0否 1是*/
@@ -90,7 +88,7 @@ public class InspectionCodeContent implements Serializable {
     /**数据字典：1 无、2 选择项、3 输入项*/
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "数据字典：1 无、2 选择项、3 输入项")
-    private java.lang.Integer statusItem;
+    private java.lang.String statusItem;
 
     /**数据字典：1 无、2 选择项、3 输入项*/
     @Excel(name = "检查值类型", width = 15,dicCode = "patrol_input_type")
@@ -105,7 +103,7 @@ public class InspectionCodeContent implements Serializable {
      */
     @ApiModelProperty(value = "检查值是否必填：0否 1是")
     @Dict(dicCode = "inspection_value")
-    private java.lang.Integer inspectionType;
+    private java.lang.String inspectionType;
 
     /**
      * 检查值是否必填：0否1是
@@ -117,12 +115,12 @@ public class InspectionCodeContent implements Serializable {
     private java.lang.String isInspectionType;
 
 
-	/**选择项关联的数据字典*/
-	@Excel(name = "选择项关联的数据字典", width = 15)
+    /**选择项关联的数据字典*/
+    @Excel(name = "选择项关联的数据字典", width = 15)
     @ApiModelProperty(value = "选择项关联的数据字典")
     private java.lang.String dictCode;
-	/**数据校验字段*/
-	@Excel(name = "数据校验字段", width = 15)
+    /**数据校验字段*/
+    @Excel(name = "数据校验字段", width = 15)
     @ApiModelProperty(value = "数据校验字段")
     private java.lang.String dataCheck;
 
@@ -132,22 +130,22 @@ public class InspectionCodeContent implements Serializable {
     @ApiModelProperty(value = "检修标准id，关联inspection_code表的id")
     private java.lang.String inspectionCodeId;
 
-	/**删除状态*/
+    /**删除状态*/
     @ApiModelProperty(value = "删除状态")
     private java.lang.Integer delFlag;
-	/**创建人*/
+    /**创建人*/
     @ApiModelProperty(value = "创建人")
     private java.lang.String createBy;
-	/**修改人*/
+    /**修改人*/
     @ApiModelProperty(value = "修改人")
     private java.lang.String updateBy;
-	/**创建时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    /**创建时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "创建时间")
     private java.util.Date createTime;
-	/**修改时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    /**修改时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
@@ -170,4 +168,9 @@ public class InspectionCodeContent implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "检查值是否必填名称")
     private java.lang.String inspectionTypeName;
+
+    /**错误原因*/
+    @Excel(name = "错误原因", width = 15)
+    @ApiModelProperty(value = "错误原因")
+    private String errorCause;
 }
