@@ -1,8 +1,10 @@
 package com.aiurt.modules.major.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
@@ -140,6 +142,10 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
             params.setNeedSave(true);
             try {
                 List<CsMajorImportVO> csMajorList = ExcelImportUtil.importExcel(file.getInputStream(), CsMajorImportVO.class, params);
+                if(CollUtil.isEmpty(csMajorList))
+                {
+                    throw new AiurtBootException("该文件无数据，请填写再导入");
+                }
                 List<CsMajor> list = new ArrayList<>();
                 for (int i = 0; i < csMajorList.size(); i++) {
                     CsMajorImportVO csMajorImportVO = csMajorList.get(i);

@@ -6,6 +6,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.subsystem.dto.*;
@@ -377,6 +378,10 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 List<CsSubsystemImportDTO> csSubsystemDTOList = ExcelImportUtil.importExcel(file.getInputStream(), CsSubsystemImportDTO.class, params);
                 csSubsystemDTOList = csSubsystemDTOList.parallelStream().filter(c->c.getMajorCode()!=null||c.getSystemName()!=null||c.getSystemCode()!=null||c.getSystemUserName()!=null||c.getGeneralSituation()!=null).collect(Collectors.toList());
                 List<CsSubsystem> list = new ArrayList<>();
+                if(CollUtil.isEmpty(csSubsystemDTOList))
+                {
+                    throw new AiurtBootException("该文件无数据，请填写再导入");
+                }
                 for (int i = 0; i < csSubsystemDTOList.size(); i++) {
                     CsSubsystemImportDTO csSubsystemDTO = csSubsystemDTOList.get(i);
                     List<CsSubsystemImportDTO> csSubsystemCodes = csSubsystemDTOList.stream().filter(c -> c.getSystemCode().equals(csSubsystemDTO.getSystemCode())).collect(Collectors.toList());
