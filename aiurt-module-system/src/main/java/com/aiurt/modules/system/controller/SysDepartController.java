@@ -320,6 +320,8 @@ public class SysDepartController {
      *
      * @param request
      */
+	@AutoLog(value = "部门管理-导出")
+	@ApiOperation(value = "部门管理-导出", notes = "部门管理-导出")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(SysDepart sysDepart,HttpServletRequest request) {
         // Step.1 组装查询条件
@@ -344,8 +346,8 @@ public class SysDepartController {
     }
 
 
-	@AutoLog(value = "下载部门导入模板")
-	@ApiOperation(value = "下载部门导入模板", notes = "下载部门导入模板")
+	@AutoLog(value = "部门管理-下载部门导入模板")
+	@ApiOperation(value = "部门管理-下载部门导入模板", notes = "部门管理-下载部门导入模板")
 	@RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
 	public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
 		ClassPathResource classPathResource = new ClassPathResource("templates/sysDepart.xls");
@@ -368,6 +370,8 @@ public class SysDepartController {
      * @param response
      * @return
      */
+	@AutoLog(value = "部门管理-导入")
+	@ApiOperation(value = "部门管理-导入", notes = "部门管理-导入")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
 	@CacheEvict(value= {CacheConstant.SYS_DEPARTS_CACHE,CacheConstant.SYS_DEPART_IDS_CACHE}, allEntries=true)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
