@@ -54,7 +54,7 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @param ordList
      * @return
      */
-    List<FaultCountInfosDTO> getFaultCountInfos(@Param("type") Integer type, @Param("page") Page<FaultCountInfosDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq,@Param("ordList") List<String> ordList);
+    List<FaultCountInfosDTO> getFaultCountInfos(@Param("type") Integer type, @Param("page") Page<FaultCountInfosDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq,@Param("ordList") List<String> ordList,@Param("majorByUserId")List<String> majorByUserId,@Param("isDirector")boolean isDirector);
 
 
 
