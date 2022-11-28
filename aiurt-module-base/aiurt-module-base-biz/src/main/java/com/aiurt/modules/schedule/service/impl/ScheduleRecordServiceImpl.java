@@ -405,7 +405,9 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                     }
                 }
             }else {
-                insertRecordByItem(value);
+                if (!value.getDeleteFlag()) {
+                    insertRecordByItem(value);
+                }
             }
         }
 
