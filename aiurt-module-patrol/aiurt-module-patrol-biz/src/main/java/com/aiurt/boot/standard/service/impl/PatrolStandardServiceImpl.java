@@ -17,6 +17,7 @@ import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
+import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -39,6 +40,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -61,6 +63,7 @@ import java.util.stream.Collectors;
 public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper, PatrolStandard> implements IPatrolStandardService {
     @Autowired
     private PatrolStandardMapper patrolStandardMapper;
+
     @Autowired
     private PatrolStandardItemsMapper patrolStandardItemsMapper;
     @Autowired
@@ -161,6 +164,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         return items;
     }
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
@@ -214,6 +218,38 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 if (errorLines > 0) {
                     //错误报告下载
                     return getErrorExcel(errorLines,list,deviceAssemblyErrorModels,errorMessage,successLines,url, type);
+                }
+                else
+                {
+                    LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                    for (PatrolStandardModel patrolStandardModel : list) {
+                        PatrolStandard patrolStandard = new PatrolStandard();
+                        BeanUtils.copyProperties(patrolStandardModel,patrolStandard);
+                        String standardCode = PatrolCodeUtil.getStandardCode();
+                        patrolStandard.setCode(standardCode);
+                        patrolStandard.setUserId(user.getId());
+                        patrolStandardMapper.insert(patrolStandard);
+                         List<PatrolStandardItems> items = patrolStandardModel.getPatrolStandardItemsList();
+                         if(CollUtil.isNotEmpty(items))
+                         {
+                              List<PatrolStandardItems> parents = items.stream().filter(e -> e.getHierarchyType() == 0).collect(Collectors.toList());
+                              List<PatrolStandardItems> sons = items.stream().filter(e -> e.getHierarchyType() == 1).collect(Collectors.toList());
+                             for (PatrolStandardItems item : parents) {
+                                 item.setParentId("0");
+                                 item.setStandardId(patrolStandard.getId());
+                                 patrolStandardItemsMapper.insert(item);
+                                 List<PatrolStandardItems> standardItems = sons.stream().filter(e->e.getParent().equals(item.getContent())).collect(Collectors.toList());
+                                 if(CollUtil.isNotEmpty(standardItems))
+                                 {
+                                     for (PatrolStandardItems standardItem : standardItems) {
+                                         standardItem.setParentId(item.getId());
+                                         standardItem.setStandardId(patrolStandard.getId());
+                                         patrolStandardItemsMapper.insert(standardItem);
+                                     }
+                                 }
+                             }
+                         }
+                    }
                 }
                 return Result.ok("文件导入成功！");
 
@@ -306,7 +342,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         String  isDeviceType = model.getIsDeviceType();
         String  statusName = model.getStatusName();
         String  deviceTypeName = model.getDeviceTypeName();
-        if (StrUtil.isNotEmpty(majorName) && StrUtil.isNotEmpty(isDeviceType) && StrUtil.isNotEmpty(statusName) && StrUtil.isNotEmpty(deviceTypeName)&& StrUtil.isNotEmpty(name)) {
+        if (StrUtil.isNotEmpty(majorName) && StrUtil.isNotEmpty(isDeviceType) && StrUtil.isNotEmpty(statusName) && StrUtil.isNotEmpty(name)) {
             JSONObject major = iSysBaseAPI.getCsMajorByName(majorName);
             if(ObjectUtil.isNotEmpty(major))
             {
@@ -319,14 +355,17 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 {
                     stringBuilder.append("生效状态填写不规范，");
                 }
-                 DeviceType d = iSysBaseAPI.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName);
-                if(ObjectUtil.isNull(d))
+                if(StrUtil.isNotEmpty(deviceTypeName))
                 {
-                    stringBuilder.append("系统不存在该专业下的设备类型，");
-                }
-                else
-                {
-                    patrolStandard.setDeviceTypeCode(d.getCode());
+                    DeviceType d = iSysBaseAPI.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName);
+                    if(ObjectUtil.isNull(d))
+                    {
+                        stringBuilder.append("系统不存在该专业下的设备类型，");
+                    }
+                    else
+                    {
+                        patrolStandard.setDeviceTypeCode(d.getCode());
+                    }
                 }
             }
             else
@@ -366,9 +405,17 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     stringBuildera.append("该数据存在相同数据,");
                 }
                 if (StrUtil.isNotEmpty(hierarchyTypeName) && StrUtil.isNotEmpty(itemsCode) && StrUtil.isNotEmpty(checkName)&& StrUtil.isNotEmpty(content)) {
-                    PatrolStandardItems one = patrolStandardItemsMapper.selectOne(new LambdaQueryWrapper<PatrolStandardItems>().eq(PatrolStandardItems::getCode, itemsCode));
-
-                    if(!hierarchyTypeName.equals(PatrolConstant.ONE_LEVEL)&&(!hierarchyTypeName.equals(PatrolConstant.SON_LEVEL)))
+                   List <PatrolStandardItems> one = patrolStandardItemsMapper.selectList(new LambdaQueryWrapper<PatrolStandardItems>().eq(PatrolStandardItems::getCode, itemsCode));
+                   List<PatrolStandardItems> itemsList = new ArrayList<>();
+                   if(items.equals(PatrolConstant.SON_LEVEL))
+                   {
+                       itemsList =standardItems.stream().filter(e -> e.getContent().equals(items.getParent())&&!e.equals(items)&&e.getHierarchyType().equals(PatrolConstant.ONE_LEVEL)).collect(Collectors.toList());
+                   }
+                    if(itemsList.size()==0&&items.equals(PatrolConstant.SON_LEVEL))
+                    {
+                        stringBuildera.append("父级不存在,");
+                    }
+                    if(!hierarchyTypeName.equals(PatrolConstant.ONE_LEVEL)&&!hierarchyTypeName.equals(PatrolConstant.SON_LEVEL))
                     {
                         stringBuildera.append("层级类型填写不规范,");
                     }
@@ -384,10 +431,11 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     {
                         items.setCheck(PatrolConstant.ONE_LEVEL.equals(hierarchyTypeName)?PatrolConstant.TASK_UNDISPOSE:PatrolConstant.INPUT_TYPE_1);
                     }
-                    if(ObjectUtil.isNotEmpty(one))
+                    if(CollUtil.isNotEmpty(one))
                     {
                         stringBuildera.append("编码数据库已经存在，");
                     }
+
                 }
                 else
                 {
