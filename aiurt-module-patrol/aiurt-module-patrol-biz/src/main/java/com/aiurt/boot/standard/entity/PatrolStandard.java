@@ -43,7 +43,6 @@ public class PatrolStandard extends DictEntity implements Serializable {
     @ApiModelProperty(value = "巡视标准表名称")
     private java.lang.String name;
 	/**专业code*/
-	@Excel(name = "适用专业", width = 15,needMerge = true)
     @ApiModelProperty(value = "专业code")
     @MajorFilterColumn
     private java.lang.String professionCode;

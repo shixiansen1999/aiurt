@@ -1,8 +1,6 @@
 package com.aiurt.boot.standard.entity;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
-import cn.afterturn.easypoi.excel.annotation.ExcelCollection;
-import com.aiurt.boot.standard.dto.PatrolStandardItemsExport;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -75,6 +73,11 @@ public class PatrolStandardItems implements Serializable {
 	/**父级ID，其中顶级为0*/
     @ApiModelProperty(value = "父级ID，其中顶级为0")
     private java.lang.String parentId;
+    /**父级*/
+    @Excel(name = "父级", width = 15,needMerge = true)
+    @ApiModelProperty(value = "父级")
+    @TableField(exist = false)
+    private java.lang.String parent;
 	/**数据填写类型：1开关项(即二选一)、2选择项、3输入项*/
 	//@Excel(name = "数据填写类型：1开关项(即二选一)、2选择项、3输入项", width = 15)
     @TableField(updateStrategy = FieldStrategy.IGNORED)
@@ -121,9 +124,8 @@ public class PatrolStandardItems implements Serializable {
     @ApiModelProperty(value = "存放子集集合")
     @TableField(exist = false)
     private List<PatrolStandardItems> children;
-    /**存放子集*/
-    @ExcelCollection(name = "配置项")
-    @ApiModelProperty(value = "配置项")
+    /**错误原因*/
+    @ApiModelProperty(value = "错误原因")
     @TableField(exist = false)
-    private List<PatrolStandardItemsExport> itemsExportList;
+    private  String  itemParentMistake;
 }

@@ -113,4 +113,8 @@ public class PatrolStandardItemsExport implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
+    /**错误原因*/
+    @ApiModelProperty(value = "错误原因")
+    @TableField(exist = false)
+    private  String  itemSonMistake;
 }

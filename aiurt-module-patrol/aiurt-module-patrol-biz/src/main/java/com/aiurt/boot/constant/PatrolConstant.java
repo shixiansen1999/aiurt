@@ -176,4 +176,28 @@ public interface PatrolConstant {
      * 巡视项检查值是否必填：1是
      */
     Integer REQUIRED_1 = 0;
+    /**
+     * 是否与设备类型相关：是
+     */
+    String IS_DEVICE_TYPE = "是";
+    /**
+     * 是否与设备类型相关：否
+     */
+    String IS_NOT_DEVICE_TYPE = "否";
+    /**
+     * 是否与设备类型相关：生效
+     */
+    String ACTIVE = "生效";
+    /**
+     * 是否与设备类型相关：未生效
+     */
+    String NOT_ACTIVE = "未生效";
+    /**
+     * 层级：一级
+     */
+    String ONE_LEVEL = "一级";
+    /**
+     * 层级：子级
+     */
+    String SON_LEVEL = "子级";
 }

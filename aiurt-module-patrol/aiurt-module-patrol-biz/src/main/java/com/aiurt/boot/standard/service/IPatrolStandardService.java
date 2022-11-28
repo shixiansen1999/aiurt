@@ -6,9 +6,11 @@ import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -49,4 +51,12 @@ public interface IPatrolStandardService extends IService<PatrolStandard> {
      * @return
      */
     void exportXls(HttpServletRequest request, HttpServletResponse response, PatrolStandard patrolStandard);
+
+    /**
+     * 巡检标准导入
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

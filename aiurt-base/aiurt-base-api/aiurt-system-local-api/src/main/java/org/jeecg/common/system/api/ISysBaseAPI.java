@@ -5,6 +5,7 @@ import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
@@ -560,6 +561,20 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     JSONObject getCsMajorByCode(String majorCode);
+    /**
+     * 根据专业名称获取专业
+     * @param majorName
+     * @return
+     */
+    JSONObject getCsMajorByName(String majorName);
+
+    /**
+     * 根据专业code、设备类型名称 ，查询设备类型信息
+     * @param majorCode
+     * @param deviceTypeName
+     * @return
+     */
+    DeviceType getCsMajorByCodeTypeName(String majorCode, String deviceTypeName);
 
     /**
      * 根据线路编号获取线路名称,线路编号:线路名称

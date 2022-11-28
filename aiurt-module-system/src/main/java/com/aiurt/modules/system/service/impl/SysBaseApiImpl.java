@@ -159,7 +159,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Autowired
     private DeviceMapper deviceMapper;
-
     @Autowired
     private WorkAreaMapper workAreaMapper;
     @Autowired
@@ -1671,6 +1670,27 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return null;
         }
         return JSONObject.parseObject(JSONObject.toJSONString(csMajor));
+    }
+    @Override
+    public JSONObject getCsMajorByName(String majorName) {
+        LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsMajor::getMajorName, majorName).eq(CsMajor::getDelFlag,CommonConstant.DEL_FLAG_0).last("limit 1");
+        CsMajor csMajor = majorService.getBaseMapper().selectOne(wrapper);
+        if (Objects.isNull(csMajor)) {
+            return null;
+        }
+        return JSONObject.parseObject(JSONObject.toJSONString(csMajor));
+    }
+
+    @Override
+    public DeviceType getCsMajorByCodeTypeName(String majorCode,String deviceTypeName) {
+        LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(DeviceType::getMajorCode, majorCode).eq(DeviceType::getName,deviceTypeName).eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).last("limit 1");
+        DeviceType deviceType = deviceTypeService.getBaseMapper().selectOne(wrapper);
+        if (Objects.isNull(deviceType)) {
+            return null;
+        }
+        return deviceType;
     }
 
     @Override
