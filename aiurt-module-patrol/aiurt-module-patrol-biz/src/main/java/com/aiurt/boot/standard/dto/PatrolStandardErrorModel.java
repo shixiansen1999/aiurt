@@ -67,10 +67,14 @@ public class PatrolStandardErrorModel {
     @TableField(value = "`code`")
     private java.lang.String code;
     /**内容排序*/
-    @Excel(name = "内容排序", width = 15,needMerge = true)
     @ApiModelProperty(value = "内容排序")
     @TableField(value = "`order`")
     private java.lang.String order;
+    /**内容排序*/
+    @Excel(name = "内容排序", width = 15,needMerge = true)
+    @ApiModelProperty(value = "内容排序")
+    @TableField(value = "`order`")
+    private java.lang.String detailOrder;
     /**是否为巡检项目：0否 1是*/
     @Excel(name = "是否为巡检项目", width = 15,needMerge = true)
     @ApiModelProperty(value = "是否为巡检项目：0否 1是")

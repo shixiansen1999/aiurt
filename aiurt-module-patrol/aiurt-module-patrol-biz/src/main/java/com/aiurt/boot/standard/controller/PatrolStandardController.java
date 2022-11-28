@@ -202,7 +202,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
     * @param patrolStandard
     */
 	@ApiOperation(value="巡检标准表导出", notes="巡检标准表导出")
-    @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
+		@RequestMapping(value = "/exportXls",method = RequestMethod.GET)
     public void exportXls(HttpServletRequest request, HttpServletResponse response, PatrolStandard patrolStandard) {
           patrolStandardService.exportXls(request,response, patrolStandard);
     }
@@ -238,7 +238,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
     */
 	@AutoLog(value = "巡检标准导入")
 	@ApiOperation(value = "巡检标准导入", notes = "巡检标准导入")
-	@RequestMapping(value = "/importExcel",method = RequestMethod.GET)
+	@RequestMapping(value = "/importExcel",method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException{
         return patrolStandardService.importExcel(request, response);
     }

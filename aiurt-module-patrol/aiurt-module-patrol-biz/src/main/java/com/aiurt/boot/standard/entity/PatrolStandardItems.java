@@ -42,27 +42,36 @@ public class PatrolStandardItems implements Serializable {
     @ApiModelProperty(value = "层级类型：0一级、1子级")
     @TableField(exist = false)
     private java.lang.String hierarchyTypeName;
+    /**父级*/
+    @Excel(name = "父级", width = 15,needMerge = true)
+    @ApiModelProperty(value = "父级")
+    @TableField(exist = false)
+    private java.lang.String parent;
     /**巡检项内容*/
-    @Excel(name = "巡检项内容", width = 15,needMerge = true)
-    @ApiModelProperty(value = "巡检项内容")
+    @Excel(name = "巡视项内容", width = 15,needMerge = true)
+    @ApiModelProperty(value = "巡视项内容")
     private java.lang.String content;
 	/**巡检项编号*/
-	@Excel(name = "巡检项编号", width = 15,needMerge = true)
-    @ApiModelProperty(value = "巡检项编号")
+	@Excel(name = "巡视项编号", width = 15,needMerge = true)
+    @ApiModelProperty(value = "巡视项编号")
     @TableField(value = "`code`")
     private java.lang.String code;
+    /**内容排序*/
+    @ApiModelProperty(value = "内容排序")
+    @TableField(value = "`order`")
+    private java.lang.Integer order;
     /**内容排序*/
     @Excel(name = "内容排序", width = 15,needMerge = true)
     @ApiModelProperty(value = "内容排序")
     @TableField(value = "`order`")
-    private java.lang.Integer order;
+    private java.lang.String detailOrder;
     /**是否为巡检项目：0否 1是*/
-    @ApiModelProperty(value = "是否为巡检项目：0否 1是")
+    @ApiModelProperty(value = "是否为巡视项目：0否 1是")
     @TableField(value = "`check`")
     private java.lang.Integer check;
     /**是否为巡检项目：0否 1是*/
-    @Excel(name = "是否为巡检项目", width = 15,needMerge = true)
-    @ApiModelProperty(value = "是否为巡检项目：0否 1是")
+    @Excel(name = "是否为巡视项目", width = 15,needMerge = true)
+    @ApiModelProperty(value = "是否为巡视项目：0否 1是")
     @TableField(exist = false)
     private java.lang.String checkName;
 	/**质量标准*/
@@ -73,11 +82,6 @@ public class PatrolStandardItems implements Serializable {
 	/**父级ID，其中顶级为0*/
     @ApiModelProperty(value = "父级ID，其中顶级为0")
     private java.lang.String parentId;
-    /**父级*/
-    @Excel(name = "父级", width = 15,needMerge = true)
-    @ApiModelProperty(value = "父级")
-    @TableField(exist = false)
-    private java.lang.String parent;
 	/**数据填写类型：1开关项(即二选一)、2选择项、3输入项*/
 	//@Excel(name = "数据填写类型：1开关项(即二选一)、2选择项、3输入项", width = 15)
     @TableField(updateStrategy = FieldStrategy.IGNORED)

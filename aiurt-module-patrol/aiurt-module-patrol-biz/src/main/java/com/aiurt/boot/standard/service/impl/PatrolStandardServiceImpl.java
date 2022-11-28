@@ -268,7 +268,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             lm.put("parent",deviceAssemblyErrorModel.getParent());
             lm.put("standradDetail",deviceAssemblyErrorModel.getContent());
             lm.put("code",deviceAssemblyErrorModel.getCode());
-            lm.put("detailOrc",deviceAssemblyErrorModel.getOrder());
+            lm.put("detailOrc",deviceAssemblyErrorModel.getDetailOrder());
             lm.put("isStandard",deviceAssemblyErrorModel.getCheckName());
             lm.put("qualityStandard",deviceAssemblyErrorModel.getQualityStandard());
             lm.put("itemParentMistake",deviceAssemblyErrorModel.getItemParentMistake());
@@ -332,6 +332,14 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             else
             {
                 stringBuilder.append("系统不存在该专业，");
+                if(!isDeviceType.equals(PatrolConstant.IS_DEVICE_TYPE)&&!isDeviceType.equals(PatrolConstant.IS_NOT_DEVICE_TYPE))
+                {
+                    stringBuilder.append("是否与设备类型相关填写不规范，");
+                }
+                if(!statusName.equals(PatrolConstant.ACTIVE)&&!statusName.equals(PatrolConstant.NOT_ACTIVE))
+                {
+                    stringBuilder.append("生效状态填写不规范，");
+                }
             }
         }
         else {
@@ -362,7 +370,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
 
                     if(!hierarchyTypeName.equals(PatrolConstant.ONE_LEVEL)&&(!hierarchyTypeName.equals(PatrolConstant.SON_LEVEL)))
                     {
-                        stringBuildera.append("层级类型填写不规范");
+                        stringBuildera.append("层级类型填写不规范,");
                     }
                     else
                     {
