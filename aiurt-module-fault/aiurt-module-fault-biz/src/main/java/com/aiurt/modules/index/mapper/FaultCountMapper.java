@@ -34,7 +34,7 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @param faultTimeoutLevelReq
      * @return
      */
-    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level, @Param("page") Page<FaultTimeoutLevelDTO> page, @Param("faultTimeoutLevelReq") FaultTimeoutLevelReq faultTimeoutLevelReq);
+    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level, @Param("page") Page<FaultTimeoutLevelDTO> page, @Param("faultTimeoutLevelReq") FaultTimeoutLevelReq faultTimeoutLevelReq,@Param("majorByUserId")List<String> majorByUserId,@Param("isDirector")boolean isDirector);
 
     /**
      * 故障概况统计详情(总数和已解决)分页

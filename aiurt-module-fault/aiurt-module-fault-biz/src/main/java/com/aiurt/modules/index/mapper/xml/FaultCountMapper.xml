@@ -99,10 +99,12 @@
 
 
     <select id="getFaultData" resultType="com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO">
-       select r.*
-    from (
-    select t.*,(select org_id from sys_user where t.appoint_user_name = username)as orgId
-    from fault t) as r
+        <if test="isDirector==true">
+   select r.* from fault r
+    </if>
+    <if test="isDirector==false">
+    select r.*from (select t.*,(select org_id from sys_user where t.appoint_user_name = username)as orgId from fault t) as r
+    </if>
         <where>
             <if test="level == 1">
                 AND status &lt;&gt; 12
@@ -134,9 +136,15 @@
             <if test="faultTimeoutLevelReq.faultModeCode != null">
                 and fault_mode_code  = #{faultTimeoutLevelReq.faultModeCode}
             </if>
-            <if test="faultTimeoutLevelReq.orgList != null and faultTimeoutLevelReq.orgList.size() != 0">
+            <if test="faultTimeoutLevelReq.orgList != null and faultTimeoutLevelReq.orgList.size() != 0 and isDirector ==false">
               AND  r.orgId in
             <foreach collection="faultTimeoutLevelReq.orgList" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+             </foreach>
+            </if>
+                     <if test="majorByUserId != null and majorByUserId.size() != 0 and isDirector ==true ">
+              AND  r.major_code in
+            <foreach collection="majorByUserId" item="item" index="index" open="(" close=")" separator=",">
             #{item}
              </foreach>
             </if>

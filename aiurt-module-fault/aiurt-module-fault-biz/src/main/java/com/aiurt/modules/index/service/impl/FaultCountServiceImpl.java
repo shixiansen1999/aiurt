@@ -66,7 +66,6 @@ public class FaultCountServiceImpl implements IFaultCountService {
         }
         List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
         List<String> majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-        System.out.println(user.getRoleCodes());
         FaultIndexDTO faultIndexDTO = new FaultIndexDTO();
         if (ObjectUtil.isEmpty(startDate) || ObjectUtil.isEmpty(endDate)) {
             return faultIndexDTO;
@@ -77,7 +76,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
         queryWrapper.ge(Fault::getApprovalPassTime, DateUtil.beginOfDay(startDate));
         queryWrapper.le(Fault::getApprovalPassTime, DateUtil.beginOfDay(endDate));
         List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-        if(CollUtil.isEmpty(departByUserId))
+        if(CollUtil.isEmpty(departByUserId)&&!isDirector)
         {
             return faultIndexDTO;
         }
@@ -233,14 +232,25 @@ public class FaultCountServiceImpl implements IFaultCountService {
         // 分页数据
         Page<FaultTimeoutLevelDTO> page = new Page<>(faultTimeoutLevelReq.getPageNo(), faultTimeoutLevelReq.getPageSize());
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String[] split = user.getRoleCodes().split(",");
+        List<String> roleCodes = CollUtil.newArrayList(split);
+        roleCodes = roleCodes.stream().filter(s->s.equals("director")).collect(Collectors.toList());
+        //当前登录人为主任，则根据当前用户所拥有的专业，查询该专业下的故障信息
+        boolean isDirector = false;
+        if(roleCodes.size()>0)
+        {
+            isDirector=true;
+        }
+        List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
+        List<String> majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
         List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-        if(CollUtil.isEmpty(departByUserId))
+        if(CollUtil.isEmpty(departByUserId)&&!isDirector)
         {
             return result;
         }
          List<String> ordCode = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
         faultTimeoutLevelReq.setOrgList(ordCode);
-        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq);
+        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq,majors,isDirector);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultTimeoutLevelDTO faultDatum : faultData) {
                 //查找设备编码
