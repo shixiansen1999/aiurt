@@ -17,11 +17,15 @@ import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -293,5 +297,28 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
         Page<RepairDeviceDTO> page = new Page<>(pageNo, pageSize);
         IPage<RepairDeviceDTO> pageList = inspectionStrategyService.queryDeviceByCodeAndId(page, inspectionStrCode, inspectionStaCode);
         return Result.OK(pageList);
+    }
+
+    /**
+     * 下载导入模板
+     *
+     */
+    @AutoLog(value = "下载导入模板", operateType =  6, operateTypeAlias = "下载导入模板", permissionUrl = "")
+    @ApiOperation(value="下载导入模板", notes="下载导入模板")
+    @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
+    public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        //获取输入流，原始模板位置
+        ClassPathResource classPathResource =  new ClassPathResource("templates/InspectionSty.xls");
+        InputStream bis = classPathResource.getInputStream();
+        //设置发送到客户端的响应的内容类型
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment;filename="+"检修策略导入模板.xlsx");
+        BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+        int len = 0;
+        while ((len = bis.read()) != -1) {
+            out.write(len);
+            out.flush();
+        }
+        out.close();
     }
 }

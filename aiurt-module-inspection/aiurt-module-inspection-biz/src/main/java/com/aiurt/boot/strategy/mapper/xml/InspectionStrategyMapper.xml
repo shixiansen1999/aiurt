@@ -384,4 +384,15 @@
 	left join device  d on d.code = isdr.device_code
 	where isdr.inspection_str_rel_id = #{id}
     </select>
+    <select id="getStation" resultType="com.aiurt.boot.plan.dto.StationDTO">
+        select cs.station_code,cs.line_code from cs_station cs
+        left join cs_line cl on cl.line_code = cs.line_code
+        where cs.del_flag = 0 and cl.del_flag = 0 and cs.station_name = #{stationName} and cl.line_name = #{lineName}
+    </select>
+    <select id="getOrgs" resultType="java.lang.String">
+        select org_code from sys_depart where depart_name =#{org} and del_flag = 0
+    </select>
+    <select id="getIsExistDevice" resultType="com.aiurt.modules.device.entity.Device">
+        select * from device where code=#{device} and del_flag = 0
+    </select>
 </mapper>
