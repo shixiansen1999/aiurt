@@ -371,6 +371,12 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         HashMap<String, ScheduleRecordREditDTO> map = new HashMap<>();
         for (ScheduleRecordREditDTO scheduleRecordREditDTO : scheduleRecordREditDTOS) {
             String key = scheduleRecordREditDTO.getUserId() + scheduleRecordREditDTO.getDate();
+            ScheduleRecordREditDTO dto = map.get(key);
+            if (ObjectUtil.isNotEmpty(dto)) {
+                if (ObjectUtil.isNotEmpty(dto.getScheduleRecordId())) {
+                    scheduleRecordREditDTO.setScheduleRecordId(dto.getScheduleRecordId());
+                }
+            }
             map.put(key, scheduleRecordREditDTO);
         }
 
