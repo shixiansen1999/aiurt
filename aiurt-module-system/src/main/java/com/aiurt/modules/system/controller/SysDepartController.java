@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.controller;
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
@@ -32,6 +33,7 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,7 +42,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -338,6 +342,22 @@ public class SysDepartController {
         mv.addObject(NormalExcelConstants.DATA_LIST, pageList);
         return mv;
     }
+
+
+	@AutoLog(value = "下载部门导入模板")
+	@ApiOperation(value = "下载部门导入模板", notes = "下载部门导入模板")
+	@RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
+	public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		ClassPathResource classPathResource = new ClassPathResource("templates/sysDepart.xls");
+		InputStream bis = classPathResource.getInputStream();
+		BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+		int len = 0;
+		while ((len = bis.read()) != -1) {
+			out.write(len);
+			out.flush();
+		}
+		out.close();
+	}
 
     /**
      * 通过excel导入数据
