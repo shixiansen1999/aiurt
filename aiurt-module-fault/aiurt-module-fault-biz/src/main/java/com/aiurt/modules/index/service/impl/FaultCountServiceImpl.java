@@ -151,13 +151,24 @@ public class FaultCountServiceImpl implements IFaultCountService {
         Page<FaultCountInfoDTO> page = new Page<>(faultCountInfoReq.getPageNo(), faultCountInfoReq.getPageSize());
         //权限控制
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String[] split = user.getRoleCodes().split(",");
+        List<String> roleCodes = CollUtil.newArrayList(split);
+        roleCodes = roleCodes.stream().filter(s->s.equals("director")).collect(Collectors.toList());
+        //当前登录人为主任，则根据当前用户所拥有的专业，查询该专业下的故障信息
+        boolean isDirector = false;
+        if(roleCodes.size()>0)
+        {
+            isDirector=true;
+        }
+        List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
+        List<String> majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
         List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-        if(CollUtil.isEmpty(departByUserId))
+        if(CollUtil.isEmpty(departByUserId)&&!isDirector)
         {
             return result;
         }
         List<String> ordId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
-        List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq,ordId);
+        List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq,ordId,majors,isDirector);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultCountInfoDTO faultDatum : faultData) {
                 //查找设备编码

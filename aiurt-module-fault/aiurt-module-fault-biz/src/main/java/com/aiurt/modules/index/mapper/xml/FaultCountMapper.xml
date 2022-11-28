@@ -29,8 +29,12 @@
     </select>
 
     <select id="getFaultCountInfo" resultType="com.aiurt.modules.fault.dto.FaultCountInfoDTO">
+        <if test="isDirector==true">
+            select r.* from fault r
+          </if>
+        <if test="isDirector==false">
         select r.*from (select t.*,(select org_id from sys_user where t.appoint_user_name = username)as orgId from fault t) as r
-        <where>
+        </if>        <where>
             <if test="faultCountInfoReq.type == 1">
                 AND 1 = 1
             </if>
@@ -53,11 +57,17 @@
             <if test="faultCountInfoReq.faultModeCode != null">
                 and fault_mode_code  = #{faultCountInfoReq.faultModeCode}
             </if>
-            <if test="ordList != null and ordList.size() != 0">
+            <if test="ordList != null and ordList.size() != 0 and isDirector==false ">
                 AND  r.orgId in
                 <foreach collection="ordList" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
+            </if>
+                     <if test="majorByUserId != null and majorByUserId.size() != 0 and isDirector ==true ">
+              AND  r.major_code in
+            <foreach collection="majorByUserId" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+             </foreach>
             </if>
         </where>
     </select>
