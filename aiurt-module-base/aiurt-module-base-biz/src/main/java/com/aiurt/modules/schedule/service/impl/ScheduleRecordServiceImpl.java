@@ -329,40 +329,42 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                 dto.setDate(scheduleRecordREditDTO.getStartTime());
                 scheduleRecordREditDTOS.add(dto);
             } else {
-                Calendar start = Calendar.getInstance();
-                start.setTime(scheduleRecordREditDTO.getStartTime());
+                if (!scheduleRecordREditDTO.getDeleteFlag()) {
+                    Calendar start = Calendar.getInstance();
+                    start.setTime(scheduleRecordREditDTO.getStartTime());
 
-                QueryWrapper wrapper = new QueryWrapper();
-                wrapper.eq("rule_id", scheduleRecordREditDTO.getScheduleRuleId());
-                wrapper.orderByDesc("id");
-                List<ScheduleRuleItem> itemList = ruleItemService.list(wrapper);
-                int itemSize = itemList.size();
-                Map<Integer, Integer> scheduleRuleItemMap = new HashMap<>(itemSize);
-                for (ScheduleRuleItem scheduleRuleItem : itemList) {
-                    scheduleRuleItemMap.put(scheduleRuleItem.getSort(), scheduleRuleItem.getItemId());
-                }
-                int i = 1;
-
-                while (!start.getTime().after(scheduleRecordREditDTO.getEndTime())) {
-                    ScheduleRecordREditDTO dto = new ScheduleRecordREditDTO();
-                    LambdaQueryWrapper<ScheduleRecord> queryWrapper = new LambdaQueryWrapper<>();
-                    queryWrapper.eq(ScheduleRecord::getDelFlag, "0");
-                    queryWrapper.eq(ScheduleRecord::getUserId, scheduleRecordREditDTO.getUserId());
-                    queryWrapper.eq(ScheduleRecord::getDate, start.getTime());
-                    ScheduleRecord one = this.getOne(queryWrapper);
-                    if (ObjectUtil.isNotEmpty(one)) {
-                        dto.setScheduleRecordId(one.getId());
+                    QueryWrapper wrapper = new QueryWrapper();
+                    wrapper.eq("rule_id", scheduleRecordREditDTO.getScheduleRuleId());
+                    wrapper.orderByDesc("id");
+                    List<ScheduleRuleItem> itemList = ruleItemService.list(wrapper);
+                    int itemSize = itemList.size();
+                    Map<Integer, Integer> scheduleRuleItemMap = new HashMap<>(itemSize);
+                    for (ScheduleRuleItem scheduleRuleItem : itemList) {
+                        scheduleRuleItemMap.put(scheduleRuleItem.getSort(), scheduleRuleItem.getItemId());
                     }
-                    dto.setDeleteFlag(scheduleRecordREditDTO.getDeleteFlag());
-                    dto.setSchedulingMethod("1");
-                    dto.setUserId(scheduleRecordREditDTO.getUserId());
-                    int index = (i % itemSize == 0 ? itemSize : i % itemSize);
-                    Integer ruleItemId = scheduleRuleItemMap.get(index);
-                    dto.setScheduleItemId(ruleItemId);
-                    dto.setDate(start.getTime());
-                    scheduleRecordREditDTOS.add(dto);
-                    start.add(Calendar.DAY_OF_YEAR, 1);
-                    i++;
+                    int i = 1;
+
+                    while (!start.getTime().after(scheduleRecordREditDTO.getEndTime())) {
+                        ScheduleRecordREditDTO dto = new ScheduleRecordREditDTO();
+                        LambdaQueryWrapper<ScheduleRecord> queryWrapper = new LambdaQueryWrapper<>();
+                        queryWrapper.eq(ScheduleRecord::getDelFlag, "0");
+                        queryWrapper.eq(ScheduleRecord::getUserId, scheduleRecordREditDTO.getUserId());
+                        queryWrapper.eq(ScheduleRecord::getDate, start.getTime());
+                        ScheduleRecord one = this.getOne(queryWrapper);
+                        if (ObjectUtil.isNotEmpty(one)) {
+                            dto.setScheduleRecordId(one.getId());
+                        }
+                        dto.setDeleteFlag(scheduleRecordREditDTO.getDeleteFlag());
+                        dto.setSchedulingMethod("1");
+                        dto.setUserId(scheduleRecordREditDTO.getUserId());
+                        int index = (i % itemSize == 0 ? itemSize : i % itemSize);
+                        Integer ruleItemId = scheduleRuleItemMap.get(index);
+                        dto.setScheduleItemId(ruleItemId);
+                        dto.setDate(start.getTime());
+                        scheduleRecordREditDTOS.add(dto);
+                        start.add(Calendar.DAY_OF_YEAR, 1);
+                        i++;
+                    }
                 }
             }
         }
