@@ -20,7 +20,7 @@ import java.util.List;
  *
  */
 @Configuration
-@MapperScan(value={"org.jeecg.modules.**.mapper*", "com.aiurt.modules.**.mapper*", "com.aiurt.boot.modules.**.mapper*", "com.aiurt.boot.**.mapper*"})
+@MapperScan(value={"org.jeecg.modules.**.mapper*", "com.aiurt.boot.rehearsal.mapper", "com.aiurt.boot.modules.**.mapper*", "com.aiurt.boot.rehearsal.mapper"})
 public class MybatisPlusSaasConfig {
     /**
      * tenant_id 字段名
