@@ -3,9 +3,10 @@ package com.aiurt.boot.materials.controller;
 import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.aiurt.modules.materials.entity.EmergencyMaterialsCategory;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsCategoryService;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -27,7 +28,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-11-29
  * @Version: V1.0
  */
-@Api(tags="emergency_materials_category")
+@Api(tags="物资分类")
 @RestController
 @RequestMapping("/emergency/emergencyMaterialsCategory")
 @Slf4j
@@ -45,7 +46,7 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	 * @return
 	 */
 	//@AutoLog(value = "emergency_materials_category-分页列表查询")
-	@ApiOperation(value="emergency_materials_category-分页列表查询", notes="emergency_materials_category-分页列表查询")
+	@ApiOperation(value="物资分类-分页列表查询", notes="物资分类-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<EmergencyMaterialsCategory>> queryPageList(EmergencyMaterialsCategory emergencyMaterialsCategory,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -63,8 +64,8 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	 * @param emergencyMaterialsCategory
 	 * @return
 	 */
-	@AutoLog(value = "emergency_materials_category-添加")
-	@ApiOperation(value="emergency_materials_category-添加", notes="emergency_materials_category-添加")
+	@AutoLog(value = "物资分类-添加")
+	@ApiOperation(value="物资分类-添加", notes="物资分类-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody EmergencyMaterialsCategory emergencyMaterialsCategory) {
 		emergencyMaterialsCategoryService.save(emergencyMaterialsCategory);
@@ -77,8 +78,8 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	 * @param emergencyMaterialsCategory
 	 * @return
 	 */
-	@AutoLog(value = "emergency_materials_category-编辑")
-	@ApiOperation(value="emergency_materials_category-编辑", notes="emergency_materials_category-编辑")
+	@AutoLog(value = "物资分类-编辑")
+	@ApiOperation(value="物资分类-编辑", notes="物资分类-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody EmergencyMaterialsCategory emergencyMaterialsCategory) {
 		emergencyMaterialsCategoryService.updateById(emergencyMaterialsCategory);
@@ -91,8 +92,8 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "emergency_materials_category-通过id删除")
-	@ApiOperation(value="emergency_materials_category-通过id删除", notes="emergency_materials_category-通过id删除")
+	@AutoLog(value = "物资分类-通过id删除")
+	@ApiOperation(value="物资分类-通过id删除", notes="物资分类-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		emergencyMaterialsCategoryService.removeById(id);
@@ -105,8 +106,8 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "emergency_materials_category-批量删除")
-	@ApiOperation(value="emergency_materials_category-批量删除", notes="emergency_materials_category-批量删除")
+	@AutoLog(value = "物资分类-批量删除")
+	@ApiOperation(value="物资分类-批量删除", notes="物资分类-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.emergencyMaterialsCategoryService.removeByIds(Arrays.asList(ids.split(",")));
@@ -120,7 +121,7 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	 * @return
 	 */
 	//@AutoLog(value = "emergency_materials_category-通过id查询")
-	@ApiOperation(value="emergency_materials_category-通过id查询", notes="emergency_materials_category-通过id查询")
+	@ApiOperation(value="物资分类-通过id查询", notes="物资分类-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<EmergencyMaterialsCategory> queryById(@RequestParam(name="id",required=true) String id) {
 		EmergencyMaterialsCategory emergencyMaterialsCategory = emergencyMaterialsCategoryService.getById(id);

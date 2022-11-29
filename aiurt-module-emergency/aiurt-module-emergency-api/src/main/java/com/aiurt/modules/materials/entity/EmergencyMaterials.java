@@ -1,4 +1,4 @@
-package com.aiurt.boot.materials.entity;
+package com.aiurt.modules.materials.entity;
 
 import java.io.Serializable;
 

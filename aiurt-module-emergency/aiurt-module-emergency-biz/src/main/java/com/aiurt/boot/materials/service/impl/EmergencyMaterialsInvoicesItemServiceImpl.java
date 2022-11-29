@@ -1,8 +1,8 @@
 package com.aiurt.boot.materials.service.impl;
 
-import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesItemMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsInvoicesItemService;
+import com.aiurt.modules.materials.entity.EmergencyMaterialsInvoicesItem;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
