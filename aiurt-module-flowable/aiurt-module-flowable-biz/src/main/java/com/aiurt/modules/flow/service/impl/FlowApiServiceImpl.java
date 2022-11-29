@@ -1659,6 +1659,13 @@ public class FlowApiServiceImpl implements FlowApiService {
                     }
                 }
             }
+            // // 查询审批意见
+            ActCustomTaskComment actCustomTaskComment = actCustomTaskCommentMapper.selectOne(new LambdaQueryWrapper<ActCustomTaskComment>().eq(ActCustomTaskComment::getTaskId, entity.getId()).orderByDesc(ActCustomTaskComment::getCreateTime).last("limit 1"));
+
+            if (Objects.nonNull(actCustomTaskComment)) {
+                historicTaskInfo.setResult(FlowApprovalType.DICT_MAP.get(actCustomTaskComment.getApprovalType()));
+                historicTaskInfo.setRemark(actCustomTaskComment.getComment());
+            }
             historicTaskInfoList.add(historicTaskInfo);
         });
         return historicTaskInfoList;

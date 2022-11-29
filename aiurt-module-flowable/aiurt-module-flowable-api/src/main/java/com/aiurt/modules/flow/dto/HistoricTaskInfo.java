@@ -43,4 +43,10 @@ public class HistoricTaskInfo implements Serializable {
     @ApiModelProperty("耗时时间")
     private String costTime;
 
+    @ApiModelProperty(value = "审核结果")
+    private String result;
+
+    @ApiModelProperty(value = "审核意见")
+    private String remark;
+
 }

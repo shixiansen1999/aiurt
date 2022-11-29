@@ -70,10 +70,11 @@ public final class FlowApprovalType {
      */
     public static final String CANCEL = "cancel";
 
-    private static final Map<Object, String> DICT_MAP = new HashMap<>(2);
+    public static final Map<Object, String> DICT_MAP = new HashMap<>(16);
     static {
         DICT_MAP.put(SAVE, "保存");
         DICT_MAP.put(AGREE, "同意");
+        DICT_MAP.put(REJECT_TO_STAR, "拒绝");
         DICT_MAP.put(REFUSE, "拒绝");
         DICT_MAP.put(TRANSFER, "指派");
         DICT_MAP.put(MULTI_SIGN, "多实例会签");
