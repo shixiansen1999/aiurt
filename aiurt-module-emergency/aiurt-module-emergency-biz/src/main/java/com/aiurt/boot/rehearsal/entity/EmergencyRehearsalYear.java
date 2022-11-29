@@ -3,6 +3,7 @@ package com.aiurt.boot.rehearsal.entity;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -35,6 +36,7 @@ public class EmergencyRehearsalYear implements Serializable {
 	/**计划编号*/
 	@Excel(name = "计划编号", width = 15)
     @ApiModelProperty(value = "计划编号")
+    @TableField(value = "`code`")
     private java.lang.String code;
 	/**计划名称*/
 	@Excel(name = "计划名称", width = 15)
@@ -45,6 +47,7 @@ public class EmergencyRehearsalYear implements Serializable {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "所属年份")
+    @TableField(value = "`year`")
     private java.util.Date year;
 	/**编制人ID*/
 	@Excel(name = "编制人ID", width = 15)
@@ -63,6 +66,7 @@ public class EmergencyRehearsalYear implements Serializable {
 	/**审核状态（1待提交、2待审核、3审核中、4已通过）*/
 	@Excel(name = "审核状态（1待提交、2待审核、3审核中、4已通过）", width = 15)
     @ApiModelProperty(value = "审核状态（1待提交、2待审核、3审核中、4已通过）")
+    @TableField(value = "`status`")
     private java.lang.Integer status;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
