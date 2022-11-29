@@ -1,31 +1,31 @@
-package com.aiurt.modules.plan.entity;
-
-import java.io.Serializable;
+package com.aiurt.boot.plan.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
- * @Description: emergency_plan_record_depart
+ * @Description: emergency_plan_record_disposal_procedure
  * @Author: aiurt
  * @Date:   2022-11-29
  * @Version: V1.0
  */
 @Data
-@TableName("emergency_plan_record_depart")
+@TableName("emergency_plan_record_disposal_procedure")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="emergency_plan_record_depart对象", description="emergency_plan_record_depart")
-public class EmergencyPlanRecordDepart implements Serializable {
+@ApiModel(value="emergency_plan_record_disposal_procedure对象", description="emergency_plan_record_disposal_procedure")
+public class EmergencyPlanRecordDisposalProcedure implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键id*/
@@ -35,11 +35,23 @@ public class EmergencyPlanRecordDepart implements Serializable {
 	/**应急预案启动记录id*/
 	@Excel(name = "应急预案启动记录id", width = 15)
     @ApiModelProperty(value = "应急预案启动记录id")
-    private String emergencyPlanLaunchRecordId;
-	/**参与部门*/
-	@Excel(name = "参与部门", width = 15)
-    @ApiModelProperty(value = "参与部门")
+    private String emergencyPlanRecordId;
+	/**处置部门*/
+	@Excel(name = "处置部门", width = 15)
+    @ApiModelProperty(value = "处置部门")
     private String orgCode;
+	/**处置岗位（角色）*/
+	@Excel(name = "处置岗位（角色）", width = 15)
+    @ApiModelProperty(value = "处置岗位（角色）")
+    private String roleId;
+	/**应急处置内容*/
+	@Excel(name = "应急处置内容", width = 15)
+    @ApiModelProperty(value = "应急处置内容")
+    private String disposalProcedureContent;
+	/**应急处置情况*/
+	@Excel(name = "应急处置情况", width = 15)
+    @ApiModelProperty(value = "应急处置情况")
+    private String disposalProcedureSituation;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

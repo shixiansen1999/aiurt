@@ -1,4 +1,4 @@
-package com.aiurt.modules.plan.entity;
+package com.aiurt.boot.plan.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -15,53 +15,31 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.io.Serializable;
 
 /**
- * @Description: emergency_plan_record_problem_measures
+ * @Description: emergency_plan_team
  * @Author: aiurt
  * @Date:   2022-11-29
  * @Version: V1.0
  */
 @Data
-@TableName("emergency_plan_record_problem_measures")
+@TableName("emergency_plan_team")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="emergency_plan_record_problem_measures对象", description="emergency_plan_record_problem_measures")
-public class EmergencyPlanRecordProblemMeasures implements Serializable {
+@ApiModel(value="emergency_plan_team对象", description="emergency_plan_team")
+public class EmergencyPlanTeam implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
     private String id;
-	/**应急预案启动记录id*/
-	@Excel(name = "应急预案启动记录id", width = 15)
-    @ApiModelProperty(value = "应急预案启动记录id")
-    private String emergencyPlanRecordId;
-	/**问题类型*/
-	@Excel(name = "问题类型", width = 15)
-    @ApiModelProperty(value = "问题类型")
-    private Integer problemType;
-	/**问题描述*/
-	@Excel(name = "问题描述", width = 15)
-    @ApiModelProperty(value = "问题描述")
-    private String problemContent;
-	/**责任部门*/
-	@Excel(name = "责任部门", width = 15)
-    @ApiModelProperty(value = "责任部门")
-    private String orgCode;
-	/**负责人id*/
-	@Excel(name = "负责人id", width = 15)
-    @ApiModelProperty(value = "负责人id")
-    private String managerId;
-	/**解决期限*/
-	@Excel(name = "解决期限", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "解决期限")
-    private java.util.Date resolveTime;
-	/**问题状态（1待处理、2已处理）*/
-	@Excel(name = "问题状态（1待处理、2已处理）", width = 15)
-    @ApiModelProperty(value = "问题状态（1待处理、2已处理）")
-    private Integer status;
+	/**应急预案id*/
+	@Excel(name = "应急预案id", width = 15)
+    @ApiModelProperty(value = "应急预案id")
+    private String emergencyPlanId;
+	/**应急队伍id*/
+	@Excel(name = "应急队伍id", width = 15)
+    @ApiModelProperty(value = "应急队伍id")
+    private String emergencyTeamId;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

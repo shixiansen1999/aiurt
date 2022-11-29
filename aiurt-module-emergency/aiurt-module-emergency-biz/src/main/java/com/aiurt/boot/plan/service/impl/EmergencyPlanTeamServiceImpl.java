@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service.impl;
 
-import com.aiurt.modules.plan.entity.EmergencyPlanTeam;
+import com.aiurt.boot.plan.entity.EmergencyPlanTeam;
 import com.aiurt.boot.plan.service.IEmergencyPlanTeamService;
 import com.aiurt.boot.plan.mapper.EmergencyPlanTeamMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

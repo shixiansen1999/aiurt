@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service.impl;
 
-import com.aiurt.modules.plan.entity.EmergencyPlanRecordMaterials;
+import com.aiurt.boot.plan.entity.EmergencyPlanRecordMaterials;
 import com.aiurt.boot.plan.mapper.EmergencyPlanRecordMaterialsMapper;
 import com.aiurt.boot.plan.service.IEmergencyPlanRecordMaterialsService;
 import org.springframework.stereotype.Service;

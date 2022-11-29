@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.controller;
 
-import com.aiurt.modules.plan.entity.EmergencyPlanRecordProblemMeasures;
+import com.aiurt.boot.plan.entity.EmergencyPlanRecordProblemMeasures;
 import com.aiurt.boot.plan.service.IEmergencyPlanRecordProblemMeasuresService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;

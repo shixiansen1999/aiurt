@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service.impl;
 
-import com.aiurt.modules.plan.entity.EmergencyPlanRecordProblemMeasures;
+import com.aiurt.boot.plan.entity.EmergencyPlanRecordProblemMeasures;
 import com.aiurt.boot.plan.mapper.EmergencyPlanRecordProblemMeasuresMapper;
 import com.aiurt.boot.plan.service.IEmergencyPlanRecordProblemMeasuresService;
 import org.springframework.stereotype.Service;

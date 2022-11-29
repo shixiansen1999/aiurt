@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.mapper;
 
-import com.aiurt.modules.plan.entity.EmergencyPlanRecordTeam;
+import com.aiurt.boot.plan.entity.EmergencyPlanRecordTeam;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service.impl;
 
-import com.aiurt.modules.plan.entity.EmergencyPlanAtt;
+import com.aiurt.boot.plan.entity.EmergencyPlanAtt;
 import com.aiurt.boot.plan.mapper.EmergencyPlanAttMapper;
 import com.aiurt.boot.plan.service.IEmergencyPlanAttService;
 import org.springframework.stereotype.Service;

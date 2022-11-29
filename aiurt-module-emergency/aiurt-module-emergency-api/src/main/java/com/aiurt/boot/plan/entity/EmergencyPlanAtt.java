@@ -1,41 +1,41 @@
-package com.aiurt.modules.plan.entity;
-
-import java.io.Serializable;
+package com.aiurt.boot.plan.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
- * @Description: emergency_plan_record_att
+ * @Description: emergency_plan_att
  * @Author: aiurt
  * @Date:   2022-11-29
  * @Version: V1.0
  */
 @Data
-@TableName("emergency_plan_record_att")
+@TableName("emergency_plan_att")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="emergency_plan_record_att对象", description="emergency_plan_record_att")
-public class EmergencyPlanRecordAtt implements Serializable {
+@ApiModel(value="emergency_plan_att对象", description="emergency_plan_att")
+public class EmergencyPlanAtt implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private String id;
-	/**应急预案启动记录id*/
-	@Excel(name = "应急预案启动记录id", width = 15)
-    @ApiModelProperty(value = "应急预案启动记录id")
-    private String emergencyPlanRecordId;
+	/**应急预案id*/
+	@Excel(name = "应急预案id", width = 15)
+    @ApiModelProperty(value = "应急预案id")
+    private String emergencyPlanId;
 	/**附件路径*/
 	@Excel(name = "附件路径", width = 15)
     @ApiModelProperty(value = "附件路径")
@@ -52,10 +52,6 @@ public class EmergencyPlanRecordAtt implements Serializable {
 	@Excel(name = "附件类型", width = 15)
     @ApiModelProperty(value = "附件类型")
     private String type;
-	/**事件材料类型(0事件相关，1事件总结)*/
-	@Excel(name = "事件材料类型(0事件相关，1事件总结)", width = 15)
-    @ApiModelProperty(value = "事件材料类型(0事件相关，1事件总结)")
-    private Integer materialType;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

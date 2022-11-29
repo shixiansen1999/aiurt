@@ -1,31 +1,31 @@
-package com.aiurt.modules.plan.entity;
-
-import java.io.Serializable;
+package com.aiurt.boot.plan.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
- * @Description: emergency_plan_record_materials
+ * @Description: emergency_plan_record_depart
  * @Author: aiurt
  * @Date:   2022-11-29
  * @Version: V1.0
  */
 @Data
-@TableName("emergency_plan_record_materials")
+@TableName("emergency_plan_record_depart")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="emergency_plan_record_materials对象", description="emergency_plan_record_materials")
-public class EmergencyPlanRecordMaterials implements Serializable {
+@ApiModel(value="emergency_plan_record_depart对象", description="emergency_plan_record_depart")
+public class EmergencyPlanRecordDepart implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键id*/
@@ -35,15 +35,11 @@ public class EmergencyPlanRecordMaterials implements Serializable {
 	/**应急预案启动记录id*/
 	@Excel(name = "应急预案启动记录id", width = 15)
     @ApiModelProperty(value = "应急预案启动记录id")
-    private String emergencyPlanRecordId;
-	/**应急物资编号*/
-	@Excel(name = "应急物资编号", width = 15)
-    @ApiModelProperty(value = "应急物资编号")
-    private String materialsCode;
-	/**使用数量*/
-	@Excel(name = "使用数量", width = 15)
-    @ApiModelProperty(value = "使用数量")
-    private Integer materialsNumber;
+    private String emergencyPlanLaunchRecordId;
+	/**参与部门*/
+	@Excel(name = "参与部门", width = 15)
+    @ApiModelProperty(value = "参与部门")
+    private String orgCode;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

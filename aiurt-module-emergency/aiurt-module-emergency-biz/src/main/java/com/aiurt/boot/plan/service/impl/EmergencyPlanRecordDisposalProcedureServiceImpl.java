@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service.impl;
 
-import com.aiurt.modules.plan.entity.EmergencyPlanRecordDisposalProcedure;
+import com.aiurt.boot.plan.entity.EmergencyPlanRecordDisposalProcedure;
 import com.aiurt.boot.plan.mapper.EmergencyPlanRecordDisposalProcedureMapper;
 import com.aiurt.boot.plan.service.IEmergencyPlanRecordDisposalProcedureService;
 import org.springframework.stereotype.Service;

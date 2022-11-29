@@ -1,4 +1,4 @@
-package com.aiurt.modules.plan.entity;
+package com.aiurt.boot.plan.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -15,35 +15,31 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.io.Serializable;
 
 /**
- * @Description: emergency_plan_materials
+ * @Description: emergency_plan_record_team
  * @Author: aiurt
  * @Date:   2022-11-29
  * @Version: V1.0
  */
 @Data
-@TableName("emergency_plan_materials")
+@TableName("emergency_plan_record_team")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="emergency_plan_materials对象", description="emergency_plan_materials")
-public class EmergencyPlanMaterials implements Serializable {
+@ApiModel(value="emergency_plan_record_team对象", description="emergency_plan_record_team")
+public class EmergencyPlanRecordTeam implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
     private String id;
-	/**应急预案id*/
-	@Excel(name = "应急预案id", width = 15)
-    @ApiModelProperty(value = "应急预案id")
-    private String emergencyPlanId;
-	/**应急物资编号*/
-	@Excel(name = "应急物资编号", width = 15)
-    @ApiModelProperty(value = "应急物资编号")
-    private String materialsCode;
-	/**应急物资数量*/
-	@Excel(name = "应急物资数量", width = 15)
-    @ApiModelProperty(value = "应急物资数量")
-    private Integer materialsNumber;
+	/**应急预案启动记录id*/
+	@Excel(name = "应急预案启动记录id", width = 15)
+    @ApiModelProperty(value = "应急预案启动记录id")
+    private String emergencyPlanRecordId;
+	/**应急队伍id*/
+	@Excel(name = "应急队伍id", width = 15)
+    @ApiModelProperty(value = "应急队伍id")
+    private String emergencyTeamId;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

@@ -3,9 +3,10 @@ package com.aiurt.boot.plan.controller;
 import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.aiurt.boot.plan.entity.EmergencyPlanRecordTeam;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.modules.plan.entity.EmergencyPlanRecordTeam;
 import com.aiurt.boot.plan.service.IEmergencyPlanRecordTeamService;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;

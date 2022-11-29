@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service;
 
-import com.aiurt.modules.plan.entity.EmergencyPlanDisposalProcedure;
+import com.aiurt.boot.plan.entity.EmergencyPlanDisposalProcedure;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service.impl;
 
-import com.aiurt.modules.plan.entity.EmergencyPlanRecordDepart;
+import com.aiurt.boot.plan.entity.EmergencyPlanRecordDepart;
 import com.aiurt.boot.plan.mapper.EmergencyPlanRecordDepartMapper;
 import com.aiurt.boot.plan.service.IEmergencyPlanRecordDepartService;
 import org.springframework.stereotype.Service;

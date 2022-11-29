@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service;
 
-import com.aiurt.modules.plan.entity.EmergencyPlanRecordDepart;
+import com.aiurt.boot.plan.entity.EmergencyPlanRecordDepart;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
