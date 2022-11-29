@@ -25,7 +25,30 @@ public interface IEmergencyRehearsalYearService extends IService<EmergencyRehear
 
     /**
      * 应急演练管理-年演练计划添加
+     *
      * @param emergencyRehearsalYearAddDTO
      */
-    boolean add(EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO);
+    String add(EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO);
+
+    /**
+     * 应急演练管理-年演练计划通过id删除
+     *
+     * @param id
+     */
+    void delete(String id);
+
+    /**
+     * 应急演练管理-年演练计划编辑
+     *
+     * @param emergencyRehearsalYearAddDTO
+     */
+    String edit(EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO);
+
+    /**
+     * 应急演练管理-年演练计划提交
+     * 后期接入流程可作为流程启动的方法
+     *
+     * @param id
+     */
+    String startProcess(String id);
 }

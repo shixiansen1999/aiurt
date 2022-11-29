@@ -1,22 +1,21 @@
 package com.aiurt.boot.rehearsal.entity;
 
-import java.io.Serializable;
-
-import com.aiurt.boot.constant.EmergencyDictConstant;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: 月演练计划实体对象
@@ -48,7 +47,7 @@ public class EmergencyRehearsalMonth extends DictEntity implements Serializable 
 	/**演练类型(1单项应急预案、2综合应急预案、3现场处置方案)*/
 	@Excel(name = "演练类型(1单项应急预案、2综合应急预案、3现场处置方案)", width = 15)
     @ApiModelProperty(value = "演练类型(1单项应急预案、2综合应急预案、3现场处置方案)")
-    @Dict(dicCode = EmergencyDictConstant.MODALITY)
+    @Dict(dicCode = "emergency_rehearsal_type")
     private java.lang.Integer type;
 	/**演练科目*/
 	@Excel(name = "演练科目", width = 15)
@@ -60,7 +59,7 @@ public class EmergencyRehearsalMonth extends DictEntity implements Serializable 
     private java.lang.String schemeId;
 	/**演练形式(1实战演练、2桌面推演)*/
 	@Excel(name = "演练形式(1实战演练、2桌面推演)", width = 15)
-    @Dict(dicCode = EmergencyDictConstant.TYPE)
+    @Dict(dicCode = "emergency_rehearsal_modality")
     @ApiModelProperty(value = "演练形式(1实战演练、2桌面推演)")
     private java.lang.Integer modality;
 	/**组织部门编码*/

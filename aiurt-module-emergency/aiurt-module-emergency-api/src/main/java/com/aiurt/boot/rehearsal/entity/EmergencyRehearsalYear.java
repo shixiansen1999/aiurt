@@ -1,22 +1,21 @@
 package com.aiurt.boot.rehearsal.entity;
 
-import java.io.Serializable;
-
-import com.aiurt.boot.constant.EmergencyDictConstant;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: 应急演练年计划实体对象
@@ -72,7 +71,7 @@ public class EmergencyRehearsalYear extends DictEntity implements Serializable {
 	@Excel(name = "审核状态（1待提交、2待审核、3审核中、4已通过）", width = 15)
     @ApiModelProperty(value = "审核状态（1待提交、2待审核、3审核中、4已通过）")
     @TableField(value = "`status`")
-    @Dict(dicCode = EmergencyDictConstant.YEARPLAN_STATUS)
+    @Dict(dicCode = "emergency_yearplan_status")
     private java.lang.Integer status;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
