@@ -1,4 +1,4 @@
-package com.aiurt.modules.materials.entity;
+package com.aiurt.boot.materials.entity;
 
 import java.io.Serializable;
 
@@ -15,43 +15,49 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: emergency_materials_category
+ * @Description: emergency_materials_invoices
  * @Author: aiurt
  * @Date:   2022-11-29
  * @Version: V1.0
  */
 @Data
-@TableName("emergency_materials_category")
+@TableName("emergency_materials_invoices")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="emergency_materials_category对象", description="emergency_materials_category")
-public class EmergencyMaterialsCategory implements Serializable {
+@ApiModel(value="emergency_materials_invoices对象", description="emergency_materials_invoices")
+public class EmergencyMaterialsInvoices implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private java.lang.String id;
-	/**父级ID，第一级默认为0*/
-	@Excel(name = "父级ID，第一级默认为0", width = 15)
-    @ApiModelProperty(value = "父级ID，第一级默认为0")
-    private java.lang.String pid;
-	/**分类编号*/
-	@Excel(name = "分类编号", width = 15)
-    @ApiModelProperty(value = "分类编号")
-    private java.lang.String categoryCode;
-	/**分类名称*/
-	@Excel(name = "分类名称", width = 15)
-    @ApiModelProperty(value = "分类名称")
-    private java.lang.String categoryName;
-	/**分类状态(0停用、1启用)*/
-	@Excel(name = "分类状态(0停用、1启用)", width = 15)
-    @ApiModelProperty(value = "分类状态(0停用、1启用)")
-    private java.lang.Integer status;
-	/**排序*/
-	@Excel(name = "排序", width = 15)
-    @ApiModelProperty(value = "排序")
-    private java.lang.Integer sort;
+	/**应急物资巡检单号*/
+	@Excel(name = "应急物资巡检单号", width = 15)
+    @ApiModelProperty(value = "应急物资巡检单号")
+    private java.lang.String materialsPatrolCode;
+	/**巡视标准编码*/
+	@Excel(name = "巡视标准编码", width = 15)
+    @ApiModelProperty(value = "巡视标准编码")
+    private java.lang.String standardCode;
+	/**巡视标准名称*/
+	@Excel(name = "巡视标准名称", width = 15)
+    @ApiModelProperty(value = "巡视标准名称")
+    private java.lang.String standardName;
+	/**巡视日期*/
+	@Excel(name = "巡视日期", width = 15, format = "yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "巡视日期")
+    private java.util.Date patrolDate;
+	/**巡视位置*/
+	@Excel(name = "巡视位置", width = 15)
+    @ApiModelProperty(value = "巡视位置")
+    private java.lang.String stationCode;
+	/**巡视人ID*/
+	@Excel(name = "巡视人ID", width = 15)
+    @ApiModelProperty(value = "巡视人ID")
+    private java.lang.String userId;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

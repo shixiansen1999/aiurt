@@ -1,7 +1,7 @@
 package com.aiurt.boot.materials.mapper;
 
 
-import com.aiurt.modules.materials.entity.EmergencyMaterials;
+import com.aiurt.boot.materials.entity.EmergencyMaterials;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

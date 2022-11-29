@@ -4,7 +4,7 @@ import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.aiurt.modules.materials.entity.EmergencyMaterialsUsage;
+import com.aiurt.boot.materials.entity.EmergencyMaterialsUsage;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsUsageService;

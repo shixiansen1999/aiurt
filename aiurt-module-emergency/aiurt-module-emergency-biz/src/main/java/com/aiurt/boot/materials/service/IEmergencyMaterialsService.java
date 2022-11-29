@@ -1,6 +1,6 @@
 package com.aiurt.boot.materials.service;
 
-import com.aiurt.modules.materials.entity.EmergencyMaterials;
+import com.aiurt.boot.materials.entity.EmergencyMaterials;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

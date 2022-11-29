@@ -2,7 +2,7 @@ package com.aiurt.boot.materials.service.impl;
 
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsCategoryMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsCategoryService;
-import com.aiurt.modules.materials.entity.EmergencyMaterialsCategory;
+import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

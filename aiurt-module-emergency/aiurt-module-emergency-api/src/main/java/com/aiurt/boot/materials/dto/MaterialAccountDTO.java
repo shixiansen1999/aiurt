@@ -1,4 +1,4 @@
-package com.aiurt.modules.materials.dto;
+package com.aiurt.boot.materials.dto;
 
 import lombok.Data;
 
