@@ -21,4 +21,11 @@ public interface CsSafetyAttentionMapper extends BaseMapper<CsSafetyAttention> {
      * @param majorCodeName
      */
     CsUserMajorModel selectCsMajor(@Param("majorCodeName") String majorCodeName);
+
+    /**
+     * 查询子系统
+     * @param systemName
+     * @return
+     */
+    String selectSystemCode(@Param("systemName") String systemName);
 }

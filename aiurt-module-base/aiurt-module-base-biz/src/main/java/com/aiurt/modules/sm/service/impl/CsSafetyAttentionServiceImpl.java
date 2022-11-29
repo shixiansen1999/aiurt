@@ -17,6 +17,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 
 import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
@@ -61,7 +62,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
         List<CsSafetyAttention> safetyAttentions = new ArrayList<>();
         if (StrUtil.isNotEmpty(ids)){
             List<CsSafetyAttention>safetyAttentions1 = baseMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>()
-                .in(CsSafetyAttention::getAttentionType,Arrays.asList(ids.split(",")))
+                .in(CsSafetyAttention::getSystemCode,Arrays.asList(ids.split(",")))
                 .eq(CsSafetyAttention::getDelFlag,0));
             safetyAttentions.addAll(safetyAttentions1);
         }
@@ -79,18 +80,12 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
         }
          safetyAttentions =  safetyAttentions.stream().distinct().collect(Collectors.toList());
         if (CollectionUtil.isNotEmpty(safetyAttentions)) {
-            safetyAttentions.stream().forEach(s->{
-                CsSafetyAttentionType csSafetyAttentionType = csSafetyAttentionTypeMapper.selectOne(new LambdaQueryWrapper<CsSafetyAttentionType>()
-                        .eq(CsSafetyAttentionType::getId,s.getAttentionType())
-                        .eq(CsSafetyAttentionType::getDelFlag,0));
-                s.setAttentionTypeName(csSafetyAttentionType.getName());
-            });
             //导出文件名称
             mv.addObject(NormalExcelConstants.FILE_NAME, "安全事项管理");
             //excel注解对象Class
             mv.addObject(NormalExcelConstants.CLASS, CsSafetyAttention.class);
             //自定义导出字段
-            String exportField = "majorCode,attentionTypeName,attentionContent,attentionMeasures,state";
+            String exportField = "majorCode,systemCode,attentionContent,state";
             mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
             //自定义表格参数
             mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("安全事项管理", "安全事项管理"));
@@ -126,34 +121,22 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                 } else {
                     csSafetyAttention.setMajorCode(csMajor.getMajorCode());
                     //安全事项分类
-                    String baseTypeCodeName = csSafetyAttention.getAttentionTypeName() == null ? "" : csSafetyAttention.getAttentionTypeName();
-                    if ("".equals(baseTypeCodeName)) {
-                        errorStrs.add("第 " + i + " 行：安全事项为空，忽略导入。");
-                        list.add(csSafetyAttention);
-                        continue;
+                    String systemName = csSafetyAttention.getSystemName() == null ? "" : csSafetyAttention.getSystemName();
+                    if (StrUtil.isNotEmpty(systemName)) {
+                      String systemCode = baseMapper.selectSystemCode(systemName);
+                      if (StrUtil.isNotEmpty(systemCode)){
+                          csSafetyAttention.setSystemCode(systemCode);
+                      }else {
+                          errorStrs.add("第 " + i + " 行：输入的子系统找不到！请核对后输出，忽略导入。");
+                          list.add(csSafetyAttention);
+                          continue;
+                      }
                     }
-                    CsSafetyAttentionType csSafetyAttentionType = csSafetyAttentionTypeMapper.selectOne(new LambdaQueryWrapper<CsSafetyAttentionType>()
-                            .like(CsSafetyAttentionType::getName, baseTypeCodeName)
-                            .eq(CsSafetyAttentionType::getDelFlag, 0));
-                    if (csSafetyAttentionType == null) {
-                        errorStrs.add("第 " + i + " 行：无法根据安全事项分类找到对应数据，忽略导入。");
-                        list.add(csSafetyAttention);
-                        continue;
-                    } else {
-                        csSafetyAttention.setAttentionTypeCode(csSafetyAttentionType.getCode());
-                        csSafetyAttention.setAttentionType(csSafetyAttentionType.getId());
-                    }
+
                     //安全事项内容
                     String attentionContent = csSafetyAttention.getAttentionContent() == null ? "" : csSafetyAttention.getAttentionContent();
                     if ("".equals(attentionContent)) {
                         errorStrs.add("第 " + i + " 行：安全事项内容为空，忽略导入。");
-                        list.add(csSafetyAttention);
-                        continue;
-                    }
-                    //安全事项措施
-                    String attentionMeasures = csSafetyAttention.getAttentionMeasures() == null ? "" : csSafetyAttention.getAttentionMeasures();
-                    if ("".equals(attentionMeasures)) {
-                        errorStrs.add("第 " + i + " 行：安全事项措施为空，忽略导入。");
                         list.add(csSafetyAttention);
                         continue;
                     }
@@ -199,9 +182,8 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
             list.forEach(l->{
                 Map<String, Object> lm = new HashMap<String, Object>();
                 lm.put("majorName",l.getMajorName());
-                lm.put("attentionTypeName",l.getAttentionTypeName());
+                lm.put("systemName",l.getSystemName());
                 lm.put("attentionContent",l.getAttentionContent());
-                lm.put("attentionMeasures",l.getAttentionMeasures());
                 lm.put("stateName",l.getStateName());
                 mapList.add(lm);
             });

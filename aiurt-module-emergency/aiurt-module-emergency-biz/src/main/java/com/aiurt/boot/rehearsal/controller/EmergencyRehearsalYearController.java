@@ -4,6 +4,7 @@ import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearAddDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -61,14 +62,14 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
 	/**
 	 *   应急演练管理-年演练计划添加
 	 *
-	 * @param emergencyRehearsalYear
+	 * @param
 	 * @return
 	 */
 	@AutoLog(value = "应急演练管理-年演练计划添加")
 	@ApiOperation(value="应急演练管理-年演练计划添加", notes="应急演练管理-年演练计划添加")
 	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody EmergencyRehearsalYear emergencyRehearsalYear) {
-		emergencyRehearsalYearService.save(emergencyRehearsalYear);
+	public Result<String> add(@RequestBody EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO) {
+		emergencyRehearsalYearService.add(emergencyRehearsalYearAddDTO);
 		return Result.OK("添加成功！");
 	}
 

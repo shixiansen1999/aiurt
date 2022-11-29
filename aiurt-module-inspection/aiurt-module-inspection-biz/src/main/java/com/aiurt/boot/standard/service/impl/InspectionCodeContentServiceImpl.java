@@ -463,8 +463,10 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
                     if (ObjectUtil.isNull(inspectionCodeContentDto.getName())) {
                         errorMessage.add("检修项内容为必填项，忽略导入");
                         sb.append("检修项内容为必填项为必填项;");
-                        errorLines++;
-                        error = false;
+                        if(error) {
+                            errorLines++;
+                            error = false;
+                        }
                     }else {
                         InspectionCodeContent inspectionCodeContent = inspectionCodeContentMapper.selectOne(new QueryWrapper<InspectionCodeContent>().lambda().eq(InspectionCodeContent::getName, inspectionCodeContentDto.getName()).eq(InspectionCodeContent::getDelFlag, 0));
                         if (inspectionCodeContent != null) {
