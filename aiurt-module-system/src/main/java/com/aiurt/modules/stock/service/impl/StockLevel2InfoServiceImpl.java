@@ -3,6 +3,7 @@ package com.aiurt.modules.stock.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.manufactor.entity.vo.CsManuFactorImportVo;
@@ -94,7 +95,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 						.collect(Collectors.toList());
 				//空文件直接返回
 				if(CollUtil.isEmpty(stockLevel2InfoList)){
-					return imporReturnRes(errorLines, successLines, errorMessage,false,url);
+					throw new AiurtBootException("该文件无数据，请填写再导入");
 				}
 				List<StockLevel2Info> list = new ArrayList<>();
 				for (int i = 0; i < stockLevel2InfoList.size(); i++) {

@@ -189,7 +189,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
      */
     @AutoLog(value = "检修标准管理-导出excel",  operateType =  4, operateTypeAlias = "导出excel", module = ModuleType.INSPECTION)
     @ApiOperation(value="检修标准管理-导出excel", notes="检修标准管理-导出excel")
-    @RequestMapping(value = "/exportXls")
+    @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
     public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response,InspectionCode inspectionCode) {
         return inspectionCodeService.exportXls(request,response,inspectionCode);
     }
@@ -200,7 +200,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
      */
     @AutoLog(value = "检修标准导入模板下载", operateType =  4, operateTypeAlias = "导出excel", module = ModuleType.INSPECTION)
     @ApiOperation(value="检修标准导入模板下载", notes="检修标准导入模板下载")
-    @RequestMapping(value = "/exportTemplateXls")
+    @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
     public ModelAndView exportTemplateXl() {
 //        String remark = "检修标准导入模板\n" +
 //                "填写须知：\n" +
@@ -208,7 +208,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
 //                "2.请严格按照数据规范填写，并填写完所有必填项，红底白字列为必填项；\n" +
 //                "字段说明：\n" +
 //                "1.检修标准名称：必填字段；\n" +
-//                "2.检修标准编码：自动生成，无需填写；\n" ;
+//                "2.检修标准编码：自动生成，无需填写；\n";
         return super.exportTemplateXls("", InspectionCode.class,"检修标准导入模板","");
     }
 

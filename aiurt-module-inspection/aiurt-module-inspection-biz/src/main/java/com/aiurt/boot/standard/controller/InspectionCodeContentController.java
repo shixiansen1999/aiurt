@@ -237,7 +237,7 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 
 	 @AutoLog(value = "配置检修项-导出excel",  operateType =  4, operateTypeAlias = "导出excel", module = ModuleType.INSPECTION)
 	 @ApiOperation(value="配置检修项-导出excel", notes="配置检修项-导出excel")
-	 @RequestMapping(value = "/exportXls")
+	 @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
 	 public ModelAndView exportXls(HttpServletRequest request,HttpServletResponse response, InspectionCodeContent inspectionCodeContent) {
 		 return inspectionCodeContentService.exportXls(request,response,inspectionCodeContent);
 	 }
@@ -245,7 +245,7 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 
 	 @AutoLog(value = "配置检修项模板下载", operateType =  4, operateTypeAlias = "导出excel", module = ModuleType.INSPECTION)
 	 @ApiOperation(value="配置检修项导入模板下载", notes="配置检修项导入模板下载")
-	 @RequestMapping(value = "/exportTemplateXls")
+	 @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
 	 public ModelAndView exportTemplateXl() {
 //        String remark = "检修标准导入模板\n" +
 //                "填写须知：\n" +

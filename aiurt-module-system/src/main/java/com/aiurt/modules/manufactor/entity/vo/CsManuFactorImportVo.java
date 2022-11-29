@@ -3,6 +3,7 @@ package com.aiurt.modules.manufactor.entity.vo;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.system.base.annotation.ExcelExtend;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
@@ -70,6 +71,7 @@ public class CsManuFactorImportVo implements Serializable {
     /**错误原因*/
     @Excel(name = "错误原因", width = 15)
     @ApiModelProperty(value = "错误原因")
+    @TableField(exist = false)
     private String errorCause;
 
 }

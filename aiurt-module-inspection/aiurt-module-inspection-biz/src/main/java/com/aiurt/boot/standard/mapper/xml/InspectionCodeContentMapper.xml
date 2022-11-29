@@ -27,7 +27,8 @@
 		</if>
 	</select>
     <select id="selectLists" resultType="com.aiurt.boot.standard.entity.InspectionCodeContent">
-		select * from inspection_code_content a where a.del_flag =0
+		select * from inspection_code_content a
+		where a.del_flag =0
 		 <if test="inspectionCodeContent.inspectionCodeId !=null">
 		and a.inspection_code_id=#{inspectionCodeContent.inspectionCodeId}
 		</if>

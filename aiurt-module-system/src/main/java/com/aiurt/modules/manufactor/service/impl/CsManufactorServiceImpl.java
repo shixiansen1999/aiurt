@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.view.AiurtEntityExcelView;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
@@ -171,7 +172,7 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                         .filter(c->c.getName()!=null||c.getLevel()!=null||c.getLinkPhoneNo()!=null||c.getLinkAddress()!=null||c.getLinkPerson() !=null||c.getFilePath() !=null)
                         .collect(Collectors.toList());
                 if(CollUtil.isEmpty(csManuFactorList)){
-                    return imporReturnRes(errorLines, successLines, errorMessage,false,url);
+                    throw new AiurtBootException("该文件无数据，请填写再导入");
                 }
                 List<CsManufactor> list = new ArrayList<>();
                 for (int i = 0; i < csManuFactorList.size(); i++) {

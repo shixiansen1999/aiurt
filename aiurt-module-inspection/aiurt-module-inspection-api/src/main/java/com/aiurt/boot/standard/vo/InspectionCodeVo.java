@@ -40,6 +40,7 @@ public class InspectionCodeVo extends DictEntity implements Serializable {
 	@Excel(name = "检修标准表编码", width = 15)
     @ApiModelProperty(value = "检修标准编码")
     private String code;
+
 	/**检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)*/
     @ApiModelProperty(value = "检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)")
     @Dict(dicCode = "inspection_cycle_type")
@@ -65,8 +66,8 @@ public class InspectionCodeVo extends DictEntity implements Serializable {
     @ApiModelProperty(value = "专业子系统code,关联cs_subsystem_user的code")
     @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     private String subsystemCode;
-	/**是否与设备相关(0否1是)*/
 
+	/**是否与设备相关(0否1是)*/
     @ApiModelProperty(value = "是否与设备相关(0否1是)")
     @Dict(dicCode = "is_appoint_device")
     private String isAppointDevice;
@@ -101,6 +102,7 @@ public class InspectionCodeVo extends DictEntity implements Serializable {
     /**错误原因*/
     @Excel(name = "错误原因", width = 15)
     @ApiModelProperty(value = "错误原因")
+    @TableField(exist = false)
     private String errorCause;
 
 
