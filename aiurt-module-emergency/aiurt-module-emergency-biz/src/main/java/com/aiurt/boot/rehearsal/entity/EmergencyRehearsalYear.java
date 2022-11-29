@@ -2,6 +2,9 @@ package com.aiurt.boot.rehearsal.entity;
 
 import java.io.Serializable;
 
+import com.aiurt.boot.constant.EmergencyDictConstant;
+import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -16,7 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: emergency_rehearsal_year
+ * @Description: 应急演练年计划实体对象
  * @Author: aiurt
  * @Date:   2022-11-29
  * @Version: V1.0
@@ -25,8 +28,8 @@ import lombok.experimental.Accessors;
 @TableName("emergency_rehearsal_year")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="emergency_rehearsal_year对象", description="emergency_rehearsal_year")
-public class EmergencyRehearsalYear implements Serializable {
+@ApiModel(value="应急演练年计划实体对象", description="应急演练年计划实体对象")
+public class EmergencyRehearsalYear extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
@@ -42,20 +45,22 @@ public class EmergencyRehearsalYear implements Serializable {
 	@Excel(name = "计划名称", width = 15)
     @ApiModelProperty(value = "计划名称")
     private java.lang.String name;
-	/**所属年份*/
-	@Excel(name = "所属年份", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "所属年份")
+	/**所属年份格式：yyyy*/
+	@Excel(name = "所属年份", width = 15, format = "yyyy")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy")
+    @DateTimeFormat(pattern="yyyy")
+    @ApiModelProperty(value = "所属年份格式：yyyy")
     @TableField(value = "`year`")
     private java.util.Date year;
 	/**编制人ID*/
 	@Excel(name = "编制人ID", width = 15)
     @ApiModelProperty(value = "编制人ID")
+    @Dict(dictTable = "sys_user", dicCode = "id", dicText = "realname")
     private java.lang.String userId;
 	/**编制部门编码*/
 	@Excel(name = "编制部门编码", width = 15)
     @ApiModelProperty(value = "编制部门编码")
+    @Dict(dictTable = "sys_depart", dicCode = "org_code", dicText = "depart_name")
     private java.lang.String orgCode;
 	/**编制日期*/
 	@Excel(name = "编制日期", width = 15, format = "yyyy-MM-dd")
@@ -67,6 +72,7 @@ public class EmergencyRehearsalYear implements Serializable {
 	@Excel(name = "审核状态（1待提交、2待审核、3审核中、4已通过）", width = 15)
     @ApiModelProperty(value = "审核状态（1待提交、2待审核、3审核中、4已通过）")
     @TableField(value = "`status`")
+    @Dict(dicCode = EmergencyDictConstant.YEARPLAN_STATUS)
     private java.lang.Integer status;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
@@ -76,16 +82,16 @@ public class EmergencyRehearsalYear implements Serializable {
     @ApiModelProperty(value = "创建人")
     private java.lang.String createBy;
 	/**创建时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
     private java.util.Date createTime;
 	/**更新人*/
     @ApiModelProperty(value = "更新人")
     private java.lang.String updateBy;
 	/**更新时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
 }

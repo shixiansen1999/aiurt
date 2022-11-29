@@ -1,5 +1,6 @@
 package com.aiurt.boot.rehearsal.service;
 
+import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearAddDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -21,4 +22,10 @@ public interface IEmergencyRehearsalYearService extends IService<EmergencyRehear
      * @return
      */
     IPage<EmergencyRehearsalYear> queryPageList(Page<EmergencyRehearsalYear> page, EmergencyRehearsalYearDTO emergencyRehearsalYearDTO);
+
+    /**
+     * 应急演练管理-年演练计划添加
+     * @param emergencyRehearsalYearAddDTO
+     */
+    boolean add(EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO);
 }
