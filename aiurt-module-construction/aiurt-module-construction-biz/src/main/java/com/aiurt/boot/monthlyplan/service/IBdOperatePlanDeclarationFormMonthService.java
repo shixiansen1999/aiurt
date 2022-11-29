@@ -60,7 +60,7 @@ public interface IBdOperatePlanDeclarationFormMonthService extends IService<BdOp
      *
      * @return List<BdStationCopyDTO> 包含了两个列,站点名称和id
      */
-    List<BdStationCopyDTO> queryAllStationInfo();//
+    List<BdStationCopyDTO> queryAllStationInfo(String lienId);
 
     /**
      * 获取线路信息,返回线路id和name

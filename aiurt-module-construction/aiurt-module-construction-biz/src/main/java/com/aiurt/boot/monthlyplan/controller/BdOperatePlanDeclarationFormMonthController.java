@@ -272,8 +272,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
     @AutoLog(value = "月计划-查询所有车站",operateType = 1,operateTypeAlias = "月计划-查询所有车站",permissionUrl = "/production/plan")
     @ApiOperation(value = "月计划-查询所有车站", notes = "月计划-查询所有车站")
     @GetMapping("/queryAllStationInfo")
-    public Result<?> queryAllStationInfo() {
-        return Result.OK(bdOperatePlanDeclarationFormMonthService.queryAllStationInfo());
+    public Result<?> queryAllStationInfo(String lineId) {
+        return Result.OK(bdOperatePlanDeclarationFormMonthService.queryAllStationInfo(lineId));
     }
 
     /**
