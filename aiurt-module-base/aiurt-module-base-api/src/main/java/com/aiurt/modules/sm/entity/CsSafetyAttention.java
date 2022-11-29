@@ -60,6 +60,15 @@ public class CsSafetyAttention implements Serializable {
     @ApiModelProperty(value = "专业编码")
     @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private java.lang.String majorCode;
+    /**子系统编码*/
+    @Excel(name = "子系统", width = 15,dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
+    @ApiModelProperty(value = "子系统编码")
+    @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
+    private java.lang.String systemCode;
+
+    @Excel(name = "专业子系统", width = 15)
+    @TableField(exist = false)
+    private java.lang.String systemName;
     /**专业编码*/
     @Excel(name = "专业", width = 15)
     @ApiModelProperty(value = "专业")
@@ -80,7 +89,7 @@ public class CsSafetyAttention implements Serializable {
     private java.lang.String attentionTypeName;
 	/**安全事项内容*/
 	@Excel(name = "安全事项内容", width = 15)
-    @ApiModelProperty(value = "安全事项内容")
+    @ApiModelProperty(value = "安全事项内容和措施")
     private java.lang.String attentionContent;
 	/**安全事项措施*/
 	@Excel(name = "安全事项措施", width = 15)

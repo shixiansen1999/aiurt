@@ -91,6 +91,9 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionContent())){
 			queryWrapper.like(CsSafetyAttention::getAttentionContent,csSafetyAttention.getAttentionContent());
 		}
+		if (StrUtil.isNotEmpty(csSafetyAttention.getSystemCode())){
+			queryWrapper.eq(CsSafetyAttention::getSystemCode,csSafetyAttention.getSystemCode());
+		}
 		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionType())){
 			CsSafetyAttentionType csSafetyAttentionType =  csSafetyAttentionTypeMapper
 					.selectOne(new LambdaUpdateWrapper<CsSafetyAttentionType>()
@@ -110,13 +113,6 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		queryWrapper.eq(CsSafetyAttention::getDelFlag,0);
 		Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);
 		IPage<CsSafetyAttention> pageList = csSafetyAttentionService.page(page, queryWrapper);
-		pageList.getRecords().forEach(l->{
-			CsSafetyAttentionType csSafetyAttentionType =  csSafetyAttentionTypeMapper
-					        .selectOne(new LambdaUpdateWrapper<CsSafetyAttentionType>()
-							.eq(CsSafetyAttentionType::getId,l.getAttentionType())
-							.eq(CsSafetyAttentionType::getDelFlag,0));
-			l.setAttentionTypeName(csSafetyAttentionType.getName());
-		});
 		return Result.OK(pageList);
 	}
 
@@ -130,15 +126,8 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	@ApiOperation(value="安全事项-添加", notes="安全事项-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody CsSafetyAttention csSafetyAttention) {
-		CsSafetyAttentionType csSafetyAttentionType = csSafetyAttentionTypeMapper
-				             .selectOne(new LambdaUpdateWrapper<CsSafetyAttentionType>()
-							 .eq(CsSafetyAttentionType::getId,csSafetyAttention.getAttentionType())
-							 .eq(CsSafetyAttentionType::getDelFlag,0));
-		if (csSafetyAttentionType!=null){
-		   csSafetyAttention.setAttentionTypeCode(csSafetyAttentionType.getCode());
-		}
 		csSafetyAttentionService.save(csSafetyAttention);
-		return Result.OK("添加成功！");
+		return Result.OK("添加成功");
 	}
 
 	/**
@@ -165,7 +154,7 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	 @ApiOperation(value="安全事项-修改状态", notes="安全事项-修改状态")
 	 @RequestMapping(value = "/modify", method = {RequestMethod.POST})
 	 public Result<String> modify(@RequestParam(name = "id") String id,
-								@RequestParam(name = "status") Integer state) {
+								  @RequestParam(name = "status") Integer state) {
 	 	CsSafetyAttention csSafetyAttention = new CsSafetyAttention();
 	 	csSafetyAttention.setId(id);
 	 	if (state==0){
