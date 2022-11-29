@@ -1,6 +1,8 @@
 package com.aiurt.boot.materials.service;
 
+import com.aiurt.boot.materials.dto.MaterialAccountDTO;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,4 +13,12 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IEmergencyMaterialsService extends IService<EmergencyMaterials> {
 
+
+    /**
+     * 应急物资台账列表
+     * @param pageList
+     * @param condition
+     * @return
+     */
+    Page<MaterialAccountDTO> getMaterialAccountList(Page<MaterialAccountDTO> pageList, MaterialAccountDTO condition);
 }

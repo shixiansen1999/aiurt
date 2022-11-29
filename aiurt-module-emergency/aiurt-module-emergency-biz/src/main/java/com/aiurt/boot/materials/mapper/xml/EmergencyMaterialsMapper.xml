@@ -2,8 +2,27 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper">
     <sql id="list">
-
+       t1.id as id ,t2.id as categoryId,t1.materials_code as materialsCode,t1.materials_name as materialsName,t2.category_code as categoryCode,
+       t2.category_name as categoryName,t1.specification as specification,t1.number as number,t1.primary_org as primaryOrg,t1.user_id as userId,
+       t1.phone as phone,t1.location as location
     </sql>
+    <select id="getMaterialAccountList" resultType="com.aiurt.boot.materials.dto.MaterialAccountDTO">
+       SELECT
+        <include refid="list"></include>
+       FROM
+	   emergency_materials t1
+	   LEFT JOIN emergency_materials_category t2 ON t1.category_code = t2.category_code
+        <where>
+              t1.del_flag = 0
+              AND t2.del_flag = 0
+            <if test="condition.categoryName!=null">
+              AND t2.category_name = #{condition.categoryName}
+            </if>
+            <if test="condition.materialsName!=null">
+              AND t1.materials_name = #{condition.materialsName}
+            </if>
+        </where>
+    </select>
 
 
 </mapper>

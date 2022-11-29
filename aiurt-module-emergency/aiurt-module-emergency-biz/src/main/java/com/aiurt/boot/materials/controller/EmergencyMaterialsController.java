@@ -4,11 +4,15 @@ import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.boot.materials.dto.MaterialAccountDTO;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
@@ -55,6 +59,29 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		IPage<EmergencyMaterials> pageList = emergencyMaterialsService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
+
+
+	 /**
+	  * 应急物资台账列表查询
+	  * @param condition
+	  * @param pageNo
+	  * @param pageSize
+	  * @return
+	  */
+	 @AutoLog(value = "物资信息-应急物资台账列表查询", operateType =  1, operateTypeAlias = "应急物资台账列表查询", module = ModuleType.INSPECTION)
+	 @ApiOperation(value = "物资信息-应急物资台账列表查询", notes = "物资信息-应急物资台账列表查询")
+	 @GetMapping(value = "/getMaterialAccountList")
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = MaterialAccountDTO.class)
+	 })
+	 public Result<Page<MaterialAccountDTO>> repairTaskPageList(MaterialAccountDTO condition,
+																@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+																@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
+	 ) {
+		 Page<MaterialAccountDTO> pageList = new Page<>(pageNo, pageSize);
+		 Page<MaterialAccountDTO> repairTaskPage = emergencyMaterialsService.getMaterialAccountList(pageList, condition);
+		 return Result.OK(repairTaskPage);
+	 }
 
 	/**
 	 *   添加
