@@ -22,8 +22,10 @@ import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
+import com.aiurt.modules.modeler.entity.ActCustomVariable;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import com.aiurt.modules.modeler.service.IActCustomVariableService;
 import com.aiurt.modules.online.businessdata.entity.ActCustomBusinessData;
 import com.aiurt.modules.online.businessdata.service.IActCustomBusinessDataService;
 import com.aiurt.modules.online.page.entity.ActCustomPage;
@@ -122,6 +124,9 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Lazy
     private IActCustomModelInfoService modelInfoService;
 
+    @Autowired
+    private IActCustomVariableService variableService;
+
 
     /**
      * @param startBpmnDTO
@@ -200,6 +205,22 @@ public class FlowApiServiceImpl implements FlowApiService {
         Map<String, Object> busData = startBpmnDTO.getBusData();
         Map<String, Object> variableData = new HashMap<>(16);
         this.initAndGetProcessInstanceVariables(variableData);
+        if (Objects.nonNull(busData)) {
+            // 流程key
+
+
+            // 流程模板信息
+            LambdaQueryWrapper<ActCustomModelInfo> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(ActCustomModelInfo::getModelKey, startBpmnDTO.getModelKey()).last("limit 1");
+            ActCustomModelInfo one = modelInfoService.getOne(queryWrapper);
+
+            List<ActCustomVariable> list = variableService.list(new LambdaQueryWrapper<ActCustomVariable>().eq(ActCustomVariable::getModelId, one.getModelId())
+                    .eq(ActCustomVariable::getVariableType, 1).eq(ActCustomVariable::getType, 0));
+            list.stream().forEach(variable->{
+                String variableName = variable.getVariableName();
+                variableData.put(variableName, busData.get(variableName));
+            });
+        }
 
         // 根据key查询第一个用户任务
         UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(startBpmnDTO.getModelKey());
@@ -327,6 +348,23 @@ public class FlowApiServiceImpl implements FlowApiService {
         // todo 中间变量
         variableData.put("operationType", approvalType);
         variableData.put("comment", commentStr);
+
+        if (Objects.nonNull(busData)) {
+            // 流程key
+            String processDefinitionKey = processInstance.getProcessDefinitionKey();
+
+            // 流程模板信息
+            LambdaQueryWrapper<ActCustomModelInfo> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(ActCustomModelInfo::getModelKey, processDefinitionKey).last("limit 1");
+            ActCustomModelInfo one = modelInfoService.getOne(queryWrapper);
+
+            List<ActCustomVariable> list = variableService.list(new LambdaQueryWrapper<ActCustomVariable>().eq(ActCustomVariable::getModelId, one.getModelId())
+                    .eq(ActCustomVariable::getVariableType, 1).eq(ActCustomVariable::getType, 0));
+            list.stream().forEach(variable->{
+                String variableName = variable.getVariableName();
+                variableData.put(variableName, busData.get(variableName));
+            });
+        }
 
         // 判断使保存还是提交
         if (StrUtil.equalsIgnoreCase(FlowApprovalType.SAVE, approvalType)) {
