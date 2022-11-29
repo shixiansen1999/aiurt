@@ -195,8 +195,8 @@ public class OverhaulStatisticsService{
                     e.setNameList(collect);
                 }
                 List<OverhaulStatisticsDTO> nameList1 = e.getNameList();
+                if (CollUtil.isNotEmpty(nameList1)){
                 List<String> collect2 = nameList1.stream().map(OverhaulStatisticsDTO::getUserId).collect(Collectors.toList());
-
                 if (CollectionUtil.isNotEmpty(collect2)){
                     //获取所有检修任务人员总工时和所有同行人总工时
                     List<PersonnelTeamDTO> teamTime = personnelTeamMapper.getTeamTime(collect2,condition.getStartDate() , condition.getEndDate());
@@ -212,6 +212,9 @@ public class OverhaulStatisticsService{
                     //秒转时
                     BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);
                     e.setMaintenanceDuration(decimal.longValue());
+                }else {
+                    e.setMaintenanceDuration(0L);
+                }
                 }else {
                     e.setMaintenanceDuration(0L);
                 }
