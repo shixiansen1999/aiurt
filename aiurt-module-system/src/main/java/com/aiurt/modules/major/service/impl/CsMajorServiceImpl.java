@@ -142,6 +142,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
             params.setNeedSave(true);
             try {
                 List<CsMajorImportVO> csMajorList = ExcelImportUtil.importExcel(file.getInputStream(), CsMajorImportVO.class, params);
+                csMajorList= csMajorList.stream().filter(e->e.getMajorName()!=null||e.getMajorCode()!=null).collect(Collectors.toList());
                 if(CollUtil.isEmpty(csMajorList))
                 {
                     throw new AiurtBootException("该文件无数据，请填写再导入");
@@ -272,8 +273,8 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
             }
         }
         else if (csMajorImportVO.getMajorCode() != null && csMajorImportVO.getMajorName() != null) {
-            CsMajor csMajorCode = csMajorMapper.selectOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorName, csMajorImportVO.getMajorName()).eq(CsMajor::getDelFlag, 0));
-            CsMajor csMajorName = csMajorMapper.selectOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorCode, csMajorImportVO.getMajorCode()).eq(CsMajor::getDelFlag, 0));
+            CsMajor csMajorCode = csMajorMapper.selectOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorCode, csMajorImportVO.getMajorCode()).eq(CsMajor::getDelFlag, 0));
+            CsMajor csMajorName = csMajorMapper.selectOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorName, csMajorImportVO.getMajorName()).eq(CsMajor::getDelFlag, 0));
             if (csMajorCode != null&&csMajorName!=null) {
                 return "专业编码已存在;专业名称已存在";
             }
