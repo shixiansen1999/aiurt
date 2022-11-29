@@ -193,33 +193,6 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 		return Result.OK(inspectionCodeContent);
 	}
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param inspectionCodeContent
-    */
-	/**
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, InspectionCodeContent inspectionCodeContent) {
-		return super.exportXls(request, inspectionCodeContent, InspectionCodeContent.class, "inspection_code_content");
-    }
-	*/
-
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-	/**
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-		return super.importExcel(request, response, InspectionCodeContent.class);
-    }
-	 */
-
 	 /**
 	  * 通过检修标准id查看检修项
 	  *
