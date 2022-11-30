@@ -39,6 +39,11 @@ public class EmergencyMaterialsCategory implements Serializable {
 	@Excel(name = "父级ID，第一级默认为0", width = 15)
     @ApiModelProperty(value = "父级ID，第一级默认为0")
     private java.lang.String pid;
+
+    /**父级名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "父级名称")
+    private java.lang.String fatherName;
 	/**分类编号*/
 	@Excel(name = "分类编号", width = 15)
     @ApiModelProperty(value = "分类编号")

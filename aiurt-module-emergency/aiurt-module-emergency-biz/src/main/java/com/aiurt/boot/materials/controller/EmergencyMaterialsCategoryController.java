@@ -58,6 +58,12 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 		QueryWrapper<EmergencyMaterialsCategory> queryWrapper = QueryGenerator.initQueryWrapper(emergencyMaterialsCategory, req.getParameterMap());
 		Page<EmergencyMaterialsCategory> page = new Page<EmergencyMaterialsCategory>(pageNo, pageSize);
 		IPage<EmergencyMaterialsCategory> pageList = emergencyMaterialsCategoryService.page(page, queryWrapper);
+		pageList.getRecords().forEach(e->{
+			if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0")==false){
+				EmergencyMaterialsCategory byId = emergencyMaterialsCategoryService.getById(e.getPid());
+                e.setFatherName(byId.getCategoryName());
+			}
+		});
 		return Result.OK(pageList);
 	}
 
