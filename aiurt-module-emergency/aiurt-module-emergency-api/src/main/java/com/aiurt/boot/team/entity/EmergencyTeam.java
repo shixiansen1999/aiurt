@@ -1,18 +1,21 @@
 package com.aiurt.boot.team.entity;
 
-import java.io.Serializable;
-
+import com.aiurt.boot.team.dto.EmergencyTeamDTO;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: emergency_team
@@ -36,10 +39,16 @@ public class EmergencyTeam implements Serializable {
 	@Excel(name = "所属专业", width = 15)
     @ApiModelProperty(value = "所属专业")
     private String majorCode;
+    @ApiModelProperty(value = "所属专业名称")
+    @TableField(exist = false)
+    private String majorName;
 	/**所属部门*/
 	@Excel(name = "所属部门", width = 15)
     @ApiModelProperty(value = "所属部门")
     private String orgCode;
+    @ApiModelProperty(value = "所属部门名称")
+    @TableField(exist = false)
+    private String orgName;
 	/**应急队伍名称*/
 	@Excel(name = "应急队伍名称", width = 15)
     @ApiModelProperty(value = "应急队伍名称")
@@ -64,22 +73,37 @@ public class EmergencyTeam implements Serializable {
 	@Excel(name = "线路编码", width = 15)
     @ApiModelProperty(value = "线路编码")
     private String lineCode;
+    @ApiModelProperty(value = "线路名称")
+    @TableField(exist = false)
+    private String lineName;
 	/**站点编码*/
 	@Excel(name = "站点编码", width = 15)
     @ApiModelProperty(value = "站点编码")
     private String stationCode;
+    @ApiModelProperty(value = "站点名称")
+    @TableField(exist = false)
+    private String stationName;
 	/**驻扎地编码*/
 	@Excel(name = "驻扎地编码", width = 15)
     @ApiModelProperty(value = "驻扎地编码")
     private String positionCode;
+    @ApiModelProperty(value = "驻扎地名称")
+    @TableField(exist = false)
+    private String positionName;
 	/**工区编码*/
 	@Excel(name = "工区编码", width = 15)
     @ApiModelProperty(value = "工区编码")
-    private String workareCode;
+    private String workareaCode;
+    @ApiModelProperty(value = "工区名称")
+    @TableField(exist = false)
+    private String workareaName;
 	/**负责人id*/
 	@Excel(name = "负责人id", width = 15)
     @ApiModelProperty(value = "负责人id")
     private String managerId;
+    @ApiModelProperty(value = "负责人姓名")
+    @TableField(exist = false)
+    private String managerName;
 	/**联系电话*/
 	@Excel(name = "联系电话", width = 15)
     @ApiModelProperty(value = "联系电话")
@@ -104,4 +128,13 @@ public class EmergencyTeam implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
+
+
+    @ApiModelProperty(value = "应急人员")
+    @TableField(exist = false)
+    private List<EmergencyCrew> emergencyCrewList;
+
+    @ApiModelProperty(value = "训练计划")
+    @TableField(exist = false)
+    private List<EmergencyTeamDTO> emergencyTeamDTOList;
 }

@@ -1,5 +1,6 @@
 package com.aiurt.boot.team.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -11,7 +12,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -19,14 +22,16 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
- /**
+/**
  * @Description: emergency_team
  * @Author: aiurt
  * @Date:   2022-11-29
  * @Version: V1.0
  */
-@Api(tags="emergency_team")
+@Api(tags="应急队伍台账")
 @RestController
 @RequestMapping("/emergency/emergencyTeam")
 @Slf4j
@@ -34,6 +39,8 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	@Autowired
 	private IEmergencyTeamService emergencyTeamService;
 
+	@Autowired
+	private ISysBaseAPI iSysBaseAPI;
 	/**
 	 * 分页列表查询
 	 *
@@ -43,16 +50,29 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_team-分页列表查询")
-	@ApiOperation(value="emergency_team-分页列表查询", notes="emergency_team-分页列表查询")
+	@ApiOperation(value="应急队伍台账-分页列表查询", notes="emergency_team-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<EmergencyTeam>> queryPageList(EmergencyTeam emergencyTeam,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		QueryWrapper<EmergencyTeam> queryWrapper = QueryGenerator.initQueryWrapper(emergencyTeam, req.getParameterMap());
+		//获取用户的所属部门及所属部门子部门
+		List<SysDepartModel> models = iSysBaseAPI.getUserDepartCodes();
+		if (CollUtil.isEmpty(models)) {
+			return Result.OK(new Page<>());
+		}
+		List<String> orgCodes = models.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+		queryWrapper.lambda().in(EmergencyTeam::getOrgCode, orgCodes);
+		queryWrapper.lambda().eq(EmergencyTeam::getDelFlag, 0);
 		Page<EmergencyTeam> page = new Page<EmergencyTeam>(pageNo, pageSize);
 		IPage<EmergencyTeam> pageList = emergencyTeamService.page(page, queryWrapper);
+		List<EmergencyTeam> records = pageList.getRecords();
+		if (CollUtil.isNotEmpty(records)) {
+			for (EmergencyTeam record : records) {
+				emergencyTeamService.translate(record);
+			}
+		}
 		return Result.OK(pageList);
 	}
 
@@ -62,12 +82,11 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	 * @param emergencyTeam
 	 * @return
 	 */
-	@AutoLog(value = "emergency_team-添加")
-	@ApiOperation(value="emergency_team-添加", notes="emergency_team-添加")
+	@AutoLog(value = "应急队伍台账-添加")
+	@ApiOperation(value="应急队伍台账-添加", notes="应急队伍台账-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody EmergencyTeam emergencyTeam) {
-		emergencyTeamService.save(emergencyTeam);
-		return Result.OK("添加成功！");
+		return emergencyTeamService.add(emergencyTeam);
 	}
 
 	/**
@@ -76,12 +95,12 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	 * @param emergencyTeam
 	 * @return
 	 */
-	@AutoLog(value = "emergency_team-编辑")
-	@ApiOperation(value="emergency_team-编辑", notes="emergency_team-编辑")
+	@AutoLog(value = "应急队伍台账-编辑")
+	@ApiOperation(value="应急队伍台账-编辑", notes="应急队伍台账-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody EmergencyTeam emergencyTeam) {
-		emergencyTeamService.updateById(emergencyTeam);
-		return Result.OK("编辑成功!");
+		return emergencyTeamService.edit(emergencyTeam);
+
 	}
 
 	/**
@@ -90,12 +109,11 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "emergency_team-通过id删除")
-	@ApiOperation(value="emergency_team-通过id删除", notes="emergency_team-通过id删除")
+	@AutoLog(value = "应急队伍台账-通过id删除")
+	@ApiOperation(value="应急队伍台账-通过id删除", notes="应急队伍台账-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		emergencyTeamService.removeById(id);
-		return Result.OK("删除成功!");
+		return emergencyTeamService.delete(id);
 	}
 
 	/**
@@ -104,8 +122,8 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "emergency_team-批量删除")
-	@ApiOperation(value="emergency_team-批量删除", notes="emergency_team-批量删除")
+	@AutoLog(value = "应急队伍台账-批量删除")
+	@ApiOperation(value="应急队伍台账-批量删除", notes="应急队伍台账-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.emergencyTeamService.removeByIds(Arrays.asList(ids.split(",")));
@@ -118,15 +136,27 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_team-通过id查询")
-	@ApiOperation(value="emergency_team-通过id查询", notes="emergency_team-通过id查询")
+	@ApiOperation(value="应急队伍台账-通过id查询", notes="应急队伍台账-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<EmergencyTeam> queryById(@RequestParam(name="id",required=true) String id) {
 		EmergencyTeam emergencyTeam = emergencyTeamService.getById(id);
 		if(emergencyTeam==null) {
 			return Result.error("未找到对应数据");
 		}
-		return Result.OK(emergencyTeam);
+		EmergencyTeam team = emergencyTeamService.getCrew(emergencyTeam);
+		return Result.OK(team);
+	}
+
+	/**
+	 * 通过id查询训练记录
+	 *
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(value="应急队伍台账-训练记录", notes="应急队伍台账-训练记录")
+	@GetMapping(value = "/getTrainingRecordById")
+	public Result<EmergencyTeam> getTrainingRecordById(@RequestParam(name="id",required=true) String id) {
+		return emergencyTeamService.getTrainingRecordById(id);
 	}
 
     /**

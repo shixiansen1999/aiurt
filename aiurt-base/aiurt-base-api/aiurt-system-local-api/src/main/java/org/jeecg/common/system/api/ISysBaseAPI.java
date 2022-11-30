@@ -665,4 +665,19 @@ public interface ISysBaseAPI extends CommonAPI {
      * @param line
      */
     List<CsStation> getStationInfoByNameAndLineId( String cellText,String line);
+
+    /**
+     * 根据工区编码获取工区名称
+     * @param workAreaCode
+     * @return
+     */
+    String getWorkAreaNameByCode(String workAreaCode);
+
+    /**
+     *  获取用户的所属部门及所属部门子部门编码
+     * 根据工区编码获取工区名称
+     * @param
+     * @return
+     */
+    List<SysDepartModel> getUserDepartCodes();
 }

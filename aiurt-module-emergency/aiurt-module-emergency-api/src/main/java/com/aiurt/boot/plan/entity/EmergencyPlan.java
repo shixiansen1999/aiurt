@@ -1,6 +1,8 @@
 package com.aiurt.boot.plan.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -13,6 +15,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: emergency_plan
@@ -35,6 +38,7 @@ public class EmergencyPlan implements Serializable {
 	/**应急预案类型*/
 	@Excel(name = "应急预案类型", width = 15)
     @ApiModelProperty(value = "应急预案类型")
+    @Dict(dicCode = "emergency_plan_type")
     private Integer emergencyPlanType;
 	/**应急预案名称*/
 	@Excel(name = "应急预案名称", width = 15)
@@ -57,12 +61,14 @@ public class EmergencyPlan implements Serializable {
     @ApiModelProperty(value = "编制部门")
     private String orgCode;
 	/**应急预案状态（1未启用、2启用中）*/
-	@Excel(name = "应急预案状态（1未启用、2启用中）", width = 15)
-    @ApiModelProperty(value = "应急预案状态（1未启用、2启用中）")
+	@Excel(name = "启用状态（1已停用、2启用中）", width = 15)
+    @ApiModelProperty(value = "应急预案状态（1已停用、2启用、3空）")
+    @Dict(dicCode = "emergency_status")
     private Integer status;
-	/**状态（1待提交、2待审核、3审核中、4待发布、5已发布）*/
-	@Excel(name = "状态（1待提交、2待审核、3审核中、4待发布、5已发布）", width = 15)
-    @ApiModelProperty(value = "状态（1待提交、2待审核、3审核中、4待发布、5已发布）")
+	/**状态（1待提交、2待审核、3审核中、4已驳回、5已通过）*/
+	@Excel(name = "流程状态（1待提交、2待审核、3审核中、4已驳回、5已通过）", width = 15)
+    @ApiModelProperty(value = "流程状态（1待提交、2待审核、3审核中、4已驳回、5已通过）")
+    @Dict(dicCode = "emergency_plan_status")
     private Integer emergencyPlanStatus;
 	/**发布人*/
 	@Excel(name = "发布人", width = 15)

@@ -1,18 +1,19 @@
 package com.aiurt.boot.team.entity;
 
-import java.io.Serializable;
-
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: emergency_crew
@@ -48,6 +49,10 @@ public class EmergencyCrew implements Serializable {
 	@Excel(name = "人员id", width = 15)
     @ApiModelProperty(value = "人员id")
     private String userId;
+
+	@ApiModelProperty(value = "人员姓名")
+    @TableField(exist = false)
+    private String userName;
 	/**联系电话*/
 	@Excel(name = "联系电话", width = 15)
     @ApiModelProperty(value = "联系电话")
@@ -76,4 +81,8 @@ public class EmergencyCrew implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
+
+    @ApiModelProperty(value = "岗位名称")
+    @TableField(exist = false)
+    private String roleName;
 }

@@ -32,26 +32,25 @@ public class InspectionCodeContentDTO implements Serializable {
 
     /**是否有子节点*/
     @Excel(name = "是否有子节点", width = 15, dicCode = "yn")
-    @ExcelExtend(isRequired = true,remark = "必填字段")
+    @ExcelExtend(isRequired = true)
     @Dict(dicCode = "yn")
     @ApiModelProperty(value = "是否有子节点")
     private java.lang.String hasChild;
 
     /**父级节点，顶级为0*/
     @Excel(name = "父级节点", width = 15)
-//    @ExcelExtend(isRequired = true,remark = "必填字段")
     @ApiModelProperty(value = "父级节点，顶级为0")
     private java.lang.String pid;
 
     /**检修项名称*/
     @Excel(name = "检修项内容", width = 15)
-    @ExcelExtend(isRequired = true,remark = "必填字段")
+    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "检修项名称")
     private java.lang.String name;
 
     /**检查项编号*/
     @Excel(name = "检查项编号", width = 15)
-    @ExcelExtend(isRequired = true,remark = "必填字段")
+    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "检查项编号")
     private java.lang.String code;
 
@@ -61,7 +60,7 @@ public class InspectionCodeContentDTO implements Serializable {
 
     /**排序编号*/
     @Excel(name = "排序编号", width = 15)
-    @ExcelExtend(isRequired = true,remark = "必填字段")
+    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "排序编号")
     private java.lang.String isSortNo;
 
@@ -72,7 +71,7 @@ public class InspectionCodeContentDTO implements Serializable {
 
     /**检查项类型，是否是检查项：0否 1是*/
     @Excel(name = "是否是检查项", width = 15,dicCode = "inspection_value")
-    @ExcelExtend(isRequired = true,remark = "必填字段")
+    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "检查项类型，是否是检查项：0否 1是")
     @Dict(dicCode = "inspection_value")
     @TableField(exist = false)
@@ -92,7 +91,7 @@ public class InspectionCodeContentDTO implements Serializable {
 
     /**数据字典：1 无、2 选择项、3 输入项*/
     @Excel(name = "检查值类型", width = 15,dicCode = "patrol_input_type")
-    @ExcelExtend(isRequired = true,remark = "必填字段")
+    @ExcelExtend(isRequired = true)
     @TableField(updateStrategy = FieldStrategy.IGNORED,exist = false)
     @ApiModelProperty(value = "数据字典：1 无、2 选择项、3 输入项")
     @Dict(dicCode = "patrol_input_type")
@@ -126,29 +125,9 @@ public class InspectionCodeContentDTO implements Serializable {
 
     /**检修标准id，关联inspection_code表的id*/
     @Excel(name = "检修标准id", width = 15)
-    @ExcelExtend(isRequired = true,remark = "必填字段")
+    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "检修标准id，关联inspection_code表的id")
     private java.lang.String inspectionCodeId;
-
-    /**删除状态*/
-    @ApiModelProperty(value = "删除状态")
-    private java.lang.Integer delFlag;
-    /**创建人*/
-    @ApiModelProperty(value = "创建人")
-    private java.lang.String createBy;
-    /**修改人*/
-    @ApiModelProperty(value = "修改人")
-    private java.lang.String updateBy;
-    /**创建时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "创建时间")
-    private java.util.Date createTime;
-    /**修改时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "修改时间")
-    private java.util.Date updateTime;
 
     /**
      * 子节点
@@ -172,5 +151,6 @@ public class InspectionCodeContentDTO implements Serializable {
     /**错误原因*/
     @Excel(name = "错误原因", width = 15)
     @ApiModelProperty(value = "错误原因")
+    @TableField(exist = false)
     private String errorCause;
 }

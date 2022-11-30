@@ -32,14 +32,10 @@ public class EmergencyTrainingRecord implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
     private String id;
-	/**训练计划编号*/
-	@Excel(name = "训练计划编号", width = 15)
-    @ApiModelProperty(value = "训练计划编号")
-    private String trainingProgramCode;
-	/**训练项目名称*/
-	@Excel(name = "训练项目名称", width = 15)
-    @ApiModelProperty(value = "训练项目名称")
-    private String trainingProgramName;
+    /**训练计划id*/
+    @Excel(name = "训练计划id", width = 15)
+    @ApiModelProperty(value = "训练计划id")
+    private String emergencyTrainingProgramId;
 	/**应急队伍id*/
 	@Excel(name = "应急队伍id", width = 15)
     @ApiModelProperty(value = "应急队伍id")
@@ -51,8 +47,8 @@ public class EmergencyTrainingRecord implements Serializable {
     @ApiModelProperty(value = "训练时间")
     private java.util.Date trainingTime;
 	/**参加人数*/
-	@Excel(name = "参加人数", width = 15)
-    @ApiModelProperty(value = "参加人数")
+	@Excel(name = "训练人数", width = 15)
+    @ApiModelProperty(value = "训练人数")
     private Integer traineesNum;
 	/**线路编码*/
 	@Excel(name = "线路编码", width = 15)

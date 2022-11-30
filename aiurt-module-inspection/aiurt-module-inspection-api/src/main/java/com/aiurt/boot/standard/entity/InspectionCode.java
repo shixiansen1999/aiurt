@@ -35,7 +35,7 @@ public class InspectionCode extends DictEntity implements Serializable {
     private java.lang.String id;
     /**检修标准名称*/
     @Excel(name = "检修标准表名称", width = 15)
-    @ExcelExtend(isRequired = true,remark = "必填字段")
+    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "检修标准名称")
     private java.lang.String title;
 	/**检修标准编码*/
@@ -49,7 +49,7 @@ public class InspectionCode extends DictEntity implements Serializable {
 
     /**检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)*/
     @Excel(name = "检修周期类型", width = 15,dicCode = "inspection_cycle_type")
-    @ExcelExtend(isRequired = true,remark = "必填字段")
+    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)")
     @Dict(dicCode = "inspection_cycle_type")
     @TableField(exist = false)
@@ -57,14 +57,14 @@ public class InspectionCode extends DictEntity implements Serializable {
 
     /**专业code,关联cs_major的code*/
     @Excel(name = "适用专业", width = 15,dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
-    @ExcelExtend(isRequired = true,remark = "必填字段")
+    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "专业code,关联cs_major的code")
     @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private java.lang.String majorCode;
 
     /**专业子系统code,关联cs_subsystem_user的code*/
     @Excel(name = "适用子系统", width = 15,dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
-    @ExcelExtend(isRequired = true,remark = "必填字段")
+    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "专业子系统code,关联cs_subsystem_user的code")
     @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     private java.lang.String subsystemCode;
@@ -76,7 +76,7 @@ public class InspectionCode extends DictEntity implements Serializable {
 
     /**是否与设备相关(0否1是)*/
     @Excel(name = "与设备类型相关", width = 15,dicCode = "is_appoint_device")
-    @ExcelExtend(isRequired = true,remark = "必填字段")
+    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "是否与设备相关(0否1是)")
     @Dict(dicCode = "is_appoint_device")
     @TableField(exist = false)
@@ -96,7 +96,7 @@ public class InspectionCode extends DictEntity implements Serializable {
 
     /**状态 0-未生效 1-已生效*/
     @Excel(name = "生效状态", width = 15,dicCode = "is_take_effect")
-    @ExcelExtend(isRequired = true,remark = "必填字段")
+    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "状态 0-未生效 1-已生效")
     @Dict(dicCode = "is_take_effect")
     @TableField(exist = false)
