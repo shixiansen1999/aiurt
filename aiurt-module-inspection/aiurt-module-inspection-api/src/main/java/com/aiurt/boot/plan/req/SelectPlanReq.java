@@ -26,6 +26,8 @@ public class SelectPlanReq {
     private Date endTime;
     @ApiModelProperty(value = "状态")
     private Integer status;
+    @ApiModelProperty(value = "多个状态,用,隔开")
+    private String statuStr;
     @ApiModelProperty(value = "作业类型")
     private Integer workType;
     @ApiModelProperty(value = "站点code")
