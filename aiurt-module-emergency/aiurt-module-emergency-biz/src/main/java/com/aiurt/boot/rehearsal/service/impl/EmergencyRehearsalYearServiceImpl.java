@@ -71,7 +71,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
             code += String.format("%02d", 1);
         } else {
             String yearCode = emergencyRehearsalYear.getCode();
-            Integer serialNo = Integer.valueOf(yearCode.substring(yearCode.indexOf("-") + 1));
+            Integer serialNo = Integer.valueOf(yearCode.substring(yearCode.lastIndexOf("-") + 1));
             if (serialNo >= 99) {
                 code += (serialNo + 1);
             } else {
@@ -94,7 +94,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
             int serialNo = 0;
             if (ObjectUtil.isNotEmpty(rehearsalMonth)) {
                 String rehearsalMonthCode = rehearsalMonth.getCode();
-                serialNo = Integer.valueOf(rehearsalMonthCode.substring(rehearsalMonthCode.indexOf("-") + 1));
+                serialNo = Integer.valueOf(rehearsalMonthCode.substring(rehearsalMonthCode.lastIndexOf("-") + 1));
             }
             for (EmergencyRehearsalMonth month : monthList) {
                 serialNo++;
