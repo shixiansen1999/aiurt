@@ -105,7 +105,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
                 queryWrapper.lambda().in(SysAnnouncement::getSender, userNameList);
             } else {
                 result.setSuccess(true);
-                result.setResult(null);
+                result.setResult(new Page<>());
                 return result;
             }
         }
