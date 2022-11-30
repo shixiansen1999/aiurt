@@ -1,9 +1,11 @@
 package com.aiurt.boot.materials.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -45,17 +47,31 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_materials_category-分页列表查询")
+	@AutoLog(value = "物资分类-分页列表查询")
 	@ApiOperation(value="物资分类-分页列表查询", notes="物资分类-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<EmergencyMaterialsCategory>> queryPageList(EmergencyMaterialsCategory emergencyMaterialsCategory,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
+		emergencyMaterialsCategory.setDelFlag(0);
 		QueryWrapper<EmergencyMaterialsCategory> queryWrapper = QueryGenerator.initQueryWrapper(emergencyMaterialsCategory, req.getParameterMap());
 		Page<EmergencyMaterialsCategory> page = new Page<EmergencyMaterialsCategory>(pageNo, pageSize);
 		IPage<EmergencyMaterialsCategory> pageList = emergencyMaterialsCategoryService.page(page, queryWrapper);
 		return Result.OK(pageList);
+	}
+
+	 /**
+	  *
+	  * @return
+	  */
+
+	 @AutoLog(value = "物资分类-物资分类树")
+	 @ApiOperation(value="物资分类-物资分类树", notes="物资分类-物资分类树")
+	 @GetMapping(value = "/selectTreeList")
+	public Result<List<EmergencyMaterialsCategory>> selectTreeList(){
+		List<EmergencyMaterialsCategory> emergencyMaterialsCategories = emergencyMaterialsCategoryService.selectTreeList();
+		return Result.OK(emergencyMaterialsCategories);
 	}
 
 	/**
@@ -96,7 +112,14 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	@ApiOperation(value="物资分类-通过id删除", notes="物资分类-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		emergencyMaterialsCategoryService.removeById(id);
+		EmergencyMaterialsCategory emergencyMaterialsCategory = new EmergencyMaterialsCategory();
+		if (StrUtil.isNotBlank(id)){
+			emergencyMaterialsCategory.setId(id);
+			emergencyMaterialsCategory.setDelFlag(1);
+		}else {
+			return Result.OK("删除失败，id为空或不存在!");
+		}
+		emergencyMaterialsCategoryService.updateById(emergencyMaterialsCategory);
 		return Result.OK("删除成功!");
 	}
 
@@ -120,7 +143,7 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_materials_category-通过id查询")
+	@AutoLog(value = "物资分类-通过id查询")
 	@ApiOperation(value="物资分类-通过id查询", notes="物资分类-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<EmergencyMaterialsCategory> queryById(@RequestParam(name="id",required=true) String id) {

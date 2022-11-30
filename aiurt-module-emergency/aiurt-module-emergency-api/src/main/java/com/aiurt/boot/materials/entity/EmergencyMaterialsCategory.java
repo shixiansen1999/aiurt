@@ -1,8 +1,11 @@
 package com.aiurt.boot.materials.entity;
 
 import java.io.Serializable;
+import java.util.List;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -47,6 +50,7 @@ public class EmergencyMaterialsCategory implements Serializable {
 	/**分类状态(0停用、1启用)*/
 	@Excel(name = "分类状态(0停用、1启用)", width = 15)
     @ApiModelProperty(value = "分类状态(0停用、1启用)")
+    @Dict(dicCode = "category_status")
     private java.lang.Integer status;
 	/**排序*/
 	@Excel(name = "排序", width = 15)
@@ -72,4 +76,11 @@ public class EmergencyMaterialsCategory implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
+
+    /**
+     * 子节点
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "子节点")
+    private List<EmergencyMaterialsCategory> children;
 }
