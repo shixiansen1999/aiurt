@@ -1,6 +1,7 @@
 package com.aiurt.boot.rehearsal.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.EmergencyConstant;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearAddDTO;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,13 +60,51 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
     public String add(EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO) {
         EmergencyRehearsalYear rehearsalYear = new EmergencyRehearsalYear();
         BeanUtils.copyProperties(emergencyRehearsalYearAddDTO, rehearsalYear);
+        // 构造年计划编号
+        String code = "NDYJ" + DateUtil.format(new Date(), "yyyyMMdd-");
+        EmergencyRehearsalYear emergencyRehearsalYear = this.lambdaQuery().like(EmergencyRehearsalYear::getCode, code)
+                .orderByDesc(EmergencyRehearsalYear::getCode)
+                .last("limit 1")
+                .one();
+        if (ObjectUtil.isEmpty(emergencyRehearsalYear)) {
+            code += String.format("%02d", 1);
+        } else {
+            String yearCode = emergencyRehearsalYear.getCode();
+            Integer serialNo = Integer.valueOf(yearCode.substring(yearCode.indexOf("-") + 1));
+            if (serialNo >= 99) {
+                code += (serialNo + 1);
+            } else {
+                code += String.format("%02d", (serialNo + 1));
+            }
+        }
+        rehearsalYear.setCode(code);
         this.save(rehearsalYear);
+
         String id = rehearsalYear.getId();
         List<EmergencyRehearsalMonth> monthList = emergencyRehearsalYearAddDTO.getMonthList();
         if (CollectionUtil.isNotEmpty(monthList)) {
-            monthList.forEach(l -> {
-                l.setPlanId(id);
-            });
+            // 构造月计划编号
+            String monthCode = "YYLJH-" + DateUtil.format(new Date(), "yyyyMMdd-");
+            EmergencyRehearsalMonth rehearsalMonth = emergencyRehearsalMonthService.lambdaQuery()
+                    .like(EmergencyRehearsalMonth::getCode, monthCode)
+                    .orderByDesc(EmergencyRehearsalMonth::getCode)
+                    .last("limit 1")
+                    .one();
+            int serialNo = 0;
+            if (ObjectUtil.isNotEmpty(rehearsalMonth)) {
+                String rehearsalMonthCode = rehearsalMonth.getCode();
+                serialNo = Integer.valueOf(rehearsalMonthCode.substring(rehearsalMonthCode.indexOf("-") + 1));
+            }
+            for (EmergencyRehearsalMonth month : monthList) {
+                serialNo++;
+                if (999 < serialNo) {
+                    monthCode += serialNo;
+                } else {
+                    monthCode += String.format("%03d", serialNo);
+                }
+                month.setPlanId(id);
+                month.setCode(monthCode);
+            }
             emergencyRehearsalMonthService.saveBatch(monthList);
         }
         return id;

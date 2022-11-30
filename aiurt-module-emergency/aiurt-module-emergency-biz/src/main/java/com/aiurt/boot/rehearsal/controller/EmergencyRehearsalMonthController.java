@@ -62,8 +62,8 @@ public class EmergencyRehearsalMonthController extends BaseController<EmergencyR
      * @param emergencyRehearsalMonth
      * @return
      */
-    @AutoLog(value = "emergency_rehearsal_month-添加")
-    @ApiOperation(value = "emergency_rehearsal_month-添加", notes = "emergency_rehearsal_month-添加")
+    @AutoLog(value = "应急月演练计划-添加")
+    @ApiOperation(value = "应急月演练计划-添加", notes = "应急月演练计划-添加")
     @PostMapping(value = "/add")
     public Result<String> add(@RequestBody EmergencyRehearsalMonth emergencyRehearsalMonth) {
         emergencyRehearsalMonthService.save(emergencyRehearsalMonth);
@@ -71,13 +71,13 @@ public class EmergencyRehearsalMonthController extends BaseController<EmergencyR
     }
 
     /**
-     * 编辑
+     * 应急月演练计划-编辑
      *
      * @param emergencyRehearsalMonth
      * @return
      */
-    @AutoLog(value = "emergency_rehearsal_month-编辑")
-    @ApiOperation(value = "emergency_rehearsal_month-编辑", notes = "emergency_rehearsal_month-编辑")
+    @AutoLog(value = "应急月演练计划-编辑")
+    @ApiOperation(value = "应急月演练计划-编辑", notes = "应急月演练计划-编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<String> edit(@RequestBody EmergencyRehearsalMonth emergencyRehearsalMonth) {
         emergencyRehearsalMonthService.updateById(emergencyRehearsalMonth);
@@ -85,41 +85,27 @@ public class EmergencyRehearsalMonthController extends BaseController<EmergencyR
     }
 
     /**
-     * 通过id删除
+     * 应急月演练计划-通过id删除
      *
      * @param id
      * @return
      */
-    @AutoLog(value = "emergency_rehearsal_month-通过id删除")
-    @ApiOperation(value = "emergency_rehearsal_month-通过id删除", notes = "emergency_rehearsal_month-通过id删除")
+    @AutoLog(value = "应急月演练计划-通过id删除")
+    @ApiOperation(value = "应急月演练计划-通过id删除", notes = "应急月演练计划-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
         emergencyRehearsalMonthService.removeById(id);
         return Result.OK("删除成功!");
     }
 
-    /**
-     * 批量删除
-     *
-     * @param ids
-     * @return
-     */
-    @AutoLog(value = "emergency_rehearsal_month-批量删除")
-    @ApiOperation(value = "emergency_rehearsal_month-批量删除", notes = "emergency_rehearsal_month-批量删除")
-    @DeleteMapping(value = "/deleteBatch")
-    public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
-        this.emergencyRehearsalMonthService.removeByIds(Arrays.asList(ids.split(",")));
-        return Result.OK("批量删除成功!");
-    }
 
     /**
-     * 通过id查询
+     * 应急月演练计划-通过id查询
      *
      * @param id
      * @return
      */
-    //@AutoLog(value = "emergency_rehearsal_month-通过id查询")
-    @ApiOperation(value = "emergency_rehearsal_month-通过id查询", notes = "emergency_rehearsal_month-通过id查询")
+    @ApiOperation(value = "应急月演练计划-通过id查询", notes = "应急月演练计划-通过id查询")
     @GetMapping(value = "/queryById")
     public Result<EmergencyRehearsalMonth> queryById(@RequestParam(name = "id", required = true) String id) {
         EmergencyRehearsalMonth emergencyRehearsalMonth = emergencyRehearsalMonthService.getById(id);
@@ -128,28 +114,28 @@ public class EmergencyRehearsalMonthController extends BaseController<EmergencyR
         }
         return Result.OK(emergencyRehearsalMonth);
     }
-
-    /**
-     * 导出excel
-     *
-     * @param request
-     * @param emergencyRehearsalMonth
-     */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, EmergencyRehearsalMonth emergencyRehearsalMonth) {
-        return super.exportXls(request, emergencyRehearsalMonth, EmergencyRehearsalMonth.class, "emergency_rehearsal_month");
-    }
-
-    /**
-     * 通过excel导入数据
-     *
-     * @param request
-     * @param response
-     * @return
-     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, EmergencyRehearsalMonth.class);
-    }
+//
+//    /**
+//     * 导出excel
+//     *
+//     * @param request
+//     * @param emergencyRehearsalMonth
+//     */
+//    @RequestMapping(value = "/exportXls")
+//    public ModelAndView exportXls(HttpServletRequest request, EmergencyRehearsalMonth emergencyRehearsalMonth) {
+//        return super.exportXls(request, emergencyRehearsalMonth, EmergencyRehearsalMonth.class, "emergency_rehearsal_month");
+//    }
+//
+//    /**
+//     * 通过excel导入数据
+//     *
+//     * @param request
+//     * @param response
+//     * @return
+//     */
+//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+//        return super.importExcel(request, response, EmergencyRehearsalMonth.class);
+//    }
 
 }
