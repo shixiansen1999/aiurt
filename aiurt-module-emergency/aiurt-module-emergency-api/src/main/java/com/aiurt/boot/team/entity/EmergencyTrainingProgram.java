@@ -1,18 +1,18 @@
 package com.aiurt.boot.team.entity;
 
-import java.io.Serializable;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: emergency_training_program
@@ -40,10 +40,6 @@ public class EmergencyTrainingProgram implements Serializable {
 	@Excel(name = "训练项目名称", width = 15)
     @ApiModelProperty(value = "训练项目名称")
     private String trainingProgramName;
-	/**训练负责人id*/
-	@Excel(name = "训练负责人id", width = 15)
-    @ApiModelProperty(value = "训练负责人id")
-    private String trainingManagerId;
 	/**计划训练时间*/
 	@Excel(name = "计划训练时间", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")

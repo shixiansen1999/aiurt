@@ -118,4 +118,8 @@ where cm.major_code = #{majorCode} and cs.del_flag = 0 and cm.del_flag=0
         select org_id from sys_user
         where id = #{userId}
     </select>
+
+<select id="getWorkAreaNameByCode" resultType="java.lang.String">
+    select name  from work_area where del_flag = 0 and code = #{workAreaCode}
+    </select>
 </mapper>

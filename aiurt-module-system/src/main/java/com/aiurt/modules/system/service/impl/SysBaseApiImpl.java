@@ -1872,6 +1872,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return stations;
     }
 
+    @Override
+    public String getWorkAreaNameByCode(String workAreaCode) {
+        return workAreaMapper.getWorkAreaNameByCode(workAreaCode);
+    }
+
+    @Override
+    public List<SysDepartModel> getUserDepartCodes() {
+        //获取用户的所属部门及所属部门子部门
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String orgCode = user.getOrgCode();
+        return sysDepartMapper.getUserOrgCategory(orgCode);
+    }
+
     private String escapeUrl(String remoteFileUrl) throws UnsupportedEncodingException {
         // 先替换空格
         remoteFileUrl = remoteFileUrl.replaceAll(" ", "%20");

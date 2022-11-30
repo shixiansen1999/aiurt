@@ -1,6 +1,5 @@
 package com.aiurt.modules.workarea.mapper;
 
-import com.aiurt.boot.weeklyplan.entity.BdTeam;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.workarea.dto.MajorDTO;
 import com.aiurt.modules.workarea.dto.MajorUserDTO;
@@ -99,4 +98,12 @@ public interface WorkAreaMapper extends BaseMapper<WorkArea> {
      * @return
      */
     String queryByUserId(String userId);
+
+
+    /**
+     * 根据工区code查询工区名称
+     * @param workAreaCode
+     * @return
+     */
+    String getWorkAreaNameByCode(String workAreaCode);
 }
