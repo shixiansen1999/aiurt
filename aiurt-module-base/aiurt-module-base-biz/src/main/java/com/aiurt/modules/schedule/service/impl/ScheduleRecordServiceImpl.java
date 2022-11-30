@@ -356,9 +356,11 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                     dto.setDeleteFlag(scheduleRecordREditDTO.getDeleteFlag());
                     dto.setSchedulingMethod("1");
                     dto.setUserId(scheduleRecordREditDTO.getUserId());
-                    int index = (i % itemSize == 0 ? itemSize : i % itemSize);
-                    Integer ruleItemId = scheduleRuleItemMap.get(index);
-                    dto.setScheduleItemId(ruleItemId);
+                    if (!scheduleRecordREditDTO.getDeleteFlag()) {
+                        int index = (i % itemSize == 0 ? itemSize : i % itemSize);
+                        Integer ruleItemId = scheduleRuleItemMap.get(index);
+                        dto.setScheduleItemId(ruleItemId);
+                    }
                     dto.setDate(start.getTime());
                     scheduleRecordREditDTOS.add(dto);
                     start.add(Calendar.DAY_OF_YEAR, 1);
@@ -371,6 +373,12 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         HashMap<String, ScheduleRecordREditDTO> map = new HashMap<>();
         for (ScheduleRecordREditDTO scheduleRecordREditDTO : scheduleRecordREditDTOS) {
             String key = scheduleRecordREditDTO.getUserId() + scheduleRecordREditDTO.getDate();
+            ScheduleRecordREditDTO dto = map.get(key);
+            if (ObjectUtil.isNotEmpty(dto)) {
+                if (ObjectUtil.isNotEmpty(dto.getScheduleRecordId())) {
+                    scheduleRecordREditDTO.setScheduleRecordId(dto.getScheduleRecordId());
+                }
+            }
             map.put(key, scheduleRecordREditDTO);
         }
 
@@ -391,13 +399,15 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                         LoginUser user = userService.getUserById(log.getUserId());
                         log.setUserName(user.getRealname());
                         logService.save(log);
-                        this.removeById(value.getScheduleRecordId());
+                        this.baseMapper.deleteById(value.getScheduleRecordId());
                     } else {
                         updateRecordByItem(scheduleRecordEntity, value);
                     }
                 }
             }else {
-                insertRecordByItem(value);
+                if (!value.getDeleteFlag()) {
+                    insertRecordByItem(value);
+                }
             }
         }
 
