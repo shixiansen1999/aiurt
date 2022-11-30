@@ -12,6 +12,7 @@ import com.aiurt.boot.rehearsal.mapper.EmergencyRehearsalYearMapper;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalMonthService;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalYearService;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.common.entity.UpdateStateEntity;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -165,5 +166,21 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
         rehearsalYear.setStatus(EmergencyConstant.YEAR_STATUS_2);
         this.updateById(rehearsalYear);
         return id;
+    }
+
+    @Override
+    public void audit(String id) {
+        // todo 接入流程
+
+    }
+
+    public void updateState(UpdateStateEntity updateStateEntity) {
+        String businessKey = updateStateEntity.getBusinessKey();
+        EmergencyRehearsalYear rehearsalYear = this.getById(businessKey);
+        if (ObjectUtil.isEmpty(rehearsalYear)) {
+            throw new AiurtBootException("未找到ID为【" + businessKey + "】的数据！");
+        }
+        // todo 改变状态
+
     }
 }

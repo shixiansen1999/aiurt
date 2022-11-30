@@ -5,6 +5,7 @@ import java.io.Serializable;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
@@ -22,6 +23,7 @@ import lombok.experimental.Accessors;
 @TableName("emergency_record_dept")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
+@AllArgsConstructor
 @ApiModel(value="emergency_record_dept对象", description="emergency_record_dept")
 public class EmergencyRecordDept implements Serializable {
     private static final long serialVersionUID = 1L;

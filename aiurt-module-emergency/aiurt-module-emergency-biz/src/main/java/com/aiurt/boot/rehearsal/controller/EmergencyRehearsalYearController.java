@@ -124,6 +124,19 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
         return Result.OK(emergencyRehearsalYear);
     }
 
+    /**
+     * 应急演练管理-年演练计划审核
+     *
+     * @param id
+     * @return
+     */
+    @ApiOperation(value = "应急演练管理-年演练计划审核", notes = "应急演练管理-年演练计划审核")
+    @GetMapping(value = "/audit")
+    public Result<EmergencyRehearsalYear> audit(@RequestParam(name = "id", required = true) String id) {
+        emergencyRehearsalYearService.audit(id);
+        return Result.OK();
+    }
+
 //    /**
 //    * 导出excel
 //    *

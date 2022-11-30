@@ -32,6 +32,10 @@ public class EmergencyRecordQuestion implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "责任人ID")
     private java.lang.String id;
+    /**实施记录ID*/
+    @Excel(name = "实施记录ID", width = 15)
+    @ApiModelProperty(value = "实施记录ID")
+    private java.lang.String recordId;
 	/**问题分类(1问题、2隐患)*/
 	@Excel(name = "问题分类(1问题、2隐患)", width = 15)
     @ApiModelProperty(value = "问题分类(1问题、2隐患)")

@@ -51,4 +51,11 @@ public interface IEmergencyRehearsalYearService extends IService<EmergencyRehear
      * @param id
      */
     String startProcess(String id);
+
+    /**
+     * 应急演练管理-年演练计划审核
+     *
+     * @param id
+     */
+    void audit(String id);
 }
