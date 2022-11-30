@@ -83,6 +83,7 @@ public final class FlowApprovalType {
         DICT_MAP.put(MULTI_ABSTAIN, "会签弃权");
         DICT_MAP.put(MULTI_CONSIGN, "多实例加签");
         DICT_MAP.put(STOP, "中止");
+        DICT_MAP.put(CANCEL, "取消");
     }
 
     /**

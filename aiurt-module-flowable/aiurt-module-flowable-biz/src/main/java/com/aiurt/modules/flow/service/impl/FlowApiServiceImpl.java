@@ -398,7 +398,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             // 作废
             StopProcessInstanceDTO instanceDTO = new StopProcessInstanceDTO();
             instanceDTO.setProcessInstanceId(processInstanceId);
-            instanceDTO.setStopReason("作废");
+            instanceDTO.setStopReason(commentStr);
             stopProcessInstance(instanceDTO);
         }else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.REJECT_FIRST_USER_TASK, approvalType)) {
             // 驳回到第一个用户任务
@@ -1255,13 +1255,18 @@ public class FlowApiServiceImpl implements FlowApiService {
             customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
         }
 
-        // 暂时处理先
+        // 暂时处理先 todo
        if (StrUtil.startWithIgnoreCase(definitionId, "bd_work_ticket2") || StrUtil.startWithIgnoreCase(definitionId, "bd_work_titck")) {
            String businessKey = processInstance.getBusinessKey();
            if (StrUtil.isNotBlank(businessKey)) {
                actCustomTaskCommentMapper.updateWorkticketState(businessKey);
            }
 
+       }else if (StrUtil.startWithIgnoreCase(definitionId, "week_plan_construction") || StrUtil.startWithIgnoreCase(definitionId, "supplementary_plan")) {
+           String businessKey = processInstance.getBusinessKey();
+           if (StrUtil.isNotBlank(businessKey)) {
+               actCustomTaskCommentMapper.updateConstructionWeekPlanCommand(businessKey);
+           }
        }
         // 发送redis事件
     }
@@ -1578,6 +1583,8 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
             String json = customTaskExt.getOperationListJson();
             List<JSONObject> objectList = JSONObject.parseArray(json, JSONObject.class);
+            // 过滤是否已经
+            objectList = objectList.stream().filter(entity-> !StrUtil.equalsIgnoreCase(entity.getString("type"), FlowApprovalType.CANCEL)).collect(Collectors.toList());
             taskInfoDTO.setOperationList(objectList);
         }
         taskInfoDTO.setProcessName(processDefinition.getName());
@@ -1663,6 +1670,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             ActCustomTaskComment actCustomTaskComment = actCustomTaskCommentMapper.selectOne(new LambdaQueryWrapper<ActCustomTaskComment>().eq(ActCustomTaskComment::getTaskId, entity.getId()).orderByDesc(ActCustomTaskComment::getCreateTime).last("limit 1"));
 
             if (Objects.nonNull(actCustomTaskComment)) {
+                // 判断第一个节点
                 historicTaskInfo.setResult(FlowApprovalType.DICT_MAP.get(actCustomTaskComment.getApprovalType()));
                 historicTaskInfo.setRemark(actCustomTaskComment.getComment());
             }
@@ -1679,9 +1687,6 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     public List<HistoricTaskInfo> getHistoricLogByProcessInstanceId(String processInstanceId) {
-
-
-
 
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 

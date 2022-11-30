@@ -14,4 +14,6 @@ import org.apache.ibatis.annotations.Param;
 public interface ActCustomTaskCommentMapper extends BaseMapper<ActCustomTaskComment> {
 
     void updateWorkticketState(@Param("id") String id);
+
+    void updateConstructionWeekPlanCommand(@Param("id") String id);
 }

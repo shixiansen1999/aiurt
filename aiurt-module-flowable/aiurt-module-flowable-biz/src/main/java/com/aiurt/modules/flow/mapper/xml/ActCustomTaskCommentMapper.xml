@@ -5,4 +5,8 @@
     <update id="updateWorkticketState" parameterType="java.lang.String">
         update bd_work_ticket set state = 9 where id = #{id}
     </update>
+    
+    <update id="updateConstructionWeekPlanCommand">
+        update construction_week_plan_command set form_status = 4 where id = #{id}
+    </update>
 </mapper>
