@@ -70,7 +70,10 @@ public class FaultCountServiceImpl implements IFaultCountService {
         if (ObjectUtil.isEmpty(startDate) || ObjectUtil.isEmpty(endDate)) {
             return faultIndexDTO;
         }
-
+        if(isDirector&&CollUtil.isNotEmpty(majors))
+        {
+            return  faultIndexDTO;
+        }
         //将符合条件的故障数据查出
         LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.ge(Fault::getApprovalPassTime, DateUtil.beginOfDay(startDate));
@@ -167,6 +170,10 @@ public class FaultCountServiceImpl implements IFaultCountService {
         {
             return result;
         }
+        if(isDirector&&CollUtil.isNotEmpty(majors))
+        {
+            return result;
+        }
         List<String> ordId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
         List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq,ordId,majors,isDirector);
         if (CollUtil.isNotEmpty(faultData)) {
@@ -219,6 +226,10 @@ public class FaultCountServiceImpl implements IFaultCountService {
         {
             return result;
         }
+        if(isDirector&&CollUtil.isNotEmpty(majors))
+        {
+            return  result;
+        }
         List<String> ordId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
         List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq,ordId,majors,isDirector);
         if (CollUtil.isNotEmpty(faultData)) {
@@ -269,6 +280,10 @@ public class FaultCountServiceImpl implements IFaultCountService {
         if(CollUtil.isEmpty(departByUserId)&&!isDirector)
         {
             return result;
+        }
+        if(isDirector&&CollUtil.isNotEmpty(majors))
+        {
+            return  result;
         }
          List<String> ordCode = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
         faultTimeoutLevelReq.setOrgList(ordCode);
