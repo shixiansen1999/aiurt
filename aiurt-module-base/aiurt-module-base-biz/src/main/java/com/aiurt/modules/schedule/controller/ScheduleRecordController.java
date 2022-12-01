@@ -561,8 +561,15 @@ public class ScheduleRecordController {
     @AutoLog(value = "班组下拉框", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "班组下拉框", notes = "班组下拉框")
     @GetMapping(value = "/selectDepart")
-    public List<SysDepartModel> selectDepart() {
+    public Result<List<SysDepartModel>> selectDepart() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        return iSysBaseApi.getUserSysDepart(sysUser.getId());
+        List<SysDepartModel> userSysDepart = iSysBaseApi.getUserSysDepart(sysUser.getId());
+        Result<List<SysDepartModel>> result = new Result<>();
+        result.setSuccess(true);
+        if (CollUtil.isEmpty(userSysDepart)) {
+            result.setResult(new ArrayList<>());
+        }
+        result.setResult(userSysDepart);
+        return result;
     }
 }

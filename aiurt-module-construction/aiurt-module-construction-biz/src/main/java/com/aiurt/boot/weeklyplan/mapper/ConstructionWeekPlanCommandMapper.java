@@ -24,4 +24,14 @@ public interface ConstructionWeekPlanCommandMapper extends BaseMapper<Constructi
      */
     IPage<ConstructionWeekPlanCommandVO> queryPageList(@Param("page") Page<ConstructionWeekPlanCommandVO> page, @Param("userId") String userId,
                                                        @Param("condition") ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO);
+
+    /**
+     *
+     * @param page
+     * @param id
+     * @param constructionWeekPlanCommandDTO
+     * @return
+     */
+    IPage<ConstructionWeekPlanCommandVO> queryWorkToDo(@Param("page") Page<ConstructionWeekPlanCommandVO> page,@Param("userName") String id,
+                                                       @Param("condition")  ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO);
 }
