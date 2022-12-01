@@ -90,6 +90,8 @@ public class IndexPlanService {
         // 将符合条件的检修计划查出
         LambdaQueryWrapper<RepairPool> queryWrapper = new LambdaQueryWrapper<>();
         doQuery(startDate, endDate, isAllData, queryWrapper);
+        //查出检修标准关联表任务id
+        //查出检修部门关联表任务id
         List<RepairPool> repairPoolList = repairPoolMapper.selectList(queryWrapper);
 
         // 检修总数

@@ -9,9 +9,13 @@ import com.aiurt.boot.constant.PatrolDictCode;
 import com.aiurt.boot.statistics.dto.*;
 import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.entity.PatrolTaskOrganization;
+import com.aiurt.boot.task.entity.PatrolTaskStandard;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -49,6 +53,8 @@ public class PatrolStatisticsService {
     private PatrolTaskStationMapper patrolTaskStationMapper;
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
+    @Autowired
+    private PatrolTaskStandardMapper patrolTaskStandardMapper;
     /**
      * 权限过滤标识
      */
@@ -67,16 +73,18 @@ public class PatrolStatisticsService {
 //                // 过滤手工下发
 ////                .and(i -> i.ne(PatrolTask::getSource, PatrolConstant.TASK_MANUAL).or().isNull(PatrolTask::getSource))
 //                .between(PatrolTask::getPatrolDate, newStartDate, newEndDate).list();
-        List<CsUserDepartModel> departList = null;
-        if (ObjectUtil.isEmpty(isAllData) || !ALLDATA.equals(isAllData)) {
-            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            if (ObjectUtil.isEmpty(loginUser)) {
-                throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
-            }
-            departList = sysBaseApi.getDepartByUserId(loginUser.getId());
-        }
-        List<PatrolTask> list = patrolTaskMapper.getOverviewInfo(newStartDate, newEndDate, departList);
-
+//        List<CsUserDepartModel> departList = null;
+//        if (ObjectUtil.isEmpty(isAllData) || !ALLDATA.equals(isAllData)) {
+//            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+//            if (ObjectUtil.isEmpty(loginUser)) {
+//                throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
+//            }
+//            departList = sysBaseApi.getDepartByUserId(loginUser.getId());
+//        }
+        List<PatrolTaskStandard> standards = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0));
+        List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+        boolean openClose = GlobalThreadLocal.setDataFilter(false);
+        List<PatrolTask> list = patrolTaskMapper.getOverviewInfo(newStartDate, newEndDate, departList,standards);
         long sum = list.stream().count();
         long finish = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
         long unfinish = sum - finish;
@@ -92,8 +100,8 @@ public class PatrolStatisticsService {
 ////         漏检任务列表
 //        List<PatrolTask> omitList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
 //                .between(PatrolTask::getPatrolDate, startTime, endTime).list();
-        List<PatrolTask> omitList = patrolTaskMapper.getOverviewInfo(startTime, endTime, departList);
-
+        List<PatrolTask> omitList = patrolTaskMapper.getOverviewInfo(startTime, endTime, departList,standards);
+        GlobalThreadLocal.setDataFilter(openClose);
         // 漏检时间范围内的任务总数
         long omitScopeSum = omitList.size();
         omit += omitList.stream().filter(l -> PatrolConstant.OMIT_STATUS.equals(l.getOmitStatus())).count();

@@ -2,6 +2,7 @@ package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.task.dto.PatrolTaskStandardDTO;
 import com.aiurt.boot.task.entity.PatrolTaskStandard;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
  * @Date:   2022-06-21
  * @Version: V1.0
  */
+@EnableDataPerm(excluseMethodName = {"getMajorSystemName","getStandard"})
 public interface PatrolTaskStandardMapper extends BaseMapper<PatrolTaskStandard> {
     /**
      * app-巡检详情-专业和子系统名称

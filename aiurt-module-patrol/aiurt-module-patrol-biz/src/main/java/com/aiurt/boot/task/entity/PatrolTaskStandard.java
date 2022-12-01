@@ -1,19 +1,19 @@
 package com.aiurt.boot.task.entity;
 
-import java.io.Serializable;
-
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: patrol_task_standard
@@ -48,6 +48,7 @@ public class PatrolTaskStandard implements Serializable {
 	/**专业code*/
 	@Excel(name = "专业code", width = 15)
     @ApiModelProperty(value = "专业code")
+    @MajorFilterColumn
     private java.lang.String professionCode;
 	/**系统code*/
 	@Excel(name = "系统code", width = 15)

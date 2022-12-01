@@ -5,6 +5,7 @@ import com.aiurt.boot.statistics.dto.IndexTaskDTO;
 import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.statistics.service.PatrolStatisticsService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -39,6 +40,7 @@ public class PatrolStatisticsController {
     @AutoLog(value = "首页-巡视概况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-巡视概况", notes = "首页-巡视概况")
     @RequestMapping(value = "/overviewInfo", method = {RequestMethod.GET, RequestMethod.POST})
+    @PermissionData(pageComponent = "dashboard/Analysis")
     public Result<PatrolSituation> getOverviewInfo(@ApiParam(name = "startDate", value = "开始日期")
                                                    @DateTimeFormat(pattern = "yyyy-MM-dd")
                                                    @RequestParam("startDate") Date startDate,

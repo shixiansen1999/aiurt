@@ -22,6 +22,8 @@ import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.entity.PatrolTaskOrganization;
+import com.aiurt.boot.task.entity.PatrolTaskStandard;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -216,7 +218,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param departList
      * @return
      */
-    List<PatrolTask> getOverviewInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("departList") List<CsUserDepartModel> departList);
+    List<PatrolTask> getOverviewInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("departList") List<PatrolTaskOrganization> departList, @Param("taskIds") List<PatrolTaskStandard> taskIds);
 
     /**
      * 查看当前用户，当天的巡检任务
