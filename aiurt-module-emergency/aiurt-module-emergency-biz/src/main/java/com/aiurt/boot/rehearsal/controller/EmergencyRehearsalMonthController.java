@@ -1,8 +1,11 @@
 package com.aiurt.boot.rehearsal.controller;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalMonthService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -50,6 +53,9 @@ public class EmergencyRehearsalMonthController extends BaseController<EmergencyR
                                                                 @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                                 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                                 HttpServletRequest req) {
+        if (ObjectUtil.isEmpty(emergencyRehearsalMonth) || StrUtil.isEmpty(emergencyRehearsalMonth.getPlanId())) {
+            throw new AiurtBootException("年演练计划ID不能为空！");
+        }
         QueryWrapper<EmergencyRehearsalMonth> queryWrapper = QueryGenerator.initQueryWrapper(emergencyRehearsalMonth, req.getParameterMap());
         Page<EmergencyRehearsalMonth> page = new Page<EmergencyRehearsalMonth>(pageNo, pageSize);
         IPage<EmergencyRehearsalMonth> pageList = emergencyRehearsalMonthService.page(page, queryWrapper);

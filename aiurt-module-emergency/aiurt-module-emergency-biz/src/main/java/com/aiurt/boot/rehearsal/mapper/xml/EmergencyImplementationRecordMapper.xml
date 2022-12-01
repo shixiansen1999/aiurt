@@ -3,12 +3,14 @@
 <mapper namespace="com.aiurt.boot.rehearsal.mapper.EmergencyImplementationRecordMapper">
     <select id="queryPageList" resultType="com.aiurt.boot.rehearsal.vo.EmergencyImplementationRecordVO">
         select eir.*,
-               erm.code           as planCode,
-               erm.subject,
-               erm.rehearsal_time as planRehearsalTime,
-               erm.org_code       as deptCode
+               erm.code               as planCode,
+               erm.subject            as subject,
+               erm.rehearsal_time     as planRehearsalTime,
+               erm.org_code           as deptCode,
+               ep.emergency_plan_name as schemeName
         from emergency_implementation_record eir
                  left join emergency_rehearsal_month erm on eir.plan_id = erm.id
+                 left join emergency_plan ep on erm.scheme_id = ep.id
         where eir.del_flag = 0
         <if test="condition.subject != null and condition.subject != ''">
             and erm.subject like concat('%', #{condition.subject}, '%')
@@ -25,6 +27,10 @@
             and erm.org_code = #{condition.orgCode}
         </if>
         <if test="condition.joinOrgCode != null and condition.joinOrgCode != ''">
+            and eir.id in (
+            select distinct record_id
+            from emergency_record_dept
+            where org_code = #{condition.joinOrgCode} )
         </if>
     </select>
 </mapper>

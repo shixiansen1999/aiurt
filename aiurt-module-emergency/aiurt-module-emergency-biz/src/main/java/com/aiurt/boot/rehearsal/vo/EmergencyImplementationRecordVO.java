@@ -1,7 +1,9 @@
 package com.aiurt.boot.rehearsal.vo;
 
+import com.aiurt.boot.rehearsal.dto.EmergencyDeptDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
 import com.aiurt.boot.rehearsal.entity.EmergencyRecordDept;
+import com.aiurt.common.aspect.annotation.Dict;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -28,10 +30,10 @@ public class EmergencyImplementationRecordVO extends EmergencyImplementationReco
     @ApiModelProperty(value = "演练科目")
     private String subject;
     /**
-     * 依托预案
+     * 依托预案名称
      */
-    @ApiModelProperty(value = "依托预案")
-    private String name;
+    @ApiModelProperty(value = "依托预案名称")
+    private String schemeName;
     /**
      * 计划演练日期，格式yyyy-MM
      */
@@ -43,16 +45,12 @@ public class EmergencyImplementationRecordVO extends EmergencyImplementationReco
      * 组织部门编码
      */
     @ApiModelProperty(value = "组织部门编码")
+    @Dict(dictTable = "sys_depart", dicCode = "org_code", dicText = "depart_name")
     private String deptCode;
     /**
-     * 组织部门编码
+     * 参与部门信息
      */
-    @ApiModelProperty(value = "组织部门编码")
-    private String deptName;
-//    /**
-//     * 参与部门
-//     */
-//    @ApiModelProperty(value = "计划演练日期，格式yyyy-MM")
-//    List<EmergencyRecordDept> deptList;
+    @ApiModelProperty(value = "参与部门信息")
+    List<EmergencyDeptDTO> deptList;
 
 }

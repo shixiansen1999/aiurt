@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
  * @Date: 2022-11-29
  * @Version: V1.0
  */
-@Api(tags = "emergency_implementation_record")
+@Api(tags = "应急实施记录")
 @RestController
 @RequestMapping("/emergency/emergencyImplementationRecord")
 @Slf4j
