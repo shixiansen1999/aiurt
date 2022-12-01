@@ -80,7 +80,7 @@ public interface FlowModelAttConstant {
     String LABEL = "label";
 
     /**
-     * 页面按钮类型
+     * 页面按钮类型 agree save
      */
     String TYPE = "type";
 
@@ -89,6 +89,15 @@ public interface FlowModelAttConstant {
      */
     String SHOW_ORDER = "showOrder";
 
+    /**
+     * 备注是否显示：1：是，0否
+     */
+    String IS_DISPLAY_REMARK = "isDisplayRemark";
+
+    /**
+     * 备注是否必填： 1：是，0否
+     */
+    String IS_REQUIRE_REMARK = "isRequireRemark";
 
     /**
      * 选人类型
