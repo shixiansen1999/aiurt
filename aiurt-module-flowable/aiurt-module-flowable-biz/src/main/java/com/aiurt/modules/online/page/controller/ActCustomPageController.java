@@ -58,14 +58,20 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
+
+		LambdaQueryWrapper<ActCustomPage> queryWrapper = new LambdaQueryWrapper<>();
 		String sysOrgCode = actCustomPage.getSysOrgCode();
 		if (StrUtil.isNotBlank(sysOrgCode)) {
 			SysDepartModel sysDepartModel = sysBaseApi.selectAllById(sysOrgCode);
 			if (Objects.nonNull(sysDepartModel)) {
 				actCustomPage.setSysOrgCode(sysDepartModel.getOrgCode());
 			}
+
+			queryWrapper.eq(ActCustomPage::getSysOrgCode, actCustomPage.getSysOrgCode());
 		}
-		QueryWrapper<ActCustomPage> queryWrapper = QueryGenerator.initQueryWrapper(actCustomPage, req.getParameterMap());
+
+		queryWrapper.like(StrUtil.isNotBlank(actCustomPage.getPageName()),ActCustomPage::getPageName, actCustomPage.getPageName());
+
 		Page<ActCustomPage> page = new Page<>(pageNo, pageSize);
 		IPage<ActCustomPage> pageList = actCustomPageService.page(page, queryWrapper);
 		return Result.OK(pageList);

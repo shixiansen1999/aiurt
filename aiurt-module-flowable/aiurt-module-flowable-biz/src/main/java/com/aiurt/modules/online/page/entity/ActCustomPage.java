@@ -3,6 +3,7 @@ package com.aiurt.modules.online.page.entity;
 import java.io.Serializable;
 import java.util.Date;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.annotation.*;
@@ -53,6 +54,7 @@ public class ActCustomPage implements Serializable {
     private Date updateTime;
 	/**所属部门*/
     @ApiModelProperty(value = "所属部门")
+    @Dict(dicCode = "org_code", dicText = "depart_name", dictTable = "sys_depart")
     private String sysOrgCode;
 	/**表单名称*/
 	@Excel(name = "表单名称", width = 15)
