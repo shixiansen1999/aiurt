@@ -14,16 +14,17 @@ import com.aiurt.boot.index.mapper.IndexPlanMapper;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
+import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
-import com.aiurt.boot.plan.mapper.RepairPoolMapper;
-import com.aiurt.boot.plan.mapper.RepairPoolOrgRelMapper;
-import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
+import com.aiurt.boot.plan.entity.RepairPoolRel;
+import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskStationRel;
 import com.aiurt.boot.task.entity.RepairTaskUser;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.boot.task.mapper.RepairTaskStationRelMapper;
 import com.aiurt.boot.task.mapper.RepairTaskUserMapper;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.common.api.IBaseApi;
@@ -73,6 +74,10 @@ public class IndexPlanService {
     private DailyFaultApi dailyFaultApi;
     @Resource
     private RepairPoolOrgRelMapper orgRelMapper;
+    @Resource
+    private RepairPoolRelMapper poolRelMapper;
+    @Resource
+    private RepairPoolCodeMapper poolCodeMapper;
 
     /**
      * 首页巡视概况
@@ -90,8 +95,6 @@ public class IndexPlanService {
         // 将符合条件的检修计划查出
         LambdaQueryWrapper<RepairPool> queryWrapper = new LambdaQueryWrapper<>();
         doQuery(startDate, endDate, isAllData, queryWrapper);
-        //查出检修标准关联表任务id
-        //查出检修部门关联表任务id
         List<RepairPool> repairPoolList = repairPoolMapper.selectList(queryWrapper);
 
         // 检修总数
@@ -143,15 +146,20 @@ public class IndexPlanService {
         queryWrapper.ge(RepairPool::getStartTime, startDate);
         queryWrapper.le(RepairPool::getStartTime, endDate);
         queryWrapper.isNotNull(RepairPool::getStartTime);
+        List<RepairPoolOrgRel> poolOrgRelList = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList())));
+        queryWrapper.in(RepairPool::getCode,poolOrgRelList.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList()));
+        queryWrapper.in(RepairPool::getCode,repairPoolRels.stream().map(RepairPoolRel::getRepairPoolCode).collect(Collectors.toList()));
         // 默认按照管理的组织机构进行数据过滤
-        if (ObjectUtil.isEmpty(isAllData)
-                || (ObjectUtil.isNotEmpty(isAllData)
-                && isAllData.equals(InspectionConstant.IS_ALL_DATA_0))) {
-            List<String> codeByOrgCode = getCodeByOrgCode();
-            if (CollUtil.isNotEmpty(codeByOrgCode)) {
-                queryWrapper.in(RepairPool::getCode, codeByOrgCode);
-            }
-        }
+//        if (ObjectUtil.isEmpty(isAllData)
+//                || (ObjectUtil.isNotEmpty(isAllData)
+//                && isAllData.equals(InspectionConstant.IS_ALL_DATA_0))) {
+//            List<String> codeByOrgCode = getCodeByOrgCode();
+//            if (CollUtil.isNotEmpty(codeByOrgCode)) {
+//                queryWrapper.in(RepairPool::getCode, codeByOrgCode);
+//            }
+//        }
     }
 
     /**
