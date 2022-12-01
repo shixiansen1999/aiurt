@@ -2,6 +2,7 @@ package com.aiurt.boot.rehearsal.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.EmergencyConstant;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
 import com.aiurt.boot.rehearsal.mapper.EmergencyRehearsalMonthMapper;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalMonthService;
@@ -28,6 +29,7 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
         // 构造月计划编号
         String monthCode = this.getMonthCode();
         emergencyRehearsalMonth.setCode(monthCode);
+        emergencyRehearsalMonth.setYearWithin(EmergencyConstant.WITHIN_0);
         this.save(emergencyRehearsalMonth);
         return emergencyRehearsalMonth.getId();
     }

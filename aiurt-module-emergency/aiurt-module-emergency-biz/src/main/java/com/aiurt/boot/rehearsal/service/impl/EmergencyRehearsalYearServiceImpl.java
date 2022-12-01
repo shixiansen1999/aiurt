@@ -88,6 +88,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
                 String monthCode = emergencyRehearsalMonthService.getMonthCode();
                 month.setPlanId(id);
                 month.setCode(monthCode);
+                month.setYearWithin(EmergencyConstant.WITHIN_1);
                 emergencyRehearsalMonthService.save(month);
             }
         }
@@ -134,6 +135,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
                 String monthCode = emergencyRehearsalMonthService.getMonthCode();
                 month.setPlanId(id);
                 month.setCode(monthCode);
+                month.setYearWithin(EmergencyConstant.WITHIN_1);
                 emergencyRehearsalMonthService.save(month);
             }
         }

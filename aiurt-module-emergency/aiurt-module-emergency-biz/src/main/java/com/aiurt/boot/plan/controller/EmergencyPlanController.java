@@ -64,6 +64,18 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 		return Result.OK(pageList);
 	}
 
+	 /**
+	  * 查询所有应急预案列表
+	  *
+	  * @return
+	  */
+	 @ApiOperation(value = "查询所有应急预案列表", notes = "查询所有应急预案列表")
+	 @GetMapping(value = "/getAllPlanList")
+	 public Result<List<EmergencyPlan>> getAllPlanList() {
+		 List<EmergencyPlan> list = emergencyPlanService.list();
+		 return Result.OK(list);
+	 }
+
 	/**
 	 *   新增应急预案保存
 	 *

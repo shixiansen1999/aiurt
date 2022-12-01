@@ -49,6 +49,11 @@ public class EmergencyRehearsalMonth extends DictEntity implements Serializable 
     @ApiModelProperty(value = "演练类型(1单项应急预案、2综合应急预案、3现场处置方案)")
     @Dict(dicCode = "emergency_rehearsal_type")
     private java.lang.Integer type;
+	/**计划类型(0年计划外、1年计划内)*/
+    @Excel(name = "计划类型(0年计划外、1年计划内)", width = 15)
+    @ApiModelProperty(value = "计划类型(0年计划外、1年计划内)")
+    @Dict(dicCode = "emergency_year_within")
+    private java.lang.Integer yearWithin;
 	/**演练科目*/
 	@Excel(name = "演练科目", width = 15)
     @ApiModelProperty(value = "演练科目")

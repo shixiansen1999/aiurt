@@ -22,4 +22,12 @@ public interface EmergencyConstant {
      * 应急模块-年演练计划待审核状态
      */
     Integer YEAR_STATUS_4 = 4;
+    /**
+     * 应急模块-月计划类型年计划外状态
+     */
+    Integer WITHIN_0 = 0;
+    /**
+     * 应急模块-月计划类型年计划内状态
+     */
+    Integer WITHIN_1 = 1;
 }
