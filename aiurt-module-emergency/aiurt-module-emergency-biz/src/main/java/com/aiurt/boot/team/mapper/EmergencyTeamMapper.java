@@ -1,7 +1,10 @@
 package com.aiurt.boot.team.mapper;
 
+import com.aiurt.boot.team.dto.EmergencyTeamDTO;
 import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * @Description: emergency_team
@@ -11,4 +14,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface EmergencyTeamMapper extends BaseMapper<EmergencyTeam> {
 
+    List<EmergencyTeamDTO> getTrainingRecord(String id);
 }

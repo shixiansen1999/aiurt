@@ -2,6 +2,7 @@ package com.aiurt.boot.team.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.team.dto.EmergencyTeamDTO;
 import com.aiurt.boot.team.entity.EmergencyCrew;
 import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.mapper.EmergencyTeamMapper;
@@ -33,6 +34,9 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
 
     @Autowired
     private IEmergencyCrewService emergencyCrewService;
+
+    @Autowired
+    private EmergencyTeamMapper emergencyTeamMapper;
 
     @Override
     public void translate(EmergencyTeam emergencyTeam) {
@@ -142,8 +146,13 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         if(emergencyTeam==null) {
             return Result.error("未找到对应数据");
         }
-
-
+        List<EmergencyTeamDTO> trainingRecord = emergencyTeamMapper.getTrainingRecord(id);
+        translate(emergencyTeam);
+        if (CollUtil.isNotEmpty(trainingRecord)) {
+            for (EmergencyTeamDTO emergencyTeamDTO : trainingRecord) {
+                emergencyTeamDTO.setManagerName(emergencyTeam.getManagerName());
+            }
+        }
         return Result.OK();
     }
 }
