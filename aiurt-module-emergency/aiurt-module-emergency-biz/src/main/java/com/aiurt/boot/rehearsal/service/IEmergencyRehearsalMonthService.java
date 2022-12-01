@@ -6,9 +6,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 /**
  * @Description: emergency_rehearsal_month
  * @Author: aiurt
- * @Date:   2022-11-29
+ * @Date: 2022-11-29
  * @Version: V1.0
  */
 public interface IEmergencyRehearsalMonthService extends IService<EmergencyRehearsalMonth> {
 
+    String addMonthPlan(EmergencyRehearsalMonth emergencyRehearsalMonth);
 }
