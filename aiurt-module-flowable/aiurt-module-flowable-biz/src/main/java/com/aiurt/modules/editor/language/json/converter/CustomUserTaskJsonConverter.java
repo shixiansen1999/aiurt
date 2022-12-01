@@ -95,10 +95,12 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 ArrayNode arrayNode = super.objectMapper.createArrayNode();
                 for (ExtensionElement e : formOperationElements) {
                     ObjectNode objectNode = super.objectMapper.createObjectNode();
-                    objectNode.put("id", e.getAttributeValue(null, "id"));
-                    objectNode.put("label", e.getAttributeValue(null, "label"));
-                    objectNode.put("type", e.getAttributeValue(null, "type"));
-                    objectNode.put("showOrder", e.getAttributeValue(null, "showOrder"));
+                    objectNode.put(FlowModelAttConstant.ID, e.getAttributeValue(null, FlowModelAttConstant.ID));
+                    objectNode.put(FlowModelAttConstant.LABEL, e.getAttributeValue(null, FlowModelAttConstant.LABEL));
+                    objectNode.put(FlowModelAttConstant.TYPE, e.getAttributeValue(null, FlowModelAttConstant.TYPE));
+                    objectNode.put(FlowModelAttConstant.SHOW_ORDER, e.getAttributeValue(null, FlowModelAttConstant.SHOW_ORDER));
+                    objectNode.put(FlowModelAttConstant.IS_DISPLAY_REMARK, e.getAttributeValue(null, FlowModelAttConstant.IS_DISPLAY_REMARK));
+                    objectNode.put(FlowModelAttConstant.IS_REQUIRE_REMARK, e.getAttributeValue(null, FlowModelAttConstant.IS_REQUIRE_REMARK));
                     arrayNode.add(objectNode);
                 }
                 propertiesNode.set(FORM_OPERATION, arrayNode);
