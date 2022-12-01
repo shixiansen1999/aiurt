@@ -675,7 +675,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      *  获取用户的所属部门及所属部门子部门编码
-     * 根据工区编码获取工区名称
      * @param
      * @return
      */

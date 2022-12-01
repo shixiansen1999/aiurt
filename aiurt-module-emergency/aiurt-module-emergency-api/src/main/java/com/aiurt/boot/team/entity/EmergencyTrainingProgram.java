@@ -1,6 +1,7 @@
 package com.aiurt.boot.team.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -45,19 +46,22 @@ public class EmergencyTrainingProgram implements Serializable {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "计划训练时间")
-    private java.util.Date trainingPlantime;
+    private java.util.Date trainingPlanTime;
 	/**计划训练人数*/
 	@Excel(name = "计划训练人数", width = 15)
     @ApiModelProperty(value = "计划训练人数")
     private Integer traineesNum;
 	/**审核状态（1待提交、2待完成、3已完成）*/
-	@Excel(name = "审核状态（1待提交、2待完成、3已完成）", width = 15)
-    @ApiModelProperty(value = "审核状态（1待提交、2待完成、3已完成）")
+	@Excel(name = "审核状态（1待下发、2待完成、3已完成）", width = 15)
+    @ApiModelProperty(value = "审核状态（1待下发、2待完成、3已完成）")
     private Integer status;
 	/**编制部门*/
 	@Excel(name = "编制部门", width = 15)
     @ApiModelProperty(value = "编制部门")
     private String orgCode;
+    @ApiModelProperty(value = "编制部门名称")
+    @TableField(exist = false)
+    private String orgName;
 	/**备注*/
 	@Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")
@@ -82,4 +86,8 @@ public class EmergencyTrainingProgram implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
+
+    /**应急队伍名称*/
+    @ApiModelProperty(value = "应急队伍名称")
+    private String emergencyTeamName;
 }

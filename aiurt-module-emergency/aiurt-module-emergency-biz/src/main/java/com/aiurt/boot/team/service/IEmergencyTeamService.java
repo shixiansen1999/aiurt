@@ -53,5 +53,12 @@ public interface IEmergencyTeamService extends IService<EmergencyTeam> {
      */
     Result<EmergencyTeam> getTrainingRecordById(String id);
 
+    /**
+     * 查询列表
+     * @param emergencyTeamDTO
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
     IPage<EmergencyTeam> queryPageList(EmergencyTeamDTO emergencyTeamDTO, Integer pageNo, Integer pageSize);
 }

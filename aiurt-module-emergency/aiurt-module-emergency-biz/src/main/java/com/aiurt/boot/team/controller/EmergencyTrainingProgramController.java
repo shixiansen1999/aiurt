@@ -1,17 +1,15 @@
 package com.aiurt.boot.team.controller;
 
+import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
 import com.aiurt.boot.team.service.IEmergencyTrainingProgramService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -37,22 +35,19 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	/**
 	 * 分页列表查询
 	 *
-	 * @param emergencyTrainingProgram
+	 * @param emergencyTrainingProgramDTO
 	 * @param pageNo
 	 * @param pageSize
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_training_program-分页列表查询")
 	@ApiOperation(value="emergency_training_program-分页列表查询", notes="emergency_training_program-分页列表查询")
 	@GetMapping(value = "/list")
-	public Result<IPage<EmergencyTrainingProgram>> queryPageList(EmergencyTrainingProgram emergencyTrainingProgram,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<EmergencyTrainingProgram> queryWrapper = QueryGenerator.initQueryWrapper(emergencyTrainingProgram, req.getParameterMap());
-		Page<EmergencyTrainingProgram> page = new Page<EmergencyTrainingProgram>(pageNo, pageSize);
-		IPage<EmergencyTrainingProgram> pageList = emergencyTrainingProgramService.page(page, queryWrapper);
+	public Result<IPage<EmergencyTrainingProgram>> queryPageList(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO,
+																 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+																 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+																 HttpServletRequest req) {
+		IPage<EmergencyTrainingProgram> pageList = emergencyTrainingProgramService.queryPageList(emergencyTrainingProgramDTO,pageNo,pageSize);
 		return Result.OK(pageList);
 	}
 

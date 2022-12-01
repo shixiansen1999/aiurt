@@ -76,9 +76,6 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             queryWrapper.like(EmergencyTeam::getEmergencyTeamname, team.getEmergencyTeamname());
         }
         List<String> orgCodes = models.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-        if (CollUtil.isEmpty(orgCodes)) {
-            return new Page<>();
-        }
         queryWrapper.in(EmergencyTeam::getOrgCode, orgCodes);
         queryWrapper.eq(EmergencyTeam::getDelFlag, 0);
         Page<EmergencyTeam> page = new Page<EmergencyTeam>(pageNo, pageSize);
@@ -99,7 +96,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         emergencyTeam.setMajorName(major.getString("majorName"));
 
         SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(emergencyTeam.getOrgCode());
-        emergencyTeam.setMajorName(sysDepartModel.getDepartName());
+        emergencyTeam.setOrgName(sysDepartModel.getDepartName());
 
         String lineName = iSysBaseAPI.getPosition(emergencyTeam.getLineCode());
         emergencyTeam.setLineName(lineName);
