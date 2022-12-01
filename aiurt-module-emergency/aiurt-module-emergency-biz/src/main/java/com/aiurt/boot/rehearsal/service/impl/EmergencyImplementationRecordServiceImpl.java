@@ -1,6 +1,7 @@
 package com.aiurt.boot.rehearsal.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
 import com.aiurt.boot.rehearsal.dto.EmergencyDeptDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRecordDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalRegisterDTO;
@@ -14,6 +15,7 @@ import com.aiurt.boot.rehearsal.service.IEmergencyRecordDeptService;
 import com.aiurt.boot.rehearsal.service.IEmergencyRecordQuestionService;
 import com.aiurt.boot.rehearsal.service.IEmergencyRecordStepService;
 import com.aiurt.boot.rehearsal.vo.EmergencyImplementationRecordVO;
+import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -24,6 +26,7 @@ import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +58,7 @@ public class EmergencyImplementationRecordServiceImpl extends ServiceImpl<Emerge
     public String rehearsalRegister(EmergencyRehearsalRegisterDTO emergencyRehearsalRegisterDTO) {
         EmergencyImplementationRecord implementationRecord = new EmergencyImplementationRecord();
         BeanUtils.copyProperties(emergencyRehearsalRegisterDTO, implementationRecord);
+        implementationRecord.setStatus(EmergencyConstant.RECORD_STATUS_1);
         this.save(implementationRecord);
 
         String id = implementationRecord.getId();
@@ -101,5 +105,23 @@ public class EmergencyImplementationRecordServiceImpl extends ServiceImpl<Emerge
             }
         });
         return pageList;
+    }
+
+    @Override
+    public boolean submit(String id, Integer status) {
+        EmergencyImplementationRecord record = this.getById(id);
+        Assert.notNull(record, "未找到对应数据！");
+        if (EmergencyConstant.RECORD_STATUS_2.equals(record.getStatus())) {
+            throw new AiurtBootException("记录已提交，无需重复提交！");
+        } else if (EmergencyConstant.RECORD_STATUS_1.equals(record.getStatus())) {
+            if (!EmergencyConstant.RECORD_STATUS_2.equals(status)) {
+                throw new AiurtBootException("当前记录已经是待提交状态，不允许再更改为待提交状态！");
+            }
+            record.setStatus(status);
+            boolean update = this.updateById(record);
+            return update;
+        } else {
+            throw new AiurtBootException("数据存在异常！");
+        }
     }
 }

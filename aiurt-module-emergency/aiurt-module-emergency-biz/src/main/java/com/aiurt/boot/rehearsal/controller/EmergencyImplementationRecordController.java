@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,20 @@ public class EmergencyImplementationRecordController extends BaseController<Emer
     public Result<String> add(@RequestBody EmergencyRehearsalRegisterDTO emergencyRehearsalRegisterDTO) {
         String id = emergencyImplementationRecordService.rehearsalRegister(emergencyRehearsalRegisterDTO);
         return Result.OK("添加成功！记录ID为：【" + id + "】");
+    }
+
+    /**
+     * 应急实施记录-提交(将记录更新为已提交)
+     *
+     * @return
+     */
+    @AutoLog(value = "应急实施记录-提交(将记录更新为已提交)")
+    @ApiOperation(value = "应急实施记录-提交(将记录更新为已提交)", notes = "应急实施记录-提交(将记录更新为已提交)")
+    @PostMapping(value = "/submit")
+    public Result<String> submit(@RequestParam @ApiParam(value = "记录ID", name = "id", required = true) String id,
+                                 @RequestParam @ApiParam(value = "记录状态(1待提交、2已提交)", name = "status", required = true) Integer status) {
+        boolean submit = emergencyImplementationRecordService.submit(id, status);
+        return Result.OK("提交成功！");
     }
 //
 //    /**
