@@ -2,6 +2,8 @@ package com.aiurt.boot.rehearsal.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.plan.entity.EmergencyPlan;
+import com.aiurt.boot.plan.service.IEmergencyPlanService;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalMonthService;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -17,11 +19,9 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * @Description: emergency_rehearsal_month
@@ -36,6 +36,8 @@ import java.util.Arrays;
 public class EmergencyRehearsalMonthController extends BaseController<EmergencyRehearsalMonth, IEmergencyRehearsalMonthService> {
     @Autowired
     private IEmergencyRehearsalMonthService emergencyRehearsalMonthService;
+    @Autowired
+    private IEmergencyPlanService emergencyPlanService;
 
     /**
      * 应急月演练计划-分页列表查询
@@ -118,6 +120,12 @@ public class EmergencyRehearsalMonthController extends BaseController<EmergencyR
         if (emergencyRehearsalMonth == null) {
             return Result.error("未找到对应数据");
         }
+        Optional.ofNullable(emergencyRehearsalMonth.getSchemeId()).ifPresent(schemeId -> {
+            EmergencyPlan emergencyPlan = emergencyPlanService.getById(schemeId);
+            Optional.ofNullable(emergencyPlan).ifPresent(ep -> {
+                emergencyRehearsalMonth.setSchemeName(ep.getEmergencyPlanName());
+            });
+        });
         return Result.OK(emergencyRehearsalMonth);
     }
 //

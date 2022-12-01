@@ -12,4 +12,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface IEmergencyRehearsalMonthService extends IService<EmergencyRehearsalMonth> {
 
     String addMonthPlan(EmergencyRehearsalMonth emergencyRehearsalMonth);
+
+    /**
+     * 生成月计划编码
+     *
+     * @return
+     */
+    String getMonthCode();
 }

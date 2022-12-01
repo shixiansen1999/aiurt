@@ -84,29 +84,12 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
         String id = rehearsalYear.getId();
         List<EmergencyRehearsalMonth> monthList = emergencyRehearsalYearAddDTO.getMonthList();
         if (CollectionUtil.isNotEmpty(monthList)) {
-            // 构造月计划编号
-            String monthCode = "YYLJH-" + DateUtil.format(new Date(), "yyyyMMdd-");
-            EmergencyRehearsalMonth rehearsalMonth = emergencyRehearsalMonthService.lambdaQuery()
-                    .like(EmergencyRehearsalMonth::getCode, monthCode)
-                    .orderByDesc(EmergencyRehearsalMonth::getCode)
-                    .last("limit 1")
-                    .one();
-            int serialNo = 0;
-            if (ObjectUtil.isNotEmpty(rehearsalMonth)) {
-                String rehearsalMonthCode = rehearsalMonth.getCode();
-                serialNo = Integer.valueOf(rehearsalMonthCode.substring(rehearsalMonthCode.lastIndexOf("-") + 1));
-            }
             for (EmergencyRehearsalMonth month : monthList) {
-                serialNo++;
-                if (999 < serialNo) {
-                    monthCode += serialNo;
-                } else {
-                    monthCode += String.format("%03d", serialNo);
-                }
+                String monthCode = emergencyRehearsalMonthService.getMonthCode();
                 month.setPlanId(id);
                 month.setCode(monthCode);
+                emergencyRehearsalMonthService.save(month);
             }
-            emergencyRehearsalMonthService.saveBatch(monthList);
         }
         return id;
     }
@@ -147,10 +130,12 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
         emergencyRehearsalMonthService.remove(wrapper);
         List<EmergencyRehearsalMonth> monthList = emergencyRehearsalYearAddDTO.getMonthList();
         if (CollectionUtil.isNotEmpty(monthList)) {
-            monthList.forEach(l -> {
-                l.setPlanId(rehearsalYear.getId());
-            });
-            emergencyRehearsalMonthService.saveBatch(monthList);
+            for (EmergencyRehearsalMonth month : monthList) {
+                String monthCode = emergencyRehearsalMonthService.getMonthCode();
+                month.setPlanId(id);
+                month.setCode(monthCode);
+                emergencyRehearsalMonthService.save(month);
+            }
         }
         return id;
     }
