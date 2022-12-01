@@ -39,4 +39,19 @@ public interface IEmergencyImplementationRecordService extends IService<Emergenc
      * @return
      */
     boolean submit(String id, Integer status);
+
+    /**
+     * 应急实施记录-通过id删除
+     *
+     * @param id
+     * @return
+     */
+    void delete(String id);
+
+    /**
+     * 应急实施记录-编辑
+     *
+     * @param emergencyRehearsalRegisterDTO
+     */
+    void edit(EmergencyRehearsalRegisterDTO emergencyRehearsalRegisterDTO);
 }

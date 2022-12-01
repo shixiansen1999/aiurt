@@ -77,90 +77,48 @@ public class EmergencyImplementationRecordController extends BaseController<Emer
     @PostMapping(value = "/submit")
     public Result<String> submit(@RequestParam @ApiParam(value = "记录ID", name = "id", required = true) String id,
                                  @RequestParam @ApiParam(value = "记录状态(1待提交、2已提交)", name = "status", required = true) Integer status) {
-        boolean submit = emergencyImplementationRecordService.submit(id, status);
+        emergencyImplementationRecordService.submit(id, status);
         return Result.OK("提交成功！");
     }
-//
-//    /**
-//     * 编辑
-//     *
-//     * @param emergencyImplementationRecord
-//     * @return
-//     */
-//    @AutoLog(value = "emergency_implementation_record-编辑")
-//    @ApiOperation(value = "emergency_implementation_record-编辑", notes = "emergency_implementation_record-编辑")
-//    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-//    public Result<String> edit(@RequestBody EmergencyImplementationRecord emergencyImplementationRecord) {
-//        emergencyImplementationRecordService.updateById(emergencyImplementationRecord);
-//        return Result.OK("编辑成功!");
-//    }
-//
-//    /**
-//     * 通过id删除
-//     *
-//     * @param id
-//     * @return
-//     */
-//    @AutoLog(value = "emergency_implementation_record-通过id删除")
-//    @ApiOperation(value = "emergency_implementation_record-通过id删除", notes = "emergency_implementation_record-通过id删除")
-//    @DeleteMapping(value = "/delete")
-//    public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
-//        emergencyImplementationRecordService.removeById(id);
-//        return Result.OK("删除成功!");
-//    }
-//
-//    /**
-//     * 批量删除
-//     *
-//     * @param ids
-//     * @return
-//     */
-//    @AutoLog(value = "emergency_implementation_record-批量删除")
-//    @ApiOperation(value = "emergency_implementation_record-批量删除", notes = "emergency_implementation_record-批量删除")
-//    @DeleteMapping(value = "/deleteBatch")
-//    public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
-//        this.emergencyImplementationRecordService.removeByIds(Arrays.asList(ids.split(",")));
-//        return Result.OK("批量删除成功!");
-//    }
-//
-//    /**
-//     * 通过id查询
-//     *
-//     * @param id
-//     * @return
-//     */
-//    //@AutoLog(value = "emergency_implementation_record-通过id查询")
-//    @ApiOperation(value = "emergency_implementation_record-通过id查询", notes = "emergency_implementation_record-通过id查询")
-//    @GetMapping(value = "/queryById")
-//    public Result<EmergencyImplementationRecord> queryById(@RequestParam(name = "id", required = true) String id) {
-//        EmergencyImplementationRecord emergencyImplementationRecord = emergencyImplementationRecordService.getById(id);
-//        if (emergencyImplementationRecord == null) {
-//            return Result.error("未找到对应数据");
-//        }
-//        return Result.OK(emergencyImplementationRecord);
-//    }
-//
-//    /**
-//     * 导出excel
-//     *
-//     * @param request
-//     * @param emergencyImplementationRecord
-//     */
-//    @RequestMapping(value = "/exportXls")
-//    public ModelAndView exportXls(HttpServletRequest request, EmergencyImplementationRecord emergencyImplementationRecord) {
-//        return super.exportXls(request, emergencyImplementationRecord, EmergencyImplementationRecord.class, "emergency_implementation_record");
-//    }
-//
-//    /**
-//     * 通过excel导入数据
-//     *
-//     * @param request
-//     * @param response
-//     * @return
-//     */
-//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-//        return super.importExcel(request, response, EmergencyImplementationRecord.class);
-//    }
+
+    /**
+     * 应急实施记录-编辑
+     */
+    @AutoLog(value = "应急实施记录-编辑")
+    @ApiOperation(value = "应急实施记录-编辑", notes = "应急实施记录-编辑")
+    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
+    public Result<String> edit(@RequestBody EmergencyRehearsalRegisterDTO emergencyRehearsalRegisterDTO) {
+        emergencyImplementationRecordService.edit(emergencyRehearsalRegisterDTO);
+        return Result.OK("编辑成功!");
+    }
+
+
+    /**
+     * 应急实施记录-通过id删除
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "应急实施记录-通过id删除")
+    @ApiOperation(value = "应急实施记录-通过id删除", notes = "应急实施记录-通过id删除")
+    @DeleteMapping(value = "/delete")
+    public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
+        emergencyImplementationRecordService.delete(id);
+        return Result.OK("删除成功!");
+    }
+
+    /**
+     * 应急实施记录-通过id查询
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "应急实施记录-通过id查询")
+    @ApiOperation(value = "应急实施记录-通过id查询", notes = "应急实施记录-通过id查询")
+    @DeleteMapping(value = "/queryById")
+    public Result<String> queryById(@RequestParam(name = "id", required = true) String id) {
+        // todo 根据id查询记录
+        return Result.OK("删除成功!");
+    }
 
 }
