@@ -58,6 +58,29 @@ public class EmergencyPlanDisposalProcedureController extends BaseController<Eme
 		return Result.OK(pageList);
 	}
 
+	 /**
+	  * 根据预案Id查询所有处置程序
+	  * @param emergencyPlanDisposalProcedure
+	  * @param id
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 @ApiOperation(value="根据预案Id查询所有处置程序", notes="根据预案Id查询所有处置程序")
+	 @GetMapping(value = "/queryPageListById")
+	 public Result<IPage<EmergencyPlanDisposalProcedure>> queryPageListById(EmergencyPlanDisposalProcedure emergencyPlanDisposalProcedure,
+																		String id,
+																		@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+																		@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+																		HttpServletRequest req) {
+		 QueryWrapper<EmergencyPlanDisposalProcedure> queryWrapper = QueryGenerator.initQueryWrapper(emergencyPlanDisposalProcedure, req.getParameterMap());
+		 queryWrapper.lambda().eq(EmergencyPlanDisposalProcedure::getEmergencyPlanId,id);
+		 Page<EmergencyPlanDisposalProcedure> page = new Page<EmergencyPlanDisposalProcedure>(pageNo, pageSize);
+		 IPage<EmergencyPlanDisposalProcedure> pageList = emergencyPlanDisposalProcedureService.page(page, queryWrapper);
+		 return Result.OK(pageList);
+	 }
+
 	/**
 	 *   添加
 	 *

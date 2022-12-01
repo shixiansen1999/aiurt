@@ -104,7 +104,16 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 		return Result.OK("编辑成功!");
 	}
 
-	/**
+	 @AutoLog(value = "新增应急预案变更")
+	 @ApiOperation(value="新增应急预案变更", notes="新增应急预案变更")
+	 @PostMapping(value = "/change")
+	 public Result<String> change(@RequestBody EmergencyPlanDTO emergencyPlanDto) {
+		 String id = emergencyPlanService.change(emergencyPlanDto);
+		 return Result.OK("保存成功!");
+	 }
+
+
+	 /**
 	 *   通过id删除
 	 *
 	 * @param id

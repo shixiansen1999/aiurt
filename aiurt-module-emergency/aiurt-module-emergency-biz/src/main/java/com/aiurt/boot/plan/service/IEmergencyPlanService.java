@@ -62,6 +62,11 @@ public interface IEmergencyPlanService extends IService<EmergencyPlan> {
      */
     void audit(String id);
 
+    /**
+     * 查看详情
+     * @param id
+     * @return
+     */
     List<EmergencyPlanDTO> getPlanInfo(String id);
 
 }

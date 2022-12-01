@@ -36,10 +36,6 @@ public class EmergencyPlanConstant {
      */
     public static final Integer VALID = 2;
 
-    /**
-     * 空
-     */
-    public static final Integer EMPTY = 3;
 
 
 

@@ -62,8 +62,8 @@ public class EmergencyPlan implements Serializable {
     @ApiModelProperty(value = "编制部门")
     private String orgCode;
 	/**应急预案状态（1未启用、2启用中）*/
-	@Excel(name = "启用状态（1已停用、2有效、3空）", width = 15)
-    @ApiModelProperty(value = "启用状态（1已停用、2有效、3空）")
+	@Excel(name = "启用状态（1已停用、2有效）", width = 15)
+    @ApiModelProperty(value = "启用状态（1已停用、2有效）")
     @Dict(dicCode = "emergency_status")
     private Integer status;
 	/**状态（1待提交、2待审核、3审核中、4已驳回、5已通过）*/
@@ -71,6 +71,11 @@ public class EmergencyPlan implements Serializable {
     @ApiModelProperty(value = "流程状态（1待提交、2待审核、3审核中、4已驳回、5已通过）")
     @Dict(dicCode = "emergency_plan_status")
     private Integer emergencyPlanStatus;
+
+    /**应急预案版本*/
+    @Excel(name = "上一个应急预案版本id", width = 15)
+    @ApiModelProperty(value = "上一个应急预案版本id")
+    private String oldPlanId;
 
 	/**评审日期*/
 	@Excel(name = "评审日期", width = 15, format = "yyyy-MM-dd")

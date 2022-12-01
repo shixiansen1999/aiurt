@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.boot.plan.entity.EmergencyPlanAtt;
+import com.aiurt.boot.plan.entity.EmergencyPlanRecordAtt;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.plan.service.IEmergencyPlanAttService;
@@ -57,6 +58,20 @@ public class EmergencyPlanAttController extends BaseController<EmergencyPlanAtt,
 		IPage<EmergencyPlanAtt> pageList = emergencyPlanAttService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
+
+	 @ApiOperation(value="根据预案id查询所有预案附件", notes="根据预案id查询所有预案附件")
+	 @GetMapping(value = "/queryPageListById")
+	 public Result<IPage<EmergencyPlanAtt>> queryPageListById(EmergencyPlanAtt emergencyPlanAtt,
+														  String id,
+														  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+														  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+														  HttpServletRequest req) {
+		 QueryWrapper<EmergencyPlanAtt> queryWrapper = QueryGenerator.initQueryWrapper(emergencyPlanAtt, req.getParameterMap());
+		 queryWrapper.lambda().eq(EmergencyPlanAtt::getEmergencyPlanId,id);
+		 Page<EmergencyPlanAtt> page = new Page<EmergencyPlanAtt>(pageNo, pageSize);
+		 IPage<EmergencyPlanAtt> pageList = emergencyPlanAttService.page(page, queryWrapper);
+		 return Result.OK(pageList);
+	 }
 
 	/**
 	 *   添加
