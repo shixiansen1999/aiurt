@@ -1,4 +1,4 @@
-package com.aiurt.boot.constant;
+package com.aiurt.boot.rehearsal.constant;
 
 /**
  * @author

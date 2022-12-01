@@ -1,5 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.rehearsal.mapper.EmergencyRehearsalMonthMapper">
-
+    <select id="queryPageList" resultType="com.aiurt.boot.rehearsal.vo.EmergencyRehearsalMonthVO">
+        select erm.*,
+               ery.`year`             as `year`,
+               ep.emergency_plan_name as schemeName
+        from emergency_rehearsal_month erm
+                 left join emergency_rehearsal_year ery on erm.plan_id = ery.id
+            and ery.del_flag = 0
+                 left join emergency_plan ep on erm.scheme_id = ep.id
+            and ep.del_flag = 0
+        where erm.del_flag = 0
+        <if test="condition.planId != null and condition.planId != ''">
+            and erm.plan_id = #{condition.planId}
+        </if>
+        <if test="condition.code != null">
+            and erm.`code` = #{condition.code}
+        </if>
+        <if test="condition.type != null">
+            and erm.type = #{condition.type}
+        </if>
+        <if test="condition.subject != null and condition.subject != ''">
+            and erm.`subject` like concat('%', #{condition.subject}, '%')
+        </if>
+        <if test="condition.schemeId != null">
+            and erm.scheme_id = #{condition.schemeId}
+        </if>
+        <if test="condition.modality != null">
+            and erm.modality = #{condition.modality}
+        </if>
+        <if test="condition.orgCode != null and condition.orgCode != ''">
+            and erm.org_code = #{condition.orgCode}
+        </if>
+        <if test="condition.rehearsalTime != null">
+            and date_format(erm.rehearsal_time, '%Y-%m-%d') = date_format(#{condition.rehearsalTime}, '%Y-%m-%d')
+        </if>
+        <if test="condition.step != null and condition.step != ''">
+            and erm.step like concat('%', #{condition.step}, '%')
+        </if>
+    </select>
 </mapper>

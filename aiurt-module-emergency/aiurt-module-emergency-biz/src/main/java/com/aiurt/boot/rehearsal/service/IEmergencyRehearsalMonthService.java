@@ -1,6 +1,9 @@
 package com.aiurt.boot.rehearsal.service;
 
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
+import com.aiurt.boot.rehearsal.vo.EmergencyRehearsalMonthVO;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -19,4 +22,13 @@ public interface IEmergencyRehearsalMonthService extends IService<EmergencyRehea
      * @return
      */
     String getMonthCode();
+
+    /**
+     * 应急月演练计划-分页列表查询
+     *
+     * @param page
+     * @param emergencyRehearsalMonth
+     * @return
+     */
+    IPage<EmergencyRehearsalMonthVO> queryPageList(Page<EmergencyRehearsalMonthVO> page, EmergencyRehearsalMonth emergencyRehearsalMonth);
 }

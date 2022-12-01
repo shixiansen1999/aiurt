@@ -1,4 +1,4 @@
-package com.aiurt.boot.constant;
+package com.aiurt.boot.rehearsal.constant;
 
 /**
  * @author
@@ -18,4 +18,16 @@ public interface EmergencyDictConstant {
      * 应急模块-演练形式字典编码
      */
     String MODALITY = "emergency_rehearsal_modality";
+    /**
+     * 应急模块-记录状态字典编码
+     */
+    String RECORD_STATUS = "emergency_record_status";
+    /**
+     * 应急模块-计划类型字典编码
+     */
+    String WITHIN = "emergency_year_within";
+    /**
+     * 应急模块-问题状态字典编码
+     */
+    String QUESTION = "emergency_question_status";
 }

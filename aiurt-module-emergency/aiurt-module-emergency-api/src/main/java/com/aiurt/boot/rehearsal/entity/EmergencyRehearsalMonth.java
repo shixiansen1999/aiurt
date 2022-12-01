@@ -1,5 +1,6 @@
 package com.aiurt.boot.rehearsal.entity;
 
+import com.aiurt.boot.rehearsal.constant.EmergencyDictConstant;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -44,15 +45,15 @@ public class EmergencyRehearsalMonth extends DictEntity implements Serializable 
     @ApiModelProperty(value = "月演练计划编号")
     @TableField(value = "`code`")
     private java.lang.String code;
-	/**演练类型(1单项应急预案、2综合应急预案、3现场处置方案)*/
-	@Excel(name = "演练类型(1单项应急预案、2综合应急预案、3现场处置方案)", width = 15)
-    @ApiModelProperty(value = "演练类型(1单项应急预案、2综合应急预案、3现场处置方案)")
-    @Dict(dicCode = "emergency_rehearsal_type")
+	/**演练类型(1专项应急预案、2综合应急预案、3现场处置方案)*/
+	@Excel(name = "演练类型(1专项应急预案、2综合应急预案、3现场处置方案)", width = 15)
+    @ApiModelProperty(value = "演练类型(1专项应急预案、2综合应急预案、3现场处置方案)")
+    @Dict(dicCode = EmergencyDictConstant.TYPE)
     private java.lang.Integer type;
 	/**计划类型(0年计划外、1年计划内)*/
     @Excel(name = "计划类型(0年计划外、1年计划内)", width = 15)
     @ApiModelProperty(value = "计划类型(0年计划外、1年计划内)")
-    @Dict(dicCode = "emergency_year_within")
+    @Dict(dicCode = EmergencyDictConstant.WITHIN)
     private java.lang.Integer yearWithin;
 	/**演练科目*/
 	@Excel(name = "演练科目", width = 15)
@@ -69,7 +70,7 @@ public class EmergencyRehearsalMonth extends DictEntity implements Serializable 
     private java.lang.String schemeName;
 	/**演练形式(1实战演练、2桌面推演)*/
 	@Excel(name = "演练形式(1实战演练、2桌面推演)", width = 15)
-    @Dict(dicCode = "emergency_rehearsal_modality")
+    @Dict(dicCode = EmergencyDictConstant.MODALITY)
     @ApiModelProperty(value = "演练形式(1实战演练、2桌面推演)")
     private java.lang.Integer modality;
 	/**组织部门编码*/

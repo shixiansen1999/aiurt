@@ -3,7 +3,7 @@ package com.aiurt.boot.rehearsal.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.constant.EmergencyConstant;
+import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearAddDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;

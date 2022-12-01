@@ -1,22 +1,18 @@
 package com.aiurt.boot.rehearsal.controller;
 
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.plan.service.IEmergencyPlanService;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalMonthService;
+import com.aiurt.boot.rehearsal.vo.EmergencyRehearsalMonthVO;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,16 +47,12 @@ public class EmergencyRehearsalMonthController extends BaseController<EmergencyR
     @AutoLog(value = "应急月演练计划-分页列表查询")
     @ApiOperation(value = "应急月演练计划-分页列表查询", notes = "应急月演练计划-分页列表查询")
     @GetMapping(value = "/list")
-    public Result<IPage<EmergencyRehearsalMonth>> queryPageList(EmergencyRehearsalMonth emergencyRehearsalMonth,
-                                                                @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                                @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                                HttpServletRequest req) {
-        if (ObjectUtil.isEmpty(emergencyRehearsalMonth) || StrUtil.isEmpty(emergencyRehearsalMonth.getPlanId())) {
-            throw new AiurtBootException("年演练计划ID不能为空！");
-        }
-        QueryWrapper<EmergencyRehearsalMonth> queryWrapper = QueryGenerator.initQueryWrapper(emergencyRehearsalMonth, req.getParameterMap());
-        Page<EmergencyRehearsalMonth> page = new Page<EmergencyRehearsalMonth>(pageNo, pageSize);
-        IPage<EmergencyRehearsalMonth> pageList = emergencyRehearsalMonthService.page(page, queryWrapper);
+    public Result<IPage<EmergencyRehearsalMonthVO>> queryPageList(EmergencyRehearsalMonth emergencyRehearsalMonth,
+                                                                  @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                  HttpServletRequest req) {
+        Page<EmergencyRehearsalMonthVO> page = new Page<EmergencyRehearsalMonthVO>(pageNo, pageSize);
+        IPage<EmergencyRehearsalMonthVO> pageList = emergencyRehearsalMonthService.queryPageList(page, emergencyRehearsalMonth);
         return Result.OK(pageList);
     }
 

@@ -39,9 +39,9 @@ public class EmergencyRecordDTO {
     @ApiModelProperty(value = "参与部门")
     private String joinOrgCode;
     /**
-     * 预案类型(1单项应急预案、2综合应急预案、3现场处置方案)
+     * 预案类型(1专项应急预案、2综合应急预案、3现场处置方案)
      */
-    @ApiModelProperty(value = "预案类型(1单项应急预案、2综合应急预案、3现场处置方案)")
+    @ApiModelProperty(value = "预案类型(1专项应急预案、2综合应急预案、3现场处置方案)")
     private Integer type;
     /**
      * 组织部门

@@ -2,6 +2,8 @@ package com.aiurt.boot.rehearsal.entity;
 
 import java.io.Serializable;
 
+import com.aiurt.boot.rehearsal.constant.EmergencyDictConstant;
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -63,6 +65,7 @@ public class EmergencyRecordQuestion implements Serializable {
 	/**问题状态(1待处理、2处理中、3已处理)*/
 	@Excel(name = "问题状态(1待处理、2处理中、3已处理)", width = 15)
     @ApiModelProperty(value = "问题状态(1待处理、2处理中、3已处理)")
+    @Dict(dicCode = EmergencyDictConstant.QUESTION)
     private java.lang.Integer status;
 	/**处理方式*/
 	@Excel(name = "处理方式", width = 15)

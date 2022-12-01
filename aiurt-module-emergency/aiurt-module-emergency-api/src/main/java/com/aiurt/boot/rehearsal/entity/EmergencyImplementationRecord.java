@@ -2,6 +2,7 @@ package com.aiurt.boot.rehearsal.entity;
 
 import java.io.Serializable;
 
+import com.aiurt.boot.rehearsal.constant.EmergencyDictConstant;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -93,7 +94,7 @@ public class EmergencyImplementationRecord extends DictEntity implements Seriali
 	/**记录状态(1待提交、2已提交)*/
 	@Excel(name = "记录状态(1待提交、2已提交)", width = 15)
     @ApiModelProperty(value = "记录状态(1待提交、2已提交)")
-    @Dict(dicCode = "emergency_record_status")
+    @Dict(dicCode = EmergencyDictConstant.RECORD_STATUS)
     private java.lang.Integer status;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)

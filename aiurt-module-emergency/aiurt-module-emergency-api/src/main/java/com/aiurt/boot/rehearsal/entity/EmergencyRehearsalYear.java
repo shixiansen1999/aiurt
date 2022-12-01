@@ -1,5 +1,6 @@
 package com.aiurt.boot.rehearsal.entity;
 
+import com.aiurt.boot.rehearsal.constant.EmergencyDictConstant;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -71,7 +72,7 @@ public class EmergencyRehearsalYear extends DictEntity implements Serializable {
 	@Excel(name = "审核状态（1待提交、2待审核、3审核中、4已通过）", width = 15)
     @ApiModelProperty(value = "审核状态（1待提交、2待审核、3审核中、4已通过）")
     @TableField(value = "`status`")
-    @Dict(dicCode = "emergency_yearplan_status")
+    @Dict(dicCode = EmergencyDictConstant.YEARPLAN_STATUS)
     private java.lang.Integer status;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
