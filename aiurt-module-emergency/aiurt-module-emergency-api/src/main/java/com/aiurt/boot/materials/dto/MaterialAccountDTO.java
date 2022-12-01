@@ -3,6 +3,7 @@ package com.aiurt.boot.materials.dto;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.jeecgframework.poi.excel.annotation.Excel;
 
 @Data
 public class MaterialAccountDTO {
@@ -62,21 +63,45 @@ public class MaterialAccountDTO {
     @ApiModelProperty(value = "负责人ID")
     private java.lang.String userId;
 
+    /**负责人名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "负责人名称")
+    private java.lang.String userName;
+
     /**联系电话*/
     @TableField(exist = false)
     @ApiModelProperty(value = "联系电话")
     private java.lang.String phone;
 
-    /**存放位置编码*/
+    /**线路编码*/
     @TableField(exist = false)
-    @ApiModelProperty(value = "存放位置编码")
-    private java.lang.String location;
+    @ApiModelProperty(value = "线路编码")
+    private java.lang.String lineCode;
 
+    /**站点编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "站点编码")
+    private java.lang.String stationCode;
+
+    /**位置编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "位置编码")
+    private java.lang.String positionCode;
 
     /**线路名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "线路名称")
     private java.lang.String lineName;
+
+    /**站点名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "站点名称")
+    private java.lang.String stationName;
+
+    /**位置名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "位置名称")
+    private java.lang.String positionName;
 
 
 }

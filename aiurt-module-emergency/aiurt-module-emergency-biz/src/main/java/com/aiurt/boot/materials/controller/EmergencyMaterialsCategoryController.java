@@ -5,8 +5,10 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsCategoryService;
@@ -159,6 +161,20 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 		}
 		return Result.OK(emergencyMaterialsCategory);
 	}
+
+
+	 @AutoLog(value = "物资分类-通过code查询")
+	 @ApiOperation(value="物资分类-通过code查询", notes="物资分类-通过code查询")
+	 @GetMapping(value = "/queryByCode")
+	 public Result<?> getCode(@RequestParam(name="code",required=true) String code){
+		LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,code);
+		EmergencyMaterialsCategory one = emergencyMaterialsCategoryService.getOne(queryWrapper, false);
+		if (ObjectUtil.isNotEmpty(one)){
+			return Result.OK("分类编码已存在！");
+		}
+		return Result.OK("编码校验成功，请继续！");
+	 }
 
     /**
     * 导出excel

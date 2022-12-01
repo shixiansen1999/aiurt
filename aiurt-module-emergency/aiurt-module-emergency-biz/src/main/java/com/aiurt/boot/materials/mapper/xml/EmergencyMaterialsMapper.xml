@@ -4,7 +4,7 @@
     <sql id="list">
        t1.id as id ,t2.id as categoryId,t1.materials_code as materialsCode,t1.materials_name as materialsName,t2.category_code as categoryCode,
        t2.category_name as categoryName,t1.specification as specification,t1.number as number,t1.primary_org as primaryOrg,t1.user_id as userId,
-       t1.phone as phone,t1.location as location
+       t1.phone as phone,t1.line_code as lineCode,t1.station_code as stationCode,t1.position_code as positionCode
     </sql>
     <select id="getMaterialAccountList" resultType="com.aiurt.boot.materials.dto.MaterialAccountDTO">
        SELECT

@@ -3,6 +3,7 @@ package com.aiurt.boot.materials.entity;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -52,6 +53,10 @@ public class EmergencyMaterials implements Serializable {
 	@Excel(name = "物资分类编码", width = 15)
     @ApiModelProperty(value = "物资分类编码")
     private java.lang.String categoryCode;
+    /**物资分类名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "物资分类名称")
+    private java.lang.String categoryName;
 	/**是否防汛物资(0否、1是)*/
 	@Excel(name = "是否防汛物资(0否、1是)", width = 15)
     @ApiModelProperty(value = "是否防汛物资(0否、1是)")

@@ -4,10 +4,14 @@ import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.dto.MaterialAccountDTO;
+import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
+import com.aiurt.boot.materials.service.IEmergencyMaterialsCategoryService;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -37,6 +41,9 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class EmergencyMaterialsController extends BaseController<EmergencyMaterials, IEmergencyMaterialsService> {
 	@Autowired
 	private IEmergencyMaterialsService emergencyMaterialsService;
+
+	 @Autowired
+	 private IEmergencyMaterialsCategoryService emergencyMaterialsCategoryService;
 
 	/**
 	 * 分页列表查询
@@ -121,7 +128,14 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	@ApiOperation(value="物资信息-通过id删除", notes="物资信息-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		emergencyMaterialsService.removeById(id);
+		EmergencyMaterials emergencyMaterials = new EmergencyMaterials();
+		if (StrUtil.isNotBlank(id)){
+			emergencyMaterials.setId(id);
+			emergencyMaterials.setDelFlag(1);
+		}else {
+			return Result.OK("删除失败，id为空或不存在!");
+		}
+		emergencyMaterialsService.updateById(emergencyMaterials);
 		return Result.OK("删除成功!");
 	}
 
@@ -145,11 +159,18 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_materials-通过id查询")
-	@ApiOperation(value="物资信息-通过id查询", notes="物资信息-通过id查询")
+	@AutoLog(value = "物资信息-应急物资台账通过id查询")
+	@ApiOperation(value="物资信息-应急物资台账通过id查询", notes="物资信息-应急物资台账通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<EmergencyMaterials> queryById(@RequestParam(name="id",required=true) String id) {
 		EmergencyMaterials emergencyMaterials = emergencyMaterialsService.getById(id);
+		if (StrUtil.isNotBlank(emergencyMaterials.getCategoryCode())){
+			//根据分类编码查询分类名称
+			LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
+			queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,emergencyMaterials.getCategoryCode());
+			EmergencyMaterialsCategory one = emergencyMaterialsCategoryService.getOne(queryWrapper, true);
+			emergencyMaterials.setCategoryName(one.getCategoryName());
+		}
 		if(emergencyMaterials==null) {
 			return Result.error("未找到对应数据");
 		}
