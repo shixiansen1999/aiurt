@@ -189,7 +189,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param departList
      * @return
      */
-    IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, @Param("condition") PatrolCondition condition, @Param("regexp") String regexp, @Param("departList") List<CsUserDepartModel> departList);
+    IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, @Param("condition") PatrolCondition condition, @Param("regexp") String regexp, @Param("departList") List<PatrolTaskOrganization> departList,@Param("standard")List<PatrolTaskStandard> standard);
 
     /**
      * 获取首页巡视列表下的任务列表

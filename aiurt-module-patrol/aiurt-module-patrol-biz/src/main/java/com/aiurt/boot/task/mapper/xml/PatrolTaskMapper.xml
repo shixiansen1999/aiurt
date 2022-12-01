@@ -357,13 +357,16 @@
             AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d')
         </if>
         <if test="departList != null and departList.size>0">
-            AND pt.`code` in (
-            SELECT task_code FROM patrol_task_organization WHERE del_flag = 0
-            AND org_code IN
+            AND pt.`code` in
             <foreach collection="departList" item="item" open="(" separator="," close=")">
-                #{item.orgCode}
+                #{item.taskCode}
             </foreach>
-            )
+        </if>
+           <if test="standard != null and standard.size() != 0">
+            AND pt.id in
+            <foreach collection="standard" item="item" open="(" separator="," close=")">
+                #{item.taskId}
+            </foreach>
         </if>
         <if test="condition.omitStatus != null">
             AND pt.omit_status = #{condition.omitStatus}

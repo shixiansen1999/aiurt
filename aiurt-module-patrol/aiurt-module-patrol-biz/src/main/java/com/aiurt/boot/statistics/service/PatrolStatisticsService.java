@@ -172,14 +172,17 @@ public class PatrolStatisticsService {
 
         IPage<PatrolIndexTask> pageList = null;
         if (ObjectUtil.isNotEmpty(patrolCondition.getIsAllData()) && ALLDATA.equals(patrolCondition.getIsAllData())) {
-            pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp, null);
+            pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp, null,null);
         } else {
             LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             if (ObjectUtil.isEmpty(loginUser)) {
                 throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
             }
-            List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
-            pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp, departList);
+            //List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
+            //替换，用注解的方法来获取用户管理的权限、管理的专业
+            List<PatrolTaskStandard> standards = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0));
+            List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+            pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp, departList,standards);
         }
 
         // 巡视任务集
