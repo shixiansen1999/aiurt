@@ -51,6 +51,8 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
                     .ifPresent(status -> wrapper.lambda().eq(EmergencyRehearsalYear::getStatus, status));
             Optional.ofNullable(emergencyRehearsalYearDTO.getOrgCode())
                     .ifPresent(orgCode -> wrapper.lambda().eq(EmergencyRehearsalYear::getOrgCode, orgCode));
+            Optional.ofNullable(emergencyRehearsalYearDTO.getYear())
+                    .ifPresent(year -> wrapper.lambda().like(EmergencyRehearsalYear::getYear, year));
         }
         Page<EmergencyRehearsalYear> pageList = this.page(page, wrapper);
         return pageList;

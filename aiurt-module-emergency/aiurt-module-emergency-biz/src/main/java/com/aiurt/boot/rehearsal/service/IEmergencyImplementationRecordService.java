@@ -30,4 +30,13 @@ public interface IEmergencyImplementationRecordService extends IService<Emergenc
      * @return
      */
     IPage<EmergencyImplementationRecordVO> queryPageList(Page<EmergencyImplementationRecordVO> page, EmergencyRecordDTO emergencyRecordDTO);
+
+    /**
+     * 应急实施记录-提交(将记录更新为已提交)
+     *
+     * @param id
+     * @param status
+     * @return
+     */
+    boolean submit(String id, Integer status);
 }

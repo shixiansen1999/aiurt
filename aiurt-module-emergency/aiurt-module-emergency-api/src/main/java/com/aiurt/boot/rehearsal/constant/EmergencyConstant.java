@@ -30,4 +30,12 @@ public interface EmergencyConstant {
      * 应急模块-月计划类型年计划内状态
      */
     Integer WITHIN_1 = 1;
+    /**
+     * 应急模块-记录待提交状态
+     */
+    Integer RECORD_STATUS_1 = 1;
+    /**
+     * 应急模块-记录已提交状态
+     */
+    Integer RECORD_STATUS_2 = 2;
 }
