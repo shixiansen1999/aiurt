@@ -424,35 +424,34 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("检测为未登录状态，请登录系统后操作！");
         }
-
         // 获取当前登录人的部门权限
         List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
         List<String> orgCodes = departList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-        if (CollectionUtil.isEmpty(orgCodes)) {
-            return new ArrayList<>();
-        }
-
         // 当前登录人的部门权限和任务的组织机构交集
         List<String> intersectOrg = CollectionUtil.intersection(orgCodes, orgCode.getOrg()).stream().collect(Collectors.toList());
-        if (CollectionUtil.isEmpty(intersectOrg)) {
-            return new ArrayList<>();
-        }
-
         // 获取今日当班的人员
         List<SysUserTeamDTO> todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
         List<String> todayUserId = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
-        if (CollectionUtil.isEmpty(todayUserId)) {
-            return new ArrayList<>();
-        }
         // 根据当班人员过滤待指派人员信息
-        arrayList.stream().forEach(l -> {
+        if(ObjectUtil.isNotEmpty(orgCode.getIdentity()))
+        {
+            if (CollectionUtil.isEmpty(orgCodes)) {
+                return new ArrayList<>();
+            }
+            if (CollectionUtil.isEmpty(intersectOrg)) {
+                return new ArrayList<>();
+            }
+            if (CollectionUtil.isEmpty(todayUserId)) {
+                return new ArrayList<>();
+            }
+            arrayList.stream().forEach(l -> {
             List<PatrolTaskUserContentDTO> userList = Optional.ofNullable(l.getUserList()).orElseGet(Collections::emptyList);
             List<PatrolTaskUserContentDTO> newUserList = userList.stream()
                     .filter(u -> todayUserId.contains(u.getId()))
                     .collect(Collectors.toList());
             l.setUserList(newUserList);
         });
-
+        }
         PatrolTask patrolTask = patrolTaskMapper.selectById(orgCode.getTaskId());
         if (PatrolConstant.TASK_RETURNED.equals(patrolTask.getStatus())) {
             return arrayList;

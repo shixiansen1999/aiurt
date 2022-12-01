@@ -15,7 +15,7 @@ import java.util.List;
 @Data
 public class PatrolOrgDTO {
     @Excel(name = "身份标识", width = 15)
-    @ApiModelProperty(value = "身份标识，传1表示待指派")
+    @ApiModelProperty(value = "身份标识，传1表示待指派,同行人则不传")
     private Integer identity;
     @Excel(name = "任务Id", width = 15)
     @ApiModelProperty(value = "任务Id")

@@ -447,9 +447,9 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         {
             patrolTaskUserDto = Optional.ofNullable(patrolTaskUserDto).orElseGet(Collections::emptyList).stream()
                     .filter(l -> ObjectUtil.isNotEmpty(l.getUserList())).collect(Collectors.toList());
-        }
-        if(ObjectUtil.isEmpty(patrolTaskUserDto)){
-            throw new AiurtBootException("您没有指派当前任务人员的权限或当前暂无排班人员!");
+            if(ObjectUtil.isEmpty(patrolTaskUserDto)){
+                throw new AiurtBootException("您没有指派当前任务人员的权限或当前暂无排班人员!");
+            }
         }
         return Result.OK(patrolTaskUserDto);
     }
