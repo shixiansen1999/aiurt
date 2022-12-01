@@ -1,6 +1,6 @@
 package com.aiurt.boot.team.entity;
 
-import com.aiurt.boot.team.dto.EmergencyTeamDTO;
+import com.aiurt.boot.team.dto.EmergencyTeamTrainingDTO;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -47,6 +47,7 @@ public class EmergencyTeam implements Serializable {
 	/**所属部门*/
 	@Excel(name = "所属部门", width = 15)
     @ApiModelProperty(value = "所属部门")
+    @NotBlank(message = "所属部门不能为空")
     private String orgCode;
     @ApiModelProperty(value = "所属部门名称")
     @TableField(exist = false)
@@ -54,6 +55,7 @@ public class EmergencyTeam implements Serializable {
 	/**应急队伍名称*/
 	@Excel(name = "应急队伍名称", width = 15)
     @ApiModelProperty(value = "应急队伍名称")
+    @NotBlank(message = "应急队伍名称不能为空")
     private String emergencyTeamname;
 	/**应急队伍编号*/
 	@Excel(name = "应急队伍编号", width = 15)
@@ -74,6 +76,7 @@ public class EmergencyTeam implements Serializable {
 	/**线路编码*/
 	@Excel(name = "线路编码", width = 15)
     @ApiModelProperty(value = "线路编码")
+    @NotBlank(message = "线路不能为空")
     private String lineCode;
     @ApiModelProperty(value = "线路名称")
     @TableField(exist = false)
@@ -81,6 +84,7 @@ public class EmergencyTeam implements Serializable {
 	/**站点编码*/
 	@Excel(name = "站点编码", width = 15)
     @ApiModelProperty(value = "站点编码")
+    @NotBlank(message = "站点不能为空")
     private String stationCode;
     @ApiModelProperty(value = "站点名称")
     @TableField(exist = false)
@@ -88,6 +92,7 @@ public class EmergencyTeam implements Serializable {
 	/**驻扎地编码*/
 	@Excel(name = "驻扎地编码", width = 15)
     @ApiModelProperty(value = "驻扎地编码")
+    @NotBlank(message = "驻扎地不能为空")
     private String positionCode;
     @ApiModelProperty(value = "驻扎地名称")
     @TableField(exist = false)
@@ -102,6 +107,7 @@ public class EmergencyTeam implements Serializable {
 	/**负责人id*/
 	@Excel(name = "负责人id", width = 15)
     @ApiModelProperty(value = "负责人id")
+    @NotBlank(message = "负责人不能为空")
     private String managerId;
     @ApiModelProperty(value = "负责人姓名")
     @TableField(exist = false)
@@ -109,6 +115,7 @@ public class EmergencyTeam implements Serializable {
 	/**联系电话*/
 	@Excel(name = "联系电话", width = 15)
     @ApiModelProperty(value = "联系电话")
+    @NotBlank(message = "联系电话不能为空")
     private String managerPhone;
 	/**删除状态(0-正常,1-已删除)*/
 	@Excel(name = "删除状态(0-正常,1-已删除)", width = 15)
@@ -138,5 +145,5 @@ public class EmergencyTeam implements Serializable {
 
     @ApiModelProperty(value = "训练计划")
     @TableField(exist = false)
-    private List<EmergencyTeamDTO> emergencyTeamDTOList;
+    private List<EmergencyTeamTrainingDTO> emergencyTeamDTOList;
 }

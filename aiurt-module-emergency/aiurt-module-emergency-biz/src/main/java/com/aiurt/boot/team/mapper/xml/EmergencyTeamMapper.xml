@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.team.mapper.EmergencyTeamMapper">
 
-<select id="getTrainingRecord" resultType="com.aiurt.boot.team.dto.EmergencyTeamDTO">
+<select id="getTrainingRecord" resultType="com.aiurt.boot.team.dto.EmergencyTeamTrainingDTO">
     select
         etp.training_program_name,
         etr.training_time,

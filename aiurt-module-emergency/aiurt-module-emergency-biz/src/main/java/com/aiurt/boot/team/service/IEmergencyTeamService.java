@@ -1,6 +1,8 @@
 package com.aiurt.boot.team.service;
 
+import com.aiurt.boot.team.dto.EmergencyTeamDTO;
 import com.aiurt.boot.team.entity.EmergencyTeam;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
@@ -50,4 +52,6 @@ public interface IEmergencyTeamService extends IService<EmergencyTeam> {
      * @return
      */
     Result<EmergencyTeam> getTrainingRecordById(String id);
+
+    IPage<EmergencyTeam> queryPageList(EmergencyTeamDTO emergencyTeamDTO, Integer pageNo, Integer pageSize);
 }

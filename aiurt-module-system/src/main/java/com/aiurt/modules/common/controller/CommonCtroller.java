@@ -2,6 +2,7 @@ package com.aiurt.modules.common.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.dto.DeviceDTO;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.common.service.ICommonService;
@@ -16,6 +17,9 @@ import com.aiurt.modules.position.service.ICsStationService;
 import com.aiurt.modules.system.service.ICsUserMajorService;
 import com.aiurt.modules.system.service.ICsUserStaionService;
 import com.aiurt.modules.system.service.ICsUserSubsystemService;
+import com.aiurt.modules.system.service.impl.CsUserDepartServiceImpl;
+import com.aiurt.modules.workarea.entity.WorkArea;
+import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -84,6 +88,14 @@ public class CommonCtroller {
     @Autowired
     private ICsUserStaionService userStationService;
 
+    @Autowired
+    private CsUserDepartServiceImpl csUserDepartService;
+
+    @Autowired
+    private ICsStationPositionService csStationPositionService;
+
+    @Autowired
+    private IWorkAreaService workAreaService;
 
     public Result<List<Device>> query() {
         return Result.OK();
@@ -397,5 +409,50 @@ public class CommonCtroller {
         return Result.OK(tables);
     }
 
+    /**
+     * 位置列表查询
+     * @param
+     * @return
+     */
+    @ApiOperation(value="位置列表查询", notes="站所列表查询")
+    @GetMapping(value = "/stationPosition/selectList")
+    public Result<?> selectList() {
+        LambdaQueryWrapper<CsStationPosition> queryWrapper = new LambdaQueryWrapper<>();
+        List<CsStationPosition> list = csStationPositionService.list(queryWrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0));
+        return Result.OK(list);
+    }
 
+    /**
+     * 根据站点位置列表查询
+     * @param
+     * @return
+     */
+    @ApiOperation(value="位置列表查询", notes="站所列表查询")
+    @GetMapping(value = "/workArea/selectWorkAreaList")
+    public Result<?> selectWorkAreaList(@RequestParam(value = "stationCode") String stationCode) {
+        LambdaQueryWrapper<WorkArea> queryWrapper = new LambdaQueryWrapper<>();
+        List<WorkArea> list = workAreaService.list(queryWrapper.eq(WorkArea::getDelFlag, CommonConstant.DEL_FLAG_0).eq(WorkArea::getPosition,stationCode));
+        return Result.OK(list);
+    }
+
+
+
+/*    @GetMapping("/system/queryDepartTree")
+    @ApiOperation("查询用户拥有部门权限树")
+    public Result<List<SelectTable>> queryDepartTree() {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departByUserId = csUserDepartService.getDepartByUserId(loginUser.getId());
+        List<SelectTable> selectTables = new ArrayList<>();
+        if (CollUtil.isNotEmpty(departByUserId)) {
+            for (CsUserDepartModel csUserDepartModel : departByUserId) {
+                if () {
+                }
+                SelectTable selectTable = new SelectTable();
+
+            }
+        }
+
+
+        return null;
+    }*/
 }

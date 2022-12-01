@@ -1,8 +1,10 @@
 package com.aiurt.boot.team.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.team.dto.EmergencyTeamDTO;
+import com.aiurt.boot.team.dto.EmergencyTeamTrainingDTO;
 import com.aiurt.boot.team.entity.EmergencyCrew;
 import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.mapper.EmergencyTeamMapper;
@@ -10,7 +12,10 @@ import com.aiurt.boot.team.service.IEmergencyCrewService;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -18,7 +23,9 @@ import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: emergency_team
@@ -28,6 +35,10 @@ import java.util.List;
  */
 @Service
 public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, EmergencyTeam> implements IEmergencyTeamService {
+    /**
+     * 系统管理员角色编码
+     */
+    private static final String ADMIN = "admin";
 
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
@@ -37,6 +48,50 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
 
     @Autowired
     private EmergencyTeamMapper emergencyTeamMapper;
+
+    @Override
+    public IPage<EmergencyTeam> queryPageList(EmergencyTeamDTO emergencyTeamDTO, Integer pageNo, Integer pageSize) {
+        EmergencyTeam team = new EmergencyTeam();
+        BeanUtil.copyProperties(emergencyTeamDTO, team);
+        // 系统管理员不做权限过滤
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String roleCodes = user.getRoleCodes();
+        List<SysDepartModel> models = new ArrayList<>();
+        if (StrUtil.isNotBlank(roleCodes)) {
+            if (!roleCodes.contains(ADMIN)) {
+                //获取用户的所属部门及所属部门子部门
+                models = iSysBaseAPI.getUserDepartCodes();
+                if (CollUtil.isEmpty(models)) {
+                    return new Page<>();
+                }
+            }
+        }else {
+            return new Page<>();
+        }
+        LambdaQueryWrapper<EmergencyTeam> queryWrapper = new LambdaQueryWrapper<>();
+        if (StrUtil.isNotBlank(team.getMajorCode())) {
+            queryWrapper.eq(EmergencyTeam::getMajorCode, team.getMajorCode());
+        }
+        if (StrUtil.isNotBlank(team.getEmergencyTeamname())) {
+            queryWrapper.like(EmergencyTeam::getEmergencyTeamname, team.getEmergencyTeamname());
+        }
+        List<String> orgCodes = models.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        if (CollUtil.isEmpty(orgCodes)) {
+            return new Page<>();
+        }
+        queryWrapper.in(EmergencyTeam::getOrgCode, orgCodes);
+        queryWrapper.eq(EmergencyTeam::getDelFlag, 0);
+        Page<EmergencyTeam> page = new Page<EmergencyTeam>(pageNo, pageSize);
+        IPage<EmergencyTeam> pageList = this.page(page, queryWrapper);
+        List<EmergencyTeam> records = pageList.getRecords();
+        if (CollUtil.isNotEmpty(records)) {
+            for (EmergencyTeam record : records) {
+                this.translate(record);
+            }
+        }
+        return pageList;
+    }
+
 
     @Override
     public void translate(EmergencyTeam emergencyTeam) {
@@ -146,13 +201,14 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         if(emergencyTeam==null) {
             return Result.error("未找到对应数据");
         }
-        List<EmergencyTeamDTO> trainingRecord = emergencyTeamMapper.getTrainingRecord(id);
+        List<EmergencyTeamTrainingDTO> trainingRecord = emergencyTeamMapper.getTrainingRecord(id);
         translate(emergencyTeam);
         if (CollUtil.isNotEmpty(trainingRecord)) {
-            for (EmergencyTeamDTO emergencyTeamDTO : trainingRecord) {
+            for (EmergencyTeamTrainingDTO emergencyTeamDTO : trainingRecord) {
                 emergencyTeamDTO.setManagerName(emergencyTeam.getManagerName());
             }
         }
         return Result.OK();
     }
+
 }

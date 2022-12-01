@@ -1,33 +1,23 @@
 package com.aiurt.boot.team.controller;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.team.dto.EmergencyTeamDTO;
 import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @Description: emergency_team
@@ -40,10 +30,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/emergency/emergencyTeam")
 @Slf4j
 public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmergencyTeamService> {
-	/**
-	 * 系统管理员角色编码
-	 */
-	private static final String ADMIN = "admin";
+
 
 	@Autowired
 	private IEmergencyTeamService emergencyTeamService;
@@ -53,7 +40,7 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	/**
 	 * 分页列表查询
 	 *
-	 * @param emergencyTeam
+	 * @param emergencyTeamDTO
 	 * @param pageNo
 	 * @param pageSize
 	 * @param req
@@ -61,37 +48,11 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	 */
 	@ApiOperation(value="应急队伍台账-分页列表查询", notes="emergency_team-分页列表查询")
 	@GetMapping(value = "/list")
-	public Result<IPage<EmergencyTeam>> queryPageList(EmergencyTeam emergencyTeam,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<EmergencyTeam> queryWrapper = QueryGenerator.initQueryWrapper(emergencyTeam, req.getParameterMap());
-		// 系统管理员不做权限过滤
-		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		String roleCodes = user.getRoleCodes();
-		List<SysDepartModel> models = new ArrayList<>();
-		if (StrUtil.isNotBlank(roleCodes)) {
-			if (!roleCodes.contains(ADMIN)) {
-				//获取用户的所属部门及所属部门子部门
-				models = iSysBaseAPI.getUserDepartCodes();
-				if (CollUtil.isEmpty(models)) {
-					return Result.OK(new Page<>());
-				}
-			}
-		}else {
-			return Result.OK(new Page<>());
-		}
-		List<String> orgCodes = models.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-		queryWrapper.lambda().in(EmergencyTeam::getOrgCode, orgCodes);
-		queryWrapper.lambda().eq(EmergencyTeam::getDelFlag, 0);
-		Page<EmergencyTeam> page = new Page<EmergencyTeam>(pageNo, pageSize);
-		IPage<EmergencyTeam> pageList = emergencyTeamService.page(page, queryWrapper);
-		List<EmergencyTeam> records = pageList.getRecords();
-		if (CollUtil.isNotEmpty(records)) {
-			for (EmergencyTeam record : records) {
-				emergencyTeamService.translate(record);
-			}
-		}
+	public Result<IPage<EmergencyTeam>> queryPageList(EmergencyTeamDTO emergencyTeamDTO,
+													  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+													  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+													  HttpServletRequest req) {
+		IPage<EmergencyTeam> pageList = emergencyTeamService.queryPageList(emergencyTeamDTO,pageNo,pageSize);
 		return Result.OK(pageList);
 	}
 
