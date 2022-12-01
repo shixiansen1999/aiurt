@@ -28,7 +28,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-11-29
  * @Version: V1.0
  */
-@Api(tags="emergency_plan_record_att")
+@Api(tags="应急物资附件")
 @RestController
 @RequestMapping("/emergency/emergencyPlanRecordAtt")
 @Slf4j

@@ -5,6 +5,8 @@ import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import java.util.List;
+
 /**
  * @Description: emergency_plan
  * @Author: aiurt
@@ -25,6 +27,13 @@ public interface IEmergencyPlanService extends IService<EmergencyPlan> {
      * @return
      */
     String edit(EmergencyPlanDTO emergencyPlanDto);
+
+    /**
+     * 变更
+     * @param emergencyPlanDto
+     * @return
+     */
+    String change(EmergencyPlanDTO emergencyPlanDto);
 
     /**
      * 删除
@@ -52,5 +61,7 @@ public interface IEmergencyPlanService extends IService<EmergencyPlan> {
      * @param id
      */
     void audit(String id);
+
+    List<EmergencyPlanDTO> getPlanInfo(String id);
 
 }

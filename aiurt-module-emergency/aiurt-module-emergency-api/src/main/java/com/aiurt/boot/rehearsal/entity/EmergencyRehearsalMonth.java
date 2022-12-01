@@ -57,6 +57,11 @@ public class EmergencyRehearsalMonth extends DictEntity implements Serializable 
 	@Excel(name = "依托预案ID", width = 15)
     @ApiModelProperty(value = "依托预案ID")
     private java.lang.String schemeId;
+	/**依托预案名称*/
+    @Excel(name = "依托预案名称", width = 15)
+    @ApiModelProperty(value = "依托预案名称")
+    @TableField(exist = false)
+    private java.lang.String schemeName;
 	/**演练形式(1实战演练、2桌面推演)*/
 	@Excel(name = "演练形式(1实战演练、2桌面推演)", width = 15)
     @Dict(dicCode = "emergency_rehearsal_modality")

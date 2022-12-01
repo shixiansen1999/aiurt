@@ -13,8 +13,10 @@ import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,11 +48,17 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     @Transactional(rollbackFor = Exception.class)
     public String saveAndAdd(EmergencyPlanDTO emergencyPlanDto) {
         //应急预案添加
+        //获取当前登录人组织部门作为编制部门
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String orgId = loginUser.getOrgId();
+
         EmergencyPlan emergencyPlan = new EmergencyPlan();
         BeanUtils.copyProperties(emergencyPlanDto, emergencyPlan);
         emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
         emergencyPlan.setStatus(EmergencyPlanConstant.EMPTY);
+        emergencyPlan.setOrgCode(orgId);
         this.save(emergencyPlan);
+
         String id = emergencyPlanDto.getId();
         //应急队伍关联
         List<String> emergencyTeamId = emergencyPlanDto.getEmergencyTeamId();
@@ -92,6 +100,67 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String edit(EmergencyPlanDTO emergencyPlanDto) {
+        String id = emergencyPlanDto.getId();
+
+        Assert.notNull(id, "记录ID为空！");
+        EmergencyPlan emPlan = this.getById(id);
+        Assert.notNull(emPlan, "未找到对应数据！");
+        // 代提审才允许编辑
+        if (!EmergencyPlanConstant.TO_SUBMITTED.equals(emPlan.getEmergencyPlanStatus())) {
+            throw new AiurtBootException("已提审的计划不允许编辑！");
+        }
+        EmergencyPlan emergencyPlan = new EmergencyPlan();
+        BeanUtils.copyProperties(emergencyPlanDto, emergencyPlan);
+        this.updateById(emergencyPlan);
+
+        //应急队伍关联
+        List<String> emergencyTeamId = emergencyPlanDto.getEmergencyTeamId();
+        if(CollUtil.isNotEmpty(emergencyTeamId)){
+            for (String s : emergencyTeamId) {
+                EmergencyPlanTeam emergencyPlanTeam = new EmergencyPlanTeam();
+                emergencyPlanTeam.setEmergencyTeamId(s);
+                emergencyPlanTeam.setEmergencyPlanId(id);
+                emergencyPlanTeamService.save(emergencyPlanTeam);
+            }
+        }
+        //应急预案处置程序编辑
+        QueryWrapper<EmergencyPlanDisposalProcedure> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(EmergencyPlanDisposalProcedure::getEmergencyPlanId, id);
+        emergencyPlanDisposalProcedureService.remove(wrapper);
+        List<EmergencyPlanDisposalProcedure> emergencyPlanDisposalProcedure = emergencyPlanDto.getEmergencyPlanDisposalProcedure();
+        if (CollectionUtil.isNotEmpty(emergencyPlanDisposalProcedure)) {
+            emergencyPlanDisposalProcedure.forEach(l -> {
+                l.setEmergencyPlanId(emergencyPlan.getId());
+            });
+            emergencyPlanDisposalProcedureService.saveBatch(emergencyPlanDisposalProcedure);
+        }
+        //应急物资
+        QueryWrapper<EmergencyPlanMaterials> planMaterialsWrapper = new QueryWrapper<>();
+        planMaterialsWrapper.lambda().eq(EmergencyPlanMaterials::getEmergencyPlanId, id);
+        emergencyPlanMaterialsService.remove(planMaterialsWrapper);
+        List<EmergencyPlanMaterials> emergencyPlanMaterials = emergencyPlanDto.getEmergencyPlanMaterials();
+        if (CollectionUtil.isNotEmpty(emergencyPlanMaterials)) {
+            emergencyPlanMaterials.forEach(l -> {
+                l.setEmergencyPlanId(emergencyPlan.getId());
+            });
+            emergencyPlanMaterialsService.saveBatch(emergencyPlanMaterials);
+        }
+        //应急预案附件
+        QueryWrapper<EmergencyPlanAtt> planAttWrapper = new QueryWrapper<>();
+        planAttWrapper.lambda().eq(EmergencyPlanAtt::getEmergencyPlanId,id);
+        emergencyPlanAttService.remove(planAttWrapper);
+        List<EmergencyPlanAtt> emergencyPlanAtt = emergencyPlanDto.getEmergencyPlanAtt();
+        if (CollectionUtil.isNotEmpty(emergencyPlanAtt)) {
+            emergencyPlanAtt.forEach(l -> {
+                l.setEmergencyPlanId(emergencyPlan.getId());
+            });
+            emergencyPlanAttService.saveBatch(emergencyPlanAtt);
+        }
+        return id;
+    }
+
+    @Override
+    public String change(EmergencyPlanDTO emergencyPlanDto) {
         String id = emergencyPlanDto.getId();
 
         Assert.notNull(id, "记录ID为空！");
@@ -218,5 +287,11 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     @Override
     public void audit(String id) {
 
+    }
+
+    @Override
+    public List<EmergencyPlanDTO> getPlanInfo(String id) {
+
+        return null;
     }
 }
