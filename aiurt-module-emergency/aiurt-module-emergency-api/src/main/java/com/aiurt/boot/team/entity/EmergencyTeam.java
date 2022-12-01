@@ -14,6 +14,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.List;
 
@@ -38,6 +39,7 @@ public class EmergencyTeam implements Serializable {
 	/**所属专业*/
 	@Excel(name = "所属专业", width = 15)
     @ApiModelProperty(value = "所属专业")
+    @NotBlank(message = "所属专业不能为空")
     private String majorCode;
     @ApiModelProperty(value = "所属专业名称")
     @TableField(exist = false)

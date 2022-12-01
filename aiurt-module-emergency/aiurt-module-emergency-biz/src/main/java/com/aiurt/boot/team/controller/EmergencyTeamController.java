@@ -1,6 +1,7 @@
 package com.aiurt.boot.team.controller;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -11,9 +12,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +24,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,6 +40,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/emergency/emergencyTeam")
 @Slf4j
 public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmergencyTeamService> {
+	/**
+	 * 系统管理员角色编码
+	 */
+	private static final String ADMIN = "admin";
+
 	@Autowired
 	private IEmergencyTeamService emergencyTeamService;
 
@@ -57,9 +66,19 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		QueryWrapper<EmergencyTeam> queryWrapper = QueryGenerator.initQueryWrapper(emergencyTeam, req.getParameterMap());
-		//获取用户的所属部门及所属部门子部门
-		List<SysDepartModel> models = iSysBaseAPI.getUserDepartCodes();
-		if (CollUtil.isEmpty(models)) {
+		// 系统管理员不做权限过滤
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		String roleCodes = user.getRoleCodes();
+		List<SysDepartModel> models = new ArrayList<>();
+		if (StrUtil.isNotBlank(roleCodes)) {
+			if (!roleCodes.contains(ADMIN)) {
+				//获取用户的所属部门及所属部门子部门
+				models = iSysBaseAPI.getUserDepartCodes();
+				if (CollUtil.isEmpty(models)) {
+					return Result.OK(new Page<>());
+				}
+			}
+		}else {
 			return Result.OK(new Page<>());
 		}
 		List<String> orgCodes = models.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
