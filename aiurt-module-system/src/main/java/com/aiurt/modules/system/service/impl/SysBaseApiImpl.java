@@ -1841,8 +1841,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         QueryWrapper<SysRole> wrapper = new QueryWrapper<>();
         wrapper.lambda().eq(SysRole::getRoleCode,roleCode).last("limit 1");
         SysRole sysRole = sysRoleMapper.selectOne(wrapper);
-        String roleId = sysRole.getId();
-        return roleId;
+        if (ObjectUtil.isNotEmpty(sysRole)) {
+            return sysRole.getId();
+        }
+        return "";
     }
 
     @Override
