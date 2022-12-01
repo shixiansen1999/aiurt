@@ -64,10 +64,18 @@ public class EmergencyMaterials implements Serializable {
 	@Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")
     private java.lang.String remark;
-	/**存放位置编码*/
-	@Excel(name = "存放位置编码", width = 15)
-    @ApiModelProperty(value = "存放位置编码")
-    private java.lang.String location;
+	/**线路编码*/
+	@Excel(name = "线路编码", width = 15)
+    @ApiModelProperty(value = "线路编码")
+    private java.lang.String lineCode;
+    /**站点编码*/
+    @Excel(name = "站点编码", width = 15)
+    @ApiModelProperty(value = "站点编码")
+    private java.lang.String stationCode;
+    /**位置编码*/
+    @Excel(name = "位置编码", width = 15)
+    @ApiModelProperty(value = "位置编码")
+    private java.lang.String positionCode;
 	/**主管部门编码*/
 	@Excel(name = "主管部门编码", width = 15)
     @ApiModelProperty(value = "主管部门编码")
