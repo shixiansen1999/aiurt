@@ -52,6 +52,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
     @Override
     public IPage<EmergencyTeam> queryPageList(EmergencyTeamDTO emergencyTeamDTO, Integer pageNo, Integer pageSize) {
         EmergencyTeam team = new EmergencyTeam();
+        LambdaQueryWrapper<EmergencyTeam> queryWrapper = new LambdaQueryWrapper<>();
         BeanUtil.copyProperties(emergencyTeamDTO, team);
         // 系统管理员不做权限过滤
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -64,19 +65,19 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 if (CollUtil.isEmpty(models)) {
                     return new Page<>();
                 }
+                List<String> orgCodes = models.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+                queryWrapper.in(EmergencyTeam::getOrgCode, orgCodes);
             }
         }else {
             return new Page<>();
         }
-        LambdaQueryWrapper<EmergencyTeam> queryWrapper = new LambdaQueryWrapper<>();
+
         if (StrUtil.isNotBlank(team.getMajorCode())) {
             queryWrapper.eq(EmergencyTeam::getMajorCode, team.getMajorCode());
         }
         if (StrUtil.isNotBlank(team.getEmergencyTeamname())) {
             queryWrapper.like(EmergencyTeam::getEmergencyTeamname, team.getEmergencyTeamname());
         }
-        List<String> orgCodes = models.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-        queryWrapper.in(EmergencyTeam::getOrgCode, orgCodes);
         queryWrapper.eq(EmergencyTeam::getDelFlag, 0);
         Page<EmergencyTeam> page = new Page<EmergencyTeam>(pageNo, pageSize);
         IPage<EmergencyTeam> pageList = this.page(page, queryWrapper);

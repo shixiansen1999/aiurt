@@ -46,6 +46,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
     public IPage<EmergencyTrainingProgram> queryPageList(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO, Integer pageNo, Integer pageSize) {
         // 系统管理员不做权限过滤
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        LambdaQueryWrapper<EmergencyTrainingProgram> queryWrapper = new LambdaQueryWrapper<>();
         String roleCodes = user.getRoleCodes();
         List<SysDepartModel> models = new ArrayList<>();
         if (StrUtil.isNotBlank(roleCodes)) {
@@ -55,6 +56,8 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
                 if (CollUtil.isEmpty(models)) {
                     return new Page<>();
                 }
+                List<String> orgCodes = models.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+                queryWrapper.in(EmergencyTrainingProgram::getOrgCode, orgCodes);
             }
         }else {
             return new Page<>();
@@ -62,7 +65,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         Page<EmergencyTrainingProgram> page = new Page<>(pageNo, pageSize);
         EmergencyTrainingProgram trainingProgram = new EmergencyTrainingProgram();
         BeanUtil.copyProperties(trainingProgram,emergencyTrainingProgramDTO);
-        LambdaQueryWrapper<EmergencyTrainingProgram> queryWrapper = new LambdaQueryWrapper<>();
+
         Optional.ofNullable(trainingProgram.getOrgCode())
                 .ifPresent(code -> queryWrapper.eq(EmergencyTrainingProgram::getOrgCode, code));
         Optional.ofNullable(trainingProgram.getTrainingPlanTime())
@@ -74,8 +77,6 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         Optional.ofNullable(trainingProgram.getTrainingProgramName())
                 .ifPresent(programName -> queryWrapper.like(EmergencyTrainingProgram::getTrainingProgramName, programName));
 
-        List<String> orgCodes = models.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-        queryWrapper.in(EmergencyTrainingProgram::getOrgCode, orgCodes);
         IPage<EmergencyTrainingProgram> pageList = this.page(page, queryWrapper);
 
         List<EmergencyTrainingProgram> records = pageList.getRecords();
