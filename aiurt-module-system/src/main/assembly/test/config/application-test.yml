@@ -317,26 +317,26 @@ justauth:
 #第三方APP对接
 third-app:
   enabled: true
-    type:
-      #企业微信
-      WECHAT_ENTERPRISE:
-        enabled: true
-        #CORP_ID
-        client-id: ww19d88c8272303c7b
-        #SECRET
-        client-secret: dlcGybmI3DaooKDYv7g3cKKBcVmtd5Ljb82TgHBq6Jk
-        #自建应用id
-        agent-id: 1000002
-      #自建应用秘钥（新版企微需要配置）
-      # agent-app-secret: ??
-    #钉钉
-      DINGTALK:
-        enabled: false
-        # appKey
-        client-id: ??
-        # appSecret
-        client-secret: ??
-        agent-id: ??
+  type:
+    #企业微信
+    WECHAT_ENTERPRISE:
+      enabled: true
+      #CORP_ID
+      client-id: ww19d88c8272303c7b
+      #SECRET
+      client-secret: dlcGybmI3DaooKDYv7g3cKKBcVmtd5Ljb82TgHBq6Jk
+      #自建应用id
+      agent-id: 1000002
+    #自建应用秘钥（新版企微需要配置）
+    # agent-app-secret: ??
+  #钉钉
+    DINGTALK:
+      enabled: false
+      # appKey
+      client-id: ??
+      # appSecret
+      client-secret: ??
+      agent-id: ??
 
 
 #项目专用配置

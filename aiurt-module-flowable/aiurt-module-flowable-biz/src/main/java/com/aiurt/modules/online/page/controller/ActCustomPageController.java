@@ -1,5 +1,6 @@
 package com.aiurt.modules.online.page.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -13,13 +14,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Description: 设计表单
@@ -36,6 +40,9 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@Autowired
 	private IActCustomPageService actCustomPageService;
 
+	@Autowired
+	private ISysBaseAPI sysBaseApi;
+
 	/**
 	 * 分页列表查询
 	 *
@@ -51,7 +58,20 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		QueryWrapper<ActCustomPage> queryWrapper = QueryGenerator.initQueryWrapper(actCustomPage, req.getParameterMap());
+
+		LambdaQueryWrapper<ActCustomPage> queryWrapper = new LambdaQueryWrapper<>();
+		String sysOrgCode = actCustomPage.getSysOrgCode();
+		if (StrUtil.isNotBlank(sysOrgCode)) {
+			SysDepartModel sysDepartModel = sysBaseApi.selectAllById(sysOrgCode);
+			if (Objects.nonNull(sysDepartModel)) {
+				actCustomPage.setSysOrgCode(sysDepartModel.getOrgCode());
+			}
+
+			queryWrapper.eq(ActCustomPage::getSysOrgCode, actCustomPage.getSysOrgCode());
+		}
+
+		queryWrapper.like(StrUtil.isNotBlank(actCustomPage.getPageName()),ActCustomPage::getPageName, actCustomPage.getPageName());
+
 		Page<ActCustomPage> page = new Page<>(pageNo, pageSize);
 		IPage<ActCustomPage> pageList = actCustomPageService.page(page, queryWrapper);
 		return Result.OK(pageList);
