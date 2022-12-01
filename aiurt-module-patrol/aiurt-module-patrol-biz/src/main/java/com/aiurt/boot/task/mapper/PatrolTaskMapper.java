@@ -199,7 +199,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param departList
      * @return
      */
-    IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition, @Param("departList") List<CsUserDepartModel> departList);
+    IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition, @Param("departList") List<PatrolTaskOrganization> departList,@Param("standard")List<PatrolTaskStandard> standard);
 
     /**
      * 获取首页的日程的巡检列表

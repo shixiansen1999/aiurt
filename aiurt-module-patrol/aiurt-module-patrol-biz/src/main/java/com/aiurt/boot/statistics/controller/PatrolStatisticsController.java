@@ -78,6 +78,7 @@ public class PatrolStatisticsController {
     @AutoLog(value = "首页-获取首页的巡视任务列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-获取首页的巡视任务列表", notes = "首页-获取首页的巡视任务列表")
     @RequestMapping(value = "/getIndexTaskList", method = RequestMethod.POST)
+    @PermissionData(pageComponent = "dashboard/Analysis")
     public Result<IPage<IndexTaskInfo>> getIndexTaskList(@Validated @RequestBody IndexTaskDTO indexTaskDTO) {
         Page<IndexTaskInfo> page = new Page<>(indexTaskDTO.getPageNo(), indexTaskDTO.getPageSize());
         IPage<IndexTaskInfo> pageList = patrolStatisticsService.getIndexTaskList(page, indexTaskDTO);

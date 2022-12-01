@@ -182,7 +182,10 @@ public class PatrolStatisticsService {
             //替换，用注解的方法来获取用户管理的权限、管理的专业
             List<PatrolTaskStandard> standards = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0));
             List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+            //下面禁用数据权限
+            boolean b= GlobalThreadLocal.setDataFilter(false);
             pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp, departList,standards);
+            GlobalThreadLocal.setDataFilter(b);
         }
 
         // 巡视任务集
@@ -264,14 +267,20 @@ public class PatrolStatisticsService {
 
         IPage<IndexTaskInfo> pageList = null;
         if (ObjectUtil.isNotEmpty(indexTaskDTO.getIsAllData()) && ALLDATA.equals(indexTaskDTO.getIsAllData())) {
-            pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO, null);
+            pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO, null,null);
         } else {
             LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             if (ObjectUtil.isEmpty(loginUser)) {
                 throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
             }
-            List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
-            pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO, departList);
+            //List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
+            //替换，用注解的方法来获取用户管理的权限、管理的专业
+            List<PatrolTaskStandard> standards = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0));
+            List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+            //下面禁用数据权限
+            boolean b= GlobalThreadLocal.setDataFilter(false);
+            pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO, departList,standards);
+
         }
         pageList.getRecords().stream().forEach(l -> {
             String taskCode = l.getCode();
