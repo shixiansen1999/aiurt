@@ -185,12 +185,10 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
     * @param request
     * @param emergencyPlan
     */
-	/**
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, EmergencyPlan emergencyPlan) {
         return super.exportXls(request, emergencyPlan, EmergencyPlan.class, "emergency_plan");
     }
-	*/
 
     /**
       * 通过excel导入数据
@@ -199,11 +197,10 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
     * @param response
     * @return
     */
-	/**
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, EmergencyPlan.class);
     }
-	*/
+
 
 }

@@ -14,6 +14,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.List;
 
@@ -61,8 +62,8 @@ public class EmergencyPlan implements Serializable {
     @ApiModelProperty(value = "编制部门")
     private String orgCode;
 	/**应急预案状态（1未启用、2启用中）*/
-	@Excel(name = "启用状态（1已停用、2启用中）", width = 15)
-    @ApiModelProperty(value = "应急预案状态（1已停用、2启用、3空）")
+	@Excel(name = "启用状态（1已停用、2有效、3空）", width = 15)
+    @ApiModelProperty(value = "启用状态（1已停用、2有效、3空）")
     @Dict(dicCode = "emergency_status")
     private Integer status;
 	/**状态（1待提交、2待审核、3审核中、4已驳回、5已通过）*/
@@ -70,16 +71,14 @@ public class EmergencyPlan implements Serializable {
     @ApiModelProperty(value = "流程状态（1待提交、2待审核、3审核中、4已驳回、5已通过）")
     @Dict(dicCode = "emergency_plan_status")
     private Integer emergencyPlanStatus;
-	/**发布人*/
-	@Excel(name = "发布人", width = 15)
-    @ApiModelProperty(value = "发布人")
-    private String publisher;
-	/**发布时间*/
-	@Excel(name = "发布时间", width = 15, format = "yyyy-MM-dd")
+
+	/**评审日期*/
+	@Excel(name = "评审日期", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "发布时间")
-    private java.util.Date publishTime;
+    @ApiModelProperty(value = "评审日期")
+    private java.util.Date approvedTime;
+
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
