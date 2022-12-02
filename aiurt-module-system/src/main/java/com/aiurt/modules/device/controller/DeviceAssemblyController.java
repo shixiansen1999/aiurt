@@ -54,9 +54,8 @@ public class DeviceAssemblyController {
                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                        @RequestParam(name = "deviceCode", required = false) String deviceCode,
                                                        HttpServletRequest req) {
-        Result<IPage<DeviceAssembly>> result = new Result<IPage<DeviceAssembly>>();
-        Map<String, String[]> parameterMap = req.getParameterMap();
-        QueryWrapper<DeviceAssembly> queryWrapper = QueryGenerator.initQueryWrapper(deviceAssembly, parameterMap);
+        Result<IPage<DeviceAssembly>> result = new Result<>();
+        QueryWrapper<DeviceAssembly> queryWrapper = new QueryWrapper<>();
         if (deviceCode != null && !"".equals(deviceCode)) {
             queryWrapper.eq("device_code",deviceCode);
         }
