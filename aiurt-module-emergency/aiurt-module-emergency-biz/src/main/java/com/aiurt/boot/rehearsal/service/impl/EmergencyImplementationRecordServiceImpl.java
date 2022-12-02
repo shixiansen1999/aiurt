@@ -2,6 +2,7 @@ package com.aiurt.boot.rehearsal.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.plan.service.IEmergencyPlanService;
 import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
@@ -19,23 +20,21 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysDeptUserModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -192,6 +191,23 @@ public class EmergencyImplementationRecordServiceImpl extends ServiceImpl<Emerge
         recordVO.setSteps(stepList);
         recordVO.setQuestions(questionList);
         return recordVO;
+    }
+
+    @Override
+    public List<SysDeptUserModel> getDeptUserGanged() {
+        return iSysBaseApi.getDeptUserGanged();
+    }
+
+    @Override
+    public List<LoginUser> getDutyUser() {
+        // 责任人根据当前的用户部门筛选出当前部门的所有人
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String orgCode = loginUser.getOrgCode();
+        if (StrUtil.isEmpty(orgCode)) {
+            return Collections.emptyList();
+        }
+        List<LoginUser> users = iSysBaseApi.getUserByDeptCode(orgCode);
+        return users;
     }
 
     /**

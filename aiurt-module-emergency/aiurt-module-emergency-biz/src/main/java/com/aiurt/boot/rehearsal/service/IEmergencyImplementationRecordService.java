@@ -8,6 +8,10 @@ import com.aiurt.boot.rehearsal.vo.EmergencyRecordReadOneVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDeptUserModel;
+
+import java.util.List;
 
 /**
  * @Description: emergency_implementation_record
@@ -63,4 +67,14 @@ public interface IEmergencyImplementationRecordService extends IService<Emergenc
      * @return
      */
     EmergencyRecordReadOneVO queryById(String id);
+
+    /**
+     * 应急模块-责任部门和用户联动信息
+     */
+    List<SysDeptUserModel> getDeptUserGanged();
+
+    /**
+     * 应急模块-责任人信息
+     */
+    List<LoginUser> getDutyUser();
 }

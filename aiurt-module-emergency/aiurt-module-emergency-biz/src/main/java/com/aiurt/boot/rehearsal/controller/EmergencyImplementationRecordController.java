@@ -15,10 +15,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDeptUserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @Description: emergency_implementation_record
@@ -120,6 +123,28 @@ public class EmergencyImplementationRecordController extends BaseController<Emer
     public Result<EmergencyRecordReadOneVO> queryById(@RequestParam(name = "id", required = true) String id) {
         EmergencyRecordReadOneVO recordVO = emergencyImplementationRecordService.queryById(id);
         return Result.OK(recordVO);
+    }
+
+    /**
+     * 应急模块-责任部门和用户联动信息
+     */
+    @AutoLog(value = "应急模块-责任部门和用户联动信息")
+    @ApiOperation(value = "应急模块-责任部门和用户联动信息", notes = "应急模块-责任部门和用户联动信息")
+    @GetMapping(value = "/getDeptUserGanged")
+    public Result<List<SysDeptUserModel>> getDeptUserGanged() {
+        List<SysDeptUserModel> deptUsers = emergencyImplementationRecordService.getDeptUserGanged();
+        return Result.OK(deptUsers);
+    }
+
+    /**
+     * 应急模块-责任人信息
+     */
+    @AutoLog(value = "应急模块-责任人信息")
+    @ApiOperation(value = "应急模块-责任人信息", notes = "应急模块-责任人信息")
+    @GetMapping(value = "/getDutyUser")
+    public Result<List<LoginUser>> getDutyUser() {
+        List<LoginUser> users = emergencyImplementationRecordService.getDutyUser();
+        return Result.OK(users);
     }
 
 }

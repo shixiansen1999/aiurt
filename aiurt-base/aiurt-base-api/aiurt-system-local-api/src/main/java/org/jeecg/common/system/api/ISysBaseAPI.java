@@ -679,4 +679,16 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<SysDepartModel> getUserDepartCodes();
+
+    /**
+     * 组织机构和用户联动
+     */
+    List<SysDeptUserModel> getDeptUserGanged();
+
+    /**
+     * 根据组织机构编码获取所有用户，如果编码为空则获取全部
+     * @param deptCode
+     * @return
+     */
+    List<LoginUser> getUserByDeptCode(String deptCode);
 }

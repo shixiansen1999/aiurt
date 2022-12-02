@@ -871,7 +871,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 if (depart != null && depart.getOrgCode() != null) {
                     compyOrgCode = depart.getOrgCode().substring(0, length);
                     if (orgCodes.indexOf(compyOrgCode) == -1) {
-                        orgCodes =orgCodes.append(orgCodes + "," + compyOrgCode) ;
+                        orgCodes = orgCodes.append(orgCodes + "," + compyOrgCode);
                     }
                 }
             }
@@ -914,7 +914,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         Set<String> permissionSet = new HashSet<>();
         List<SysPermission> permissionList = sysPermissionMapper.queryByUser(username, null);
         for (SysPermission po : permissionList) {
-			// TODO URL规则有问题？
+            // TODO URL规则有问题？
             if (oConvertUtils.isNotEmpty(po.getPerms())) {
                 permissionSet.add(po.getPerms());
             }
@@ -1494,7 +1494,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public SysDepartModel getDepartByOrgCode(String orgCode) {
         SysDepart sysDepart = departMapper.queryDepartByOrgCode(orgCode);
         if (Objects.isNull(sysDepart)) {
-            return  null;
+            return null;
         }
         SysDepartModel sysDepartModel = new SysDepartModel();
         BeanUtils.copyProperties(sysDepart, sysDepartModel);
@@ -1671,10 +1671,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return JSONObject.parseObject(JSONObject.toJSONString(csMajor));
     }
+
     @Override
     public JSONObject getCsMajorByName(String majorName) {
         LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsMajor::getMajorName, majorName).eq(CsMajor::getDelFlag,CommonConstant.DEL_FLAG_0).last("limit 1");
+        wrapper.eq(CsMajor::getMajorName, majorName).eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
         CsMajor csMajor = majorService.getBaseMapper().selectOne(wrapper);
         if (Objects.isNull(csMajor)) {
             return null;
@@ -1683,9 +1684,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public DeviceType getCsMajorByCodeTypeName(String majorCode,String deviceTypeName) {
+    public DeviceType getCsMajorByCodeTypeName(String majorCode, String deviceTypeName) {
         LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(DeviceType::getMajorCode, majorCode).eq(DeviceType::getName,deviceTypeName).eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).last("limit 1");
+        wrapper.eq(DeviceType::getMajorCode, majorCode).eq(DeviceType::getName, deviceTypeName).eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
         DeviceType deviceType = deviceTypeService.getBaseMapper().selectOne(wrapper);
         if (Objects.isNull(deviceType)) {
             return null;
@@ -1839,7 +1840,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getRoleIdByCode(String roleCode) {
         QueryWrapper<SysRole> wrapper = new QueryWrapper<>();
-        wrapper.lambda().eq(SysRole::getRoleCode,roleCode).last("limit 1");
+        wrapper.lambda().eq(SysRole::getRoleCode, roleCode).last("limit 1");
         SysRole sysRole = sysRoleMapper.selectOne(wrapper);
         if (ObjectUtil.isNotEmpty(sysRole)) {
             return sysRole.getId();
@@ -1885,6 +1886,58 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String orgCode = user.getOrgCode();
         return sysDepartMapper.getUserOrgCategory(orgCode);
+    }
+
+    @Override
+    public List<SysDeptUserModel> getDeptUserGanged() {
+        QueryWrapper<SysUser> userWrapper = new QueryWrapper<>();
+        userWrapper.lambda().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<SysUser> userList = userMapper.selectList(userWrapper);
+        if (CollectionUtil.isEmpty(userList)) {
+            return Collections.emptyList();
+        }
+        List<LoginUser> loginUsers = new ArrayList<>();
+        userList.forEach(user -> {
+            LoginUser loginUser = new LoginUser();
+            BeanUtils.copyProperties(user, loginUser);
+            loginUsers.add(loginUser);
+        });
+        Map<String, List<LoginUser>> listMap = loginUsers.stream()
+                .filter(l -> StrUtil.isNotEmpty(l.getOrgCode()))
+                .collect(Collectors.groupingBy(LoginUser::getOrgCode));
+
+        QueryWrapper<SysDepart> deptWrapper = new QueryWrapper<>();
+        deptWrapper.lambda().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .in(SysDepart::getOrgCode, listMap.keySet());
+        List<SysDepart> departs = departMapper.selectList(deptWrapper);
+        Map<String, String> deptMap = departs.stream()
+                .collect(Collectors.toMap(k -> k.getOrgCode(), v -> v.getDepartName(), (a, b) -> a));
+
+        List<SysDeptUserModel> deptUserModels = new ArrayList<>();
+        for (String key : listMap.keySet()) {
+            deptUserModels.add(new SysDeptUserModel(key, deptMap.get(key), listMap.get(key)));
+        }
+        return deptUserModels;
+    }
+
+    @Override
+    public List<LoginUser> getUserByDeptCode(String deptCode) {
+        QueryWrapper<SysUser> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+        if (StrUtil.isNotEmpty(deptCode)) {
+            wrapper.lambda().eq(SysUser::getOrgCode, deptCode);
+        }
+        List<SysUser> users = userMapper.selectList(wrapper);
+        if (CollectionUtil.isEmpty(users)) {
+            return Collections.emptyList();
+        }
+        List<LoginUser> loginUsers = new ArrayList<>();
+        for (SysUser user : users) {
+            LoginUser loginUser = new LoginUser();
+            BeanUtils.copyProperties(user, loginUser);
+            loginUsers.add(loginUser);
+        }
+        return loginUsers;
     }
 
     private String escapeUrl(String remoteFileUrl) throws UnsupportedEncodingException {
