@@ -101,7 +101,7 @@ public class EmergencyTrainingProgram implements Serializable {
     private String emergencyTeamName;
 
     /**添加方式*/
-    @ApiModelProperty(value = "添加方式（0保存，1发布）")
+    @ApiModelProperty(value = "添加方式（0保存，1下发）")
     @TableField(exist = false)
     private Integer saveFlag;
 

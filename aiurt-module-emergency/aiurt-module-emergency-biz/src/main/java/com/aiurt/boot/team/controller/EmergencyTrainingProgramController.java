@@ -178,8 +178,8 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "应急队伍训练计划-发布")
-	@ApiOperation(value="应急队伍训练计划-发布", notes="应急队伍训练计划-发布")
+	@AutoLog(value = "应急队伍训练计划-下发")
+	@ApiOperation(value="应急队伍训练计划-下发", notes="应急队伍训练计划-下发")
 	@RequestMapping(value = "/publish", method = {RequestMethod.PUT})
 	public Result<String> publish(@RequestBody @RequestParam(name="id",required=true) String id) {
 		EmergencyTrainingProgram program = emergencyTrainingProgramService.getById(id);
