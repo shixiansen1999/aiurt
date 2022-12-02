@@ -163,6 +163,12 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	}
 
 
+	 /**
+	  * 通过code查询
+	  *
+	  * @param code
+	  * @return
+	  */
 	 @AutoLog(value = "物资分类-通过code查询")
 	 @ApiOperation(value="物资分类-通过code查询", notes="物资分类-通过code查询")
 	 @GetMapping(value = "/queryByCode")
@@ -170,10 +176,12 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 		LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,code);
 		EmergencyMaterialsCategory one = emergencyMaterialsCategoryService.getOne(queryWrapper, false);
-		if (ObjectUtil.isNotEmpty(one)){
+		if (StrUtil.isNotBlank(one.getCategoryCode())){
 			return Result.OK("分类编码已存在！");
-		}
-		return Result.OK("编码校验成功，请继续！");
+		}if (StrUtil.isNotBlank(one.getCategoryName())){
+			 return Result.OK("分类名称已存在！");
+		 }
+		return Result.OK("校验成功，请继续！");
 	 }
 
     /**

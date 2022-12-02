@@ -1,9 +1,11 @@
 package com.aiurt.boot.materials.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.dto.MaterialAccountDTO;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
@@ -175,6 +177,27 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 			return Result.error("未找到对应数据");
 		}
 		return Result.OK(emergencyMaterials);
+	}
+
+	 @AutoLog(value = "物资信息-应急物资位置查询")
+	 @ApiOperation(value="物资信息-应急物资位置查询", notes="物资信息-应急物资位置查询")
+	 @GetMapping(value = "/queryById")
+	public Result<?> getMaterialsCode(@RequestParam(name="stationCode",required=false) String stationCode,
+									  @RequestParam(name="positionCode",required=false) String positionCode,
+									  @RequestParam(name="materialsCode",required=false) String materialsCode){
+		 LambdaQueryWrapper<EmergencyMaterials> queryWrapper = new LambdaQueryWrapper<>();
+		 if (StrUtil.isNotBlank(stationCode)){
+			 queryWrapper.eq(EmergencyMaterials::getStationCode,stationCode);
+		 }if (StrUtil.isNotBlank(positionCode)){
+			 queryWrapper.eq(EmergencyMaterials::getPositionCode,positionCode);
+		 }if (StrUtil.isNotBlank(materialsCode)){
+			 queryWrapper.eq(EmergencyMaterials::getMaterialsCode,materialsCode);
+		 }
+		 List<EmergencyMaterials> list = emergencyMaterialsService.list(queryWrapper);
+		 if (CollUtil.isNotEmpty(list)){
+			 return Result.OK("同一位置的编码不能重复！");
+		 }
+		 return Result.OK("校验成功，请继续！");
 	}
 
     /**
