@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @Description: emergency_implementation_record
  * @Author: aiurt
@@ -22,5 +24,7 @@ public interface EmergencyImplementationRecordMapper extends BaseMapper<Emergenc
      * @param emergencyRecordDTO
      * @return
      */
-    IPage<EmergencyImplementationRecordVO> queryPageList(@Param("page") Page<EmergencyImplementationRecordVO> page,@Param("condition") EmergencyRecordDTO emergencyRecordDTO);
+    IPage<EmergencyImplementationRecordVO> queryPageList(@Param("page") Page<EmergencyImplementationRecordVO> page
+            , @Param("condition") EmergencyRecordDTO emergencyRecordDTO, @Param("orgCodes") List<String> orgCodes);
+
 }

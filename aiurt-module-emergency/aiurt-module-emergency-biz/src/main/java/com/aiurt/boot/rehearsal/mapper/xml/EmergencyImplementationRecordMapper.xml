@@ -32,5 +32,18 @@
             from emergency_record_dept
             where org_code = #{condition.joinOrgCode} )
         </if>
+        <if test="orgCodes != null and orgCodes.size() > 0">
+            and (
+                erm.org_code in
+            <foreach collection="orgCodes" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+            or
+                eir.id in ( select record_id from emergency_record_dept where org_code in
+            <foreach collection="orgCodes" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+            ) )
+        </if>
     </select>
 </mapper>
