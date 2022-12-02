@@ -82,10 +82,16 @@
             and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
             and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
         </if>
-        <if test="taskDetailsReq.isAllData!=null and taskDetailsReq.isAllData==0 and codeByOrgCode.size()>0">
+        <if test="codeByOrgCode != null and codeByOrgCode.size() != 0">
             and  rp.code in
-            <foreach collection="codeByOrgCode" item="code" open="(" close=")" separator=",">
-                #{code}
+            <foreach collection="codeByOrgCode" item="item" open="(" close=")" separator=",">
+                #{item.repairPoolCode}
+            </foreach>
+        </if>
+              <if test="repairPoolRels != null and repairPoolRels.size() != 0">
+            and  rp.code in
+            <foreach collection="repairPoolRels" item="item" open="(" close=")" separator=",">
+                #{item.repairPoolCode}
             </foreach>
         </if>
         <if test="taskDetailsReq.maintenanceCycle!=null">

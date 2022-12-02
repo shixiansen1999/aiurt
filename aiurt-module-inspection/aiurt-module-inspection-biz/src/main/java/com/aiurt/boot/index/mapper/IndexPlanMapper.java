@@ -37,7 +37,7 @@ public interface IndexPlanMapper {
      * @param taskDetailsReq
      * @return
      */
-    List<RepairPoolDetailsDTO> getMaintenancDataByStationCode(@Param("page")Page<RepairPoolDetailsDTO> page,@Param("type")Integer type, @Param("taskDetailsReq")TaskDetailsReq taskDetailsReq,@Param("codeByOrgCode")List<String> codeByOrgCode);
+    List<RepairPoolDetailsDTO> getMaintenancDataByStationCode(@Param("page")Page<RepairPoolDetailsDTO> page,@Param("type")Integer type, @Param("taskDetailsReq")TaskDetailsReq taskDetailsReq,@Param("codeByOrgCode") List<RepairPoolOrgRel> codeByOrgCode, @Param("repairPoolRels")List<RepairPoolRel> repairPoolRels);
 
     /**
      * 根据条件查询检修数据（无分页）

@@ -407,15 +407,18 @@ public class IndexPlanService {
         if (ObjectUtil.isEmpty(taskDetailsReq.getIsAllData())) {
             taskDetailsReq.setIsAllData(InspectionConstant.IS_ALL_DATA_0);
         }
-        List<String> codeByOrgCode = getCodeByOrgCode();
-
+//        List<String> codeByOrgCode = getCodeByOrgCode();
+        List<RepairPoolOrgRel> codeByOrgCode = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList())));
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         // 用于判断是否是一整月的查询
         // 如果是一整个月查询，那么返回的dayBegin是这个月的第一周的开始时间，dayEnd是这个月最后一周的结束时间
         JudgeIsMonthQuery judgeIsMonthQuery = new JudgeIsMonthQuery(taskDetailsReq.getStartTime(), taskDetailsReq.getEndTime()).invoke();
         taskDetailsReq.setStartTime(judgeIsMonthQuery.getDayBegin());
         taskDetailsReq.setEndTime(judgeIsMonthQuery.getDayEnd());
 
-        List<RepairPoolDetailsDTO> maintenancDataByStationCode = indexPlanMapper.getMaintenancDataByStationCode(page, taskDetailsReq.getType(), taskDetailsReq, codeByOrgCode);
+        List<RepairPoolDetailsDTO> maintenancDataByStationCode = indexPlanMapper.getMaintenancDataByStationCode(page, taskDetailsReq.getType(), taskDetailsReq, codeByOrgCode,repairPoolRels);
         if (CollUtil.isNotEmpty(maintenancDataByStationCode)) {
             for (RepairPoolDetailsDTO repairPool : maintenancDataByStationCode) {
                 String planCode = repairPool.getCode();

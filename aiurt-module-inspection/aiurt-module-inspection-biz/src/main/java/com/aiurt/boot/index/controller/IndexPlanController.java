@@ -84,6 +84,7 @@ public class IndexPlanController {
     @AutoLog(value = "首页-点击站点获取检修数据", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-点击站点获取检修数据", notes = "首页-点击站点获取检修数据")
     @RequestMapping(value = "/getMaintenancDataByStationCode", method = RequestMethod.GET)
+    @PermissionData(pageComponent = "dashboard/Analysis")
     public Result<IPage<RepairPoolDetailsDTO>> getMaintenancDataByStationCode(@Validated TaskDetailsReq taskDetailsReq) {
         IPage<RepairPoolDetailsDTO> result = indexPlanService.getMaintenancDataByStationCode(taskDetailsReq);
         return Result.OK(result);
