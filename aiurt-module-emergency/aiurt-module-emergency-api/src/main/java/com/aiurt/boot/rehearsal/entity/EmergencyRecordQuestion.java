@@ -4,7 +4,9 @@ import java.io.Serializable;
 
 import com.aiurt.boot.rehearsal.constant.EmergencyDictConstant;
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -27,7 +29,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="emergency_record_question对象", description="emergency_record_question")
-public class EmergencyRecordQuestion implements Serializable {
+public class EmergencyRecordQuestion extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**责任人ID*/
@@ -41,7 +43,13 @@ public class EmergencyRecordQuestion implements Serializable {
 	/**问题分类(1问题、2隐患)*/
 	@Excel(name = "问题分类(1问题、2隐患)", width = 15)
     @ApiModelProperty(value = "问题分类(1问题、2隐患)")
+    @Dict(dicCode = EmergencyDictConstant.QUESTION_CATEGORY)
     private java.lang.Integer category;
+    /**问题分类字典名称*/
+    @Excel(name = "问题分类字典名称", width = 15)
+    @ApiModelProperty(value = "问题分类字典名称")
+    @TableField(exist = false)
+    private java.lang.String categoryName;
 	/**描述*/
 	@Excel(name = "描述", width = 15)
     @ApiModelProperty(value = "描述")
@@ -65,8 +73,13 @@ public class EmergencyRecordQuestion implements Serializable {
 	/**问题状态(1待处理、2处理中、3已处理)*/
 	@Excel(name = "问题状态(1待处理、2处理中、3已处理)", width = 15)
     @ApiModelProperty(value = "问题状态(1待处理、2处理中、3已处理)")
-    @Dict(dicCode = EmergencyDictConstant.QUESTION)
+    @Dict(dicCode = EmergencyDictConstant.QUESTION_STATUS)
     private java.lang.Integer status;
+    /**问题状态字典名称*/
+    @Excel(name = "问题状态字典名称", width = 15)
+    @ApiModelProperty(value = "问题状态字典名称")
+    @TableField(exist = false)
+    private java.lang.String statusName;
 	/**处理方式*/
 	@Excel(name = "处理方式", width = 15)
     @ApiModelProperty(value = "处理方式")

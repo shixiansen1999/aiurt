@@ -1,0 +1,46 @@
+package com.aiurt.boot.rehearsal.vo;
+
+import com.aiurt.boot.rehearsal.dto.EmergencyDeptDTO;
+import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
+import com.aiurt.boot.rehearsal.entity.EmergencyRecordQuestion;
+import com.aiurt.boot.rehearsal.entity.EmergencyRecordStep;
+import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+/**
+ * @author
+ * @date 2022/12/2 10:59
+ * @description: 查询单条记录是的VO对象
+ */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ApiModel(value="查询单条记录是的VO对象", description="查询单条记录是的VO对象")
+public class EmergencyRecordReadOneVO extends EmergencyImplementationRecord {
+    /**
+     * 关联的月计划信息
+     */
+    @ApiModelProperty(value = "关联的月计划信息")
+    EmergencyRecordMonthVO rehearsalMonth;
+    /**
+     * 参与部门信息
+     */
+    @ApiModelProperty(value = "参与部门信息")
+    List<EmergencyDeptDTO> depts;
+    /**
+     * 演练步骤信息
+     */
+    @ApiModelProperty(value = "演练步骤信息")
+    List<EmergencyRecordStep> steps;
+    /**
+     * 登记问题信息
+     */
+    @ApiModelProperty(value = "v")
+    List<EmergencyRecordQuestion> questions;
+}

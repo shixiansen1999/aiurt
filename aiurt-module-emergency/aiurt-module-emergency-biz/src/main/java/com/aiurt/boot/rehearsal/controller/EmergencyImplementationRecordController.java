@@ -5,6 +5,7 @@ import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalRegisterDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
 import com.aiurt.boot.rehearsal.service.IEmergencyImplementationRecordService;
 import com.aiurt.boot.rehearsal.vo.EmergencyImplementationRecordVO;
+import com.aiurt.boot.rehearsal.vo.EmergencyRecordReadOneVO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -115,10 +116,10 @@ public class EmergencyImplementationRecordController extends BaseController<Emer
      */
     @AutoLog(value = "应急实施记录-通过id查询")
     @ApiOperation(value = "应急实施记录-通过id查询", notes = "应急实施记录-通过id查询")
-    @DeleteMapping(value = "/queryById")
-    public Result<String> queryById(@RequestParam(name = "id", required = true) String id) {
-        // todo 根据id查询记录
-        return Result.OK("删除成功!");
+    @GetMapping(value = "/queryById")
+    public Result<EmergencyRecordReadOneVO> queryById(@RequestParam(name = "id", required = true) String id) {
+        EmergencyRecordReadOneVO recordVO = emergencyImplementationRecordService.queryById(id);
+        return Result.OK(recordVO);
     }
 
 }

@@ -5,6 +5,7 @@ import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
 import com.aiurt.boot.rehearsal.entity.EmergencyRecordDept;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,6 +19,7 @@ import java.util.List;
  * @description: 返回给前端渲染的VO对象
  */
 @Data
+@ApiModel(value="返回给前端渲染的VO对象", description="返回给前端渲染的VO对象")
 public class EmergencyImplementationRecordVO extends EmergencyImplementationRecord {
     /**
      * 关联计划编码

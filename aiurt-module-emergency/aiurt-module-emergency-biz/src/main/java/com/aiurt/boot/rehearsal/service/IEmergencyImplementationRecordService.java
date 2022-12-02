@@ -4,6 +4,7 @@ import com.aiurt.boot.rehearsal.dto.EmergencyRecordDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalRegisterDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
 import com.aiurt.boot.rehearsal.vo.EmergencyImplementationRecordVO;
+import com.aiurt.boot.rehearsal.vo.EmergencyRecordReadOneVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -54,4 +55,12 @@ public interface IEmergencyImplementationRecordService extends IService<Emergenc
      * @param emergencyRehearsalRegisterDTO
      */
     void edit(EmergencyRehearsalRegisterDTO emergencyRehearsalRegisterDTO);
+
+    /**
+     * 应急实施记录-通过id查询
+     *
+     * @param id
+     * @return
+     */
+    EmergencyRecordReadOneVO queryById(String id);
 }

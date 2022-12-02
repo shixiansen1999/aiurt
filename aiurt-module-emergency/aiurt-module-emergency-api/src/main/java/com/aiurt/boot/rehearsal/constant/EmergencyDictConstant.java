@@ -29,5 +29,9 @@ public interface EmergencyDictConstant {
     /**
      * 应急模块-问题状态字典编码
      */
-    String QUESTION = "emergency_question_status";
+    String QUESTION_STATUS = "emergency_question_status";
+    /**
+     * 应急模块-问题分类字典编码
+     */
+    String QUESTION_CATEGORY = "emergency_question_category";
 }
