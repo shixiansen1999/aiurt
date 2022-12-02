@@ -88,7 +88,7 @@ public class CsSafetyAttention implements Serializable {
     @TableField(exist = false)
     private java.lang.String attentionTypeName;
 	/**安全事项内容*/
-	@Excel(name = "安全事项内容", width = 15)
+	@Excel(name = "安全事项内容和措施", width = 15)
     @ApiModelProperty(value = "安全事项内容和措施")
     private java.lang.String attentionContent;
 	/**安全事项措施*/
