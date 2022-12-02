@@ -1,5 +1,6 @@
 package com.aiurt.modules.flow.dto;
 
+import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.ApiModel;
@@ -79,7 +80,7 @@ public class TaskInfoDTO {
      * 前端所需的操作列表。
      */
     @ApiModelProperty(value = "前端所需的操作列表")
-    List<JSONObject> operationList;
+    List<ActOperationEntity> operationList;
 
     /**
      * 任务节点的自定义变量列表。

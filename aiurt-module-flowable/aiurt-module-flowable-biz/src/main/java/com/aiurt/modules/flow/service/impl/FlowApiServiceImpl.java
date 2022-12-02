@@ -23,6 +23,7 @@ import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.entity.ActCustomVariable;
+import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.modeler.service.IActCustomVariableService;
@@ -37,6 +38,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
@@ -494,7 +496,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (flowTaskExt != null) {
             // 判断为办理人才返回操作按钮
             if (StrUtil.isNotBlank(flowTaskExt.getOperationListJson()) && this.isAssigneeOrCandidate(task)){
-                taskInfoDTO.setOperationList(JSON.parseArray(flowTaskExt.getOperationListJson(), JSONObject.class));
+                taskInfoDTO.setOperationList(JSON.parseArray(flowTaskExt.getOperationListJson(), ActOperationEntity.class));
             }
             if (StrUtil.isNotBlank(flowTaskExt.getVariableListJson())) {
                 // taskInfoDTO.setVariableList(JSON.parseArray(flowTaskExt.getVariableListJson(), JSONObject.class));
@@ -1582,9 +1584,18 @@ public class FlowApiServiceImpl implements FlowApiService {
                 }
             }
             String json = customTaskExt.getOperationListJson();
-            List<JSONObject> objectList = JSONObject.parseArray(json, JSONObject.class);
-            // 过滤是否已经
-            objectList = objectList.stream().filter(entity-> !StrUtil.equalsIgnoreCase(entity.getString("type"), FlowApprovalType.CANCEL)).collect(Collectors.toList());
+            List<ActOperationEntity> objectList = JSONObject.parseArray(json, ActOperationEntity.class);
+            // 过滤 取消按钮不展示
+            objectList = objectList.stream().filter(entity-> !StrUtil.equalsIgnoreCase(entity.getType(), FlowApprovalType.CANCEL)).collect(Collectors.toList());
+            // 排序
+            objectList.stream().forEach(entity-> {
+                Integer o = entity.getShowOrder();
+                if (Objects.isNull(o)) {
+                    entity.setShowOrder(0);
+                }
+            });
+            objectList = objectList.stream().sorted(Comparator.comparing(ActOperationEntity::getShowOrder)).collect(Collectors.toList());
+
             taskInfoDTO.setOperationList(objectList);
         }
         taskInfoDTO.setProcessName(processDefinition.getName());
