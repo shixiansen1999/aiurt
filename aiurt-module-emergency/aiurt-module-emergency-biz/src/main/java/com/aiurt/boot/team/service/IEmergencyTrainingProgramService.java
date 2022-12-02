@@ -43,4 +43,23 @@ public interface IEmergencyTrainingProgramService extends IService<EmergencyTrai
      * @return
      */
     Result<String> edit(EmergencyTrainingProgram emergencyTrainingProgram);
+    /**
+     * 删除
+     * @param program
+     * @return
+     */
+    void delete(EmergencyTrainingProgram program);
+
+    /**
+     * 发布
+     * @param program
+     * @return
+     */
+    void publish(EmergencyTrainingProgram program );
+    /**
+     * 根据id查询详情
+     * @param emergencyTrainingProgram
+     * @return
+     */
+    Result<EmergencyTrainingProgram> queryById(EmergencyTrainingProgram emergencyTrainingProgram);
 }

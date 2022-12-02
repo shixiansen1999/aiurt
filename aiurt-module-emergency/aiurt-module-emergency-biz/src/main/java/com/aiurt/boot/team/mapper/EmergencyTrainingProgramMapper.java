@@ -11,5 +11,16 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface EmergencyTrainingProgramMapper extends BaseMapper<EmergencyTrainingProgram> {
 
+    /**
+     * 获取队伍名称
+     * @param id
+     * @return
+     */
     String getTrainingTeam(String id);
+    /**
+     * 获取负责人名称
+     * @param id
+     * @return
+     */
+    String getTrainees(String id);
 }

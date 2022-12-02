@@ -1,5 +1,6 @@
 package com.aiurt.boot.team.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -60,6 +61,7 @@ public class EmergencyTrainingProgram implements Serializable {
 	/**审核状态（1待提交、2待完成、3已完成）*/
 	@Excel(name = "审核状态（1待下发、2待完成、3已完成）", width = 15)
     @ApiModelProperty(value = "审核状态（1待下发、2待完成、3已完成）")
+    @Dict(dicCode = "emergency_training_status")
     private Integer status;
 	/**编制部门*/
 	@Excel(name = "编制部门", width = 15)
@@ -103,6 +105,9 @@ public class EmergencyTrainingProgram implements Serializable {
     @TableField(exist = false)
     private Integer saveFlag;
 
+    @ApiModelProperty(value = "训练负责人名称")
+    @TableField(exist = false)
+    private String trainees;
     /**
      * 应急队伍
      */

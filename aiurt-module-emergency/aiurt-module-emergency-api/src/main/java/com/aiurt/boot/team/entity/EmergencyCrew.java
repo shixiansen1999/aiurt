@@ -1,5 +1,6 @@
 package com.aiurt.boot.team.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -44,7 +45,8 @@ public class EmergencyCrew implements Serializable {
 	/**职务*/
 	@Excel(name = "职务", width = 15)
     @ApiModelProperty(value = "职务")
-    private Integer postname;
+    @Dict(dicCode = "emergency_post")
+    private Integer post;
 	/**人员id*/
 	@Excel(name = "人员id", width = 15)
     @ApiModelProperty(value = "人员id")

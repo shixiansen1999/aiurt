@@ -11,13 +11,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Description: emergency_training_program
@@ -32,7 +35,8 @@ import java.util.Arrays;
 public class EmergencyTrainingProgramController extends BaseController<EmergencyTrainingProgram, IEmergencyTrainingProgramService> {
 	@Autowired
 	private IEmergencyTrainingProgramService emergencyTrainingProgramService;
-
+	@Resource
+	private ISysBaseAPI sysBaseApi;
 	/**
 	 * 分页列表查询
 	 *
@@ -89,7 +93,11 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	@ApiOperation(value="应急队伍训练计划-通过id删除", notes="应急队伍训练计划-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		emergencyTrainingProgramService.removeById(id);
+		EmergencyTrainingProgram program = emergencyTrainingProgramService.getById(id);
+		if(program==null) {
+			return Result.error("未找到对应数据");
+		}
+		emergencyTrainingProgramService.delete(program);
 		return Result.OK("删除成功!");
 	}
 
@@ -103,7 +111,14 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	@ApiOperation(value="应急队伍训练计划-批量删除", notes="应急队伍训练计划-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.emergencyTrainingProgramService.removeByIds(Arrays.asList(ids.split(",")));
+		List<String> list = Arrays.asList(ids.split(","));
+		for (String s : list) {
+			EmergencyTrainingProgram program = emergencyTrainingProgramService.getById(s);
+			if(program==null) {
+				return Result.error("未找到对应数据");
+			}
+			emergencyTrainingProgramService.delete(program);
+		}
 		return Result.OK("批量删除成功!");
 	}
 
@@ -120,7 +135,7 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 		if(emergencyTrainingProgram==null) {
 			return Result.error("未找到对应数据");
 		}
-		return Result.OK(emergencyTrainingProgram);
+		return emergencyTrainingProgramService.queryById(emergencyTrainingProgram);
 	}
 
     /**
@@ -163,13 +178,14 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "应急队伍训练计划-编辑")
-	@ApiOperation(value="应急队伍训练计划-编辑", notes="应急队伍训练计划-编辑")
+	@AutoLog(value = "应急队伍训练计划-发布")
+	@ApiOperation(value="应急队伍训练计划-发布", notes="应急队伍训练计划-发布")
 	@RequestMapping(value = "/publish", method = {RequestMethod.PUT})
 	public Result<String> publish(@RequestBody @RequestParam(name="id",required=true) String id) {
 		EmergencyTrainingProgram program = emergencyTrainingProgramService.getById(id);
 		program.setStatus(TeamConstant.WAIT_COMPLETE);
 		emergencyTrainingProgramService.updateById(program);
+		emergencyTrainingProgramService.publish(program);
 		return Result.OK("发布成功!");
 	}
 }

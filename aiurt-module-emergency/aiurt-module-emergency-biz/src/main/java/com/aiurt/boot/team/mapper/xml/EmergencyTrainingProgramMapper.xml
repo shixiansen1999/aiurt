@@ -12,4 +12,14 @@
     ett.emergency_training_program_id = #{id} and ett.del_flag = 0
     group by ett.emergency_training_program_id
     </select>
+
+<select id="getTrainees" resultType="java.lang.String">
+    select concat_ws(',',su.realname)
+    from emergency_training_team ett
+    left join emergency_crew ec on ec.emergency_team_id = ett.emergency_team_id
+    left join sys_user su on su.id = ec.user_id
+    WHERE
+    ett.emergency_training_program_id = #{id} and ett.del_flag = 0
+    group by ett.emergency_training_program_id
+    </select>
 </mapper>

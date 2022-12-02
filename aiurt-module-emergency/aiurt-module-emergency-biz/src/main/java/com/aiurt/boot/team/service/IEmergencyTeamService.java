@@ -43,10 +43,10 @@ public interface IEmergencyTeamService extends IService<EmergencyTeam> {
     Result<String> edit(EmergencyTeam emergencyTeam);
     /**
      * 应急队伍删除
-     * @param id
+     * @param emergencyTeam
      * @return
      */
-    Result<String> delete(String id);
+    void delete(EmergencyTeam emergencyTeam );
 
     /**
      * 应急队伍查询训练记录

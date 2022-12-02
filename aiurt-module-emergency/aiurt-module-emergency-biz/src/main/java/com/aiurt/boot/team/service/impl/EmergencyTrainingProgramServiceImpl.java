@@ -7,10 +7,13 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
+import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
 import com.aiurt.boot.team.entity.EmergencyTrainingTeam;
 import com.aiurt.boot.team.mapper.EmergencyTrainingProgramMapper;
 import com.aiurt.boot.team.service.IEmergencyTrainingProgramService;
+import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.constant.CommonConstant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -50,6 +53,9 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
 
     @Autowired
     private EmergencyTrainingTeamServiceImpl emergencyTrainingTeamService;
+
+    @Autowired
+    private EmergencyTeamServiceImpl emergencyTeamService;
 
     @Override
     public IPage<EmergencyTrainingProgram> queryPageList(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO, Integer pageNo, Integer pageSize) {
@@ -112,6 +118,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         String result = "添加成功！";
         if (TeamConstant.PUBLISH.equals(emergencyTrainingProgram.getSaveFlag())) {
             emergencyTrainingProgram.setStatus(TeamConstant.WAIT_COMPLETE);
+            publish(emergencyTrainingProgram);
             result = "下发成功！";
         } else {
             emergencyTrainingProgram.setStatus(TeamConstant.WAIT_PUBLISH);
@@ -168,5 +175,51 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             }
         }
         return Result.OK("编辑成功");
+    }
+
+    @Override
+    public void delete(EmergencyTrainingProgram program) {
+        LambdaQueryWrapper<EmergencyTrainingTeam> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EmergencyTrainingTeam::getDelFlag, TeamConstant.DEL_FLAG0);
+        queryWrapper.eq(EmergencyTrainingTeam::getEmergencyTrainingProgramId, program.getId());
+        List<EmergencyTrainingTeam> teamList = emergencyTrainingTeamService.getBaseMapper().selectList(queryWrapper);
+        if (CollUtil.isNotEmpty(teamList)) {
+            for (EmergencyTrainingTeam emergencyTrainingTeam : teamList) {
+                emergencyTrainingTeamService.removeById(emergencyTrainingTeam);
+            }
+        }
+        this.removeById(program.getId());
+    }
+
+    @Override
+    public void publish(EmergencyTrainingProgram program ) {
+        LambdaQueryWrapper<EmergencyTrainingTeam> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EmergencyTrainingTeam::getDelFlag, TeamConstant.DEL_FLAG0);
+        queryWrapper.eq(EmergencyTrainingTeam::getEmergencyTrainingProgramId, program.getId());
+        List<EmergencyTrainingTeam> teamList = emergencyTrainingTeamService.getBaseMapper().selectList(queryWrapper);
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (CollUtil.isNotEmpty(teamList)) {
+            List<String> userIds = new ArrayList<>();
+            for (EmergencyTrainingTeam emergencyTrainingTeam : teamList) {
+                String emergencyTeamId = emergencyTrainingTeam.getEmergencyTeamId();
+                EmergencyTeam team = emergencyTeamService.getById(emergencyTeamId);
+                userIds.add(team.getManagerId());
+            }
+            String[] strings = userIds.toArray(new String[userIds.size()]);
+            List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(strings);
+            String userNameStr = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+            iSysBaseAPI.sendSysAnnouncement(new MessageDTO(user.getRealname(), userNameStr, "应急训练计划任务", "您有一条新的应急训练计划任务，请注意训练任务开始时间!", CommonConstant.MSG_CATEGORY_2));
+        }
+    }
+
+    @Override
+    public Result<EmergencyTrainingProgram> queryById(EmergencyTrainingProgram emergencyTrainingProgram) {
+        SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(emergencyTrainingProgram.getOrgCode());
+        emergencyTrainingProgram.setOrgName(sysDepartModel.getDepartName());
+        String trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(emergencyTrainingProgram.getId());
+        emergencyTrainingProgram.setEmergencyTeamName(trainingTeam);
+        String trainees = emergencyTrainingProgramMapper.getTrainees(emergencyTrainingProgram.getId());
+        emergencyTrainingProgram.setTrainees(trainees);
+        return Result.OK(emergencyTrainingProgram);
     }
 }

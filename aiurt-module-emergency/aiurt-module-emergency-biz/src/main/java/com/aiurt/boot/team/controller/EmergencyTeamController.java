@@ -94,7 +94,12 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	@ApiOperation(value="应急队伍台账-通过id删除", notes="应急队伍台账-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		return emergencyTeamService.delete(id);
+		EmergencyTeam emergencyTeam = emergencyTeamService.getById(id);
+		if(emergencyTeam==null) {
+			return Result.error("未找到对应数据");
+		}
+		emergencyTeamService.delete(emergencyTeam);
+		return Result.OK("删除成功!");
 	}
 
 	/**
@@ -107,7 +112,14 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	@ApiOperation(value="应急队伍台账-批量删除", notes="应急队伍台账-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.emergencyTeamService.removeByIds(Arrays.asList(ids.split(",")));
+		List<String> list = Arrays.asList(ids.split(","));
+		for (String s : list) {
+			EmergencyTeam emergencyTeam = emergencyTeamService.getById(s);
+			if(emergencyTeam==null) {
+				return Result.error("未找到对应数据");
+			}
+			emergencyTeamService.delete(emergencyTeam);
+		}
 		return Result.OK("批量删除成功!");
 	}
 

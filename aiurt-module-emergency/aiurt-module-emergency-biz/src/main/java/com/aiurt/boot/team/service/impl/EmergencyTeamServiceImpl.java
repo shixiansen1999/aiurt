@@ -177,11 +177,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
     }
 
     @Override
-    public Result<String> delete(String id) {
-        EmergencyTeam emergencyTeam = this.getById(id);
-        if(emergencyTeam==null) {
-            return Result.error("未找到对应数据");
-        }
+    public void delete(EmergencyTeam emergencyTeam ) {
         LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
         wrapper.eq(EmergencyCrew::getEmergencyTeamId, emergencyTeam.getId());
@@ -190,7 +186,6 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             emergencyCrewService.removeByIds(emergencyCrews);
         }
         this.removeById(emergencyTeam);
-        return Result.OK("删除成功!");
     }
 
     @Override
