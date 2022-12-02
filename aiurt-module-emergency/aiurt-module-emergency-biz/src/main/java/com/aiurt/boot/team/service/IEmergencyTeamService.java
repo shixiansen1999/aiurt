@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import java.util.List;
+
 /**
  * @Description: emergency_team
  * @Author: aiurt
@@ -61,4 +63,10 @@ public interface IEmergencyTeamService extends IService<EmergencyTeam> {
      * @return
      */
     IPage<EmergencyTeam> queryPageList(EmergencyTeamDTO emergencyTeamDTO, Integer pageNo, Integer pageSize);
+    /**
+     * 根据部门查询队伍
+     * @param orgCode
+     * @return
+     */
+    Result<List<EmergencyTeam>> getTeamByCode(String orgCode);
 }

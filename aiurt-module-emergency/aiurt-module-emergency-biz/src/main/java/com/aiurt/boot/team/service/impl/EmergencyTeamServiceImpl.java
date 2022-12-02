@@ -2,6 +2,7 @@ package com.aiurt.boot.team.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.team.dto.EmergencyTeamDTO;
 import com.aiurt.boot.team.dto.EmergencyTeamTrainingDTO;
@@ -89,7 +90,6 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         }
         return pageList;
     }
-
 
     @Override
     public void translate(EmergencyTeam emergencyTeam) {
@@ -208,5 +208,31 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         }
         return Result.OK();
     }
+
+
+    @Override
+    public Result<List<EmergencyTeam>> getTeamByCode(String orgCode) {
+        LambdaQueryWrapper<EmergencyTeam> queryWrapper = new LambdaQueryWrapper<>();
+        if (StrUtil.isNotBlank(orgCode)) {
+            queryWrapper.eq(EmergencyTeam::getOrgCode, orgCode);
+        }
+        queryWrapper.select(EmergencyTeam::getEmergencyTeamname, EmergencyTeam::getEmergencyTeamcode,EmergencyTeam::getManagerId);
+        List<EmergencyTeam> emergencyTeams = this.getBaseMapper().selectList(queryWrapper);
+        if (CollUtil.isNotEmpty(emergencyTeams)) {
+            for (EmergencyTeam emergencyTeam : emergencyTeams) {
+                LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(EmergencyCrew::getDelFlag, 0);
+                wrapper.eq(EmergencyCrew::getEmergencyTeamId, emergencyTeam.getId());
+                List<EmergencyCrew> emergencyCrews = emergencyCrewService.getBaseMapper().selectList(wrapper);
+                emergencyTeam.setCrews(Convert.toStr(emergencyCrews.size()));
+
+                LoginUser userById = iSysBaseAPI.getUserById(emergencyTeam.getManagerId());
+                emergencyTeam.setManagerName(userById.getRealname());
+            }
+        }
+
+        return Result.OK(emergencyTeams);
+    }
+
 
 }

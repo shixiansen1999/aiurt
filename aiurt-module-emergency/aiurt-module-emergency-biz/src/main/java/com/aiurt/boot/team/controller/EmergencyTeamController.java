@@ -18,6 +18,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Description: emergency_team
@@ -161,5 +162,17 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, EmergencyTeam.class);
     }
+
+	/**
+	 * 根据部门查找应急队伍
+	 *
+	 * @param orgCode
+	 * @return
+	 */
+	@ApiOperation(value="应急队伍台账-根据部门查找应急队伍", notes="应急队伍台账-根据部门查找应急队伍")
+	@GetMapping(value = "/getTeamByCode")
+	public Result<List<EmergencyTeam>> getTeamByCode(@RequestParam(name="orgCode",required=false) String orgCode) {
+		return emergencyTeamService.getTeamByCode(orgCode);
+	}
 
 }

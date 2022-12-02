@@ -11,4 +11,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface EmergencyTrainingProgramMapper extends BaseMapper<EmergencyTrainingProgram> {
 
+    String getTrainingTeam(String id);
 }

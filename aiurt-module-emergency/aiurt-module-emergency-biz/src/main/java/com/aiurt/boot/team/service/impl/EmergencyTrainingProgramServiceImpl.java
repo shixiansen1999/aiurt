@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
@@ -40,7 +41,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
     private ISysBaseAPI iSysBaseAPI;
 
     @Autowired
-    private EmergencyTrainingTeamServiceImpl emergencyTrainingTeamService;
+    private EmergencyTrainingProgramMapper emergencyTrainingProgramMapper;
 
     @Override
     public IPage<EmergencyTrainingProgram> queryPageList(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO, Integer pageNo, Integer pageSize) {
@@ -84,12 +85,16 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             for (EmergencyTrainingProgram record : records) {
                 SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(record.getOrgCode());
                 record.setOrgName(sysDepartModel.getDepartName());
-
-
+                String trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(record.getId());
+                record.setEmergencyTeamName(trainingTeam);
             }
         }
-
-
         return pageList;
+    }
+
+    @Override
+    public Result<String> add(EmergencyTrainingProgram emergencyTrainingProgram) {
+
+        return null;
     }
 }

@@ -28,9 +28,9 @@ public class EmergencyTrainingProgramDTO {
     @ApiModelProperty(value = "训练项目名称")
     private String trainingProgramName;
     /**计划训练时间*/
-    @Excel(name = "计划训练时间", width = 15, format = "yyyy-MM-dd")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @Excel(name = "计划训练时间", width = 15, format = "yyyy-MM")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM")
+    @DateTimeFormat(pattern="yyyy-MM")
     @ApiModelProperty(value = "计划训练时间")
     private java.util.Date trainingPlanTime;
     /**计划训练人数*/

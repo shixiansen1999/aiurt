@@ -1,5 +1,7 @@
 package com.aiurt.boot.team.controller;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
 import com.aiurt.boot.team.service.IEmergencyTrainingProgramService;
@@ -17,14 +19,15 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.Date;
 
- /**
+/**
  * @Description: emergency_training_program
  * @Author: aiurt
  * @Date:   2022-11-29
  * @Version: V1.0
  */
-@Api(tags="emergency_training_program")
+@Api(tags="应急队伍训练计划")
 @RestController
 @RequestMapping("/emergency/emergencyTrainingProgram")
 @Slf4j
@@ -41,7 +44,7 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	 * @param req
 	 * @return
 	 */
-	@ApiOperation(value="emergency_training_program-分页列表查询", notes="emergency_training_program-分页列表查询")
+	@ApiOperation(value="应急队伍训练计划-分页列表查询", notes="应急队伍训练计划-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<EmergencyTrainingProgram>> queryPageList(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO,
 																 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -57,11 +60,11 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	 * @param emergencyTrainingProgram
 	 * @return
 	 */
-	@AutoLog(value = "emergency_training_program-添加")
-	@ApiOperation(value="emergency_training_program-添加", notes="emergency_training_program-添加")
+	@AutoLog(value = "应急队伍训练计划-添加")
+	@ApiOperation(value="应急队伍训练计划-添加", notes="应急队伍训练计划-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody EmergencyTrainingProgram emergencyTrainingProgram) {
-		emergencyTrainingProgramService.save(emergencyTrainingProgram);
+		emergencyTrainingProgramService.add(emergencyTrainingProgram);
 		return Result.OK("添加成功！");
 	}
 
@@ -71,8 +74,8 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	 * @param emergencyTrainingProgram
 	 * @return
 	 */
-	@AutoLog(value = "emergency_training_program-编辑")
-	@ApiOperation(value="emergency_training_program-编辑", notes="emergency_training_program-编辑")
+	@AutoLog(value = "应急队伍训练计划-编辑")
+	@ApiOperation(value="应急队伍训练计划-编辑", notes="应急队伍训练计划-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody EmergencyTrainingProgram emergencyTrainingProgram) {
 		emergencyTrainingProgramService.updateById(emergencyTrainingProgram);
@@ -85,8 +88,8 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "emergency_training_program-通过id删除")
-	@ApiOperation(value="emergency_training_program-通过id删除", notes="emergency_training_program-通过id删除")
+	@AutoLog(value = "应急队伍训练计划-通过id删除")
+	@ApiOperation(value="应急队伍训练计划-通过id删除", notes="应急队伍训练计划-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		emergencyTrainingProgramService.removeById(id);
@@ -99,8 +102,8 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "emergency_training_program-批量删除")
-	@ApiOperation(value="emergency_training_program-批量删除", notes="emergency_training_program-批量删除")
+	@AutoLog(value = "应急队伍训练计划-批量删除")
+	@ApiOperation(value="应急队伍训练计划-批量删除", notes="应急队伍训练计划-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.emergencyTrainingProgramService.removeByIds(Arrays.asList(ids.split(",")));
@@ -113,8 +116,7 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_training_program-通过id查询")
-	@ApiOperation(value="emergency_training_program-通过id查询", notes="emergency_training_program-通过id查询")
+	@ApiOperation(value="应急队伍训练计划-通过id查询", notes="应急队伍训练计划-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<EmergencyTrainingProgram> queryById(@RequestParam(name="id",required=true) String id) {
 		EmergencyTrainingProgram emergencyTrainingProgram = emergencyTrainingProgramService.getById(id);
@@ -147,4 +149,31 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
         return super.importExcel(request, response, EmergencyTrainingProgram.class);
     }
 
+	 /**
+	  * 自动生成计划编号
+	  *
+	  * @return
+	  */
+	 @ApiOperation(value="应急队伍训练计划-自动生成计划编号", notes="应急队伍训练计划-自动生成计划编号")
+	 @GetMapping(value = "/getTrainPlanCode")
+	 public String getTrainPlanCode() {
+		 String code = "XLJH-" + DateUtil.format(new Date(), "yyyyMMdd-");
+		 EmergencyTrainingProgram one = emergencyTrainingProgramService.lambdaQuery().like(EmergencyTrainingProgram::getTrainingProgramCode, code)
+				 .orderByDesc(EmergencyTrainingProgram::getTrainingProgramCode)
+				 .last("limit 1")
+				 .one();
+
+		 if (ObjectUtil.isEmpty(one)) {
+			 code += String.format("%02d", 1);
+		 } else {
+			 String trainingProgramCode = one.getTrainingProgramCode();
+			 Integer serialNo = Integer.valueOf(trainingProgramCode.substring(trainingProgramCode.lastIndexOf("-") + 1));
+			 if (serialNo >= 99) {
+				 code += (serialNo + 1);
+			 } else {
+				 code += String.format("%02d", (serialNo + 1));
+			 }
+		 }
+		 return code;
+	 }
 }

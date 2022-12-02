@@ -4,6 +4,7 @@ import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 /**
  * @Description: emergency_training_program
@@ -21,4 +22,11 @@ public interface IEmergencyTrainingProgramService extends IService<EmergencyTrai
      * @return
      */
     IPage<EmergencyTrainingProgram> queryPageList(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO, Integer pageNo, Integer pageSize);
+
+    /**
+     * 添加
+     * @param emergencyTrainingProgram
+     * @return
+     */
+    Result<String> add(EmergencyTrainingProgram emergencyTrainingProgram);
 }
