@@ -1,6 +1,7 @@
 package com.aiurt.boot.team.entity;
 
 import com.aiurt.boot.team.dto.EmergencyTeamTrainingDTO;
+import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -139,9 +140,13 @@ public class EmergencyTeam implements Serializable {
     private java.util.Date updateTime;
 
 
-    @ApiModelProperty(value = "应急人员")
+    @ApiModelProperty(value = "应急人员添加集合")
     @TableField(exist = false)
     private List<EmergencyCrew> emergencyCrewList;
+
+    @ApiModelProperty(value = "应急人员查询集合")
+    @TableField(exist = false)
+    private List<EmergencyCrewVO> emergencyCrewVOList;
 
     @ApiModelProperty(value = "应急人员数量")
     @TableField(exist = false)

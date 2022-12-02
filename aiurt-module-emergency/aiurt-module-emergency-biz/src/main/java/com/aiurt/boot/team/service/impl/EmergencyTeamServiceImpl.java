@@ -12,6 +12,7 @@ import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.mapper.EmergencyTeamMapper;
 import com.aiurt.boot.team.service.IEmergencyCrewService;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
+import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -127,16 +128,25 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         wrapper.eq(EmergencyCrew::getEmergencyTeamId, emergencyTeam.getId());
         List<EmergencyCrew> emergencyCrews = emergencyCrewService.getBaseMapper().selectList(wrapper);
         if (CollUtil.isNotEmpty(emergencyCrews)) {
+            List<EmergencyCrewVO> list = new ArrayList<>();
             for (EmergencyCrew emergencyCrew : emergencyCrews) {
+                EmergencyCrewVO emergencyCrewVO = new EmergencyCrewVO();
                 List<String> roleNamesById = iSysBaseAPI.getRoleNamesById(emergencyCrew.getUserId());
                 if (CollUtil.isNotEmpty(roleNamesById)) {
                     String join = StrUtil.join(",", roleNamesById);
-                    emergencyCrew.setRoleName(join);
+                    emergencyCrewVO.setRoleNames(join);
                 }
                 LoginUser userById = iSysBaseAPI.getUserById(emergencyCrew.getUserId());
-                emergencyCrew.setUserName(userById.getRealname());
+                emergencyCrewVO.setRealname(userById.getRealname());
+                emergencyCrewVO.setId(emergencyCrew.getId());
+                emergencyCrewVO.setPost(emergencyCrew.getPost());
+                emergencyCrewVO.setPhone(emergencyCrew.getUserPhone());
+                SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(userById.getOrgCode());
+                emergencyCrewVO.setOrgName(sysDepartModel.getDepartName());
+                emergencyCrewVO.setRemark(emergencyCrew.getRemark());
+                list.add(emergencyCrewVO);
             }
-            emergencyTeam.setEmergencyCrewList(emergencyCrews);
+            emergencyTeam.setEmergencyCrewVOList(list);
         }
         translate(emergencyTeam);
         return emergencyTeam;
