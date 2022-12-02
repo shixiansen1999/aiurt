@@ -32,9 +32,9 @@ import lombok.experimental.Accessors;
 public class EmergencyRecordQuestion extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
-	/**责任人ID*/
+	/**主键ID*/
 	@TableId(type = IdType.ASSIGN_ID)
-    @ApiModelProperty(value = "责任人ID")
+    @ApiModelProperty(value = "主键ID")
     private java.lang.String id;
     /**实施记录ID*/
     @Excel(name = "实施记录ID", width = 15)
@@ -58,18 +58,35 @@ public class EmergencyRecordQuestion extends DictEntity implements Serializable 
 	@Excel(name = "责任部门编码", width = 15)
     @ApiModelProperty(value = "责任部门编码")
     private java.lang.String orgCode;
+    /**责任部门名称*/
+    @Excel(name = "责任部门名称", width = 15)
+    @ApiModelProperty(value = "责任部门名称")
+    @TableField(exist = false)
+    private java.lang.String orgName;
 	/**责任部门负责人ID*/
 	@Excel(name = "责任部门负责人ID", width = 15)
     @ApiModelProperty(value = "责任部门负责人ID")
     private java.lang.String orgUserId;
+    /**责任部门责任人名称*/
+    @Excel(name = "责任部门责任人名称", width = 15)
+    @ApiModelProperty(value = "责任部门责任人名称")
+    @TableField(exist = false)
+    private java.lang.String orgUserName;
 	/**责任人ID*/
 	@Excel(name = "责任人ID", width = 15)
     @ApiModelProperty(value = "责任人ID")
     private java.lang.String userId;
-	/**解决期限*/
+    /**责任人名称*/
+    @Excel(name = "责任人名称", width = 15)
+    @ApiModelProperty(value = "责任人名称")
+    @TableField(exist = false)
+    private java.lang.String userName;
+	/**解决期限,格式yyyy-MM-dd*/
 	@Excel(name = "解决期限", width = 15)
-    @ApiModelProperty(value = "解决期限")
-    private java.lang.String deadline;
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "解决期限,格式yyyy-MM-dd")
+    private java.util.Date deadline;
 	/**问题状态(1待处理、2处理中、3已处理)*/
 	@Excel(name = "问题状态(1待处理、2处理中、3已处理)", width = 15)
     @ApiModelProperty(value = "问题状态(1待处理、2处理中、3已处理)")

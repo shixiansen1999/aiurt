@@ -41,6 +41,6 @@ public class EmergencyRecordReadOneVO extends EmergencyImplementationRecord {
     /**
      * 登记问题信息
      */
-    @ApiModelProperty(value = "v")
+    @ApiModelProperty(value = "登记问题信息")
     List<EmergencyRecordQuestion> questions;
 }

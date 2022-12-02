@@ -69,7 +69,12 @@ public class EmergencyImplementationRecordServiceImpl extends ServiceImpl<Emerge
     public String rehearsalRegister(EmergencyRehearsalRegisterDTO emergencyRehearsalRegisterDTO) {
         EmergencyImplementationRecord implementationRecord = new EmergencyImplementationRecord();
         BeanUtils.copyProperties(emergencyRehearsalRegisterDTO, implementationRecord);
-        implementationRecord.setStatus(EmergencyConstant.RECORD_STATUS_1);
+        if (ObjectUtil.isNotEmpty(implementationRecord.getStatus())
+                && EmergencyConstant.RECORD_STATUS_2.equals(implementationRecord.getStatus())) {
+            implementationRecord.setStatus(EmergencyConstant.RECORD_STATUS_2);
+        } else {
+            implementationRecord.setStatus(EmergencyConstant.RECORD_STATUS_1);
+        }
         this.save(implementationRecord);
 
         String id = implementationRecord.getId();
@@ -174,16 +179,8 @@ public class EmergencyImplementationRecordServiceImpl extends ServiceImpl<Emerge
         List<EmergencyRecordQuestion> questionList = emergencyRecordQuestionService.lambdaQuery()
                 .eq(EmergencyRecordQuestion::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .eq(EmergencyRecordQuestion::getRecordId, id).list();
-        if (CollectionUtil.isNotEmpty(questionList)) {
-            Map<String, String> categoryMap = iSysBaseApi.getDictItems(EmergencyDictConstant.QUESTION_CATEGORY).stream()
-                    .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-            Map<String, String> statusMap = iSysBaseApi.getDictItems(EmergencyDictConstant.QUESTION_STATUS).stream()
-                    .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-            questionList.forEach(l -> {
-                l.setCategoryName(categoryMap.get(String.valueOf(l.getCategory())));
-                l.setStatusName(statusMap.get(String.valueOf(l.getStatus())));
-            });
-        }
+        // 问题列表的字典，组织机构名称转换
+        this.questionTranslate(questionList);
 
         // 查询对应的步骤
         List<EmergencyRecordStep> stepList = emergencyRecordStepService.lambdaQuery()
@@ -195,6 +192,35 @@ public class EmergencyImplementationRecordServiceImpl extends ServiceImpl<Emerge
         recordVO.setSteps(stepList);
         recordVO.setQuestions(questionList);
         return recordVO;
+    }
+
+    /**
+     * 关联的问题列表的字典，组织机构名称转换
+     *
+     * @param questionList
+     */
+    private void questionTranslate(List<EmergencyRecordQuestion> questionList) {
+        if (CollectionUtil.isNotEmpty(questionList)) {
+            Map<String, String> categoryMap = iSysBaseApi.getDictItems(EmergencyDictConstant.QUESTION_CATEGORY).stream()
+                    .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+            Map<String, String> statusMap = iSysBaseApi.getDictItems(EmergencyDictConstant.QUESTION_STATUS).stream()
+                    .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+            Map<String, String> orgMap = iSysBaseApi.getAllSysDepart().stream()
+                    .collect(Collectors.toMap(k -> k.getOrgCode(), v -> v.getDepartName(), (a, b) -> a));
+            questionList.forEach(l -> {
+                l.setCategoryName(categoryMap.get(String.valueOf(l.getCategory())));
+                l.setStatusName(statusMap.get(String.valueOf(l.getStatus())));
+                l.setOrgName(orgMap.get(l.getOrgCode()));
+                Optional.ofNullable(l.getOrgUserId()).ifPresent(userId -> {
+                    LoginUser loginUser = iSysBaseApi.getUserById(userId);
+                    Optional.ofNullable(loginUser).ifPresent(user -> l.setOrgUserName(user.getRealname()));
+                });
+                Optional.ofNullable(l.getUserId()).ifPresent(userId -> {
+                    LoginUser loginUser = iSysBaseApi.getUserById(userId);
+                    Optional.ofNullable(loginUser).ifPresent(user -> l.setUserName(user.getRealname()));
+                });
+            });
+        }
     }
 
     /**

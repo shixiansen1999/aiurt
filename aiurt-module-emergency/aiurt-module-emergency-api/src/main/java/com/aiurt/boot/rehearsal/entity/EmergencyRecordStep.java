@@ -36,11 +36,11 @@ public class EmergencyRecordStep implements Serializable {
     @Excel(name = "实施记录ID", width = 15)
     @ApiModelProperty(value = "实施记录ID")
     private java.lang.String recordId;
-	/**时间*/
-	@Excel(name = "时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "时间")
+	/**时间,格式yyyy-MM-dd HH:mm*/
+	@Excel(name = "时间", width = 15, format = "yyyy-MM-dd HH:mm")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "时间,格式yyyy-MM-dd HH:mm")
     private java.util.Date time;
 	/**步骤描述*/
 	@Excel(name = "步骤描述", width = 15)
