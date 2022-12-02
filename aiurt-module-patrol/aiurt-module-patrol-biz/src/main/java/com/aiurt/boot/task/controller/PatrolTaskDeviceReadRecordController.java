@@ -11,6 +11,7 @@ import com.aiurt.boot.task.entity.PatrolTaskDeviceReadRecord;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceReadRecordService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +49,9 @@ public class PatrolTaskDeviceReadRecordController extends BaseController<PatrolT
                                           @RequestParam(name = "subsystemCode",required=false) String subsystemCode,
                                           @RequestParam(name = "taskId", required=true) String taskId, HttpServletRequest req) {
          boolean isRead =  taskDeviceReadRecordService.getPatrolTaskDeviceList(taskDeviceId,majorCode,subsystemCode,taskId);
-        return Result.OK(isRead);
+        JSONObject result = new JSONObject(1);
+        result.put("show", isRead);
+        return Result.OK(result);
     }
     /**
      *   工单阅读记录添加
