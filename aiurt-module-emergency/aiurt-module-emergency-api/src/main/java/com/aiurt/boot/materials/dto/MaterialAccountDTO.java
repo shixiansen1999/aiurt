@@ -1,9 +1,9 @@
 package com.aiurt.boot.materials.dto;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.jeecgframework.poi.excel.annotation.Excel;
 
 @Data
 public class MaterialAccountDTO {
@@ -102,6 +102,12 @@ public class MaterialAccountDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "位置名称")
     private java.lang.String positionName;
+
+    /**单位*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "单位")
+    @Dict(dicCode = "materials_unit")
+    private java.lang.String unit;
 
 
 }

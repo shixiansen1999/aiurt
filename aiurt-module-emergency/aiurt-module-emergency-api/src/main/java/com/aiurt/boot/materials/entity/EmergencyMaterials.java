@@ -2,6 +2,7 @@ package com.aiurt.boot.materials.entity;
 
 import java.io.Serializable;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -48,6 +49,7 @@ public class EmergencyMaterials implements Serializable {
 	/**单位*/
 	@Excel(name = "单位", width = 15)
     @ApiModelProperty(value = "单位")
+    @Dict(dicCode = "materials_unit")
     private java.lang.String unit;
 	/**物资分类编码*/
 	@Excel(name = "物资分类编码", width = 15)
