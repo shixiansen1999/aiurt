@@ -148,7 +148,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                         continue;
                     }else  if("有效".equals(stateName)){
                         csSafetyAttention.setState(1);
-                    }else if ("失效".equals(stateName)){
+                    }else if ("无效".equals(stateName)){
                         csSafetyAttention.setState(0);
                     }else {
                         errorStrs.add("第 " + i + " 行：安全状态识别不出，忽略导入。");
