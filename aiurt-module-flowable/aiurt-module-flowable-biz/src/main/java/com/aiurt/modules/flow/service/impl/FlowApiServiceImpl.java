@@ -1644,6 +1644,14 @@ public class FlowApiServiceImpl implements FlowApiService {
     private List<HistoricTaskInfo> buildHistoricTaskInfo(HistoricProcessInstance processInstance) {
         List<HistoricTaskInstance> instanceList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstance.getId()).orderByHistoricTaskInstanceStartTime().desc().list();
         List<HistoricTaskInfo> historicTaskInfoList = new ArrayList<>();
+        HistoricTaskInstance historicTaskInstance = instanceList.get(0);
+        String firstTaskKey = null;
+        if (Objects.nonNull(historicTaskInstance)) {
+            String processDefinitionId = historicTaskInstance.getProcessDefinitionId();
+            UserTask userTask = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
+            firstTaskKey = userTask.getId();
+        }
+        String finalFirstTaskKey = firstTaskKey;
         instanceList.stream().forEach(entity->{
             HistoricTaskInfo historicTaskInfo = HistoricTaskInfo.builder()
                     .id(entity.getId())
@@ -1677,15 +1685,15 @@ public class FlowApiServiceImpl implements FlowApiService {
                     }
                 }
             }
-            // // 查询审批意见
-            ActCustomTaskComment actCustomTaskComment = actCustomTaskCommentMapper.selectOne(new LambdaQueryWrapper<ActCustomTaskComment>().eq(ActCustomTaskComment::getTaskId, entity.getId()).orderByDesc(ActCustomTaskComment::getCreateTime).last("limit 1"));
-
-            if (Objects.nonNull(actCustomTaskComment)) {
-                // 判断第一个节点
-                historicTaskInfo.setResult(FlowApprovalType.DICT_MAP.get(actCustomTaskComment.getApprovalType()));
-                historicTaskInfo.setRemark(actCustomTaskComment.getComment());
+            // // 查询审批意见 且判断第一个节点
+            if (!StrUtil.equalsIgnoreCase(entity.getTaskDefinitionKey(), finalFirstTaskKey)) {
+                ActCustomTaskComment actCustomTaskComment = actCustomTaskCommentMapper.selectOne(new LambdaQueryWrapper<ActCustomTaskComment>().eq(ActCustomTaskComment::getTaskId, entity.getId()).orderByDesc(ActCustomTaskComment::getCreateTime).last("limit 1"));
+                if (Objects.nonNull(actCustomTaskComment)) {
+                    historicTaskInfo.setResult(FlowApprovalType.DICT_MAP.get(actCustomTaskComment.getApprovalType()));
+                    historicTaskInfo.setRemark(actCustomTaskComment.getComment());
+                }
+                historicTaskInfoList.add(historicTaskInfo);
             }
-            historicTaskInfoList.add(historicTaskInfo);
         });
         return historicTaskInfoList;
     }
