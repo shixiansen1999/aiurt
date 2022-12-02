@@ -30,10 +30,16 @@
             <if test="taskDetailsReq.maintenanceCycle!=null">
                 and  rp.type = #{taskDetailsReq.maintenanceCycle}
             </if>
-            <if test="taskDetailsReq.isAllData!=null and taskDetailsReq.isAllData==0 and codeByOrgCode.size()>0">
+            <if test="codeByOrgCode != null and codeByOrgCode.size() != 0">
                 and  rp.code in
-                <foreach collection="codeByOrgCode" item="code" open="(" close=")" separator=",">
-                    #{code}
+                <foreach collection="codeByOrgCode" item="item" open="(" close=")" separator=",">
+                    #{item.repairPoolCode}
+                </foreach>
+            </if>
+               <if test="repairPoolRels != null and repairPoolRels.size() != 0">
+                and  rp.code in
+                <foreach collection="repairPoolRels" item="item" open="(" close=")" separator=",">
+                    #{item.repairPoolCode}
                 </foreach>
             </if>
         </where>

@@ -67,6 +67,7 @@ public class IndexPlanController {
     @AutoLog(value = "首页-获取首页的检修概况详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-获取首页的检修概况详情", notes = "首页-获取首页的检修概况详情")
     @RequestMapping(value = "/getOverviewInfoDetails", method = RequestMethod.GET)
+    @PermissionData(pageComponent = "dashboard/Analysis")
     public Result<IPage<TaskDetailsDTO>> getOverviewInfoDetails(@Validated TaskDetailsReq taskDetailsReq
 
     ) {

@@ -26,6 +26,7 @@ import com.aiurt.boot.task.mapper.RepairTaskStationRelMapper;
 import com.aiurt.boot.task.mapper.RepairTaskUserMapper;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.DateUtils;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
@@ -183,15 +184,18 @@ public class IndexPlanService {
         if (ObjectUtil.isEmpty(taskDetailsReq.getIsAllData())) {
             taskDetailsReq.setIsAllData(InspectionConstant.IS_ALL_DATA_0);
         }
-        List<String> codeByOrgCode = getCodeByOrgCode();
-
+       // List<String> codeByOrgCode = getCodeByOrgCode();
+        List<RepairPoolOrgRel> codeByOrgCode = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList())));
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         // 用于判断是否是一整月的查询
         // 如果是一整个月查询，那么返回的dayBegin是这个月的第一周的开始时间，dayEnd是这个月最后一周的结束时间
         JudgeIsMonthQuery judgeIsMonthQuery = new JudgeIsMonthQuery(taskDetailsReq.getStartTime(), taskDetailsReq.getEndTime()).invoke();
         taskDetailsReq.setStartTime(judgeIsMonthQuery.getDayBegin());
         taskDetailsReq.setEndTime(judgeIsMonthQuery.getDayEnd());
 
-        List<TaskDetailsDTO> detailsDTOList = indexPlanMapper.getGropuByData(taskDetailsReq.getType(), page, taskDetailsReq, codeByOrgCode);
+        List<TaskDetailsDTO> detailsDTOList = indexPlanMapper.getGropuByData(taskDetailsReq.getType(), page, taskDetailsReq, codeByOrgCode,repairPoolRels);
 
         // 查询出符合条件的检修详情数据
         if (CollUtil.isNotEmpty(detailsDTOList)) {
