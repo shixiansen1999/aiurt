@@ -44,12 +44,13 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         //应急预案添加
         //获取当前登录人组织部门作为编制部门
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String orgId = loginUser.getOrgId();
+        String orgCode = loginUser.getOrgCode();
 
         EmergencyPlan emergencyPlan = new EmergencyPlan();
         BeanUtils.copyProperties(emergencyPlanDto, emergencyPlan);
         emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
-        emergencyPlan.setOrgCode(orgId);
+        emergencyPlan.setStatus(null);
+        emergencyPlan.setOrgCode(orgCode);
         Double version =1.0;
         emergencyPlan.setEmergencyPlanVersion(String.valueOf(version));
         this.save(emergencyPlan);
@@ -172,10 +173,10 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         BeanUtils.copyProperties(emergencyPlanDto, emergencyPlan);
         //获取部门
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String orgId = loginUser.getOrgId();
+        String orgCode = loginUser.getOrgCode();
 
         emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
-        emergencyPlan.setOrgCode(orgId);
+        emergencyPlan.setOrgCode(orgCode);
         emergencyPlan.setId(null);
         emergencyPlan.setEmergencyPlanVersion(String.valueOf(Double.valueOf(emergencyPlan.getEmergencyPlanVersion())+1));
         emergencyPlan.setOldPlanId(emergencyPlanDto.getId());

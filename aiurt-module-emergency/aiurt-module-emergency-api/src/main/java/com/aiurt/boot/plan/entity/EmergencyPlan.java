@@ -60,6 +60,7 @@ public class EmergencyPlan implements Serializable {
 	/**编制部门*/
 	@Excel(name = "编制部门", width = 15)
     @ApiModelProperty(value = "编制部门")
+    @Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "org_code")
     private String orgCode;
 	/**应急预案状态（1未启用、2启用中）*/
 	@Excel(name = "启用状态（1已停用、2有效）", width = 15)
@@ -67,8 +68,8 @@ public class EmergencyPlan implements Serializable {
     @Dict(dicCode = "emergency_status")
     private Integer status;
 	/**状态（1待提交、2待审核、3审核中、4已驳回、5已通过）*/
-	@Excel(name = "流程状态（1待提交、2待审核、3审核中、4已驳回、5已通过）", width = 15)
-    @ApiModelProperty(value = "流程状态（1待提交、2待审核、3审核中、4已驳回、5已通过）")
+	@Excel(name = "流程状态（1待提审、2待审核、3审核中、4已驳回、5已通过）", width = 15)
+    @ApiModelProperty(value = "流程状态（1待提审、2待审核、3审核中、4已驳回、5已通过）")
     @Dict(dicCode = "emergency_plan_status")
     private Integer emergencyPlanStatus;
 
@@ -76,6 +77,12 @@ public class EmergencyPlan implements Serializable {
     @Excel(name = "上一个应急预案版本id", width = 15)
     @ApiModelProperty(value = "上一个应急预案版本id")
     private String oldPlanId;
+
+    /**启动应急预案版本*/
+    @Excel(name = "启动应急预案版本", width = 15)
+    @ApiModelProperty(value = "启动应急预案版本")
+    @TableField(exist = false)
+    private String planVersion;
 
 	/**评审日期*/
 	@Excel(name = "评审日期", width = 15, format = "yyyy-MM-dd")

@@ -1,15 +1,18 @@
 package com.aiurt.boot.plan.controller;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.collection.CollUtil;
+import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.plan.entity.EmergencyPlanTeam;
 import com.aiurt.boot.plan.service.IEmergencyPlanTeamService;
+import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -76,6 +79,31 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 		 return Result.OK(list);
 	 }
 
+	 /**
+	  * 查询启动应急预案列表
+	  * @return
+	  */
+	 @ApiOperation(value = "查询启动应急预案列表", notes = "查询启动应急预案列表")
+	 @GetMapping(value = "/getAllPlanVersionList")
+	 public Result<List<String>> getAllPlanVersionList() {
+		 List<EmergencyPlan> list = emergencyPlanService.list();
+		 List planVersionList = new ArrayList();
+		 if(CollUtil.isNotEmpty(list)){
+			 for (EmergencyPlan emergencyPlan : list) {
+				 if((EmergencyPlanConstant.VALID).equals(emergencyPlan.getStatus())){
+					 String emergencyPlanName = emergencyPlan.getEmergencyPlanName();
+					 String emergencyPlanVersion = emergencyPlan.getEmergencyPlanVersion();
+					 emergencyPlan.setPlanVersion(emergencyPlanName + emergencyPlanVersion);
+					 String planVersion = emergencyPlan.getPlanVersion();
+					 planVersionList.add(planVersion);
+				 }
+			 }
+		 }
+		 return Result.OK(planVersionList);
+	 }
+
+
+
 	/**
 	 *   新增应急预案保存
 	 *
@@ -86,7 +114,7 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	@ApiOperation(value="新增应急预案保存", notes="新增应急预案保存")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody EmergencyPlanDTO emergencyPlanDto) {
-		String id = emergencyPlanService.saveAndAdd(emergencyPlanDto);
+		 emergencyPlanService.saveAndAdd(emergencyPlanDto);
 		return Result.OK("保存成功!");
 	}
 

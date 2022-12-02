@@ -4,6 +4,8 @@ import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
+import com.aiurt.boot.plan.dto.EmergencyPlanRecordDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlanRecord;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -58,19 +60,28 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 		return Result.OK(pageList);
 	}
 
-	/**
-	 *   添加
-	 *
-	 * @param emergencyPlanRecord
-	 * @return
-	 */
-	@AutoLog(value = "emergency_plan_record-添加")
-	@ApiOperation(value="emergency_plan_record-添加", notes="emergency_plan_record-添加")
-	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody EmergencyPlanRecord emergencyPlanRecord) {
-		emergencyPlanRecordService.save(emergencyPlanRecord);
-		return Result.OK("添加成功！");
-	}
+
+	 /**
+	  * 应急预案启动记录保存新增
+	  * @param emergencyPlanRecordDto
+	  * @return
+	  */
+	 @AutoLog(value = "应急预案启动记录保存新增")
+	 @ApiOperation(value="应急预案启动记录保存新增", notes="应急预案启动记录保存新增")
+	 @PostMapping(value = "/add")
+	 public Result<String> add(@RequestBody EmergencyPlanRecordDTO emergencyPlanRecordDto) {
+		 String id = emergencyPlanRecordService.saveAndAdd(emergencyPlanRecordDto);
+		 return Result.OK("保存成功!");
+	 }
+
+
+	 @AutoLog(value = "应急预案启动记录-编辑")
+	 @ApiOperation(value="应急预案启动记录-编辑", notes="应急预案台账-编辑")
+	 @RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+	 public Result<String> edit(@RequestBody EmergencyPlanRecordDTO emergencyPlanRecordDto) {
+		 emergencyPlanRecordService.edit(emergencyPlanRecordDto);
+		 return Result.OK("编辑成功!");
+	 }
 
 	/**
 	 *  编辑
@@ -78,13 +89,13 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	 * @param emergencyPlanRecord
 	 * @return
 	 */
-	@AutoLog(value = "emergency_plan_record-编辑")
-	@ApiOperation(value="emergency_plan_record-编辑", notes="emergency_plan_record-编辑")
-	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody EmergencyPlanRecord emergencyPlanRecord) {
-		emergencyPlanRecordService.updateById(emergencyPlanRecord);
-		return Result.OK("编辑成功!");
-	}
+//	@AutoLog(value = "emergency_plan_record-编辑")
+//	@ApiOperation(value="emergency_plan_record-编辑", notes="emergency_plan_record-编辑")
+//	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+//	public Result<String> edit(@RequestBody EmergencyPlanRecord emergencyPlanRecord) {
+//		emergencyPlanRecordService.updateById(emergencyPlanRecord);
+//		return Result.OK("编辑成功!");
+//	}
 
 	/**
 	 *   通过id删除
@@ -92,11 +103,19 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "emergency_plan_record-通过id删除")
-	@ApiOperation(value="emergency_plan_record-通过id删除", notes="emergency_plan_record-通过id删除")
+//	@AutoLog(value = "emergency_plan_record-通过id删除")
+//	@ApiOperation(value="emergency_plan_record-通过id删除", notes="emergency_plan_record-通过id删除")
+//	@DeleteMapping(value = "/delete")
+//	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+//		emergencyPlanRecordService.removeById(id);
+//		return Result.OK("删除成功!");
+//	}
+
+	@AutoLog(value = "应急预案启动记录-通过id删除")
+	@ApiOperation(value="应急预案启动记录-通过id删除", notes="应急预案启动-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		emergencyPlanRecordService.removeById(id);
+		emergencyPlanRecordService.delete(id);
 		return Result.OK("删除成功!");
 	}
 

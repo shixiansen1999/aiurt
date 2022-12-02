@@ -1,9 +1,11 @@
 package com.aiurt.boot.plan.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.plan.entity.EmergencyPlanAtt;
 import com.aiurt.boot.plan.entity.EmergencyPlanRecordAtt;
 import org.jeecg.common.api.vo.Result;
@@ -29,7 +31,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-11-29
  * @Version: V1.0
  */
-@Api(tags="emergency_plan_att")
+@Api(tags="应急预案附件")
 @RestController
 @RequestMapping("/emergency/emergencyPlanAtt")
 @Slf4j
@@ -86,6 +88,13 @@ public class EmergencyPlanAttController extends BaseController<EmergencyPlanAtt,
 		emergencyPlanAttService.save(emergencyPlanAtt);
 		return Result.OK("添加成功！");
 	}
+
+	 @ApiOperation(value = "查询所有应急预案附件列表", notes = "查询所有应急预案附件列表")
+	 @GetMapping(value = "/getAllPlanAttList")
+	 public Result<List<EmergencyPlanAtt>> getAllPlanList() {
+		 List<EmergencyPlanAtt> list = emergencyPlanAttService.list();
+		 return Result.OK(list);
+	 }
 
 	/**
 	 *  编辑

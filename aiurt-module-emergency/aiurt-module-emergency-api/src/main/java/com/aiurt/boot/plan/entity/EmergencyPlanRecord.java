@@ -1,6 +1,8 @@
 package com.aiurt.boot.plan.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -35,10 +37,12 @@ public class EmergencyPlanRecord implements Serializable {
 	/**事件分类*/
 	@Excel(name = "事件分类", width = 15)
     @ApiModelProperty(value = "事件分类")
+    @Dict(dicCode = "emergency_event_class")
     private Integer eventClass;
 	/**事件性质*/
 	@Excel(name = "事件性质", width = 15)
     @ApiModelProperty(value = "事件性质")
+    @Dict(dicCode = "emergency_event_property")
     private Integer eventProperty;
 	/**应急预案id*/
 	@Excel(name = "应急预案id", width = 15)
@@ -48,6 +52,13 @@ public class EmergencyPlanRecord implements Serializable {
 	@Excel(name = "应急预案版本", width = 15)
     @ApiModelProperty(value = "应急预案版本")
     private String emergencyPlanVersion;
+
+    /**启动应急预案版本*/
+    @Excel(name = "启动应急预案版本", width = 15)
+    @ApiModelProperty(value = "启动应急预案版本")
+    @TableField(exist = false)
+    private String planVersion;
+
 	/**启动日期*/
 	@Excel(name = "启动日期", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
