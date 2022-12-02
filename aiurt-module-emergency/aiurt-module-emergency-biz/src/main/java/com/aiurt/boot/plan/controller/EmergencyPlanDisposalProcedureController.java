@@ -1,9 +1,11 @@
 package com.aiurt.boot.plan.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.plan.entity.EmergencyPlanDisposalProcedure;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -46,7 +48,7 @@ public class EmergencyPlanDisposalProcedureController extends BaseController<Eme
 	 * @return
 	 */
 	//@AutoLog(value = "emergency_plan_disposal_procedure-分页列表查询")
-	@ApiOperation(value="emergency_plan_disposal_procedure-分页列表查询", notes="emergency_plan_disposal_procedure-分页列表查询")
+	@ApiOperation(value="预案处置程序-分页列表查询", notes="预案处置程序-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<EmergencyPlanDisposalProcedure>> queryPageList(EmergencyPlanDisposalProcedure emergencyPlanDisposalProcedure,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -79,6 +81,13 @@ public class EmergencyPlanDisposalProcedureController extends BaseController<Eme
 		 Page<EmergencyPlanDisposalProcedure> page = new Page<EmergencyPlanDisposalProcedure>(pageNo, pageSize);
 		 IPage<EmergencyPlanDisposalProcedure> pageList = emergencyPlanDisposalProcedureService.page(page, queryWrapper);
 		 return Result.OK(pageList);
+	 }
+
+	 @ApiOperation(value = "查询所有应急预案处置程序", notes = "查询所有应急预案处置程序")
+	 @GetMapping(value = "/getAllPlanList")
+	 public Result<List<EmergencyPlanDisposalProcedure>> getAllPlanList() {
+		 List<EmergencyPlanDisposalProcedure> list = emergencyPlanDisposalProcedureService.list();
+		 return Result.OK(list);
 	 }
 
 	/**

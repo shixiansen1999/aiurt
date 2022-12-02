@@ -52,7 +52,7 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	 * @return
 	 */
 	//@AutoLog(value = "emergency_plan-分页列表查询")
-	@ApiOperation(value="emergency_plan-分页列表查询", notes="emergency_plan-分页列表查询")
+	@ApiOperation(value="应急预案台账-分页列表查询", notes="应急预案台账-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<EmergencyPlan>> queryPageList(EmergencyPlan emergencyPlan,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -96,20 +96,20 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	 * @param emergencyPlanDto
 	 * @return
 	 */
-	@AutoLog(value = "emergency_plan-编辑")
-	@ApiOperation(value="emergency_plan-编辑", notes="emergency_plan-编辑")
+	@AutoLog(value = "应急预案台账-编辑")
+	@ApiOperation(value="应急预案台账-编辑", notes="应急预案台账-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody EmergencyPlanDTO emergencyPlanDto) {
 		emergencyPlanService.edit(emergencyPlanDto);
 		return Result.OK("编辑成功!");
 	}
 
-	 @AutoLog(value = "新增应急预案变更")
-	 @ApiOperation(value="新增应急预案变更", notes="新增应急预案变更")
+	 @AutoLog(value = "应急预案变更")
+	 @ApiOperation(value="应急预案变更", notes="应急预案变更")
 	 @PostMapping(value = "/change")
 	 public Result<String> change(@RequestBody EmergencyPlanDTO emergencyPlanDto) {
-		 String id = emergencyPlanService.change(emergencyPlanDto);
-		 return Result.OK("保存成功!");
+		  emergencyPlanService.change(emergencyPlanDto);
+		 return Result.OK("变更成功!");
 	 }
 
 
@@ -119,8 +119,8 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "emergency_plan-通过id删除")
-	@ApiOperation(value="emergency_plan-通过id删除", notes="emergency_plan-通过id删除")
+	@AutoLog(value = "应急预案台账-通过id删除")
+	@ApiOperation(value="应急预案台账-通过id删除", notes="应急预案台账-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		emergencyPlanService.delete(id);
@@ -163,8 +163,8 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "emergency_plan-批量删除")
-	@ApiOperation(value="emergency_plan-批量删除", notes="emergency_plan-批量删除")
+	@AutoLog(value = "应急预案台账-批量删除")
+	@ApiOperation(value="应急预案台账-批量删除", notes="应急预案台账-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.emergencyPlanService.removeByIds(Arrays.asList(ids.split(",")));
@@ -178,7 +178,7 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	 * @return
 	 */
 	//@AutoLog(value = "emergency_plan-通过id查询")
-	@ApiOperation(value="emergency_plan-通过id查询", notes="emergency_plan-通过id查询")
+	@ApiOperation(value="应急预案台账-通过id查询", notes="应急预案台账-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<EmergencyPlan> queryById(@RequestParam(name="id",required=true) String id) {
 		EmergencyPlan emergencyPlan = emergencyPlanService.getById(id);

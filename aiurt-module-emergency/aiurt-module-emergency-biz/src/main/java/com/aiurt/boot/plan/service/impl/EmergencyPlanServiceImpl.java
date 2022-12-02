@@ -164,7 +164,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         Assert.notNull(id, "记录ID为空！");
         EmergencyPlan emPlan = this.getById(id);
         Assert.notNull(emPlan, "未找到对应数据！");
-        // 代提审才允许编辑
+        // 审核通过才允许变更
         if (!EmergencyPlanConstant.PASSED.equals(emPlan.getEmergencyPlanStatus())) {
             throw new AiurtBootException("未审核通过的预案不能变更！");
         }
@@ -178,6 +178,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         emergencyPlan.setOrgCode(orgId);
         emergencyPlan.setId(null);
         emergencyPlan.setEmergencyPlanVersion(String.valueOf(Double.valueOf(emergencyPlan.getEmergencyPlanVersion())+1));
+        emergencyPlan.setOldPlanId(emergencyPlanDto.getId());
         this.save(emergencyPlan);
 
         String newId = emergencyPlan.getId();
