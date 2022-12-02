@@ -15,6 +15,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: emergency_training_program
@@ -96,4 +97,16 @@ public class EmergencyTrainingProgram implements Serializable {
     @ApiModelProperty(value = "应急队伍名称")
     @TableField(exist = false)
     private String emergencyTeamName;
+
+    /**添加方式*/
+    @ApiModelProperty(value = "添加方式（0保存，1发布）")
+    @TableField(exist = false)
+    private Integer saveFlag;
+
+    /**
+     * 应急队伍
+     */
+    @ApiModelProperty(value = "应急队伍")
+    @TableField(exist = false)
+    private List<EmergencyTrainingTeam> emergencyTrainingTeamList;
 }

@@ -78,7 +78,7 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	 */
 	@AutoLog(value = "应急队伍台账-编辑")
 	@ApiOperation(value="应急队伍台账-编辑", notes="应急队伍台账-编辑")
-	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+	@RequestMapping(value = "/edit", method = {RequestMethod.PUT})
 	public Result<String> edit(@RequestBody EmergencyTeam emergencyTeam) {
 		return emergencyTeamService.edit(emergencyTeam);
 

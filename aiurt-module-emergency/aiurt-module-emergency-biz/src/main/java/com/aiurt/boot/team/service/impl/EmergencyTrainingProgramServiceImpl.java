@@ -2,9 +2,13 @@ package com.aiurt.boot.team.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
+import com.aiurt.boot.team.entity.EmergencyTrainingTeam;
 import com.aiurt.boot.team.mapper.EmergencyTrainingProgramMapper;
 import com.aiurt.boot.team.service.IEmergencyTrainingProgramService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -20,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -43,11 +48,15 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
     @Autowired
     private EmergencyTrainingProgramMapper emergencyTrainingProgramMapper;
 
+    @Autowired
+    private EmergencyTrainingTeamServiceImpl emergencyTrainingTeamService;
+
     @Override
     public IPage<EmergencyTrainingProgram> queryPageList(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO, Integer pageNo, Integer pageSize) {
         // 系统管理员不做权限过滤
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaQueryWrapper<EmergencyTrainingProgram> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EmergencyTrainingProgram::getDelFlag, TeamConstant.DEL_FLAG0);
         String roleCodes = user.getRoleCodes();
         List<SysDepartModel> models = new ArrayList<>();
         if (StrUtil.isNotBlank(roleCodes)) {
@@ -94,7 +103,70 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
 
     @Override
     public Result<String> add(EmergencyTrainingProgram emergencyTrainingProgram) {
+        String code = emergencyTrainingProgram.getTrainingProgramCode();
+        String trainPlanCode = getTrainPlanCode();
+        if (!code.equals(trainPlanCode)) {
+            return Result.OK("训练计划编号已存在，添加失败");
+        }
 
-        return null;
+        String result = "添加成功！";
+        if (TeamConstant.PUBLISH.equals(emergencyTrainingProgram.getSaveFlag())) {
+            emergencyTrainingProgram.setStatus(TeamConstant.WAIT_COMPLETE);
+            result = "下发成功！";
+        } else {
+            emergencyTrainingProgram.setStatus(TeamConstant.WAIT_PUBLISH);
+        }
+        this.save(emergencyTrainingProgram);
+        List<EmergencyTrainingTeam> emergencyTrainingTeamList = emergencyTrainingProgram.getEmergencyTrainingTeamList();
+        if (CollUtil.isNotEmpty(emergencyTrainingTeamList)) {
+            for (EmergencyTrainingTeam emergencyTrainingTeam : emergencyTrainingTeamList) {
+                emergencyTrainingTeam.setEmergencyTrainingProgramId(emergencyTrainingProgram.getId());
+                emergencyTrainingTeamService.save(emergencyTrainingTeam);
+            }
+        }
+        return Result.OK(result);
+    }
+
+    @Override
+    public String getTrainPlanCode() {
+        String code = "XLJH-" + DateUtil.format(new Date(), "yyyyMMdd-");
+        EmergencyTrainingProgram one = this.lambdaQuery().like(EmergencyTrainingProgram::getTrainingProgramCode, code)
+                .orderByDesc(EmergencyTrainingProgram::getTrainingProgramCode)
+                .last("limit 1")
+                .one();
+
+        if (ObjectUtil.isEmpty(one)) {
+            code += String.format("%02d", 1);
+        } else {
+            String trainingProgramCode = one.getTrainingProgramCode();
+            Integer serialNo = Integer.valueOf(trainingProgramCode.substring(trainingProgramCode.lastIndexOf("-") + 1));
+            if (serialNo >= 99) {
+                code += (serialNo + 1);
+            } else {
+                code += String.format("%02d", (serialNo + 1));
+            }
+        }
+
+        return code;
+    }
+
+    @Override
+    public Result<String> edit(EmergencyTrainingProgram emergencyTrainingProgram) {
+        this.updateById(emergencyTrainingProgram);
+        List<EmergencyTrainingTeam> emergencyTrainingTeamList = emergencyTrainingProgram.getEmergencyTrainingTeamList();
+        if (CollUtil.isNotEmpty(emergencyTrainingTeamList)) {
+            for (EmergencyTrainingTeam emergencyTrainingTeam : emergencyTrainingTeamList) {
+                if (StrUtil.isBlank(emergencyTrainingTeam.getEmergencyTrainingProgramId())) {
+                    emergencyTrainingTeam.setEmergencyTrainingProgramId(emergencyTrainingProgram.getId());
+                    emergencyTrainingTeamService.save(emergencyTrainingTeam);
+                } else {
+                    if (TeamConstant.DEL_FLAG1.equals(emergencyTrainingTeam.getDelFlag())) {
+                        emergencyTrainingTeamService.removeById(emergencyTrainingTeam);
+                    }
+                }
+
+            }
+        }
+        return Result.OK("编辑成功");
     }
 }

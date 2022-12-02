@@ -1,7 +1,6 @@
 package com.aiurt.boot.team.controller;
 
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
 import com.aiurt.boot.team.service.IEmergencyTrainingProgramService;
@@ -19,7 +18,6 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
-import java.util.Date;
 
 /**
  * @Description: emergency_training_program
@@ -76,10 +74,9 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	 */
 	@AutoLog(value = "应急队伍训练计划-编辑")
 	@ApiOperation(value="应急队伍训练计划-编辑", notes="应急队伍训练计划-编辑")
-	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+	@RequestMapping(value = "/edit", method = {RequestMethod.PUT})
 	public Result<String> edit(@RequestBody EmergencyTrainingProgram emergencyTrainingProgram) {
-		emergencyTrainingProgramService.updateById(emergencyTrainingProgram);
-		return Result.OK("编辑成功!");
+		return emergencyTrainingProgramService.edit(emergencyTrainingProgram);
 	}
 
 	/**
@@ -157,23 +154,22 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	 @ApiOperation(value="应急队伍训练计划-自动生成计划编号", notes="应急队伍训练计划-自动生成计划编号")
 	 @GetMapping(value = "/getTrainPlanCode")
 	 public String getTrainPlanCode() {
-		 String code = "XLJH-" + DateUtil.format(new Date(), "yyyyMMdd-");
-		 EmergencyTrainingProgram one = emergencyTrainingProgramService.lambdaQuery().like(EmergencyTrainingProgram::getTrainingProgramCode, code)
-				 .orderByDesc(EmergencyTrainingProgram::getTrainingProgramCode)
-				 .last("limit 1")
-				 .one();
-
-		 if (ObjectUtil.isEmpty(one)) {
-			 code += String.format("%02d", 1);
-		 } else {
-			 String trainingProgramCode = one.getTrainingProgramCode();
-			 Integer serialNo = Integer.valueOf(trainingProgramCode.substring(trainingProgramCode.lastIndexOf("-") + 1));
-			 if (serialNo >= 99) {
-				 code += (serialNo + 1);
-			 } else {
-				 code += String.format("%02d", (serialNo + 1));
-			 }
-		 }
-		 return code;
+		 return  emergencyTrainingProgramService.getTrainPlanCode();
 	 }
+
+	/**
+	 *  编辑
+	 *
+	 * @param id
+	 * @return
+	 */
+	@AutoLog(value = "应急队伍训练计划-编辑")
+	@ApiOperation(value="应急队伍训练计划-编辑", notes="应急队伍训练计划-编辑")
+	@RequestMapping(value = "/publish", method = {RequestMethod.PUT})
+	public Result<String> publish(@RequestBody @RequestParam(name="id",required=true) String id) {
+		EmergencyTrainingProgram program = emergencyTrainingProgramService.getById(id);
+		program.setStatus(TeamConstant.WAIT_COMPLETE);
+		emergencyTrainingProgramService.updateById(program);
+		return Result.OK("发布成功!");
+	}
 }

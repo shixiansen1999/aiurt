@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTeamDTO;
 import com.aiurt.boot.team.dto.EmergencyTeamTrainingDTO;
 import com.aiurt.boot.team.entity.EmergencyCrew;
@@ -79,7 +80,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         if (StrUtil.isNotBlank(team.getEmergencyTeamname())) {
             queryWrapper.like(EmergencyTeam::getEmergencyTeamname, team.getEmergencyTeamname());
         }
-        queryWrapper.eq(EmergencyTeam::getDelFlag, 0);
+        queryWrapper.eq(EmergencyTeam::getDelFlag, TeamConstant.DEL_FLAG0);
         Page<EmergencyTeam> page = new Page<EmergencyTeam>(pageNo, pageSize);
         IPage<EmergencyTeam> pageList = this.page(page, queryWrapper);
         List<EmergencyTeam> records = pageList.getRecords();
@@ -94,10 +95,10 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
     @Override
     public void translate(EmergencyTeam emergencyTeam) {
         JSONObject major = iSysBaseAPI.getCsMajorByCode(emergencyTeam.getMajorCode());
-        emergencyTeam.setMajorName(major.getString("majorName"));
+        emergencyTeam.setMajorName(major != null ? major.getString("majorName") : null);
 
-        SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(emergencyTeam.getOrgCode());
-        emergencyTeam.setOrgName(sysDepartModel.getDepartName());
+        SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(emergencyTeam.getOrgCode());
+        emergencyTeam.setOrgName(sysDepartModel != null ? sysDepartModel.getDepartName(): null);
 
         String lineName = iSysBaseAPI.getPosition(emergencyTeam.getLineCode());
         emergencyTeam.setLineName(lineName);
@@ -115,14 +116,14 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         }
 
         LoginUser userById = iSysBaseAPI.getUserById(emergencyTeam.getManagerId());
-        emergencyTeam.setManagerName(userById.getRealname());
+        emergencyTeam.setManagerName(userById != null ? userById.getRealname(): null);
 
     }
 
     @Override
     public EmergencyTeam getCrew(EmergencyTeam emergencyTeam) {
         LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(EmergencyCrew::getDelFlag, 0);
+        wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
         wrapper.eq(EmergencyCrew::getEmergencyTeamId, emergencyTeam.getId());
         List<EmergencyCrew> emergencyCrews = emergencyCrewService.getBaseMapper().selectList(wrapper);
         if (CollUtil.isNotEmpty(emergencyCrews)) {
@@ -164,8 +165,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                     emergencyCrew.setEmergencyTeamId(emergencyTeam.getId());
                     emergencyCrewService.save(emergencyCrew);
                 } else {
-                    Integer delFlag = 1;
-                    if (delFlag.equals(emergencyCrew.getDelFlag())) {
+                    if (TeamConstant.DEL_FLAG1.equals(emergencyCrew.getDelFlag())) {
                         emergencyCrewService.removeById(emergencyCrew);
                     } else {
                         emergencyCrewService.updateById(emergencyCrew);
@@ -183,7 +183,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             return Result.error("未找到对应数据");
         }
         LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(EmergencyCrew::getDelFlag, 0);
+        wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
         wrapper.eq(EmergencyCrew::getEmergencyTeamId, emergencyTeam.getId());
         List<EmergencyCrew> emergencyCrews = emergencyCrewService.getBaseMapper().selectList(wrapper);
         if (CollUtil.isNotEmpty(emergencyCrews)) {
@@ -221,7 +221,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         if (CollUtil.isNotEmpty(emergencyTeams)) {
             for (EmergencyTeam emergencyTeam : emergencyTeams) {
                 LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(EmergencyCrew::getDelFlag, 0);
+                wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
                 wrapper.eq(EmergencyCrew::getEmergencyTeamId, emergencyTeam.getId());
                 List<EmergencyCrew> emergencyCrews = emergencyCrewService.getBaseMapper().selectList(wrapper);
                 emergencyTeam.setCrews(Convert.toStr(emergencyCrews.size()));

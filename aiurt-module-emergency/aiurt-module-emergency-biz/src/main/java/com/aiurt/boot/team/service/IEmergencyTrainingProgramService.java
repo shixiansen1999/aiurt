@@ -29,4 +29,18 @@ public interface IEmergencyTrainingProgramService extends IService<EmergencyTrai
      * @return
      */
     Result<String> add(EmergencyTrainingProgram emergencyTrainingProgram);
+
+    /**
+     * 自动生成计划编号
+     * @param
+     * @return
+     */
+    String getTrainPlanCode();
+
+    /**
+     * 编辑
+     * @param emergencyTrainingProgram
+     * @return
+     */
+    Result<String> edit(EmergencyTrainingProgram emergencyTrainingProgram);
 }
