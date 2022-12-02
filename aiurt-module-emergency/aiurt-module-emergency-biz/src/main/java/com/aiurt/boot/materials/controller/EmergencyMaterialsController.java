@@ -181,7 +181,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 
 	 @AutoLog(value = "物资信息-应急物资位置查询")
 	 @ApiOperation(value="物资信息-应急物资位置查询", notes="物资信息-应急物资位置查询")
-	 @GetMapping(value = "/queryById")
+	 @GetMapping(value = "/getMaterialsCode")
 	public Result<?> getMaterialsCode(@RequestParam(name="stationCode",required=false) String stationCode,
 									  @RequestParam(name="positionCode",required=false) String positionCode,
 									  @RequestParam(name="materialsCode",required=false) String materialsCode){
