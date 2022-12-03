@@ -359,6 +359,22 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     }
 
     /**
+     * app-巡检任务池详情
+     *
+     * @param id
+     * @param req
+     * @return author hlq
+     */
+    @AutoLog(value = "巡检任务表-app巡检任务池", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
+    @ApiOperation(value = "巡检任务表-app巡检任务池", notes = "巡检任务表-app巡检任务池")
+    @GetMapping(value = "/patrolTaskPoolDetail")
+    public Result<PatrolTaskDTO> patrolTaskPoolDetail(@RequestParam(name="id",required=true) String id,
+                                                           HttpServletRequest req) {
+        PatrolTaskDTO patrolTaskDTO = patrolTaskService.getDetail(id);
+        return Result.OK(patrolTaskDTO);
+    }
+
+    /**
      * app-巡检任务列表
      *
      * @param patrolTaskDTO

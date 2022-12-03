@@ -1232,4 +1232,13 @@ FROM
 	GROUP BY
 	pt.id
 </select>
+<select id="getDetail" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
+        select t1.*,(select realname from sys_user where id= t1.end_user_id) as
+        endUserName,concat(DATE_FORMAT(t1.start_time,'%H:%i'),"-",DATE_FORMAT(t1.end_time,'%H:%i'))as startEndTime
+        from patrol_task t1
+         where t1.del_flag = 0
+         <if test="id != null and id != ''">
+         and t1.id = #{id}
+</if>
+</select>
 </mapper>

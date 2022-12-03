@@ -437,4 +437,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<UserTeamPatrolDTO> getPeopleOmitTasksNumber(@Param("useIds")List<String> useIds, @Param("startDate")String startDate, @Param("endDate")String endDate);
+
+    /**
+     * app任务池-查看详情
+     * @param id
+     * @return
+     */
+    PatrolTaskDTO getDetail(@Param("id")String id);
 }

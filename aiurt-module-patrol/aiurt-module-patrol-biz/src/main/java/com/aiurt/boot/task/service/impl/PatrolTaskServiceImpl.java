@@ -1147,4 +1147,26 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public String getLineCode(String stationCode) {
         return patrolTaskMapper.getLineCode(stationCode);
     }
+
+    @Override
+    public PatrolTaskDTO getDetail(String id) {
+        PatrolTaskDTO  e = patrolTaskMapper.getDetail(id);
+            String userName = patrolTaskMapper.getUserName(e.getBackId());
+            List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(e.getId());
+            String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).distinct().collect(Collectors.joining("；"));
+            String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).distinct().collect(Collectors.joining("；"));
+            List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
+            e.setOrganizationName(manager.translateOrg(orgCodes));
+            List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
+            e.setStationName(manager.translateStation(stationName));
+            e.setEndUserName(e.getEndUserName() == null ? "-" : e.getEndUserName());
+            e.setSubmitTime(e.getSubmitTime() == null ? "-" : e.getSubmitTime());
+            e.setPeriod(e.getPeriod() == null ? "-" : e.getPeriod());
+            e.setSysName(sysName);
+            e.setMajorName(majorName);
+            e.setOrgCodeList(orgCodes);
+            e.setPatrolUserName(manager.spliceUsername(e.getCode()));
+            e.setPatrolReturnUserName(userName == null ? "-" : userName);
+        return e;
+    }
 }

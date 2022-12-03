@@ -172,4 +172,11 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @return
      */
     String getLineCode(String stationCode);
+
+    /**
+     * app任务池详情
+     * @param id
+     * @return
+     */
+    PatrolTaskDTO getDetail(String id);
 }
