@@ -78,7 +78,6 @@ public class InspectionCode extends DictEntity implements Serializable {
     @Excel(name = "与设备类型相关", width = 15,dicCode = "is_appoint_device")
     @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "是否与设备相关(0否1是)")
-    @Dict(dicCode = "is_appoint_device")
     @TableField(exist = false)
     private java.lang.String isRelatedDevice;
 
@@ -98,7 +97,7 @@ public class InspectionCode extends DictEntity implements Serializable {
     @Excel(name = "生效状态", width = 15,dicCode = "is_take_effect")
     @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "状态 0-未生效 1-已生效")
-    @Dict(dicCode = "is_take_effect")
+//    @Dict(dicCode = "is_take_effect")
     @TableField(exist = false)
     private java.lang.String effectStatus;
 

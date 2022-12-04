@@ -202,14 +202,14 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     @ApiOperation(value="检修标准导入模板下载", notes="检修标准导入模板下载")
     @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
     public ModelAndView exportTemplateXl() {
-//        String remark = "检修标准导入模板\n" +
-//                "填写须知：\n" +
-//                "1.请勿增加、删除、或修改表格中的字段顺序、字段名称；\n" +
-//                "2.请严格按照数据规范填写，并填写完所有必填项，红底白字列为必填项；\n" +
-//                "字段说明：\n" +
-//                "1.检修标准名称：必填字段；\n" +
-//                "2.检修标准编码：自动生成，无需填写；\n";
-        return super.exportTemplateXls("", InspectionCode.class,"检修标准导入模板","");
+        String remark = "检修标准导入模板\n" +
+                "填写须知：\n" +
+                "1.请勿增加、删除、或修改表格中的字段顺序、字段名称；\n" +
+                "2.请严格按照数据规范填写，并填写完所有必填项，红底白字列为必填项；\n" +
+                "字段说明：\n" +
+                "1.检修标准名称：必填字段；\n" +
+                "2.检修标准编码：自动生成，无需填写；\n";
+        return super.exportTemplateXls("", InspectionCode.class,"检修标准导入模板",remark);
     }
 
     /**

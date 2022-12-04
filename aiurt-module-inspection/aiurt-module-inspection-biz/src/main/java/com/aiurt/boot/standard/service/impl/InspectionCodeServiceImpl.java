@@ -178,7 +178,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 return imporReturnRes(errorLines, successLines, errorMessage,false,url);
             }
             ImportParams params = new ImportParams();
-            params.setTitleRows(1);
+            params.setTitleRows(2);
             params.setHeadRows(1);
             params.setNeedSave(true);
             try {

@@ -73,7 +73,7 @@ public class InspectionCodeContentDTO implements Serializable {
     @Excel(name = "是否是检查项", width = 15,dicCode = "inspection_value")
     @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "检查项类型，是否是检查项：0否 1是")
-    @Dict(dicCode = "inspection_value")
+//    @Dict(dicCode = "inspection_value")
     @TableField(exist = false)
     private java.lang.String isType;
 
@@ -109,7 +109,7 @@ public class InspectionCodeContentDTO implements Serializable {
      */
     @Excel(name = "检查值是否必填", width = 15,dicCode = "inspection_value")
     @ApiModelProperty(value = "检查值是否必填：0否 1是")
-    @Dict(dicCode = "inspection_value")
+//    @Dict(dicCode = "inspection_value")
     @TableField(exist = false)
     private java.lang.String isInspectionType;
 

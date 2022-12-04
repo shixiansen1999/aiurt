@@ -220,11 +220,11 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 	 @ApiOperation(value="配置检修项导入模板下载", notes="配置检修项导入模板下载")
 	 @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
 	 public ModelAndView exportTemplateXl() {
-//        String remark = "检修标准导入模板\n" +
-//                "填写须知：\n" +
-//                "1.请勿增加、删除、或修改表格中的字段顺序、字段名称；\n" +
-//                "2.请严格按照数据规范填写，并填写完所有必填项，红底白字列为必填项；\n" ;
-		 return super.exportTemplateXls("", InspectionCodeContent.class,"检配置检修项导入模板","");
+        String remark = "检修标准导入模板\n" +
+                "填写须知：\n" +
+                "1.请勿增加、删除、或修改表格中的字段顺序、字段名称；\n" +
+                "2.请严格按照数据规范填写，并填写完所有必填项，红底白字列为必填项；\n" ;
+		 return super.exportTemplateXls("", InspectionCodeContent.class,"检配置检修项导入模板",remark);
 	 }
 
 	 @AutoLog(value = "配置检查项-通过excel导入数据", operateType =  6, operateTypeAlias = "通过excel导入数据", module = ModuleType.INSPECTION)
