@@ -184,12 +184,21 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (selectPlanReq.getWorkType() != null) {
             queryWrapper.eq("work_type", selectPlanReq.getWorkType());
         }
-        if(StrUtil.isNotEmpty(selectPlanReq.getStatuStr())){
+        if (StrUtil.isNotEmpty(selectPlanReq.getStatuStr())) {
             List<String> split = StrUtil.split(selectPlanReq.getStatuStr(), ',');
-            if(CollUtil.isNotEmpty(split)){
-                queryWrapper.in("status",split);
+            if (CollUtil.isNotEmpty(split)) {
+                queryWrapper.in("status", split);
             }
         }
+
+        // 组织机构数据权限过滤
+        List<String> codes = null;
+        List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isEmpty(repairPoolOrgRels)) {
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
+        }
+        codes = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList());
+        GlobalThreadLocal.setDataFilter(false);
 
         // 根据站所查询
         if (StrUtil.isNotEmpty(selectPlanReq.getStationCode())) {
@@ -197,9 +206,20 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     new LambdaQueryWrapper<RepairPoolStationRel>()
                             .eq(RepairPoolStationRel::getStationCode, selectPlanReq.getStationCode())
                             .eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-            if (CollUtil.isNotEmpty(repairPoolStationRels)) {
-                queryWrapper.in("code", repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList()));
+            if (CollUtil.isEmpty(repairPoolStationRels)) {
+                throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
             }
+            List<String> stations = repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList());
+
+            // 考虑根据组织结构条件挑选出来的计划code和站所挑选出来的计划code交集的情况
+            if(CollUtil.isNotEmpty(stations)){
+                codes = CollUtil.isNotEmpty(codes)? codes.stream().filter(l -> stations.contains(l)).collect(Collectors.toList()):stations;
+            }
+
+        }
+
+        if (CollUtil.isNotEmpty(codes)) {
+            queryWrapper.in("code", codes);
         }
 
         return queryWrapper;

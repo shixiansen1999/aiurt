@@ -10,6 +10,7 @@ import com.aiurt.boot.plan.req.SelectPlanReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.LimitSubmit;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -43,10 +44,11 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      *
      * @return
      */
-    @AutoLog(value = "检修管理-检修计划-列表查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "/overhaul/RepairPoolList")
+    @AutoLog(value = "检修管理-检修计划-列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/overhaul/RepairPoolList")
     @ApiOperation(value = "检修计划池列表查询", notes = "检修计划池列表查询")
     @GetMapping(value = "/list")
-        public Result<IPage<RepairPool>> queryList(SelectPlanReq selectPlanReq) {
+    @PermissionData(pageComponent = "overhaul/RepairPoolList")
+    public Result<IPage<RepairPool>> queryList(SelectPlanReq selectPlanReq) {
         IPage<RepairPool> pageList = repairPoolService.queryList(selectPlanReq);
         return Result.OK(pageList);
     }
@@ -58,7 +60,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      * @param req
      * @return
      */
-    @AutoLog(value = "检修管理-检修计划-查询检修标准详情", operateType =  1, operateTypeAlias = "查询检修标准详情", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修计划-查询检修标准详情", operateType = 1, operateTypeAlias = "查询检修标准详情", module = ModuleType.INSPECTION)
     @ApiOperation(value = "通过检修计划id查看检修标准详情", notes = "通过检修计划id查看检修标准详情")
     @GetMapping(value = "/queryStandardById")
     public Result<RepairStrategyDTO> queryStandardById(RepairStrategyReq req) {
@@ -72,7 +74,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      * @param id
      * @return
      */
-    @AutoLog(value = "检修管理-检修计划-查看检修计划详情", operateType =  1, operateTypeAlias = "查看检修计划详情", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修计划-查看检修计划详情", operateType = 1, operateTypeAlias = "查看检修计划详情", module = ModuleType.INSPECTION)
     @ApiOperation(value = "通过检修计划id查看详情", notes = "通过检修计划id查看详情")
     @GetMapping(value = "/queryById")
     public Result<RepairPoolDetailsDTO> queryById(@RequestParam @ApiParam(name = "id", required = true, value = "检修计划id") String id) {
@@ -86,7 +88,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      * @param year
      * @return
      */
-    @AutoLog(value = "检修管理-检修计划-获取时间范围和周数", operateType =  1, operateTypeAlias = "获取时间范围和周数", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修计划-获取时间范围和周数", operateType = 1, operateTypeAlias = "获取时间范围和周数", module = ModuleType.INSPECTION)
     @ApiOperation(value = "根据年份获取时间范围和周数", notes = "根据年份获取时间范围和周数")
     @GetMapping(value = "/getTimeInfo")
     public Result getTimeInfo(@RequestParam @ApiParam(name = "year", value = "年份", required = true) Integer year) {
@@ -100,7 +102,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      * @param
      * @return
      */
-    @AutoLog(value = "检修管理-检修计划-调整时间", operateType =  3, operateTypeAlias = "调整时间", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修计划-调整时间", operateType = 3, operateTypeAlias = "调整时间", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修计划池-调整时间", notes = "检修计划池-调整时间")
     @PostMapping(value = "/updateTime")
     public Result updateTime(@RequestParam(name = "ids") String ids,
@@ -115,7 +117,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      * @param code
      * @return
      */
-    @AutoLog(value = "检修管理-检修计划-获取适用专业和专业子系统级联下拉列表", operateType =  1, operateTypeAlias = "获取适用专业和专业子系统级联下拉列表", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修计划-获取适用专业和专业子系统级联下拉列表", operateType = 1, operateTypeAlias = "获取适用专业和专业子系统级联下拉列表", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修详情里的适用专业下拉列表", notes = "检修详情里的适用专业下拉列表")
     @GetMapping(value = "/queryMajorList")
     public Result<List<MajorDTO>> queryMajorList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code) {
@@ -129,12 +131,12 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      * @param code
      * @return
      */
-    @AutoLog(value = "检修管理-检修计划-获取检修标准下拉列表", operateType =  1, operateTypeAlias = "获取检修标准下拉列表", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修计划-获取检修标准下拉列表", operateType = 1, operateTypeAlias = "获取检修标准下拉列表", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修详情里的检修标准下拉列表", notes = "检修详情里的检修标准下拉列表")
     @GetMapping(value = "/queryStandardList")
     public Result<List<StandardNewDTO>> queryStandardList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code,
-                                                       @RequestParam(required = false) @ApiParam(name = "majorCode", value = "专业编码") String majorCode,
-                                                       @RequestParam(required = false) @ApiParam(name = "systemCode", value = "子系统编码") String systemCode) {
+                                                          @RequestParam(required = false) @ApiParam(name = "majorCode", value = "专业编码") String majorCode,
+                                                          @RequestParam(required = false) @ApiParam(name = "systemCode", value = "子系统编码") String systemCode) {
         List<StandardNewDTO> result = repairPoolService.queryStandardList(code, majorCode, systemCode);
         return Result.OK(result);
     }
@@ -145,7 +147,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      * @param
      * @return
      */
-    @AutoLog(value = "检修管理-检修计划-指派检修任务", operateType =  2, operateTypeAlias = "指派检修任务", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修计划-指派检修任务", operateType = 2, operateTypeAlias = "指派检修任务", module = ModuleType.INSPECTION)
     @ApiOperation(value = "指派检修任务", notes = "指派检修任务")
     @PostMapping(value = "/assigned")
     @LimitSubmit(key = "assigned:#assignDTO")
@@ -159,7 +161,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      * @param
      * @return
      */
-    @AutoLog(value = "检修管理-检修计划-获取检修任务人员下拉列表", operateType =  1, operateTypeAlias = "获取检修任务人员下拉列表", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修计划-获取检修任务人员下拉列表", operateType = 1, operateTypeAlias = "获取检修任务人员下拉列表", module = ModuleType.INSPECTION)
     @ApiOperation(value = "指派检修任务人员下拉列表", notes = "指派检修任务人员下拉列表")
     @GetMapping(value = "/queryUserList")
     public Result<List<LoginUser>> queryUserList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code) {
@@ -176,7 +178,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      * @param
      * @return
      */
-    @AutoLog(value = "检修管理-检修计划-查询可用的计划令", operateType =  1, operateTypeAlias = "查询可用的计划令", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修计划-查询可用的计划令", operateType = 1, operateTypeAlias = "查询可用的计划令", module = ModuleType.INSPECTION)
     @ApiOperation(value = "查询可用的计划令", notes = "查询可用的计划令")
     @GetMapping(value = "/queryPlanCodeList")
     @ApiResponses({
@@ -193,7 +195,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      * @param id 检修标准id
      * @return
      */
-    @AutoLog(value = "检修管理-检修计划-查询检修项", operateType =  1, operateTypeAlias = "查询检修项", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修计划-查询检修项", operateType = 1, operateTypeAlias = "查询检修项", module = ModuleType.INSPECTION)
     @ApiOperation(value = "通过检修标准id查看检修项", notes = "通过检修标准id查看检修项")
     @GetMapping(value = "/selectCodeContentList")
     public Result<List<RepairPoolCodeContent>> selectCodeContentList(@RequestParam @ApiParam(name = "id", required = true, value = "检修标准id") String id) {
