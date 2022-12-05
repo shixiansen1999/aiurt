@@ -3,6 +3,7 @@ package com.aiurt.boot.materials.entity;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -144,4 +145,29 @@ public class EmergencyMaterialsInvoicesItem implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
+
+
+    /**巡视日期*/
+    @TableField(exist = false)
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "巡视日期")
+    private java.util.Date patrolDate;
+
+    /**巡视人ID*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡视人ID")
+    private java.lang.String patrolId;
+
+    /**巡视人名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡视人名称")
+    private java.lang.String patrolName;
+
+    /**巡视班组名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡视班组名称")
+    private java.lang.String patrolTeam;
+
+
 }

@@ -2,4 +2,34 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesItemMapper">
 
+
+    <select id="getPatrolRecord" resultType="com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem">
+      SELECT
+	      t2.id as id,
+	      t2.content as content,
+	      t2.abnormal_condition as abnormalCondition,
+	      t2.order,
+	      t2.check,
+	      t2.check_result as checkResult,
+	      t2.hierarchy_type as hierarchyType,
+	      t2.pid as pid,
+          t3.patrol_date as patrolDate,
+          t3.user_id as patrolId
+       FROM
+      emergency_materials_invoices_item t2
+	  LEFT JOIN emergency_materials_invoices t3 ON t2.invoices_id = t3.id
+        <where>
+              t2.del_flag = 0
+              and t3.del_flag = 0
+            <if test="materialsCode != null and materialsCode != ''">
+              and t2.materials_code = #{materialsCode}
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and DATE_FORMAT(t3.patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and DATE_FORMAT(t3.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+            </if>
+        </where>
+    </select>
 </mapper>

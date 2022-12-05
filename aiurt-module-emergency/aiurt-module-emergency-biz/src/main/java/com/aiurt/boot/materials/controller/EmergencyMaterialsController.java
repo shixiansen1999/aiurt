@@ -8,8 +8,11 @@ import javax.servlet.http.HttpServletResponse;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.dto.MaterialAccountDTO;
+import com.aiurt.boot.materials.dto.MaterialPatrolDTO;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
+import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsCategoryService;
+import com.aiurt.boot.materials.service.IEmergencyMaterialsInvoicesItemService;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
@@ -46,6 +49,9 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 
 	 @Autowired
 	 private IEmergencyMaterialsCategoryService emergencyMaterialsCategoryService;
+
+	 @Autowired
+	 private IEmergencyMaterialsInvoicesItemService iEmergencyMaterialsInvoicesItemService;
 
 	/**
 	 * 分页列表查询
@@ -90,6 +96,26 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 Page<MaterialAccountDTO> pageList = new Page<>(pageNo, pageSize);
 		 Page<MaterialAccountDTO> repairTaskPage = emergencyMaterialsService.getMaterialAccountList(pageList, condition);
 		 return Result.OK(repairTaskPage);
+	 }
+
+
+	 @AutoLog(value = "物资信息-应急物资台账检查-巡检标准下拉")
+	 @ApiOperation(value="物资信息-应急物资台账检查-巡检标准下拉", notes="物资信息-应急物资台账检查-巡检标准下拉")
+	 @GetMapping(value = "/getMaterialPatrol")
+	 public Result<?> getMaterialPatrol(){
+		 MaterialPatrolDTO materialPatrol = emergencyMaterialsService.getMaterialPatrol();
+		 return Result.OK(materialPatrol);
+	 }
+
+
+	 @AutoLog(value = "物资信息-巡检记录信息查询")
+	 @ApiOperation(value="物资信息-巡检记录信息查询", notes="物资信息-巡检记录信息查询")
+	 @GetMapping(value = "/getPatrolRecord")
+	 public Result<?> getPatrolRecord(@RequestParam(name = "materialsCode",required=true) String materialsCode,
+									  @RequestParam(name = "startTime",required=false) String  startTime,
+	                                  @RequestParam(name = "endTime",required=false) String  endTime){
+		 List<EmergencyMaterialsInvoicesItem> patrolRecord = iEmergencyMaterialsInvoicesItemService.getPatrolRecord(materialsCode, startTime, endTime);
+		 return  Result.OK(patrolRecord);
 	 }
 
 	/**

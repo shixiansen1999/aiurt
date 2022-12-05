@@ -24,5 +24,26 @@
         </where>
     </select>
 
+    <select id="getPatrolStandardList" resultType="com.aiurt.boot.materials.dto.PatrolStandardDTO">
+        select
+         code as standardCode,name as standardName
+         from patrol_standard
+        <where>
+            del_flag = 0
+            <if test="majorCode.size()>0">
+              and  profession_code in
+                <foreach item="item" collection="majorCode" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="subsystemCode.size()>0">
+              and  subsystem_code in
+                <foreach item="item" collection="subsystemCode" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
 
 </mapper>

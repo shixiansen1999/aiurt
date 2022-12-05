@@ -1,20 +1,28 @@
 package com.aiurt.boot.materials.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.dto.MaterialAccountDTO;
+import com.aiurt.boot.materials.dto.MaterialPatrolDTO;
+import com.aiurt.boot.materials.dto.PatrolStandardDTO;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: emergency_materials
@@ -58,5 +66,41 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             }
         });
         return pageList.setRecords(materialAccountList);
+    }
+
+    @Override
+    public MaterialPatrolDTO getMaterialPatrol() {
+        MaterialPatrolDTO materialPatrolDTO  = new MaterialPatrolDTO();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        materialPatrolDTO.setPatrolName(sysUser.getRealname());
+
+        //根据用户id查询专业
+        List<CsUserMajorModel> majorByUserId = iSysBaseAPI.getMajorByUserId(sysUser.getId());
+        List<String> collect = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+        //根据用户id查询子系统
+        List<CsUserSubsystemModel> subsystemByUserId = iSysBaseAPI.getSubsystemByUserId(sysUser.getId());
+        List<String> collect1 = subsystemByUserId.stream().map(CsUserSubsystemModel::getSystemCode).collect(Collectors.toList());
+
+        if (CollUtil.isNotEmpty(collect) && CollUtil.isNotEmpty(collect1)){
+            List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getPatrolStandardList(collect, collect1);
+            materialPatrolDTO.setPatrolStandardDTOList(CollUtil.isNotEmpty(patrolStandardList) ? patrolStandardList : null);
+        }
+
+        //生成4位英文随机字符串
+        String random = org.apache.commons.lang3.RandomStringUtils.random(4,true,false);
+        //转换为大写
+        String string = random.toUpperCase();
+
+        //生成3位数字随机字符串
+        String random1 = RandomStringUtils.random(3,false,true);
+
+        //当前时间
+        String replace = DateUtil.formatDate(DateUtil.date()).replace("-", "");
+
+        //拼接字符串
+        String string1 = String.join("-", string, replace, random1);
+
+        materialPatrolDTO.setMaterialsPatrolCode(string1);
+        return materialPatrolDTO;
     }
 }
