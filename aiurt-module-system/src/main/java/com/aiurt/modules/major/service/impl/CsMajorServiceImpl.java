@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
@@ -127,6 +126,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
         // 错误信息
         List<String> errorMessage = new ArrayList<>();
+        String tipMessage = null;
         int successLines = 0, errorLines = 0;
         String url = null;
         for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
@@ -134,7 +134,8 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
             MultipartFile file = entity.getValue();
             String type = FilenameUtils.getExtension(file.getOriginalFilename());
             if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-                return imporReturnRes(errorLines, successLines, errorMessage, false,url);
+                tipMessage = "导入失败，文件类型不对。";
+                return imporReturnRes(errorLines, successLines,tipMessage, false,url);
             }
             ImportParams params = new ImportParams();
             params.setTitleRows(2);
@@ -145,7 +146,8 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                 csMajorList= csMajorList.stream().filter(e->e.getMajorName()!=null||e.getMajorCode()!=null).collect(Collectors.toList());
                 if(CollUtil.isEmpty(csMajorList))
                 {
-                    throw new AiurtBootException("该文件无数据，请填写再导入");
+                    tipMessage = "该文件无数据，请填写再导入。";
+                    return imporReturnRes(errorLines, successLines, tipMessage, false,url);
                 }
                 List<CsMajor> list = new ArrayList<>();
                 for (int i = 0; i < csMajorList.size(); i++) {
@@ -248,7 +250,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                 }
             }
         }
-        return imporReturnRes(errorLines, successLines, errorMessage,true,url);
+        return imporReturnRes(errorLines, successLines, tipMessage,true,url);
 
     }
 
@@ -288,7 +290,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
         return null;
     }
 
-    public static Result<?> imporReturnRes(int errorLines, int successLines, List<String> errorMessage, boolean isType,String failReportUrl ) throws IOException {
+    public static Result<?> imporReturnRes(int errorLines, int successLines,String tipMessage, boolean isType,String failReportUrl ) throws IOException {
         if (isType) {
             if (errorLines != 0) {
                 JSONObject result = new JSONObject(5);
@@ -323,7 +325,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
             int totalCount = successLines + errorLines;
             result.put("totalCount", totalCount);
             Result res = Result.ok(result);
-            res.setMessage("导入失败，文件类型不对。");
+            res.setMessage(tipMessage);
             res.setCode(200);
             return res;
         }

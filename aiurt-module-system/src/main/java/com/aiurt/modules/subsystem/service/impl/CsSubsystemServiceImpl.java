@@ -6,7 +6,6 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.subsystem.dto.*;
@@ -361,6 +360,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
         // 错误信息
         List<String> errorMessage = new ArrayList<>();
+        String tipMessage = null;
         int successLines = 0, errorLines = 0;
         String url = null;
             // 获取上传文件对象
@@ -369,7 +369,8 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         String nameAndType[] = file.getOriginalFilename().split("\\.");
         String type = nameAndType[1];
             if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-                return imporReturnRes(errorLines, successLines, errorMessage,false,null);
+                tipMessage = "导入失败，文件类型不对。";
+                return imporReturnRes(errorLines, successLines, tipMessage,false,null);
             }
             ImportParams params = new ImportParams();
             params.setTitleRows(2);
@@ -381,7 +382,8 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 List<CsSubsystem> list = new ArrayList<>();
                 if(CollUtil.isEmpty(csSubsystemDTOList))
                 {
-                    throw new AiurtBootException("该文件无数据，请填写再导入");
+                    tipMessage = "该文件无数据，请填写再导入";
+                    return imporReturnRes(errorLines, successLines, tipMessage,false,null);
                 }
                 for (int i = 0; i < csSubsystemDTOList.size(); i++) {
                     CsSubsystemImportDTO csSubsystemDTO = csSubsystemDTOList.get(i);
@@ -519,7 +521,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                     log.error(e.getMessage(), e);
                 }
             }
-        return imporReturnRes(errorLines, successLines, errorMessage,true,url);
+        return imporReturnRes(errorLines, successLines, tipMessage,true,url);
     }
 
     public static final class ExcelSelectListUtil {
@@ -648,7 +650,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         }
         return  null;
         }
-    public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage,boolean isType,String url) throws IOException {
+    public static Result<?> imporReturnRes(int errorLines,int successLines,String tipMessage,boolean isType,String url) throws IOException {
         if(isType)
         {
             if (errorLines != 0) {
@@ -686,7 +688,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             int totalCount = successLines + errorLines;
             result.put("totalCount", totalCount);
             Result res = Result.ok(result);
-            res.setMessage("导入失败，文件类型不对。");
+            res.setMessage(tipMessage);
             res.setCode(200);
             return res;
         }
