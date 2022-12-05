@@ -1,15 +1,26 @@
 package com.aiurt.boot.plan.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.plan.service.*;
+import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
+import com.aiurt.boot.team.constant.TeamConstant;
+import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: emergency_plan
@@ -37,12 +49,44 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     private IEmergencyPlanDisposalProcedureService emergencyPlanDisposalProcedureService;
     @Autowired
     private IEmergencyPlanAttService emergencyPlanAttService;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
+
+    @Override
+    public IPage<EmergencyPlan> queryPageList(Page<EmergencyPlan> page, EmergencyPlanDTO emergencyPlanDto) {
+        EmergencyPlan emergencyPlan = new EmergencyPlan();
+        LambdaQueryWrapper<EmergencyPlan> queryWrapper = new LambdaQueryWrapper<>();
+        BeanUtil.copyProperties(emergencyPlanDto, emergencyPlan);
+
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
+        List<CsUserDepartModel> deptModel = sysBaseApi.getDepartByUserId(loginUser.getId());
+        List<String> orgCodes = deptModel.stream().filter(l -> StrUtil.isNotEmpty(l.getOrgCode()))
+                .map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(orgCodes)) {
+            return page;
+        }
+        if(ObjectUtil.isNotEmpty(emergencyPlan.getEmergencyPlanType())){
+            queryWrapper.eq(EmergencyPlan::getEmergencyPlanType,emergencyPlan.getEmergencyPlanType());
+        }
+        if(ObjectUtil.isNotEmpty(emergencyPlan.getEmergencyPlanName())){
+            queryWrapper.eq(EmergencyPlan::getEmergencyPlanName,emergencyPlan.getEmergencyPlanName());
+        }
+        if(ObjectUtil.isNotEmpty(emergencyPlan.getStatus())){
+            queryWrapper.eq(EmergencyPlan::getStatus,emergencyPlan.getStatus());
+        }
+        queryWrapper.eq(EmergencyPlan::getDelFlag, EmergencyPlanConstant.DEL_FLAG0);
+        queryWrapper.in(EmergencyPlan::getOrgCode, orgCodes);
+        Page<EmergencyPlan> pageList = this.page(page, queryWrapper);
+        return pageList;
+
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String saveAndAdd(EmergencyPlanDTO emergencyPlanDto) {
         //应急预案添加
-        //获取当前登录人组织部门作为编制部门
+        //weeklyplan登录人组织部门作为编制部门
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String orgCode = loginUser.getOrgCode();
 
