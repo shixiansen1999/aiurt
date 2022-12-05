@@ -107,4 +107,9 @@ public class CsSafetyAttention implements Serializable {
 	@Excel(name = "删除标记 0，未删除，1已删除", width = 15)
     @ApiModelProperty(value = "删除标记 0，未删除，1已删除")
     private java.lang.Integer delFlag;
+    /**删除标记 0，未删除，1已删除*/
+    @Excel(name = "错误原因", width = 15)
+    @ApiModelProperty(value = "错误原因")
+    @TableField(exist = false)
+    private java.lang.String text;
 }

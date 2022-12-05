@@ -110,13 +110,13 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                 String majorCodeName = csSafetyAttention.getMajorName() == null ? "" : csSafetyAttention.getMajorName();
                 if ("".equals(majorCodeName)) {
                     errorStrs.add("第 " + i + " 行：专业名称为空，忽略导入。");
-                    list.add(csSafetyAttention);
+                    list.add(csSafetyAttention.setText("专业名称为空，忽略导入"));
                     continue;
                 }
                 CsUserMajorModel csMajor = baseMapper.selectCsMajor(majorCodeName);
                 if (csMajor == null) {
                     errorStrs.add("第 " + i + " 行：无法根据专业名称找到对应数据，忽略导入。");
-                    list.add(csSafetyAttention);
+                    list.add(csSafetyAttention.setText("无法根据专业名称找到对应数据，忽略导入"));
                     continue;
                 } else {
                     csSafetyAttention.setMajorCode(csMajor.getMajorCode());
@@ -128,7 +128,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                           csSafetyAttention.setSystemCode(systemCode);
                       }else {
                           errorStrs.add("第 " + i + " 行：输入的子系统找不到！请核对后输出，忽略导入。");
-                          list.add(csSafetyAttention);
+                          list.add(csSafetyAttention.setText("输入的子系统找不到！请核对后输出，忽略导入"));
                           continue;
                       }
                     }
@@ -137,14 +137,14 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                     String attentionContent = csSafetyAttention.getAttentionContent() == null ? "" : csSafetyAttention.getAttentionContent();
                     if ("".equals(attentionContent)) {
                         errorStrs.add("第 " + i + " 行：安全事项内容为空，忽略导入。");
-                        list.add(csSafetyAttention);
+                        list.add(csSafetyAttention.setText("安全事项内容为空，忽略导入"));
                         continue;
                     }
                     //状态
                     String stateName = csSafetyAttention.getStateName()==null?"": csSafetyAttention.getStateName();
                     if ("".equals(stateName)){
                         errorStrs.add("第 " + i + " 行：安全状态为空，忽略导入。");
-                        list.add(csSafetyAttention);
+                        list.add(csSafetyAttention.setText("安全状态为空，忽略导入"));
                         continue;
                     }else  if("有效".equals(stateName)){
                         csSafetyAttention.setState(1);
@@ -152,7 +152,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                         csSafetyAttention.setState(0);
                     }else {
                         errorStrs.add("第 " + i + " 行：安全状态识别不出，忽略导入。");
-                        list.add(csSafetyAttention);
+                        list.add(csSafetyAttention.setText("安全状态识别不出，忽略导入"));
                         continue;
                     }
                     int save = baseMapper.insert(csSafetyAttention);
@@ -185,6 +185,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                 lm.put("systemName",l.getSystemName());
                 lm.put("attentionContent",l.getAttentionContent());
                 lm.put("stateName",l.getStateName());
+                lm.put("text",l.getText());
                 mapList.add(lm);
             });
             Map<String, Object> errorMap = new HashMap<String, Object>();
