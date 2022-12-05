@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -144,8 +145,11 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "站所列表查询",permissionUrl = "/position/list")
 	 @ApiOperation(value="站所列表查询", notes="站所列表查询")
 	 @GetMapping(value = "/selectList")
-	 public Result<?> selectList() {
+	 public Result<?> selectList(@RequestParam(name = "lineCode",required=false) String lineCode) {
 		 LambdaQueryWrapper<CsStation> queryWrapper = new LambdaQueryWrapper<>();
+		 if (StringUtils.isNotBlank(lineCode)) {
+			 queryWrapper.eq(CsStation::getLineCode, lineCode);
+		 }
 		 List<CsStation> list = csStationService.list(queryWrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));
 		 return Result.OK(list);
 	 }
