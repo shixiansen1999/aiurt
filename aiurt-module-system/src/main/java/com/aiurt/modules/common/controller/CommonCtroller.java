@@ -416,8 +416,11 @@ public class CommonCtroller {
      */
     @ApiOperation(value="位置列表查询", notes="站所列表查询")
     @GetMapping(value = "/stationPosition/selectList")
-    public Result<?> selectList() {
+    public Result<?> selectList(@RequestParam(name = "stationCode",required = false) String stationCode) {
         LambdaQueryWrapper<CsStationPosition> queryWrapper = new LambdaQueryWrapper<>();
+        if (StrUtil.isNotBlank(stationCode)) {
+            queryWrapper.eq(CsStationPosition::getStaionCode, stationCode);
+        }
         List<CsStationPosition> list = csStationPositionService.list(queryWrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0));
         return Result.OK(list);
     }
@@ -429,9 +432,12 @@ public class CommonCtroller {
      */
     @ApiOperation(value="位置列表查询", notes="站所列表查询")
     @GetMapping(value = "/workArea/selectWorkAreaList")
-    public Result<?> selectWorkAreaList(@RequestParam(value = "stationCode") String stationCode) {
+    public Result<?> selectWorkAreaList(@RequestParam(name = "stationCode",required = false) String stationCode) {
         LambdaQueryWrapper<WorkArea> queryWrapper = new LambdaQueryWrapper<>();
-        List<WorkArea> list = workAreaService.list(queryWrapper.eq(WorkArea::getDelFlag, CommonConstant.DEL_FLAG_0).eq(WorkArea::getPosition,stationCode));
+        if (StrUtil.isNotBlank(stationCode)) {
+            queryWrapper.eq(WorkArea::getPosition, stationCode);
+        }
+        List<WorkArea> list = workAreaService.list(queryWrapper.eq(WorkArea::getDelFlag, CommonConstant.DEL_FLAG_0));
         return Result.OK(list);
     }
 
