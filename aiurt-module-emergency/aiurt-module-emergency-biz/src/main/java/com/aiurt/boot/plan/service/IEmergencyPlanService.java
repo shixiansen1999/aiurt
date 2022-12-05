@@ -2,6 +2,10 @@ package com.aiurt.boot.plan.service;
 
 import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
+import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
+import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
@@ -14,6 +18,14 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface IEmergencyPlanService extends IService<EmergencyPlan> {
+    /**
+     * 应急预案列表查询
+     * @param page
+     * @param emergencyPlanDto
+     * @return
+     */
+    IPage<EmergencyPlan> queryPageList(Page<EmergencyPlan> page, EmergencyPlanDTO emergencyPlanDto);
+
     /**
      * 保存并添加
      * @param emergencyPlanDto

@@ -36,6 +36,15 @@ public class EmergencyPlanConstant {
      */
     public static final Integer VALID = 2;
 
+    /**
+     * 未删除状态
+     */
+    public static final Integer DEL_FLAG0 = 0;
+    /**
+     * 已删除状态
+     */
+    public static final Integer DEL_FLAG1 = 1;
+
 
 
 

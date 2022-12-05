@@ -14,7 +14,9 @@ import com.aiurt.boot.plan.entity.EmergencyPlanTeam;
 import com.aiurt.boot.plan.service.IEmergencyPlanTeamService;
 import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
+import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.plan.service.IEmergencyPlanService;
 
@@ -24,6 +26,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
 import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.system.vo.ComboModel;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -44,11 +48,13 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmergencyPlanService> {
 	@Autowired
 	private IEmergencyPlanService emergencyPlanService;
+	@Autowired
+	private ISysBaseAPI sysBaseApi;
 
 	/**
 	 * 分页列表查询
 	 *
-	 * @param emergencyPlan
+	 * @param emergencyPlanDto
 	 * @param pageNo
 	 * @param pageSize
 	 * @param req
@@ -57,13 +63,12 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	//@AutoLog(value = "emergency_plan-分页列表查询")
 	@ApiOperation(value="应急预案台账-分页列表查询", notes="应急预案台账-分页列表查询")
 	@GetMapping(value = "/list")
-	public Result<IPage<EmergencyPlan>> queryPageList(EmergencyPlan emergencyPlan,
+	public Result<IPage<EmergencyPlan>> queryPageList(EmergencyPlanDTO emergencyPlanDto,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		QueryWrapper<EmergencyPlan> queryWrapper = QueryGenerator.initQueryWrapper(emergencyPlan, req.getParameterMap());
 		Page<EmergencyPlan> page = new Page<EmergencyPlan>(pageNo, pageSize);
-		IPage<EmergencyPlan> pageList = emergencyPlanService.page(page, queryWrapper);
+		IPage<EmergencyPlan> pageList = emergencyPlanService.queryPageList(page, emergencyPlanDto);
 		return Result.OK(pageList);
 	}
 
@@ -80,22 +85,33 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	 }
 
 	 /**
+	  * 查询所有角色
+	  * @return
+	  */
+	 @ApiOperation(value = "查询所有角色", notes = "查询所有角色")
+	 @GetMapping(value = "/queryAllRole")
+	 public Result<List<ComboModel>> queryAllRole() {
+		 List<ComboModel> comboModels = sysBaseApi.queryAllRole();
+		 return Result.OK(comboModels);
+	 }
+
+
+	 /**
 	  * 查询启动应急预案列表
 	  * @return
 	  */
 	 @ApiOperation(value = "查询启动应急预案列表", notes = "查询启动应急预案列表")
 	 @GetMapping(value = "/getAllPlanVersionList")
-	 public Result<List<String>> getAllPlanVersionList() {
+	 public Result<List<EmergencyPlan>> getAllPlanVersionList() {
 		 List<EmergencyPlan> list = emergencyPlanService.list();
-		 List planVersionList = new ArrayList();
+		 List<EmergencyPlan> planVersionList = new ArrayList();
 		 if(CollUtil.isNotEmpty(list)){
 			 for (EmergencyPlan emergencyPlan : list) {
 				 if((EmergencyPlanConstant.VALID).equals(emergencyPlan.getStatus())){
 					 String emergencyPlanName = emergencyPlan.getEmergencyPlanName();
 					 String emergencyPlanVersion = emergencyPlan.getEmergencyPlanVersion();
 					 emergencyPlan.setPlanVersion(emergencyPlanName + emergencyPlanVersion);
-					 String planVersion = emergencyPlan.getPlanVersion();
-					 planVersionList.add(planVersion);
+					 planVersionList.add(emergencyPlan);
 				 }
 			 }
 		 }

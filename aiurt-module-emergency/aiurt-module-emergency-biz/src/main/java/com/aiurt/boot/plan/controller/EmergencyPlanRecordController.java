@@ -30,7 +30,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-11-29
  * @Version: V1.0
  */
-@Api(tags="emergency_plan_record")
+@Api(tags="应急预案-应急启动记录")
 @RestController
 @RequestMapping("/emergency/emergencyPlanRecord")
 @Slf4j
@@ -48,7 +48,7 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	 * @return
 	 */
 	//@AutoLog(value = "emergency_plan_record-分页列表查询")
-	@ApiOperation(value="emergency_plan_record-分页列表查询", notes="emergency_plan_record-分页列表查询")
+	@ApiOperation(value="应急启动记录-分页列表查询", notes="应急启动记录-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<EmergencyPlanRecord>> queryPageList(EmergencyPlanRecord emergencyPlanRecord,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -70,7 +70,7 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	 @ApiOperation(value="应急预案启动记录保存新增", notes="应急预案启动记录保存新增")
 	 @PostMapping(value = "/add")
 	 public Result<String> add(@RequestBody EmergencyPlanRecordDTO emergencyPlanRecordDto) {
-		 String id = emergencyPlanRecordService.saveAndAdd(emergencyPlanRecordDto);
+		 emergencyPlanRecordService.saveAndAdd(emergencyPlanRecordDto);
 		 return Result.OK("保存成功!");
 	 }
 
