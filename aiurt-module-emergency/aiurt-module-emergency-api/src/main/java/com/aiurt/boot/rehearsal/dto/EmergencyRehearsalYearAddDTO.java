@@ -5,6 +5,7 @@ import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -18,5 +19,6 @@ public class EmergencyRehearsalYearAddDTO extends EmergencyRehearsalYear {
      * 月演练计划列表
      */
     @ApiModelProperty(value = "月演练计划列表")
+    @Valid
     private List<EmergencyRehearsalMonth> monthList;
 }

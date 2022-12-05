@@ -16,6 +16,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -32,18 +33,31 @@ import java.io.Serializable;
 public class EmergencyRehearsalYear extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 新增保存时的校验分组
+     */
+    public interface Save {}
+
+    /**
+     * 修改时的校验分组
+     */
+    public interface Update {}
+
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
+    @NotNull(message = "主键ID不能为空！", groups = Update.class)
     private java.lang.String id;
 	/**计划编号*/
 	@Excel(name = "计划编号", width = 15)
     @ApiModelProperty(value = "计划编号")
     @TableField(value = "`code`")
+    @NotNull(message = "计划编号不能为空！", groups = Update.class)
     private java.lang.String code;
 	/**计划名称*/
 	@Excel(name = "计划名称", width = 15)
     @ApiModelProperty(value = "计划名称")
+    @NotNull(message = "计划名称不能为空！", groups = {Save.class, Update.class})
     private java.lang.String name;
 	/**所属年份格式：yyyy*/
 	@Excel(name = "所属年份", width = 15, format = "yyyy")
@@ -51,22 +65,26 @@ public class EmergencyRehearsalYear extends DictEntity implements Serializable {
     @DateTimeFormat(pattern="yyyy")
     @ApiModelProperty(value = "所属年份格式：yyyy")
     @TableField(value = "`year`")
+    @NotNull(message = "所属年份不能为空！", groups = {Save.class, Update.class})
     private java.util.Date year;
 	/**编制人ID*/
 	@Excel(name = "编制人ID", width = 15)
     @ApiModelProperty(value = "编制人ID")
     @Dict(dictTable = "sys_user", dicCode = "id", dicText = "realname")
+    @NotNull(message = "编制人ID不能为空！", groups = {Save.class, Update.class})
     private java.lang.String userId;
 	/**编制部门编码*/
 	@Excel(name = "编制部门编码", width = 15)
     @ApiModelProperty(value = "编制部门编码")
     @Dict(dictTable = "sys_depart", dicCode = "org_code", dicText = "depart_name")
+    @NotNull(message = "编制部门编码不能为空！", groups = {Save.class, Update.class})
     private java.lang.String orgCode;
 	/**编制日期*/
 	@Excel(name = "编制日期", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "编制日期")
+    @ApiModelProperty(value = "编制日期，格式yyyy-MM-dd")
+    @NotNull(message = "编制日期编码不能为空！", groups = {Save.class, Update.class})
     private java.util.Date compileDate;
 	/**审核状态（1待提交、2待审核、3审核中、4已通过）*/
 	@Excel(name = "审核状态（1待提交、2待审核、3审核中、4已通过）", width = 15)

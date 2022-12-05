@@ -13,9 +13,11 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 /**
  * @Description: emergency_rehearsal_year
@@ -61,7 +63,7 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
     @AutoLog(value = "应急演练管理-年演练计划添加")
     @ApiOperation(value = "应急演练管理-年演练计划添加", notes = "应急演练管理-年演练计划添加")
     @PostMapping(value = "/add")
-    public Result<String> add(@RequestBody EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO) {
+    public Result<String> add(@RequestBody @Validated(EmergencyRehearsalYearAddDTO.Save.class) EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO) {
         String id = emergencyRehearsalYearService.add(emergencyRehearsalYearAddDTO);
         return Result.OK("添加成功！ID为：【" + id + "】");
     }
@@ -75,7 +77,7 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
     @AutoLog(value = "应急演练管理-年演练计划编辑")
     @ApiOperation(value = "应急演练管理-年演练计划编辑", notes = "应急演练管理-年演练计划编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<String> edit(@RequestBody EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO) {
+    public Result<String> edit(@RequestBody @Validated(EmergencyRehearsalYearAddDTO.Update.class) EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO) {
         emergencyRehearsalYearService.edit(emergencyRehearsalYearAddDTO);
         return Result.OK("编辑成功!");
     }

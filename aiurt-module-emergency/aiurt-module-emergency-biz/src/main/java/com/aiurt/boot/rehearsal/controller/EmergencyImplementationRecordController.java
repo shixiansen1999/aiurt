@@ -18,6 +18,7 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDeptUserModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -66,7 +67,7 @@ public class EmergencyImplementationRecordController extends BaseController<Emer
     @AutoLog(value = "应急实施记录-演练登记")
     @ApiOperation(value = "应急实施记录-演练登记", notes = "应急实施记录-演练登记")
     @PostMapping(value = "/add")
-    public Result<String> add(@RequestBody EmergencyRehearsalRegisterDTO emergencyRehearsalRegisterDTO) {
+    public Result<String> add(@RequestBody @Validated(EmergencyImplementationRecord.Save.class) EmergencyRehearsalRegisterDTO emergencyRehearsalRegisterDTO) {
         String id = emergencyImplementationRecordService.rehearsalRegister(emergencyRehearsalRegisterDTO);
         return Result.OK("添加成功！记录ID为：【" + id + "】");
     }
@@ -91,7 +92,7 @@ public class EmergencyImplementationRecordController extends BaseController<Emer
     @AutoLog(value = "应急实施记录-编辑")
     @ApiOperation(value = "应急实施记录-编辑", notes = "应急实施记录-编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<String> edit(@RequestBody EmergencyRehearsalRegisterDTO emergencyRehearsalRegisterDTO) {
+    public Result<String> edit(@RequestBody @Validated(EmergencyImplementationRecord.Update.class) EmergencyRehearsalRegisterDTO emergencyRehearsalRegisterDTO) {
         emergencyImplementationRecordService.edit(emergencyRehearsalRegisterDTO);
         return Result.OK("编辑成功!");
     }

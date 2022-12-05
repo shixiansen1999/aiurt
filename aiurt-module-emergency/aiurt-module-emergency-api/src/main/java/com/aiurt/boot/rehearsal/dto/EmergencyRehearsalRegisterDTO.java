@@ -6,6 +6,8 @@ import com.aiurt.boot.rehearsal.entity.EmergencyRecordStep;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.util.List;
 
 /**
@@ -19,6 +21,8 @@ public class EmergencyRehearsalRegisterDTO extends EmergencyImplementationRecord
      * 参与部门编码列表
      */
     @ApiModelProperty(value = "参与部门编码列表")
+    @Valid
+    @NotEmpty(message = "参与部门不能为空！", groups = {EmergencyImplementationRecord.Save.class, EmergencyImplementationRecord.Update.class})
     private List<String> orgCodes;
     /**
      * 登记演练步骤列表
