@@ -51,7 +51,7 @@ public class PatrolTaskDeviceReadRecordController extends BaseController<PatrolT
          boolean isRead =  taskDeviceReadRecordService.getPatrolTaskDeviceList(taskDeviceId,majorCode,subsystemCode,taskId);
         JSONObject result = new JSONObject(1);
         result.put("show", isRead);
-        return Result.OK(result);
+        return Result.ok(result);
     }
     /**
      *   工单阅读记录添加
