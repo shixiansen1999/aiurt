@@ -39,7 +39,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fasterxml.jackson.databind.type.CollectionLikeType;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -789,7 +788,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             // 判断是否xls、xlsx两种类型的文件，不是则直接返回
             String type = FilenameUtils.getExtension(file.getOriginalFilename());
             if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-                return imporReturnRes(errorLines, false, failReportUrl);
+                return imporReturnRes(errorLines, false, failReportUrl,"文件导入失败，文件类型不对");
             }
 
             // 设置excel参数
@@ -808,6 +807,10 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
                 list = ExcelImportUtil.importExcel(file.getInputStream(), InspectionStyImportExcelDTO.class, params);
 
+                // 空表格直接返回
+                if(CollUtil.isEmpty(list)){
+                    return imporReturnRes(errorLines, false, failReportUrl,"暂无导入数据");
+                }
                 // 校验数据
                 for (InspectionStyImportExcelDTO inspectionStyImportExcelDTO : list) {
                     InspectionStrategyDTO inspectionStrategyDTO = new InspectionStrategyDTO();
@@ -837,14 +840,14 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                     for (InspectionStrategyDTO saveDatum : saveData) {
                         this.add(saveDatum);
                     }
-                    return imporReturnRes(errorLines, true, failReportUrl);
+                    return imporReturnRes(errorLines, true, failReportUrl,"文件导入成功");
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return null;
+        return imporReturnRes(errorLines, false, failReportUrl,"暂无导入数据");
     }
 
     /**
@@ -1207,33 +1210,23 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         return result;
     }
 
-    public static Result<?> imporReturnRes(int errorLines, boolean isType, String failReportUrl) {
+    /**
+     * 检修策略导入统一返回格式
+     * @param errorLines 错误条数
+     * @param isSucceed 是否成功
+     * @param failReportUrl 错误报告下载地址
+     * @param message 提示信息
+     * @return
+     */
+    public static Result<?> imporReturnRes(int errorLines, boolean isSucceed, String failReportUrl,String message) {
         JSONObject result = new JSONObject(5);
-        if (!isType) {
-            result.put("isSucceed", false);
-            result.put("errorCount", errorLines);
-            Result res = Result.ok(result);
-            res.setMessage("导入失败，文件类型不对。");
-            res.setCode(200);
-            return res;
-        }
-        if (errorLines != 0) {
-            result.put("isSucceed", false);
-            result.put("errorCount", errorLines);
-            result.put("failReportUrl", failReportUrl);
-            Result res = Result.ok(result);
-            res.setMessage("文件失败，数据有错误。");
-            res.setCode(200);
-            return res;
-        } else {
-            //是否成功
-            result.put("isSucceed", true);
-            result.put("errorCount", errorLines);
-            Result res = Result.ok(result);
-            res.setMessage("文件导入成功！");
-            res.setCode(200);
-            return res;
-        }
+        result.put("isSucceed", isSucceed);
+        result.put("errorCount", errorLines);
+        result.put("failReportUrl", failReportUrl);
+        Result res = Result.ok(result);
+        res.setMessage(message);
+        res.setCode(200);
+        return res;
     }
 
     private Result<?> getErrorExcel(int errorLines, List<InspectionStyImportExcelDTO> list, String url, String type) throws IOException {
@@ -1280,7 +1273,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             e.printStackTrace();
         }
 
-        return imporReturnRes(errorLines, true, url);
+        return imporReturnRes(errorLines, false, url,"文件导入失败，数据有错误");
     }
 
     @NotNull
