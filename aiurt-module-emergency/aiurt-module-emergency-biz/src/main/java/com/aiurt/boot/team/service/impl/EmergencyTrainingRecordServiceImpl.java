@@ -7,6 +7,7 @@ import com.aiurt.boot.team.dto.EmergencyTrainingRecordDTO;
 import com.aiurt.boot.team.entity.EmergencyTrainingRecord;
 import com.aiurt.boot.team.mapper.EmergencyTrainingRecordMapper;
 import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
+import com.aiurt.boot.team.vo.EmergencyTrainingRecordVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -37,7 +38,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
 
 
     @Override
-    public IPage<EmergencyTrainingRecord> queryPageList(EmergencyTrainingRecordDTO emergencyTrainingRecordDTO, Integer pageNo, Integer pageSize) {
+    public IPage<EmergencyTrainingRecordVO> queryPageList(EmergencyTrainingRecordDTO emergencyTrainingRecordDTO, Integer pageNo, Integer pageSize) {
         // 系统管理员不做权限过滤
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String roleCodes = user.getRoleCodes();
@@ -56,8 +57,9 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
         }else {
             return new Page<>();
         }
-        Page<EmergencyTrainingRecord> page = new Page<>(pageNo, pageSize);
-        emergencyTrainingRecordMapper.queryPageList(page,emergencyTrainingRecordDTO);
-        return null;
+        Page<EmergencyTrainingRecordVO> page = new Page<>(pageNo, pageSize);
+        List<EmergencyTrainingRecordVO> result = emergencyTrainingRecordMapper.queryPageList(page, emergencyTrainingRecordDTO);
+        page.setRecords(result);
+        return page;
     }
 }

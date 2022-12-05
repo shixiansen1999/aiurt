@@ -24,13 +24,20 @@
         and wtr.emergency_team_id = #{emergencyTrainingRecordDTO.emergencyTeamId}
     </if>
     <if test="emergencyTrainingRecordDTO.trainingProgramName != null and emergencyTrainingRecordDTO.trainingProgramName != ''">
-        and etp.training_program_name = #{emergencyTrainingRecordDTO.trainingProgramName}
+        and etp.training_program_name like concat('%',#{emergencyTrainingRecordDTO.trainingProgramName},'%')
     </if>
     <if test="emergencyTrainingRecordDTO.trainingProgramCode != null and emergencyTrainingRecordDTO.trainingProgramCode != ''">
         and etp.training_program_code = #{emergencyTrainingRecordDTO.trainingProgramCode}
     </if>
     <if test="emergencyTrainingRecordDTO.trainingStartTime != null">
-        and DATE_FORMAT( wtr.training_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{emergencyTrainingRecordDTO.trainingStartTime} ,'%Y-%m-%d')
+        and DATE_FORMAT( wtr.training_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{emergencyTrainingRecordDTO.trainingStartTime} ,'%Y-%m-%d')
     </if>
+    <if test="emergencyTrainingRecordDTO.trainingStartTime != null">
+        and DATE_FORMAT( wtr.training_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{emergencyTrainingRecordDTO.trainingEndTime} ,'%Y-%m-%d')
+    </if>
+    and etp.org_code in
+    <foreach collection="emergencyTrainingRecordDTO.orgCodeList" item="item" index="index" open="(" separator="," close=")">
+        #{item}
+    </foreach>
     </select>
 </mapper>

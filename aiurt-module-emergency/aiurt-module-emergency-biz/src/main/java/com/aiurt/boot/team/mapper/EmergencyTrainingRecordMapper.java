@@ -23,5 +23,5 @@ public interface EmergencyTrainingRecordMapper extends BaseMapper<EmergencyTrain
      * @param emergencyTrainingRecordDTO
      * @return
      */
-    List<EmergencyTrainingRecordVO> queryPageList(Page<EmergencyTrainingRecord> page,@Param("emergencyTrainingRecordDTO")EmergencyTrainingRecordDTO emergencyTrainingRecordDTO);
+    List<EmergencyTrainingRecordVO> queryPageList(Page<EmergencyTrainingRecordVO> page,@Param("emergencyTrainingRecordDTO")EmergencyTrainingRecordDTO emergencyTrainingRecordDTO);
 }

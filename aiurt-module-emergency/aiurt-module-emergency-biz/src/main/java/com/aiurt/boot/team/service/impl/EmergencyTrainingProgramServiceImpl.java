@@ -119,6 +119,8 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         } else {
             emergencyTrainingProgram.setStatus(TeamConstant.WAIT_PUBLISH);
         }
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        emergencyTrainingProgram.setOrgCode(user.getOrgCode());
         this.save(emergencyTrainingProgram);
         List<EmergencyTrainingTeam> emergencyTrainingTeamList = emergencyTrainingProgram.getEmergencyTrainingTeamList();
         if (CollUtil.isNotEmpty(emergencyTrainingTeamList)) {
