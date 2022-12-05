@@ -50,6 +50,7 @@ public class CsUserDepartServiceImpl extends ServiceImpl<CsUserDepartMapper, CsU
         if (CollUtil.isNotEmpty(list)) {
             for (CsUserDepartModel sysDepart : list) {
                 sysDepart.setSelect(true);
+                sysDepart.setId(sysDepart.getDepartId());
                 models.add(sysDepart);
                 map.put(sysDepart.getOrgCode(), sysDepart);
                 String orgCodeCc = sysDepart.getOrgCodeCc();
