@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -55,6 +56,13 @@ public class FileAppVO implements Serializable {
 	@ApiModelProperty("是否为文件 0.否 1.是")
 	private Integer status;
 
+	/**
+	 * 下载状态
+	 */
+	@Excel(name = "下载状态", width = 15)
+	@ApiModelProperty(value = "下载状态")
+	@NotNull(message = "下载状态不能为空")
+	private Integer downStatus;
 
 	@ApiModelProperty("上一级id")
 	private Long parentId;

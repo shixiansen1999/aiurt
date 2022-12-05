@@ -500,7 +500,8 @@ public class BigscreenPlanService {
                 Date[] timeByType = getTimeByType(String.valueOf(type));
                 if (timeByType.length > 0 && CollUtil.isNotEmpty(userList)) {
                     //获取一周内的班组平均维修响应时间
-                    List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList, timeByType[0], timeByType[1]);
+                    List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList,
+                            DateUtil.date(DateUtil.parseDate("2022-11-21 00:00:00")), DateUtil.date(DateUtil.parseDate("2022-11-22 23:59:00")));
                     getAverageTime(repairDuration, teamPortraitDTO);
                     //获取总工时
                     getTotalTimes(teamPortraitDTO, userList, type, timeByType);
@@ -562,7 +563,9 @@ public class BigscreenPlanService {
             dtos.addAll(inspecitonTotalTime);
             BigDecimal sum = new BigDecimal("0.00");
             for (TaskUserDTO dto : dtos) {
-                sum = sum.add(dto.getInspecitonTotalTime());
+                if (ObjectUtil.isNotNull(dto.getInspecitonTotalTime())) {
+                    sum = sum.add(dto.getInspecitonTotalTime());
+                }
             }
             //秒转时
             BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);

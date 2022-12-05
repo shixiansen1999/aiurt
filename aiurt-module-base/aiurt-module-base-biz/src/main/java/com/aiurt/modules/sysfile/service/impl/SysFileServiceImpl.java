@@ -1,5 +1,6 @@
 package com.aiurt.modules.sysfile.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
@@ -74,7 +75,7 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					total + this.lambdaQuery().eq(SysFile::getDelFlag, 0)
 							.eq(SysFile::getTypeId, param.getTypeId()).count());
 			return page;
-		} else {
+		} else if (ObjectUtil.isNotNull(param.getTypeId())){
 			long l = len - total;
 			long l1 = l % param.getPageSize() > 0 ? (l / param.getPageSize()) + 1 : l / param.getPageSize();
 			long size = l > 10 ? 10 : l;
@@ -83,14 +84,14 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 			Optional.ofNullable(filePage.getRecords()).ifPresent(sysFiles -> {
 				sysFiles.forEach(f -> {
 					FileAppVO appVO = new FileAppVO();
-					appVO.setFileName(f.getName()).setId(f.getId()).setUrl(f.getUrl()).setStatus(1).setTypeId(f.getTypeId());
+					appVO.setFileName(f.getName()).setId(f.getId()).setUrl(f.getUrl()).setStatus(1).setTypeId(f.getTypeId()).setDownStatus(f.getDownStatus());
 					list.add(appVO);
 				});
 			});
 			page.setRecords(list).setTotal(total + filePage.getTotal());
 			return page;
 		}
-
+           return page;
 	}
 
 	private final ISysFileRoleService sysFileRoleService;
