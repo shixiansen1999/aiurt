@@ -3,6 +3,7 @@ package com.aiurt.boot.rehearsal.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearAddDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
@@ -17,6 +18,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +31,7 @@ import org.springframework.util.Assert;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @Description: emergency_rehearsal_year
@@ -37,11 +43,23 @@ import java.util.Optional;
 public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehearsalYearMapper, EmergencyRehearsalYear> implements IEmergencyRehearsalYearService {
 
     @Autowired
+    private ISysBaseAPI iSysBaseApi;
+    @Autowired
     private IEmergencyRehearsalMonthService emergencyRehearsalMonthService;
 
     @Override
     public IPage<EmergencyRehearsalYear> queryPageList(Page<EmergencyRehearsalYear> page, EmergencyRehearsalYearDTO emergencyRehearsalYearDTO) {
         QueryWrapper<EmergencyRehearsalYear> wrapper = new QueryWrapper<>();
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
+        List<CsUserDepartModel> deptModel = iSysBaseApi.getDepartByUserId(loginUser.getId());
+        List<String> orgCodes = deptModel.stream().filter(l -> StrUtil.isNotEmpty(l.getOrgCode()))
+                .map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(orgCodes)) {
+            return page;
+        }
+        wrapper.lambda().in(EmergencyRehearsalYear::getOrgCode, orgCodes);
+
         if (ObjectUtil.isNotEmpty(emergencyRehearsalYearDTO)) {
             Optional.ofNullable(emergencyRehearsalYearDTO.getCode())
                     .ifPresent(code -> wrapper.lambda().eq(EmergencyRehearsalYear::getCode, code));
