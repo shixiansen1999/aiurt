@@ -6,18 +6,15 @@ import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceComposeMapper;
 import com.aiurt.modules.device.mapper.DeviceTypeMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
-import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
-import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
@@ -51,6 +48,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
      * 列表
      * @return
      */
+    @Override
     public List<DeviceType> selectList(){
         return deviceTypeMapper.readAll();
     }
