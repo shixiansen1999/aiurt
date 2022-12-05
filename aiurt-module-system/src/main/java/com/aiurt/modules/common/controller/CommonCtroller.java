@@ -29,10 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserMajorModel;
-import org.jeecg.common.system.vo.CsUserStationModel;
-import org.jeecg.common.system.vo.CsUserSubsystemModel;
-import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -443,22 +440,10 @@ public class CommonCtroller {
 
 
 
-/*    @GetMapping("/system/queryDepartTree")
+    @GetMapping("/system/queryDepartTree")
     @ApiOperation("查询用户拥有部门权限树")
-    public Result<List<SelectTable>> queryDepartTree() {
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserDepartModel> departByUserId = csUserDepartService.getDepartByUserId(loginUser.getId());
-        List<SelectTable> selectTables = new ArrayList<>();
-        if (CollUtil.isNotEmpty(departByUserId)) {
-            for (CsUserDepartModel csUserDepartModel : departByUserId) {
-                if () {
-                }
-                SelectTable selectTable = new SelectTable();
-
-            }
-        }
-
-
-        return null;
-    }*/
+    public Result<List<CsUserDepartModel>> queryDepartTree() {
+        List<CsUserDepartModel> list = csUserDepartService.queryDepartTree();
+        return Result.OK(list);
+    }
 }

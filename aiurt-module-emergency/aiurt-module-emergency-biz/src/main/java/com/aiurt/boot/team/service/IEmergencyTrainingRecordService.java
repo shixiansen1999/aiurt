@@ -1,6 +1,8 @@
 package com.aiurt.boot.team.service;
 
+import com.aiurt.boot.team.dto.EmergencyTrainingRecordDTO;
 import com.aiurt.boot.team.entity.EmergencyTrainingRecord;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,4 +13,12 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IEmergencyTrainingRecordService extends IService<EmergencyTrainingRecord> {
 
+    /**
+     * 应急队伍训练记录列表查询
+     * @param emergencyTrainingRecordDTO
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    IPage<EmergencyTrainingRecord> queryPageList(EmergencyTrainingRecordDTO emergencyTrainingRecordDTO, Integer pageNo, Integer pageSize);
 }

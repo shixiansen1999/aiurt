@@ -2,4 +2,35 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.team.mapper.EmergencyTrainingRecordMapper">
 
+<select id="queryPageList" resultType="com.aiurt.boot.team.vo.EmergencyTrainingRecordVO">
+    select
+        etp.training_program_code,
+        etp.training_program_name,
+        wtr.emergency_team_id,
+        wtr.training_time,
+        wtr.trainees_num,
+        su.realname as managerName,
+        wtr.line_code,
+        wtr.station_code,
+        wtr.position_code,
+        wtr.status,
+        wtr.training_appraise
+    from emergency_training_record wtr
+    left join emergency_training_program etp on wtr.emergency_training_program_id = etp.id
+    left join emergency_team et on wtr.emergency_team_id = et.id
+    left join sys_user su on et.manager_id = su.id
+    WHERE wtr.del_flag = 0
+    <if test="emergencyTrainingRecordDTO.emergencyTeamId != null and emergencyTrainingRecordDTO.emergencyTeamId != ''">
+        and wtr.emergency_team_id = #{emergencyTrainingRecordDTO.emergencyTeamId}
+    </if>
+    <if test="emergencyTrainingRecordDTO.trainingProgramName != null and emergencyTrainingRecordDTO.trainingProgramName != ''">
+        and etp.training_program_name = #{emergencyTrainingRecordDTO.trainingProgramName}
+    </if>
+    <if test="emergencyTrainingRecordDTO.trainingProgramCode != null and emergencyTrainingRecordDTO.trainingProgramCode != ''">
+        and etp.training_program_code = #{emergencyTrainingRecordDTO.trainingProgramCode}
+    </if>
+    <if test="emergencyTrainingRecordDTO.trainingStartTime != null">
+        and DATE_FORMAT( wtr.training_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{emergencyTrainingRecordDTO.trainingStartTime} ,'%Y-%m-%d')
+    </if>
+    </select>
 </mapper>

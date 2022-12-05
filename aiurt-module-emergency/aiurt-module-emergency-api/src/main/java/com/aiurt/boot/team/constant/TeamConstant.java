@@ -6,6 +6,10 @@ package com.aiurt.boot.team.constant;
  */
 public interface TeamConstant {
     /**
+     * 管理员身份
+     */
+    String ADMIN = "admin";
+    /**
      * 未删除状态
      */
     Integer DEL_FLAG0 = 0;

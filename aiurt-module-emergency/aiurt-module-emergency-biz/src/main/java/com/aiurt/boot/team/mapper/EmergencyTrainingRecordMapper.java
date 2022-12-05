@@ -1,7 +1,13 @@
 package com.aiurt.boot.team.mapper;
 
+import com.aiurt.boot.team.dto.EmergencyTrainingRecordDTO;
 import com.aiurt.boot.team.entity.EmergencyTrainingRecord;
+import com.aiurt.boot.team.vo.EmergencyTrainingRecordVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Description: emergency_training_record
@@ -11,4 +17,11 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface EmergencyTrainingRecordMapper extends BaseMapper<EmergencyTrainingRecord> {
 
+    /**
+     * 应急队伍训练记录列表查询
+     * @param page
+     * @param emergencyTrainingRecordDTO
+     * @return
+     */
+    List<EmergencyTrainingRecordVO> queryPageList(Page<EmergencyTrainingRecord> page,@Param("emergencyTrainingRecordDTO")EmergencyTrainingRecordDTO emergencyTrainingRecordDTO);
 }

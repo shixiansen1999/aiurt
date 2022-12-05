@@ -93,7 +93,7 @@ public interface SysDepartMapper extends BaseMapper<SysDepart> {
 	List<SysDepart> queryDeptByPid(@Param("parentId")String parentId);
 
 	/**
-	 * 通过部门编码获取部门id
+	 * 通过部门编码获取部门
 	 * @param orgCode 部门编码
 	 * @return String
 	 */

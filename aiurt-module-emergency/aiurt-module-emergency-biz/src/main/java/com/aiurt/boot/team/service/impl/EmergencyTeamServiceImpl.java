@@ -38,10 +38,6 @@ import java.util.stream.Collectors;
  */
 @Service
 public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, EmergencyTeam> implements IEmergencyTeamService {
-    /**
-     * 系统管理员角色编码
-     */
-    private static final String ADMIN = "admin";
 
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
@@ -62,7 +58,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         String roleCodes = user.getRoleCodes();
         List<SysDepartModel> models = new ArrayList<>();
         if (StrUtil.isNotBlank(roleCodes)) {
-            if (!roleCodes.contains(ADMIN)) {
+            if (!roleCodes.contains(TeamConstant.ADMIN)) {
                 //获取用户的所属部门及所属部门子部门
                 models = iSysBaseAPI.getUserDepartCodes();
                 if (CollUtil.isEmpty(models)) {
