@@ -31,22 +31,18 @@ public class PatrolTaskDeviceReadRecordServiceImpl extends ServiceImpl<PatrolTas
         List<PatrolTaskDeviceReadRecord> myselfList = taskDeviceReadRecordMapper.getReadList(taskDeviceId,majorCode,subsystemCode,taskId,user.getId());
         //查询当前登录人，在同一个任务，其他单号是否阅读过安全事项
          LambdaQueryWrapper<PatrolTaskDeviceReadRecord> queryWrapper = new LambdaQueryWrapper<>();
-         if(ObjectUtil.isNotEmpty(subsystemCode))
-         {
+         if(ObjectUtil.isNotEmpty(subsystemCode)){
              queryWrapper.eq(PatrolTaskDeviceReadRecord::getSubsystemCode,subsystemCode);
          }
         queryWrapper.eq(PatrolTaskDeviceReadRecord::getTaskId,taskId);
         queryWrapper.eq(PatrolTaskDeviceReadRecord::getMajorCode,majorCode);
         queryWrapper.eq(PatrolTaskDeviceReadRecord::getUserId,user.getId());
          List<PatrolTaskDeviceReadRecord> otherDeviceList = taskDeviceReadRecordMapper.selectList(queryWrapper);
-         if(CollUtil.isNotEmpty(myselfList)||CollUtil.isNotEmpty(otherDeviceList))
-         {
+         if(CollUtil.isNotEmpty(myselfList)||CollUtil.isNotEmpty(otherDeviceList)) {
              return true;
          }
-         else
-         {
+         else {
              return false;
-
          }
     }
 }
