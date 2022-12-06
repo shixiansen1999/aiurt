@@ -365,7 +365,7 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
     public void delete(String id) {
         ConstructionWeekPlanCommand command = this.getById(id);
         Assert.notNull(command, "未找到对应数据！");
-        if (ConstructionConstant.FORM_STATUS_0.equals(command.getFormStatus())) {
+        if (!ConstructionConstant.FORM_STATUS_0.equals(command.getFormStatus())) {
             throw new AiurtBootException("计划已经提审或者已经完成审批，不允许删除！");
         }
         this.removeById(command);
