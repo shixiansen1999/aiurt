@@ -700,4 +700,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<PatrolStandardItemsModel> patrolStandardList(String id);
+
+    /**
+     * 根据专业、子系统，查询是否有安全事项
+     * @param majorCode
+     * @param systemCode
+     * @return
+     */
+   boolean isNullSafetyPrecautions(String majorCode,String systemCode);
 }

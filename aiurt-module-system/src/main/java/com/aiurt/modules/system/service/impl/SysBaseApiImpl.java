@@ -33,6 +33,8 @@ import com.aiurt.modules.position.mapper.CsLineMapper;
 import com.aiurt.modules.position.mapper.CsStationMapper;
 import com.aiurt.modules.quartz.entity.QuartzJob;
 import com.aiurt.modules.quartz.service.IQuartzJobService;
+import com.aiurt.modules.sm.entity.CsSafetyAttention;
+import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.service.*;
@@ -173,6 +175,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private CsLineMapper lineMapper;
     @Autowired
     private SysRoleMapper sysRoleMapper;
+    @Autowired
+    private CsSafetyAttentionMapper csSafetyAttentionMapper;
 
     @Autowired
     @Lazy
@@ -2020,5 +2024,23 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             lineCode = line.getLineCode();
         }
         return lineCode;
+    }
+    @Override
+    public boolean isNullSafetyPrecautions(String majorCode, String systemCode) {
+        LambdaQueryWrapper<CsSafetyAttention> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CsSafetyAttention::getMajorCode,majorCode);
+        if(ObjectUtil.isNotEmpty(systemCode))
+        {
+            queryWrapper.eq(CsSafetyAttention::getSystemCode,systemCode);
+        }
+        List<CsSafetyAttention> list = csSafetyAttentionMapper.selectList(queryWrapper);
+        if(CollUtil.isNotEmpty(list))
+        {
+            return true;
+        }
+        else
+        {
+            return  false;
+        }
     }
 }
