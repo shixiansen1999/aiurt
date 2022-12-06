@@ -175,6 +175,7 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	 public Result<?> getCode(@RequestParam(name="code",required=true) String code){
 		LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,code);
+		queryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,0);
 		EmergencyMaterialsCategory one = emergencyMaterialsCategoryService.getOne(queryWrapper, false);
 		if (ObjectUtil.isNull(one)){
 			return Result.OK("校验成功，请继续！");
@@ -197,6 +198,7 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	 public Result<?> getName(@RequestParam(name="name",required=true) String name){
 		 LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
 		 queryWrapper.eq(EmergencyMaterialsCategory::getCategoryName,name);
+		 queryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,0);
 		 EmergencyMaterialsCategory one = emergencyMaterialsCategoryService.getOne(queryWrapper, false);
 		 if (ObjectUtil.isNull(one)){
 			 return Result.OK("校验成功，请继续！");
