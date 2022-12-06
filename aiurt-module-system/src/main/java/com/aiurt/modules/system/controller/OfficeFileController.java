@@ -142,7 +142,7 @@ public class OfficeFileController {
             }
             out.flush();
         }
-        attachment.setFilePath(savePath);
+        attachment.setFilePath(fileName);
     }
 
     /**
