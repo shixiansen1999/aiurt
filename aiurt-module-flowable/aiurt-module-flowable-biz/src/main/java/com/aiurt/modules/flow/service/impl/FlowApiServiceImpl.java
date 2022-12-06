@@ -496,7 +496,17 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (flowTaskExt != null) {
             // 判断为办理人才返回操作按钮
             if (StrUtil.isNotBlank(flowTaskExt.getOperationListJson()) && this.isAssigneeOrCandidate(task)){
-                taskInfoDTO.setOperationList(JSON.parseArray(flowTaskExt.getOperationListJson(), ActOperationEntity.class));
+                String operationListJson = flowTaskExt.getOperationListJson();
+                List<ActOperationEntity> objectList = JSON.parseArray(operationListJson, ActOperationEntity.class);
+                // 排序
+                objectList.stream().forEach(entity-> {
+                    Integer o = entity.getShowOrder();
+                    if (Objects.isNull(o)) {
+                        entity.setShowOrder(0);
+                    }
+                });
+                objectList = objectList.stream().sorted(Comparator.comparing(ActOperationEntity::getShowOrder)).collect(Collectors.toList());
+                taskInfoDTO.setOperationList(objectList);
             }
             if (StrUtil.isNotBlank(flowTaskExt.getVariableListJson())) {
                 // taskInfoDTO.setVariableList(JSON.parseArray(flowTaskExt.getVariableListJson(), JSONObject.class));

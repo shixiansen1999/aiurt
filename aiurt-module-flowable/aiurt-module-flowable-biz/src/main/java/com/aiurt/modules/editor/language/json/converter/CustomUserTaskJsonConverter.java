@@ -3,6 +3,7 @@ package com.aiurt.modules.editor.language.json.converter;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
+import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.utils.ExtensionPropertiesUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -21,6 +22,7 @@ import org.flowable.editor.language.json.converter.UserTaskJsonConverter;
 import org.flowable.editor.language.json.converter.util.JsonConverterUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -95,13 +97,13 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 ArrayNode arrayNode = super.objectMapper.createArrayNode();
                 for (ExtensionElement e : formOperationElements) {
                     ObjectNode objectNode = super.objectMapper.createObjectNode();
-                    objectNode.put(FlowModelAttConstant.ID, e.getAttributeValue(null, FlowModelAttConstant.ID));
-                    objectNode.put(FlowModelAttConstant.LABEL, e.getAttributeValue(null, FlowModelAttConstant.LABEL));
-                    objectNode.put(FlowModelAttConstant.TYPE, e.getAttributeValue(null, FlowModelAttConstant.TYPE));
-                    objectNode.put(FlowModelAttConstant.SHOW_ORDER, e.getAttributeValue(null, FlowModelAttConstant.SHOW_ORDER));
-                    objectNode.put(FlowModelAttConstant.IS_DISPLAY_REMARK, e.getAttributeValue(null, FlowModelAttConstant.IS_DISPLAY_REMARK));
-                    objectNode.put(FlowModelAttConstant.IS_REQUIRE_REMARK, e.getAttributeValue(null, FlowModelAttConstant.IS_REQUIRE_REMARK));
-                    arrayNode.add(objectNode);
+
+                    Class clazz = ActOperationEntity.class;
+                    Field[] fields = clazz.getDeclaredFields();
+                    Arrays.stream(fields).filter(field -> !StrUtil.equals("serialVersionUID", field.getName())).forEach(field -> {
+                        objectNode.put(field.getName(), e.getAttributeValue(null, field.getName()));
+                        arrayNode.add(objectNode);
+                    });
                 }
                 propertiesNode.set(FORM_OPERATION, arrayNode);
             }

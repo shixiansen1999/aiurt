@@ -143,9 +143,21 @@ public class FlowElementUtil {
      * @return
      */
     public UserTask getFirstUserTaskByDefinitionId(String processDefinitionId) {
+        FlowElement flowElement = this.getStartFlowNodeByDefinitionId(processDefinitionId);
 
+        // 获取用户节点
+        FlowNode startFlowNode = (FlowNode) flowElement;
+        UserTask userTask = null;
+        // 遍历
+        List<SequenceFlow> outgoingFlows = startFlowNode.getOutgoingFlows();
+        for (SequenceFlow outgoingFlow : outgoingFlows) {
+            FlowElement targetFlowElement = outgoingFlow.getTargetFlowElement();
+            if (targetFlowElement instanceof UserTask) {
+                userTask = (UserTask) targetFlowElement;
+            }
+        }
 
-        return null;
+        return userTask;
     }
 
 
