@@ -3,8 +3,10 @@ package com.aiurt.boot.team.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.team.constant.TeamConstant;
+import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.dto.EmergencyTrainingRecordDTO;
 import com.aiurt.boot.team.entity.*;
+import com.aiurt.boot.team.mapper.EmergencyTrainingProgramMapper;
 import com.aiurt.boot.team.mapper.EmergencyTrainingRecordMapper;
 import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
@@ -18,6 +20,7 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +51,8 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
     private EmergencyTrainingTeamServiceImpl emergencyTrainingTeamService;
     @Autowired
     private EmergencyTrainingProgramServiceImpl emergencyTrainingProgramService;
+    @Autowired
+    private EmergencyTrainingProgramMapper emergencyTrainingProgramMapper;
 
     @Override
     public IPage<EmergencyTrainingRecordVO> queryPageList(EmergencyTrainingRecordDTO emergencyTrainingRecordDTO, Integer pageNo, Integer pageSize) {
@@ -103,6 +108,12 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<String> add(EmergencyTrainingRecord emergencyTrainingRecord) {
+        boolean empty = StrUtil.isEmpty(emergencyTrainingRecord.getLineCode());
+        boolean empty1 = StrUtil.isEmpty(emergencyTrainingRecord.getStationCode());
+        boolean empty2 = StrUtil.isEmpty(emergencyTrainingRecord.getPositionCode());
+        if (empty && empty1 && empty2) {
+            return Result.error("添加失败，训练地点不能为空");
+        }
         this.save(emergencyTrainingRecord);
         String id = emergencyTrainingRecord.getId();
         List<EmergencyTrainingRecordCrew> crewList = emergencyTrainingRecord.getCrewList();
@@ -120,26 +131,119 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             emergencyTrainingRecordAtt.setEmergencyTrainingRecordId(id);
             emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
         }
+        if (TeamConstant.SUBMITTED.equals(emergencyTrainingRecord.getStatus())) {
+            submit(emergencyTrainingRecord);
+            return Result.OK("提交成功");
+        }
         return Result.OK("添加成功！");
     }
 
-    private void submit(EmergencyTrainingRecord emergencyTrainingRecord) {
-        Integer status = emergencyTrainingRecord.getStatus();
-        if (TeamConstant.SUBMITTED.equals(status)) {
-            LambdaQueryWrapper<EmergencyTrainingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
-            recordQueryWrapper.eq(EmergencyTrainingRecord::getDelFlag, TeamConstant.DEL_FLAG0);
-            recordQueryWrapper.eq(EmergencyTrainingRecord::getEmergencyTrainingProgramId, emergencyTrainingRecord.getEmergencyTrainingProgramId());
-            List<EmergencyTrainingRecord> emergencyTrainingRecords = this.getBaseMapper().selectList(recordQueryWrapper);
-
-            LambdaQueryWrapper<EmergencyTrainingTeam> teamQueryWrapper = new LambdaQueryWrapper<>();
-            teamQueryWrapper.eq(EmergencyTrainingTeam::getDelFlag, TeamConstant.DEL_FLAG0);
-            teamQueryWrapper.eq(EmergencyTrainingTeam::getEmergencyTrainingProgramId, emergencyTrainingRecord.getEmergencyTrainingProgramId());
-            List<EmergencyTrainingTeam> emergencyTrainingTeams = emergencyTrainingTeamService.getBaseMapper().selectList(teamQueryWrapper);
-            //当计划中的所有训练队伍都提交了记录的时候修改计划状态
-            if (emergencyTrainingRecords.size() == emergencyTrainingTeams.size()) {
-                emergencyTrainingProgramService.getById(emergencyTrainingRecord.getEmergencyTrainingProgramId());
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<String> edit(EmergencyTrainingRecord emergencyTrainingRecord) {
+        this.updateById(emergencyTrainingRecord);
+        String id = emergencyTrainingRecord.getId();
+        List<EmergencyTrainingRecordCrew> crewList = emergencyTrainingRecord.getCrewList();
+        if (CollUtil.isNotEmpty(crewList)) {
+            for (EmergencyTrainingRecordCrew emergencyTrainingRecordCrew : crewList) {
+                if (StrUtil.isNotBlank(emergencyTrainingRecordCrew.getId())) {
+                    if (TeamConstant.DEL_FLAG1.equals(emergencyTrainingRecordCrew.getDelFlag())) {
+                        emergencyTrainingRecordCrewService.removeById(emergencyTrainingRecordCrew);
+                    } else {
+                        emergencyTrainingRecordCrewService.updateById(emergencyTrainingRecordCrew);
+                    }
+                } else {
+                    emergencyTrainingRecordCrew.setEmergencyTrainingRecordId(id);
+                    emergencyTrainingRecordCrewService.save(emergencyTrainingRecordCrew);
+                }
             }
         }
 
+        List<EmergencyTrainingProcessRecord> processRecordList = emergencyTrainingRecord.getProcessRecordList();
+        if (CollUtil.isNotEmpty(processRecordList)) {
+            for (EmergencyTrainingProcessRecord emergencyTrainingProcessRecord : processRecordList) {
+                if (StrUtil.isNotBlank(emergencyTrainingProcessRecord.getId())) {
+                    if (TeamConstant.DEL_FLAG1.equals(emergencyTrainingProcessRecord.getDelFlag())) {
+                        emergencyTrainingProcessRecordService.removeById(emergencyTrainingProcessRecord);
+                    } else {
+                        emergencyTrainingProcessRecordService.updateById(emergencyTrainingProcessRecord);
+                    }
+                } else {
+                    emergencyTrainingProcessRecord.setEmergencyTrainingRecordId(id);
+                    emergencyTrainingProcessRecordService.save(emergencyTrainingProcessRecord);
+                }
+            }
+        }
+
+        List<EmergencyTrainingRecordAtt> attList = emergencyTrainingRecord.getAttList();
+        if (CollUtil.isNotEmpty(attList)) {
+            for (EmergencyTrainingRecordAtt emergencyTrainingRecordAtt : attList) {
+                if (StrUtil.isNotBlank(emergencyTrainingRecordAtt.getId())) {
+                    if (TeamConstant.DEL_FLAG1.equals(emergencyTrainingRecordAtt.getDelFlag())) {
+                        emergencyTrainingRecordAttService.removeById(emergencyTrainingRecordAtt);
+                    } else {
+                        emergencyTrainingRecordAttService.updateById(emergencyTrainingRecordAtt);
+                    }
+                } else {
+                    emergencyTrainingRecordAtt.setEmergencyTrainingRecordId(id);
+                    emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
+                }
+            }
+        }
+
+        if (TeamConstant.SUBMITTED.equals(emergencyTrainingRecord.getStatus())) {
+            submit(emergencyTrainingRecord);
+            return Result.OK("提交成功");
+        }
+        return Result.OK("编辑成功");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void submit(EmergencyTrainingRecord emergencyTrainingRecord) {
+        LambdaQueryWrapper<EmergencyTrainingRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
+        recordQueryWrapper.eq(EmergencyTrainingRecord::getDelFlag, TeamConstant.DEL_FLAG0);
+        recordQueryWrapper.eq(EmergencyTrainingRecord::getEmergencyTrainingProgramId, emergencyTrainingRecord.getEmergencyTrainingProgramId());
+        List<EmergencyTrainingRecord> emergencyTrainingRecords = this.getBaseMapper().selectList(recordQueryWrapper);
+
+        LambdaQueryWrapper<EmergencyTrainingTeam> teamQueryWrapper = new LambdaQueryWrapper<>();
+        teamQueryWrapper.eq(EmergencyTrainingTeam::getDelFlag, TeamConstant.DEL_FLAG0);
+        teamQueryWrapper.eq(EmergencyTrainingTeam::getEmergencyTrainingProgramId, emergencyTrainingRecord.getEmergencyTrainingProgramId());
+        List<EmergencyTrainingTeam> emergencyTrainingTeams = emergencyTrainingTeamService.getBaseMapper().selectList(teamQueryWrapper);
+        //当计划中的所有训练队伍都提交了记录的时候修改计划状态
+        if (emergencyTrainingRecords.size() == emergencyTrainingTeams.size()) {
+            EmergencyTrainingProgram program = emergencyTrainingProgramService.getById(emergencyTrainingRecord.getEmergencyTrainingProgramId());
+            program.setStatus(TeamConstant.COMPLETED);
+            emergencyTrainingProgramService.getById(program);
+        }
+    }
+
+    @Override
+    public void delete(String id) {
+        LambdaQueryWrapper<EmergencyTrainingRecordCrew> crewQueryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<EmergencyTrainingProcessRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<EmergencyTrainingRecordAtt> attQueryWrapper = new LambdaQueryWrapper<>();
+        crewQueryWrapper.eq(EmergencyTrainingRecordCrew::getEmergencyTrainingRecordId, id);
+        recordQueryWrapper.eq(EmergencyTrainingProcessRecord::getEmergencyTrainingRecordId, id);
+        attQueryWrapper.eq(EmergencyTrainingRecordAtt::getEmergencyTrainingRecordId, id);
+        emergencyTrainingRecordCrewService.getBaseMapper().delete(crewQueryWrapper);
+        emergencyTrainingProcessRecordService.getBaseMapper().delete(recordQueryWrapper);
+        emergencyTrainingRecordAttService.getBaseMapper().delete(attQueryWrapper);
+        this.removeById(id);
+    }
+
+    @Override
+    public IPage<EmergencyTrainingProgram> getTrainingProgram(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO,String id, Integer pageNo, Integer pageSize) {
+        Page<EmergencyTrainingProgram> page = new Page<>(pageNo, pageSize);
+        List<EmergencyTrainingProgram> trainingProgram = emergencyTrainingProgramMapper.getTrainingProgram(page, id, emergencyTrainingProgramDTO);
+        if (CollUtil.isNotEmpty(trainingProgram)) {
+            for (EmergencyTrainingProgram record : trainingProgram) {
+                SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(record.getOrgCode());
+                record.setOrgName(sysDepartModel.getDepartName());
+                String trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(record.getId());
+                record.setEmergencyTeamName(trainingTeam);
+            }
+        }
+        return page.setRecords(trainingProgram);
     }
 }

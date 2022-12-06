@@ -1,6 +1,9 @@
 package com.aiurt.boot.team.controller;
 
+import com.aiurt.boot.team.constant.TeamConstant;
+import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.dto.EmergencyTrainingRecordDTO;
+import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
 import com.aiurt.boot.team.entity.EmergencyTrainingRecord;
 import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
 import com.aiurt.boot.team.vo.EmergencyTrainingRecordVO;
@@ -18,8 +21,9 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.List;
 
- /**
+/**
  * @Description: emergency_training_record
  * @Author: aiurt
  * @Date:   2022-11-29
@@ -75,10 +79,25 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	@ApiOperation(value="应急队伍训练记录-编辑", notes="应急队伍训练记录-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody EmergencyTrainingRecord emergencyTrainingRecord) {
-		emergencyTrainingRecordService.updateById(emergencyTrainingRecord);
+		emergencyTrainingRecordService.edit(emergencyTrainingRecord);
 		return Result.OK("编辑成功!");
 	}
-
+	 /**
+	  * 提交
+	  *
+	  * @param id
+	  * @return
+	  */
+	 @AutoLog(value = "应急队伍训练记录-提交")
+	 @ApiOperation(value="应急队伍训练记录-提交", notes="应急队伍训练记录-提交")
+	 @DeleteMapping(value = "/recordSubmit")
+	 public Result<String> recordSubmit(@RequestParam(name="id",required=true) String id) {
+		 EmergencyTrainingRecord record = emergencyTrainingRecordService.getById(id);
+		 record.setStatus(TeamConstant.SUBMITTED);
+		 emergencyTrainingRecordService.updateById(record);
+		 emergencyTrainingRecordService.submit(record);
+		 return Result.OK("提交成功!");
+	 }
 	/**
 	 *   通过id删除
 	 *
@@ -89,7 +108,7 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	@ApiOperation(value="应急队伍训练记录-通过id删除", notes="应急队伍训练记录-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		emergencyTrainingRecordService.removeById(id);
+		emergencyTrainingRecordService.delete(id);
 		return Result.OK("删除成功!");
 	}
 
@@ -103,7 +122,10 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	@ApiOperation(value="应急队伍训练记录-批量删除", notes="应急队伍训练记录-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.emergencyTrainingRecordService.removeByIds(Arrays.asList(ids.split(",")));
+		List<String> idList = Arrays.asList(ids.split(","));
+		for (String id : idList) {
+			emergencyTrainingRecordService.delete(id);
+		}
 		return Result.OK("批量删除成功!");
 	}
 
@@ -119,6 +141,28 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 		emergencyTrainingRecordService.queryById(id);
 		return Result.OK();
 	}
+
+	/**
+	 * 根据应急队伍选择训练计划
+	 *
+	 * @param emergencyTrainingProgramDTO
+	 * @param id
+	 * @param pageNo
+	 * @param pageSize
+	 * @param req
+	 * @return
+	 */
+	@ApiOperation(value="应急队伍训练记录-根据应急队伍选择训练计划", notes="应急队伍训练记录-根据应急队伍选择训练计划")
+	@GetMapping(value = "/getTrainingProgram")
+	public Result<IPage<EmergencyTrainingProgram>> getTrainingProgram(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO,
+																	  @RequestParam(name="id") String id,
+																	  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+																	  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+																	  HttpServletRequest req) {
+		IPage<EmergencyTrainingProgram> trainingProgram = emergencyTrainingRecordService.getTrainingProgram(emergencyTrainingProgramDTO, id, pageNo, pageSize);
+		return Result.OK(trainingProgram);
+	}
+
 
     /**
     * 导出excel

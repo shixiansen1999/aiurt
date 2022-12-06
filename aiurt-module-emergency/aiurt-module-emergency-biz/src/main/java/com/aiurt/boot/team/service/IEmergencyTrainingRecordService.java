@@ -1,6 +1,8 @@
 package com.aiurt.boot.team.service;
 
+import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.dto.EmergencyTrainingRecordDTO;
+import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
 import com.aiurt.boot.team.entity.EmergencyTrainingRecord;
 import com.aiurt.boot.team.vo.EmergencyTrainingRecordVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -34,5 +36,32 @@ public interface IEmergencyTrainingRecordService extends IService<EmergencyTrain
      * @param emergencyTrainingRecord
      * @return
      */
-    Result<String>  add(EmergencyTrainingRecord emergencyTrainingRecord);
+    Result<String> add(EmergencyTrainingRecord emergencyTrainingRecord);
+    /**
+     * 编辑
+     * @param emergencyTrainingRecord
+     * @return
+     */
+    Result<String> edit(EmergencyTrainingRecord emergencyTrainingRecord);
+    /**
+     * 提交
+     * @param emergencyTrainingRecord
+     * @return
+     */
+    void submit(EmergencyTrainingRecord emergencyTrainingRecord);
+    /**
+     * 删除
+     * @param id
+     * @return
+     */
+    void delete(String id);
+    /**
+     * 根据应急队伍选择训练计划
+     * @param emergencyTrainingProgramDTO
+     * @param id
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    IPage<EmergencyTrainingProgram>  getTrainingProgram(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO, String id,Integer pageNo, Integer pageSize);
 }
