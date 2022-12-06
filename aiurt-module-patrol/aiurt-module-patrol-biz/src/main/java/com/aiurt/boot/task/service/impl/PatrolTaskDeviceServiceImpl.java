@@ -168,6 +168,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             e.setProfessionCode(taskStandardName.getProfessionCode());
             e.setTaskStandardName(taskStandardName.getName());
             e.setDeviceType(taskStandardName.getDeviceType());
+            boolean nullSafetyPrecautions = sysBaseApi.isNullSafetyPrecautions(e.getProfessionCode(), e.getSubsystemCode());
+            e.setIsNullSafetyPrecautions(nullSafetyPrecautions);
             LambdaQueryWrapper<PatrolCheckResult> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             List<PatrolAccessoryDTO> patrolAccessoryDTOList = new ArrayList<>();
             lambdaQueryWrapper.eq(PatrolCheckResult::getTaskDeviceId, e.getId());

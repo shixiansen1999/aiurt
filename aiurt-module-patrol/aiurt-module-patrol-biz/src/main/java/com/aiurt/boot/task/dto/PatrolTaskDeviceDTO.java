@@ -175,4 +175,7 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "显示填写工单编辑按钮判断，0不显示，1显示", width = 15)
     @ApiModelProperty(value = "显示填写工单编辑按钮判断，0不显示，1显示")
     private java.lang.Integer showEditButton;
+    @Excel(name = "false无安全事项，true为有安全事项", width = 15)
+    @ApiModelProperty(value = "false无安全事项，true为有安全事项")
+    private Boolean isNullSafetyPrecautions;
 }
