@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
@@ -260,4 +259,8 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "检修位置")
     @TableField(exist = false)
     private String maintenancePosition;
+    /**false无安全事项，true为有安全事项*/
+    @ApiModelProperty(value = "false无安全事项，true为有安全事项")
+    @TableField(exist = false)
+    private Boolean isNullSafetyPrecautions;
 }

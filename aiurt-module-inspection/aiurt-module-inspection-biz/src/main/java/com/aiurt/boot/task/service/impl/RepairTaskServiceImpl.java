@@ -216,7 +216,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
             //子系统
             e.setSystemName(manager.translateMajor(Arrays.asList(e.getSystemCode()), InspectionConstant.SUBSYSTEM));
-
+            boolean nullSafetyPrecautions = sysBaseApi.isNullSafetyPrecautions(e.getMajorCode(), e.getSystemCode());
+            e.setIsNullSafetyPrecautions(nullSafetyPrecautions);
             //根据设备编码翻译设备名称和设备类型名称
             List<RepairDeviceDTO> repairDeviceDTOList = manager.queryDeviceByCodes(Arrays.asList(e.getEquipmentCode()));
             repairDeviceDTOList.forEach(q -> {
