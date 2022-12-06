@@ -177,6 +177,8 @@ public class EmergencyImplementationRecordServiceImpl extends ServiceImpl<Emerge
             Map<String, String> orgMap = iSysBaseApi.getAllSysDepart().stream()
                     .collect(Collectors.toMap(k -> k.getOrgCode(), v -> v.getDepartName(), (a, b) -> a));
             deptList.forEach(l -> depts.add(new EmergencyDeptDTO(l.getOrgCode(), orgMap.get(l.getOrgCode()))));
+            String deptNames = depts.stream().map(EmergencyDeptDTO::getOrgName).collect(Collectors.joining(";"));
+            recordVO.setDeptNames(deptNames);
         }
 
         // 查询对应的问题

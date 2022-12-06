@@ -27,20 +27,25 @@ public class EmergencyRecordReadOneVO extends EmergencyImplementationRecord {
      * 关联的月计划信息
      */
     @ApiModelProperty(value = "关联的月计划信息")
-    EmergencyRecordMonthVO rehearsalMonth;
+    private EmergencyRecordMonthVO rehearsalMonth;
     /**
      * 参与部门信息
      */
     @ApiModelProperty(value = "参与部门信息")
-    List<EmergencyDeptDTO> depts;
+    private List<EmergencyDeptDTO> depts;
+    /**
+     * 参与部门信息名称,英文分号分隔
+     */
+    @ApiModelProperty(value = "参与部门信息名称,英文分号分隔")
+    private String deptNames;
     /**
      * 演练步骤信息
      */
     @ApiModelProperty(value = "演练步骤信息")
-    List<EmergencyRecordStep> steps;
+    private List<EmergencyRecordStep> steps;
     /**
      * 登记问题信息
      */
     @ApiModelProperty(value = "登记问题信息")
-    List<EmergencyRecordQuestion> questions;
+    private List<EmergencyRecordQuestion> questions;
 }

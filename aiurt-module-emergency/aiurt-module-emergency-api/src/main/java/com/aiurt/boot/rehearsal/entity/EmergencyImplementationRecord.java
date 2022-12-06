@@ -68,15 +68,15 @@ public class EmergencyImplementationRecord extends DictEntity implements Seriali
     @ApiModelProperty(value = "实际演练时间")
     @NotNull(message = "实际演练时间不能为空！", groups = {Save.class, Update.class})
     private java.util.Date rehearsalTime;
-	/**演练地点*/
+	/**演练地点，精确到点位*/
 	@Excel(name = "演练地点", width = 15)
-    @ApiModelProperty(value = "演练地点")
-    @Dict(dictTable = "cs_station", dicCode = "station_code", dicText = "station_name")
+    @ApiModelProperty(value = "演练地点，精确到点位")
+    @Dict(dictTable = "cs_station_position", dicCode = "position_code", dicText = "position_name")
     @NotNull(message = "演练地点不能为空！", groups = {Save.class, Update.class})
     private java.lang.String stationCode;
-	/**观察岗位/点位*/
+	/**观察岗位/点位，精确到点位*/
 	@Excel(name = "观察岗位/点位", width = 15)
-    @ApiModelProperty(value = "观察岗位/点位")
+    @ApiModelProperty(value = "观察岗位/点位，精确到点位")
     @Dict(dictTable = "cs_station_position", dicCode = "position_code", dicText = "position_name")
     @NotNull(message = "观察岗位/点位不能为空！", groups = {Save.class, Update.class})
     private java.lang.String positionCode;
