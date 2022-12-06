@@ -61,6 +61,7 @@ public interface IConstructionWeekPlanCommandService extends IService<Constructi
 
     /**
      * 施工周计划-根据ID查询计划信息
+     *
      * @param id
      * @return
      */
@@ -68,9 +69,17 @@ public interface IConstructionWeekPlanCommandService extends IService<Constructi
 
     /**
      * 查询待办
-     * @param page 分页
+     *
+     * @param page                           分页
      * @param constructionWeekPlanCommandDTO 请求参数
      * @return
      */
     IPage<ConstructionWeekPlanCommandVO> queryWorkToDo(Page<ConstructionWeekPlanCommandVO> page, ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO);
+
+    /**
+     * 施工周计划-根据ID删除计划
+     *
+     * @param id
+     */
+    void delete(String id);
 }

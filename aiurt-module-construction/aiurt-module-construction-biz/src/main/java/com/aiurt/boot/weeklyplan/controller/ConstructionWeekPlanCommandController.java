@@ -151,4 +151,14 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
         return Result.OK(pageList);
     }
 
+    /**
+     * 施工周计划-根据ID删除计划
+     */
+    @ApiOperation(value = "施工周计划-根据ID删除计划", notes = "施工周计划-根据ID删除计划")
+    @PostMapping(value = "/delete")
+    public Result<String> delete(@RequestParam @ApiParam(name = "id", value = "计划主键ID") String id) {
+        constructionWeekPlanCommandService.delete(id);
+        return Result.OK("删除成功！");
+    }
+
 }

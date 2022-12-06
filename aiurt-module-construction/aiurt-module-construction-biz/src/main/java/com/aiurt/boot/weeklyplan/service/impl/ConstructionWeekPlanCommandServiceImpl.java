@@ -13,8 +13,8 @@ import com.aiurt.boot.weeklyplan.mapper.ConstructionWeekPlanCommandMapper;
 import com.aiurt.boot.weeklyplan.service.IConstructionCommandAssistService;
 import com.aiurt.boot.weeklyplan.service.IConstructionWeekPlanCommandService;
 import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.util.RedisUtil;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
@@ -31,10 +31,12 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -70,8 +72,12 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("检测到未登录，请登录后操作！");
         }
-        QueryWrapper<ConstructionWeekPlanCommand> wrapper = new QueryWrapper<>(constructionWeekPlanCommand);
-        ConstructionWeekPlanCommand planCommand = this.getOne(wrapper);
+        ConstructionWeekPlanCommand planCommand = null;
+        QueryWrapper<ConstructionWeekPlanCommand> wrapper = new QueryWrapper<>();
+        if (ObjectUtil.isNotEmpty(constructionWeekPlanCommand) && ObjectUtil.isNotEmpty(constructionWeekPlanCommand.getId())) {
+            wrapper.lambda().eq(ConstructionWeekPlanCommand::getId, constructionWeekPlanCommand.getId());
+            planCommand = this.getOne(wrapper);
+        }
 
         if (ObjectUtil.isEmpty(planCommand)) {
             // 生成计划令编码
@@ -352,5 +358,22 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         }
         IPage<ConstructionWeekPlanCommandVO> pageList = constructionWeekPlanCommandMapper.queryWorkToDo(page, loginUser.getUsername(), constructionWeekPlanCommandDTO);
         return pageList;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(String id) {
+        ConstructionWeekPlanCommand command = this.getById(id);
+        Assert.notNull(command, "未找到对应数据！");
+        if (ConstructionConstant.FORM_STATUS_0.equals(command.getFormStatus())) {
+            throw new AiurtBootException("计划已经提审或者已经完成审批，不允许删除！");
+        }
+        this.removeById(command);
+        // 同时删除对应的辅站信息
+        List<ConstructionCommandAssist> commandAssists = constructionCommandAssistService.lambdaQuery()
+                .eq(ConstructionCommandAssist::getPlanId, id).list();
+        if (CollectionUtil.isNotEmpty(commandAssists)) {
+            constructionCommandAssistService.removeBatchByIds(commandAssists);
+        }
     }
 }
