@@ -32,6 +32,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
@@ -87,7 +88,9 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
 
     @Override
     public IPage<PatrolStandardDto> pageLists(Page page, PatrolStandardDto patrolStandard) {
-        List<PatrolStandardDto> page1 = patrolStandardMapper.pageLists(page, patrolStandard, patrolStandard.getStations());
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserMajorModel> list = iSysBaseAPI.getMajorByUserId(sysUser.getId());
+        List<PatrolStandardDto> page1 = patrolStandardMapper.pageLists(page, patrolStandard, patrolStandard.getStations(), list.stream().map(s->s.getMajorCode()).collect(Collectors.toList()));
         return page.setRecords(page1);
     }
 

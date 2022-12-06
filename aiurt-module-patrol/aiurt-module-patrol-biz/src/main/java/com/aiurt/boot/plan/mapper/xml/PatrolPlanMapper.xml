@@ -101,7 +101,24 @@
         and c.del_flag=0
         and css.del_flag =0) AS subsystemName
         FROM patrol_plan pp
+        LEFT JOIN patrol_plan_organization ss on pp.`code` =ss.plan_code and ss.del_flag =0
+        LEFT JOIN patrol_plan_standard sp on sp.plan_id = pp.id and sp.del_flag = 0
+        LEFT JOIN cs_major mm on sp.profession_code = mm.major_code and mm.del_flag = 0
+        LEFT JOIN  sys_depart cc on cc.org_code = ss.organization_code and cc.del_flag =0
         WHERE pp.del_flag = 0
+        <if test="patrolPlan.orgCodes != null and patrolPlan.orgCodes.size() != 0">
+            and ss.organization_code in
+            <foreach collection="patrolPlan.orgCodes" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        <if test="patrolPlan.majorCodes != null and patrolPlan.majorCodes.size() != 0">
+            and mm.major_code  in
+            <foreach collection="patrolPlan.majorCodes" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY pp.id
         ) AS abc
         WHERE
         1 = 1

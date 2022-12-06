@@ -116,4 +116,7 @@ public class PatrolPlanDto  extends PatrolPlan {
    @Excel(name = "专业编码", width = 15)
    @ApiModelProperty(value = "专业编码")
    List<String> majorCodes;
+
+   @TableField(exist = false)
+   List<String> orgCodes;
 }

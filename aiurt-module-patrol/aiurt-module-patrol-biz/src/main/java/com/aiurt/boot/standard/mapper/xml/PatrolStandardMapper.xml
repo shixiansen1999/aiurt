@@ -87,6 +87,12 @@
         <if test="patrolStandard.status !=null ">
             AND ta.status = #{patrolStandard.status}
         </if>
+        <if test="majorCodes.size()>0">
+            and ta.professionCode in
+            <foreach item="majorCodes" collection="majorCodes" separator="," open="(" close=")" index="">
+                #{majorCodes}
+            </foreach>
+        </if>
         order by ta.createTime desc
     </select>
     <select id="list" resultType="com.aiurt.boot.standard.dto.InspectionStandardDto">

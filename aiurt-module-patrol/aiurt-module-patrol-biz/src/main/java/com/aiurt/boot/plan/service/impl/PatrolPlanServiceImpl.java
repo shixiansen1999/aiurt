@@ -30,6 +30,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,6 +84,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         List<CsUserMajorModel> majorInfo = sysBaseApi.getMajorByUserId(loginUser.getId());
         List<String> majorCodes = majorInfo.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
         patrolPlan.setMajorCodes(majorCodes);
+        List<CsUserDepartModel> orgCodes = sysBaseApi.getDepartByUserId(loginUser.getId());
+        patrolPlan.setOrgCodes(orgCodes.stream().map(s->s.getOrgCode()).collect(Collectors.toList()));
         IPage<PatrolPlanDto> list = baseMapper.list(page, patrolPlan);
         List <PatrolPlanDto> list1 =list.getRecords();
         list1.forEach(l->{
