@@ -39,4 +39,14 @@ public interface TeamConstant {
      * 审核状态:3已完成
      */
     Integer COMPLETED = 3;
+
+    /**
+     * 提交状态:1待提交
+     */
+    Integer To_BE_SUBMITTED = 1;
+
+    /**
+     * 提交状态:2已提交
+     */
+    Integer SUBMITTED = 2;
 }

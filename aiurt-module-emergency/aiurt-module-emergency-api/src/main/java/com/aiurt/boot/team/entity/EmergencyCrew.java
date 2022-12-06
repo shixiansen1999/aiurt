@@ -14,6 +14,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -37,19 +38,23 @@ public class EmergencyCrew implements Serializable {
 	/**应急队伍id*/
 	@Excel(name = "应急队伍id", width = 15)
     @ApiModelProperty(value = "应急队伍id")
+    @NotBlank(message = "应急队伍不能为空")
     private String emergencyTeamId;
 	/**所属班次*/
 	@Excel(name = "所属班次", width = 15)
     @ApiModelProperty(value = "所属班次")
+    @NotBlank(message = "所属班次不能为空")
     private String scheduleItem;
 	/**职务*/
 	@Excel(name = "职务", width = 15)
     @ApiModelProperty(value = "职务")
+    @NotBlank(message = "职务不能为空")
     @Dict(dicCode = "emergency_post")
     private Integer post;
 	/**人员id*/
 	@Excel(name = "人员id", width = 15)
     @ApiModelProperty(value = "人员id")
+    @NotBlank(message = "人员不能为空")
     private String userId;
 
 	@ApiModelProperty(value = "人员姓名")
@@ -58,6 +63,7 @@ public class EmergencyCrew implements Serializable {
 	/**联系电话*/
 	@Excel(name = "联系电话", width = 15)
     @ApiModelProperty(value = "联系电话")
+    @NotBlank(message = "联系电话不能为空")
     private String userPhone;
 	/**备注*/
 	@Excel(name = "备注", width = 15)

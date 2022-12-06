@@ -50,7 +50,7 @@ public class EmergencyTrainingRecordDTO {
     private String trainingProgramCode;
 
     /**部门*/
-    @Excel(name = "部门", width = 15)
-    @ApiModelProperty(value = "部门")
-    private List<String> orgCodeList;
+    @Excel(name = "专业权限code", width = 15)
+    @ApiModelProperty(value = "专业权限code")
+    private List<String> majorCodeList;
 }

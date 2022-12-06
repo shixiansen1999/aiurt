@@ -37,5 +37,5 @@ public interface EmergencyTrainingRecordMapper extends BaseMapper<EmergencyTrain
      * @param id
      * @return
      */
-    EmergencyCrewVO getTrainingCrews(String id);
+    List<EmergencyCrewVO> getTrainingCrews(String id);
 }

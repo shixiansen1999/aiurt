@@ -15,7 +15,8 @@
         wtr.station_code,
         wtr.position_code,
         wtr.status,
-        wtr.training_appraise
+        wtr.training_appraise,
+        et.emergency_teamname
     from emergency_training_record wtr
     left join emergency_training_program etp on wtr.emergency_training_program_id = etp.id
     left join emergency_team et on wtr.emergency_team_id = et.id
@@ -36,10 +37,12 @@
     <if test="emergencyTrainingRecordDTO.trainingStartTime != null">
         and DATE_FORMAT( wtr.training_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{emergencyTrainingRecordDTO.trainingEndTime} ,'%Y-%m-%d')
     </if>
-    and etp.org_code in
-    <foreach collection="emergencyTrainingRecordDTO.orgCodeList" item="item" index="index" open="(" separator="," close=")">
-        #{item}
-    </foreach>
+    <if test="emergencyTrainingRecordDTO.majorCodeList != null and emergencyTrainingRecordDTO.majorCodeList.size() != 0">
+        and et.major_code in
+        <foreach collection="emergencyTrainingRecordDTO.majorCodeList" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </if>
     </select>
 
 <select id="queryById" resultType="com.aiurt.boot.team.vo.EmergencyTrainingRecordVO">
@@ -54,6 +57,7 @@
             wtr.station_code,
             wtr.position_code,
             wtr.status,
+            et.emergency_teamname,
             wtr.training_appraise,
             su.realname as managerName
     from emergency_training_record wtr
@@ -63,8 +67,10 @@
     </select>
 
 <select id="getTrainingCrews" resultType="com.aiurt.boot.team.vo.EmergencyCrewVO">
-    select ec.id,ec.user_id,etrc.id as recordCrewId
+    select ec.id,ec.user_id,etrc.id as recordCrewId,ec.user_phone as phone,ec.post,ec.schedule_item,su.realname
     from emergency_training_record_crew etrc
     left join emergency_crew ec on etrc.emergency_crew_id = ec.id
+    left join sys_user su on su.id = ec.user_id
+    where etrc.del_flag = 0 and etrc.emergency_training_record_id = #{id}
     </select>
 </mapper>

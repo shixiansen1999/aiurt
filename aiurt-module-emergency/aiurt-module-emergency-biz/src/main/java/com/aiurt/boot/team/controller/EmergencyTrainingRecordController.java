@@ -42,7 +42,6 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_training_record-分页列表查询")
 	@ApiOperation(value="应急队伍训练记录-分页列表查询", notes="应急队伍训练记录-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<EmergencyTrainingRecordVO>> queryPageList(EmergencyTrainingRecordDTO emergencyTrainingRecordDTO,
@@ -63,8 +62,7 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	@ApiOperation(value="应急队伍训练记录-添加", notes="应急队伍训练记录-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody EmergencyTrainingRecord emergencyTrainingRecord) {
-		emergencyTrainingRecordService.save(emergencyTrainingRecord);
-		return Result.OK("添加成功！");
+		return emergencyTrainingRecordService.add(emergencyTrainingRecord);
 	}
 
 	/**

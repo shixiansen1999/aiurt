@@ -13,6 +13,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: emergency_training_record
@@ -90,4 +91,13 @@ public class EmergencyTrainingRecord implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
+
+    @ApiModelProperty(value = "参训人员")
+    private List<EmergencyTrainingRecordCrew> crewList;
+
+    @ApiModelProperty(value = "记录附件")
+    private List<EmergencyTrainingRecordAtt> attList;
+
+    @ApiModelProperty(value = "训练过程记录")
+    private List<EmergencyTrainingProcessRecord> processRecordList;
 }

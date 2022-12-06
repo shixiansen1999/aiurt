@@ -29,4 +29,10 @@ public interface IEmergencyTrainingRecordService extends IService<EmergencyTrain
      * @return
      */
     Result<EmergencyTrainingRecordVO> queryById(String id);
+    /**
+     * 添加
+     * @param emergencyTrainingRecord
+     * @return
+     */
+    Result<String>  add(EmergencyTrainingRecord emergencyTrainingRecord);
 }

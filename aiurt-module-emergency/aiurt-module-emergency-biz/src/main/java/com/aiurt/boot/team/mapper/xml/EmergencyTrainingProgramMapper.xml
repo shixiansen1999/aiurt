@@ -4,7 +4,7 @@
 
 <select id="getTrainingTeam" resultType="java.lang.String">
     SELECT
-    concat_ws(',',et.emergency_teamname)
+    GROUP_CONCAT(et.emergency_teamname)
     FROM
     emergency_training_team ett
     LEFT JOIN emergency_team et ON ett.emergency_team_id = et.id
@@ -14,7 +14,7 @@
     </select>
 
 <select id="getTrainees" resultType="java.lang.String">
-    select concat_ws(',',su.realname)
+    select GROUP_CONCAT(su.realname)
     from emergency_training_team ett
     left join emergency_crew ec on ec.emergency_team_id = ett.emergency_team_id
     left join sys_user su on su.id = ec.user_id

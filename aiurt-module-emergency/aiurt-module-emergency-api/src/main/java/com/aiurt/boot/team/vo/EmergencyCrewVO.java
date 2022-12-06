@@ -17,12 +17,21 @@ public class EmergencyCrewVO {
     @ApiModelProperty(value = "主键id")
     private String id;
 
+    /**所属班次*/
+    @Excel(name = "所属班次", width = 15)
+    @ApiModelProperty(value = "所属班次")
+    private String scheduleItem;
+
     /**职务*/
     @Excel(name = "职务", width = 15)
     @ApiModelProperty(value = "职务")
     @Dict(dicCode = "emergency_post")
     private Integer post;
 
+    /**人员id*/
+    @Excel(name = "人员id", width = 15)
+    @ApiModelProperty(value = "人员id")
+    private String userId;
     /**
      * 真实姓名
      */
