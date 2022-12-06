@@ -6,20 +6,15 @@ import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -55,6 +50,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     @AutoLog(value = "检修标准表-分页列表查询", operateType =  1, operateTypeAlias = "分页列表查询", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修标准表-分页列表查询", notes = "检修标准表-分页列表查询")
     @GetMapping(value = "/list")
+    @PermissionData(pageComponent="inspection/standardManage")
     public Result<IPage<InspectionCodeDTO>> queryPageList(InspectionCodeDTO inspectionCodeDTO,
                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
@@ -77,6 +73,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     @AutoLog(value = "检修标准表-分页列表查询是否配置巡检项", operateType =  1, operateTypeAlias = "列表查询筛选是否有检查项", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修标准表-分页列表查询是否配置巡检项", notes = "检修标准表-分页列表查询是否配置巡检项")
     @GetMapping(value = "/lists")
+    @PermissionData(pageComponent="inspection/standardManage")
     public Result<IPage<InspectionCodeDTO>> queryPageLists(InspectionCodeDTO inspectionCodeDTO,
                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
