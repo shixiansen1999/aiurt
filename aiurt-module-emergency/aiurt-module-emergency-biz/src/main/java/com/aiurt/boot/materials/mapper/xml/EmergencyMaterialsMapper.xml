@@ -39,5 +39,7 @@
         </where>
     </select>
 
+    <select id="getInspectionRecord" resultType="com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem">
 
+    </select>
 </mapper>

@@ -27,9 +27,12 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import liquibase.pro.packaged.E;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -59,6 +62,9 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 
 	 @Autowired
 	 private IEmergencyMaterialsInvoicesService iEmergencyMaterialsInvoicesService;
+
+	 @Autowired
+	 private ISysBaseAPI iSysBaseAPI;
 
 	/**
 	 * 分页列表查询
@@ -125,6 +131,17 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 return  Result.OK(patrolRecord);
 	 }
 
+	 @AutoLog(value = "物资信息-应急物资检查记录列表")
+	 @ApiOperation(value="物资信息-应急物资检查记录列表", notes="物资信息-应急物资检查记录列表")
+	 @GetMapping(value = "/getInspectionRecord")
+	 public Result<?> getInspectionRecord(EmergencyMaterialsInvoicesItem condition,
+										  @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+										  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize){
+		 Page<EmergencyMaterialsInvoicesItem> pageList = new Page<>(pageNo, pageSize);
+		 Page<EmergencyMaterialsInvoicesItem> inspectionRecord = emergencyMaterialsService.getInspectionRecord(pageList, condition);
+		 return  Result.OK(inspectionRecord);
+	 }
+
 	/**
 	 *   添加
 	 *
@@ -170,7 +187,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 
 		 //插入物资巡检检修项
 		 iEmergencyMaterialsInvoicesItemService.saveBatch(emergencyMaterialsInvoicesItemList);
-		 return Result.OK();
+		 return Result.OK("提交成功！");
 	 }
 
 	 /**
@@ -242,6 +259,27 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		}
 		if(emergencyMaterials==null) {
 			return Result.error("未找到对应数据");
+		}
+		if (StrUtil.isNotBlank(emergencyMaterials.getUserId())){
+			//根据负责人id查询负责人名称
+			LoginUser userById = iSysBaseAPI.getUserById(emergencyMaterials.getUserId());
+			emergencyMaterials.setUserName(userById.getRealname());
+		}if (StrUtil.isNotBlank(emergencyMaterials.getPrimaryOrg())){
+			//根据部门编码查询部门名称
+			SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(emergencyMaterials.getPrimaryOrg());
+			emergencyMaterials.setPrimaryName(departByOrgCode.getDepartName());
+		}if (StrUtil.isNotBlank(emergencyMaterials.getLineCode())){
+			//根据线路编码查询线路名称
+			String position = iSysBaseAPI.getPosition(emergencyMaterials.getLineCode());
+			emergencyMaterials.setLineName(position);
+		}if(StrUtil.isNotBlank(emergencyMaterials.getStationCode())){
+			//根据站点编码查询站点名称
+			String position = iSysBaseAPI.getPosition(emergencyMaterials.getStationCode());
+			emergencyMaterials.setStationName(position);
+		}if(StrUtil.isNotBlank(emergencyMaterials.getPositionCode())){
+			//根据位置编码查询位置名称
+			String position = iSysBaseAPI.getPosition(emergencyMaterials.getPositionCode());
+			emergencyMaterials.setPositionName(position);
 		}
 		return Result.OK(emergencyMaterials);
 	}

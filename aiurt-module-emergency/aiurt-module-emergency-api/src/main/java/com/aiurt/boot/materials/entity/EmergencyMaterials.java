@@ -87,10 +87,19 @@ public class EmergencyMaterials implements Serializable {
 	@Excel(name = "主管部门编码", width = 15)
     @ApiModelProperty(value = "主管部门编码")
     private java.lang.String primaryOrg;
+    /**主管部门名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "主管部门名称")
+    private java.lang.String primaryName;
 	/**负责人ID*/
 	@Excel(name = "负责人ID", width = 15)
     @ApiModelProperty(value = "负责人ID")
     private java.lang.String userId;
+
+    /**负责人名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "负责人名称")
+    private java.lang.String userName;
 	/**联系电话*/
 	@Excel(name = "联系电话", width = 15)
     @ApiModelProperty(value = "联系电话")
@@ -115,4 +124,19 @@ public class EmergencyMaterials implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
+
+    /**线路名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "线路名称")
+    private java.lang.String lineName;
+
+    /**站点名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "站点名称")
+    private java.lang.String stationName;
+
+    /**位置名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "位置名称")
+    private java.lang.String positionName;
 }

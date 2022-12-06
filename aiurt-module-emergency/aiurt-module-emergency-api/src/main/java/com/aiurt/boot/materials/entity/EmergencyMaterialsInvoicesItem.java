@@ -169,5 +169,15 @@ public class EmergencyMaterialsInvoicesItem implements Serializable {
     @ApiModelProperty(value = "巡视班组名称")
     private java.lang.String patrolTeam;
 
+    /**应急物资巡检单号*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "应急物资巡检单号")
+    private java.lang.String materialsPatrolCode;
+
+    /**巡视位置*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡视位置")
+    private java.lang.String stationCode;
+
 
 }

@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.dto.MaterialAccountDTO;
 import com.aiurt.boot.materials.dto.MaterialPatrolDTO;
 import com.aiurt.boot.materials.dto.PatrolStandardDTO;
+import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
@@ -68,6 +69,12 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             }
         });
         return pageList.setRecords(materialAccountList);
+    }
+
+    @Override
+    public Page<EmergencyMaterialsInvoicesItem> getInspectionRecord(Page<EmergencyMaterialsInvoicesItem> pageList, EmergencyMaterialsInvoicesItem condition) {
+        List<EmergencyMaterialsInvoicesItem> inspectionRecord = emergencyMaterialsMapper.getInspectionRecord(pageList, condition);
+        return pageList.setRecords(inspectionRecord);
     }
 
     @Override
