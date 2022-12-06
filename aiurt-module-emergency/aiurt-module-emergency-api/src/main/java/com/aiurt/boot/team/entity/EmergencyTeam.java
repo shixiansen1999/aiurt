@@ -15,6 +15,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.List;
@@ -141,6 +142,7 @@ public class EmergencyTeam implements Serializable {
 
 
     @ApiModelProperty(value = "应急人员添加集合")
+    @Valid
     @TableField(exist = false)
     private List<EmergencyCrew> emergencyCrewList;
 

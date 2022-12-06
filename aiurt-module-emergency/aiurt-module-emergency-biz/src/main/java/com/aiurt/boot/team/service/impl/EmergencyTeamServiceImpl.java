@@ -25,6 +25,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -150,6 +151,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<String> add(EmergencyTeam emergencyTeam) {
         save(emergencyTeam);
         List<EmergencyCrew> emergencyCrewList = emergencyTeam.getEmergencyCrewList();
@@ -163,6 +165,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<String> edit(EmergencyTeam emergencyTeam) {
         updateById(emergencyTeam);
         List<EmergencyCrew> emergencyCrewList = emergencyTeam.getEmergencyCrewList();
@@ -184,6 +187,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void delete(EmergencyTeam emergencyTeam ) {
         LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);

@@ -25,6 +25,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -104,6 +105,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<String> add(EmergencyTrainingProgram emergencyTrainingProgram) {
         String code = emergencyTrainingProgram.getTrainingProgramCode();
         String trainPlanCode = getTrainPlanCode();
@@ -156,6 +158,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<String> edit(EmergencyTrainingProgram emergencyTrainingProgram) {
         this.updateById(emergencyTrainingProgram);
         List<EmergencyTrainingTeam> emergencyTrainingTeamList = emergencyTrainingProgram.getEmergencyTrainingTeamList();
@@ -176,6 +179,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void delete(EmergencyTrainingProgram program) {
         LambdaQueryWrapper<EmergencyTrainingTeam> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EmergencyTrainingTeam::getDelFlag, TeamConstant.DEL_FLAG0);
@@ -190,6 +194,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void publish(EmergencyTrainingProgram program ) {
         LambdaQueryWrapper<EmergencyTrainingTeam> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EmergencyTrainingTeam::getDelFlag, TeamConstant.DEL_FLAG0);

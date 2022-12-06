@@ -219,6 +219,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void delete(String id) {
         LambdaQueryWrapper<EmergencyTrainingRecordCrew> crewQueryWrapper = new LambdaQueryWrapper<>();
         LambdaQueryWrapper<EmergencyTrainingProcessRecord> recordQueryWrapper = new LambdaQueryWrapper<>();
