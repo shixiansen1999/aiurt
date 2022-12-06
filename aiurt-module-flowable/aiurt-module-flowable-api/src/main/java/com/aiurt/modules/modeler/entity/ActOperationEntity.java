@@ -29,8 +29,8 @@ public class ActOperationEntity implements Serializable {
     @ApiModelProperty(value = "按钮展示顺序")
     private Integer showOrder;
 
-    @ApiModelProperty(value = "按钮演示")
-    private String  color;
+    @ApiModelProperty(value = "按钮颜色")
+    private String  btnType;
 
     @ApiModelProperty(value = "是否有备注")
     private Boolean hasRemark;
