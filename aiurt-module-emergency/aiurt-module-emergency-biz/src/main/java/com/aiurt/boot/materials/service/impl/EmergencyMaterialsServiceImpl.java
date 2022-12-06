@@ -13,10 +13,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserMajorModel;
-import org.jeecg.common.system.vo.CsUserSubsystemModel;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -42,6 +39,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     @Override
     public Page<MaterialAccountDTO> getMaterialAccountList(Page<MaterialAccountDTO> pageList, MaterialAccountDTO condition) {
         List<MaterialAccountDTO> materialAccountList = emergencyMaterialsMapper.getMaterialAccountList(pageList, condition);
+        List<PatrolStandardItemsModel> patrolStandardItemsModels = iSysBaseAPI.patrolStandardList(condition.getPatrolStandardId());
         materialAccountList.forEach(e->{
             if (StrUtil.isNotBlank(e.getUserId())){
                 //根据负责人id查询负责人名称
@@ -63,6 +61,10 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 //根据位置编码查询位置名称
                 String position = iSysBaseAPI.getPosition(e.getPositionCode());
                 e.setPositionName(position);
+            }
+            //巡检项
+            if (CollUtil.isNotEmpty(patrolStandardItemsModels)){
+                e.setPatrolStandardItemsModelList(patrolStandardItemsModels);
             }
         });
         return pageList.setRecords(materialAccountList);

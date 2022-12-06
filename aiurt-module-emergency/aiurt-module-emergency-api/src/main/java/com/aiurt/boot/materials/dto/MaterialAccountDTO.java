@@ -4,6 +4,9 @@ import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.jeecg.common.system.vo.PatrolStandardItemsModel;
+
+import java.util.List;
 
 @Data
 public class MaterialAccountDTO {
@@ -108,6 +111,16 @@ public class MaterialAccountDTO {
     @ApiModelProperty(value = "单位")
     @Dict(dicCode = "materials_unit")
     private java.lang.String unit;
+
+    /**巡检标准id*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡检标准id")
+    private java.lang.String patrolStandardId;
+
+    /**巡检项*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡检项")
+    private List<PatrolStandardItemsModel> patrolStandardItemsModelList;
 
 
 }

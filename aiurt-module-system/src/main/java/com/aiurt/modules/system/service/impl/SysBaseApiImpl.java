@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.standard.entity.PatrolStandardItems;
+import com.aiurt.boot.standard.service.impl.PatrolStandardItemsServiceImpl;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.aspect.UrlMatchEnum;
@@ -58,6 +60,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
@@ -170,6 +173,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private CsLineMapper lineMapper;
     @Autowired
     private SysRoleMapper sysRoleMapper;
+
+    @Autowired
+    @Lazy
+    private PatrolStandardItemsServiceImpl patrolStandardItemsService;
 
 
     @Override
@@ -1938,6 +1945,33 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             loginUsers.add(loginUser);
         }
         return loginUsers;
+    }
+
+    @Override
+    public List<PatrolStandardItemsModel> patrolStandardList(String id) {
+        List<PatrolStandardItemsModel> patrolStandardItemsModels = new ArrayList<>();
+        List<PatrolStandardItems> patrolStandardItems = patrolStandardItemsService.queryPageList(id);
+        if (CollUtil.isNotEmpty(patrolStandardItems)){
+            //父级
+            patrolStandardItems.forEach(e->{
+                PatrolStandardItemsModel patrolStandardItemsModel = new PatrolStandardItemsModel();
+                BeanUtils.copyProperties(e,patrolStandardItemsModel);
+
+                //子级
+                if (CollUtil.isNotEmpty( e.getChildren())){
+                    List<PatrolStandardItemsModel> patrolStandardItemsModels1 = new ArrayList<>();
+                    e.getChildren().forEach(q->{
+                        PatrolStandardItemsModel patrolStandardItemsModel1 = new PatrolStandardItemsModel();
+                        BeanUtils.copyProperties(q,patrolStandardItemsModel1);
+                        patrolStandardItemsModels1.add(patrolStandardItemsModel1);
+                    });
+                    patrolStandardItemsModel.setChildren(patrolStandardItemsModels1);
+                }
+
+                patrolStandardItemsModels.add(patrolStandardItemsModel);
+            });
+        }
+        return patrolStandardItemsModels;
     }
 
     private String escapeUrl(String remoteFileUrl) throws UnsupportedEncodingException {

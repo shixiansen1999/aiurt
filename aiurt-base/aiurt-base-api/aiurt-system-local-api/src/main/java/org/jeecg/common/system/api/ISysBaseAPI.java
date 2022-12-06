@@ -691,4 +691,13 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<LoginUser> getUserByDeptCode(String deptCode);
+
+
+
+    /**
+     * 查询配置巡检项树
+     * @param id
+     * @return
+     */
+    List<PatrolStandardItemsModel> patrolStandardList(String id);
 }
