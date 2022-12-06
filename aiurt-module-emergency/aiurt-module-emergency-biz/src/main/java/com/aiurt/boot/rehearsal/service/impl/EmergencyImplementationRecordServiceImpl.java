@@ -112,7 +112,7 @@ public class EmergencyImplementationRecordServiceImpl extends ServiceImpl<Emerge
             throw new AiurtBootException("记录已提交，无需重复提交！");
         } else if (EmergencyConstant.RECORD_STATUS_1.equals(record.getStatus())) {
             if (!EmergencyConstant.RECORD_STATUS_2.equals(status)) {
-                throw new AiurtBootException("当前记录已经是已提交状态，不允许再更改为待提交状态！");
+                throw new AiurtBootException("当前记录已经是待提交状态，不允许再变更为待提交状态！");
             }
             record.setStatus(status);
             boolean update = this.updateById(record);
