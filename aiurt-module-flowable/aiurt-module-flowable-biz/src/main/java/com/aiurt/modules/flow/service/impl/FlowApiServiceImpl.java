@@ -497,7 +497,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 taskInfoDTO.setOperationList(JSON.parseArray(flowTaskExt.getOperationListJson(), JSONObject.class));
             }
             if (StrUtil.isNotBlank(flowTaskExt.getVariableListJson())) {
-                taskInfoDTO.setVariableList(JSON.parseArray(flowTaskExt.getVariableListJson(), JSONObject.class));
+                // taskInfoDTO.setVariableList(JSON.parseArray(flowTaskExt.getVariableListJson(), JSONObject.class));
             }
             String formJson = flowTaskExt.getFormJson();
             if (StrUtil.isNotBlank(formJson)) {
