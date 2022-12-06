@@ -7,12 +7,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.materials.dto.EmergencyMaterialsDTO;
 import com.aiurt.boot.materials.dto.MaterialAccountDTO;
 import com.aiurt.boot.materials.dto.MaterialPatrolDTO;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
+import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoices;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsCategoryService;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsInvoicesItemService;
+import com.aiurt.boot.materials.service.IEmergencyMaterialsInvoicesService;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
@@ -22,6 +25,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import liquibase.pro.packaged.E;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
@@ -52,6 +56,9 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 
 	 @Autowired
 	 private IEmergencyMaterialsInvoicesItemService iEmergencyMaterialsInvoicesItemService;
+
+	 @Autowired
+	 private IEmergencyMaterialsInvoicesService iEmergencyMaterialsInvoicesService;
 
 	/**
 	 * 分页列表查询
@@ -132,12 +139,46 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		return Result.OK("添加成功！");
 	}
 
-	/**
-	 *  编辑
-	 *
-	 * @param emergencyMaterials
-	 * @return
-	 */
+
+	 @AutoLog(value = "物资信息-应急物资巡检登记-提交")
+	 @ApiOperation(value="物资信息-应急物资巡检登记-提交", notes="物资信息-应急物资巡检登记-提交")
+	 @PostMapping(value = "/emergencyMaterialsSubmit")
+	 public Result<?> emergencyMaterialsSubmit(@RequestBody EmergencyMaterialsDTO emergencyMaterialsDTO){
+		 EmergencyMaterialsInvoices emergencyMaterialsInvoices = new EmergencyMaterialsInvoices();
+		 //应急物资巡检单号
+		 emergencyMaterialsInvoices.setMaterialsPatrolCode(emergencyMaterialsDTO.getMaterialsPatrolCode());
+		 //巡检标准
+		 if (StrUtil.isNotBlank(emergencyMaterialsDTO.getStandardCode())){
+			 emergencyMaterialsInvoices.setStandardCode(emergencyMaterialsDTO.getStandardCode());
+		 }
+		 //巡检日期
+		 emergencyMaterialsInvoices.setPatrolDate(emergencyMaterialsDTO.getPatrolDate());
+         //巡检位置
+		 if(StrUtil.isNotBlank(emergencyMaterialsDTO.getStationCode())){
+			 emergencyMaterialsInvoices.setStationCode(emergencyMaterialsDTO.getStationCode());
+		 }
+         //巡检人
+		 emergencyMaterialsInvoices.setUserId(emergencyMaterialsDTO.getUserId());
+		 //插入物资巡检单
+		 iEmergencyMaterialsInvoicesService.save(emergencyMaterialsInvoices);
+
+		 //应急物资巡检单ID
+		 List<EmergencyMaterialsInvoicesItem> emergencyMaterialsInvoicesItemList = emergencyMaterialsDTO.getEmergencyMaterialsInvoicesItemList();
+		 emergencyMaterialsInvoicesItemList.forEach(e->{
+		 	e.setInvoicesId(emergencyMaterialsInvoices.getId());
+		 });
+
+		 //插入物资巡检检修项
+		 iEmergencyMaterialsInvoicesItemService.saveBatch(emergencyMaterialsInvoicesItemList);
+		 return Result.OK();
+	 }
+
+	 /**
+      *  编辑
+      *
+      * @param emergencyMaterials
+      * @return
+      */
 	@AutoLog(value = "物资信息-编辑")
 	@ApiOperation(value="物资信息-编辑", notes="物资信息-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
