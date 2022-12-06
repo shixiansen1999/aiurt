@@ -115,15 +115,11 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_training_record-通过id查询")
 	@ApiOperation(value="应急队伍训练记录-通过id查询", notes="应急队伍训练记录-通过id查询")
 	@GetMapping(value = "/queryById")
-	public Result<EmergencyTrainingRecord> queryById(@RequestParam(name="id",required=true) String id) {
-		EmergencyTrainingRecord emergencyTrainingRecord = emergencyTrainingRecordService.getById(id);
-		if(emergencyTrainingRecord==null) {
-			return Result.error("未找到对应数据");
-		}
-		return Result.OK(emergencyTrainingRecord);
+	public Result<EmergencyTrainingRecordVO> queryById(@RequestParam(name="id",required=true) String id) {
+		emergencyTrainingRecordService.queryById(id);
+		return Result.OK();
 	}
 
     /**

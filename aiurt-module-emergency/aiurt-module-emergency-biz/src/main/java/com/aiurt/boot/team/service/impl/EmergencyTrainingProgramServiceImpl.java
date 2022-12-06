@@ -94,7 +94,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         List<EmergencyTrainingProgram> records = pageList.getRecords();
         if (CollUtil.isNotEmpty(records)) {
             for (EmergencyTrainingProgram record : records) {
-                SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(record.getOrgCode());
+                SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(record.getOrgCode());
                 record.setOrgName(sysDepartModel.getDepartName());
                 String trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(record.getId());
                 record.setEmergencyTeamName(trainingTeam);
@@ -212,7 +212,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
 
     @Override
     public Result<EmergencyTrainingProgram> queryById(EmergencyTrainingProgram emergencyTrainingProgram) {
-        SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(emergencyTrainingProgram.getOrgCode());
+        SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(emergencyTrainingProgram.getOrgCode());
         emergencyTrainingProgram.setOrgName(sysDepartModel.getDepartName());
         String trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(emergencyTrainingProgram.getId());
         emergencyTrainingProgram.setEmergencyTeamName(trainingTeam);

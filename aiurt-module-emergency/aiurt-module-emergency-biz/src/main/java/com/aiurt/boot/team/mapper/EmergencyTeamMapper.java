@@ -14,5 +14,17 @@ import java.util.List;
  */
 public interface EmergencyTeamMapper extends BaseMapper<EmergencyTeam> {
 
+    /**
+     * 根据id查询
+     * @param id
+     * @return
+     */
     List<EmergencyTeamTrainingDTO> getTrainingRecord(String id);
+
+    /**
+     * 根据训练计划查找应急队伍
+     * @param id
+     * @return
+     */
+    List<EmergencyTeam>  getTeamByTrainingProgram(String id);
 }

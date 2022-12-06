@@ -235,5 +235,29 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         return Result.OK(emergencyTeams);
     }
 
+    @Override
+    public Result<List<EmergencyTeam>> getTeamByMajor() {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String roleCodes = user.getRoleCodes();
+        LambdaQueryWrapper<EmergencyTeam> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(EmergencyTeam::getId,EmergencyTeam::getEmergencyTeamname, EmergencyTeam::getEmergencyTeamcode);
+        queryWrapper.eq(EmergencyTeam::getDelFlag, TeamConstant.DEL_FLAG0);
+        queryWrapper.like(EmergencyTeam::getMajorCode, roleCodes);
+        List<EmergencyTeam> emergencyTeams = this.getBaseMapper().selectList(queryWrapper);
+        return Result.OK(emergencyTeams);
+    }
+
+    @Override
+    public Result<List<EmergencyTeam>> getTeamByTrainingProgram(String id) {
+        List<EmergencyTeam> emergencyTeams = emergencyTeamMapper.getTeamByTrainingProgram(id);
+        if (CollUtil.isNotEmpty(emergencyTeams)) {
+            for (EmergencyTeam emergencyTeam : emergencyTeams) {
+                String positionName = iSysBaseAPI.getPosition(emergencyTeam.getPositionCode());
+                emergencyTeam.setPositionName(positionName);
+            }
+        }
+        return Result.OK(emergencyTeams);
+    }
+
 
 }

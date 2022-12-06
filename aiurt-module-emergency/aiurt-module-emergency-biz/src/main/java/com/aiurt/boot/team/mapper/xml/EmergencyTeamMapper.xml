@@ -14,4 +14,11 @@
     where etr.emergency_team_id = #{id}
     and etr.del_flag = 0
     </select>
+
+<select id="getTeamByTrainingProgram" resultType="com.aiurt.boot.team.entity.EmergencyTeam">
+    select et.id,et.emergency_teamcode,et.emergency_teamname,et.position_code
+    from emergency_plan_team ept
+    left join emergency_team et on ept.emergency_team_id = et.id
+    where ept.del_flag = 0 and ept.emergency_plan_id = #{id}
+    </select>
 </mapper>
