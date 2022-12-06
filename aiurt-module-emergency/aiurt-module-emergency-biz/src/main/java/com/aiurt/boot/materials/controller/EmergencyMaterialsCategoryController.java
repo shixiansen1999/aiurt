@@ -164,24 +164,46 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 
 
 	 /**
-	  * 通过code查询
+	  * 通过code检验查询
 	  *
 	  * @param code
 	  * @return
 	  */
-	 @AutoLog(value = "物资分类-通过code查询")
-	 @ApiOperation(value="物资分类-通过code查询", notes="物资分类-通过code查询")
+	 @AutoLog(value = "物资分类-通过code检验查询")
+	 @ApiOperation(value="物资分类-通过code检验查询", notes="物资分类-通过code检验查询")
 	 @GetMapping(value = "/queryByCode")
 	 public Result<?> getCode(@RequestParam(name="code",required=true) String code){
 		LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,code);
 		EmergencyMaterialsCategory one = emergencyMaterialsCategoryService.getOne(queryWrapper, false);
-		if (StrUtil.isNotBlank(one.getCategoryCode())){
+		if (ObjectUtil.isNull(one)){
+			return Result.OK("校验成功，请继续！");
+		}if (ObjectUtil.isNotNull(one)){
 			return Result.OK("分类编码已存在！");
-		}if (StrUtil.isNotBlank(one.getCategoryName())){
+		}
+		return Result.OK("校验成功，请继续！");
+	 }
+
+
+	 /**
+	  * 通过name检验查询
+	  *
+	  * @param name
+	  * @return
+	  */
+	 @AutoLog(value = "物资分类-通过name检验查询")
+	 @ApiOperation(value="物资分类-通过name检验查询", notes="物资分类-通过name检验查询")
+	 @GetMapping(value = "/queryByName")
+	 public Result<?> getName(@RequestParam(name="name",required=true) String name){
+		 LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
+		 queryWrapper.eq(EmergencyMaterialsCategory::getCategoryName,name);
+		 EmergencyMaterialsCategory one = emergencyMaterialsCategoryService.getOne(queryWrapper, false);
+		 if (ObjectUtil.isNull(one)){
+			 return Result.OK("校验成功，请继续！");
+		 }if (ObjectUtil.isNotNull(one)){
 			 return Result.OK("分类名称已存在！");
 		 }
-		return Result.OK("校验成功，请继续！");
+		 return Result.OK("校验成功，请继续！");
 	 }
 
     /**
