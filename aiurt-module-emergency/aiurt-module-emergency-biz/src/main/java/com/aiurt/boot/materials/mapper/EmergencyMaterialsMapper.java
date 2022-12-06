@@ -20,6 +20,6 @@ public interface EmergencyMaterialsMapper extends BaseMapper<EmergencyMaterials>
 
    List<MaterialAccountDTO> getMaterialAccountList (@Param("pageList") Page<MaterialAccountDTO> pageList, @Param("condition") MaterialAccountDTO condition);
 
-   List<PatrolStandardDTO> getPatrolStandardList(@Param("majorCode")List<String> majorCode,@Param("subsystemCode")List<String> subsystemCode);
+   List<PatrolStandardDTO> getPatrolStandardList(@Param("majorCode")List<String> majorCode);
 
 }

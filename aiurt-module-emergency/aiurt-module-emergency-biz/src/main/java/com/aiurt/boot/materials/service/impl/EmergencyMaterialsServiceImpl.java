@@ -77,12 +77,9 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         //根据用户id查询专业
         List<CsUserMajorModel> majorByUserId = iSysBaseAPI.getMajorByUserId(sysUser.getId());
         List<String> collect = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-        //根据用户id查询子系统
-        List<CsUserSubsystemModel> subsystemByUserId = iSysBaseAPI.getSubsystemByUserId(sysUser.getId());
-        List<String> collect1 = subsystemByUserId.stream().map(CsUserSubsystemModel::getSystemCode).collect(Collectors.toList());
 
-        if (CollUtil.isNotEmpty(collect) && CollUtil.isNotEmpty(collect1)){
-            List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getPatrolStandardList(collect, collect1);
+        if (CollUtil.isNotEmpty(collect)){
+            List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getPatrolStandardList(collect);
             materialPatrolDTO.setPatrolStandardDTOList(CollUtil.isNotEmpty(patrolStandardList) ? patrolStandardList : null);
         }
 

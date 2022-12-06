@@ -36,12 +36,6 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="subsystemCode.size()>0">
-              and  subsystem_code in
-                <foreach item="item" collection="subsystemCode" separator="," open="(" close=")" index="">
-                    #{item}
-                </foreach>
-            </if>
         </where>
     </select>
 
