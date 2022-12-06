@@ -42,9 +42,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -107,8 +111,12 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                 inspectionStrategyDTO.setSiteCode(String.join("|", strings));
             }
         }
-
-        IPage<InspectionStrategyDTO> list = baseMapper.selectPageList(page, inspectionStrategyDTO);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> list1 = sysBaseApi.getDepartByUserId(sysUser.getId());
+        List<CsUserMajorModel> list2 =sysBaseApi.getMajorByUserId(sysUser.getId());
+        List<String> orgCodes = list1.stream().map(s-> s.getOrgCode()).collect(Collectors.toList());
+        List<String> majorCodes = list2.stream().map(s-> s.getMajorCode()).collect(Collectors.toList());
+        IPage<InspectionStrategyDTO> list = baseMapper.selectPageList(page, inspectionStrategyDTO,orgCodes,majorCodes);
 
         if (ObjectUtil.isNotEmpty(list)) {
             List<InspectionStrategyDTO> records = list.getRecords();
