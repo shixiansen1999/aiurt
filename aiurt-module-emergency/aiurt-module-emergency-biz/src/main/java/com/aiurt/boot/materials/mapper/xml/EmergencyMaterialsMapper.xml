@@ -15,11 +15,11 @@
         <where>
               t1.del_flag = 0
               AND t2.del_flag = 0
-            <if test="condition.categoryName!=null">
-              AND t2.category_name = #{condition.categoryName}
+            <if test="condition.categoryCode!=null">
+              AND t2.category_code = #{condition.categoryCode}
             </if>
             <if test="condition.materialsName!=null">
-              AND t1.materials_name = #{condition.materialsName}
+              AND t1.materials_name LIKE CONCAT ('%', #{condition.materialsName}, '%')
             </if>
         </where>
     </select>
