@@ -15,7 +15,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -30,9 +29,14 @@ public interface InspectionStrategyMapper extends BaseMapper<InspectionStrategy>
      *
      * @param page
      * @param inspectionStrategyDTO
+     * @param orgCodes
+     * @param majorCodes
      * @return
      */
-    IPage<InspectionStrategyDTO> selectPageList(Page<InspectionStrategyDTO> page, @Param("inspectionStrategyDTO") InspectionStrategyDTO inspectionStrategyDTO);
+    IPage<InspectionStrategyDTO> selectPageList(Page<InspectionStrategyDTO> page,
+                                                @Param("inspectionStrategyDTO") InspectionStrategyDTO inspectionStrategyDTO,
+                                                @Param("orgCodes") List<String> orgCodes,
+                                                @Param("majorCodes") List<String> majorCodes);
 
     /**
      * 根据id或code进行删除

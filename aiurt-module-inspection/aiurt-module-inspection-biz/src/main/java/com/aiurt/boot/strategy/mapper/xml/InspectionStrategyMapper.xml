@@ -93,7 +93,24 @@
                        WHERE
                            insr.inspection_str_code = isy.`code`
                         and ic.del_flag = 0 and css.del_flag = 0) AS subsystemName
-              FROM inspection_strategy isy
+                    FROM inspection_strategy isy
+                    LEFT JOIN inspection_str_org_rel ss on isy.`code` =ss.inspection_str_code and ss.del_flag = 0
+                    LEFT JOIN  inspection_str_rel ii on isy.`code` = ii.inspection_str_code and ii.del_flag =0
+                    LEFT JOIN inspection_code icu on icu.`code`= ii.inspection_sta_code and icu.del_flag =0
+                    WHERE isy.del_flag = 0
+               <if test="orgCodes.size()>0">
+                       and ss.org_code in
+                    <foreach item="orgCodes" collection="orgCodes" separator="," open="(" close=")" index="">
+                       #{orgCodes}
+                   </foreach>
+               </if>
+                <if test="majorCodes.size()>0">
+                    AND  icu.major_code in
+                    <foreach item="majorCodes" collection="majorCodes" separator="," open="(" close=")" index="">
+                        #{majorCodes}
+                    </foreach>
+                </if>
+             GROUP BY isy.id
               WHERE isy.del_flag = 0
             ) AS abc
         WHERE

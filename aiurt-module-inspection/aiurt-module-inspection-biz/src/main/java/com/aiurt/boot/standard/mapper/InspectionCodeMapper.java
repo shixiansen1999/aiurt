@@ -6,6 +6,7 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.manager.dto.SubsystemDTO;
 import com.aiurt.boot.standard.dto.DeviceTypeDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -18,6 +19,7 @@ import java.util.List;
  * @Date:   2022-06-21
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface InspectionCodeMapper extends BaseMapper<InspectionCode> {
     /**
      * 分页
