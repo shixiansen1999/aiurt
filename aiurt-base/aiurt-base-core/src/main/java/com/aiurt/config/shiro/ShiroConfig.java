@@ -124,6 +124,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/swagger**/**", "anon");
         filterChainDefinitionMap.put("/webjars/**", "anon");
         filterChainDefinitionMap.put("/v2/**", "anon");
+        filterChainDefinitionMap.put("/sys/common/callback/**", "anon");
 
         filterChainDefinitionMap.put("/sys/annountCement/show/**", "anon");
 

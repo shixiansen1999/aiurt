@@ -26,7 +26,7 @@ public interface ConstructionWeekPlanCommandMapper extends BaseMapper<Constructi
                                                        @Param("condition") ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO);
 
     /**
-     *
+     *  待办审核
      * @param page
      * @param id
      * @param constructionWeekPlanCommandDTO

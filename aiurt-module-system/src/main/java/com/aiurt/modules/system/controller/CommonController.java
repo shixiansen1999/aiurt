@@ -10,6 +10,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.*;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
+import com.alibaba.druid.support.json.JSONParser;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
@@ -41,6 +42,7 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Objects;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -176,7 +178,7 @@ public class CommonController {
             // 获取文件名
             String orgName = mf.getOriginalFilename();
             orgName = CommonUtils.getFileName(orgName);
-            if (orgName.indexOf(SymbolConstant.SPOT) != -1) {
+            if (orgName.contains(SymbolConstant.SPOT)) {
                 fileName = orgName.substring(0, orgName.lastIndexOf(".")) + "_" + System.currentTimeMillis() + orgName.substring(orgName.lastIndexOf("."));
             } else {
                 fileName = orgName + "_" + System.currentTimeMillis();
