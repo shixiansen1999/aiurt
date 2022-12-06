@@ -2028,6 +2028,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public boolean isNullSafetyPrecautions(String majorCode, String systemCode) {
         LambdaQueryWrapper<CsSafetyAttention> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CsSafetyAttention::getDelFlag,CommonConstant.DEL_FLAG_0);
+        queryWrapper.eq(CsSafetyAttention::getState,1);
         queryWrapper.eq(CsSafetyAttention::getMajorCode,majorCode);
         if(ObjectUtil.isNotEmpty(systemCode))
         {
