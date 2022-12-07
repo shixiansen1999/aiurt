@@ -5,6 +5,7 @@ import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalYearService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -44,6 +45,7 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
      */
     @AutoLog(value = "应急演练管理-年演练计划分页列表查询")
     @ApiOperation(value = "应急演练管理-年演练计划分页列表查询", notes = "应急演练管理-年演练计划分页列表查询")
+    @PermissionData(pageComponent = "emergency/emergencyExercise/annualExercisePlan")
     @GetMapping(value = "/list")
     public Result<IPage<EmergencyRehearsalYear>> queryPageList(EmergencyRehearsalYearDTO emergencyRehearsalYearDTO,
                                                                @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,

@@ -28,12 +28,16 @@
         <if test="condition.year != null">
             and ery.`year` = #{condition.year}
         </if>
-        <if test="orgCodes != null and orgCodes.size() > 0">
-            and ery.org_code in
-            <foreach collection="orgCodes" item="item" separator="," open="(" close=")">
-                #{item}
-            </foreach>
-        </if>
+        <choose>
+            <when test="condition.flag != null and 1 == condition.flag">
+                and ery.`status` in (#{passStatus})
+            </when>
+            <otherwise>
+                <if test='condition.flag != null and 0 == condition.flag'>
+                    and ery.`status` not in (#{passStatus})
+                </if>
+            </otherwise>
+        </choose>
         order by ery.create_time desc
     </select>
 </mapper>

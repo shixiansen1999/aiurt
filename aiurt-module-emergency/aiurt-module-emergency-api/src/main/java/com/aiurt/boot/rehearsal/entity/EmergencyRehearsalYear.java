@@ -1,6 +1,7 @@
 package com.aiurt.boot.rehearsal.entity;
 
 import com.aiurt.boot.rehearsal.constant.EmergencyDictConstant;
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -78,6 +79,7 @@ public class EmergencyRehearsalYear extends DictEntity implements Serializable {
     @ApiModelProperty(value = "编制部门编码")
     @Dict(dictTable = "sys_depart", dicCode = "org_code", dicText = "depart_name")
     @NotNull(message = "编制部门编码不能为空！", groups = {Save.class, Update.class})
+    @DeptFilterColumn
     private java.lang.String orgCode;
 	/**编制日期*/
 	@Excel(name = "编制日期", width = 15, format = "yyyy-MM-dd")

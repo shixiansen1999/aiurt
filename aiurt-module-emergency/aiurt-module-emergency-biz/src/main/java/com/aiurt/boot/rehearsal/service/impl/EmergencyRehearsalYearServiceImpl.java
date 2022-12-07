@@ -77,16 +77,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
 //                    .ifPresent(year -> wrapper.lambda().like(EmergencyRehearsalYear::getYear, year));
 //        }
 //        Page<EmergencyRehearsalYear> pageList = this.page(page, wrapper);
-
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
-        List<CsUserDepartModel> deptModel = iSysBaseApi.getDepartByUserId(loginUser.getId());
-        List<String> orgCodes = deptModel.stream().filter(l -> StrUtil.isNotEmpty(l.getOrgCode()))
-                .map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-        if (CollectionUtil.isEmpty(orgCodes)) {
-            return page;
-        }
-        Page<EmergencyRehearsalYear> pageList = emergencyRehearsalYearMapper.queryPageList(page, emergencyRehearsalYearDTO, orgCodes);
+        Page<EmergencyRehearsalYear> pageList = emergencyRehearsalYearMapper.queryPageList(page, emergencyRehearsalYearDTO, EmergencyConstant.YEAR_STATUS_3);
         return pageList;
     }
 
