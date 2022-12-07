@@ -13,6 +13,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -28,7 +29,15 @@ import java.io.Serializable;
 @ApiModel(value="emergency_training_team对象", description="emergency_training_team")
 public class EmergencyTrainingTeam implements Serializable {
     private static final long serialVersionUID = 1L;
+    /**
+     * 新增保存时的校验分组
+     */
+    public interface Save {}
 
+    /**
+     * 修改时的校验分组
+     */
+    public interface Update {}
 	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
@@ -40,6 +49,7 @@ public class EmergencyTrainingTeam implements Serializable {
 	/**应急队伍id*/
 	@Excel(name = "应急队伍id", width = 15)
     @ApiModelProperty(value = "应急队伍id")
+    @NotBlank(message = "应急队伍id",groups = {Save.class, Update.class})
     private String emergencyTeamId;
     /**应急队伍名称*/
     @Excel(name = "应急队伍名称", width = 15)

@@ -1,18 +1,19 @@
 package com.aiurt.boot.team.entity;
 
-import java.io.Serializable;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 
 /**
  * @Description: emergency_training_record_crew
@@ -28,6 +29,15 @@ import lombok.experimental.Accessors;
 public class EmergencyTrainingRecordCrew implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 新增保存时的校验分组
+     */
+    public interface Save {}
+
+    /**
+     * 修改时的校验分组
+     */
+    public interface Update {}
 	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
@@ -39,6 +49,7 @@ public class EmergencyTrainingRecordCrew implements Serializable {
 	/**参训人员id*/
 	@Excel(name = "参训人员id", width = 15)
     @ApiModelProperty(value = "参训人员id")
+    @NotBlank(message = "参训人员id不能为空", groups = {Save.class,Update.class})
     private String emergencyCrewId;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)

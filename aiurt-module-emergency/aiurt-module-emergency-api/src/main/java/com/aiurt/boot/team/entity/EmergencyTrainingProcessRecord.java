@@ -1,18 +1,19 @@
 package com.aiurt.boot.team.entity;
 
-import java.io.Serializable;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 
 /**
  * @Description: emergency_training_process_record
@@ -27,7 +28,15 @@ import lombok.experimental.Accessors;
 @ApiModel(value="emergency_training_process_record对象", description="emergency_training_process_record")
 public class EmergencyTrainingProcessRecord implements Serializable {
     private static final long serialVersionUID = 1L;
+    /**
+     * 新增保存时的校验分组
+     */
+    public interface Save {}
 
+    /**
+     * 修改时的校验分组
+     */
+    public interface Update {}
 	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
@@ -36,15 +45,17 @@ public class EmergencyTrainingProcessRecord implements Serializable {
 	@Excel(name = "训练记录id", width = 15)
     @ApiModelProperty(value = "训练记录id")
     private String emergencyTrainingRecordId;
-	/**训练时间*/
-	@Excel(name = "训练时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "训练时间")
+	/**时间*/
+	@Excel(name = "时间", width = 15, format = "HH:mm")
+	@JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
+    @DateTimeFormat(pattern="HH:ss")
+    @ApiModelProperty(value = "时间")
+    @NotBlank(message = "时间不能为空", groups = {Save.class, Update.class})
     private java.util.Date trainingTime;
 	/**是否次日： 0是 1否*/
 	@Excel(name = "是否次日： 0是 1否", width = 15)
     @ApiModelProperty(value = "是否次日： 0是 1否")
+    @NotBlank(message = "是否次日不能为空", groups = {Save.class, Update.class})
     private Integer nextDay;
 	/**训练内容*/
 	@Excel(name = "训练内容", width = 15)

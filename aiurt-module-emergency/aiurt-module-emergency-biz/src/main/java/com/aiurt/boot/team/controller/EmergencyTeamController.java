@@ -22,6 +22,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -79,7 +80,7 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	@AutoLog(value = "应急队伍台账-添加")
 	@ApiOperation(value="应急队伍台账-添加", notes="应急队伍台账-添加")
 	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody EmergencyTeam emergencyTeam) {
+	public Result<String> add(@RequestBody   @Validated(EmergencyTeam.Save.class) EmergencyTeam emergencyTeam) {
 		return emergencyTeamService.add(emergencyTeam);
 	}
 
@@ -92,7 +93,7 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	@AutoLog(value = "应急队伍台账-编辑")
 	@ApiOperation(value="应急队伍台账-编辑", notes="应急队伍台账-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT})
-	public Result<String> edit(@RequestBody EmergencyTeam emergencyTeam) {
+	public Result<String> edit(@RequestBody @Validated(EmergencyTeam.Update.class)EmergencyTeam emergencyTeam) {
 		return emergencyTeamService.edit(emergencyTeam);
 
 	}

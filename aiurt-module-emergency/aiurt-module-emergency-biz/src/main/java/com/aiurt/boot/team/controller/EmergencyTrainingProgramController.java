@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -65,7 +66,7 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	@AutoLog(value = "应急队伍训练计划-添加")
 	@ApiOperation(value="应急队伍训练计划-添加", notes="应急队伍训练计划-添加")
 	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody EmergencyTrainingProgram emergencyTrainingProgram) {
+	public Result<String> add(@RequestBody  @Validated(EmergencyTrainingProgram.Save.class)EmergencyTrainingProgram emergencyTrainingProgram) {
 		emergencyTrainingProgramService.add(emergencyTrainingProgram);
 		return Result.OK("添加成功！");
 	}
@@ -79,7 +80,7 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	@AutoLog(value = "应急队伍训练计划-编辑")
 	@ApiOperation(value="应急队伍训练计划-编辑", notes="应急队伍训练计划-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT})
-	public Result<String> edit(@RequestBody EmergencyTrainingProgram emergencyTrainingProgram) {
+	public Result<String> edit(@RequestBody @Validated(EmergencyTrainingProgram.Update.class)EmergencyTrainingProgram emergencyTrainingProgram) {
 		return emergencyTrainingProgramService.edit(emergencyTrainingProgram);
 	}
 

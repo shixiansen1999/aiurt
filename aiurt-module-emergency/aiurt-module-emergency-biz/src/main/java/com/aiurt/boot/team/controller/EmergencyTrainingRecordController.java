@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -66,7 +67,7 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	@AutoLog(value = "应急队伍训练记录-添加")
 	@ApiOperation(value="应急队伍训练记录-添加", notes="应急队伍训练记录-添加")
 	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody EmergencyTrainingRecord emergencyTrainingRecord) {
+	public Result<String> add(@RequestBody   @Validated(EmergencyTrainingRecord.Save.class) EmergencyTrainingRecord emergencyTrainingRecord) {
 		return emergencyTrainingRecordService.add(emergencyTrainingRecord);
 	}
 
@@ -79,7 +80,7 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	@AutoLog(value = "应急队伍训练记录-编辑")
 	@ApiOperation(value="应急队伍训练记录-编辑", notes="应急队伍训练记录-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody EmergencyTrainingRecord emergencyTrainingRecord) {
+	public Result<String> edit(@RequestBody @Validated(EmergencyTrainingRecord.Update.class)EmergencyTrainingRecord emergencyTrainingRecord) {
 		emergencyTrainingRecordService.edit(emergencyTrainingRecord);
 		return Result.OK("编辑成功!");
 	}
@@ -165,7 +166,7 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	@ApiOperation(value="应急队伍训练记录-根据应急队伍选择训练计划", notes="应急队伍训练记录-根据应急队伍选择训练计划")
 	@GetMapping(value = "/getTrainingProgram")
 	public Result<IPage<EmergencyTrainingProgram>> getTrainingProgram(@RequestBody EmergencyTrainingProgramDTO emergencyTrainingProgramDTO,
-																	  @RequestParam(name="id") String id,
+																	  @RequestParam(name="id",required = false) String id,
 																	  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 																	  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 																	  HttpServletRequest req) {

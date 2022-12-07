@@ -29,7 +29,9 @@
         from emergency_training_program etp
         left join emergency_training_team ett on etp.id = ett.emergency_training_program_id
         where etp.del_flag = 0 and ett.del_flag = 0
-        and ett.emergency_team_id = #{id}
+        <if test="id != null and id != ''">
+            and ett.emergency_team_id = #{id}
+        </if>
         and etp.id not in (select etr.emergency_training_program_id  from emergency_training_record etr where etr.emergency_team_id = #{id} and etr.del_flag = 0)
         <if test="emergencyTrainingProgramDTO.trainingProgramCode != null and emergencyTrainingProgramDTO.trainingProgramCode != ''">
             and etp.training_program_code = #{emergencyTrainingProgramDTO.trainingProgramCode}

@@ -1,18 +1,20 @@
 package com.aiurt.boot.team.entity;
 
-import java.io.Serializable;
-
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 
 /**
  * @Description: emergency_training_record_att
@@ -27,7 +29,15 @@ import lombok.experimental.Accessors;
 @ApiModel(value="emergency_training_record_att对象", description="emergency_training_record_att")
 public class EmergencyTrainingRecordAtt implements Serializable {
     private static final long serialVersionUID = 1L;
+    /**
+     * 新增保存时的校验分组
+     */
+    public interface Save {}
 
+    /**
+     * 修改时的校验分组
+     */
+    public interface Update {}
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
@@ -39,19 +49,36 @@ public class EmergencyTrainingRecordAtt implements Serializable {
 	/**附件路径*/
 	@Excel(name = "附件路径", width = 15)
     @ApiModelProperty(value = "附件路径")
+    @NotBlank(message = "附件路径不能为空", groups = {Save.class, Update.class})
     private String path;
 	/**附件名称*/
 	@Excel(name = "附件名称", width = 15)
     @ApiModelProperty(value = "附件名称")
+    @NotBlank(message = "附件名称不能为空", groups = {Save.class, Update.class})
     private String name;
 	/**附件大小*/
 	@Excel(name = "附件大小", width = 15)
     @ApiModelProperty(value = "附件大小")
+    @NotBlank(message = "附件大小不能为空", groups = {Save.class, Update.class})
     private String size;
 	/**附件类型*/
 	@Excel(name = "附件类型", width = 15)
     @ApiModelProperty(value = "附件类型")
+    @NotBlank(message = "附件类型不能为空", groups = {Save.class, Update.class})
     private String type;
+    /**上传人id*/
+    @Excel(name = "上传人id", width = 15)
+    @ApiModelProperty(value = "上传人id")
+    @NotBlank(message = "上传人id不能为空", groups = {Save.class, Update.class})
+    @Dict(dictTable = "sys_user", dicCode = "id", dicText ="realname")
+    private String uploadBy;
+    /**上传日期*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "上传日期")
+    @NotBlank(message = "上传日期不能为空", groups = {Save.class, Update.class})
+    private java.util.Date uploadTime;
+
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

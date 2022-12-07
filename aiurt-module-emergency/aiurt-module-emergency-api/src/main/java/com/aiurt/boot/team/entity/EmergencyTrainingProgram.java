@@ -14,6 +14,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.List;
@@ -31,7 +32,15 @@ import java.util.List;
 @ApiModel(value="emergency_training_program对象", description="emergency_training_program")
 public class EmergencyTrainingProgram implements Serializable {
     private static final long serialVersionUID = 1L;
+    /**
+     * 新增保存时的校验分组
+     */
+    public interface Save {}
 
+    /**
+     * 修改时的校验分组
+     */
+    public interface Update {}
 	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
@@ -39,24 +48,24 @@ public class EmergencyTrainingProgram implements Serializable {
 	/**训练计划编号*/
 	@Excel(name = "训练计划编号", width = 15)
     @ApiModelProperty(value = "训练计划编号")
-    @NotBlank(message = "训练计划编号不能为空")
+    @NotBlank(message = "训练计划编号不能为空",groups = {Save.class, Update.class})
     private String trainingProgramCode;
 	/**训练项目名称*/
 	@Excel(name = "训练项目名称", width = 15)
     @ApiModelProperty(value = "训练项目名称")
-    @NotBlank(message = "训练项目名称不能为空")
+    @NotBlank(message = "训练项目名称不能为空",groups = {Save.class, Update.class})
     private String trainingProgramName;
 	/**计划训练时间*/
 	@Excel(name = "计划训练时间", width = 15, format = "yyyy-MM")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM")
     @DateTimeFormat(pattern="yyyy-MM")
     @ApiModelProperty(value = "计划训练时间")
-    @NotBlank(message = "计划训练时间不能为空")
+    @NotBlank(message = "计划训练时间不能为空",groups = {Save.class, Update.class})
     private java.util.Date trainingPlanTime;
 	/**计划训练人数*/
 	@Excel(name = "计划训练人数", width = 15)
     @ApiModelProperty(value = "计划训练人数")
-    @NotBlank(message = "计划训练人数不能为空")
+    @NotBlank(message = "计划训练人数不能为空",groups = {Save.class, Update.class})
     private Integer traineesNum;
 	/**审核状态（1待提交、2待完成、3已完成）*/
 	@Excel(name = "审核状态（1待下发、2待完成、3已完成）", width = 15)
@@ -113,5 +122,6 @@ public class EmergencyTrainingProgram implements Serializable {
      */
     @ApiModelProperty(value = "应急队伍列表")
     @TableField(exist = false)
+    @Valid
     private List<EmergencyTrainingTeam> emergencyTrainingTeamList;
 }

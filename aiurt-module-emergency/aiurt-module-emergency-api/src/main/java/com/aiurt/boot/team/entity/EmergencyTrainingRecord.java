@@ -12,6 +12,9 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import java.util.List;
 
@@ -29,6 +32,15 @@ import java.util.List;
 public class EmergencyTrainingRecord implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 新增保存时的校验分组
+     */
+    public interface Save {}
+
+    /**
+     * 修改时的校验分组
+     */
+    public interface Update {}
 	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
@@ -36,20 +48,24 @@ public class EmergencyTrainingRecord implements Serializable {
     /**训练计划id*/
     @Excel(name = "训练计划id", width = 15)
     @ApiModelProperty(value = "训练计划id")
+    @NotBlank(message = "训练计划id不能为空" , groups = Save.class)
     private String emergencyTrainingProgramId;
 	/**应急队伍id*/
 	@Excel(name = "应急队伍id", width = 15)
     @ApiModelProperty(value = "应急队伍id")
+    @NotBlank(message = "训练计划id不能为空", groups = {Save.class, Update.class})
     private String emergencyTeamId;
 	/**训练时间*/
 	@Excel(name = "训练时间", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "训练时间")
+    @NotBlank(message = "训练时间不能为空", groups = {Save.class, Update.class})
     private java.util.Date trainingTime;
 	/**参加人数*/
 	@Excel(name = "训练人数", width = 15)
     @ApiModelProperty(value = "训练人数")
+    @NotBlank(message = "训练人数不能为空", groups = {Save.class, Update.class})
     private Integer traineesNum;
 	/**线路编码*/
 	@Excel(name = "线路编码", width = 15)
@@ -93,11 +109,17 @@ public class EmergencyTrainingRecord implements Serializable {
     private java.util.Date updateTime;
 
     @ApiModelProperty(value = "参训人员")
+    @NotEmpty(message = "参训人员不能为空", groups = {Save.class, Update.class})
+    @Valid
     private List<EmergencyTrainingRecordCrew> crewList;
 
     @ApiModelProperty(value = "记录附件")
+    @NotEmpty(message = "记录附件不能为空", groups = {Save.class, Update.class})
+    @Valid
     private List<EmergencyTrainingRecordAtt> attList;
 
     @ApiModelProperty(value = "训练过程记录")
+    @NotEmpty(message = "训练过程记录不能为空", groups = {Save.class, Update.class})
+    @Valid
     private List<EmergencyTrainingProcessRecord> processRecordList;
 }
