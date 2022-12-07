@@ -53,6 +53,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -72,6 +73,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -314,6 +316,14 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			List<Device> deviceList = new ArrayList<Device>();
 			try {
 				List<DeviceModel> list = ExcelImportUtil.importExcel(file.getInputStream(), DeviceModel.class, params);
+				Iterator<DeviceModel> iterator = list.iterator();
+				while (iterator.hasNext()) {
+					DeviceModel model = iterator.next();
+					boolean b = checkObjAllFieldsIsNull(model);
+					if (b) {
+						list.remove(model);
+					}
+				}
 				Map<String, String> duplicateData = new HashMap<>();
 
 				for (DeviceModel deviceModel : list) {
@@ -926,6 +936,36 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			return res;
 		}
 
+	}
+
+	/**
+	 * 判断对象中属性值是否全为空
+	 *
+	 * @param object
+	 * @return
+	 */
+	public static boolean checkObjAllFieldsIsNull(Object object) {
+		if (null == object) {
+			return true;
+		}
+
+		try {
+			for (Field f : object.getClass().getDeclaredFields()) {
+				f.setAccessible(true);
+
+				System.out.print(f.getName() + ":");
+				System.out.println(f.get(object));
+
+				if (f.get(object) != null && StringUtils.isNotBlank(f.get(object).toString())) {
+					return false;
+				}
+
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return true;
 	}
 
 }
