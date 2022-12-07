@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -91,6 +92,7 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	 @AutoLog(value = "应急队伍训练记录-提交")
 	 @ApiOperation(value="应急队伍训练记录-提交", notes="应急队伍训练记录-提交")
 	 @DeleteMapping(value = "/recordSubmit")
+	 @Transactional(rollbackFor = Exception.class)
 	 public Result<String> recordSubmit(@RequestParam(name="id",required=true) String id) {
 		 EmergencyTrainingRecord record = emergencyTrainingRecordService.getById(id);
 		 record.setStatus(TeamConstant.SUBMITTED);
@@ -108,6 +110,10 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	@ApiOperation(value="应急队伍训练记录-通过id删除", notes="应急队伍训练记录-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+		EmergencyTrainingRecord program = emergencyTrainingRecordService.getById(id);
+		if(program==null) {
+			return Result.error("未找到对应数据");
+		}
 		emergencyTrainingRecordService.delete(id);
 		return Result.OK("删除成功!");
 	}
@@ -124,6 +130,10 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		List<String> idList = Arrays.asList(ids.split(","));
 		for (String id : idList) {
+			EmergencyTrainingRecord program = emergencyTrainingRecordService.getById(id);
+			if(program==null) {
+				return Result.error("未找到对应数据");
+			}
 			emergencyTrainingRecordService.delete(id);
 		}
 		return Result.OK("批量删除成功!");

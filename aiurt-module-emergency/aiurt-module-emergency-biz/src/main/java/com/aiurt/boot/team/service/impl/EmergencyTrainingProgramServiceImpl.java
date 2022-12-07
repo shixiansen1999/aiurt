@@ -77,7 +77,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         }
         Page<EmergencyTrainingProgram> page = new Page<>(pageNo, pageSize);
         EmergencyTrainingProgram trainingProgram = new EmergencyTrainingProgram();
-        BeanUtil.copyProperties(trainingProgram,emergencyTrainingProgramDTO);
+        BeanUtil.copyProperties(emergencyTrainingProgramDTO,trainingProgram);
 
         Optional.ofNullable(trainingProgram.getOrgCode())
                 .ifPresent(code -> queryWrapper.eq(EmergencyTrainingProgram::getOrgCode, code));
@@ -98,7 +98,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
                 SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(record.getOrgCode());
                 record.setOrgName(sysDepartModel.getDepartName());
                 String trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(record.getId());
-                record.setEmergencyTeamName(trainingTeam);
+                record.setEmergencyTeamId(trainingTeam);
             }
         }
         return pageList;
@@ -160,6 +160,13 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<String> edit(EmergencyTrainingProgram emergencyTrainingProgram) {
+        EmergencyTrainingProgram byId = this.getById(emergencyTrainingProgram.getId());
+        if (ObjectUtil.isEmpty(byId)) {
+            return Result.error("未找到对应数据");
+        }
+        if (!TeamConstant.WAIT_PUBLISH.equals(byId.getStatus())) {
+            return Result.error("当前计划不可编辑");
+        }
         this.updateById(emergencyTrainingProgram);
         List<EmergencyTrainingTeam> emergencyTrainingTeamList = emergencyTrainingProgram.getEmergencyTrainingTeamList();
         if (CollUtil.isNotEmpty(emergencyTrainingTeamList)) {
@@ -220,7 +227,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(emergencyTrainingProgram.getOrgCode());
         emergencyTrainingProgram.setOrgName(sysDepartModel.getDepartName());
         String trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(emergencyTrainingProgram.getId());
-        emergencyTrainingProgram.setEmergencyTeamName(trainingTeam);
+        emergencyTrainingProgram.setEmergencyTeamId(trainingTeam);
         String trainees = emergencyTrainingProgramMapper.getTrainees(emergencyTrainingProgram.getId());
         emergencyTrainingProgram.setTrainees(trainees);
         return Result.OK(emergencyTrainingProgram);

@@ -3,6 +3,7 @@ package com.aiurt.boot.team.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTeamDTO;
@@ -167,6 +168,10 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<String> edit(EmergencyTeam emergencyTeam) {
+        EmergencyTeam byId = this.getById(emergencyTeam.getId());
+        if (ObjectUtil.isEmpty(byId)) {
+            return Result.error("未找到对应数据！");
+        }
         updateById(emergencyTeam);
         List<EmergencyCrew> emergencyCrewList = emergencyTeam.getEmergencyCrewList();
         if (CollUtil.isNotEmpty(emergencyCrewList)) {

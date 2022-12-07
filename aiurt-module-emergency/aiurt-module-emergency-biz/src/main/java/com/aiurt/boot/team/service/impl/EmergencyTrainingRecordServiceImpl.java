@@ -1,6 +1,7 @@
 package com.aiurt.boot.team.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
@@ -141,6 +142,10 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<String> edit(EmergencyTrainingRecord emergencyTrainingRecord) {
+        EmergencyTrainingRecord byId = this.getById(emergencyTrainingRecord.getId());
+        if (ObjectUtil.isEmpty(byId)) {
+            return Result.error("未找到对应数据！");
+        }
         this.updateById(emergencyTrainingRecord);
         String id = emergencyTrainingRecord.getId();
         List<EmergencyTrainingRecordCrew> crewList = emergencyTrainingRecord.getCrewList();
@@ -242,7 +247,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(record.getOrgCode());
                 record.setOrgName(sysDepartModel.getDepartName());
                 String trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(record.getId());
-                record.setEmergencyTeamName(trainingTeam);
+                record.setEmergencyTeamId(trainingTeam);
             }
         }
         return page.setRecords(trainingProgram);

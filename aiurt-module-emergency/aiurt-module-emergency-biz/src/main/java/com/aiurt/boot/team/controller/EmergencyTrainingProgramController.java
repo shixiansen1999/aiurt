@@ -97,6 +97,9 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 		if(program==null) {
 			return Result.error("未找到对应数据");
 		}
+		if (!TeamConstant.WAIT_PUBLISH.equals(program.getStatus())) {
+			return Result.error("当前计划不可删除");
+		}
 		emergencyTrainingProgramService.delete(program);
 		return Result.OK("删除成功!");
 	}
@@ -116,6 +119,9 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 			EmergencyTrainingProgram program = emergencyTrainingProgramService.getById(s);
 			if(program==null) {
 				return Result.error("未找到对应数据");
+			}
+			if (!TeamConstant.WAIT_PUBLISH.equals(program.getStatus())) {
+				return Result.error("当前存在计划不可删除");
 			}
 			emergencyTrainingProgramService.delete(program);
 		}

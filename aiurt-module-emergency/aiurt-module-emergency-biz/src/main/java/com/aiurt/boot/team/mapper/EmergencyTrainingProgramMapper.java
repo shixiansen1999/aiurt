@@ -17,7 +17,7 @@ import java.util.List;
 public interface EmergencyTrainingProgramMapper extends BaseMapper<EmergencyTrainingProgram> {
 
     /**
-     * 获取队伍名称
+     * 获取训练队伍id
      * @param id
      * @return
      */

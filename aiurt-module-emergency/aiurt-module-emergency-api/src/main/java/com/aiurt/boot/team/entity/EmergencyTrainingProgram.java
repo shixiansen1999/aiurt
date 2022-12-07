@@ -95,10 +95,10 @@ public class EmergencyTrainingProgram implements Serializable {
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
 
-    /**应急队伍名称*/
-    @ApiModelProperty(value = "应急队伍名称")
+    /**应急队伍id*/
+    @ApiModelProperty(value = "应急队伍id")
     @TableField(exist = false)
-    private String emergencyTeamName;
+    private String emergencyTeamId;
 
     /**添加方式*/
     @ApiModelProperty(value = "添加方式（0保存，1下发）")
