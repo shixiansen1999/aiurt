@@ -102,8 +102,8 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                     Field[] fields = clazz.getDeclaredFields();
                     Arrays.stream(fields).filter(field -> !StrUtil.equals("serialVersionUID", field.getName())).forEach(field -> {
                         objectNode.put(field.getName(), e.getAttributeValue(null, field.getName()));
-                        arrayNode.add(objectNode);
                     });
+                    arrayNode.add(objectNode);
                 }
                 propertiesNode.set(FORM_OPERATION, arrayNode);
             }
