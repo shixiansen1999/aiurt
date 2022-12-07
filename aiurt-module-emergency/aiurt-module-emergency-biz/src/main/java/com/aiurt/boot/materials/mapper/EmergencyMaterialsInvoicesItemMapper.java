@@ -3,6 +3,7 @@ package com.aiurt.boot.materials.mapper;
 
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -22,5 +23,5 @@ public interface EmergencyMaterialsInvoicesItemMapper extends BaseMapper<Emergen
      * @param endTime
      * @return
      */
-    List<EmergencyMaterialsInvoicesItem> getPatrolRecord (@Param("materialsCode") String materialsCode, @Param("startTime") String startTime,@Param("endTime") String endTime);
+    List<EmergencyMaterialsInvoicesItem> getPatrolRecord (@Param("pageList") Page<EmergencyMaterialsInvoicesItem> pageList,@Param("materialsCode") String materialsCode, @Param("startTime") String startTime, @Param("endTime") String endTime);
 }

@@ -2,8 +2,7 @@ package com.aiurt.boot.materials.service;
 
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
 import com.baomidou.mybatisplus.extension.service.IService;
-
-import java.util.List;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 /**
  * @Description: emergency_materials_invoices_item
@@ -13,5 +12,5 @@ import java.util.List;
  */
 public interface IEmergencyMaterialsInvoicesItemService extends IService<EmergencyMaterialsInvoicesItem> {
 
-    List<EmergencyMaterialsInvoicesItem> getPatrolRecord(String materialsCode,String startTime, String endTime);
+    Page<EmergencyMaterialsInvoicesItem> getPatrolRecord(Page<EmergencyMaterialsInvoicesItem> pageList,String materialsCode,String startTime, String endTime);
 }

@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesItemMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsInvoicesItemService;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +30,8 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
 
 
     @Override
-    public List<EmergencyMaterialsInvoicesItem> getPatrolRecord(String materialsCode, String startTime, String endTime) {
-        List<EmergencyMaterialsInvoicesItem> patrolRecord = emergencyMaterialsInvoicesItemMapper.getPatrolRecord(materialsCode, startTime, endTime);
+    public Page<EmergencyMaterialsInvoicesItem> getPatrolRecord(Page<EmergencyMaterialsInvoicesItem> pageList, String materialsCode, String startTime, String endTime) {
+        List<EmergencyMaterialsInvoicesItem> patrolRecord = emergencyMaterialsInvoicesItemMapper.getPatrolRecord(pageList,materialsCode, startTime, endTime);
         patrolRecord.forEach(e->{
             if (StrUtil.isNotBlank(e.getPatrolId())){
                 //根据巡检人id查询巡检名称
@@ -42,6 +43,6 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
                 e.setPatrolTeamName(departNameByOrgCode);
             }
         });
-        return patrolRecord;
+        return pageList.setRecords(patrolRecord);
     }
 }

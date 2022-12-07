@@ -126,8 +126,11 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	 @GetMapping(value = "/getPatrolRecord")
 	 public Result<?> getPatrolRecord(@RequestParam(name = "materialsCode",required=true) String materialsCode,
 									  @RequestParam(name = "startTime",required=false) String  startTime,
-	                                  @RequestParam(name = "endTime",required=false) String  endTime){
-		 List<EmergencyMaterialsInvoicesItem> patrolRecord = iEmergencyMaterialsInvoicesItemService.getPatrolRecord(materialsCode, startTime, endTime);
+	                                  @RequestParam(name = "endTime",required=false) String  endTime,
+									  @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+									  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize){
+		 Page<EmergencyMaterialsInvoicesItem> pageList = new Page<>(pageNo, pageSize);
+		 Page<EmergencyMaterialsInvoicesItem> patrolRecord = iEmergencyMaterialsInvoicesItemService.getPatrolRecord(pageList, materialsCode, startTime, endTime);
 		 return  Result.OK(patrolRecord);
 	 }
 
@@ -321,6 +324,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 }if (StrUtil.isNotBlank(materialsCode)){
 			 queryWrapper.eq(EmergencyMaterials::getMaterialsCode,materialsCode);
 		 }
+		 queryWrapper.eq(EmergencyMaterials::getDelFlag,0);
 		 List<EmergencyMaterials> list = emergencyMaterialsService.list(queryWrapper);
 		 if (CollUtil.isNotEmpty(list)){
 			 return Result.OK("编码不能重复！");
