@@ -1,9 +1,12 @@
 package com.aiurt.boot.materials.controller;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.dto.MaterialAccountDTO;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsUsage;
 import org.jeecg.common.api.vo.Result;
@@ -56,8 +59,8 @@ public class EmergencyMaterialsUsageController extends BaseController<EmergencyM
 	 * @param emergencyMaterialsUsage
 	 * @return
 	 */
-	@AutoLog(value = "emergency_materials_usage-添加")
-	@ApiOperation(value="emergency_materials_usage-添加", notes="emergency_materials_usage-添加")
+	@AutoLog(value = "应急物资使用记录-添加")
+	@ApiOperation(value="应急物资使用记录-添加", notes="应急物资使用记录-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody EmergencyMaterialsUsage emergencyMaterialsUsage) {
 		emergencyMaterialsUsageService.save(emergencyMaterialsUsage);
@@ -70,8 +73,8 @@ public class EmergencyMaterialsUsageController extends BaseController<EmergencyM
 	 * @param emergencyMaterialsUsage
 	 * @return
 	 */
-	@AutoLog(value = "emergency_materials_usage-编辑")
-	@ApiOperation(value="emergency_materials_usage-编辑", notes="emergency_materials_usage-编辑")
+	@AutoLog(value = "应急物资使用记录-编辑")
+	@ApiOperation(value="应急物资使用记录-编辑", notes="应急物资使用记录-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody EmergencyMaterialsUsage emergencyMaterialsUsage) {
 		emergencyMaterialsUsageService.updateById(emergencyMaterialsUsage);
@@ -84,27 +87,50 @@ public class EmergencyMaterialsUsageController extends BaseController<EmergencyM
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "emergency_materials_usage-通过id删除")
-	@ApiOperation(value="emergency_materials_usage-通过id删除", notes="emergency_materials_usage-通过id删除")
+	@AutoLog(value = "应急物资使用记录-通过id删除")
+	@ApiOperation(value="应急物资使用记录-通过id删除", notes="应急物资使用记录-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		emergencyMaterialsUsageService.removeById(id);
+		EmergencyMaterialsUsage emergencyMaterialsUsage = new EmergencyMaterialsUsage();
+		if (StrUtil.isNotBlank(id)){
+			emergencyMaterialsUsage.setId(id);
+			emergencyMaterialsUsage.setDelFlag(1);
+		}else {
+			return Result.OK("删除失败，id为空或不存在!");
+		}
+		emergencyMaterialsUsageService.updateById(emergencyMaterialsUsage);
 		return Result.OK("删除成功!");
 	}
 
-	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	@AutoLog(value = "emergency_materials_usage-批量删除")
-	@ApiOperation(value="emergency_materials_usage-批量删除", notes="emergency_materials_usage-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.emergencyMaterialsUsageService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
-	}
+//	/**
+//	 *  批量删除
+//	 *
+//	 * @param ids
+//	 * @return
+//	 */
+//	@AutoLog(value = "emergency_materials_usage-批量删除")
+//	@ApiOperation(value="emergency_materials_usage-批量删除", notes="emergency_materials_usage-批量删除")
+//	@DeleteMapping(value = "/deleteBatch")
+//	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
+//		this.emergencyMaterialsUsageService.removeByIds(Arrays.asList(ids.split(",")));
+//		return Result.OK("批量删除成功!");
+//	}
+
+	 @AutoLog(value = "应急物资使用记录-提交")
+	 @ApiOperation(value="应急物资使用记录-提交", notes="应急物资使用记录-提交")
+	 @PostMapping(value = "/getSubmitMaterialRecord")
+	 public Result<?> getSubmitMaterialRecord(@RequestParam(name="ids",required=true) String ids){
+		 List<EmergencyMaterialsUsage> list = new ArrayList<>();
+		 List<String> stringList = Arrays.asList(ids.split(","));
+		     stringList.forEach(e->{
+				 EmergencyMaterialsUsage emergencyMaterialsUsage = new EmergencyMaterialsUsage();
+				 emergencyMaterialsUsage.setId(e);
+				 emergencyMaterialsUsage.setStatus(1);
+				 list.add(emergencyMaterialsUsage);
+			 });
+		 emergencyMaterialsUsageService.updateBatchById(list);
+		 return Result.OK("提交成功!");
+	 }
 
 	/**
 	 * 通过id查询
@@ -112,8 +138,8 @@ public class EmergencyMaterialsUsageController extends BaseController<EmergencyM
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_materials_usage-通过id查询")
-	@ApiOperation(value="emergency_materials_usage-通过id查询", notes="emergency_materials_usage-通过id查询")
+	@AutoLog(value = "应急物资使用记录-通过id查询")
+	@ApiOperation(value="应急物资使用记录-通过id查询", notes="应急物资使用记录-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<EmergencyMaterialsUsage> queryById(@RequestParam(name="id",required=true) String id) {
 		EmergencyMaterialsUsage emergencyMaterialsUsage = emergencyMaterialsUsageService.getById(id);

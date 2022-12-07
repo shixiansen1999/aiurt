@@ -34,6 +34,7 @@
                 AND t1.position_code = #{condition.positionCode}
             </if>
         </where>
+        order by t1.update_time desc,t1.create_time desc
     </select>
 
     <select id="getPatrolStandardList" resultType="com.aiurt.boot.materials.dto.PatrolStandardDTO">

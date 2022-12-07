@@ -323,7 +323,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 }
 		 List<EmergencyMaterials> list = emergencyMaterialsService.list(queryWrapper);
 		 if (CollUtil.isNotEmpty(list)){
-			 return Result.OK("同一位置的编码不能重复！");
+			 return Result.OK("编码不能重复！");
 		 }
 		 return Result.OK("校验成功，请继续！");
 	}

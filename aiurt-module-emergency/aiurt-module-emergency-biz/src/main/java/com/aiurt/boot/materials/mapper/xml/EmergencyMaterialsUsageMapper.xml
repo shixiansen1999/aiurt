@@ -3,7 +3,9 @@
 <mapper namespace="com.aiurt.boot.materials.mapper.EmergencyMaterialsUsageMapper">
 
     <sql id="list">
-
+       t1.materials_name as materialsName,t1.materials_code as materialsCode,t2.category_name as categoryName,t2.category_code as categoryCode,
+       t3.status as status,t3.number as number,t3.use_date as useDate,t3.user_id as userId,t3.use_time as useTime,t3.back_date as backDate,t3.back_time as backTime,
+       t3.back_id as backId,t1.remark as remark,t3.id as id
     </sql>
 
     <select id="getUsageRecordList" resultType="com.aiurt.boot.materials.entity.EmergencyMaterialsUsage">
@@ -29,6 +31,16 @@
             <if test="condition.endTime!=null">
                 and DATE_FORMAT(t3.use_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d')
             </if>
+            <if test="condition.materialsCode!=null">
+                and t1.materials_code = #{condition.materialsCode}
+            </if>
+            <if test="condition.id!=null">
+                and t3.id = #{condition.id}
+            </if>
+            <if test="condition.primaryOrg!=null">
+                and t1.primary_org = #{condition.primaryOrg}
+            </if>
         </where>
+        order by t3.update_time desc,t3.create_time desc
     </select>
 </mapper>

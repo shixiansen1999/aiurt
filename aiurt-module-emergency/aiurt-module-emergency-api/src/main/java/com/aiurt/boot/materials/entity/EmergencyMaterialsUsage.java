@@ -73,6 +73,11 @@ public class EmergencyMaterialsUsage extends DictEntity implements Serializable 
 	@Excel(name = "使用人ID", width = 15)
     @ApiModelProperty(value = "使用人ID")
     private java.lang.String userId;
+
+    /**使用人名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "使用人名称")
+    private java.lang.String userName;
 	/**归还日期*/
 	@Excel(name = "归还日期", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
@@ -89,6 +94,10 @@ public class EmergencyMaterialsUsage extends DictEntity implements Serializable 
 	@Excel(name = "归还人ID", width = 15)
     @ApiModelProperty(value = "归还人ID")
     private java.lang.String backId;
+    /**归还人名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "归还人名称")
+    private java.lang.String backName;
     /**提交状态(0待提交,1已提交)*/
     @Excel(name = "提交状态(0待提交,1已提交)", width = 15)
     @ApiModelProperty(value = "提交状态(0待提交,1已提交)")
@@ -129,4 +138,19 @@ public class EmergencyMaterialsUsage extends DictEntity implements Serializable 
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "结束时间")
     private java.util.Date endTime;
+
+    /**备注*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "备注")
+    private java.lang.String remark;
+
+    /**主管部门编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "主管部门编码")
+    private java.lang.String primaryOrg;
+
+    /**主管部门名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "主管部门名称")
+    private java.lang.String primaryName;
 }

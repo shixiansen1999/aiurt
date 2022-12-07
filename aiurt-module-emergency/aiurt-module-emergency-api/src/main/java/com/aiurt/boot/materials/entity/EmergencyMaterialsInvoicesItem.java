@@ -70,6 +70,7 @@ public class EmergencyMaterialsInvoicesItem extends DictEntity implements Serial
 	/**检查项编号*/
 	@Excel(name = "检查项编号", width = 15)
     @ApiModelProperty(value = "检查项编号")
+    @TableField(value = "`code`")
     private java.lang.String code;
 	/**检查项内容*/
 	@Excel(name = "检查项内容", width = 15)
@@ -91,11 +92,13 @@ public class EmergencyMaterialsInvoicesItem extends DictEntity implements Serial
 	/**内容排序*/
 	@Excel(name = "内容排序", width = 15)
     @ApiModelProperty(value = "内容排序")
+    @TableField(value = "`order`")
     private java.lang.Integer order;
 	/**是否为巡检项目：0否 1是*/
 	@Excel(name = "是否为巡检项目：0否 1是", width = 15)
     @ApiModelProperty(value = "是否为巡检项目：0否 1是")
     @Dict(dicCode = "check")
+    @TableField(value = "`check`")
     private java.lang.Integer check;
 	/**检查结果：0异常、1正常*/
 	@Excel(name = "检查结果：0异常、1正常", width = 15)
