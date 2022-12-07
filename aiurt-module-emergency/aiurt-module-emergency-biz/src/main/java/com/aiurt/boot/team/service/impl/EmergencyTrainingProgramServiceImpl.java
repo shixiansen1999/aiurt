@@ -172,16 +172,12 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         this.updateById(emergencyTrainingProgram);
         List<EmergencyTrainingTeam> emergencyTrainingTeamList = emergencyTrainingProgram.getEmergencyTrainingTeamList();
         if (CollUtil.isNotEmpty(emergencyTrainingTeamList)) {
+            LambdaQueryWrapper<EmergencyTrainingTeam> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(EmergencyTrainingTeam::getEmergencyTrainingProgramId, emergencyTrainingProgram.getId());
+            emergencyTrainingTeamService.getBaseMapper().delete(queryWrapper);
             for (EmergencyTrainingTeam emergencyTrainingTeam : emergencyTrainingTeamList) {
-                if (StrUtil.isBlank(emergencyTrainingTeam.getEmergencyTrainingProgramId())) {
-                    emergencyTrainingTeam.setEmergencyTrainingProgramId(emergencyTrainingProgram.getId());
-                    emergencyTrainingTeamService.save(emergencyTrainingTeam);
-                } else {
-                    if (TeamConstant.DEL_FLAG1.equals(emergencyTrainingTeam.getDelFlag())) {
-                        emergencyTrainingTeamService.removeById(emergencyTrainingTeam);
-                    }
-                }
-
+                emergencyTrainingTeam.setEmergencyTrainingProgramId(emergencyTrainingProgram.getId());
+                emergencyTrainingTeamService.save(emergencyTrainingTeam);
             }
         }
         return Result.OK("编辑成功");

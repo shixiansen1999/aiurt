@@ -1,6 +1,7 @@
 package com.aiurt.boot.team.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.team.constant.TeamConstant;
@@ -130,6 +131,12 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
         List<EmergencyTrainingRecordAtt> attList = emergencyTrainingRecord.getAttList();
         for (EmergencyTrainingRecordAtt emergencyTrainingRecordAtt : attList) {
             emergencyTrainingRecordAtt.setEmergencyTrainingRecordId(id);
+            String size = emergencyTrainingRecordAtt.getSize();
+            String type = emergencyTrainingRecordAtt.getType();
+            double fileSize  = (double) Convert.toInt(size) / 1024;
+            if (fileSize  > 50 || !type.contains("doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar")) {
+                return Result.error("文件大小超过限制或者文件格式不对");
+            }
             emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
         }
         if (TeamConstant.SUBMITTED.equals(emergencyTrainingRecord.getStatus())) {
@@ -146,53 +153,49 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
         if (ObjectUtil.isEmpty(byId)) {
             return Result.error("未找到对应数据！");
         }
+        if (TeamConstant.SUBMITTED.equals(byId.getStatus())) {
+            return Result.error("当前记录已提交，不可编辑");
+        }
         this.updateById(emergencyTrainingRecord);
         String id = emergencyTrainingRecord.getId();
         List<EmergencyTrainingRecordCrew> crewList = emergencyTrainingRecord.getCrewList();
         if (CollUtil.isNotEmpty(crewList)) {
+            LambdaQueryWrapper<EmergencyTrainingRecordCrew> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(EmergencyTrainingRecordCrew::getEmergencyTrainingRecordId, emergencyTrainingRecord.getId());
+            emergencyTrainingRecordCrewService.getBaseMapper().delete(queryWrapper);
             for (EmergencyTrainingRecordCrew emergencyTrainingRecordCrew : crewList) {
-                if (StrUtil.isNotBlank(emergencyTrainingRecordCrew.getId())) {
-                    if (TeamConstant.DEL_FLAG1.equals(emergencyTrainingRecordCrew.getDelFlag())) {
-                        emergencyTrainingRecordCrewService.removeById(emergencyTrainingRecordCrew);
-                    } else {
-                        emergencyTrainingRecordCrewService.updateById(emergencyTrainingRecordCrew);
-                    }
-                } else {
-                    emergencyTrainingRecordCrew.setEmergencyTrainingRecordId(id);
-                    emergencyTrainingRecordCrewService.save(emergencyTrainingRecordCrew);
-                }
+                emergencyTrainingRecordCrew.setEmergencyTrainingRecordId(id);
+                emergencyTrainingRecordCrewService.save(emergencyTrainingRecordCrew);
             }
         }
 
         List<EmergencyTrainingProcessRecord> processRecordList = emergencyTrainingRecord.getProcessRecordList();
         if (CollUtil.isNotEmpty(processRecordList)) {
+            LambdaQueryWrapper<EmergencyTrainingProcessRecord> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(EmergencyTrainingProcessRecord::getEmergencyTrainingRecordId, emergencyTrainingRecord.getId());
+            emergencyTrainingProcessRecordService.getBaseMapper().delete(queryWrapper);
             for (EmergencyTrainingProcessRecord emergencyTrainingProcessRecord : processRecordList) {
-                if (StrUtil.isNotBlank(emergencyTrainingProcessRecord.getId())) {
-                    if (TeamConstant.DEL_FLAG1.equals(emergencyTrainingProcessRecord.getDelFlag())) {
-                        emergencyTrainingProcessRecordService.removeById(emergencyTrainingProcessRecord);
-                    } else {
-                        emergencyTrainingProcessRecordService.updateById(emergencyTrainingProcessRecord);
-                    }
-                } else {
-                    emergencyTrainingProcessRecord.setEmergencyTrainingRecordId(id);
-                    emergencyTrainingProcessRecordService.save(emergencyTrainingProcessRecord);
-                }
+                emergencyTrainingProcessRecord.setEmergencyTrainingRecordId(id);
+                emergencyTrainingProcessRecordService.save(emergencyTrainingProcessRecord);
             }
         }
 
         List<EmergencyTrainingRecordAtt> attList = emergencyTrainingRecord.getAttList();
         if (CollUtil.isNotEmpty(attList)) {
+
+            LambdaQueryWrapper<EmergencyTrainingRecordAtt> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(EmergencyTrainingRecordAtt::getEmergencyTrainingRecordId, emergencyTrainingRecord.getId());
+            emergencyTrainingRecordAttService.getBaseMapper().delete(queryWrapper);
+
             for (EmergencyTrainingRecordAtt emergencyTrainingRecordAtt : attList) {
-                if (StrUtil.isNotBlank(emergencyTrainingRecordAtt.getId())) {
-                    if (TeamConstant.DEL_FLAG1.equals(emergencyTrainingRecordAtt.getDelFlag())) {
-                        emergencyTrainingRecordAttService.removeById(emergencyTrainingRecordAtt);
-                    } else {
-                        emergencyTrainingRecordAttService.updateById(emergencyTrainingRecordAtt);
-                    }
-                } else {
-                    emergencyTrainingRecordAtt.setEmergencyTrainingRecordId(id);
-                    emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
+                emergencyTrainingRecordAtt.setEmergencyTrainingRecordId(id);
+                String size = emergencyTrainingRecordAtt.getSize();
+                String type = emergencyTrainingRecordAtt.getType();
+                double fileSize  = (double) Convert.toInt(size) / 1024;
+                if (fileSize  > 50 || !type.contains("doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar")) {
+                    return Result.error("文件大小超过限制或者文件格式不对");
                 }
+                emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
             }
         }
 

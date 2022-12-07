@@ -59,7 +59,7 @@ public class EmergencyCrew implements Serializable {
 
 	@ApiModelProperty(value = "人员姓名")
     @TableField(exist = false)
-    private String userName;
+    private String realname;
 	/**联系电话*/
 	@Excel(name = "联系电话", width = 15)
     @ApiModelProperty(value = "联系电话")
@@ -92,5 +92,5 @@ public class EmergencyCrew implements Serializable {
 
     @ApiModelProperty(value = "岗位名称")
     @TableField(exist = false)
-    private String roleName;
+    private String roleNames;
 }

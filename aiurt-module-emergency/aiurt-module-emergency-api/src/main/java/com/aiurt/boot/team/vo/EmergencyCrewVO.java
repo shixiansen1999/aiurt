@@ -16,6 +16,10 @@ public class EmergencyCrewVO {
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
     private String id;
+    /**应急队伍id*/
+    @Excel(name = "应急队伍id", width = 15)
+    @ApiModelProperty(value = "应急队伍id")
+    private String emergencyTeamId;
 
     /**所属班次*/
     @Excel(name = "所属班次", width = 15)

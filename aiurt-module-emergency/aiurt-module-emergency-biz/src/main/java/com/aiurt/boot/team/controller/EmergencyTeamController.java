@@ -1,16 +1,26 @@
 package com.aiurt.boot.team.controller;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.team.dto.EmergencyTeamDTO;
+import com.aiurt.boot.team.entity.EmergencyCrew;
 import com.aiurt.boot.team.entity.EmergencyTeam;
+import com.aiurt.boot.team.service.IEmergencyCrewService;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
+import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -38,6 +48,9 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 
 	@Autowired
 	private ISysBaseAPI iSysBaseAPI;
+
+	@Autowired
+	private IEmergencyCrewService emergencyCrewService;
 	/**
 	 * 分页列表查询
 	 *
@@ -199,15 +212,50 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 		return emergencyTeamService.getTeamByMajor();
 	}
 
-	/**
+/*	*//**
 	 * 根据训练计划查找应急队伍
 	 *
 	 * @param
 	 * @return
-	 */
+	 *//*
 	@ApiOperation(value="应急队伍台账-根据训练计划查找应急队伍", notes="应急队伍台账-根据训练计划查找应急队伍")
 	@GetMapping(value = "/getTeamByTrainingProgram")
 	public Result<List<EmergencyTeam>> getTeamByTrainingProgram(@RequestParam(name="id",required=false) String id) {
 		return emergencyTeamService.getTeamByTrainingProgram(id);
+	}*/
+
+	/**
+	 * 应急人员-根据应急队伍查询
+	 *
+	 * @param emergencyCrewVO
+	 * @param pageNo
+	 * @param pageSize
+	 * @param req
+	 * @return
+	 */
+	@ApiOperation(value="应急人员-根据应急队伍查询", notes="应急人员-根据应急队伍查询")
+	@GetMapping(value = "/queryCrewPageList")
+	public Result<IPage<EmergencyCrew>> queryCrewPageList(EmergencyCrewVO emergencyCrewVO,
+													  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+													  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+													  HttpServletRequest req) {
+		EmergencyCrew emergencyCrew = new EmergencyCrew();
+		BeanUtil.copyProperties(emergencyCrewVO, emergencyCrew);
+		QueryWrapper<EmergencyCrew> queryWrapper = QueryGenerator.initQueryWrapper(emergencyCrew, req.getParameterMap());
+		Page<EmergencyCrew> page = new Page<EmergencyCrew>(pageNo, pageSize);
+		IPage<EmergencyCrew> pageList = emergencyCrewService.page(page, queryWrapper);
+		List<EmergencyCrew> records = pageList.getRecords();
+		if (CollUtil.isNotEmpty(records)) {
+			for (EmergencyCrew record : records) {
+				LoginUser userById = iSysBaseAPI.getUserById(record.getUserId());
+				record.setRealname(userById.getRealname());
+				List<String> roleNamesById = iSysBaseAPI.getRoleNamesById(record.getUserId());
+				if (CollUtil.isNotEmpty(roleNamesById)) {
+					String join = StrUtil.join(",", roleNamesById);
+					record.setRoleNames(join);
+				}
+			}
+		}
+		return Result.OK(pageList);
 	}
 }
