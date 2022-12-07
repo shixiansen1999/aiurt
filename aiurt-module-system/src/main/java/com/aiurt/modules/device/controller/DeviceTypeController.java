@@ -15,16 +15,22 @@ import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBaseType;
+import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
 import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.CsUserSubsystemModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
@@ -61,6 +67,10 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	private IDeviceService deviceService;
 	@Autowired
 	private IDeviceComposeService deviceComposeService;
+	@Autowired
+	private ISysBaseAPI sysBaseAPI;
+	@Autowired
+	private CsSafetyAttentionMapper csSafetyAttentionMapper;
 
 	 /**
 	  * 设备类型左侧树、子系统树
@@ -107,6 +117,67 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		 return Result.OK(newList);
 	 }
 
+	/**
+	 * 设备类型左侧树、子系统树
+	 * @param
+	 * @return
+	 */
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "权限过滤子系统设备类型左侧树",permissionUrl = "/deviceType/list")
+	@ApiOperation(value = "权限过滤子系统设备类型左侧树")
+	@GetMapping(value = "/powerTreeList")
+	@PermissionData(pageComponent = "manage/MajorList")
+	public Result<?> powerTreeList(Integer level) {
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		List<CsUserMajorModel> list = sysBaseAPI.getMajorByUserId(sysUser.getId());
+		List<CsUserSubsystemModel> list1 = sysBaseAPI.getSubsystemByUserId(sysUser.getId());
+		List <String> majorCode =  list.stream().map(s-> s.getMajorCode()).collect(Collectors.toList());
+		List <String> majorCode1 = list1.stream().map(s -> s.getMajorCode()).distinct().collect(Collectors.toList());
+		List<String> majorCode2 =new ArrayList<>();
+		majorCode2 = majorCode.stream()
+				.filter((String s) -> !majorCode1.contains(s))
+				.collect(Collectors.toList());
+		List<String> systemCodes = csSafetyAttentionMapper.selectSystemCodes(majorCode2);
+		List<String> systemList1 = list1.stream().map(s-> s.getSystemCode()).collect(Collectors.toList());
+		systemList1.addAll(systemCodes);
+		List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>()
+				.eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0)
+				.in(CsMajor::getMajorCode,majorCode));
+		List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>()
+				.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0)
+				.in(CsSubsystem::getSystemCode,systemList1)
+				.orderByDesc(CsSubsystem::getCreateTime));
+		List<DeviceType> deviceTypeList = deviceTypeService.selectList();
+		List<DeviceType> deviceTypeTree = deviceTypeService.treeList(deviceTypeList,"0");
+		List<DeviceType> newList = new ArrayList<>();
+		majorList.forEach(one -> {
+			DeviceType major = setEntity(one.getId(),"zy",one.getMajorCode(),one.getMajorName(),null,null,null,one.getMajorCode(),null,"-",null);
+			List<CsSubsystem> sysList = systemList.stream().filter(system-> system.getMajorCode().equals(one.getMajorCode())).collect(Collectors.toList());
+			List<DeviceType> majorDeviceType = deviceTypeTree.stream().filter(type-> one.getMajorCode().equals(type.getMajorCode()) && (null==type.getSystemCode() || "".equals(type.getSystemCode())) && ("0").equals(type.getPid())).collect(Collectors.toList());
+			List<DeviceType> twoList = new ArrayList<>();
+			if(level>LEVEL_2) {
+				//添加设备类型数据
+				twoList.addAll(majorDeviceType);
+			}
+			//判断是否有子系统数据
+			sysList.forEach(two ->{
+				DeviceType system = setEntity(two.getId()+"","zxt",two.getSystemCode(),two.getSystemName(),null,null,null,two.getMajorCode(),two.getSystemCode(),one.getMajorName(),null);
+				if(level>LEVEL_2) {
+					List<DeviceType> sysDeviceType = deviceTypeTree.stream().filter(type -> system.getMajorCode().equals(type.getMajorCode()) && (null != type.getSystemCode() && !"".equals(type.getSystemCode()) && system.getSystemCode().equals(type.getSystemCode()))).collect(Collectors.toList());
+					List<DeviceType> collect = sysDeviceType.stream().distinct().collect(Collectors.toList());
+					system.setChildren(collect);
+				}
+				twoList.add(system);
+			});
+			if(!sysList.isEmpty()){
+				major.setPIsHaveSystem(1);
+			}else{
+				major.setPIsHaveSystem(0);
+			}
+			major.setChildren(twoList);
+			newList.add(major);
+		});
+		return Result.OK(newList);
+	}
 	/**
 	 * 物资分类列表结构查询（无分页。用于左侧树）
 	 * @param majorCode

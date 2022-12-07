@@ -2,6 +2,7 @@ package com.aiurt.modules.sm.controller;
 
 import java.io.BufferedOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -13,12 +14,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.view.AiurtEntityExcelView;
 import com.aiurt.modules.sm.entity.CsSafetyAttentionType;
+import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.sm.entity.CsSafetyAttention;
@@ -29,6 +34,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
+import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.CsUserSubsystemModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -61,6 +69,10 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	private ICsSafetyAttentionService csSafetyAttentionService;
 	 @Autowired
 	 private CsSafetyAttentionTypeMapper csSafetyAttentionTypeMapper;
+	 @Autowired
+	 private ISysBaseAPI sysBaseAPI;
+	 @Autowired
+	 private CsSafetyAttentionMapper csSafetyAttentionMapper;
 
 	/**
 	 * 分页列表查询
@@ -74,10 +86,20 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	//@AutoLog(value = "安全事项-分页列表查询")
 	@ApiOperation(value="安全事项-分页列表查询", notes="安全事项-分页列表查询")
 	@GetMapping(value = "/list")
+	//@PermissionData(pageComponent = "/overhaul/SafetyAttentionList")
 	public Result<IPage<CsSafetyAttention>> queryPageList(CsSafetyAttention csSafetyAttention,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		List<CsUserMajorModel> list = sysBaseAPI.getMajorByUserId(sysUser.getId());
+		List<CsUserSubsystemModel> list1 = sysBaseAPI.getSubsystemByUserId(sysUser.getId());
+		List <String> majorCode =  list.stream().map(s-> s.getMajorCode()).collect(Collectors.toList());
+		List <String> majorCode1 = list1.stream().map(s -> s.getMajorCode()).distinct().collect(Collectors.toList());
+		List<String> majorCode2 =new ArrayList<>();
+		majorCode2 = majorCode.stream()
+				.filter((String s) -> !majorCode1.contains(s))
+				.collect(Collectors.toList());
 		LambdaQueryWrapper<CsSafetyAttention> queryWrapper = new LambdaQueryWrapper();
 		if (StrUtil.isNotEmpty(csSafetyAttention.getMajorCode())){
 		queryWrapper.eq(CsSafetyAttention::getMajorCode,csSafetyAttention.getMajorCode());
@@ -110,7 +132,10 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionTypeCode())){
 			queryWrapper.eq(CsSafetyAttention::getAttentionTypeCode,csSafetyAttention.getAttentionTypeCode());
 		}
-		queryWrapper.eq(CsSafetyAttention::getDelFlag,0);
+		 List<String> systemCodes = csSafetyAttentionMapper.selectSystemCodes(majorCode2);
+		 List<String> systemList = list1.stream().map(s-> s.getSystemCode()).collect(Collectors.toList());
+		 systemList.addAll(systemCodes);
+				queryWrapper.eq(CsSafetyAttention::getDelFlag,0).in(CsSafetyAttention::getSystemCode,systemList);
 		Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);
 		IPage<CsSafetyAttention> pageList = csSafetyAttentionService.page(page, queryWrapper);
 		return Result.OK(pageList);

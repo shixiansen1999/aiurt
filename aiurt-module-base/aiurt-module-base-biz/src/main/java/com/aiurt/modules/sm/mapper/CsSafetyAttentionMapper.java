@@ -28,4 +28,11 @@ public interface CsSafetyAttentionMapper extends BaseMapper<CsSafetyAttention> {
      * @return
      */
     String selectSystemCode(@Param("systemName") String systemName);
+    /**
+     * 查询子系统
+     * @param
+     * @param majorCode
+     * @return
+     */
+    List<String> selectSystemCodes(@Param("majorCode")List<String>majorCode);
 }

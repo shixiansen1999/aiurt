@@ -10,4 +10,13 @@
         select system_code from cs_subsystem where del_flag =0
         and system_name = #{systemName}
     </select>
+    <select id="selectSystemCodes" resultType="java.lang.String">
+        select system_code from cs_subsystem where del_flag =0
+        <if test="majorCode.size()>0">
+            AND major_code in
+            <foreach item="majorCode" collection="majorCode" separator="," open="(" close=")" index="">
+                #{majorCode}
+            </foreach>
+        </if>
+    </select>
 </mapper>
