@@ -112,8 +112,12 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             }
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserDepartModel> list1 = sysBaseApi.getDepartByUserId(sysUser.getId());
-        List<CsUserMajorModel> list2 =sysBaseApi.getMajorByUserId(sysUser.getId());
+        List<CsUserMajorModel> list2 = new ArrayList<>();
+        List<CsUserDepartModel> list1 =  new ArrayList<>();
+        if(!sysUser.getUsername().equals("admin")){
+           list1 =  sysBaseApi.getDepartByUserId(sysUser.getId());
+           list2 = sysBaseApi.getMajorByUserId(sysUser.getId());
+        }
         List<String> orgCodes = list1.stream().map(s-> s.getOrgCode()).collect(Collectors.toList());
         List<String> majorCodes = list2.stream().map(s-> s.getMajorCode()).collect(Collectors.toList());
         IPage<InspectionStrategyDTO> list = baseMapper.selectPageList(page, inspectionStrategyDTO,orgCodes,majorCodes);

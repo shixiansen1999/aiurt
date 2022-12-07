@@ -111,7 +111,6 @@
                     </foreach>
                 </if>
              GROUP BY isy.id
-              WHERE isy.del_flag = 0
             ) AS abc
         WHERE
             1 = 1

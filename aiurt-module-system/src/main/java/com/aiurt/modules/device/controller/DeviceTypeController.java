@@ -128,11 +128,14 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	@PermissionData(pageComponent = "manage/MajorList")
 	public Result<?> powerTreeList(Integer level) {
 		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		//专业权限
 		List<CsUserMajorModel> list = sysBaseAPI.getMajorByUserId(sysUser.getId());
+		//子系统权限
 		List<CsUserSubsystemModel> list1 = sysBaseAPI.getSubsystemByUserId(sysUser.getId());
 		List <String> majorCode =  list.stream().map(s-> s.getMajorCode()).collect(Collectors.toList());
 		List <String> majorCode1 = list1.stream().map(s -> s.getMajorCode()).distinct().collect(Collectors.toList());
 		List<String> majorCode2 =new ArrayList<>();
+		//专业下的子系统
 		majorCode2 = majorCode.stream()
 				.filter((String s) -> !majorCode1.contains(s))
 				.collect(Collectors.toList());
