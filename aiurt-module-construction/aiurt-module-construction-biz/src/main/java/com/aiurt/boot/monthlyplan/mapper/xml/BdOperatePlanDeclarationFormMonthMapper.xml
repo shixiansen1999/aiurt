@@ -167,7 +167,7 @@
         from cs_station as station
                  left join cs_line bs on station.line_code = bs.line_code
             where station.del_flag = 0 and bs.del_flag = 0
-        order by bs.id asc;
+        order by station.sort asc;
     </select>
 
     <!--    获取线路信息,使用了BdLineInfoDTO-->
