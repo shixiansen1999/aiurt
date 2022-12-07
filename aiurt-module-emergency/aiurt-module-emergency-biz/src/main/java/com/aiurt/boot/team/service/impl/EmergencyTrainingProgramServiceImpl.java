@@ -97,8 +97,10 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             for (EmergencyTrainingProgram record : records) {
                 SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(record.getOrgCode());
                 record.setOrgName(sysDepartModel.getDepartName());
-                String trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(record.getId());
-                record.setEmergencyTeamId(trainingTeam);
+                List<EmergencyTrainingTeam> trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(record.getId());
+                record.setEmergencyTrainingTeamList(trainingTeam);
+                List<String> names = trainingTeam.stream().map(EmergencyTrainingTeam::getEmergencyTeamName).collect(Collectors.toList());
+                record.setEmergencyTeamName(CollUtil.join(names, ","));
             }
         }
         return pageList;
@@ -218,7 +220,8 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             String[] strings = userIds.toArray(new String[userIds.size()]);
             List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(strings);
             String userNameStr = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
-            iSysBaseAPI.sendSysAnnouncement(new MessageDTO(user.getRealname(), userNameStr, "应急训练计划任务", "您有一条新的应急训练计划任务，请注意训练任务开始时间!", CommonConstant.MSG_CATEGORY_2));
+            String content ="您有一条新的应急训练计划任务:演练计划编号："+program.getTrainingProgramCode()+"，训练项目名称："+program.getTrainingProgramName()+"，训练计划时间："+DateUtil.format(program.getTrainingPlanTime(), "yyyy-MM")+",请注意训练任务开始时间!";
+            iSysBaseAPI.sendSysAnnouncement(new MessageDTO(user.getRealname(), userNameStr, "应急训练计划任务", content, CommonConstant.MSG_CATEGORY_2));
         }
     }
 
@@ -226,8 +229,8 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
     public Result<EmergencyTrainingProgram> queryById(EmergencyTrainingProgram emergencyTrainingProgram) {
         SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(emergencyTrainingProgram.getOrgCode());
         emergencyTrainingProgram.setOrgName(sysDepartModel.getDepartName());
-        String trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(emergencyTrainingProgram.getId());
-        emergencyTrainingProgram.setEmergencyTeamId(trainingTeam);
+        List<EmergencyTrainingTeam> trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(emergencyTrainingProgram.getId());
+        emergencyTrainingProgram.setEmergencyTrainingTeamList(trainingTeam);
         String trainees = emergencyTrainingProgramMapper.getTrainees(emergencyTrainingProgram.getId());
         emergencyTrainingProgram.setTrainees(trainees);
         return Result.OK(emergencyTrainingProgram);

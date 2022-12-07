@@ -2,15 +2,16 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.team.mapper.EmergencyTrainingProgramMapper">
 
-<select id="getTrainingTeam" resultType="java.lang.String">
+<select id="getTrainingTeam" resultType="com.aiurt.boot.team.entity.EmergencyTrainingTeam">
     SELECT
-    GROUP_CONCAT(et.id)
+    ett.id,
+    et.id as emergencyTeamId,
+    et.emergency_teamname as emergencyTeamName
     FROM
     emergency_training_team ett
     LEFT JOIN emergency_team et ON ett.emergency_team_id = et.id
     WHERE
     ett.emergency_training_program_id = #{id} and ett.del_flag = 0
-    group by ett.emergency_training_program_id
     </select>
 
 <select id="getTrainees" resultType="java.lang.String">

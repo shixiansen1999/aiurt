@@ -2,6 +2,7 @@ package com.aiurt.boot.team.mapper;
 
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
+import com.aiurt.boot.team.entity.EmergencyTrainingTeam;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -21,7 +22,7 @@ public interface EmergencyTrainingProgramMapper extends BaseMapper<EmergencyTrai
      * @param id
      * @return
      */
-    String getTrainingTeam(@Param("id")String id);
+    List<EmergencyTrainingTeam> getTrainingTeam(@Param("id")String id);
     /**
      * 获取负责人名称
      * @param id

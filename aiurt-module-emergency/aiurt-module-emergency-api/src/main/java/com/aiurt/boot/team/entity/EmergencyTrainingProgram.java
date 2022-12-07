@@ -95,10 +95,10 @@ public class EmergencyTrainingProgram implements Serializable {
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
 
-    /**应急队伍id*/
-    @ApiModelProperty(value = "应急队伍id")
+    /**应急队伍名称*/
+    @ApiModelProperty(value = "应急队伍名称")
     @TableField(exist = false)
-    private String emergencyTeamId;
+    private String emergencyTeamName;
 
     /**添加方式*/
     @ApiModelProperty(value = "添加方式（0保存，1下发）")
@@ -109,9 +109,9 @@ public class EmergencyTrainingProgram implements Serializable {
     @TableField(exist = false)
     private String trainees;
     /**
-     * 应急队伍
+     * 应急队伍列表
      */
-    @ApiModelProperty(value = "应急队伍")
+    @ApiModelProperty(value = "应急队伍列表")
     @TableField(exist = false)
     private List<EmergencyTrainingTeam> emergencyTrainingTeamList;
 }

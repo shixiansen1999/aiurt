@@ -246,8 +246,10 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             for (EmergencyTrainingProgram record : trainingProgram) {
                 SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(record.getOrgCode());
                 record.setOrgName(sysDepartModel.getDepartName());
-                String trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(record.getId());
-                record.setEmergencyTeamId(trainingTeam);
+                List<EmergencyTrainingTeam> trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(record.getId());
+                record.setEmergencyTrainingTeamList(trainingTeam);
+                List<String> names = trainingTeam.stream().map(EmergencyTrainingTeam::getEmergencyTeamName).collect(Collectors.toList());
+                record.setEmergencyTeamName(CollUtil.join(names, ","));
             }
         }
         return page.setRecords(trainingProgram);
