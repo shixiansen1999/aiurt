@@ -551,9 +551,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
 
             //检修位置
+            //判断设备code是否为空
             if(checkListDTO.getEquipmentCode() !=null){
                 List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(checkListDTO.getEquipmentCode());
                 String station = manager.translateStation(stationDTOList);
+                //判断具体位置是否为空
                 if (checkListDTO.getSpecificLocation() != null) {
                     if (station != null) {
                         String string = checkListDTO.getSpecificLocation() + station;
