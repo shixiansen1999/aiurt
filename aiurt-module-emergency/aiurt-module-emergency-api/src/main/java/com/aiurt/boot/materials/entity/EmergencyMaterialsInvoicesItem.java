@@ -42,6 +42,10 @@ public class EmergencyMaterialsInvoicesItem implements Serializable {
 	@Excel(name = "应急物资分类编码", width = 15)
     @ApiModelProperty(value = "应急物资分类编码")
     private java.lang.String categoryCode;
+    /**应急物资分类名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "应急物资分类名称")
+    private java.lang.String categoryName;
 	/**应急物资编码*/
 	@Excel(name = "应急物资编码", width = 15)
     @ApiModelProperty(value = "应急物资编码")
@@ -77,6 +81,7 @@ public class EmergencyMaterialsInvoicesItem implements Serializable {
 	/**层级类型：0一级、1子级*/
 	@Excel(name = "层级类型：0一级、1子级", width = 15)
     @ApiModelProperty(value = "层级类型：0一级、1子级")
+    @Dict(dicCode = "hierarchy_type")
     private java.lang.Integer hierarchyType;
 	/**父级ID,顶级默认为0*/
 	@Excel(name = "父级ID,顶级默认为0", width = 15)
@@ -89,6 +94,7 @@ public class EmergencyMaterialsInvoicesItem implements Serializable {
 	/**是否为巡检项目：0否 1是*/
 	@Excel(name = "是否为巡检项目：0否 1是", width = 15)
     @ApiModelProperty(value = "是否为巡检项目：0否 1是")
+    @Dict(dicCode = "check")
     private java.lang.Integer check;
 	/**检查结果：0异常、1正常*/
 	@Excel(name = "检查结果：0异常、1正常", width = 15)

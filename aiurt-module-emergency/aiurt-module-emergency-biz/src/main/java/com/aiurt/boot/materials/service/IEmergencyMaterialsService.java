@@ -6,6 +6,9 @@ import com.aiurt.boot.materials.entity.EmergencyMaterials;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Description: emergency_materials
@@ -37,4 +40,12 @@ public interface IEmergencyMaterialsService extends IService<EmergencyMaterials>
      * @return
      */
     MaterialPatrolDTO getMaterialPatrol();
+
+
+    /**
+     * 应急物资检查记录查看
+     * @param id
+     * @return
+     */
+    List<EmergencyMaterialsInvoicesItem> getMaterialInspection(@Param("id") String id);
 }

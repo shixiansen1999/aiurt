@@ -130,4 +130,9 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         materialPatrolDTO.setMaterialsPatrolCode(string1);
         return materialPatrolDTO;
     }
+
+    @Override
+    public List<EmergencyMaterialsInvoicesItem> getMaterialInspection(String id) {
+        return emergencyMaterialsMapper.getMaterialInspection(id);
+    }
 }
