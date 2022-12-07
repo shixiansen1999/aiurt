@@ -1,6 +1,7 @@
 package com.aiurt.boot.strategy.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
@@ -12,6 +13,7 @@ import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
+import com.aiurt.boot.strategy.context.FunctionStrategy;
 import com.aiurt.boot.strategy.entity.*;
 import com.aiurt.boot.strategy.mapper.InspectionStrDeviceRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrOrgRelMapper;
@@ -25,11 +27,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -66,6 +67,8 @@ public class StrategyService {
     @Resource
     private RepairPoolRelMapper relMapper;
 
+    private Map<Integer, FunctionStrategy<InspectionStrategy, List<RepairPoolCode>, List<InspectionStrOrgRel>, List<InspectionStrStaRel>>> map = new ConcurrentHashMap<>(8);
+
     /**
      * 周检
      *
@@ -83,7 +86,10 @@ public class StrategyService {
         if (Integer.valueOf(DateUtils.getYear()).equals(Integer.valueOf(ins.getYear()))) {
             date = DateUtils.getDate();
         } else {
-            date = DateUtils.getNextYearFirstDay();
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.YEAR, ins.getYear());
+            date = DateUtil.beginOfYear(new DateTime(calendar));
+//            date = DateUtils.getNextYearFirstDay();
         }
 
         //生成时间限制
@@ -632,6 +638,51 @@ public class StrategyService {
             throw new AiurtBootException("检修标准项目为空");
         }
         return inspectionCodeContentList;
+    }
+
+    /**
+     * @PostConstruct 被@PostConstruct修饰的方法会在服务器加载Servlet的时候运行，并且只会被服务器执行一次
+     * 初始化业务分派逻辑,代替了if-else部分
+     * key: 拉取数据类型
+     * value: lambda表达式,最终会获得该数据渠道的拉取方式
+     */
+    @PostConstruct
+    public void dispatcherInit() {
+        map.put(InspectionConstant.WEEK, (InspectionStrategy ins, List<RepairPoolCode> repairPoolCodes, List<InspectionStrOrgRel> inspectionStrOrgRels, List<InspectionStrStaRel> inspectionStrStaRels) -> {
+            this.weekPlan(ins, repairPoolCodes, inspectionStrOrgRels, inspectionStrStaRels);
+        });
+        map.put(InspectionConstant.MONTH, (InspectionStrategy ins, List<RepairPoolCode> repairPoolCodes, List<InspectionStrOrgRel> inspectionStrOrgRels, List<InspectionStrStaRel> inspectionStrStaRels) -> {
+            this.monthPlan(ins, repairPoolCodes, inspectionStrOrgRels, inspectionStrStaRels);
+        });
+        map.put(InspectionConstant.DOUBLEMONTH, (InspectionStrategy ins, List<RepairPoolCode> repairPoolCodes, List<InspectionStrOrgRel> inspectionStrOrgRels, List<InspectionStrStaRel> inspectionStrStaRels) -> {
+            this.doubleMonthPlan(ins, repairPoolCodes, inspectionStrOrgRels, inspectionStrStaRels);
+        });
+        map.put(InspectionConstant.QUARTER, (InspectionStrategy ins, List<RepairPoolCode> repairPoolCodes, List<InspectionStrOrgRel> inspectionStrOrgRels, List<InspectionStrStaRel> inspectionStrStaRels) -> {
+            this.quarterPlan(ins, repairPoolCodes, inspectionStrOrgRels, inspectionStrStaRels);
+        });
+        map.put(InspectionConstant.SEMIANNUAL, (InspectionStrategy ins, List<RepairPoolCode> repairPoolCodes, List<InspectionStrOrgRel> inspectionStrOrgRels, List<InspectionStrStaRel> inspectionStrStaRels) -> {
+            this.semiAnnualPlan(ins, repairPoolCodes, inspectionStrOrgRels, inspectionStrStaRels);
+        });
+        map.put(InspectionConstant.ANNUAL, (InspectionStrategy ins, List<RepairPoolCode> repairPoolCodes, List<InspectionStrOrgRel> inspectionStrOrgRels, List<InspectionStrStaRel> inspectionStrStaRels) -> {
+            this.annualPlan(ins, repairPoolCodes, inspectionStrOrgRels, inspectionStrStaRels);
+        });
+    }
+
+    /**
+     * 对外提供调用方法
+     *
+     * @param cycle
+     * @param ins
+     * @param repairPoolCodes
+     * @param inspectionStrOrgRels
+     * @param inspectionStrStaRels
+     */
+    public void macth(Integer cycle, InspectionStrategy ins, List<RepairPoolCode> repairPoolCodes, List<InspectionStrOrgRel> inspectionStrOrgRels, List<InspectionStrStaRel> inspectionStrStaRels) {
+        FunctionStrategy<InspectionStrategy, List<RepairPoolCode>, List<InspectionStrOrgRel>, List<InspectionStrStaRel>> result = map.get(cycle);
+        if (result != null) {
+            //传入resourceId 执行这段表达式获得String型的grantType
+            result.apply(ins, repairPoolCodes, inspectionStrOrgRels, inspectionStrStaRels);
+        }
     }
 
 }

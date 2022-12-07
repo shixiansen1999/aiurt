@@ -536,35 +536,37 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         // 根据检修类型查询调用不同的方法
         Integer type = ins.getType();
 
-        // 周检
-        if (type.equals(InspectionConstant.WEEK)) {
-            strategyService.weekPlan(ins, newStaIds, orgList, stationList);
-        }
-
-        // 月检
-        if (type.equals(InspectionConstant.MONTH)) {
-            strategyService.monthPlan(ins, newStaIds, orgList, stationList);
-        }
-
-        // 双月检
-        if (type.equals(InspectionConstant.DOUBLEMONTH)) {
-            strategyService.doubleMonthPlan(ins, newStaIds, orgList, stationList);
-        }
-
-        // 季检
-        if (type.equals(InspectionConstant.QUARTER)) {
-            strategyService.quarterPlan(ins, newStaIds, orgList, stationList);
-        }
-
-        // 半年检
-        if (type.equals(InspectionConstant.SEMIANNUAL)) {
-            strategyService.semiAnnualPlan(ins, newStaIds, orgList, stationList);
-        }
-
-        // 年检
-        if (type.equals(InspectionConstant.ANNUAL)) {
-            strategyService.annualPlan(ins, newStaIds, orgList, stationList);
-        }
+        // 根据类型生成计划
+        strategyService.macth(type,ins, newStaIds, orgList, stationList);
+//        // 周检
+//        if (type.equals(InspectionConstant.WEEK)) {
+//            strategyService.weekPlan(ins, newStaIds, orgList, stationList);
+//        }
+//
+//        // 月检
+//        if (type.equals(InspectionConstant.MONTH)) {
+//            strategyService.monthPlan(ins, newStaIds, orgList, stationList);
+//        }
+//
+//        // 双月检
+//        if (type.equals(InspectionConstant.DOUBLEMONTH)) {
+//            strategyService.doubleMonthPlan(ins, newStaIds, orgList, stationList);
+//        }
+//
+//        // 季检
+//        if (type.equals(InspectionConstant.QUARTER)) {
+//            strategyService.quarterPlan(ins, newStaIds, orgList, stationList);
+//        }
+//
+//        // 半年检
+//        if (type.equals(InspectionConstant.SEMIANNUAL)) {
+//            strategyService.semiAnnualPlan(ins, newStaIds, orgList, stationList);
+//        }
+//
+//        // 年检
+//        if (type.equals(InspectionConstant.ANNUAL)) {
+//            strategyService.annualPlan(ins, newStaIds, orgList, stationList);
+//        }
 
         // 更新是否生成年计划状态
         ins.setGenerateStatus(InspectionConstant.GENERATED);
