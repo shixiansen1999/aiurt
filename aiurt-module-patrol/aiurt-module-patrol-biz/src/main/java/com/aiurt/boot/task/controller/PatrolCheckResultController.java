@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -119,14 +120,15 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 			 {
 			 	if(ObjectUtil.isNotEmpty(patrolCheckResult.getRegular()))
 				{
-					boolean matches = Pattern.matches(patrolCheckDTO.getRegular(), patrolCheckDTO.getWriteValue());
-					if(matches)
+					Pattern pattern = Pattern.compile(patrolCheckResult.getRegular());
+					Matcher matcher = pattern.matcher(patrolCheckResult.getWriteValue());
+					if(matcher.find())
 					{
 						updateWrapper.set(PatrolCheckResult::getWriteValue,patrolCheckDTO.getWriteValue()).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,patrolCheckDTO.getId());
 					}
 					else
 					{
-						return Result.error("应该在："+patrolCheckDTO.getRegular()+"的范围内");
+						return Result.error("填写有误，请重新填写");
 					}
 				}
 			 	else
