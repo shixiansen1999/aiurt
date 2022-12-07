@@ -188,6 +188,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             params.setHeadRows(2);
             params.setNeedSave(true);
             List<PatrolStandardErrorModel> deviceAssemblyErrorModels = new ArrayList<>();
+            List<PatrolStandard> standardList = new ArrayList<>();
             try {
                 List<PatrolStandardModel> list = ExcelImportUtil.importExcel(file.getInputStream(), PatrolStandardModel.class, params);
                 for (PatrolStandardModel model : list) {
@@ -216,7 +217,9 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                             }
                         }
                         patrolStandard.setPatrolStandardItemsList(itemsList);
+                        standardList.add(patrolStandard);
                     }
+
                 }
                 if (errorLines > 0) {
                     //错误报告下载
@@ -225,14 +228,12 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 else
                 {
                     LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-                    for (PatrolStandardModel patrolStandardModel : list) {
-                        PatrolStandard patrolStandard = new PatrolStandard();
-                        BeanUtils.copyProperties(patrolStandardModel,patrolStandard);
+                    for (PatrolStandard patrolStandard : standardList) {
                         String standardCode = PatrolCodeUtil.getStandardCode();
                         patrolStandard.setCode(standardCode);
                         patrolStandard.setUserId(user.getId());
                         patrolStandardMapper.insert(patrolStandard);
-                         List<PatrolStandardItems> items = patrolStandardModel.getPatrolStandardItemsList();
+                         List<PatrolStandardItems> items = patrolStandard.getPatrolStandardItemsList();
                          if(CollUtil.isNotEmpty(items))
                          {
                               List<PatrolStandardItems> parents = items.stream().filter(e -> e.getHierarchyType() == 0).collect(Collectors.toList());
@@ -340,6 +341,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     }
 
     private void standard(PatrolStandardModel model, PatrolStandard patrolStandard, StringBuilder stringBuilder) {
+        BeanUtils.copyProperties(model,patrolStandard);
         String name  = model.getName();
         String  majorName = model.getProfessionCode();
         String  isDeviceType = model.getIsDeviceType();
