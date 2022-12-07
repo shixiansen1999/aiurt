@@ -276,15 +276,15 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	@GetMapping(value = "/queryById")
 	public Result<EmergencyMaterials> queryById(@RequestParam(name="id",required=true) String id) {
 		EmergencyMaterials emergencyMaterials = emergencyMaterialsService.getById(id);
+		if(emergencyMaterials==null) {
+			return Result.error("未找到对应数据");
+		}
 		if (StrUtil.isNotBlank(emergencyMaterials.getCategoryCode())){
 			//根据分类编码查询分类名称
 			LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
 			queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,emergencyMaterials.getCategoryCode());
 			EmergencyMaterialsCategory one = emergencyMaterialsCategoryService.getOne(queryWrapper, true);
 			emergencyMaterials.setCategoryName(one.getCategoryName());
-		}
-		if(emergencyMaterials==null) {
-			return Result.error("未找到对应数据");
 		}
 		if (StrUtil.isNotBlank(emergencyMaterials.getUserId())){
 			//根据负责人id查询负责人名称
