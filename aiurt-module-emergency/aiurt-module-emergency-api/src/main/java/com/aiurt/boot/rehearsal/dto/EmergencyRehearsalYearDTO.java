@@ -21,9 +21,9 @@ public class EmergencyRehearsalYearDTO {
     @ApiModelProperty(value = "计划名称")
     private String name;
     /**
-     * 审核状态（1待提交、2待审核、3审核中、4已通过）
+     * 审核状态（1待提交、2审核中、3已通过）
      */
-    @ApiModelProperty(value = "审核状态（1待提交、2待审核、3审核中、4已通过）")
+    @ApiModelProperty(value = "审核状态（1待提交、2审核中、3已通过）")
     private Integer status;
     /**
      * 组织机构编码

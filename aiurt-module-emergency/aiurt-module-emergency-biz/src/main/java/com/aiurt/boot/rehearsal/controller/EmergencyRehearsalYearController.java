@@ -106,7 +106,7 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
     @ApiOperation(value = "应急演练管理-年演练计划提交", notes = "应急演练管理-年演练计划提交")
     @DeleteMapping(value = "/submit")
     public Result<String> startProcess(@RequestParam(name = "id", required = true) String id) {
-        emergencyRehearsalYearService.startProcess(id);
+//        emergencyRehearsalYearService.startProcess(id);
         return Result.OK("提交成功!");
     }
 
@@ -124,19 +124,6 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
             return Result.error("未找到对应数据!");
         }
         return Result.OK(emergencyRehearsalYear);
-    }
-
-    /**
-     * 应急演练管理-年演练计划审核
-     *
-     * @param id
-     * @return
-     */
-    @ApiOperation(value = "应急演练管理-年演练计划审核", notes = "应急演练管理-年演练计划审核")
-    @GetMapping(value = "/audit")
-    public Result<EmergencyRehearsalYear> audit(@RequestParam(name = "id", required = true) String id) {
-        emergencyRehearsalYearService.audit(id);
-        return Result.OK();
     }
 
 //    /**

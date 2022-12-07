@@ -1,5 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.rehearsal.mapper.EmergencyRehearsalYearMapper">
-
+    <select id="queryPageList" resultType="com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear">
+        select ery.*,
+               ahp.PROC_INST_ID_ as process_instance_id,
+               ara.ID_           as task_id,
+               ara.NAME_         as task_name,
+               arp.KEY_          as model_key
+        from emergency_rehearsal_year ery
+                 Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = ery.id
+                 LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
+                 LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+        where ery.del_flag = 0
+          and ahp.ID_ is not null
+        <if test="condition.code != null and condition.code != ''">
+            and ery.`code` = #{condition.code}
+        </if>
+        <if test="condition.name != null and condition.name != ''">
+            and ery.name like concat('%', #{condition.name}, '%')
+        </if>
+        <if test="condition.status != null">
+            and ery.`status` = #{condition.status}
+        </if>
+        <if test="condition.orgCode != null and condition.orgCode != ''">
+            and ery.org_code = #{condition.orgCode}
+        </if>
+        <if test="condition.year != null">
+            and ery.`year` = #{condition.year}
+        </if>
+        <if test="orgCodes != null and orgCodes.size() > 0">
+            and ery.org_code in
+            <foreach collection="orgCodes" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        order by ery.create_time desc
+    </select>
 </mapper>

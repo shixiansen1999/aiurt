@@ -86,9 +86,9 @@ public class EmergencyRehearsalYear extends DictEntity implements Serializable {
     @ApiModelProperty(value = "编制日期，格式yyyy-MM-dd")
     @NotNull(message = "编制日期编码不能为空！", groups = {Save.class, Update.class})
     private java.util.Date compileDate;
-	/**审核状态（1待提交、2待审核、3审核中、4已通过）*/
-	@Excel(name = "审核状态（1待提交、2待审核、3审核中、4已通过）", width = 15)
-    @ApiModelProperty(value = "审核状态（1待提交、2待审核、3审核中、4已通过）")
+	/**审核状态（1待提交、2审核中、3已通过）*/
+	@Excel(name = "审核状态（1待提交、2审核中、3已通过）", width = 15)
+    @ApiModelProperty(value = "审核状态（1待提交、2审核中、3已通过）")
     @TableField(value = "`status`")
     @Dict(dicCode = EmergencyDictConstant.YEARPLAN_STATUS)
     private java.lang.Integer status;
@@ -112,4 +112,28 @@ public class EmergencyRehearsalYear extends DictEntity implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
+    /**
+     * 实例id
+     */
+    @ApiModelProperty(value = "实例id")
+    @TableField(exist = false)
+    private String processInstanceId;
+    /**
+     * 任务id
+     */
+    @ApiModelProperty(value = "任务id")
+    @TableField(exist = false)
+    private String taskId;
+    /**
+     * 任务名称
+     */
+    @ApiModelProperty(value = "任务名称")
+    @TableField(exist = false)
+    private String taskName;
+    /**
+     * 模板key，流程标识
+     */
+    @ApiModelProperty(value = "模板key，流程标识")
+    @TableField(exist = false)
+    private String modelKey;
 }
