@@ -6,7 +6,8 @@
          t.*,
          t1.materials_name as materialsName,
          t2.category_code as categoryCode,
-         t2.category_name as categoryName
+         t2.category_name as categoryName,
+         t1.unit as unit
         FROM
          emergency_plan_materials t
         LEFT JOIN emergency_materials t1 on t.materials_code = t1.materials_code
@@ -15,8 +16,8 @@
             t.del_flag = 0
             AND t1.del_flag = 0
             AND t2.del_flag = 0
-            <if test="condition.emergencyPlanId!=null">
-                AND t.emergency_plan_id = #{emergencyPlanId}
+            <if test="condition.emergencyPlanId!=null and condition.emergencyPlanId != ''">
+                AND t.emergency_plan_id = #{condition.emergencyPlanId}
             </if>
         </where>
     </select>

@@ -7,12 +7,15 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
+import com.aiurt.boot.plan.dto.EmergencyPlanRecordDTO;
+import com.aiurt.boot.plan.dto.EmergencyPlanRecordDepartDTO;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.plan.service.*;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.entity.EmergencyTeam;
+import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -30,7 +33,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +56,8 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     private IEmergencyPlanAttService emergencyPlanAttService;
     @Autowired
     private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private IEmergencyTeamService emergencyTeamService;
 
     @Override
     public IPage<EmergencyPlan> queryPageList(Page<EmergencyPlan> page, EmergencyPlanDTO emergencyPlanDto) {
@@ -86,7 +93,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     @Transactional(rollbackFor = Exception.class)
     public String saveAndAdd(EmergencyPlanDTO emergencyPlanDto) {
         //应急预案添加
-        //weeklyplan登录人组织部门作为编制部门
+        //登录人组织部门作为编制部门
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String orgCode = loginUser.getOrgCode();
 
@@ -325,7 +332,8 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             emergencyPlan.setStatus(EmergencyPlanConstant.STOPPED);
             this.updateById(emergencyPlan);
         }
-        if(EmergencyPlanConstant.PASSED.equals(emergencyPlan.getEmergencyPlanStatus()) & "0".equals(emergencyPlan.getStatus())){
+        //审核通过并且预案状态为空改为启用
+        if(EmergencyPlanConstant.PASSED.equals(emergencyPlan.getEmergencyPlanStatus()) & ObjectUtil.isEmpty(emergencyPlan.getStatus())){
             emergencyPlan.setStatus(EmergencyPlanConstant.VALID);
             this.updateById(emergencyPlan);
         }
@@ -337,9 +345,51 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
 
     }
 
+    /**
+     * 应急预案台账查看详情
+     * @param id
+     * @return
+     */
     @Override
-    public List<EmergencyPlanDTO> getPlanInfo(String id) {
+    public EmergencyPlanDTO queryById(String id) {
+        EmergencyPlan plan = this.getById(id);
+        Assert.notNull(plan, "未找到对应记录！");
+        EmergencyPlanDTO planDto = new EmergencyPlanDTO();
+        BeanUtils.copyProperties(plan, planDto);
 
-        return null;
+        // 获取应急队伍
+        List<EmergencyPlanTeam> teamList = emergencyPlanTeamService.lambdaQuery()
+                .eq(EmergencyPlanTeam::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                .eq(EmergencyPlanTeam::getEmergencyPlanId, id).list();
+        List<String> teamName = new ArrayList<>();
+        if(CollUtil.isNotEmpty(teamList)){
+            for (EmergencyPlanTeam planTeam : teamList) {
+                List<EmergencyTeam> list = emergencyTeamService.lambdaQuery().eq(EmergencyTeam::getId, planTeam.getEmergencyTeamId()).list();
+                if(CollUtil.isNotEmpty(list)){
+                    for (EmergencyTeam emergencyTeam : list) {
+                        String emergencyTeamName = emergencyTeam.getEmergencyTeamname();
+                        teamName.add(emergencyTeamName);
+                    }
+                }
+
+            }
+
+        }
+        // 查询对应的应急预案启动记录处置程序
+        List<EmergencyPlanDisposalProcedure> procedureList = emergencyPlanDisposalProcedureService.lambdaQuery()
+                .eq(EmergencyPlanDisposalProcedure::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                .eq(EmergencyPlanDisposalProcedure::getEmergencyPlanId, id).list();
+        //应急预案附件
+        List<EmergencyPlanAtt> recordAttList = emergencyPlanAttService.lambdaQuery()
+                .eq(EmergencyPlanAtt::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                .eq(EmergencyPlanAtt::getEmergencyPlanId, id).list();
+
+        planDto.setEmergencyTeamId(teamName);
+        planDto.setEmergencyPlanDisposalProcedure(procedureList);
+        planDto.setEmergencyPlanAtt(recordAttList);
+
+
+        return planDto;
     }
+
 }

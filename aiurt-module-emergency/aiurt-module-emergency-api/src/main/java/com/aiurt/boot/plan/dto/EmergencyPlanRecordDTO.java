@@ -1,6 +1,7 @@
 package com.aiurt.boot.plan.dto;
 
 import com.aiurt.boot.plan.entity.*;
+import com.aiurt.boot.rehearsal.dto.EmergencyDeptDTO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -16,12 +17,16 @@ import java.util.List;
 public class EmergencyPlanRecordDTO extends EmergencyPlanRecord {
     /**应急预案启动记录应急队伍*/
     @ApiModelProperty(value = "应急预案启动记录应急救援队伍")
-    List<String> emergencyPlanRecordTeamId;
+    private List<String> emergencyPlanRecordTeamId;
 
     /**应急预案启动记录参与部门*/
     @ApiModelProperty(value = "应急预案启动记录参与部门")
-    List<String> emergencyPlanRecordDepartId;
-
+    private List<EmergencyPlanRecordDepartDTO> emergencyPlanRecordDepartId;
+    /**
+     * 参与部门信息名称,英文分号分隔
+     */
+    @ApiModelProperty(value = "参与部门信息名称,英文分号分隔")
+    private String deptNames;
     /**
      * 应急预案启动记录处置程序
      */

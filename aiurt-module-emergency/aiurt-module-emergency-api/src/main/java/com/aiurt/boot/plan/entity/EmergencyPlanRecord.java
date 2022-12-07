@@ -54,8 +54,8 @@ public class EmergencyPlanRecord implements Serializable {
     private String emergencyPlanVersion;
 
     /**启动应急预案版本*/
-    @Excel(name = "启动应急预案版本", width = 15)
-    @ApiModelProperty(value = "启动应急预案版本")
+    @Excel(name = "启动应急预案", width = 15)
+    @ApiModelProperty(value = "启动应急预案")
     @TableField(exist = false)
     private String planVersion;
 
@@ -72,6 +72,7 @@ public class EmergencyPlanRecord implements Serializable {
 	/**记录人*/
 	@Excel(name = "记录人", width = 15)
     @ApiModelProperty(value = "记录人")
+    @Dict(dictTable = "sys_user",dicCode = "username",dicText = "realname")
     private String recorderId;
 	/**记录时间*/
 	@Excel(name = "记录时间", width = 15, format = "yyyy-MM-dd")

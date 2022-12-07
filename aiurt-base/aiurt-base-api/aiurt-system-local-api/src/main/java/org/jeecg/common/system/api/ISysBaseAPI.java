@@ -165,14 +165,14 @@ public interface ISysBaseAPI extends CommonAPI {
     public JSONObject queryAllUser(String userIds, Integer pageNo, Integer pageSize);
 
     /**
-     * 20获取所有角色
+     * 20weeklyplan
      *
      * @return
      */
     public List<ComboModel> queryAllRole();
 
     /**
-     * 21获取所有角色 带参
+     * 21weeklyplan 带参
      *
      * @param roleIds 默认选中角色
      * @return

@@ -6,7 +6,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
 import com.aiurt.boot.plan.dto.EmergencyPlanRecordDTO;
+import com.aiurt.boot.plan.dto.EmergencyPlanRecordQueryDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlanRecord;
+import com.aiurt.boot.rehearsal.vo.EmergencyRecordReadOneVO;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.plan.service.IEmergencyPlanRecordService;
@@ -41,7 +43,7 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	/**
 	 * 分页列表查询
 	 *
-	 * @param emergencyPlanRecord
+	 * @param emergencyPlanRecordQueryDto
 	 * @param pageNo
 	 * @param pageSize
 	 * @param req
@@ -49,14 +51,13 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	 */
 	//@AutoLog(value = "emergency_plan_record-分页列表查询")
 	@ApiOperation(value="应急启动记录-分页列表查询", notes="应急启动记录-分页列表查询")
-	@GetMapping(value = "/list")
-	public Result<IPage<EmergencyPlanRecord>> queryPageList(EmergencyPlanRecord emergencyPlanRecord,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<EmergencyPlanRecord> queryWrapper = QueryGenerator.initQueryWrapper(emergencyPlanRecord, req.getParameterMap());
-		Page<EmergencyPlanRecord> page = new Page<EmergencyPlanRecord>(pageNo, pageSize);
-		IPage<EmergencyPlanRecord> pageList = emergencyPlanRecordService.page(page, queryWrapper);
+	@GetMapping(value = "/queryPageList")
+	public Result<IPage<EmergencyPlanRecordDTO>> queryPageList(EmergencyPlanRecordQueryDTO emergencyPlanRecordQueryDto,
+															@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+															@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+															HttpServletRequest req) {
+		Page<EmergencyPlanRecordDTO> page = new Page<>(pageNo, pageSize);
+		IPage<EmergencyPlanRecordDTO> pageList = emergencyPlanRecordService.queryPageList(page, emergencyPlanRecordQueryDto);
 		return Result.OK(pageList);
 	}
 
@@ -83,33 +84,7 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 		 return Result.OK("编辑成功!");
 	 }
 
-	/**
-	 *  编辑
-	 *
-	 * @param emergencyPlanRecord
-	 * @return
-	 */
-//	@AutoLog(value = "emergency_plan_record-编辑")
-//	@ApiOperation(value="emergency_plan_record-编辑", notes="emergency_plan_record-编辑")
-//	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-//	public Result<String> edit(@RequestBody EmergencyPlanRecord emergencyPlanRecord) {
-//		emergencyPlanRecordService.updateById(emergencyPlanRecord);
-//		return Result.OK("编辑成功!");
-//	}
 
-	/**
-	 *   通过id删除
-	 *
-	 * @param id
-	 * @return
-	 */
-//	@AutoLog(value = "emergency_plan_record-通过id删除")
-//	@ApiOperation(value="emergency_plan_record-通过id删除", notes="emergency_plan_record-通过id删除")
-//	@DeleteMapping(value = "/delete")
-//	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-//		emergencyPlanRecordService.removeById(id);
-//		return Result.OK("删除成功!");
-//	}
 
 	@AutoLog(value = "应急预案启动记录-通过id删除")
 	@ApiOperation(value="应急预案启动记录-通过id删除", notes="应急预案启动-通过id删除")
@@ -140,14 +115,22 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	 * @return
 	 */
 	//@AutoLog(value = "emergency_plan_record-通过id查询")
-	@ApiOperation(value="emergency_plan_record-通过id查询", notes="emergency_plan_record-通过id查询")
+//	@ApiOperation(value="应急预案启动记录-通过id查询", notes="应急预案启动记录-通过id查询")
+//	@GetMapping(value = "/queryById")
+//	public Result<EmergencyPlanRecord> queryById(@RequestParam(name="id",required=true) String id) {
+//		EmergencyPlanRecord emergencyPlanRecord = emergencyPlanRecordService.getById(id);
+//		if(emergencyPlanRecord==null) {
+//			return Result.error("未找到对应数据");
+//		}
+//		return Result.OK(emergencyPlanRecord);
+//	}
+
+	@AutoLog(value = "应急预案启动记录-通过id查询")
+	@ApiOperation(value = "应急预案启动记录-通过id查询", notes = "应急预案启动记录-通过id查询")
 	@GetMapping(value = "/queryById")
-	public Result<EmergencyPlanRecord> queryById(@RequestParam(name="id",required=true) String id) {
-		EmergencyPlanRecord emergencyPlanRecord = emergencyPlanRecordService.getById(id);
-		if(emergencyPlanRecord==null) {
-			return Result.error("未找到对应数据");
-		}
-		return Result.OK(emergencyPlanRecord);
+	public Result<EmergencyPlanRecordDTO> queryById(@RequestParam(name = "id", required = true) String id) {
+		EmergencyPlanRecordDTO planRecordDTO = emergencyPlanRecordService.queryById(id);
+		return Result.OK(planRecordDTO);
 	}
 
     /**

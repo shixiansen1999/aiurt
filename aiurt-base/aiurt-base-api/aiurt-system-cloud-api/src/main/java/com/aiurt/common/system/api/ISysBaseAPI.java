@@ -199,7 +199,7 @@ public interface ISysBaseAPI extends CommonAPI {
 
 
     /**
-     * 20获取所有角色 带参
+     * 20weeklyplan 带参
      * @param roleIds 默认选中角色
      * @return
      */

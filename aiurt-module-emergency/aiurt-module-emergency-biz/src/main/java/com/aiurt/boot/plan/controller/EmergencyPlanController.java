@@ -224,12 +224,12 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	//@AutoLog(value = "emergency_plan-通过id查询")
 	@ApiOperation(value="应急预案台账-通过id查询", notes="应急预案台账-通过id查询")
 	@GetMapping(value = "/queryById")
-	public Result<EmergencyPlan> queryById(@RequestParam(name="id",required=true) String id) {
-		EmergencyPlan emergencyPlan = emergencyPlanService.getById(id);
-		if(emergencyPlan==null) {
+	public Result<EmergencyPlanDTO> queryById(@RequestParam(name="id",required=true) String id) {
+		EmergencyPlanDTO emergencyPlanDTO = emergencyPlanService.queryById(id);
+		if(emergencyPlanDTO==null) {
 			return Result.error("未找到对应数据");
 		}
-		return Result.OK(emergencyPlan);
+		return Result.OK(emergencyPlanDTO);
 	}
 
 	 /**

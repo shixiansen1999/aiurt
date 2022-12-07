@@ -27,32 +27,29 @@ public class EmergencyPlanMaterialsDTO implements Serializable {
     @ApiModelProperty(value = "主键id")
     private String id;
 	/**应急预案id*/
-	@Excel(name = "应急预案id", width = 15)
     @ApiModelProperty(value = "应急预案id")
     private String emergencyPlanId;
 	/**应急物资编号*/
-	@Excel(name = "应急物资编号", width = 15)
     @ApiModelProperty(value = "应急物资编号")
     private String materialsCode;
 	/**应急物资数量*/
-	@Excel(name = "应急物资数量", width = 15)
     @ApiModelProperty(value = "应急物资数量")
     private Integer materialsNumber;
 
     /**应急物资名称*/
-    @Excel(name = "应急物资名称", width = 15)
     @ApiModelProperty(value = "应急物资名称")
     private java.lang.String materialsName;
 
     /**物资分类编码*/
-    @Excel(name = "物资分类编码", width = 15)
     @ApiModelProperty(value = "物资分类编码")
     private java.lang.String categoryCode;
 
     /**分类名称*/
-    @Excel(name = "分类名称", width = 15)
     @ApiModelProperty(value = "分类名称")
     private java.lang.String categoryName;
+    /**单位*/
+    @ApiModelProperty(value = "单位")
+    private java.lang.String unit;
 
 
 }

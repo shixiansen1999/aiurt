@@ -551,22 +551,40 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
 
             //检修位置
-            if (checkListDTO.getSpecificLocation() != null) {
-                List<StationDTO> stationDTOList = new ArrayList<>();
-                stationDTOList.forEach(e -> {
+            if(checkListDTO.getEquipmentCode() !=null){
+                List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(checkListDTO.getEquipmentCode());
+                String station = manager.translateStation(stationDTOList);
+                if (checkListDTO.getSpecificLocation() != null) {
+                    if (station != null) {
+                        String string = checkListDTO.getSpecificLocation() + station;
+                        checkListDTO.setMaintenancePosition(string);
+                    } else {
+                        checkListDTO.setMaintenancePosition(checkListDTO.getSpecificLocation());
+                    }
+                }else{
+                    checkListDTO.setMaintenancePosition(station);
+                }
+            }else{
+                List<StationDTO> stationDTOList1 = new ArrayList<>();
+                stationDTOList1.forEach(e -> {
                     e.setStationCode(checkListDTO.getStationCode());
                     e.setLineCode(checkListDTO.getLineCode());
                     e.setPositionCode(checkListDTO.getPositionCode());
                 });
-                String station = manager.translateStation(stationDTOList);
-                if (station != null) {
-                    String string = checkListDTO.getSpecificLocation() + station;
-                    checkListDTO.setMaintenancePosition(string);
-                } else {
-                    checkListDTO.setMaintenancePosition(checkListDTO.getSpecificLocation());
+                String station = manager.translateStation(stationDTOList1);
+                if (checkListDTO.getSpecificLocation() != null) {
+                    if (station != null) {
+                        String string = checkListDTO.getSpecificLocation() + station;
+                        checkListDTO.setMaintenancePosition(string);
+                    } else {
+                        checkListDTO.setMaintenancePosition(checkListDTO.getSpecificLocation());
+                    }
+                }else{
+                    checkListDTO.setMaintenancePosition(station);
                 }
 
             }
+
             //构造树形
             List<RepairTaskResult> repairTaskResults = selectCodeContentList(checkListDTO.getDeviceId());
             checkListDTO.setRepairTaskResultList(repairTaskResults);

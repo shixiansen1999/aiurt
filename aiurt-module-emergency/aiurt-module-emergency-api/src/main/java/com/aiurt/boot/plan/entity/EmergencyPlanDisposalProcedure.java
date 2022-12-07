@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -39,10 +40,12 @@ public class EmergencyPlanDisposalProcedure implements Serializable {
 	/**处置部门*/
 	@Excel(name = "处置部门", width = 15)
     @ApiModelProperty(value = "处置部门")
+    @Dict(dictTable = "sys_depart",dicCode = "org_code",dicText = "depart_name")
     private String orgCode;
 	/**处置岗位（角色）*/
 	@Excel(name = "处置岗位（角色）", width = 15)
     @ApiModelProperty(value = "处置岗位（角色）")
+    @Dict(dictTable = "sys_role",dicCode = "id",dicText = "role_name")
     private String roleId;
 	/**应急处置内容*/
 	@Excel(name = "应急处置内容", width = 15)

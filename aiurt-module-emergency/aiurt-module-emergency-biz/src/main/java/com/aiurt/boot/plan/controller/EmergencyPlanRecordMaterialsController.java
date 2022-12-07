@@ -4,7 +4,11 @@ import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.boot.plan.dto.EmergencyPlanMaterialsDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlanRecordMaterials;
+import com.aiurt.common.constant.enums.ModuleType;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.plan.service.IEmergencyPlanRecordMaterialsService;
@@ -28,7 +32,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-11-29
  * @Version: V1.0
  */
-@Api(tags="应急物资关联")
+@Api(tags="应急预案启动记录应急物资关联")
 @RestController
 @RequestMapping("/emergency/emergencyPlanRecordMaterials")
 @Slf4j
@@ -72,7 +76,30 @@ public class EmergencyPlanRecordMaterialsController extends BaseController<Emerg
 		return Result.OK("添加成功！");
 	}
 
-	/**
+	 /**
+	  * 应急预案物资列表查询
+	  * @param condition
+	  * @param pageNo
+	  * @param pageSize
+	  * @return
+	  */
+	 @AutoLog(value = "应急预案物资列表查询", operateType =  1, operateTypeAlias = "应急预案物资列表查询", module = ModuleType.INSPECTION)
+	 @ApiOperation(value = "应急预案物资列表查询", notes = "应急预案物资列表查询")
+	 @GetMapping(value = "/getMaterialAccountList")
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = EmergencyPlanMaterialsDTO.class)
+	 })
+	 public Result<Page<EmergencyPlanMaterialsDTO>> repairTaskPageList(EmergencyPlanMaterialsDTO condition,
+																	   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+																	   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
+	 ) {
+		 Page<EmergencyPlanMaterialsDTO> pageList = new Page<>(pageNo, pageSize);
+		 Page<EmergencyPlanMaterialsDTO> repairTaskPage = emergencyPlanRecordMaterialsService.getMaterialAccountList(pageList, condition);
+		 return Result.OK(repairTaskPage);
+	 }
+
+
+	 /**
 	 *  编辑
 	 *
 	 * @param emergencyPlanRecordMaterials

@@ -1,6 +1,7 @@
 package com.aiurt.boot.plan.service;
 
 import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
+import com.aiurt.boot.plan.dto.EmergencyPlanRecordDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
@@ -75,10 +76,10 @@ public interface IEmergencyPlanService extends IService<EmergencyPlan> {
     void audit(String id);
 
     /**
-     * 查看详情
+     * 应急预案台账通过id查询
      * @param id
      * @return
      */
-    List<EmergencyPlanDTO> getPlanInfo(String id);
+    EmergencyPlanDTO queryById(String id);
 
 }
