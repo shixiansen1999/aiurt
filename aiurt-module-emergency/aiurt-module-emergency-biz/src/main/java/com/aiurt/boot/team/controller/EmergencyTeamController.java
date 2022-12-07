@@ -212,20 +212,8 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 		return emergencyTeamService.getTeamByMajor();
 	}
 
-/*	*//**
-	 * 根据训练计划查找应急队伍
-	 *
-	 * @param
-	 * @return
-	 *//*
-	@ApiOperation(value="应急队伍台账-根据训练计划查找应急队伍", notes="应急队伍台账-根据训练计划查找应急队伍")
-	@GetMapping(value = "/getTeamByTrainingProgram")
-	public Result<List<EmergencyTeam>> getTeamByTrainingProgram(@RequestParam(name="id",required=false) String id) {
-		return emergencyTeamService.getTeamByTrainingProgram(id);
-	}*/
-
 	/**
-	 * 应急人员-根据应急队伍查询
+	 * 应急队伍台账-根据应急队伍查询应急人员
 	 *
 	 * @param emergencyCrewVO
 	 * @param pageNo
@@ -233,7 +221,7 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	 * @param req
 	 * @return
 	 */
-	@ApiOperation(value="应急人员-根据应急队伍查询", notes="应急人员-根据应急队伍查询")
+	@ApiOperation(value="应急队伍台账-根据应急队伍查询应急人员", notes="应急队伍台账-根据应急队伍查询应急人员")
 	@GetMapping(value = "/queryCrewPageList")
 	public Result<IPage<EmergencyCrew>> queryCrewPageList(EmergencyCrewVO emergencyCrewVO,
 													  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,

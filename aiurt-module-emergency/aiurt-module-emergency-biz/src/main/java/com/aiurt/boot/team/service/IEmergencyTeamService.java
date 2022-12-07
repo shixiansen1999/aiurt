@@ -75,10 +75,4 @@ public interface IEmergencyTeamService extends IService<EmergencyTeam> {
      * @return
      */
     Result<List<EmergencyTeam>> getTeamByMajor();
-    /**
-     * 根据训练计划查找应急队伍
-     * @param id
-     * @return
-     */
-    Result<List<EmergencyTeam>> getTeamByTrainingProgram(String id);
 }

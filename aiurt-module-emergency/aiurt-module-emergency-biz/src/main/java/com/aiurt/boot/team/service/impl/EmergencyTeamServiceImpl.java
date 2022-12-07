@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -248,26 +249,16 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
     @Override
     public Result<List<EmergencyTeam>> getTeamByMajor() {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String roleCodes = user.getRoleCodes();
+        List<CsUserMajorModel> majorByUserId = iSysBaseAPI.getMajorByUserId(user.getId());
+        if (CollUtil.isEmpty(majorByUserId)) {
+            return Result.OK(new ArrayList<>());
+        }
+        List<String> collect = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
         LambdaQueryWrapper<EmergencyTeam> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.select(EmergencyTeam::getId,EmergencyTeam::getEmergencyTeamname, EmergencyTeam::getEmergencyTeamcode);
         queryWrapper.eq(EmergencyTeam::getDelFlag, TeamConstant.DEL_FLAG0);
-        queryWrapper.like(EmergencyTeam::getMajorCode, roleCodes);
+        queryWrapper.in(EmergencyTeam::getMajorCode, collect);
         List<EmergencyTeam> emergencyTeams = this.getBaseMapper().selectList(queryWrapper);
         return Result.OK(emergencyTeams);
     }
-
-    @Override
-    public Result<List<EmergencyTeam>> getTeamByTrainingProgram(String id) {
-        List<EmergencyTeam> emergencyTeams = emergencyTeamMapper.getTeamByTrainingProgram(id);
-        if (CollUtil.isNotEmpty(emergencyTeams)) {
-            for (EmergencyTeam emergencyTeam : emergencyTeams) {
-                String positionName = iSysBaseAPI.getPosition(emergencyTeam.getPositionCode());
-                emergencyTeam.setPositionName(positionName);
-            }
-        }
-        return Result.OK(emergencyTeams);
-    }
-
-
 }
