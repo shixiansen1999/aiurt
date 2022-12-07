@@ -12,6 +12,7 @@ import com.aiurt.modules.manage.service.IActCustomVersionService;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
+import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.modeler.enums.ModelFormStatusEnum;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
@@ -50,6 +51,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -384,10 +386,11 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
             List<JSONObject> list = new ArrayList<>();
             for (ExtensionElement e : formOperationElements) {
                 JSONObject json = new JSONObject();
-                json.put(FlowModelAttConstant.ID, e.getAttributeValue(null, FlowModelAttConstant.ID));
-                json.put(FlowModelAttConstant.LABEL, e.getAttributeValue(null, FlowModelAttConstant.LABEL));
-                json.put(FlowModelAttConstant.TYPE, e.getAttributeValue(null, FlowModelAttConstant.TYPE));
-                json.put(FlowModelAttConstant.SHOW_ORDER, e.getAttributeValue(null, FlowModelAttConstant.SHOW_ORDER));
+                Class clazz = ActOperationEntity.class;
+                Field[] fields = clazz.getDeclaredFields();
+                Arrays.stream(fields).filter(field -> !StrUtil.equals("serialVersionUID", field.getName())).forEach(field -> {
+                    json.put(field.getName(), e.getAttributeValue(null, field.getName()));
+                });
                 list.add(json);
             }
             return list;
