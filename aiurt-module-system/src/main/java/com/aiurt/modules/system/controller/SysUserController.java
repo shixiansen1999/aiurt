@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.controller;
 
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
@@ -15,6 +16,8 @@ import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.sm.entity.CsSafetyAttention;
+import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.*;
@@ -36,6 +39,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import liquibase.pro.packaged.L;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -126,6 +130,10 @@ public class SysUserController {
     private CsUserSubsystemMapper csUserSubsystemMapper;
     @Autowired
     private SysUserMapper userMapper;
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
+    @Autowired
+    private CsSafetyAttentionMapper csSafetyAttentionMapper;
 
     /**
      * 获取用户列表数据
@@ -1644,6 +1652,42 @@ public class SysUserController {
     public Result<?> getSubsystemByMajor(@RequestParam(name = "majorId", required = false) String majorId) {
         List<CsSubsystem> list = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, 0).eq(CsSubsystem::getMajorCode, majorId));
         return Result.OK(list);
+    }
+    /**
+     * 用户拥有的专业下的子系统
+     * @param majorId
+     * @return
+     */
+    @AutoLog(value = "用户拥有的专业下的子系统")
+    @ApiOperation(value = "用户拥有的专业下的子系统", notes = "用户拥有的专业下的子系统")
+    @GetMapping(value = "/getUserSubsystemByMajor")
+    public Result<?> getUserSubsystemByMajor(@RequestParam(name = "majorId", required = false) String majorId) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserMajorModel> list = sysBaseAPI.getMajorByUserId(sysUser.getId());
+        List<CsUserSubsystemModel> list1 = sysBaseAPI.getSubsystemByUserId(sysUser.getId());
+        List <String> majorCode =  list.stream().map(s-> s.getMajorCode()).collect(Collectors.toList());
+        List <String> majorCode1 = list1.stream().map(s -> s.getMajorCode()).distinct().collect(Collectors.toList());
+        List<String> majorCode2 =new ArrayList<>();
+        majorCode2 = majorCode.stream()
+                .filter((String s) -> !majorCode1.contains(s))
+                .collect(Collectors.toList());
+        List<String> systemCodes = csSafetyAttentionMapper.selectSystemCodes(majorCode2);
+        List<String> systemList = list1.stream().map(s-> s.getSystemCode()).collect(Collectors.toList());
+        systemList.addAll(systemCodes);
+        LambdaQueryWrapper<CsSubsystem> queryWrapper = new LambdaQueryWrapper();
+        if (StrUtil.isNotEmpty(majorId)){
+            queryWrapper.eq(CsSubsystem::getMajorCode, majorId);
+           List<CsUserSubsystemModel> list2 = list1.stream().filter(s -> s.getMajorCode().equals(majorId)).distinct().collect(Collectors.toList());
+           if (CollectionUtil.isNotEmpty(list2)){
+               List<String> code =list2.stream().map(s-> s.getSystemCode()).collect(Collectors.toList());
+               queryWrapper.in(CsSubsystem::getSystemCode,code);
+           }
+        }else {
+            queryWrapper.in(CsSubsystem::getSystemCode,systemList);
+        }
+        queryWrapper.eq(CsSubsystem::getDelFlag,0);
+        List<CsSubsystem> list3 = csSubsystemService.list(queryWrapper);
+        return Result.OK(list3);
     }
 
     /**

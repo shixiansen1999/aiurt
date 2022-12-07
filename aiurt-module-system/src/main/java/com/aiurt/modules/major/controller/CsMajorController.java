@@ -100,6 +100,7 @@ public class CsMajorController extends BaseController<CsMajor, ICsMajorService> 
     @AutoLog(value = "查询", operateType = 1, operateTypeAlias = "专业不分页列表查询", permissionUrl = "/major/list")
     @ApiOperation(value = "专业列表查询", notes = "专业列表查询")
     @GetMapping(value = "/selectList")
+    @PermissionData(pageComponent = "manage/MajorList")
     public Result<?> selectList(CsMajor csMajor,
                                 HttpServletRequest req) {
         QueryWrapper<CsMajor> queryWrapper = QueryGenerator.initQueryWrapper(csMajor, req.getParameterMap());
