@@ -1,7 +1,9 @@
 package com.aiurt.boot.plan.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -26,7 +28,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="emergency_plan_disposal_procedure对象", description="emergency_plan_disposal_procedure")
-public class EmergencyPlanDisposalProcedure implements Serializable {
+public class EmergencyPlanDisposalProcedure extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键id*/
@@ -42,11 +44,21 @@ public class EmergencyPlanDisposalProcedure implements Serializable {
     @ApiModelProperty(value = "处置部门")
     @Dict(dictTable = "sys_depart",dicCode = "org_code",dicText = "depart_name")
     private String orgCode;
+
+    @ApiModelProperty(value = "处置部门名称")
+    @TableField(exist = false)
+    private String orgName;
+
 	/**处置岗位（角色）*/
 	@Excel(name = "处置岗位（角色）", width = 15)
     @ApiModelProperty(value = "处置岗位（角色）")
     @Dict(dictTable = "sys_role",dicCode = "id",dicText = "role_name")
     private String roleId;
+
+    @ApiModelProperty(value = "处置岗位（角色）")
+    @TableField(exist = false)
+    private String roleName;
+
 	/**应急处置内容*/
 	@Excel(name = "应急处置内容", width = 15)
     @ApiModelProperty(value = "应急处置内容")

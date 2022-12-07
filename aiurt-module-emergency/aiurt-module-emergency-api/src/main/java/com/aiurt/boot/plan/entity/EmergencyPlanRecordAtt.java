@@ -68,6 +68,17 @@ public class EmergencyPlanRecordAtt implements Serializable {
 	/**更新人*/
     @ApiModelProperty(value = "更新人")
     private String updateBy;
+
+    /**上传人*/
+    @ApiModelProperty(value = "上传人")
+    private String uploadBy;
+
+    /**上传日期*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "上传时间")
+    private java.util.Date uploadTime;
+
 	/**更新日期*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")

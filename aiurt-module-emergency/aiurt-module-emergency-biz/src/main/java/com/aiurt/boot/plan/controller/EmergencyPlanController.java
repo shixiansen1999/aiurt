@@ -119,7 +119,6 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	 }
 
 
-
 	/**
 	 *   新增应急预案保存
 	 *
@@ -179,7 +178,7 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	  */
 	 @AutoLog(value = "应急预案-应急预案台账提交")
 	 @ApiOperation(value = "应急预案-应急预案台账提交", notes = "应急预案-应急预案台账提交")
-	 @DeleteMapping(value = "/submit")
+	 @PostMapping(value = "/submit")
 	 public Result<String> startProcess(@RequestParam(name = "id", required = true) String id) {
 		 emergencyPlanService.startProcess(id);
 		 return Result.OK("提交成功!");
@@ -193,7 +192,7 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	  */
 	 @AutoLog(value = "应急预案-应急预案台账启用和停用")
 	 @ApiOperation(value = "应急预案-应急预案台账启用和停用", notes = "应急预案-应急预案台账启用和停用")
-	 @DeleteMapping(value = "/openOrStop")
+	 @PostMapping(value = "/openOrStop")
 	 public Result<String> openOrStop(@RequestParam(name = "id", required = true) String id) {
 		 emergencyPlanService.openOrStop(id);
 		 return Result.OK("提交成功!");

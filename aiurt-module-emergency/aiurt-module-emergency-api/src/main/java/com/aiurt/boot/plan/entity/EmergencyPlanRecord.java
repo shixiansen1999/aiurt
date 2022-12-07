@@ -1,6 +1,7 @@
 package com.aiurt.boot.plan.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -27,7 +28,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="emergency_plan_record对象", description="emergency_plan_record")
-public class EmergencyPlanRecord implements Serializable {
+public class EmergencyPlanRecord extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/

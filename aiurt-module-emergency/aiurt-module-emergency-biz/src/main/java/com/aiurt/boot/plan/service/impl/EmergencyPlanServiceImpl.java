@@ -12,6 +12,8 @@ import com.aiurt.boot.plan.dto.EmergencyPlanRecordDepartDTO;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.plan.service.*;
+import com.aiurt.boot.rehearsal.constant.EmergencyDictConstant;
+import com.aiurt.boot.rehearsal.entity.EmergencyRecordQuestion;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.entity.EmergencyTeam;
@@ -23,6 +25,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.ComboModel;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
@@ -36,6 +39,7 @@ import org.springframework.util.Assert;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -84,6 +88,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         }
         queryWrapper.eq(EmergencyPlan::getDelFlag, EmergencyPlanConstant.DEL_FLAG0);
         queryWrapper.in(EmergencyPlan::getOrgCode, orgCodes);
+        queryWrapper.orderByAsc(EmergencyPlan::getEmergencyPlanStatus);
         Page<EmergencyPlan> pageList = this.page(page, queryWrapper);
         return pageList;
 
@@ -221,16 +226,20 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             throw new AiurtBootException("未审核通过的预案不能变更！");
         }
         EmergencyPlan emergencyPlan = new EmergencyPlan();
-        BeanUtils.copyProperties(emergencyPlanDto, emergencyPlan);
         //获取部门
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String orgCode = loginUser.getOrgCode();
-
+        //创建新的应急预案
+        emergencyPlan.setEmergencyPlanType(emergencyPlanDto.getEmergencyPlanType());
+        emergencyPlan.setEmergencyPlanName(emergencyPlanDto.getEmergencyPlanName());
+        emergencyPlan.setEmergencyPlanContent(emergencyPlanDto.getEmergencyPlanContent());
+        emergencyPlan.setKeyWord(emergencyPlanDto.getKeyWord());
         emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
         emergencyPlan.setOrgCode(orgCode);
-        emergencyPlan.setId(null);
-        emergencyPlan.setEmergencyPlanVersion(String.valueOf(Double.valueOf(emergencyPlan.getEmergencyPlanVersion())+1));
+        String emergencyPlanVersion = emergencyPlanDto.getEmergencyPlanVersion();
+        emergencyPlan.setEmergencyPlanVersion(String.valueOf(Double.valueOf(emergencyPlanVersion)+1));
         emergencyPlan.setOldPlanId(emergencyPlanDto.getId());
+        emergencyPlan.setStatus(null);
         this.save(emergencyPlan);
 
         String newId = emergencyPlan.getId();
@@ -321,21 +330,22 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         // 审核通过才能启用和停用
         if (!EmergencyPlanConstant.PASSED.equals(emergencyPlan.getEmergencyPlanStatus())) {
             throw new AiurtBootException("该计划还未审核通过，不能启用和停用");
-        }
-        //审核通过并且已停用改成有效
-        if(EmergencyPlanConstant.PASSED.equals(emergencyPlan.getEmergencyPlanStatus()) & EmergencyPlanConstant.STOPPED.equals(emergencyPlan.getStatus())){
-            emergencyPlan.setStatus(EmergencyPlanConstant.VALID);
-            this.updateById(emergencyPlan);
-        }
-        //审核通过并且有效改成已停用
-        if(EmergencyPlanConstant.PASSED.equals(emergencyPlan.getEmergencyPlanStatus()) & EmergencyPlanConstant.VALID.equals(emergencyPlan.getStatus())){
-            emergencyPlan.setStatus(EmergencyPlanConstant.STOPPED);
-            this.updateById(emergencyPlan);
-        }
-        //审核通过并且预案状态为空改为启用
-        if(EmergencyPlanConstant.PASSED.equals(emergencyPlan.getEmergencyPlanStatus()) & ObjectUtil.isEmpty(emergencyPlan.getStatus())){
-            emergencyPlan.setStatus(EmergencyPlanConstant.VALID);
-            this.updateById(emergencyPlan);
+        }else{
+            //审核通过并且预案状态为空改为启用
+            if(ObjectUtil.isEmpty(emergencyPlan.getStatus())){
+                emergencyPlan.setStatus(EmergencyPlanConstant.VALID);
+                this.updateById(emergencyPlan);
+            }
+            //审核通过并且有效改成已停用
+            else if(EmergencyPlanConstant.VALID.equals(emergencyPlan.getStatus())){
+                emergencyPlan.setStatus(EmergencyPlanConstant.STOPPED);
+                this.updateById(emergencyPlan);
+            }
+            //审核通过并且已停用改成有效
+            else if(EmergencyPlanConstant.STOPPED.equals(emergencyPlan.getStatus())){
+                emergencyPlan.setStatus(EmergencyPlanConstant.VALID);
+                this.updateById(emergencyPlan);
+            }
         }
         return id;
     }
@@ -379,6 +389,8 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         List<EmergencyPlanDisposalProcedure> procedureList = emergencyPlanDisposalProcedureService.lambdaQuery()
                 .eq(EmergencyPlanDisposalProcedure::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
                 .eq(EmergencyPlanDisposalProcedure::getEmergencyPlanId, id).list();
+        this.disposalProcedureTranslate(procedureList);
+
         //应急预案附件
         List<EmergencyPlanAtt> recordAttList = emergencyPlanAttService.lambdaQuery()
                 .eq(EmergencyPlanAtt::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
@@ -390,6 +402,25 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
 
 
         return planDto;
+    }
+
+    /**
+     * 关联的问题列表的字典，组织机构名称转换
+     *
+     * @param procedureList
+     */
+    private void disposalProcedureTranslate(List<EmergencyPlanDisposalProcedure> procedureList) {
+        if (CollectionUtil.isNotEmpty(procedureList)) {
+            Map<String, String> orgMap = sysBaseApi.getAllSysDepart().stream()
+                    .collect(Collectors.toMap(k -> k.getOrgCode(), v -> v.getDepartName(), (a, b) -> a));
+            Map<String, String> roleMap = sysBaseApi.queryAllRole().stream()
+                    .collect(Collectors.toMap(k -> k.getId(), v -> v.getTitle(), (a, b) -> a));
+
+            procedureList.forEach(l -> {
+                l.setOrgName(orgMap.get(String.valueOf(l.getOrgCode())));
+                l.setRoleName(roleMap.get(String.valueOf(l.getRoleId())));
+            });
+        }
     }
 
 }

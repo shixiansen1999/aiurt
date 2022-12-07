@@ -30,6 +30,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDeptUserModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -334,16 +335,14 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         List<EmergencyPlanRecordDisposalProcedure> procedureList = emergencyPlanRecordDisposalProcedureService.lambdaQuery()
                 .eq(EmergencyPlanRecordDisposalProcedure::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
                 .eq(EmergencyPlanRecordDisposalProcedure::getEmergencyPlanRecordId, id).list();
+          this.disposalProcedureTranslate(procedureList);
 
-        // 查询对应的应急物资
-//        List<EmergencyPlanRecordMaterials> materialsList = emergencyPlanRecordMaterialsService.lambdaQuery()
-//                .eq(EmergencyPlanRecordMaterials::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
-//                .eq(EmergencyPlanRecordMaterials::getEmergencyPlanRecordId, id).list();
 
         //应急预案附件
         List<EmergencyPlanRecordAtt> recordAttList = emergencyPlanRecordAttService.lambdaQuery()
                 .eq(EmergencyPlanRecordAtt::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
                 .eq(EmergencyPlanRecordAtt::getEmergencyPlanRecordId, id).list();
+
         //应急预案启动记录事件问题措施添加
         List<EmergencyPlanRecordProblemMeasures> problemMeasuresList = emergencyPlanRecordProblemMeasuresService.lambdaQuery()
                 .eq(EmergencyPlanRecordProblemMeasures::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
@@ -352,9 +351,44 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         recordDto.setEmergencyPlanRecordTeamId(teamName);
         recordDto.setEmergencyPlanRecordDepartId(depts);
         recordDto.setEmergencyPlanRecordDisposalProcedureList(procedureList);
-//        recordDto.setEmergencyPlanRecordMaterialsList(materialsList);
         recordDto.setEmergencyPlanRecordAttList(recordAttList);
         recordDto.setEmergencyPlanRecordProblemMeasuresList(problemMeasuresList);
         return recordDto;
+    }
+
+    @Override
+    public List<SysDeptUserModel> getDeptUserGanged() {
+        return sysBaseApi.getDeptUserGanged();
+    }
+
+    @Override
+    public List<LoginUser> getDutyUser() {
+        // 责任人根据当前的用户部门筛选出当前部门的所有人
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String orgCode = loginUser.getOrgCode();
+        if (StrUtil.isEmpty(orgCode)) {
+            return Collections.emptyList();
+        }
+        List<LoginUser> users = sysBaseApi.getUserByDeptCode(orgCode);
+        return users;
+    }
+
+    /**
+     * 关联的问题列表的字典，组织机构名称转换
+     *
+     * @param procedureList
+     */
+    private void disposalProcedureTranslate(List<EmergencyPlanRecordDisposalProcedure> procedureList) {
+        if (CollectionUtil.isNotEmpty(procedureList)) {
+            Map<String, String> orgMap = sysBaseApi.getAllSysDepart().stream()
+                    .collect(Collectors.toMap(k -> k.getOrgCode(), v -> v.getDepartName(), (a, b) -> a));
+            Map<String, String> roleMap = sysBaseApi.queryAllRole().stream()
+                    .collect(Collectors.toMap(k -> k.getId(), v -> v.getTitle(), (a, b) -> a));
+
+            procedureList.forEach(l -> {
+                l.setOrgName(orgMap.get(String.valueOf(l.getOrgCode())));
+                l.setRoleName(roleMap.get(String.valueOf(l.getRoleId())));
+            });
+        }
     }
 }

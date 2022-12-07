@@ -7,15 +7,21 @@
         left join emergency_plan ep on ep.id = epr.emergency_plan_id
         where epr.del_flag = 0
         <if test="condition.eventClass != null and condition.eventClass != ''">
-            and epr.eventClass = #{condition.eventClass}
+            and epr.event_class = #{condition.eventClass}
         </if>
         <if test="condition.emergencyPlanId != null and condition.emergencyPlanId != ''">
             and epr.emergency_plan_id = #{condition.emergencyPlanId}
         </if>
         <if test="condition.startDate != null and condition.endDate != null">
-            and DATE_FORMAT(epr.record_time, '%Y-%m-%d')
-            between DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            on DATE_FORMAT#{condition.endDate}, '%Y-%m-%d')
+            and date_format(epr.record_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.startDate},'%Y-%m-%d')
+            and date_format(epr.record_time ,'%Y-%m-%d') &lt;= date_format(#{condition.endDate},'%Y-%m-%d')
+        </if>
+        <if test="orgCodes != null and orgCodes.size() > 0">
+            and
+            epr.org_code in
+            <foreach collection="orgCodes" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
         </if>
     </select>
 </mapper>

@@ -1,12 +1,17 @@
 package com.aiurt.boot.plan.controller;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.collection.CollUtil;
+import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
 import com.aiurt.boot.plan.dto.EmergencyPlanRecordDTO;
 import com.aiurt.boot.plan.dto.EmergencyPlanRecordQueryDTO;
+import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.plan.entity.EmergencyPlanRecord;
 import com.aiurt.boot.rehearsal.vo.EmergencyRecordReadOneVO;
 import org.jeecg.common.api.vo.Result;
@@ -19,6 +24,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
 import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDeptUserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -108,22 +115,6 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 		return Result.OK("批量删除成功!");
 	}
 
-	/**
-	 * 通过id查询
-	 *
-	 * @param id
-	 * @return
-	 */
-	//@AutoLog(value = "emergency_plan_record-通过id查询")
-//	@ApiOperation(value="应急预案启动记录-通过id查询", notes="应急预案启动记录-通过id查询")
-//	@GetMapping(value = "/queryById")
-//	public Result<EmergencyPlanRecord> queryById(@RequestParam(name="id",required=true) String id) {
-//		EmergencyPlanRecord emergencyPlanRecord = emergencyPlanRecordService.getById(id);
-//		if(emergencyPlanRecord==null) {
-//			return Result.error("未找到对应数据");
-//		}
-//		return Result.OK(emergencyPlanRecord);
-//	}
 
 	@AutoLog(value = "应急预案启动记录-通过id查询")
 	@ApiOperation(value = "应急预案启动记录-通过id查询", notes = "应急预案启动记录-通过id查询")
@@ -155,5 +146,27 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, EmergencyPlanRecord.class);
     }
+
+	 /**
+	  * 应急模块-责任部门和用户联动信息
+	  */
+	 @AutoLog(value = "启动记录新增-责任部门和用户联动信息")
+	 @ApiOperation(value = "应急模块-责任部门和用户联动信息", notes = "应急模块-责任部门和用户联动信息")
+	 @GetMapping(value = "/getDeptUserGanged")
+	 public Result<List<SysDeptUserModel>> getDeptUserGanged() {
+		 List<SysDeptUserModel> deptUsers = emergencyPlanRecordService.getDeptUserGanged();
+		 return Result.OK(deptUsers);
+	 }
+
+	 /**
+	  * 应急模块-责任人信息
+	  */
+	 @AutoLog(value = "启动记录新增-责任人信息")
+	 @ApiOperation(value = "应急模块-责任人信息", notes = "应急模块-责任人信息")
+	 @GetMapping(value = "/getDutyUser")
+	 public Result<List<LoginUser>> getDutyUser() {
+		 List<LoginUser> users = emergencyPlanRecordService.getDutyUser();
+		 return Result.OK(users);
+	 }
 
 }
