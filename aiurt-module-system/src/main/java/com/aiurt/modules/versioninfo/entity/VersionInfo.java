@@ -86,8 +86,11 @@ public class VersionInfo implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
-	/**文件url*/
-    @ApiModelProperty(value = "文件url")
-	private String url;
+	/**ios文件url*/
+    @ApiModelProperty(value = "ios文件url")
+	private String iosUrl;
+    /**android文件url*/
+    @ApiModelProperty(value = "android文件url")
+	private String androidUrl;
 
 }

@@ -85,7 +85,7 @@ public class VersionInfoController extends BaseController<VersionInfo, IVersionI
         long count = bdVersionInfoService.count(queryWrapper);
         if (count > 0) {
             return Result.OK("版本号重复，请更改版本号");
-        } else if (StrUtil.isNotBlank(versionInfo.getUrl())) {
+        } else if (StrUtil.isNotBlank(versionInfo.getAndroidUrl())) {
             bdVersionInfoService.insertAppInfo(versionInfo);
             return Result.OK("文件上传成功");
         }
@@ -132,7 +132,7 @@ public class VersionInfoController extends BaseController<VersionInfo, IVersionI
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         VersionInfo byId = bdVersionInfoService.getById(id);
         if (!Objects.isNull(byId)) {
-            String url = byId.getUrl();
+            String url = byId.getAndroidUrl();
 //后期修改
 //            sysBaseAPI.deleteFile(url);
             bdVersionInfoService.removeById(id);
