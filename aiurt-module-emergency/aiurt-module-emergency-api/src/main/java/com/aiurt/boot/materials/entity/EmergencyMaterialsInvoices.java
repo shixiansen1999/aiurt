@@ -50,14 +50,26 @@ public class EmergencyMaterialsInvoices implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "巡视日期")
     private java.util.Date patrolDate;
-	/**巡视位置*/
-	@Excel(name = "巡视位置", width = 15)
-    @ApiModelProperty(value = "巡视位置")
+    /**线路编码*/
+    @Excel(name = "巡视线路编码", width = 15)
+    @ApiModelProperty(value = "巡视线路编码")
+    private java.lang.String lineCode;
+    /**站点编码*/
+    @Excel(name = "巡视站点编码", width = 15)
+    @ApiModelProperty(value = "巡视站点编码")
     private java.lang.String stationCode;
+    /**位置编码*/
+    @Excel(name = "巡视位置编码", width = 15)
+    @ApiModelProperty(value = "巡视位置编码")
+    private java.lang.String positionCode;
 	/**巡视人ID*/
 	@Excel(name = "巡视人ID", width = 15)
     @ApiModelProperty(value = "巡视人ID")
     private java.lang.String userId;
+    /**巡视班组Code*/
+    @Excel(name = "巡视班组Code", width = 15)
+    @ApiModelProperty(value = "巡视班组Code")
+    private java.lang.String departmentCode;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

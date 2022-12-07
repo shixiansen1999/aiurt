@@ -131,8 +131,8 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 return  Result.OK(patrolRecord);
 	 }
 
-	 @AutoLog(value = "物资信息-应急物资检查记录列表")
-	 @ApiOperation(value="物资信息-应急物资检查记录列表", notes="物资信息-应急物资检查记录列表")
+	 @AutoLog(value = "物资信息-应急物资检查记录列表查询")
+	 @ApiOperation(value="物资信息-应急物资检查记录列表查询", notes="物资信息-应急物资检查记录列表查询")
 	 @GetMapping(value = "/getInspectionRecord")
 	 public Result<?> getInspectionRecord(EmergencyMaterialsInvoicesItem condition,
 										  @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -176,6 +176,12 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 }
          //巡检人
 		 emergencyMaterialsInvoices.setUserId(emergencyMaterialsDTO.getUserId());
+
+		 if (StrUtil.isNotBlank(emergencyMaterialsDTO.getUserId())){
+		 	//巡视班组Code
+			 LoginUser userById = iSysBaseAPI.getUserById(emergencyMaterialsDTO.getUserId());
+			 emergencyMaterialsInvoices.setDepartmentCode(userById.getOrgCode());
+		 }
 		 //插入物资巡检单
 		 iEmergencyMaterialsInvoicesService.save(emergencyMaterialsInvoices);
 

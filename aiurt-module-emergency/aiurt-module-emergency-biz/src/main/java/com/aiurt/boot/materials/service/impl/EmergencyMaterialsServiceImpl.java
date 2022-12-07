@@ -74,6 +74,27 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     @Override
     public Page<EmergencyMaterialsInvoicesItem> getInspectionRecord(Page<EmergencyMaterialsInvoicesItem> pageList, EmergencyMaterialsInvoicesItem condition) {
         List<EmergencyMaterialsInvoicesItem> inspectionRecord = emergencyMaterialsMapper.getInspectionRecord(pageList, condition);
+        inspectionRecord.forEach(e->{
+            if (StrUtil.isNotBlank(e.getLineCode())){
+                //根据线路编码查询线路名称
+                String position = iSysBaseAPI.getPosition(e.getLineCode());
+                e.setLineName(position);
+            }if(StrUtil.isNotBlank(e.getStationCode())){
+                //根据站点编码查询站点名称
+                String position = iSysBaseAPI.getPosition(e.getStationCode());
+                e.setStationName(position);
+            }if(StrUtil.isNotBlank(e.getPositionCode())){
+                //根据位置编码查询位置名称
+                String position = iSysBaseAPI.getPosition(e.getPositionCode());
+                e.setPositionName(position);
+            }if(StrUtil.isNotBlank(e.getPatrolTeamCode())){
+                String departNameByOrgCode = iSysBaseAPI.getDepartNameByOrgCode(e.getPatrolTeamCode());
+                e.setPatrolTeamName(departNameByOrgCode);
+            }if(StrUtil.isNotBlank(e.getPatrolId())){
+                LoginUser userById = iSysBaseAPI.getUserById(e.getPatrolId());
+                e.setPatrolName(userById.getRealname());
+            }
+        });
         return pageList.setRecords(inspectionRecord);
     }
 

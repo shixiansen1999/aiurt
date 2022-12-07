@@ -2,6 +2,7 @@ package com.aiurt.boot.materials.entity;
 
 import java.io.Serializable;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -92,6 +93,7 @@ public class EmergencyMaterialsInvoicesItem implements Serializable {
 	/**检查结果：0异常、1正常*/
 	@Excel(name = "检查结果：0异常、1正常", width = 15)
     @ApiModelProperty(value = "检查结果：0异常、1正常")
+    @Dict(dicCode = "check_result")
     private java.lang.Integer checkResult;
 	/**数据填写类型：1 无、2 选择项、3 输入项*/
 	@Excel(name = "数据填写类型：1 无、2 选择项、3 输入项", width = 15)
@@ -167,17 +169,59 @@ public class EmergencyMaterialsInvoicesItem implements Serializable {
     /**巡视班组名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "巡视班组名称")
-    private java.lang.String patrolTeam;
+    private java.lang.String patrolTeamName;
+
+    /**巡视班组编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡视班组编码")
+    private java.lang.String patrolTeamCode;
 
     /**应急物资巡检单号*/
     @TableField(exist = false)
     @ApiModelProperty(value = "应急物资巡检单号")
     private java.lang.String materialsPatrolCode;
 
-    /**巡视位置*/
+    /**线路编码*/
     @TableField(exist = false)
-    @ApiModelProperty(value = "巡视位置")
+    @ApiModelProperty(value = "巡视线路编码")
+    private java.lang.String lineCode;
+
+    /**巡视线路名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡视线路名称")
+    private java.lang.String lineName;
+    /**站点编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡视站点编码")
     private java.lang.String stationCode;
+
+    /**巡视站点名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡视站点名称")
+    private java.lang.String stationName;
+    /**位置编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡视位置编码")
+    private java.lang.String positionCode;
+    /**巡视位置名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡视位置名称")
+    private java.lang.String positionName;
+
+    /**巡视日期*/
+    @TableField(exist = false)
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "开始时间")
+    private java.util.Date startTime;
+
+
+    /**巡视日期*/
+    @TableField(exist = false)
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "结束时间")
+    private java.util.Date endTime;
 
 
 }

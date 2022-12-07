@@ -762,6 +762,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
+    public String getDepartNameByOrgCode(String orgCode) {
+        return departMapper.queryDepartNameByOrgCode(orgCode);
+    }
+
+    @Override
     public List<SysDepartModel> getAllSysDepart() {
         List<SysDepartModel> departModelList = new ArrayList<SysDepartModel>();
         List<SysDepart> departList = departMapper.selectList(new QueryWrapper<SysDepart>().eq("del_flag", "0"));

@@ -21,6 +21,18 @@
             <if test="condition.materialsName!=null">
               AND t1.materials_name LIKE CONCAT ('%', #{condition.materialsName}, '%')
             </if>
+            <if test="condition.primaryOrg!=null">
+                AND t1.primary_org = #{condition.primaryOrg}
+            </if>
+            <if test="condition.lineCode!=null">
+                AND t1.line_code = #{condition.lineCode}
+            </if>
+            <if test="condition.stationCode!=null">
+                AND t1.station_code = #{condition.stationCode}
+            </if>
+            <if test="condition.positionCode!=null">
+                AND t1.position_code = #{condition.positionCode}
+            </if>
         </where>
     </select>
 
@@ -40,6 +52,44 @@
     </select>
 
     <select id="getInspectionRecord" resultType="com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem">
-
+       select
+        t1.id as id,
+        t2.id as invoicesId,
+        t2.materials_patrol_code as materialsPatrolCode,
+        t2.patrol_date as patrolDate,
+        t2.line_code as lineCode,
+        t2.station_code as stationCode,
+        t2.position_code as positionCode,
+        t2.user_id as patrolId,
+        t2.department_code as patrolTeamCode,
+        t1.check_result as checkResult
+       from
+       emergency_materials_invoices_item t1
+	   LEFT JOIN emergency_materials_invoices t2 ON t1.invoices_id = t2.id
+        <where>
+                t2.del_flag = 0
+                and t3.del_flag = 0
+            <if test="condition.id!=null">
+                and t1.id = #{condition.id}
+            </if>
+            <if test="condition.invoicesId!=null">
+                and t2.id = #{condition.invoicesId}
+            </if>
+            <if test="condition.categoryCode!=null">
+                and t1.category_code = #{condition.categoryCode}
+            </if>
+            <if test="condition.materialsName!=null">
+                and t1.materials_name LIKE CONCAT ('%', #{condition.materialsName}, '%')
+            </if>
+            <if test="condition.startTime != null">
+                and DATE_FORMAT(t2.patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d')
+            </if>
+            <if test="condition.endTime != null">
+                and DATE_FORMAT(t2.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d')
+            </if>
+            <if test="condition.patrolTeamCode != null">
+                and t2.department_code = #{condition.patrolTeamCode}
+            </if>
+        </where>
     </select>
 </mapper>

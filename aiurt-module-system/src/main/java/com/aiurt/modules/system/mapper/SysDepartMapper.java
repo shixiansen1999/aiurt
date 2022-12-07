@@ -43,6 +43,14 @@ public interface SysDepartMapper extends BaseMapper<SysDepart> {
 	@Select("select id from sys_depart where org_code=#{orgCode}")
 	public String queryDepartIdByOrgCode(@Param("orgCode") String orgCode);
 
+	/**
+	 * 通过部门编码获取部门名称
+	 * @param orgCode 部门编码
+	 * @return String
+	 */
+	@Select("select depart_name from sys_depart where org_code=#{orgCode}")
+	public String queryDepartNameByOrgCode(@Param("orgCode") String orgCode);
+
     /**
      * 通过部门id 查询部门id,父id
      * @param departId 部门id

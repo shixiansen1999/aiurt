@@ -196,6 +196,14 @@ public interface ISysBaseAPI extends CommonAPI {
     public String getDepartIdsByOrgCode(String orgCode);
 
     /**
+     * 23通过部门编号查询部门名称
+     *
+     * @param orgCode
+     * @return
+     */
+    public String getDepartNameByOrgCode(String orgCode);
+
+    /**
      * 24查询所有部门
      *
      * @return

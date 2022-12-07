@@ -62,6 +62,7 @@ public class EmergencyMaterials implements Serializable {
 	/**是否防汛物资(0否、1是)*/
 	@Excel(name = "是否防汛物资(0否、1是)", width = 15)
     @ApiModelProperty(value = "是否防汛物资(0否、1是)")
+    @Dict(dicCode = "flood_protection")
     private java.lang.Integer floodProtection;
 	/**数量*/
 	@Excel(name = "数量", width = 15)

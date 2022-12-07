@@ -33,10 +33,13 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
         List<EmergencyMaterialsInvoicesItem> patrolRecord = emergencyMaterialsInvoicesItemMapper.getPatrolRecord(materialsCode, startTime, endTime);
         patrolRecord.forEach(e->{
             if (StrUtil.isNotBlank(e.getPatrolId())){
-                //根据巡检人id查询巡检人信息
+                //根据巡检人id查询巡检名称
                 LoginUser userById = iSysBaseAPI.getUserById(e.getPatrolId());
                 e.setPatrolName(userById.getRealname());
-                e.setPatrolTeam(userById.getOrgName());
+            }if(StrUtil.isNotBlank(e.getPatrolTeamCode())){
+                //根据巡检班组code查询巡检班组名称
+                String departNameByOrgCode = iSysBaseAPI.getDepartNameByOrgCode(e.getPatrolTeamCode());
+                e.setPatrolTeamName(departNameByOrgCode);
             }
         });
         return patrolRecord;
