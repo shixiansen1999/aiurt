@@ -33,9 +33,7 @@
                 and ery.`status` in (#{passStatus})
             </when>
             <otherwise>
-                <if test='condition.flag != null and 0 == condition.flag'>
-                    and ery.`status` not in (#{passStatus})
-                </if>
+                and ery.`status` not in (#{passStatus})
             </otherwise>
         </choose>
         order by ery.create_time desc
