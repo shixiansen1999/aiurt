@@ -170,10 +170,17 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 }
 		 //巡检日期
 		 emergencyMaterialsInvoices.setPatrolDate(emergencyMaterialsDTO.getPatrolDate());
-         //巡检位置
+          //巡检线路
+		 if(StrUtil.isNotBlank(emergencyMaterialsDTO.getLineCode())){
+			 emergencyMaterialsInvoices.setLineCode(emergencyMaterialsDTO.getLineCode());
+		 } //巡检站点
 		 if(StrUtil.isNotBlank(emergencyMaterialsDTO.getStationCode())){
 			 emergencyMaterialsInvoices.setStationCode(emergencyMaterialsDTO.getStationCode());
+		 } //巡检位置
+		 if(StrUtil.isNotBlank(emergencyMaterialsDTO.getPositionCode())){
+			 emergencyMaterialsInvoices.setPositionCode(emergencyMaterialsDTO.getPositionCode());
 		 }
+
          //巡检人
 		 emergencyMaterialsInvoices.setUserId(emergencyMaterialsDTO.getUserId());
 
