@@ -164,7 +164,7 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	 * @return
 	 */
 	@ApiOperation(value="应急队伍训练记录-根据应急队伍选择训练计划", notes="应急队伍训练记录-根据应急队伍选择训练计划")
-	@GetMapping(value = "/getTrainingProgram")
+	@PostMapping(value = "/getTrainingProgram")
 	public Result<IPage<EmergencyTrainingProgram>> getTrainingProgram(@RequestBody EmergencyTrainingProgramDTO emergencyTrainingProgramDTO,
 																	  @RequestParam(name="id",required = false) String id,
 																	  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
