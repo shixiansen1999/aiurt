@@ -132,7 +132,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     }
 
     @Override
-    public List<EmergencyMaterialsInvoicesItem> getMaterialInspection(String id) {
-        return emergencyMaterialsMapper.getMaterialInspection(id);
+    public Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList,String id) {
+        List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsMapper.getMaterialInspection(pageList, id);
+        return pageList.setRecords(materialInspection);
     }
 }

@@ -145,8 +145,11 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	 @AutoLog(value = "物资信息-应急物资检查记录查看")
 	 @ApiOperation(value="物资信息-应急物资检查记录查看", notes="物资信息-应急物资检查记录查看")
 	 @GetMapping(value = "/getMaterialInspection")
-	 public Result<?> getMaterialInspection( @RequestParam(name = "invoicesId",required=true) String invoicesId){
-		 List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsService.getMaterialInspection(invoicesId);
+	 public Result<?> getMaterialInspection(@RequestParam(name = "invoicesId",required=true) String invoicesId,
+											@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+											@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize){
+		 Page<EmergencyMaterialsInvoicesItem> pageList = new Page<>(pageNo, pageSize);
+		 Page<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsService.getMaterialInspection(pageList,invoicesId);
 		 return  Result.OK(materialInspection);
 	 }
 	/**

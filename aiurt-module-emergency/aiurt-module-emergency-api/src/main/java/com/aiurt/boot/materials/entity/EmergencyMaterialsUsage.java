@@ -76,6 +76,10 @@ public class EmergencyMaterialsUsage implements Serializable {
 	@Excel(name = "归还人ID", width = 15)
     @ApiModelProperty(value = "归还人ID")
     private java.lang.String backId;
+    /**提交状态(0待提交,1已提交)*/
+    @Excel(name = "提交状态(0待提交,1已提交)", width = 15)
+    @ApiModelProperty(value = "提交状态(0待提交,1已提交)")
+    private java.lang.Integer status;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

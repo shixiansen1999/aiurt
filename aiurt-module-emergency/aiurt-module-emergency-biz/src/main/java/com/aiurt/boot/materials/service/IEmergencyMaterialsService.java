@@ -47,5 +47,5 @@ public interface IEmergencyMaterialsService extends IService<EmergencyMaterials>
      * @param id
      * @return
      */
-    List<EmergencyMaterialsInvoicesItem> getMaterialInspection(@Param("id") String id);
+    Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList,@Param("id") String id);
 }

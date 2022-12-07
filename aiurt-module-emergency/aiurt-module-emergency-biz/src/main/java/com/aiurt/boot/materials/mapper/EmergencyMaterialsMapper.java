@@ -25,6 +25,6 @@ public interface EmergencyMaterialsMapper extends BaseMapper<EmergencyMaterials>
 
    List<PatrolStandardDTO> getPatrolStandardList(@Param("majorCode")List<String> majorCode);
 
-   List<EmergencyMaterialsInvoicesItem> getMaterialInspection(@Param("id") String id);
+   List<EmergencyMaterialsInvoicesItem> getMaterialInspection(@Param("pageList") Page<EmergencyMaterialsInvoicesItem> pageList,@Param("id") String id);
 
 }
