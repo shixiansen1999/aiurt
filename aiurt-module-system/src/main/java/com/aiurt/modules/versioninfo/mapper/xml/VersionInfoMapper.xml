@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.versioninfo.mapper.VersionInfoMapper">
+    <!--根据版本id查询版本信息-->
+    <select id="selectByVid" resultType="com.aiurt.modules.versioninfo.entity.VersionInfo">
+        SELECT *
+        FROM sys_version_info
+        WHERE version_id = #{versionId}
+    </select>
+    <!--查询最新App版本-->
+    <select id="selectLatest" resultType="com.aiurt.modules.versioninfo.entity.VersionInfo">
+        SELECT *
+        FROM sys_version_info
+        ORDER BY create_time desc limit 1
+    </select>
+</mapper>
