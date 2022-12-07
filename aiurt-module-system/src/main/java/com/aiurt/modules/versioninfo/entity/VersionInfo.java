@@ -92,5 +92,10 @@ public class VersionInfo implements Serializable {
     /**android文件url*/
     @ApiModelProperty(value = "android文件url")
 	private String androidUrl;
+    /**更新时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "上传时间")
+    private java.util.Date uploadTime;
 
 }

@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -102,6 +103,7 @@ public class VersionInfoController extends BaseController<VersionInfo, IVersionI
     @ApiOperation(value = "添加", notes = "添加")
     @PostMapping(value = "/add")
     public Result<?> add(@RequestBody VersionInfo versionInfo) {
+        versionInfo.setUploadTime(new Date());
         bdVersionInfoService.save(versionInfo);
         return Result.OK("添加成功！");
     }
@@ -162,7 +164,7 @@ public class VersionInfoController extends BaseController<VersionInfo, IVersionI
      */
      @AutoLog(value = "查看app最新版本")
     @ApiOperation(value = "查看app最新版本", notes = "查看app最新版本")
-    @DeleteMapping(value = "/selectLatest")
+    @GetMapping(value = "/selectLatest")
     public Result<?> selectLatest() {
           VersionInfo versionInfo = bdVersionInfoService.selectLatest();
          return Result.OK(versionInfo);
