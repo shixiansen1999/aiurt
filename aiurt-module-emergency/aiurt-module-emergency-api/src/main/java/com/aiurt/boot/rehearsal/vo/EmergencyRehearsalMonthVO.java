@@ -18,10 +18,8 @@ import java.util.Date;
 @ApiModel(value = "月计划条件分页查询列表VO对象", description = "月计划条件分页查询列表VO对象")
 public class EmergencyRehearsalMonthVO extends EmergencyRehearsalMonth {
     /**
-     * 年度,格式yyyy
+     * 年度
      */
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy")
-    @DateTimeFormat(pattern = "yyyy")
-    @ApiModelProperty(value = "年度,格式yyyy")
-    private Date year;
+    @ApiModelProperty(value = "年度")
+    private String year;
 }

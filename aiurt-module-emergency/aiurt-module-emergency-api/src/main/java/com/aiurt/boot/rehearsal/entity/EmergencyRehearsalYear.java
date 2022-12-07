@@ -61,13 +61,11 @@ public class EmergencyRehearsalYear extends DictEntity implements Serializable {
     @NotNull(message = "计划名称不能为空！", groups = {Save.class, Update.class})
     private java.lang.String name;
 	/**所属年份格式：yyyy*/
-	@Excel(name = "所属年份", width = 15, format = "yyyy")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy")
-    @DateTimeFormat(pattern="yyyy")
+	@Excel(name = "所属年份", width = 15)
     @ApiModelProperty(value = "所属年份格式：yyyy")
     @TableField(value = "`year`")
     @NotNull(message = "所属年份不能为空！", groups = {Save.class, Update.class})
-    private java.util.Date year;
+    private java.lang.String year;
 	/**编制人ID*/
 	@Excel(name = "编制人ID", width = 15)
     @ApiModelProperty(value = "编制人ID")
