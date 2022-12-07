@@ -4,6 +4,7 @@ import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.boot.materials.dto.MaterialAccountDTO;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsUsage;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -28,7 +29,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-11-29
  * @Version: V1.0
  */
-@Api(tags="emergency_materials_usage")
+@Api(tags="应急物资使用记录")
 @RestController
 @RequestMapping("/emergency/emergencyMaterialsUsage")
 @Slf4j
@@ -36,26 +37,17 @@ public class EmergencyMaterialsUsageController extends BaseController<EmergencyM
 	@Autowired
 	private IEmergencyMaterialsUsageService emergencyMaterialsUsageService;
 
-	/**
-	 * 分页列表查询
-	 *
-	 * @param emergencyMaterialsUsage
-	 * @param pageNo
-	 * @param pageSize
-	 * @param req
-	 * @return
-	 */
-	//@AutoLog(value = "emergency_materials_usage-分页列表查询")
-	@ApiOperation(value="emergency_materials_usage-分页列表查询", notes="emergency_materials_usage-分页列表查询")
-	@GetMapping(value = "/list")
-	public Result<IPage<EmergencyMaterialsUsage>> queryPageList(EmergencyMaterialsUsage emergencyMaterialsUsage,
+
+	@AutoLog(value = "应急物资使用记录-分页列表查询", operateType =  1, operateTypeAlias = "应急物资使用记录-分页列表查询")
+	@ApiOperation(value="应急物资使用记录-分页列表查询", notes="应急物资使用记录-分页列表查询")
+	@GetMapping(value = "/queryPageList")
+	public Result<IPage<EmergencyMaterialsUsage>> queryPageList(EmergencyMaterialsUsage condition,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<EmergencyMaterialsUsage> queryWrapper = QueryGenerator.initQueryWrapper(emergencyMaterialsUsage, req.getParameterMap());
-		Page<EmergencyMaterialsUsage> page = new Page<EmergencyMaterialsUsage>(pageNo, pageSize);
-		IPage<EmergencyMaterialsUsage> pageList = emergencyMaterialsUsageService.page(page, queryWrapper);
-		return Result.OK(pageList);
+								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize
+								   ) {
+		Page<EmergencyMaterialsUsage> pageList = new Page<>(pageNo, pageSize);
+		Page<EmergencyMaterialsUsage> usageRecordList = emergencyMaterialsUsageService.getUsageRecordList(pageList, condition);
+		return Result.OK(usageRecordList);
 	}
 
 	/**

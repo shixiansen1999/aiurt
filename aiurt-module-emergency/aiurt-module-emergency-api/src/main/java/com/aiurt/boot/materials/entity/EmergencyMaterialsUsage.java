@@ -2,7 +2,10 @@ package com.aiurt.boot.materials.entity;
 
 import java.io.Serializable;
 
+import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -25,7 +28,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="emergency_materials_usage对象", description="emergency_materials_usage")
-public class EmergencyMaterialsUsage implements Serializable {
+public class EmergencyMaterialsUsage extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
@@ -40,6 +43,16 @@ public class EmergencyMaterialsUsage implements Serializable {
 	@Excel(name = "物资名称", width = 15)
     @ApiModelProperty(value = "物资名称")
     private java.lang.String materialsName;
+
+    /**物资分类名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "物资分类名称")
+    private java.lang.String categoryName;
+
+    /**物资分类名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "物资分类编码")
+    private java.lang.String categoryCode;
 	/**使用数量*/
 	@Excel(name = "使用数量", width = 15)
     @ApiModelProperty(value = "使用数量")
@@ -79,6 +92,7 @@ public class EmergencyMaterialsUsage implements Serializable {
     /**提交状态(0待提交,1已提交)*/
     @Excel(name = "提交状态(0待提交,1已提交)", width = 15)
     @ApiModelProperty(value = "提交状态(0待提交,1已提交)")
+    @Dict(dicCode = "usage_status")
     private java.lang.Integer status;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
@@ -100,4 +114,19 @@ public class EmergencyMaterialsUsage implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
+
+    /**巡视日期*/
+    @TableField(exist = false)
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "开始时间")
+    private java.util.Date startTime;
+
+
+    /**巡视日期*/
+    @TableField(exist = false)
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "结束时间")
+    private java.util.Date endTime;
 }

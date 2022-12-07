@@ -96,7 +96,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	  * @param pageSize
 	  * @return
 	  */
-	 @AutoLog(value = "物资信息-应急物资台账列表查询或检查巡检应急物资查询", operateType =  1, operateTypeAlias = "应急物资台账列表查询或检查巡检应急物资查询", module = ModuleType.INSPECTION)
+	 @AutoLog(value = "物资信息-应急物资台账列表查询或检查巡检应急物资查询", operateType =  1, operateTypeAlias = "应急物资台账列表查询或检查巡检应急物资查询")
 	 @ApiOperation(value = "物资信息-应急物资台账列表查询或检查巡检应急物资查询", notes = "物资信息-应急物资台账列表查询或检查巡检应急物资查询")
 	 @GetMapping(value = "/getMaterialAccountList")
 	 @ApiResponses({

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -28,7 +29,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="emergency_materials_category对象", description="emergency_materials_category")
-public class EmergencyMaterialsCategory implements Serializable {
+public class EmergencyMaterialsCategory extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
