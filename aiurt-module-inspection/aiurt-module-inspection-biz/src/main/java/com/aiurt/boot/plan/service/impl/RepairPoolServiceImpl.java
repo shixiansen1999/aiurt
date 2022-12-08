@@ -884,7 +884,6 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 || CollUtil.isEmpty(assignDTO.getUserIds())
                 || ObjectUtil.isEmpty(assignDTO.getStartTime())
                 || ObjectUtil.isEmpty(assignDTO.getEndTime())
-                || StrUtil.isEmpty(assignDTO.getWorkType())
                 || assignDTO.getIsManual() == null) {
             throw new AiurtBootException(InspectionConstant.INCOMPLETE_PARAMETERS);
         }
