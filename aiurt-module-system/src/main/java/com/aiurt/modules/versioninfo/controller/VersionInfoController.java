@@ -1,6 +1,7 @@
 package com.aiurt.modules.versioninfo.controller;
 
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -23,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -60,7 +62,7 @@ public class VersionInfoController extends BaseController<VersionInfo, IVersionI
                                    @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                    HttpServletRequest req) {
         QueryWrapper<VersionInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.orderByDesc("id").like(StrUtil.isNotBlank(versionInfo.getVersionId()), "version_id", versionInfo.getVersionId());
+        queryWrapper.orderByDesc("upload_time").like(StrUtil.isNotEmpty(String.valueOf(versionInfo.getVersionId())), "version_id", versionInfo.getVersionId());
         Page<VersionInfo> page = new Page<>(pageNo, pageSize);
         IPage<VersionInfo> pageList = bdVersionInfoService.page(page, queryWrapper);
         //Stream<BdVersionInfo> pageList = bdVersionInfoService.list(queryWrapper).stream().limit(1);
@@ -103,6 +105,22 @@ public class VersionInfoController extends BaseController<VersionInfo, IVersionI
     @ApiOperation(value = "添加", notes = "添加")
     @PostMapping(value = "/add")
     public Result<?> add(@RequestBody VersionInfo versionInfo) {
+        String s =versionInfo.getAndroidPackageName();
+        List<String> androidFile = Arrays.asList(s.split("\\."));
+        VersionInfo versionInfo1 = bdVersionInfoService.selectLatest();
+        if(ObjectUtil.isNotEmpty(versionInfo1))
+        {
+            int count = versionInfo.getVersionId() - versionInfo1.getVersionId();
+            if (count !=1) {
+                return Result.OK("版本号需要比之前版本大一版，请更改版本号");
+            }
+        }
+
+            if(!androidFile.get(androidFile.size()-1).equals("apk"))
+            {
+               return Result.error("文件上传错误，不是.apk文件");
+            }
+
         versionInfo.setUploadTime(new Date());
         bdVersionInfoService.save(versionInfo);
         return Result.OK("添加成功！");

@@ -27,7 +27,7 @@ public class VersionInfoServiceImpl extends ServiceImpl<VersionInfoMapper, Versi
      */
     @Override
     public void insertAppInfo(VersionInfo versionInfo) {
-        VersionInfo versionInfo1 = baseMapper.selectByVid(versionInfo.getVersionId());
+        VersionInfo versionInfo1 = baseMapper.selectByVid(String.valueOf(versionInfo.getVersionId()));
         if (versionInfo1 != null && versionInfo1.getUpdateTime() != null) {
             String APP_INfO_ERROR = "上传失败,版本号已重复,当前服务器最新版本号为";
             throw new JeecgBootException(APP_INfO_ERROR + versionInfo1.getVersionId() + ",更新时间为" + versionInfo1.getUpdateTime().toString());

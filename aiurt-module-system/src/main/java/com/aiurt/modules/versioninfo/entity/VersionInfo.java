@@ -38,7 +38,11 @@ public class VersionInfo implements Serializable {
 	/**版本号*/
 	@Excel(name = "版本号", width = 15)
     @ApiModelProperty(value = "版本号")
-    private String versionId;
+    private Integer versionId;
+	/**版本名称*/
+	@Excel(name = "版本名称", width = 15)
+    @ApiModelProperty(value = "版本名称")
+    private String versionName;
 	/**更新内容描述*/
 	@Excel(name = "更新内容描述", width = 15)
     @ApiModelProperty(value = "更新内容描述")
