@@ -172,7 +172,7 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
                         .filter(c->c.getName()!=null||c.getLevel()!=null||c.getLinkPhoneNo()!=null||c.getLinkAddress()!=null||c.getLinkPerson() !=null||c.getFilePath() !=null)
                         .collect(Collectors.toList());
                 if(CollUtil.isEmpty(csManuFactorList)){
-                    throw new AiurtBootException("该文件无数据，请填写再导入");
+                    return imporReturnRes(errorLines, successLines, errorMessage,false,url);
                 }
                 List<CsManufactor> list = new ArrayList<>();
                 for (int i = 0; i < csManuFactorList.size(); i++) {

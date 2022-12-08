@@ -95,7 +95,7 @@ public class StockLevel2InfoServiceImpl extends ServiceImpl<StockLevel2InfoMappe
 						.collect(Collectors.toList());
 				//空文件直接返回
 				if(CollUtil.isEmpty(stockLevel2InfoList)){
-					throw new AiurtBootException("该文件无数据，请填写再导入");
+					return imporReturnRes(errorLines, successLines, errorMessage, false,url);
 				}
 				List<StockLevel2Info> list = new ArrayList<>();
 				for (int i = 0; i < stockLevel2InfoList.size(); i++) {
