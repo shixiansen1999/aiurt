@@ -3,6 +3,7 @@
 <mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartStockMapper">
     <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartStock">
         SELECT
+        distinct
         spare_part_stock.id,
         t1.warehouse_code,
         t1.warehouse_name warehouseName,
@@ -31,7 +32,6 @@
         LEFT JOIN cs_manufactor t7 ON t7.id = t2.manufactor_code
         LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
         LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t2.unit AND dict3.id = d3.dict_id
-
         WHERE
         spare_part_stock.del_flag =0
         <if test="stock.materialCode!=null and stock.materialCode!=''">
