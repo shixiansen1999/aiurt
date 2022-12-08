@@ -41,7 +41,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import liquibase.pro.packaged.L;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -49,14 +51,17 @@ import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
 import org.jeecg.common.util.SpringContextUtils;
 import org.jeecg.modules.base.service.BaseCommonService;
+import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -64,9 +69,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -659,6 +662,7 @@ public class SysUserController {
         // 错误信息
         List<String> errorMessage = new ArrayList<>();
         int successLines = 0, errorLines = 0;
+        List<SysUserImportVO> list = new ArrayList<>();
         for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
             // 获取上传文件对象
             MultipartFile file = entity.getValue();
@@ -668,12 +672,19 @@ public class SysUserController {
             params.setNeedSave(true);
             try {
                 List<SysUser> listSysUsers = ExcelImportUtil.importExcel(file.getInputStream(), SysUser.class, params);
-                listSysUsers =  listSysUsers.stream().filter(item ->item.getUsername() != null).collect(Collectors.toList());
+                listSysUsers =  listSysUsers.stream().filter(item ->item.getUsername() != null || item.getRealname() != null).collect(Collectors.toList());
                 List<SysUserImportVO> importVos = ExcelImportUtil.importExcel(file.getInputStream(), SysUserImportVO.class, params);
-                importVos=  importVos.stream().filter(item ->item.getUsername() != null).collect(Collectors.toList());
+                importVos=  importVos.stream().filter(item ->item.getUsername() != null || item.getRealname() != null).collect(Collectors.toList());
                 for (int i = 0; i < listSysUsers.size(); i++) {
                     SysUser sysUserExcel = listSysUsers.get(i);
                     SysUserImportVO importVO = importVos.get(i);
+                    if (StrUtil.isEmpty(importVO.getBuName())){
+                        errorMessage.add("未输入部门,忽略导入");
+                        errorLines++;
+                        importVO.setText("未输入部门,忽略导入");
+                        list.add(importVO);
+                        break;
+                    }
                     SysDepart sysDepart = sysDepartService.getOne(new QueryWrapper<SysDepart>().lambda().eq(SysDepart::getDepartName,importVO.getBuName()).eq(SysDepart::getDelFlag,0));
                     if (StringUtils.isBlank(sysUserExcel.getPassword())) {
                         // 密码默认为 “123456”
@@ -684,24 +695,53 @@ public class SysUserController {
                     if (sysDepart==null){
                         errorMessage.add(importVO.getBuName()+"部门不存在,忽略导入");
                         errorLines++;
+                        importVO.setText("部门不存在,忽略导入");
+                        list.add(importVO);
+                        break;
+                    }
+                    if (StrUtil.isEmpty(sysUserExcel.getUsername())){
+                        errorMessage.add("未输入用户名，忽略导入");
+                        errorLines++;
+                        importVO.setText("未输入用户名，忽略导入");
+                        list.add(importVO);
                         break;
                     }
                     SysUser sysUser = sysUserService.getOne(new QueryWrapper<SysUser>().lambda().eq(SysUser::getUsername,sysUserExcel.getUsername()).eq(SysUser::getDelFlag,0));
                     if (sysUser!=null){
                         errorMessage.add(sysUserExcel.getUsername()+"用户名已经存在，忽略导入");
                         errorLines++;
+                        importVO.setText("用户名已经存在，忽略导入");
+                        list.add(importVO);
                         break;
                     }
                     SysUser sysUser1 = sysUserService.getOne(new QueryWrapper<SysUser>().lambda().eq(SysUser::getWorkNo,sysUserExcel.getWorkNo()).eq(SysUser::getDelFlag,0));
                     if (sysUser1!=null){
                         errorMessage.add(sysUserExcel.getWorkNo()+"工号已经存在，忽略导入");
                         errorLines++;
+                        importVO.setText("工号已经存在，忽略导入");
+                        list.add(importVO);
+                        break;
+                    }
+                    if (StrUtil.isEmpty(sysUserExcel.getPhone())){
+                        errorMessage.add("手机号未输入,忽略导入");
+                        errorLines++;
+                        importVO.setText("手机号未输入，忽略导入");
+                        list.add(importVO);
                         break;
                     }
                     SysUser sysUser2 = sysUserService.getOne(new QueryWrapper<SysUser>().lambda().eq(SysUser::getPhone,sysUserExcel.getPhone()).eq(SysUser::getDelFlag,0));
                     if (sysUser2!=null){
                         errorMessage.add(sysUserExcel.getPhone()+"手机号已经存在，忽略导入");
                         errorLines++;
+                        importVO.setText("手机号已经存在，忽略导入");
+                        list.add(importVO);
+                        break;
+                    }
+                    if (StrUtil.isEmpty(sysUserExcel.getPost())){
+                        errorMessage.add("职位未输入,忽略导入");
+                        errorLines++;
+                        importVO.setText("职位未输入，忽略导入");
+                        list.add(importVO);
                         break;
                     }
                     sysUserExcel.setOrgCode(sysDepart.getOrgCode());
@@ -712,12 +752,25 @@ public class SysUserController {
                     sysUserExcel.setStatus(1);
                     String passwordEncode = PasswordUtil.encrypt(sysUserExcel.getUsername(), sysUserExcel.getPassword(), salt);
                     sysUserExcel.setPassword(passwordEncode);
+                    if(StrUtil.isEmpty(importVO.getNames())){
+                        errorMessage.add("角色未输入,忽略导入");
+                        errorLines++;
+                        importVO.setText("角色未输入,忽略导入");
+                        list.add(importVO);
+                        break;
+                    }
                     List<String> roleIds = sysUserService.getSysRole(importVO.getNames());
                     if (oConvertUtils.isNotEmpty(roleIds)) {
                         for (String roleId : roleIds) {
                             SysUserRole userRole = new SysUserRole(sysUserExcel.getId(), roleId);
                             sysUserRoleMapper.insert(userRole);
                         }
+                    }else {
+                        errorMessage.add("角色不存在,忽略导入");
+                        errorLines++;
+                        importVO.setText("角色不存在,忽略导入");
+                        list.add(importVO);
+                        break;
                     }
                     sysUserService.save(sysUserExcel);
                     successLines++;
@@ -729,6 +782,43 @@ public class SysUserController {
                         List<SysUserDepart> userDepartList = new ArrayList<>(departIdArray.length);
                         for (String departId : departIdArray) {
                             userDepartList.add(new SysUserDepart(userId, departId));
+                        }
+                        if (list.size()>0){
+                            //创建导入失败错误报告,进行模板导出
+                            Resource resource = new ClassPathResource("templates/sysUserError.xls");
+                            InputStream resourceAsStream = resource.getInputStream();
+                            //2.获取临时文件
+                            File fileTemp= new File("templates/sysUserError.xls");
+                            try {
+                                //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+                                FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+                            } catch (Exception e) {
+                                log.error(e.getMessage());
+                            }
+                            String path = fileTemp.getAbsolutePath();
+                            TemplateExportParams exportParams = new TemplateExportParams(path);
+                            List<Map<String, Object>> mapList = new ArrayList<>();
+                            list.forEach(l->{
+                                Map<String, Object> lm = new HashMap<String, Object>();
+                                lm.put("username",l.getUsername());
+                                lm.put("realname",l.getRealname());
+                                lm.put("buName",l.getBuName());
+                                lm.put("names",l.getNames());
+                                lm.put("phone",l.getPhone());
+                                lm.put("post",l.getPost());
+                                lm.put("workNo",l.getWorkNo());
+                                lm.put("text",l.getText());
+                                mapList.add(lm);
+                            });
+                            Map<String, Object> errorMap = new HashMap<String, Object>();
+                            errorMap.put("maplist", mapList);
+                            Workbook workbook = ExcelExportUtil.exportExcel(exportParams,errorMap);
+                            String fileName = "用户导入错误模板"+"_" + System.currentTimeMillis()+".xlsx";
+                            FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
+                            String  url = fileName;
+                            workbook.write(out);
+                            successLines+=(importVos.size()-errorLines);
+                            return ImportExcelUtil.imporReturnRes(errorLines,successLines,null,url);
                         }
                         sysUserDepartService.saveBatch(userDepartList);
                     }
