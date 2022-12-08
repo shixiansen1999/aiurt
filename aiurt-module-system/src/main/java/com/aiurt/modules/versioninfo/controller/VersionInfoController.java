@@ -15,6 +15,7 @@ import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -57,16 +58,22 @@ public class VersionInfoController extends BaseController<VersionInfo, IVersionI
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = VersionInfo.class)
     })
-    public Result<?> queryPageList(VersionInfo versionInfo,
+    public Result<IPage<VersionInfo>> queryPageList(VersionInfo versionInfo,
                                    @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                    @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                    HttpServletRequest req) {
-        QueryWrapper<VersionInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.orderByDesc("upload_time").like(StrUtil.isNotEmpty(String.valueOf(versionInfo.getVersionId())), "version_id", versionInfo.getVersionId());
-        Page<VersionInfo> page = new Page<>(pageNo, pageSize);
+        Result<IPage<VersionInfo>> result = new Result<IPage<VersionInfo>>();
+        QueryWrapper<VersionInfo> queryWrapper = QueryGenerator.initQueryWrapper(versionInfo, req.getParameterMap());
+        queryWrapper.orderByDesc("upload_time");
+        if(ObjectUtil.isNotEmpty(versionInfo.getVersionId()))
+        {
+            queryWrapper.like("version_id", String.valueOf(versionInfo.getVersionId()));
+        }
+        Page<VersionInfo> page = new Page<VersionInfo>(pageNo, pageSize);
         IPage<VersionInfo> pageList = bdVersionInfoService.page(page, queryWrapper);
-        //Stream<BdVersionInfo> pageList = bdVersionInfoService.list(queryWrapper).stream().limit(1);
-        return Result.OK(pageList);
+        result.setSuccess(true);
+        result.setResult(pageList);
+        return result;
     }
 
     /**
