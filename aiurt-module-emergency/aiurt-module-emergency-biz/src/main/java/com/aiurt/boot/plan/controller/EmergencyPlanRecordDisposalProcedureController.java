@@ -1,9 +1,11 @@
 package com.aiurt.boot.plan.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.plan.entity.EmergencyPlanRecordDisposalProcedure;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -28,7 +30,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-11-29
  * @Version: V1.0
  */
-@Api(tags="emergency_plan_record_disposal_procedure")
+@Api(tags="应急预案启动记录处置程序")
 @RestController
 @RequestMapping("/emergency/emergencyPlanRecordDisposalProcedure")
 @Slf4j
@@ -121,14 +123,14 @@ public class EmergencyPlanRecordDisposalProcedureController extends BaseControll
 	 * @return
 	 */
 	//@AutoLog(value = "emergency_plan_record_disposal_procedure-通过id查询")
-	@ApiOperation(value="emergency_plan_record_disposal_procedure-通过id查询", notes="emergency_plan_record_disposal_procedure-通过id查询")
+	@ApiOperation(value="应急预案启动记录处置程序-通过id查询", notes="应急预案启动记录处置程序-通过id查询")
 	@GetMapping(value = "/queryById")
-	public Result<EmergencyPlanRecordDisposalProcedure> queryById(@RequestParam(name="id",required=true) String id) {
-		EmergencyPlanRecordDisposalProcedure emergencyPlanRecordDisposalProcedure = emergencyPlanRecordDisposalProcedureService.getById(id);
-		if(emergencyPlanRecordDisposalProcedure==null) {
+	public Result<List<EmergencyPlanRecordDisposalProcedure>> queryById(@RequestParam(name="id",required=true) String id) {
+		List<EmergencyPlanRecordDisposalProcedure> emergencyPlanRecordDisposalProcedures = emergencyPlanRecordDisposalProcedureService.queryById(id);
+		if(CollUtil.isEmpty(emergencyPlanRecordDisposalProcedures)) {
 			return Result.error("未找到对应数据");
 		}
-		return Result.OK(emergencyPlanRecordDisposalProcedure);
+		return Result.OK(emergencyPlanRecordDisposalProcedures);
 	}
 
     /**

@@ -1,6 +1,7 @@
 package com.aiurt.boot.plan.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -48,10 +49,34 @@ public class EmergencyPlanRecordProblemMeasures implements Serializable {
 	@Excel(name = "责任部门", width = 15)
     @ApiModelProperty(value = "责任部门")
     private String orgCode;
+
+    /**责任部门名称*/
+    @Excel(name = "责任部门名称", width = 15)
+    @ApiModelProperty(value = "责任部门名称")
+    @TableField(exist = false)
+    private java.lang.String orgName;
+
+    /**责任部门负责人ID*/
+    @Excel(name = "责任部门负责人ID", width = 15)
+    @ApiModelProperty(value = "责任部门负责人ID")
+    private java.lang.String orgUserId;
+    /**责任部门责任人名称*/
+    @Excel(name = "责任部门责任人名称", width = 15)
+    @ApiModelProperty(value = "责任部门责任人名称")
+    @TableField(exist = false)
+    private java.lang.String orgUserName;
+
 	/**负责人id*/
 	@Excel(name = "负责人id", width = 15)
     @ApiModelProperty(value = "负责人id")
     private String managerId;
+
+    /**责任人名称*/
+    @Excel(name = "责任人名称", width = 15)
+    @ApiModelProperty(value = "责任人名称")
+    @TableField(exist = false)
+    private java.lang.String userName;
+
 	/**解决期限*/
 	@Excel(name = "解决期限", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")

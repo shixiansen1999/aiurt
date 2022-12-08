@@ -3,6 +3,7 @@ package com.aiurt.boot.plan.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
@@ -13,6 +14,7 @@ import com.aiurt.boot.plan.dto.EmergencyPlanRecordQueryDTO;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.EmergencyPlanRecordMapper;
 import com.aiurt.boot.plan.service.*;
+import com.aiurt.boot.rehearsal.constant.EmergencyDictConstant;
 import com.aiurt.boot.rehearsal.dto.EmergencyDeptDTO;
 import com.aiurt.boot.rehearsal.entity.*;
 import com.aiurt.boot.rehearsal.vo.EmergencyImplementationRecordVO;
@@ -118,7 +120,8 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         emergencyPlanRecord.setEmergencyPlanVersion(String.valueOf(version));
         String username = loginUser.getUsername();
         emergencyPlanRecord.setRecorderId(username);
-        emergencyPlanRecord.setRecordTime(new Date());
+        Date nowDate = DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd"));
+        emergencyPlanRecord.setRecordTime(nowDate);
         this.save(emergencyPlanRecord);
 
         String id = emergencyPlanRecord.getId();
@@ -338,15 +341,23 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
           this.disposalProcedureTranslate(procedureList);
 
 
-        //应急预案附件
+        //应急预案启动记录事件相关材料
         List<EmergencyPlanRecordAtt> recordAttList = emergencyPlanRecordAttService.lambdaQuery()
                 .eq(EmergencyPlanRecordAtt::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
-                .eq(EmergencyPlanRecordAtt::getEmergencyPlanRecordId, id).list();
+                .eq(EmergencyPlanRecordAtt::getEmergencyPlanRecordId, id)
+                .eq(EmergencyPlanRecordAtt::getMaterialType,EmergencyPlanConstant.MATERIAL_TYPE0).list();
 
-        //应急预案启动记录事件问题措施添加
+        //应急预案启动记录事件总结材料
+        List<EmergencyPlanRecordAtt> recordAttList2 = emergencyPlanRecordAttService.lambdaQuery()
+                .eq(EmergencyPlanRecordAtt::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                .eq(EmergencyPlanRecordAtt::getEmergencyPlanRecordId, id)
+                .eq(EmergencyPlanRecordAtt::getMaterialType,EmergencyPlanConstant.MATERIAL_TYPE1).list();
+
+        //应急预案启动记录事件问题措施
         List<EmergencyPlanRecordProblemMeasures> problemMeasuresList = emergencyPlanRecordProblemMeasuresService.lambdaQuery()
                 .eq(EmergencyPlanRecordProblemMeasures::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
                 .eq(EmergencyPlanRecordProblemMeasures::getEmergencyPlanRecordId, id).list();
+        this.questionTranslate(problemMeasuresList);
 
         recordDto.setEmergencyPlanRecordTeamId(teamName);
         recordDto.setEmergencyPlanRecordDepartId(depts);
@@ -374,7 +385,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     }
 
     /**
-     * 关联的问题列表的字典，组织机构名称转换
+     * 处置程序字段翻译
      *
      * @param procedureList
      */
@@ -388,6 +399,32 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             procedureList.forEach(l -> {
                 l.setOrgName(orgMap.get(String.valueOf(l.getOrgCode())));
                 l.setRoleName(roleMap.get(String.valueOf(l.getRoleId())));
+            });
+        }
+    }
+
+    /**
+     * 关联的问题列表的字典，组织机构名称转换
+     *
+     * @param problemMeasuresList
+     */
+    private void questionTranslate(List<EmergencyPlanRecordProblemMeasures> problemMeasuresList) {
+        if (CollectionUtil.isNotEmpty(problemMeasuresList)) {
+            Map<String, String> orgMap = sysBaseApi.getAllSysDepart().stream()
+                    .collect(Collectors.toMap(k -> k.getOrgCode(), v -> v.getDepartName(), (a, b) -> a));
+            problemMeasuresList.forEach(l -> {
+                //责任部门翻译
+                l.setOrgName(orgMap.get(l.getOrgCode()));
+                //责任部门负责人翻译
+                Optional.ofNullable(l.getOrgUserId()).ifPresent(userId -> {
+                    LoginUser loginUser = sysBaseApi.getUserById(userId);
+                    Optional.ofNullable(loginUser).ifPresent(user -> l.setOrgUserName(user.getRealname()));
+                });
+                //责任人翻译
+                Optional.ofNullable(l.getManagerId()).ifPresent(userId -> {
+                    LoginUser loginUser = sysBaseApi.getUserById(userId);
+                    Optional.ofNullable(loginUser).ifPresent(user -> l.setUserName(user.getRealname()));
+                });
             });
         }
     }

@@ -5,8 +5,10 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.plan.entity.EmergencyPlanDisposalProcedure;
+import com.aiurt.boot.plan.entity.EmergencyPlanRecordDisposalProcedure;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.plan.service.IEmergencyPlanDisposalProcedureService;
@@ -30,7 +32,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-11-29
  * @Version: V1.0
  */
-@Api(tags="预案处置程序")
+@Api(tags="应急预案处置程序")
 @RestController
 @RequestMapping("/emergency/emergencyPlanDisposalProcedure")
 @Slf4j
@@ -69,7 +71,7 @@ public class EmergencyPlanDisposalProcedureController extends BaseController<Eme
 	  * @param req
 	  * @return
 	  */
-	 @ApiOperation(value="根据预案Id查询所有处置程序", notes="根据预案Id查询所有处置程序")
+	 @ApiOperation(value="根据预案Id查询所有处置程序分页", notes="根据预案Id查询所有处置程序分页")
 	 @GetMapping(value = "/queryPageListById")
 	 public Result<IPage<EmergencyPlanDisposalProcedure>> queryPageListById(EmergencyPlanDisposalProcedure emergencyPlanDisposalProcedure,
 																		String id,
@@ -146,22 +148,16 @@ public class EmergencyPlanDisposalProcedureController extends BaseController<Eme
 		return Result.OK("批量删除成功!");
 	}
 
-	/**
-	 * 通过id查询
-	 *
-	 * @param id
-	 * @return
-	 */
-	//@AutoLog(value = "emergency_plan_disposal_procedure-通过id查询")
-	@ApiOperation(value="emergency_plan_disposal_procedure-通过id查询", notes="emergency_plan_disposal_procedure-通过id查询")
-	@GetMapping(value = "/queryById")
-	public Result<EmergencyPlanDisposalProcedure> queryById(@RequestParam(name="id",required=true) String id) {
-		EmergencyPlanDisposalProcedure emergencyPlanDisposalProcedure = emergencyPlanDisposalProcedureService.getById(id);
-		if(emergencyPlanDisposalProcedure==null) {
-			return Result.error("未找到对应数据");
-		}
-		return Result.OK(emergencyPlanDisposalProcedure);
-	}
+
+	 @ApiOperation(value="应急预案启动记录处置程序-通过id查询", notes="应急预案启动记录处置程序-通过id查询")
+	 @GetMapping(value = "/queryById")
+	 public Result<List<EmergencyPlanDisposalProcedure>> queryById(@RequestParam(name="id",required=false) String id) {
+		 List<EmergencyPlanDisposalProcedure> EmergencyPlanDisposalProcedures = emergencyPlanDisposalProcedureService.queryById(id);
+		 if(CollUtil.isEmpty(EmergencyPlanDisposalProcedures)) {
+			 return Result.error("未找到对应数据");
+		 }
+		 return Result.OK(EmergencyPlanDisposalProcedures);
+	 }
 
     /**
     * 导出excel

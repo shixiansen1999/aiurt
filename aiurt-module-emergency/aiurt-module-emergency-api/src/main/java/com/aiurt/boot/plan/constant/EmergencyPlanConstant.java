@@ -45,6 +45,18 @@ public class EmergencyPlanConstant {
      */
     public static final Integer DEL_FLAG1 = 1;
 
+    /**
+     * 事件相关材料
+     */
+    public static final Integer MATERIAL_TYPE0 = 0;
+
+    /**
+     * 事件总结材料
+     */
+    public static final Integer MATERIAL_TYPE1 = 1;
+
+
+
 
 
 
