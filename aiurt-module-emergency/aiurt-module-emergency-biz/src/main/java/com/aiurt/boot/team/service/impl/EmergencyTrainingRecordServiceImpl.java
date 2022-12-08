@@ -136,7 +136,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             BigDecimal bigDecimal = new BigDecimal(size);
             BigDecimal divide = bigDecimal.divide(new BigDecimal(1048576));
             int i = divide.compareTo(new BigDecimal(20));
-            if (i > 0 || !type.contains("doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar")) {
+            if (i > 0 || !"doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar".contains(type)) {
                 return Result.error("文件大小超过限制或者文件格式不对");
             }
             emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
@@ -196,7 +196,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 BigDecimal bigDecimal = new BigDecimal(size);
                 BigDecimal divide = bigDecimal.divide(new BigDecimal(1048576));
                 int i = divide.compareTo(new BigDecimal(20));
-                if (i > 0 || !type.contains("doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar")) {
+                if (i > 0 || !"doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar".contains(type)) {
                     return Result.error("文件大小超过限制或者文件格式不对");
                 }
                 emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
