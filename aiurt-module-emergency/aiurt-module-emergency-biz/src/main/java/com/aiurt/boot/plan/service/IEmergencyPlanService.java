@@ -69,11 +69,6 @@ public interface IEmergencyPlanService extends IService<EmergencyPlan> {
      */
     String openOrStop(String id);
 
-    /**
-     * 应急预案台账审核
-     * @param id
-     */
-    void audit(String id);
 
     /**
      * 应急预案台账通过id查询

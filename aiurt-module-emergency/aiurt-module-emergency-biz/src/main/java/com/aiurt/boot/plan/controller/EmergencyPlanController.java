@@ -231,17 +231,6 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 		return Result.OK(emergencyPlanDTO);
 	}
 
-	 /**
-	  * 应急预案-应急预案台账审核
-	  * @param id
-	  * @return
-	  */
-	 @ApiOperation(value = "应急预案-应急预案台账审核", notes = "应急预案-应急预案台账审核")
-	 @GetMapping(value = "/audit")
-	 public Result<EmergencyPlan> audit(@RequestParam(name = "id", required = true) String id) {
-		 emergencyPlanService.audit(id);
-		 return Result.OK();
-	 }
 
     /**
     * 导出excel

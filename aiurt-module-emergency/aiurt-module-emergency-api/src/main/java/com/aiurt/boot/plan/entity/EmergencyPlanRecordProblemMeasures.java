@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -86,6 +87,7 @@ public class EmergencyPlanRecordProblemMeasures implements Serializable {
 	/**问题状态（1待处理、2已处理）*/
 	@Excel(name = "问题状态（1待处理、2已处理）", width = 15)
     @ApiModelProperty(value = "问题状态（1待处理、2已处理）")
+    @Dict(dicCode = "emergency_problem_status")
     private Integer status;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
