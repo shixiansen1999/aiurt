@@ -33,7 +33,8 @@ import java.util.stream.Collectors;
 @Service
 public class BdOperatePlanDeclarationFormMonthServiceImpl extends ServiceImpl<BdOperatePlanDeclarationFormMonthMapper, BdOperatePlanDeclarationFormMonth> implements IBdOperatePlanDeclarationFormMonthService {
 
-
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
     @Autowired
     private BdOperatePlanDeclarationFormMonthMapper bdMapper;
 
@@ -54,7 +55,7 @@ public class BdOperatePlanDeclarationFormMonthServiceImpl extends ServiceImpl<Bd
      */
     @Override
     public Page<getAllByDateDTO> listByDate(String start_time, String end_time, String line_id, Integer PageNo, Integer PageSize, Page page, String roleType, String staffID) {
-        List<BdStationCopyDTO> StationInfoList = queryAllStationInfo(null,null);
+        List<BdStationCopyDTO> StationInfoList = queryAllStationInfo(null, null);
         Page<getAllByDateDTO> lls = bdMapper.getAllByDate(start_time, end_time, line_id, page, roleType, staffID);
         List<getAllByDateDTO> ls = lls.getRecords();
         int skip = PageNo * PageSize;
@@ -128,9 +129,9 @@ public class BdOperatePlanDeclarationFormMonthServiceImpl extends ServiceImpl<Bd
      *
      * @return List<BdStationCopyDTO> 包含 线路id和线路名称
      */
-    ISysBaseAPI iSysBaseAPI;
+
     @Override
-    public List<BdStationCopyDTO> queryAllStationInfo(String lineId,String lineCode) {
+    public List<BdStationCopyDTO> queryAllStationInfo(String lineId, String lineCode) {
         List<BdStationCopyDTO> lineList = bdMapper.queryAllStationInfo();
         if (StrUtil.isNotEmpty(lineId) && CollectionUtil.isNotEmpty(lineList)) {
             lineList = lineList.stream().filter(l -> lineId.equals(l.getLineId())).collect(Collectors.toList());
@@ -381,7 +382,7 @@ public class BdOperatePlanDeclarationFormMonthServiceImpl extends ServiceImpl<Bd
      */
     @Override
     public Page<getAllByDateDTO> ApproveQuery(String start_time, String end_time, String line_id, Integer PageNo, Integer PageSize, Page page, String roleType, String staffID, String busId) {
-        List<BdStationCopyDTO> StationInfoList = queryAllStationInfo(null,null);
+        List<BdStationCopyDTO> StationInfoList = queryAllStationInfo(null, null);
         Page<getAllByDateDTO> lls = bdMapper.ApproveQuery(start_time, end_time, line_id, page, roleType, staffID, busId);
         List<getAllByDateDTO> ls = lls.getRecords();
         int skip = PageNo * PageSize;
