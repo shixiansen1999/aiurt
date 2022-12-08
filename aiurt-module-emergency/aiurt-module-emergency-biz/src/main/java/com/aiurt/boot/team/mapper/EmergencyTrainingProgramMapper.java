@@ -33,10 +33,9 @@ public interface EmergencyTrainingProgramMapper extends BaseMapper<EmergencyTrai
     /**
      * 根据应急队伍选择训练计划
      * @param page
-     * @param id
      * @param emergencyTrainingProgramDTO
      * @return
      */
-    List<EmergencyTrainingProgram> getTrainingProgram(Page<EmergencyTrainingProgram> page, @Param("id")String id, @Param("emergencyTrainingProgramDTO") EmergencyTrainingProgramDTO emergencyTrainingProgramDTO);
+    List<EmergencyTrainingProgram> getTrainingProgram(Page<EmergencyTrainingProgram> page, @Param("emergencyTrainingProgramDTO") EmergencyTrainingProgramDTO emergencyTrainingProgramDTO);
 
 }

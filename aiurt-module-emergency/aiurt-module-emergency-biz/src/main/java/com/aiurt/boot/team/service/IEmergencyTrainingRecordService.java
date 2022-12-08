@@ -58,10 +58,9 @@ public interface IEmergencyTrainingRecordService extends IService<EmergencyTrain
     /**
      * 根据应急队伍选择训练计划
      * @param emergencyTrainingProgramDTO
-     * @param id
      * @param pageNo
      * @param pageSize
      * @return
      */
-    IPage<EmergencyTrainingProgram>  getTrainingProgram(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO, String id,Integer pageNo, Integer pageSize);
+    IPage<EmergencyTrainingProgram>  getTrainingProgram(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO,Integer pageNo, Integer pageSize);
 }

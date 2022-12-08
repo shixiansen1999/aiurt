@@ -157,7 +157,6 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	 * 根据应急队伍选择训练计划
 	 *
 	 * @param emergencyTrainingProgramDTO
-	 * @param id
 	 * @param pageNo
 	 * @param pageSize
 	 * @param req
@@ -166,11 +165,10 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	@ApiOperation(value="应急队伍训练记录-根据应急队伍选择训练计划", notes="应急队伍训练记录-根据应急队伍选择训练计划")
 	@PostMapping(value = "/getTrainingProgram")
 	public Result<IPage<EmergencyTrainingProgram>> getTrainingProgram(@RequestBody EmergencyTrainingProgramDTO emergencyTrainingProgramDTO,
-																	  @RequestParam(name="id",required = false) String id,
 																	  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 																	  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 																	  HttpServletRequest req) {
-		IPage<EmergencyTrainingProgram> trainingProgram = emergencyTrainingRecordService.getTrainingProgram(emergencyTrainingProgramDTO, id, pageNo, pageSize);
+		IPage<EmergencyTrainingProgram> trainingProgram = emergencyTrainingRecordService.getTrainingProgram(emergencyTrainingProgramDTO, pageNo, pageSize);
 		return Result.OK(trainingProgram);
 	}
 

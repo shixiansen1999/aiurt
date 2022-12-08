@@ -133,8 +133,8 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             emergencyTrainingRecordAtt.setEmergencyTrainingRecordId(id);
             String size = emergencyTrainingRecordAtt.getSize();
             String type = emergencyTrainingRecordAtt.getType();
-            double fileSize  = (double) Convert.toInt(size) / 1024;
-            if (fileSize  > 50 || !type.contains("doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar")) {
+            double fileSize  = (double) Convert.toInt(size) / 1048576;
+            if (fileSize  > 20 || !type.contains("doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar")) {
                 return Result.error("文件大小超过限制或者文件格式不对");
             }
             emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
@@ -191,8 +191,8 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 emergencyTrainingRecordAtt.setEmergencyTrainingRecordId(id);
                 String size = emergencyTrainingRecordAtt.getSize();
                 String type = emergencyTrainingRecordAtt.getType();
-                double fileSize  = (double) Convert.toInt(size) / 1024;
-                if (fileSize  > 50 || !type.contains("doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar")) {
+                double fileSize  = (double) Convert.toInt(size) / 1048576;
+                if (fileSize  > 20 || !type.contains("doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar")) {
                     return Result.error("文件大小超过限制或者文件格式不对");
                 }
                 emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
@@ -242,9 +242,9 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
     }
 
     @Override
-    public IPage<EmergencyTrainingProgram> getTrainingProgram(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO,String id, Integer pageNo, Integer pageSize) {
+    public IPage<EmergencyTrainingProgram> getTrainingProgram(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO, Integer pageNo, Integer pageSize) {
         Page<EmergencyTrainingProgram> page = new Page<>(pageNo, pageSize);
-        List<EmergencyTrainingProgram> trainingProgram = emergencyTrainingProgramMapper.getTrainingProgram(page, id, emergencyTrainingProgramDTO);
+        List<EmergencyTrainingProgram> trainingProgram = emergencyTrainingProgramMapper.getTrainingProgram(page, emergencyTrainingProgramDTO);
         if (CollUtil.isNotEmpty(trainingProgram)) {
             for (EmergencyTrainingProgram record : trainingProgram) {
                 SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(record.getOrgCode());
