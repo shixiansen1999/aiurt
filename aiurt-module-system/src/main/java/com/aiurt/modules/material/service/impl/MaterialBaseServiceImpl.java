@@ -228,7 +228,12 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 						continue;
 					}
 				}
-
+                if (StrUtil.isEmpty(materialBase.getManufactorCodeName())){
+					errorStrs.add("第 " + i + " 行：生产厂商名称未输入，忽略导入。");
+					materialBase.setText("生产厂商名称未输入，忽略导入");
+					list.add(materialBase);
+					continue;
+				}
 				//生产厂商
 				String manufactorCodeName = materialBase.getManufactorCodeName()==null?"":materialBase.getManufactorCodeName();
 				CsManufactor csManufactor = csManufactorService.getOne(new QueryWrapper<CsManufactor>().eq("name",manufactorCodeName).eq("del_flag",0).last("limit 1"));
@@ -282,19 +287,6 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 			} catch (Exception e) {
 				log.error(e.getMessage());
 			}
-
-//			//2.获取临时文件
-//			File fileTemp= new File("/templates/scheduleErrorReport.xlsx");
-//			try {
-//				//将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
-//				FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
-//			} catch (Exception e) {
-//				log.error(e.getMessage());
-//			}
-//
-//			String path = fileTemp.getAbsolutePath();
-//			log.info("path:{}", path);
-//			TemplateExportParams exportParams = new TemplateExportParams(path);
 			String path = fileTemp.getAbsolutePath();
 			TemplateExportParams exportParams = new TemplateExportParams(path);
 			List<Map<String, Object>> mapList = new ArrayList<>();

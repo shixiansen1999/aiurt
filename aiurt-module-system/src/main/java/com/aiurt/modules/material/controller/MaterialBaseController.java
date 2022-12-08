@@ -402,7 +402,7 @@ public class MaterialBaseController {
             // 获取上传文件对象
             MultipartFile file = entity.getValue();
             ImportParams params = new ImportParams();
-            params.setTitleRows(1);
+            params.setTitleRows(2);
             params.setHeadRows(1);
             params.setNeedSave(true);
             try {
