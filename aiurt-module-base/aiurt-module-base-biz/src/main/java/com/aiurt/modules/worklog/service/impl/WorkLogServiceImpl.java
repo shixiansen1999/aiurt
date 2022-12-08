@@ -383,13 +383,16 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         Map<String, CsStation> stationIdMap = null;
         Map<String, List<CsStation>> stationTeamIdMap =null;
         Map<String, String> departMap = null;
+       List<String> a = null;
         //todo 待处理
        if (CollectionUtils.isNotEmpty(stationList)){
            stationIdMap = stationList.stream().collect(Collectors.toMap(CsStation::getId, s -> s));
            stationTeamIdMap = stationList.stream().filter(f->f.getSysOrgCode()!=null).collect(Collectors.groupingBy(CsStation::getSysOrgCode));
        }
         if (CollectionUtils.isNotEmpty(departList)){
-            departMap = departList.stream().collect(Collectors.toMap(SysDepartModel::getDepartName, SysDepartModel::getId));
+             a = departList.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+            System.out.println(a);
+            departMap = departList.stream().collect(Collectors.toMap(SysDepartModel::getId, SysDepartModel::getDepartName));
         }
 
         Map<String,List<WorkLogEnclosure>> map0 = null;
@@ -418,7 +421,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         for (WorkLogResult record : records) {
 
             if (departMap!=null && stationTeamIdMap!=null){
-                String id = departMap.get(record.getSubmitOrgName());
+                String id = departMap.get(record.getSubmitOrgId());
                 if (StringUtils.isNotBlank(id)){
                     List<CsStation> station = stationTeamIdMap.get(id);
                     if (CollectionUtils.isNotEmpty(station)){

@@ -4,6 +4,7 @@
     <select id="queryWorkLog" resultType="com.aiurt.common.result.WorkLogResult">
         SELECT
             wl.*,
+            sur.org_id as submitOrgId,
             su.realname AS succeedName,
             sur.realname AS submitName,
             sur.org_name AS submitOrgName,

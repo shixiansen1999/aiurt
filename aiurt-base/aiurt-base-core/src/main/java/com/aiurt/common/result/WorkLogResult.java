@@ -2,6 +2,7 @@ package com.aiurt.common.result;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -42,6 +43,11 @@ public class WorkLogResult {
     @Excel(name = "班组", width = 15)
     @ApiModelProperty(value = "班组")
     private  String  submitOrgName;
+    /**提交人班组*/
+    @Excel(name = "班组", width = 15)
+    @ApiModelProperty(value = "班组")
+    @TableField(exist = false)
+    private  String  submitOrgId;
 
     /**日志编号*/
     @Excel(name = "编号", width = 15)
