@@ -153,4 +153,15 @@ public class EmergencyMaterialsUsage extends DictEntity implements Serializable 
     @TableField(exist = false)
     @ApiModelProperty(value = "主管部门名称")
     private java.lang.String primaryName;
+
+
+    /**规格型号*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "规格型号")
+    private java.lang.String specification;
+    /**单位*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "单位")
+    @Dict(dicCode = "materials_unit")
+    private java.lang.String unit;
 }

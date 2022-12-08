@@ -5,7 +5,7 @@
     <sql id="list">
        t1.materials_name as materialsName,t1.materials_code as materialsCode,t2.category_name as categoryName,t2.category_code as categoryCode,
        t3.status as status,t3.number as number,t3.use_date as useDate,t3.user_id as userId,t3.use_time as useTime,t3.back_date as backDate,t3.back_time as backTime,
-       t3.back_id as backId,t1.remark as remark,t3.id as id
+       t3.back_id as backId,t1.remark as remark,t3.id as id,t1.specification as specification,t1.unit as unit
     </sql>
 
     <select id="getUsageRecordList" resultType="com.aiurt.boot.materials.entity.EmergencyMaterialsUsage">
