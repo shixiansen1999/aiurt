@@ -39,7 +39,7 @@
 
     <select id="getPatrolStandardList" resultType="com.aiurt.boot.materials.dto.PatrolStandardDTO">
         select
-         code as standardCode,name as standardName
+         id as standardId,code as standardCode,`name` as standardName
          from patrol_standard
         <where>
             del_flag = 0
