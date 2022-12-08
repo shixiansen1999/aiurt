@@ -572,9 +572,11 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				List<DeviceType> deviceTypeList = deviceTypeService.list(deviceTypeQueryWrapper);
 				if (CollUtil.isNotEmpty(deviceTypeList)) {
 					DeviceType type = deviceTypeList.stream().filter(deviceType -> deviceType.getName().equals(deviceTypeCodeName)).findFirst().orElse(null);
+
 					if (type != null) {
 						device.setDeviceTypeCode(type.getCode());
-						String codeCc = this.getCodeByCc(type.getCode());
+						//导入禁用编码校验
+						/*String codeCc = this.getCodeByCc(type.getCode());
 						String str = major.getMajorCode() + subsystem.getSystemCode() + codeCc;
 						Device device1 = this.getOne(new LambdaQueryWrapper<Device>().likeRight(Device::getCode, str)
 								.eq(Device::getDelFlag, 0).orderByDesc(Device::getCreateTime).last("limit 1"));
@@ -589,7 +591,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 						String deviceCode = str + format;
 						if (!deviceCode.equals(code)) {
 							stringBuilder.append("该设备类型的设备编号不符合规范，");
-						}
+						}*/
 						device.setDeviceTypeCodeCc(type.getCodeCc());
 					} else {
 						stringBuilder.append("系统不存在该专业子系统的设备类型，设备编号，");
@@ -773,7 +775,8 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			lm.put("status",deviceAssemblyErrorModel.getStatus());
 			lm.put("lineCodeName",deviceAssemblyErrorModel.getLineCodeName());
 			lm.put("stationCodeName",deviceAssemblyErrorModel.getStationCodeName());
-			lm.put("orgCodeName",deviceAssemblyErrorModel.getPositionCodeName());
+			lm.put("positionCodeName",deviceAssemblyErrorModel.getPositionCodeName());
+			lm.put("orgCodeName",deviceAssemblyErrorModel.getOrgCodeName());
 			lm.put("manageUserName",deviceAssemblyErrorModel.getManageUserName());
 			lm.put("deviceLevel",deviceAssemblyErrorModel.getDeviceLevel());
 			lm.put("temporary",deviceAssemblyErrorModel.getTemporary());
