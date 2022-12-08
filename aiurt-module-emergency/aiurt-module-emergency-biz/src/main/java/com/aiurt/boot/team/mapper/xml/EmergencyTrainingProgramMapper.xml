@@ -42,5 +42,6 @@
         <if test="emergencyTrainingProgramDTO.trainingPlanTime != null">
             and etp.training_plan_time = #{emergencyTrainingProgramDTO.trainingPlanTime}
         </if>
+        group by etp.id
     </select>
 </mapper>
