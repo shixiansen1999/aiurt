@@ -15,7 +15,6 @@ import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -62,7 +61,7 @@ public class VersionInfoController extends BaseController<VersionInfo, IVersionI
                                    @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                    @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                    HttpServletRequest req) {
-        QueryWrapper<VersionInfo> queryWrapper = QueryGenerator.initQueryWrapper(versionInfo, req.getParameterMap());
+        QueryWrapper<VersionInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.orderByDesc("upload_time");
         if(ObjectUtil.isNotEmpty(versionInfo.getVersionId()))
         {
