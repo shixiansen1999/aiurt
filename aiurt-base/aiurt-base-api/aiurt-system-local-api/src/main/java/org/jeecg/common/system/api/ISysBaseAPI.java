@@ -716,4 +716,11 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
    boolean isNullSafetyPrecautions(String majorCode,String systemCode);
+
+    /**
+     * 根据线路编码获取线路id
+     * @param lineCode
+     * @return
+     */
+    String getLineIdByCode(String lineCode);
 }

@@ -7,9 +7,11 @@ import com.aiurt.boot.monthlyplan.dto.*;
 import com.aiurt.boot.monthlyplan.entity.BdOperatePlanDeclarationFormMonth;
 import com.aiurt.boot.monthlyplan.mapper.BdOperatePlanDeclarationFormMonthMapper;
 import com.aiurt.boot.monthlyplan.service.IBdOperatePlanDeclarationFormMonthService;
+import com.aiurt.boot.weeklyplan.mapper.BdLineMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -52,7 +54,7 @@ public class BdOperatePlanDeclarationFormMonthServiceImpl extends ServiceImpl<Bd
      */
     @Override
     public Page<getAllByDateDTO> listByDate(String start_time, String end_time, String line_id, Integer PageNo, Integer PageSize, Page page, String roleType, String staffID) {
-        List<BdStationCopyDTO> StationInfoList = queryAllStationInfo(null);
+        List<BdStationCopyDTO> StationInfoList = queryAllStationInfo(null,null);
         Page<getAllByDateDTO> lls = bdMapper.getAllByDate(start_time, end_time, line_id, page, roleType, staffID);
         List<getAllByDateDTO> ls = lls.getRecords();
         int skip = PageNo * PageSize;
@@ -126,14 +128,18 @@ public class BdOperatePlanDeclarationFormMonthServiceImpl extends ServiceImpl<Bd
      *
      * @return List<BdStationCopyDTO> 包含 线路id和线路名称
      */
+    ISysBaseAPI iSysBaseAPI;
     @Override
-    public List<BdStationCopyDTO> queryAllStationInfo(String lineId) {
+    public List<BdStationCopyDTO> queryAllStationInfo(String lineId,String lineCode) {
         List<BdStationCopyDTO> lineList = bdMapper.queryAllStationInfo();
         if (StrUtil.isNotEmpty(lineId) && CollectionUtil.isNotEmpty(lineList)) {
             lineList = lineList.stream().filter(l -> lineId.equals(l.getLineId())).collect(Collectors.toList());
         }
-        for (BdStationCopyDTO bds : lineList
-        ) {
+        if (StrUtil.isNotEmpty(lineCode) && CollectionUtil.isNotEmpty(lineList)) {
+            String id = iSysBaseAPI.getLineIdByCode(lineCode);
+            lineList = lineList.stream().filter(l -> id.equals(l.getLineId())).collect(Collectors.toList());
+        }
+        for (BdStationCopyDTO bds : lineList) {
             bds.setName(bds.getLineName() + "--" + bds.getName());
         }
         return lineList;
@@ -375,7 +381,7 @@ public class BdOperatePlanDeclarationFormMonthServiceImpl extends ServiceImpl<Bd
      */
     @Override
     public Page<getAllByDateDTO> ApproveQuery(String start_time, String end_time, String line_id, Integer PageNo, Integer PageSize, Page page, String roleType, String staffID, String busId) {
-        List<BdStationCopyDTO> StationInfoList = queryAllStationInfo(null);
+        List<BdStationCopyDTO> StationInfoList = queryAllStationInfo(null,null);
         Page<getAllByDateDTO> lls = bdMapper.ApproveQuery(start_time, end_time, line_id, page, roleType, staffID, busId);
         List<getAllByDateDTO> ls = lls.getRecords();
         int skip = PageNo * PageSize;

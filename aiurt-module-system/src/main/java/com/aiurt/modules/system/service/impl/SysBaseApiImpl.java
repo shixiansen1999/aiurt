@@ -2050,4 +2050,17 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return  false;
         }
     }
+
+    @Override
+    public String getLineIdByCode(String lineCode) {
+        QueryWrapper<CsLine> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(CsLine::getLineCode, lineCode)
+                .last("limit 1");
+        CsLine csLine = lineMapper.selectOne(wrapper);
+        if (ObjectUtil.isNotEmpty(csLine)) {
+            return csLine.getId();
+        }
+        return "";
+    }
 }
