@@ -1,5 +1,6 @@
 package com.aiurt.boot.materials.controller;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -10,6 +11,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.dto.EmergencyMaterialsDTO;
 import com.aiurt.boot.materials.dto.MaterialAccountDTO;
 import com.aiurt.boot.materials.dto.MaterialPatrolDTO;
+import com.aiurt.boot.materials.dto.PatrolPeopleDTO;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoices;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
@@ -26,6 +28,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import liquibase.pro.packaged.E;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -113,12 +116,31 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	 }
 
 
-	 @AutoLog(value = "物资信息-应急物资台账检查-巡检标准下拉")
-	 @ApiOperation(value="物资信息-应急物资台账检查-巡检标准下拉", notes="物资信息-应急物资台账检查-巡检标准下拉")
+	 @AutoLog(value = "物资信息-应急物资台账检查-巡检标准下拉列表")
+	 @ApiOperation(value="物资信息-应急物资台账检查-巡检标准下拉列表", notes="物资信息-应急物资台账检查-巡检标准下拉列表")
 	 @GetMapping(value = "/getMaterialPatrol")
 	 public Result<?> getMaterialPatrol(){
 		 MaterialPatrolDTO materialPatrol = emergencyMaterialsService.getMaterialPatrol();
 		 return Result.OK(materialPatrol);
+	 }
+
+	 @AutoLog(value = "物资信息-应急物资台账检查-巡检人下拉列表")
+	 @ApiOperation(value="物资信息-应急物资台账检查-巡检人下拉列表", notes="物资信息-应急物资台账检查-巡检人下拉列表")
+	 @GetMapping(value = "/getPatrolPeople")
+	 public Result<?> getPatrolPeople(){
+		 PatrolPeopleDTO patrolPeopleDTO = new PatrolPeopleDTO();
+		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 //当前登录人的id
+		 patrolPeopleDTO.setPatrolId(sysUser.getId());
+		 //当前登录人的名称
+		 patrolPeopleDTO.setPatrolName(sysUser.getRealname());
+
+		 //部门列表
+		 List<LoginUser> userPersonnel = iSysBaseAPI.getUserPersonnel(sysUser.getOrgId());
+		 if (CollUtil.isNotEmpty(userPersonnel)){
+			 patrolPeopleDTO.setLoginUserList(userPersonnel);
+		 }
+		 return Result.OK(patrolPeopleDTO);
 	 }
 
 
