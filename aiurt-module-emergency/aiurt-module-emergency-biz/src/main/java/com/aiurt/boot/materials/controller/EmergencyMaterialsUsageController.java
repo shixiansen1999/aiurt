@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.aiurt.common.system.base.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import io.swagger.annotations.Api;
@@ -62,6 +63,7 @@ public class EmergencyMaterialsUsageController extends BaseController<EmergencyM
 	@AutoLog(value = "应急物资使用记录-添加")
 	@ApiOperation(value="应急物资使用记录-添加", notes="应急物资使用记录-添加")
 	@PostMapping(value = "/add")
+	@Transactional(rollbackFor = Exception.class)
 	public Result<String> add(@RequestBody EmergencyMaterialsUsage emergencyMaterialsUsage) {
 		emergencyMaterialsUsageService.save(emergencyMaterialsUsage);
 		return Result.OK("添加成功！");
@@ -76,6 +78,7 @@ public class EmergencyMaterialsUsageController extends BaseController<EmergencyM
 	@AutoLog(value = "应急物资使用记录-编辑")
 	@ApiOperation(value="应急物资使用记录-编辑", notes="应急物资使用记录-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+	@Transactional(rollbackFor = Exception.class)
 	public Result<String> edit(@RequestBody EmergencyMaterialsUsage emergencyMaterialsUsage) {
 		emergencyMaterialsUsageService.updateById(emergencyMaterialsUsage);
 		return Result.OK("编辑成功!");
@@ -90,6 +93,7 @@ public class EmergencyMaterialsUsageController extends BaseController<EmergencyM
 	@AutoLog(value = "应急物资使用记录-通过id删除")
 	@ApiOperation(value="应急物资使用记录-通过id删除", notes="应急物资使用记录-通过id删除")
 	@DeleteMapping(value = "/delete")
+	@Transactional(rollbackFor = Exception.class)
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		EmergencyMaterialsUsage emergencyMaterialsUsage = new EmergencyMaterialsUsage();
 		if (StrUtil.isNotBlank(id)){
@@ -119,6 +123,7 @@ public class EmergencyMaterialsUsageController extends BaseController<EmergencyM
 	 @AutoLog(value = "应急物资使用记录-提交")
 	 @ApiOperation(value="应急物资使用记录-提交", notes="应急物资使用记录-提交")
 	 @PostMapping(value = "/getSubmitMaterialRecord")
+	 @Transactional(rollbackFor = Exception.class)
 	 public Result<?> getSubmitMaterialRecord(@RequestParam(name="ids",required=true) String ids){
 		 List<EmergencyMaterialsUsage> list = new ArrayList<>();
 		 List<String> stringList = Arrays.asList(ids.split(","));

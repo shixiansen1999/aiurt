@@ -34,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import io.swagger.annotations.Api;
@@ -164,6 +165,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	@AutoLog(value = "物资信息-添加")
 	@ApiOperation(value="物资信息-添加", notes="物资信息-添加")
 	@PostMapping(value = "/add")
+	@Transactional(rollbackFor = Exception.class)
 	public Result<String> add(@RequestBody EmergencyMaterials emergencyMaterials) {
 		emergencyMaterialsService.save(emergencyMaterials);
 		return Result.OK("添加成功！");
@@ -173,6 +175,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	 @AutoLog(value = "物资信息-应急物资巡检登记-提交")
 	 @ApiOperation(value="物资信息-应急物资巡检登记-提交", notes="物资信息-应急物资巡检登记-提交")
 	 @PostMapping(value = "/emergencyMaterialsSubmit")
+	 @Transactional(rollbackFor = Exception.class)
 	 public Result<?> emergencyMaterialsSubmit(@RequestBody EmergencyMaterialsDTO emergencyMaterialsDTO){
 		 EmergencyMaterialsInvoices emergencyMaterialsInvoices = new EmergencyMaterialsInvoices();
 		 //应急物资巡检单号
@@ -225,6 +228,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	@AutoLog(value = "物资信息-编辑")
 	@ApiOperation(value="物资信息-编辑", notes="物资信息-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+	@Transactional(rollbackFor = Exception.class)
 	public Result<String> edit(@RequestBody EmergencyMaterials emergencyMaterials) {
 		emergencyMaterialsService.updateById(emergencyMaterials);
 		return Result.OK("编辑成功!");
@@ -239,6 +243,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	@AutoLog(value = "物资信息-通过id删除")
 	@ApiOperation(value="物资信息-通过id删除", notes="物资信息-通过id删除")
 	@DeleteMapping(value = "/delete")
+	@Transactional(rollbackFor = Exception.class)
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		EmergencyMaterials emergencyMaterials = new EmergencyMaterials();
 		if (StrUtil.isNotBlank(id)){
@@ -260,6 +265,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	@AutoLog(value = "物资信息-批量删除")
 	@ApiOperation(value="物资信息-批量删除", notes="物资信息-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
+	@Transactional(rollbackFor = Exception.class)
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.emergencyMaterialsService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");

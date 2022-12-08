@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import com.aiurt.common.system.base.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import io.swagger.annotations.Api;
@@ -91,6 +92,7 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	@AutoLog(value = "物资分类-添加")
 	@ApiOperation(value="物资分类-添加", notes="物资分类-添加")
 	@PostMapping(value = "/add")
+	@Transactional(rollbackFor = Exception.class)
 	public Result<String> add(@RequestBody EmergencyMaterialsCategory emergencyMaterialsCategory) {
 		emergencyMaterialsCategoryService.save(emergencyMaterialsCategory);
 		return Result.OK("添加成功！");
@@ -105,6 +107,7 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	@AutoLog(value = "物资分类-编辑")
 	@ApiOperation(value="物资分类-编辑", notes="物资分类-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+	@Transactional(rollbackFor = Exception.class)
 	public Result<String> edit(@RequestBody EmergencyMaterialsCategory emergencyMaterialsCategory) {
 		emergencyMaterialsCategoryService.updateById(emergencyMaterialsCategory);
 		return Result.OK("编辑成功!");
@@ -119,6 +122,7 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	@AutoLog(value = "物资分类-通过id删除")
 	@ApiOperation(value="物资分类-通过id删除", notes="物资分类-通过id删除")
 	@DeleteMapping(value = "/delete")
+	@Transactional(rollbackFor = Exception.class)
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		EmergencyMaterialsCategory emergencyMaterialsCategory = new EmergencyMaterialsCategory();
 		if (StrUtil.isNotBlank(id)){
@@ -140,6 +144,7 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	@AutoLog(value = "物资分类-批量删除")
 	@ApiOperation(value="物资分类-批量删除", notes="物资分类-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
+	@Transactional(rollbackFor = Exception.class)
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.emergencyMaterialsCategoryService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
