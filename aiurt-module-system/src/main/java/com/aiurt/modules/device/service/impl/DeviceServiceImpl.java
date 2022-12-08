@@ -9,9 +9,11 @@ import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.afterturn.easypoi.util.PoiMergeCellUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.util.oConvertUtils;
@@ -54,13 +56,18 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -794,6 +801,19 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
 		sheetsMap.put(0, errorMap);
 		Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+		CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+		//专业下拉框
+		List<DictModel> majorModels = bean.queryTableDictItemsByCode("cs_major", "major_name", "major_code");
+		selectList(workbook, "专业", 0, 0, majorModels);
+		//子系统下拉框
+		List<DictModel> subsystemModels = bean.queryTableDictItemsByCode("cs_subsystem", "system_name", "system_code");
+		selectList(workbook, "子系统", 1, 1, subsystemModels);
+		//设备状态下拉框
+		List<DictModel> statusModels = bean.queryDictItemsByCode("device_status");
+		selectList(workbook, "设备状态", 5, 5, statusModels);
+		//组件状态下拉框
+		List<DictModel> assemblyStatusModels = bean.queryDictItemsByCode("device_assembly_status");
+		selectList(workbook, "组件状态", 14, 14, assemblyStatusModels);
 		int size = 4;
 		for (DeviceModel deviceModel : list) {
 			for (int i = 0; i <= 12; i++) {
@@ -849,7 +869,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 					List<DictModel> deviceStatus = sysDictMapper.queryDictItemsByCode("device_assembly_status");
 					DictModel model = Optional.ofNullable(deviceStatus).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(statusName)).findFirst().orElse(null);
 					if (model != null) {
-						deviceAssembly.setAssemblyStatus(model.getValue());
+						deviceAssembly.setAssemblyStatus(model.getText());
 					} else {
 						stringBuilder.append("系统不存在该组件状态，");
 					}
@@ -940,7 +960,6 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		}
 
 	}
-
 	/**
 	 * 判断对象中属性值是否全为空
 	 *
@@ -969,6 +988,89 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		}
 
 		return true;
+	}
+	//下拉框
+	private void selectList(Workbook workbook,String name,int firstCol, int lastCol,List<DictModel> modelList){
+		Sheet sheet = workbook.getSheetAt(0);
+		if (CollectionUtil.isNotEmpty(modelList)) {
+			//将新建的sheet页隐藏掉, 下拉值太多，需要创建隐藏页面
+			int sheetTotal = workbook.getNumberOfSheets();
+			String hiddenSheetName = name + "_hiddenSheet";
+			List<String> collect = modelList.stream().map(DictModel::getText).collect(Collectors.toList());
+			Sheet hiddenSheet = workbook.getSheet(hiddenSheetName);
+			if (hiddenSheet == null) {
+				hiddenSheet = workbook.createSheet(hiddenSheetName);
+				//写入下拉数据到新的sheet页中
+				for (int i = 0; i < collect.size(); i++) {
+					Row hiddenRow = hiddenSheet.createRow(i);
+					Cell  hiddenCell = hiddenRow.createCell(0);
+					hiddenCell.setCellValue(collect.get(i));
+				}
+				workbook.setSheetHidden(sheetTotal, true);
+			}
+
+			// 下拉数据
+			CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(4, 65535, firstCol, lastCol);
+			//  生成下拉框内容名称
+			String strFormula = hiddenSheetName + "!$A$1:$A$65535";
+			// 根据隐藏页面创建下拉列表
+			XSSFDataValidationConstraint constraint = new XSSFDataValidationConstraint(DataValidationConstraint.ValidationType.LIST, strFormula);
+			XSSFDataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) hiddenSheet);
+			DataValidation validation = dvHelper.createValidation(constraint, cellRangeAddressList);
+			//  对sheet页生效
+			sheet.addValidationData(validation);
+		}
+
+	}
+
+
+	@Override
+	public void exportTemplateXl(HttpServletResponse response)throws IOException {
+		//获取输入流，原始模板位置
+		Resource resource = new ClassPathResource("/templates/device.xlsx");
+		InputStream resourceAsStream = resource.getInputStream();
+
+		//2.获取临时文件
+		File fileTemp= new File("/templates/device.xlsx");
+		try {
+			//将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+			FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
+
+		String path = fileTemp.getAbsolutePath();
+		TemplateExportParams exportParams = new TemplateExportParams(path);
+		Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+		Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+
+		CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+		//专业下拉框
+		List<DictModel> majorModels = bean.queryTableDictItemsByCode("cs_major", "major_name", "major_code");
+		selectList(workbook, "专业", 0, 0, majorModels);
+		//子系统下拉框
+		List<DictModel> subsystemModels = bean.queryTableDictItemsByCode("cs_subsystem", "system_name", "system_code");
+		selectList(workbook, "子系统", 1, 1, subsystemModels);
+		//设备状态下拉框
+		List<DictModel> statusModels = bean.queryDictItemsByCode("device_status");
+		selectList(workbook, "设备状态", 5, 5, statusModels);
+		//组件状态下拉框
+		List<DictModel> assemblyStatusModels = bean.queryDictItemsByCode("device_assembly_status");
+		selectList(workbook, "组件状态", 14, 14, assemblyStatusModels);
+
+		String fileName = "设备主数据导入模板.xlsx";
+
+		try {
+			response.setHeader("Content-Disposition",
+					"attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+			response.setHeader("Content-Disposition", "attachment;filename="+"设备主数据导入模板.xlsx");
+			BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+			workbook.write(bufferedOutPut);
+			bufferedOutPut.flush();
+			bufferedOutPut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

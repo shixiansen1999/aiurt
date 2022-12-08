@@ -24,14 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -347,19 +344,7 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
     @ApiOperation(value="设备主数据模板下载", notes="设备主数据模板下载")
     @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
     public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
-        //获取输入流，原始模板位置
-        ClassPathResource classPathResource =  new ClassPathResource("templates/device.xlsx");
-        InputStream bis = classPathResource.getInputStream();
-        //设置发送到客户端的响应的内容类型
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment;filename="+"设备主数据导入模板.xlsx");
-        BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
-        int len = 0;
-        while ((len = bis.read()) != -1) {
-            out.write(len);
-            out.flush();
-        }
-        out.close();
+        deviceService.exportTemplateXl(response);
     }
 
     /**

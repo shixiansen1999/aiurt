@@ -58,4 +58,6 @@ public interface IDeviceService extends IService<Device> {
     Result<Device> add(Device device);
 
     void exportXls(Device device, HttpServletRequest request, HttpServletResponse response);
+
+    void exportTemplateXl(HttpServletResponse response) throws IOException;
 }
