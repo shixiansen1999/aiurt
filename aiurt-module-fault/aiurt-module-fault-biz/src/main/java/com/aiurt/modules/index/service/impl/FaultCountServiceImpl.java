@@ -68,11 +68,11 @@ public class FaultCountServiceImpl implements IFaultCountService {
         List<String> majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
         FaultIndexDTO faultIndexDTO = new FaultIndexDTO();
         if (ObjectUtil.isEmpty(startDate) || ObjectUtil.isEmpty(endDate)) {
-            return faultIndexDTO;
+            return  setDefault();
         }
-        if(isDirector&&CollUtil.isNotEmpty(majors))
+        if(isDirector&&CollUtil.isEmpty(majors))
         {
-            return  faultIndexDTO;
+            return  setDefault();
         }
         //将符合条件的故障数据查出
         LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
@@ -81,7 +81,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
         List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
         if(CollUtil.isEmpty(departByUserId)&&!isDirector)
         {
-            return faultIndexDTO;
+            return  setDefault();
         }
         List<String> ordId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
         List<Fault> faultList = faultCountMapper.queryFaultCount(startDate,endDate,ordId,majors,isDirector);
@@ -135,7 +135,19 @@ public class FaultCountServiceImpl implements IFaultCountService {
         return faultIndexDTO;
     }
 
-
+    public FaultIndexDTO setDefault()
+{
+    FaultIndexDTO faultIndexDTO = new FaultIndexDTO();
+    faultIndexDTO.setHang(0L);
+    faultIndexDTO.setSum(0L);
+    faultIndexDTO.setUnSolve(0L);
+    faultIndexDTO.setSolve(0L);
+    faultIndexDTO.setLevelOneNumber(0);
+    faultIndexDTO.setLevelTwoNumber(0);
+    faultIndexDTO.setLevelThreeNumber(0);
+    faultIndexDTO.setSolveRate("0%");
+    return  faultIndexDTO;
+}
     /**
      * 首页-故障概况详情(总数和已解决)
      * @param faultCountInfoReq
