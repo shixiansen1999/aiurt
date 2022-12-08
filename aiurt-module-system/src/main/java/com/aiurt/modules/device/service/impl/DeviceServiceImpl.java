@@ -374,6 +374,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 						}
 						List<DeviceAssembly> deviceAssemblies = new ArrayList<>();
 						if (CollUtil.isNotEmpty(deviceAssemblyModels)) {
+							//有组件
 							for (DeviceAssemblyModel deviceAssemblyModel : deviceAssemblyModels) {
 								if (errorLines > 0) {
 									//生成错误信息
@@ -389,6 +390,14 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 									deviceAssembly.setStatus(deviceAssemblyModel.getAssemblyStatus());
 									deviceAssemblies.add(deviceAssembly);
 								}
+							}
+						}else {
+							//没有组件
+							if (errorLines > 0) {
+								//生成错误信息
+								DeviceAssemblyErrorModel deviceAssemblyErrorModel = new DeviceAssemblyErrorModel();
+								BeanUtil.copyProperties(deviceModel, deviceAssemblyErrorModel);
+								deviceAssemblyErrorModels.add(deviceAssemblyErrorModel);
 							}
 						}
 						if (errorLines == 0) {
