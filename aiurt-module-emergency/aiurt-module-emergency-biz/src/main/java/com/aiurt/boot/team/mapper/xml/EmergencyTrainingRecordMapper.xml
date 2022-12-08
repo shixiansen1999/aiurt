@@ -68,7 +68,7 @@
     </select>
 
 <select id="getTrainingCrews" resultType="com.aiurt.boot.team.vo.EmergencyCrewVO">
-    select ec.id,ec.user_id,etrc.id as recordCrewId,ec.user_phone as phone,ec.post,ec.schedule_item,su.realname
+    select ec.id,ec.user_id,ec.user_phone as phone,ec.post,ec.schedule_item,su.realname
     from emergency_training_record_crew etrc
     left join emergency_crew ec on etrc.emergency_crew_id = ec.id
     left join sys_user su on su.id = ec.user_id
