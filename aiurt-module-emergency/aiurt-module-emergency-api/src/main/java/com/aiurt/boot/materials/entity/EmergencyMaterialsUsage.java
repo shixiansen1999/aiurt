@@ -64,9 +64,9 @@ public class EmergencyMaterialsUsage extends DictEntity implements Serializable 
     @ApiModelProperty(value = "使用日期")
     private java.util.Date useDate;
 	/**使用时间*/
-	@Excel(name = "使用时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@Excel(name = "使用时间", width = 15, format = "HH:mm")
+	@JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
+    @DateTimeFormat(pattern="HH:mm")
     @ApiModelProperty(value = "使用时间")
     private java.util.Date useTime;
 	/**使用人ID*/
@@ -85,9 +85,9 @@ public class EmergencyMaterialsUsage extends DictEntity implements Serializable 
     @ApiModelProperty(value = "归还日期")
     private java.util.Date backDate;
 	/**归还时间*/
-	@Excel(name = "归还时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@Excel(name = "归还时间", width = 15, format = "HH:mm")
+	@JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
+    @DateTimeFormat(pattern="HH:mm")
     @ApiModelProperty(value = "归还时间")
     private java.util.Date backTime;
 	/**归还人ID*/
