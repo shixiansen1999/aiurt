@@ -14,7 +14,7 @@
         where ery.del_flag = 0
           and ahp.ID_ is not null
         <if test="condition.code != null and condition.code != ''">
-            and ery.`code` = #{condition.code}
+            and ery.`code` like concat('%', #{condition.code}, '%')
         </if>
         <if test="condition.name != null and condition.name != ''">
             and ery.name like concat('%', #{condition.name}, '%')
@@ -26,7 +26,7 @@
             and ery.org_code = #{condition.orgCode}
         </if>
         <if test="condition.year != null and condition.year != ''">
-            and ery.`year` = #{condition.year}
+            and ery.`year` like concat('%', #{condition.year}, '%')
         </if>
         <choose>
             <when test="condition.flag != null and 1 == condition.flag">
