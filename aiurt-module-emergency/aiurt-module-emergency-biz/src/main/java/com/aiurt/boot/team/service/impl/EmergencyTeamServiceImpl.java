@@ -235,8 +235,8 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
                 wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
                 wrapper.eq(EmergencyCrew::getEmergencyTeamId, emergencyTeam.getId());
-                List<EmergencyCrew> emergencyCrews = emergencyCrewService.getBaseMapper().selectList(wrapper);
-                emergencyTeam.setCrews(Convert.toStr(emergencyCrews.size()));
+                Long crews = emergencyCrewService.getBaseMapper().selectCount(wrapper);
+                emergencyTeam.setCrews(Convert.toStr(crews));
 
                 LoginUser userById = iSysBaseAPI.getUserById(emergencyTeam.getManagerId());
                 emergencyTeam.setManagerName(userById.getRealname());
@@ -255,10 +255,21 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         }
         List<String> collect = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
         LambdaQueryWrapper<EmergencyTeam> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.select(EmergencyTeam::getId,EmergencyTeam::getEmergencyTeamname, EmergencyTeam::getEmergencyTeamcode);
+        queryWrapper.select(EmergencyTeam::getId,EmergencyTeam::getEmergencyTeamname, EmergencyTeam::getEmergencyTeamcode,EmergencyTeam::getPositionCode);
         queryWrapper.eq(EmergencyTeam::getDelFlag, TeamConstant.DEL_FLAG0);
         queryWrapper.in(EmergencyTeam::getMajorCode, collect);
         List<EmergencyTeam> emergencyTeams = this.getBaseMapper().selectList(queryWrapper);
+        if (CollUtil.isNotEmpty(emergencyTeams)) {
+            for (EmergencyTeam emergencyTeam : emergencyTeams) {
+                LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
+                wrapper.eq(EmergencyCrew::getEmergencyTeamId, emergencyTeam.getId());
+                Long crews = emergencyCrewService.getBaseMapper().selectCount(wrapper);
+                emergencyTeam.setCrews(Convert.toStr(crews));
+                String positionName = iSysBaseAPI.getPosition(emergencyTeam.getPositionCode());
+                emergencyTeam.setPositionName(positionName);
+            }
+        }
         return Result.OK(emergencyTeams);
     }
 }
