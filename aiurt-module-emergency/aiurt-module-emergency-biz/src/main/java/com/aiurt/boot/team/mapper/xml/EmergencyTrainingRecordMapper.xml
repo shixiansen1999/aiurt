@@ -64,6 +64,7 @@
                  left join emergency_training_program etp on wtr.emergency_training_program_id = etp.id
                  left join emergency_team et on wtr.emergency_team_id = et.id
                  left join sys_user su on et.manager_id = su.id
+        where wtr.del_flag = 0 and wtr.id = #{id}
     </select>
 
 <select id="getTrainingCrews" resultType="com.aiurt.boot.team.vo.EmergencyCrewVO">

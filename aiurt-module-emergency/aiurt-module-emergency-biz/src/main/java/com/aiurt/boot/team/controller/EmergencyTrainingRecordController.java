@@ -149,8 +149,7 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	@ApiOperation(value="应急队伍训练记录-通过id查询", notes="应急队伍训练记录-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<EmergencyTrainingRecordVO> queryById(@RequestParam(name="id",required=true) String id) {
-		emergencyTrainingRecordService.queryById(id);
-		return Result.OK();
+		return emergencyTrainingRecordService.queryById(id);
 	}
 
 	/**
