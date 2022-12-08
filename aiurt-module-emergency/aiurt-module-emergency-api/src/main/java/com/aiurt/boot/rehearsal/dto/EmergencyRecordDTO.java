@@ -22,15 +22,15 @@ public class EmergencyRecordDTO {
     /**
      * 演练开始时间yyyy-MM-dd
      */
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM")
-    @DateTimeFormat(pattern = "yyyy-MM")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "演练开始时间yyyy-MM-dd")
     private Date startDate;
     /**
      * 演练结束时间yyyy-MM-dd
      */
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM")
-    @DateTimeFormat(pattern = "yyyy-MM")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "演练结束时间yyyy-MM-dd")
     private Date endDate;
     /**
