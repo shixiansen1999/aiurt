@@ -146,7 +146,12 @@ public class EmergencyImplementationRecordServiceImpl extends ServiceImpl<Emerge
             throw new AiurtBootException("记录已经提交，不允许更改！");
         }
         BeanUtils.copyProperties(emergencyRehearsalRegisterDTO, record);
-        record.setStatus(EmergencyConstant.RECORD_STATUS_1);
+        if (ObjectUtil.isNotEmpty(emergencyRehearsalRegisterDTO.getStatus())
+                && EmergencyConstant.RECORD_STATUS_2.equals(emergencyRehearsalRegisterDTO.getStatus())) {
+            record.setStatus(EmergencyConstant.RECORD_STATUS_2);
+        } else {
+            record.setStatus(EmergencyConstant.RECORD_STATUS_1);
+        }
         this.updateById(record);
 
         // 根据实施记录的ID删除记录的部门、问题、步骤等关联信息
