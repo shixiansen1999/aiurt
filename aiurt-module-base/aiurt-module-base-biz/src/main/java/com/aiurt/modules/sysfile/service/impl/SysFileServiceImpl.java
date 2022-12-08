@@ -5,6 +5,7 @@ import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
 import com.aiurt.modules.sysfile.mapper.SysFileMapper;
+import com.aiurt.modules.sysfile.mapper.SysFileRoleMapper;
 import com.aiurt.modules.sysfile.mapper.SysFileTypeMapper;
 import com.aiurt.modules.sysfile.param.FileAppParam;
 import com.aiurt.modules.sysfile.service.ISysFileRoleService;
@@ -18,8 +19,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -39,9 +42,16 @@ import java.util.stream.Collectors;
 public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> implements ISysFileService {
 
 	private final SysFileTypeMapper sysFileTypeMapper;
+	@Autowired
+	private SysFileRoleMapper sysFileRoleMapper;
 
 	@Override
 	public IPage<FileAppVO> selectAppList(FileAppParam param) {
+		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		List<SysFileRole> roleList = sysFileRoleMapper.selectList(new LambdaQueryWrapper<SysFileRole>()
+				.eq(SysFileRole::getDelFlag, 0).eq(SysFileRole::getUserId, loginUser.getId()));
+        List<Long> role =roleList.stream().map(s-> s.getTypeId()).collect(Collectors.toList());
+
 		if (param.getPageNo() == null) {
 			param.setPageNo(1);
 		}
@@ -49,11 +59,15 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 			param.setPageSize(10);
 		}
 		IPage<FileAppVO> page = new Page<>();
+		if (role == null || role.size() == 0) {
+			return page.setRecords(new ArrayList<>());
+		}
 		List<FileAppVO> list = new ArrayList<>();
 		int len = param.getPageNo() * param.getPageSize();
 		LambdaQueryWrapper<SysFileType> typeQueryWrapper = new LambdaQueryWrapper<SysFileType>()
 				.eq(SysFileType::getDelFlag, CommonConstant.DEL_FLAG_0)
-				.select(SysFileType::getId, SysFileType::getName);
+				.select(SysFileType::getId, SysFileType::getName)
+				.in(SysFileType::getId, role);
 		if (param.getTypeId() == null) {
 			typeQueryWrapper.eq(SysFileType::getParentId, 0);
 		} else {
