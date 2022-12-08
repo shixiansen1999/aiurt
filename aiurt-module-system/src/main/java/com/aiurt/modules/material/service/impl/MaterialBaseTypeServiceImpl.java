@@ -116,12 +116,14 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                 String majorCodeName = materialBase.getMajorName()==null?"":materialBase.getMajorName();
                 if("".equals(majorCodeName)){
                     errorStrs.add("第 " + i + " 行：专业名称为空，忽略导入。");
+                    materialBase.setText("专业名称为空，忽略导入");
                     list.add(materialBase);
                     continue;
                 }
                 CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().eq("major_name",majorCodeName).eq("del_flag",0));
                 if(csMajor == null){
                     errorStrs.add("第 " + i + " 行：无法根据专业名称找到对应数据，忽略导入。");
+                    materialBase.setText("无法根据专业名称找到对应数据，忽略导入");
                     list.add(materialBase);
                     continue;
                 }else{
@@ -131,6 +133,7 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                     CsSubsystem csSubsystem = csSubsystemService.getOne(new QueryWrapper<CsSubsystem>().eq("major_code",csMajor.getMajorCode()).eq("system_name",systemCodeName).eq("del_flag",0));
                     if(!"".equals(systemCodeName) && csSubsystem == null){
                         errorStrs.add("第 " + i + " 行：无法根据子系统名称找到对应数据，忽略导入。");
+                        materialBase.setText("无法根据子系统名称找到对应数据，忽略导入");
                         list.add(materialBase);
                         continue;
                     }else{
@@ -144,10 +147,11 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                 if(StrUtil.isNotEmpty(materialBase.getBaseTypeCode())){
                    List<MaterialBaseType>  materialBaseType = this.list(new LambdaQueryWrapper<MaterialBaseType>()
                            .eq(MaterialBaseType::getBaseTypeCode,materialBase.getBaseTypeCode())
-                           .eq(MaterialBaseType::getMajorCode,majorCodeName)
+                           .eq(MaterialBaseType::getMajorCode,materialBase.getMajorCode())
                            .eq(MaterialBaseType::getDelFlag,0));
                    if (materialBaseType.size()>0){
                        errorStrs.add("第 " + i + " 行：分类编码相同，忽略导入。");
+                       materialBase.setText("分类编码相同，忽略导入");
                        list.add(materialBase);
                        continue;
                    }
@@ -159,12 +163,14 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                             .eq(MaterialBaseType::getDelFlag,0));
                     if (materialBaseType.size()>0){
                         errorStrs.add("第 " + i + " 行：分类名称相同，忽略导入。");
+                        materialBase.setText("分类名称相同，忽略导入");
                         list.add(materialBase);
                         continue;
                     }
                 }
                 if ("".equals(materialBase.getStatus())){
                     errorStrs.add("第 " + i + " 行：没输入分类状态，忽略导入。");
+                    materialBase.setText("没输入分类状态，忽略导入");
                     list.add(materialBase);
                     continue;
                 }else {
@@ -174,6 +180,7 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                         materialBase.setStatus("2");
                     }else {
                         errorStrs.add("第 " + i + " 行：分类状态输入错误只有启用和停用，忽略导入。");
+                        materialBase.setText("分类状态输入错误只有启用和停用，忽略导入");
                         list.add(materialBase);
                         continue;
                     }
@@ -210,6 +217,7 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                 lm.put("baseTypeCode",l.getBaseTypeCode());
                 lm.put("baseTypeName",l.getBaseTypeName());
                 lm.put("systemName",l.getSystemName());
+                lm.put("text",l.getText());
                 mapList.add(lm);
             });
             Map<String, Object> errorMap = new HashMap<String, Object>();

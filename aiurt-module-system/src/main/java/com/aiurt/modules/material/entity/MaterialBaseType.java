@@ -194,4 +194,8 @@ public class MaterialBaseType extends DictEntity {
 	@ApiModelProperty(value = "个数")
 	@TableField(exist = false)
 	private Long count;
+	@Excel(name = "错误原因", width = 15)
+	@ApiModelProperty(value = "错误原因")
+	@TableField(exist = false)
+	private String text;
 }

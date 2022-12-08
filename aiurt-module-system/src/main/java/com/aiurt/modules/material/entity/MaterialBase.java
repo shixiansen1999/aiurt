@@ -188,5 +188,8 @@ public class MaterialBase extends DictEntity {
 	@ApiModelProperty(value = "添加个数")
 	@TableField(exist = false)
 	private Integer addNumber;
-
+	@Excel(name = "错误原因", width = 15)
+	@ApiModelProperty(value = "错误原因")
+	@TableField(exist = false)
+	private String text;
 }

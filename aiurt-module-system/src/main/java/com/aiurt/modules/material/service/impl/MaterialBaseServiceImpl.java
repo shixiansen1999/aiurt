@@ -132,12 +132,14 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 				String majorCodeName = materialBase.getMajorCodeName()==null?"":materialBase.getMajorCodeName();
 				if("".equals(majorCodeName)){
 					errorStrs.add("第 " + i + " 行：专业名称为空，忽略导入。");
+					materialBase.setText("专业名称为空，忽略导入");
 					list.add(materialBase);
 					continue;
 				}
 				CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().eq("major_name",majorCodeName).eq("del_flag",0));
 				if(csMajor == null){
 					errorStrs.add("第 " + i + " 行：无法根据专业名称找到对应数据，忽略导入。");
+					materialBase.setText("无法根据专业名称找到对应数据，忽略导入");
 					list.add(materialBase);
 					continue;
 				}else{
@@ -147,6 +149,7 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 					CsSubsystem csSubsystem = csSubsystemService.getOne(new QueryWrapper<CsSubsystem>().eq("major_code",csMajor.getMajorCode()).eq("system_name",systemCodeName).eq("del_flag",0));
 					if(!"".equals(systemCodeName) && csSubsystem == null){
 						errorStrs.add("第 " + i + " 行：无法根据子系统名称找到对应数据，忽略导入。");
+						materialBase.setText("无法根据子系统名称找到对应数据，忽略导入");
 						list.add(materialBase);
 						continue;
 					}else{
@@ -157,6 +160,7 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 						String baseTypeCodeName = materialBase.getBaseTypeCodeName()==null?"":materialBase.getBaseTypeCodeName();
 						if("".equals(baseTypeCodeName)){
 							errorStrs.add("第 " + i + " 行：物资分类编码为空，忽略导入。");
+							materialBase.setText("物资分类编码为空，忽略导入");
 							list.add(materialBase);
 							continue;
 						}
@@ -170,6 +174,7 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 						MaterialBaseType materialBaseType = materialBaseTypeService.getOne(queryWrapper);
 						if(materialBaseType == null){
 							errorStrs.add("第 " + i + " 行：无法根据物资分类名称找到对应数据，忽略导入。");
+							materialBase.setText("无法根据物资分类名称找到对应数据，忽略导入");
 							list.add(materialBase);
 							continue;
 						}else{
@@ -182,6 +187,7 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 									.eq(MaterialBase::getDelFlag,0));
 							if (materialBase1.size()>0){
 								errorStrs.add("第 " + i + " 行：在同一专业下相同的物资编号，忽略导入。");
+								materialBase.setText("在同一专业下相同的物资编号，忽略导入");
 								list.add(materialBase);
 								continue;
 							}
@@ -198,12 +204,14 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 				String name = materialBase.getName()==null?"":materialBase.getName();
 				if ("".equals(name)) {
 					errorStrs.add("第 " + i + " 行：物资名称为空，忽略导入。");
+					materialBase.setText("物资名称为空，忽略导入");
 					list.add(materialBase);
 					continue;
 				}
 				String type = materialBase.getType()==null?"":materialBase.getType();
 				if ("".equals(type)) {
 					errorStrs.add("第 " + i + " 行：物资类型为空，忽略导入。");
+					materialBase.setText("物资类型为空，忽略导入");
 					list.add(materialBase);
 					continue;
 				}else {
@@ -215,6 +223,7 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 							materialBase.setType("3");
 						}else {
 						errorStrs.add("第 " + i + " 行：物资类型不存在，忽略导入。");
+						materialBase.setText("物资类型不存在，忽略导入");
 						list.add(materialBase);
 						continue;
 					}
@@ -225,6 +234,7 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 				CsManufactor csManufactor = csManufactorService.getOne(new QueryWrapper<CsManufactor>().eq("name",manufactorCodeName).eq("del_flag",0).last("limit 1"));
 				if(!"".equals(manufactorCodeName) && csManufactor == null){
 					errorStrs.add("第 " + i + " 行：无法根据生产厂商名称找到对应数据，忽略导入。");
+					materialBase.setText("无法根据生产厂商名称找到对应数据，忽略导入");
 					list.add(materialBase);
 					continue;
 				}else{
@@ -239,6 +249,7 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 						materialBase.setUnit(collect.get(0).getValue());
 					}else{
 						errorStrs.add("第 " + i + " 行：无法根据物资单位找到对应数据，忽略导入。");
+						materialBase.setText("无法根据物资单位找到对应数据，忽略导入");
 						list.add(materialBase);
 						continue;
 					}
@@ -300,6 +311,7 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 				lm.put("unitName",l.getUnitName());
 				lm.put("price",l.getPrice());
 				lm.put("consumablesName",l.getConsumablesName());
+				lm.put("text",l.getText());
 				mapList.add(lm);
 			});
 			Map<String, Object> errorMap = new HashMap<String, Object>();
