@@ -15,6 +15,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
 
@@ -53,19 +54,19 @@ public class EmergencyTrainingRecord implements Serializable {
 	/**应急队伍id*/
 	@Excel(name = "应急队伍id", width = 15)
     @ApiModelProperty(value = "应急队伍id")
-    @NotBlank(message = "训练计划id不能为空", groups = {Save.class, Update.class})
+    @NotBlank(message = "应急队伍id不能为空", groups = {Save.class, Update.class})
     private String emergencyTeamId;
 	/**训练时间*/
 	@Excel(name = "训练时间", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "训练时间")
-    @NotBlank(message = "训练时间不能为空", groups = {Save.class, Update.class})
+    @NotNull(message = "训练时间不能为空", groups = {Save.class, Update.class})
     private java.util.Date trainingTime;
 	/**参加人数*/
 	@Excel(name = "训练人数", width = 15)
     @ApiModelProperty(value = "训练人数")
-    @NotBlank(message = "训练人数不能为空", groups = {Save.class, Update.class})
+    @NotNull(message = "训练人数不能为空", groups = {Save.class, Update.class})
     private Integer traineesNum;
 	/**线路编码*/
 	@Excel(name = "线路编码", width = 15)

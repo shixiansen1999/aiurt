@@ -13,6 +13,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -48,9 +49,9 @@ public class EmergencyTrainingProcessRecord implements Serializable {
 	/**时间*/
 	@Excel(name = "时间", width = 15, format = "HH:mm")
 	@JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
-    @DateTimeFormat(pattern="HH:ss")
+    @DateTimeFormat(pattern="HH:mm")
     @ApiModelProperty(value = "时间")
-    @NotBlank(message = "时间不能为空", groups = {Save.class, Update.class})
+    @NotNull(message = "时间不能为空", groups = {Save.class, Update.class})
     private java.util.Date trainingTime;
 	/**是否次日： 0是 1否*/
 	@Excel(name = "是否次日： 0是 1否", width = 15)
