@@ -62,18 +62,15 @@ public class VersionInfoController extends BaseController<VersionInfo, IVersionI
                                    @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                    @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                    HttpServletRequest req) {
-        Result<IPage<VersionInfo>> result = new Result<IPage<VersionInfo>>();
         QueryWrapper<VersionInfo> queryWrapper = QueryGenerator.initQueryWrapper(versionInfo, req.getParameterMap());
         queryWrapper.orderByDesc("upload_time");
         if(ObjectUtil.isNotEmpty(versionInfo.getVersionId()))
         {
-            queryWrapper.like("version_id", String.valueOf(versionInfo.getVersionId()));
+            queryWrapper.like(true,"version_id", String.valueOf(versionInfo.getVersionId()));
         }
         Page<VersionInfo> page = new Page<VersionInfo>(pageNo, pageSize);
         IPage<VersionInfo> pageList = bdVersionInfoService.page(page, queryWrapper);
-        result.setSuccess(true);
-        result.setResult(pageList);
-        return result;
+        return Result.OK(pageList);
     }
 
     /**
