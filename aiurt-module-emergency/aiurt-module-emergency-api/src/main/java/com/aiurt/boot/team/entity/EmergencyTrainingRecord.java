@@ -1,6 +1,7 @@
 package com.aiurt.boot.team.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -111,16 +112,19 @@ public class EmergencyTrainingRecord implements Serializable {
 
     @ApiModelProperty(value = "参训人员")
     @NotEmpty(message = "参训人员不能为空", groups = {Save.class, Update.class})
+    @TableField(exist = false)
     @Valid
     private List<EmergencyTrainingRecordCrew> crewList;
 
     @ApiModelProperty(value = "记录附件")
     @NotEmpty(message = "记录附件不能为空", groups = {Save.class, Update.class})
+    @TableField(exist = false)
     @Valid
     private List<EmergencyTrainingRecordAtt> attList;
 
     @ApiModelProperty(value = "训练过程记录")
     @NotEmpty(message = "训练过程记录不能为空", groups = {Save.class, Update.class})
+    @TableField(exist = false)
     @Valid
     private List<EmergencyTrainingProcessRecord> processRecordList;
 }

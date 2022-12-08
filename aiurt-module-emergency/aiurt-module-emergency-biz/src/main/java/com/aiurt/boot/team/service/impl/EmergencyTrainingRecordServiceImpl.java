@@ -1,7 +1,6 @@
 package com.aiurt.boot.team.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.team.constant.TeamConstant;
@@ -27,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -133,8 +133,10 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             emergencyTrainingRecordAtt.setEmergencyTrainingRecordId(id);
             String size = emergencyTrainingRecordAtt.getSize();
             String type = emergencyTrainingRecordAtt.getType();
-            double fileSize  = (double) Convert.toInt(size) / 1048576;
-            if (fileSize  > 20 || !type.contains("doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar")) {
+            BigDecimal bigDecimal = new BigDecimal(size);
+            BigDecimal divide = bigDecimal.divide(new BigDecimal(1048576));
+            int i = divide.compareTo(new BigDecimal(20));
+            if (i > 0 || !type.contains("doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar")) {
                 return Result.error("文件大小超过限制或者文件格式不对");
             }
             emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
@@ -191,8 +193,10 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 emergencyTrainingRecordAtt.setEmergencyTrainingRecordId(id);
                 String size = emergencyTrainingRecordAtt.getSize();
                 String type = emergencyTrainingRecordAtt.getType();
-                double fileSize  = (double) Convert.toInt(size) / 1048576;
-                if (fileSize  > 20 || !type.contains("doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar")) {
+                BigDecimal bigDecimal = new BigDecimal(size);
+                BigDecimal divide = bigDecimal.divide(new BigDecimal(1048576));
+                int i = divide.compareTo(new BigDecimal(20));
+                if (i > 0 || !type.contains("doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar")) {
                     return Result.error("文件大小超过限制或者文件格式不对");
                 }
                 emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
