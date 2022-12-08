@@ -64,8 +64,4 @@ public class EmergencyCrewVO {
     @ApiModelProperty(value = "备注")
     private String remark;
 
-    /**应急队伍训练记录参训人员关联表id*/
-    @TableId(type = IdType.ASSIGN_ID)
-    @ApiModelProperty(value = "应急队伍训练记录参训人员关联表id")
-    private String recordCrewId;
 }
