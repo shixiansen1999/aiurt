@@ -37,10 +37,11 @@ public class CsStationServiceImpl extends ServiceImpl<CsStationMapper, CsStation
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> add(CsStation csStation) {
-        //名称不能重复，判断数据库中是否存在，如不存在则可继续添加
+        //同一父级下 名称不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<CsStation> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsStation::getStationName, csStation.getStationName());
         nameWrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
+        nameWrapper.eq(CsStation::getLineCode, csStation.getLineCode());
         List<CsStation> stationList = csStationMapper.selectList(nameWrapper);
         if (!stationList.isEmpty()) {
             return Result.error("二级名称重复，请重新填写！");
