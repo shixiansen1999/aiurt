@@ -120,7 +120,7 @@ public class SysDepart implements Serializable {
 	private Date updateTime;
 	/**联系人id*/
 	@ApiModelProperty(value = "联系人id")
-	@Excel(name="联系人id",width=15)
+	@Excel(name="联系人名称",width=15)
 	private String contactId;
 	/**联系人方式*/
 	@ApiModelProperty(value = "联系人方式")
@@ -128,11 +128,11 @@ public class SysDepart implements Serializable {
 	private String concatWay;
 	/**管理负责人id*/
 	@ApiModelProperty(value = "管理负责人id")
-	@Excel(name="管理负责人id",width=15)
+	@Excel(name="管理负责人名称",width=15)
 	private String managerId;
 	/**技术负责人id*/
 	@ApiModelProperty(value = "技术负责人id")
-	@Excel(name="技术负责人id",width=15)
+	@Excel(name="技术负责人名称",width=15)
 	private String technicalId;
 	/**班组类别*/
 	@ApiModelProperty(value = "班组类别")

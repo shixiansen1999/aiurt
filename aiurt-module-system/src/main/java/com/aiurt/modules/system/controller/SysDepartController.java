@@ -1,11 +1,13 @@
 package com.aiurt.modules.system.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.system.util.JwtUtil;
 import org.jeecg.common.system.vo.LoginUser;
@@ -68,6 +70,8 @@ public class SysDepartController {
 	private ISysUserService sysUserService;
 	@Autowired
 	private ISysUserDepartService sysUserDepartService;
+	@Autowired
+	private ISysBaseAPI  iSysBaseAPI;
 	/**
 	 * 查询数据 查出我的部门,并以树结构数据格式响应给前端
 	 *
@@ -417,6 +421,36 @@ public class SysDepartController {
                 		}
                 	}else{
                 		sysDepart.setParentId("");
+					}
+					if (StrUtil.isBlank(sysDepart.getParentId())) {
+						sysDepart.setOrgCodeCc("/"+sysDepart.getOrgCode()+"/");
+					}else {
+						// 查询上级的编码
+						SysDepart depart = sysDepartService.getById(sysDepart.getParentId());
+						if (Objects.nonNull(depart) && StrUtil.isNotBlank(depart.getOrgCodeCc())) {
+							sysDepart.setOrgCodeCc(depart.getOrgCodeCc()+""+sysDepart.getOrgCode()+"/");
+						}
+					}
+					String userName = iSysBaseAPI.getUserName(sysDepart.getContactId());
+					if (StrUtil.isNotBlank(userName)){
+						LoginUser loginUser = iSysBaseAPI.queryUser(userName);
+						sysDepart.setContactId(loginUser.getId());
+					}else {
+						return Result.error("文件导入失败:没有此联系人！");
+					}
+					String userName1 = iSysBaseAPI.getUserName(sysDepart.getManagerId());
+					if (StrUtil.isNotBlank(userName1)){
+						LoginUser loginUser = iSysBaseAPI.queryUser(userName1);
+						sysDepart.setManagerId(loginUser.getId());
+					}else {
+						return Result.error("文件导入失败:没有此管理负责人！");
+					}
+					String userName2 = iSysBaseAPI.getUserName(sysDepart.getTechnicalId());
+					if (StrUtil.isNotBlank(userName2)){
+						LoginUser loginUser = iSysBaseAPI.queryUser(userName2);
+						sysDepart.setTechnicalId(loginUser.getId());
+					}else {
+						return Result.error("文件导入失败:没有此技术负责人！");
 					}
                     //update-begin---author:liusq   Date:20210223  for：批量导入部门以后，不能追加下一级部门 #2245------------
 					sysDepart.setOrgType(sysDepart.getOrgCode().length()/codeLength+"");
