@@ -1,58 +1,47 @@
 package com.aiurt.modules.sm.controller;
 
-import java.io.BufferedOutputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.common.aspect.annotation.PermissionData;
-import com.aiurt.common.system.base.view.AiurtEntityExcelView;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.sm.entity.CsSafetyAttention;
 import com.aiurt.modules.sm.entity.CsSafetyAttentionType;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionTypeMapper;
+import com.aiurt.modules.sm.service.ICsSafetyAttentionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.common.util.oConvertUtils;
-import com.aiurt.modules.sm.entity.CsSafetyAttention;
-import com.aiurt.modules.sm.service.ICsSafetyAttentionService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
-
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-import com.aiurt.common.system.base.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
  /**
  * @Description: 安全事项
@@ -141,6 +130,32 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		return Result.OK(pageList);
 	}
 
+	 /**
+	  *  app巡视、检修-安全事项查询
+	  *
+	  * @param csSafetyAttention
+	  * @return
+	  */
+	 @AutoLog(value = " app巡视、检修-安全事项查询")
+	 @ApiOperation(value=" app巡视、检修-安全事项查询", notes=" app巡视、检修-安全事项查询")
+	 @GetMapping (value = "/queryList")
+	 public Result<IPage<CsSafetyAttention>> queryList(CsSafetyAttention csSafetyAttention,
+														   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+														   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+														   HttpServletRequest req) {
+		 QueryWrapper<CsSafetyAttention> queryWrapper = new QueryWrapper<>();
+		 queryWrapper.orderByDesc("create_time");
+		 queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+		 if(ObjectUtil.isNotEmpty(csSafetyAttention.getMajorCode()))
+		 {queryWrapper.eq("major_code",csSafetyAttention.getMajorCode()); }
+		 if(ObjectUtil.isNotEmpty(csSafetyAttention.getSystemCode()))
+		 { queryWrapper.eq("system_code",csSafetyAttention.getSystemCode()); }
+		 if(ObjectUtil.isNotEmpty(csSafetyAttention.getState()))
+		 { queryWrapper.eq("state",csSafetyAttention.getState()); }
+		 Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);
+		 IPage<CsSafetyAttention> pageList = csSafetyAttentionService.page(page, queryWrapper);
+		 return Result.OK(pageList);
+	 }
 	/**
 	 *   添加
 	 *
