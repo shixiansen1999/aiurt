@@ -108,6 +108,13 @@ public class EmergencyPlanRecord extends DictEntity implements Serializable {
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
     private Integer delFlag;
+
+    /**提交状态： 0待提交 1已提交*/
+    @Excel(name = "提交状态： 0未提交 1已提交", width = 15)
+    @ApiModelProperty(value = "提交状态： 0待提交 1已提交")
+    @Dict(dicCode = "emergency_is_commit")
+    private Integer status;
+
 	/**创建日期*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")

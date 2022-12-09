@@ -86,6 +86,7 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	 }
 
 
+
 	 @AutoLog(value = "应急预案启动记录-编辑")
 	 @ApiOperation(value="应急预案启动记录-编辑", notes="应急预案台账-编辑")
 	 @RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
@@ -170,6 +171,14 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	 public Result<List<LoginUser>> getDutyUser() {
 		 List<LoginUser> users = emergencyPlanRecordService.getDutyUser();
 		 return Result.OK(users);
+	 }
+
+	 @AutoLog(value = "应急预案-应急预案启动记录提交")
+	 @ApiOperation(value = "应急预案-应急预案启动记录提交", notes = "应急预案-应急预案启动记录提交")
+	 @PostMapping(value = "/submit")
+	 public Result<String> startProcess(@RequestParam(name = "id", required = true) String id) {
+		 emergencyPlanRecordService.submit(id);
+		 return Result.OK("提交成功!");
 	 }
 
 }

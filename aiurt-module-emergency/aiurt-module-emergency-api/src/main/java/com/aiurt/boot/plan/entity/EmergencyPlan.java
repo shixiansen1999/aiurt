@@ -114,4 +114,29 @@ public class EmergencyPlan extends DictEntity implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
+
+    /**
+     * 实例id
+     */
+    @ApiModelProperty(value = "实例id")
+    @TableField(exist = false)
+    private String processInstanceId;
+    /**
+     * 任务id
+     */
+    @ApiModelProperty(value = "任务id")
+    @TableField(exist = false)
+    private String taskId;
+    /**
+     * 任务名称
+     */
+    @ApiModelProperty(value = "任务名称")
+    @TableField(exist = false)
+    private String taskName;
+    /**
+     * 模板key，流程标识
+     */
+    @ApiModelProperty(value = "模板key，流程标识")
+    @TableField(exist = false)
+    private String modelKey;
 }

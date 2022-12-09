@@ -7,6 +7,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
+import com.aiurt.boot.plan.dto.EmergencyPlanQueryDTO;
 import com.aiurt.boot.plan.dto.EmergencyPlanRecordDTO;
 import com.aiurt.boot.plan.dto.EmergencyPlanRecordDepartDTO;
 import com.aiurt.boot.plan.entity.*;
@@ -71,13 +72,12 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     @Autowired
     @Lazy
     private IEmergencyPlanService emergencyPlanService;
+    @Autowired
+    private EmergencyPlanMapper emergencyPlanMapper;
 
     @Override
-    public IPage<EmergencyPlan> queryPageList(Page<EmergencyPlan> page, EmergencyPlanDTO emergencyPlanDto) {
-        EmergencyPlan emergencyPlan = new EmergencyPlan();
-        LambdaQueryWrapper<EmergencyPlan> queryWrapper = new LambdaQueryWrapper<>();
-        BeanUtil.copyProperties(emergencyPlanDto, emergencyPlan);
-
+    @Transactional(rollbackFor = Exception.class)
+    public IPage<EmergencyPlan> queryPageList(Page<EmergencyPlan> page, EmergencyPlanQueryDTO emergencyPlanQueryDto) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
         List<CsUserDepartModel> deptModel = sysBaseApi.getDepartByUserId(loginUser.getId());
@@ -86,19 +86,8 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         if (CollectionUtil.isEmpty(orgCodes)) {
             return page;
         }
-        if(ObjectUtil.isNotEmpty(emergencyPlan.getEmergencyPlanType())){
-            queryWrapper.eq(EmergencyPlan::getEmergencyPlanType,emergencyPlan.getEmergencyPlanType());
-        }
-        if(ObjectUtil.isNotEmpty(emergencyPlan.getEmergencyPlanName())){
-            queryWrapper.eq(EmergencyPlan::getEmergencyPlanName,emergencyPlan.getEmergencyPlanName());
-        }
-        if(ObjectUtil.isNotEmpty(emergencyPlan.getStatus())){
-            queryWrapper.eq(EmergencyPlan::getStatus,emergencyPlan.getStatus());
-        }
-        queryWrapper.eq(EmergencyPlan::getDelFlag, EmergencyPlanConstant.DEL_FLAG0);
-        queryWrapper.in(EmergencyPlan::getOrgCode, orgCodes);
-        queryWrapper.orderByAsc(EmergencyPlan::getEmergencyPlanStatus);
-        Page<EmergencyPlan> pageList = this.page(page, queryWrapper);
+        IPage<EmergencyPlan> pageList = emergencyPlanMapper.queryPageList(page, emergencyPlanQueryDto,orgCodes);
+
         return pageList;
 
     }
@@ -344,6 +333,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String change(EmergencyPlanDTO emergencyPlanDto) {
         String id = emergencyPlanDto.getId();
 
@@ -439,7 +429,8 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     }
 
     @Override
-    public String startProcess(String id) {
+    @Transactional(rollbackFor = Exception.class)
+    public String commit(String id) {
         EmergencyPlan emergencyPlan = this.getById(id);
         Assert.notNull(emergencyPlan, "未找到对应数据！");
         // 代提审才允许编辑
@@ -453,6 +444,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String openOrStop(String id) {
         EmergencyPlan emergencyPlan = this.getById(id);
         Assert.notNull(emergencyPlan, "未找到对应数据！");
@@ -486,6 +478,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public EmergencyPlanDTO queryById(String id) {
         EmergencyPlan plan = this.getById(id);
         Assert.notNull(plan, "未找到对应记录！");
