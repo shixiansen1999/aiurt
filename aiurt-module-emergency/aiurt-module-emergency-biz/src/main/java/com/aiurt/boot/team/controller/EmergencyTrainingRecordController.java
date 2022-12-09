@@ -101,7 +101,8 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 			 return Result.error("当前记录已提交,不能重复提交");
 		 }
 		 //如果是提交，判断是否所有内容填写完整
-		 if (CollUtil.isEmpty(record.getCrewList()) || CollUtil.isEmpty(record.getProcessRecordList()) ||CollUtil.isEmpty(record.getAttList())) {
+		 Result<EmergencyTrainingRecordVO> result = this.queryById(id);
+		 if (CollUtil.isEmpty(result.getResult().getTrainingCrews()) || CollUtil.isEmpty(result.getResult().getProcessRecords()) ||CollUtil.isEmpty(result.getResult().getRecordAtts())) {
 			 return Result.error("还有内容没有填写，不能提交");
 		 }
 		 record.setStatus(TeamConstant.SUBMITTED);

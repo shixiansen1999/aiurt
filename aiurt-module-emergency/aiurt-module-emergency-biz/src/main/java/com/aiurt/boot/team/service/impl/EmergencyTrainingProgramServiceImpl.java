@@ -86,7 +86,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         Optional.ofNullable(trainingProgram.getStatus())
                 .ifPresent(status -> queryWrapper.eq(EmergencyTrainingProgram::getStatus, status));
         Optional.ofNullable(trainingProgram.getTrainingProgramCode())
-                .ifPresent(programCode -> queryWrapper.eq(EmergencyTrainingProgram::getTrainingProgramCode, programCode));
+                .ifPresent(programCode -> queryWrapper.like(EmergencyTrainingProgram::getTrainingProgramCode, programCode));
         Optional.ofNullable(trainingProgram.getTrainingProgramName())
                 .ifPresent(programName -> queryWrapper.like(EmergencyTrainingProgram::getTrainingProgramName, programName));
         queryWrapper.orderByDesc(EmergencyTrainingProgram::getCreateTime).orderByDesc(EmergencyTrainingProgram::getUpdateTime);
