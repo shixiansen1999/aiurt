@@ -1702,8 +1702,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                     historicTaskInfo.setResult(FlowApprovalType.DICT_MAP.get(actCustomTaskComment.getApprovalType()));
                     historicTaskInfo.setRemark(actCustomTaskComment.getComment());
                 }
-                historicTaskInfoList.add(historicTaskInfo);
             }
+            historicTaskInfoList.add(historicTaskInfo);
         });
         return historicTaskInfoList;
     }
