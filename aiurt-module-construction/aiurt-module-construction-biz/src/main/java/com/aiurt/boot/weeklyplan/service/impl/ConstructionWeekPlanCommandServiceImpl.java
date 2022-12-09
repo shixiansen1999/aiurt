@@ -309,12 +309,14 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             // 线路负责人审批
             command.setLineStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setLineOpinion(updateStateEntity.getReason());
+            command.setLineUserId(loginUser.getId());
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
         } else if (3 == states) {
             // 生产调度审批
             command.setDispatchStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setDispatchOpinion(updateStateEntity.getReason());
+            command.setDispatchId(loginUser.getId());
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
         } else if (5 == states) {
@@ -324,12 +326,14 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             // 分部主任审批
             command.setDirectorStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setDirectorOpinion(updateStateEntity.getReason());
+            command.setDirectorId(loginUser.getId());
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
         } else if (8 == states) {
             // 中心经理审批
             command.setManagerStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setManagerOpinion(updateStateEntity.getReason());
+            command.setManagerId(loginUser.getId());
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
         } else if (2 == states || 4 == states || 7 == states || 9 == states) {
@@ -337,6 +341,11 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             command.setRejectId(loginUser.getId());
             command.setRejectReason(updateStateEntity.getReason());
             command.setFormStatus(ConstructionConstant.FORM_STATUS_3);
+            // 清空之前的审批人信息
+            command.setLineUserId(null);
+            command.setDispatchId(null);
+            command.setDirectorId(null);
+            command.setManagerId(null);
         } else {
             throw new AiurtBootException("你没有权限审批或你不是节点的审批人！");
         }
