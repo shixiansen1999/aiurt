@@ -98,7 +98,9 @@ public class EmergencyImplementationRecordServiceImpl extends ServiceImpl<Emerge
             if (CollectionUtil.isNotEmpty(recordDepts)) {
                 List<EmergencyDeptDTO> depts = new ArrayList<>();
                 recordDepts.forEach(d -> depts.add(new EmergencyDeptDTO(d.getOrgCode(), orgMap.get(d.getOrgCode()))));
+                String deptNames = depts.stream().map(EmergencyDeptDTO::getOrgName).collect(Collectors.joining(","));
                 l.setDeptList(depts);
+                l.setDeptNames(deptNames);
             }
         });
         return pageList;

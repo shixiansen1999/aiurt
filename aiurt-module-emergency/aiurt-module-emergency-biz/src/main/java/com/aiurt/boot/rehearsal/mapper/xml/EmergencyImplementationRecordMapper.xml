@@ -16,8 +16,8 @@
             and erm.subject like concat('%', #{condition.subject}, '%')
         </if>
         <if test="condition.startDate != null and condition.endDate != null">
-            and DATE_FORMAT(erm.rehearsal_time, '%Y-%m-%d')
-                between DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(eir.rehearsal_time, '%Y-%m-%d' )
+            between DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
             and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
         </if>
         <if test="condition.type != null">
