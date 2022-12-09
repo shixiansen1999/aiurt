@@ -37,7 +37,7 @@
             and etp.training_program_code like concat('%',#{emergencyTrainingProgramDTO.trainingProgramCode},'%')
         </if>
         <if test="emergencyTrainingProgramDTO.trainingProgramName != null and emergencyTrainingProgramDTO.trainingProgramName != ''">
-            and etp.training_program_name like concat('%',#{emergencyTrainingProgramDTO.trainingProgramCode},'%')
+            and etp.training_program_name like concat('%',#{emergencyTrainingProgramDTO.trainingProgramName},'%')
         </if>
         <if test="emergencyTrainingProgramDTO.trainingPlanTime != null">
             and etp.training_plan_time = #{emergencyTrainingProgramDTO.trainingPlanTime}
