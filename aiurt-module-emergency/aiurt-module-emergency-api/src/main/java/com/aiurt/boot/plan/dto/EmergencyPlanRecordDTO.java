@@ -50,7 +50,7 @@ public class EmergencyPlanRecordDTO extends EmergencyPlanRecord {
     /**
      * 应急预案启动记录事件总结附件
      */
-    @ApiModelProperty(value = "应急预案启动记录事件材料附件")
+    @ApiModelProperty(value = "应急预案启动记录总结材料附件")
     private List<EmergencyPlanRecordAtt> emergencyPlanRecordAttList2;
 
     /**

@@ -1,7 +1,15 @@
 package com.aiurt.boot.plan.mapper;
 
+import com.aiurt.boot.plan.dto.EmergencyPlanQueryDTO;
+import com.aiurt.boot.plan.dto.EmergencyPlanRecordQueryDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
+import com.aiurt.boot.plan.vo.EmergencyPlanRecordVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Description: emergency_plan
@@ -11,5 +19,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface EmergencyPlanMapper extends BaseMapper<EmergencyPlan> {
 
-
+    IPage<EmergencyPlan> queryPageList(@Param("page") Page<EmergencyPlan> page
+            , @Param("condition") EmergencyPlanQueryDTO emergencyPlanQueryDTO, @Param("orgCodes") List<String> orgCodes);
 }

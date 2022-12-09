@@ -55,6 +55,16 @@ public class EmergencyPlanConstant {
      */
     public static final Integer MATERIAL_TYPE1 = 1;
 
+    /**
+     * 未提交
+     */
+    public static final Integer IS_SUBMIT0 = 0;
+
+    /**
+     * 已提交
+     */
+    public static final Integer IS_SUBMIT1 = 1;
+
 
 
 

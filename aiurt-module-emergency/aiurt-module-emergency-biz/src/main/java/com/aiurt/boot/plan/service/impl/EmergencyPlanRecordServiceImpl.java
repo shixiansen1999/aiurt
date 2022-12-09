@@ -6,6 +6,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.materials.entity.EmergencyMaterialsUsage;
+import com.aiurt.boot.materials.service.IEmergencyMaterialsUsageService;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.*;
@@ -36,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -70,8 +73,11 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     private IEmergencyPlanService emergencyPlanService;
     @Autowired
     private IEmergencyTeamService emergencyTeamService;
+    @Autowired
+    private IEmergencyMaterialsUsageService iEmergencyMaterialsUsageService;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public IPage<EmergencyPlanRecordVO> queryPageList(Page<EmergencyPlanRecordVO> page, EmergencyPlanRecordQueryDTO emergencyPlanRecordQueryDto) {
        // 根据当前登录人的部门权限和记录的组织部门过滤数据
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -136,6 +142,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String saveAndAdd(EmergencyPlanRecordDTO emergencyPlanRecordDto) {
         EmergencyPlanRecord emergencyPlanRecord = new EmergencyPlanRecord();
         BeanUtils.copyProperties(emergencyPlanRecordDto, emergencyPlanRecord);
@@ -175,6 +182,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         if(CollUtil.isNotEmpty(emergencyPlanRecordDisposalProcedureList)){
             for (EmergencyPlanRecordDisposalProcedure emergencyPlanRecordDisposalProcedure : emergencyPlanRecordDisposalProcedureList) {
                 emergencyPlanRecordDisposalProcedure.setEmergencyPlanRecordId(id);
+                emergencyPlanRecordDisposalProcedure.setId(null);
                 emergencyPlanRecordDisposalProcedureService.save(emergencyPlanRecordDisposalProcedure);
             }
         }
@@ -186,6 +194,8 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                 emergencyPlanRecordMaterialsService.save(emergencyPlanRecordMaterial);
             }
         }
+
+
         //应急预案启动记录事件材料附件添加
         List<EmergencyPlanRecordAtt> emergencyPlanRecordAttList = emergencyPlanRecordDto.getEmergencyPlanRecordAttList();
         if(CollUtil.isNotEmpty(emergencyPlanRecordAttList)){
@@ -214,6 +224,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String edit(EmergencyPlanRecordDTO emergencyPlanRecordDto) {
         String id = emergencyPlanRecordDto.getId();
 
@@ -306,6 +317,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void delete(String id) {
         EmergencyPlanRecord emPlanRecord = this.getById(id);
         Assert.notNull(emPlanRecord, "未找到对应数据！");
@@ -338,6 +350,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public EmergencyPlanRecordDTO queryById(String id) {
         EmergencyPlanRecord planRecord = this.getById(id);
         Assert.notNull(planRecord, "未找到对应记录！");
@@ -430,6 +443,37 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         }
         List<LoginUser> users = sysBaseApi.getUserByDeptCode(orgCode);
         return users;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String submit(String id) {
+        EmergencyPlanRecord emergencyPlanRecord = this.getById(id);
+        Assert.notNull(emergencyPlanRecord, "未找到对应数据！");
+        //状态改为已提交
+        emergencyPlanRecord.setStatus(EmergencyPlanConstant.IS_SUBMIT1);
+        this.updateById(emergencyPlanRecord);
+
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<EmergencyPlanRecordMaterials> materialsList = emergencyPlanRecordMaterialsService.lambdaQuery().eq(EmergencyPlanRecordMaterials::getEmergencyPlanRecordId, id).list();
+        materialsList.forEach(m->{
+            List<EmergencyMaterialsUsage> list = iEmergencyMaterialsUsageService.lambdaQuery().eq(EmergencyMaterialsUsage::getMaterialsCode, m.getMaterialsCode()).list();
+            String materialsName = null;
+            for (EmergencyMaterialsUsage emergencyMaterialsUsage : list) {
+                 materialsName = emergencyMaterialsUsage.getMaterialsName();
+            }
+            EmergencyMaterialsUsage emergencyMaterialsUsage = new EmergencyMaterialsUsage();
+            emergencyMaterialsUsage.setMaterialsCode(m.getMaterialsCode());
+            emergencyMaterialsUsage.setMaterialsName(materialsName);
+            emergencyMaterialsUsage.setNumber(m.getMaterialsNumber());
+            Date nowDate = DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
+            emergencyMaterialsUsage.setUseDate(nowDate);
+            emergencyMaterialsUsage.setUseTime(nowDate);
+            emergencyMaterialsUsage.setUserId(loginUser.getId());
+            iEmergencyMaterialsUsageService.save(emergencyMaterialsUsage);
+        });
+
+        return id;
     }
 
     /**

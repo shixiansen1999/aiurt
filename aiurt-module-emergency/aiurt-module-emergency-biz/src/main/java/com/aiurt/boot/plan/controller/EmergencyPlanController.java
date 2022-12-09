@@ -9,8 +9,10 @@ import javax.servlet.http.HttpServletResponse;
 import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
+import com.aiurt.boot.plan.dto.EmergencyPlanQueryDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.plan.entity.EmergencyPlanTeam;
+import com.aiurt.boot.plan.mapper.EmergencyPlanMapper;
 import com.aiurt.boot.plan.service.IEmergencyPlanTeamService;
 import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
@@ -50,11 +52,13 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	private IEmergencyPlanService emergencyPlanService;
 	@Autowired
 	private ISysBaseAPI sysBaseApi;
+	@Autowired
+	private EmergencyPlanMapper emergencyPlanMapper;
 
 	/**
 	 * 分页列表查询
 	 *
-	 * @param emergencyPlanDto
+	 * @param emergencyPlanQueryDto
 	 * @param pageNo
 	 * @param pageSize
 	 * @param req
@@ -63,12 +67,12 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	//@AutoLog(value = "emergency_plan-分页列表查询")
 	@ApiOperation(value="应急预案台账-分页列表查询", notes="应急预案台账-分页列表查询")
 	@GetMapping(value = "/list")
-	public Result<IPage<EmergencyPlan>> queryPageList(EmergencyPlanDTO emergencyPlanDto,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
+	public Result<IPage<EmergencyPlan>> queryPageList(EmergencyPlanQueryDTO emergencyPlanQueryDto,
+													  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+													  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+													  HttpServletRequest req) {
 		Page<EmergencyPlan> page = new Page<EmergencyPlan>(pageNo, pageSize);
-		IPage<EmergencyPlan> pageList = emergencyPlanService.queryPageList(page, emergencyPlanDto);
+		IPage<EmergencyPlan> pageList = emergencyPlanService.queryPageList(page, emergencyPlanQueryDto);
 		return Result.OK(pageList);
 	}
 
@@ -180,7 +184,7 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	 @ApiOperation(value = "应急预案-应急预案台账提交", notes = "应急预案-应急预案台账提交")
 	 @PostMapping(value = "/submit")
 	 public Result<String> startProcess(@RequestParam(name = "id", required = true) String id) {
-		 emergencyPlanService.startProcess(id);
+		 emergencyPlanService.commit(id);
 		 return Result.OK("提交成功!");
 	 }
 

@@ -65,4 +65,11 @@ public interface IEmergencyPlanRecordService extends IService<EmergencyPlanRecor
      * 应急模块-责任人信息
      */
     List<LoginUser> getDutyUser();
+
+    /**
+     * 应急预案启动记录-提交
+     * @param id
+     * @return
+     */
+    String submit(String id);
 }

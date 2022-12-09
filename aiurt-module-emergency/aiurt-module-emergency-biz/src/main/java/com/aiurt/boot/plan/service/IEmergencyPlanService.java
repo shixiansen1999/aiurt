@@ -1,6 +1,7 @@
 package com.aiurt.boot.plan.service;
 
 import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
+import com.aiurt.boot.plan.dto.EmergencyPlanQueryDTO;
 import com.aiurt.boot.plan.dto.EmergencyPlanRecordDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
@@ -22,10 +23,10 @@ public interface IEmergencyPlanService extends IService<EmergencyPlan> {
     /**
      * 应急预案列表查询
      * @param page
-     * @param emergencyPlanDto
+     * @param emergencyPlanQueryDto
      * @return
      */
-    IPage<EmergencyPlan> queryPageList(Page<EmergencyPlan> page, EmergencyPlanDTO emergencyPlanDto);
+    IPage<EmergencyPlan> queryPageList(Page<EmergencyPlan> page, EmergencyPlanQueryDTO emergencyPlanQueryDto);
 
     /**
      * 保存并添加
@@ -60,7 +61,7 @@ public interface IEmergencyPlanService extends IService<EmergencyPlan> {
      * @param id
      * @return
      */
-    String startProcess(String id);
+    String commit(String id);
 
     /**
      * 应急预案台账启用和停用
