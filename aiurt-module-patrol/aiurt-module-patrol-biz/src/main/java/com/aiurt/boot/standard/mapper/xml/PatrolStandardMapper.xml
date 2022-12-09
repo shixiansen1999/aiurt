@@ -147,5 +147,12 @@
             and p.subsystem_code  = #{patrolStandard.subsystemCode}
         </if>
     </select>
-
+    <select id="querySysDict" resultType="org.jeecg.common.system.vo.DictModel">
+         SELECT sd.dict_name as text,sd.dict_code as value
+        FROM sys_dict sd
+        WHERE sd.del_flag=0
+        <if test="modules !=null">
+            and  sd.modules = #{modules}
+        </if>
+    </select>
 </mapper>

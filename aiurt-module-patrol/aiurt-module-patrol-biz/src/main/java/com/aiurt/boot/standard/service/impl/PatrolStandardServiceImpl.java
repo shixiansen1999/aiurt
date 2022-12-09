@@ -8,6 +8,7 @@ import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.afterturn.easypoi.util.PoiMergeCellUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
@@ -18,6 +19,7 @@ import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
+import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -28,13 +30,18 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -276,6 +283,112 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         return Result.ok("文件导入失败！");
     }
 
+    @Override
+    public void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        //获取输入流，原始模板位置
+        Resource resource = new ClassPathResource("/templates/patrolstandardTemplate.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+
+        //2.获取临时文件
+        File fileTemp= new File("/templates/patrolstandardTemplate.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+        Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+        CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+        List<DictModel> majorModels = bean.queryTableDictItemsByCode("cs_major", "major_name", "major_code");
+        ExcelSelectListUtil.selectList(workbook, "专业",1, 1, majorModels);
+
+        List<DictModel> subsystemModels = bean.queryTableDictItemsByCode("cs_subsystem", "system_name", "system_code");
+        ExcelSelectListUtil.selectList(workbook, "子系统",2, 2, subsystemModels);
+
+        List<DictModel> isDeviceTypeModels = bean.queryDictItemsByCode("patrol_device_type");
+        ExcelSelectListUtil.selectList(workbook, "是否与设备类型相关",3, 3, isDeviceTypeModels);
+
+        List<DictModel> statusModels = bean.queryDictItemsByCode("patrol_standard_status");
+        ExcelSelectListUtil.selectList(workbook, "生效状态",4, 4, statusModels);
+
+        List<DictModel> deviceTypeModels = bean.queryTableDictItemsByCode("device_type","name","code");
+        ExcelSelectListUtil.selectList(workbook, "设备类型",5, 5, deviceTypeModels);
+
+        List<DictModel> hierarchyTypeModels = bean.queryDictItemsByCode("patrol_hierarchy_type");
+        ExcelSelectListUtil.selectList(workbook, "层级类型",6, 6, hierarchyTypeModels);
+
+        List<DictModel> isStandardModels = bean.queryDictItemsByCode("patrol_check");
+        ExcelSelectListUtil.selectList(workbook, "是否为巡视项目",11, 11, isStandardModels);
+
+        List<DictModel> requiredDictModels = bean.queryDictItemsByCode("patrol_input_type");
+        ExcelSelectListUtil.selectList(workbook, "检查值类型",13, 13, requiredDictModels);
+
+        List<DictModel> requiredModels = bean.queryDictItemsByCode("patrol_item_required");
+        ExcelSelectListUtil.selectList(workbook, "检查值是否必填",14, 14, requiredModels);
+        Integer modules = 2;
+        List<DictModel> sysDictDTOS = patrolStandardMapper.querySysDict(modules);
+        ExcelSelectListUtil.selectList(workbook, "关联数据字典",15, 15, sysDictDTOS);
+
+        List<DictModel> regularModels = bean.queryDictItemsByCode("regex");
+        ExcelSelectListUtil.selectList(workbook, "数据校验表达式",16, 16, regularModels);
+        String fileName = "巡检标准导入模板.xlsx";
+
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename="+"巡检标准导入模板.xlsx");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public static final class ExcelSelectListUtil {
+        /**
+         * firstRow 開始行號 根据此项目，默认为3(下标0开始)
+         * lastRow  根据此项目，默认为最大65535
+         * firstCol 区域中第一个单元格的列号 (下标0开始)
+         * lastCol 区域中最后一个单元格的列号
+         * strings 下拉内容
+         * */
+
+        public static void selectList(Workbook workbook,String name,int firstCol,int lastCol,List<DictModel>modelList ){
+            if (CollectionUtil.isNotEmpty(modelList)) {
+                Sheet sheet = workbook.getSheetAt(0);
+                //将新建的sheet页隐藏掉, 下拉值太多，需要创建隐藏页面
+                int sheetTotal = workbook.getNumberOfSheets();
+                List<String> collect = modelList.stream().map(DictModel::getText).collect(Collectors.toList());
+                String hiddenSheetName = name+ "_hiddenSheet";
+                Sheet hiddenSheet = workbook.getSheet(hiddenSheetName);
+                if (hiddenSheet == null) {
+                    hiddenSheet = workbook.createSheet(hiddenSheetName);
+                    //写入下拉数据到新的sheet页中
+                    for (int i = 0; i < collect.size(); i++) {
+                        Row hiddenRow = hiddenSheet.createRow(i);
+                        Cell hiddenCell = hiddenRow.createCell(0);
+                        hiddenCell.setCellValue(collect.get(i));
+                    }
+                    workbook.setSheetHidden(sheetTotal, true);
+                }
+
+                // 下拉数据
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3, 65535, firstCol, lastCol);
+                //  生成下拉框内容名称
+                String strFormula = hiddenSheetName + "!$A$1:$A$65535";
+                // 根据隐藏页面创建下拉列表
+                XSSFDataValidationConstraint constraint = new XSSFDataValidationConstraint(DataValidationConstraint.ValidationType.LIST, strFormula);
+                XSSFDataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) hiddenSheet);
+                DataValidation validation = dvHelper.createValidation(constraint, cellRangeAddressList);
+                //  对sheet页生效
+                sheet.addValidationData(validation);
+            }
+        }
+    }
     private Result<?> getErrorExcel(int errorLines, List<PatrolStandardModel> list,List<PatrolStandardErrorModel> deviceAssemblyErrorModels, List<String> errorMessage, int successLines, String url, String type) throws IOException {
         //创建导入失败错误报告,进行模板导出
         Resource resource = new ClassPathResource("/templates/patrolstandardError.xlsx");

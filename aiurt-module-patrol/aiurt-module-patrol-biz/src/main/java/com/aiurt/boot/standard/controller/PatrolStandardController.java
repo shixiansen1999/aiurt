@@ -227,7 +227,16 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 		 }
 		 out.close();
 	 }
-
+	 /**
+	  * 导出模板
+	  *
+	  */
+	 @AutoLog(value = "巡检标准表模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "")
+	 @ApiOperation(value="巡检标准表模板下载", notes="巡检标准表模板下载")
+	 @RequestMapping(value = "/getTemplate",method = RequestMethod.GET)
+	 public void getTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		 patrolStandardService.getImportTemplate(response,request);
+	 }
     /**
       * 通过excel导入数据
     *

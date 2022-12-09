@@ -7,6 +7,7 @@ import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
+import org.jeecg.common.system.vo.DictModel;
 
 import java.util.List;
 
@@ -69,4 +70,6 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      * @return
      */
     List<PatrolStandard> getList(@Param("patrolStandard")PatrolStandard patrolStandard);
+
+    List<DictModel> querySysDict(@Param("modules")Integer modules);
 }
