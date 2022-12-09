@@ -89,7 +89,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
                 .ifPresent(programCode -> queryWrapper.eq(EmergencyTrainingProgram::getTrainingProgramCode, programCode));
         Optional.ofNullable(trainingProgram.getTrainingProgramName())
                 .ifPresent(programName -> queryWrapper.like(EmergencyTrainingProgram::getTrainingProgramName, programName));
-
+        queryWrapper.orderByDesc(EmergencyTrainingProgram::getCreateTime).orderByDesc(EmergencyTrainingProgram::getUpdateTime);
         IPage<EmergencyTrainingProgram> pageList = this.page(page, queryWrapper);
 
         List<EmergencyTrainingProgram> records = pageList.getRecords();

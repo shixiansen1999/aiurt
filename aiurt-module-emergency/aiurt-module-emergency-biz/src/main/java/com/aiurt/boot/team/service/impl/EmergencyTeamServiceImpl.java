@@ -81,6 +81,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             queryWrapper.like(EmergencyTeam::getEmergencyTeamname, team.getEmergencyTeamname());
         }
         queryWrapper.eq(EmergencyTeam::getDelFlag, TeamConstant.DEL_FLAG0);
+        queryWrapper.orderByDesc(EmergencyTeam::getCreateTime).orderByDesc(EmergencyTeam::getUpdateTime);
         Page<EmergencyTeam> page = new Page<EmergencyTeam>(pageNo, pageSize);
         IPage<EmergencyTeam> pageList = this.page(page, queryWrapper);
         List<EmergencyTeam> records = pageList.getRecords();
