@@ -16,6 +16,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -105,6 +106,7 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 	 @AutoLog(value = "app巡检-检查项-检查值-保存", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
 	 @ApiOperation(value = "app巡检-检查项-检查值-保存", notes = "app巡检-检查项-检查值-保存")
 	 @PostMapping(value = "/patrolTaskAccessory")
+	 @Transactional(rollbackFor = Exception.class)
 	 public Result<?> patrolTaskAccessory(@RequestBody PatrolCheckDTO patrolCheckDTO,
 	 									  HttpServletRequest req) {
 		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper = new LambdaUpdateWrapper<>();
@@ -120,8 +122,8 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 			 {
 			 	if(ObjectUtil.isNotEmpty(patrolCheckResult.getRegular()))
 				{
-					Pattern pattern = Pattern.compile(patrolCheckResult.getRegular());
-					Matcher matcher = pattern.matcher(patrolCheckResult.getWriteValue());
+					Pattern pattern = Pattern.compile(patrolCheckDTO.getRegular());
+					Matcher matcher = pattern.matcher(patrolCheckDTO.getWriteValue());
 					if(matcher.find())
 					{
 						updateWrapper.set(PatrolCheckResult::getWriteValue,patrolCheckDTO.getWriteValue()).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,patrolCheckDTO.getId());
