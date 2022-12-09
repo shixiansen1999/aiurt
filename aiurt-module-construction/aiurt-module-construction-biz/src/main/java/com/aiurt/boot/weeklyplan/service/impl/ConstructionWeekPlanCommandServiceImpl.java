@@ -309,31 +309,34 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             // 线路负责人审批
             command.setLineStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setLineOpinion(updateStateEntity.getReason());
-            command.setLineUserId(loginUser.getId());
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
         } else if (3 == states) {
+            command.setLineUserId(loginUser.getId());
             // 生产调度审批
             command.setDispatchStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setDispatchOpinion(updateStateEntity.getReason());
-            command.setDispatchId(loginUser.getId());
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
         } else if (5 == states) {
+            command.setDispatchId(loginUser.getId());
+            if (ConstructionConstant.PLAN_TYPE_2.equals(command.getFormStatus())
+                    || ConstructionConstant.PLAN_TYPE_3.equals(command.getFormStatus())) {
+                command.setManagerId(loginUser.getId());
+            }
             // 已通过
             command.setFormStatus(ConstructionConstant.FORM_STATUS_5);
         } else if (6 == states) {
             // 分部主任审批
             command.setDirectorStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setDirectorOpinion(updateStateEntity.getReason());
-            command.setDirectorId(loginUser.getId());
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
         } else if (8 == states) {
+            command.setDirectorId(loginUser.getId());
             // 中心经理审批
             command.setManagerStatus(ConstructionConstant.APPROVE_STATUS_1);
             command.setManagerOpinion(updateStateEntity.getReason());
-            command.setManagerId(loginUser.getId());
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
         } else if (2 == states || 4 == states || 7 == states || 9 == states) {
