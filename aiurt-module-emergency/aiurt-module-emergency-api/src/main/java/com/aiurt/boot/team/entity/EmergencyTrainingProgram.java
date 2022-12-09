@@ -16,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
 
@@ -60,12 +61,12 @@ public class EmergencyTrainingProgram implements Serializable {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM")
     @DateTimeFormat(pattern="yyyy-MM")
     @ApiModelProperty(value = "计划训练时间")
-    @NotBlank(message = "计划训练时间不能为空",groups = {Save.class, Update.class})
+    @NotNull(message = "计划训练时间不能为空",groups = {Save.class, Update.class})
     private java.util.Date trainingPlanTime;
 	/**计划训练人数*/
 	@Excel(name = "计划训练人数", width = 15)
     @ApiModelProperty(value = "计划训练人数")
-    @NotBlank(message = "计划训练人数不能为空",groups = {Save.class, Update.class})
+    @NotNull(message = "计划训练人数不能为空",groups = {Save.class, Update.class})
     private Integer traineesNum;
 	/**审核状态（1待提交、2待完成、3已完成）*/
 	@Excel(name = "审核状态（1待下发、2待完成、3已完成）", width = 15)

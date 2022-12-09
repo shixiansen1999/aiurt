@@ -12,7 +12,6 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
@@ -56,7 +55,7 @@ public class EmergencyTrainingProcessRecord implements Serializable {
 	/**是否次日： 0是 1否*/
 	@Excel(name = "是否次日： 0是 1否", width = 15)
     @ApiModelProperty(value = "是否次日： 0是 1否")
-    @NotBlank(message = "是否次日不能为空", groups = {Save.class, Update.class})
+    @NotNull(message = "是否次日不能为空", groups = {Save.class, Update.class})
     private Integer nextDay;
 	/**训练内容*/
 	@Excel(name = "训练内容", width = 15)

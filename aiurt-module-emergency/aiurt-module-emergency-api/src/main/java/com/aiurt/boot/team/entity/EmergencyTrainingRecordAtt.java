@@ -14,6 +14,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -76,7 +77,7 @@ public class EmergencyTrainingRecordAtt implements Serializable {
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "上传日期")
-    @NotBlank(message = "上传日期不能为空", groups = {Save.class, Update.class})
+    @NotNull(message = "上传日期不能为空", groups = {Save.class, Update.class})
     private java.util.Date uploadTime;
 
 	/**删除状态： 0未删除 1已删除*/

@@ -15,6 +15,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -56,7 +57,7 @@ public class EmergencyCrew implements Serializable {
 	/**职务*/
 	@Excel(name = "职务", width = 15)
     @ApiModelProperty(value = "职务")
-    @NotBlank(message = "职务不能为空",groups = {EmergencyTeam.Save.class, EmergencyTeam.Update.class})
+    @NotNull(message = "职务不能为空",groups = {EmergencyTeam.Save.class, EmergencyTeam.Update.class})
     @Dict(dicCode = "emergency_post")
     private Integer post;
 	/**人员id*/
