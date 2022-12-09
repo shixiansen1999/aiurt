@@ -100,7 +100,7 @@
          t2.category_name as categoryName,
          t3.specification as specification,
          t3.number as number,
-         t3.check,
+         t3.`check`,
          t3.abnormal_condition as abnormalCondition,
          t3.check_result as checkResult
         from emergency_materials t1
