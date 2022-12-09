@@ -52,8 +52,6 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	private IEmergencyPlanService emergencyPlanService;
 	@Autowired
 	private ISysBaseAPI sysBaseApi;
-	@Autowired
-	private EmergencyPlanMapper emergencyPlanMapper;
 
 	/**
 	 * 分页列表查询

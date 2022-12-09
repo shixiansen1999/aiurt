@@ -557,23 +557,23 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         switch (states) {
             case 2:
                 // 分部主任审核
-                emergencyPlan.setStatus(EmergencyPlanConstant.UNDER_REVIEW);
+                emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.UNDER_REVIEW);
                 break;
             case 3:
                 // 分部主任驳回，更新状态为待提交状态
-                emergencyPlan.setStatus(EmergencyPlanConstant.REJECTED);
+                emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.REJECTED);
                 break;
             case 4:
                 // 安技部审核
-                emergencyPlan.setStatus(EmergencyPlanConstant.UNDER_REVIEW);
+                emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.UNDER_REVIEW);
                 break;
             case 5:
                 // 安技部驳回
-                emergencyPlan.setStatus(EmergencyPlanConstant.REJECTED);
+                emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.REJECTED);
                 break;
             case 6:
                 // 已通过
-                emergencyPlan.setStatus(EmergencyPlanConstant.PASSED);
+                emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.PASSED);
                 if(ObjectUtil.isNotEmpty(emergencyPlan.getOldPlanId())){
                     List<EmergencyPlan> list = emergencyPlanService.lambdaQuery()
                             .eq(EmergencyPlan::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
