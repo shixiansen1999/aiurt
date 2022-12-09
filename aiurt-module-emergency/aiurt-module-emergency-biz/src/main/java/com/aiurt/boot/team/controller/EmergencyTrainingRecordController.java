@@ -1,5 +1,6 @@
 package com.aiurt.boot.team.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.dto.EmergencyTrainingRecordDTO;
@@ -98,6 +99,10 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 		 EmergencyTrainingRecord record = emergencyTrainingRecordService.getById(id);
 		 if (TeamConstant.SUBMITTED.equals(record.getStatus())) {
 			 return Result.error("当前记录已提交,不能重复提交");
+		 }
+		 //如果是提交，判断是否所有内容填写完整
+		 if (CollUtil.isEmpty(record.getCrewList()) || CollUtil.isEmpty(record.getProcessRecordList()) ||CollUtil.isEmpty(record.getAttList())) {
+			 return Result.error("还有内容没有填写，不能提交");
 		 }
 		 record.setStatus(TeamConstant.SUBMITTED);
 		 emergencyTrainingRecordService.updateById(record);

@@ -164,5 +164,5 @@ public class EmergencyTeam implements Serializable {
 
     @ApiModelProperty(value = "训练计划")
     @TableField(exist = false)
-    private List<EmergencyTeamTrainingDTO> emergencyTeamDTOList;
+    private List<EmergencyTeamTrainingDTO> emergencyTeamTrainingDTOS;
 }

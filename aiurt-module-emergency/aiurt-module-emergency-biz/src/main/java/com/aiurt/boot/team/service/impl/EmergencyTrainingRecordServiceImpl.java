@@ -142,6 +142,10 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
         }
         if (TeamConstant.SUBMITTED.equals(emergencyTrainingRecord.getStatus())) {
+            //如果是提交，判断是否所有内容填写完整
+            if (CollUtil.isEmpty(emergencyTrainingRecord.getCrewList()) || CollUtil.isEmpty(emergencyTrainingRecord.getProcessRecordList()) ||CollUtil.isEmpty(emergencyTrainingRecord.getAttList())) {
+                return Result.error("还有内容没有填写，不能提交");
+            }
             submit(emergencyTrainingRecord);
             return Result.OK("提交成功");
         }
@@ -204,6 +208,10 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
         }
 
         if (TeamConstant.SUBMITTED.equals(byId.getStatus())) {
+            //如果是提交，判断是否所有内容填写完整
+            if (CollUtil.isEmpty(emergencyTrainingRecord.getCrewList()) || CollUtil.isEmpty(emergencyTrainingRecord.getProcessRecordList()) ||CollUtil.isEmpty(emergencyTrainingRecord.getAttList())) {
+                return Result.error("还有内容没有填写，不能提交");
+            }
             submit(byId);
             return Result.OK("提交成功");
         }

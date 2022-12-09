@@ -219,8 +219,9 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             for (EmergencyTeamTrainingDTO emergencyTeamDTO : trainingRecord) {
                 emergencyTeamDTO.setManagerName(emergencyTeam.getManagerName());
             }
+            emergencyTeam.setEmergencyTeamTrainingDTOS(trainingRecord);
         }
-        return Result.OK();
+        return Result.OK(emergencyTeam);
     }
 
 

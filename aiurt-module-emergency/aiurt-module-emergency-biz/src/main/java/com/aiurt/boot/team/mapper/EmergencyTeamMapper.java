@@ -20,11 +20,4 @@ public interface EmergencyTeamMapper extends BaseMapper<EmergencyTeam> {
      * @return
      */
     List<EmergencyTeamTrainingDTO> getTrainingRecord(String id);
-
-    /**
-     * 根据训练计划查找应急队伍
-     * @param id
-     * @return
-     */
-    List<EmergencyTeam>  getTeamByTrainingProgram(String id);
 }
