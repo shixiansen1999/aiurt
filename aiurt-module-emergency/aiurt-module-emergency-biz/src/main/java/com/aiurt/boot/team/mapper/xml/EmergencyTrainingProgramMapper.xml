@@ -28,7 +28,7 @@
         select etp.*
         from emergency_training_program etp
         left join emergency_training_team ett on etp.id = ett.emergency_training_program_id
-        where etp.del_flag = 0 and ett.del_flag = 0
+        where etp.del_flag = 0 and ett.del_flag = 0 and etp.status != 1
         <if test="emergencyTrainingProgramDTO.id != null and emergencyTrainingProgramDTO.id != ''">
             and ett.emergency_team_id = #{emergencyTrainingProgramDTO.id}
             and etp.id not in (select etr.emergency_training_program_id  from emergency_training_record etr where etr.emergency_team_id = #{emergencyTrainingProgramDTO.id} and etr.del_flag = 0)
