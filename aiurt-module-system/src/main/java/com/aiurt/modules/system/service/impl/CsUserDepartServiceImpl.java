@@ -43,6 +43,7 @@ public class CsUserDepartServiceImpl extends ServiceImpl<CsUserDepartMapper, CsU
     }
 
     public List<CsUserDepartModel> queryDepartTree() {
+        //查询用户拥有部门权限树,如果权限是父部门，同时查出该部门的子部门
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserDepartModel> list = getDepartByUserId(loginUser.getId());
         List<CsUserDepartModel> models = new ArrayList<>();

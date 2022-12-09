@@ -47,7 +47,6 @@ public class EmergencyCrew implements Serializable {
 	/**应急队伍id*/
 	@Excel(name = "应急队伍id", width = 15)
     @ApiModelProperty(value = "应急队伍id")
-    @NotBlank(message = "应急队伍不能为空",groups = {EmergencyTeam.Save.class, EmergencyTeam.Update.class})
     private String emergencyTeamId;
 	/**所属班次*/
 	@Excel(name = "所属班次", width = 15)
