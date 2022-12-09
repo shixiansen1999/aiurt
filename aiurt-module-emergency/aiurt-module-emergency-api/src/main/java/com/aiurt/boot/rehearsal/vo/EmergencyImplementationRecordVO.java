@@ -53,6 +53,11 @@ public class EmergencyImplementationRecordVO extends EmergencyImplementationReco
      * 参与部门信息
      */
     @ApiModelProperty(value = "参与部门信息")
-    List<EmergencyDeptDTO> deptList;
+    private List<EmergencyDeptDTO> deptList;
+    /**
+     * 参与部门信息名称
+     */
+    @ApiModelProperty(value = "参与部门信息名称")
+    private String deptNames;
 
 }
