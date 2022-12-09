@@ -4,6 +4,7 @@
 
 <select id="getTrainingRecord" resultType="com.aiurt.boot.team.dto.EmergencyTeamTrainingDTO">
     select
+        etp.id,
         etp.training_program_name,
         etr.training_time,
         etr.trainees_num,
