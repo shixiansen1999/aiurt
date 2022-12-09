@@ -96,6 +96,9 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	 @Transactional(rollbackFor = Exception.class)
 	 public Result<String> recordSubmit(@RequestParam(name="id",required=true) String id) {
 		 EmergencyTrainingRecord record = emergencyTrainingRecordService.getById(id);
+		 if (TeamConstant.SUBMITTED.equals(record.getStatus())) {
+			 return Result.error("当前记录已提交,不能重复提交");
+		 }
 		 record.setStatus(TeamConstant.SUBMITTED);
 		 emergencyTrainingRecordService.updateById(record);
 		 emergencyTrainingRecordService.submit(record);
@@ -114,6 +117,9 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 		EmergencyTrainingRecord program = emergencyTrainingRecordService.getById(id);
 		if(program==null) {
 			return Result.error("未找到对应数据");
+		}
+		if (TeamConstant.SUBMITTED.equals(program.getStatus())) {
+			return Result.error("当前记录已提交，不可删除");
 		}
 		emergencyTrainingRecordService.delete(id);
 		return Result.OK("删除成功!");
@@ -134,6 +140,9 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 			EmergencyTrainingRecord program = emergencyTrainingRecordService.getById(id);
 			if(program==null) {
 				return Result.error("未找到对应数据");
+			}
+			if (TeamConstant.SUBMITTED.equals(program.getStatus())) {
+				return Result.error("当前记录已提交，不可删除");
 			}
 			emergencyTrainingRecordService.delete(id);
 		}

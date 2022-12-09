@@ -15,7 +15,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
@@ -111,19 +110,16 @@ public class EmergencyTrainingRecord implements Serializable {
     private java.util.Date updateTime;
 
     @ApiModelProperty(value = "参训人员")
-    @NotEmpty(message = "参训人员不能为空", groups = {Save.class, Update.class})
     @TableField(exist = false)
     @Valid
     private List<EmergencyTrainingRecordCrew> crewList;
 
     @ApiModelProperty(value = "记录附件")
-    @NotEmpty(message = "记录附件不能为空", groups = {Save.class, Update.class})
     @TableField(exist = false)
     @Valid
     private List<EmergencyTrainingRecordAtt> attList;
 
     @ApiModelProperty(value = "训练过程记录")
-    @NotEmpty(message = "训练过程记录不能为空", groups = {Save.class, Update.class})
     @TableField(exist = false)
     @Valid
     private List<EmergencyTrainingProcessRecord> processRecordList;
