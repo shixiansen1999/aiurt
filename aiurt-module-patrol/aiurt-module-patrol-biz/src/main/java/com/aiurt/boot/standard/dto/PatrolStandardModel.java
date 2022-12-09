@@ -28,6 +28,9 @@ public class PatrolStandardModel {
     @ApiModelProperty(value = "专业code")
     @MajorFilterColumn
     private java.lang.String professionCode;
+    @Excel(name = "适用子系统",width = 15,needMerge = true)
+    @ApiModelProperty(value = "适用系统code")
+    private java.lang.String subsystemCode;
     /**与设备类型相关：0否 1 是*/
     @Excel(name = "是否与设备类型相关", width = 15,needMerge = true)
     @ApiModelProperty(value = "与设备类型相关：0否 1 是")

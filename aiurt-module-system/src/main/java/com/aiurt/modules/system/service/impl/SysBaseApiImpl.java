@@ -35,6 +35,8 @@ import com.aiurt.modules.quartz.entity.QuartzJob;
 import com.aiurt.modules.quartz.service.IQuartzJobService;
 import com.aiurt.modules.sm.entity.CsSafetyAttention;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
+import com.aiurt.modules.subsystem.entity.CsSubsystem;
+import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.service.*;
@@ -170,7 +172,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private IWorkAreaService workAreaService;
 
     @Autowired
-    private ICsMajorService majorService;
+    private ICsMajorService majorService; 
+    @Autowired
+    private CsSubsystemMapper subsystemMapper;
     @Autowired
     private CsLineMapper lineMapper;
     @Autowired
@@ -1697,6 +1701,16 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return null;
         }
         return JSONObject.parseObject(JSONObject.toJSONString(csMajor));
+    }    
+    @Override
+    public JSONObject getSystemName(String majorCode,String systemName) {
+        LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsSubsystem::getSystemName, systemName).eq(CsSubsystem::getMajorCode,majorCode).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        CsSubsystem subsystem = subsystemMapper.selectOne(wrapper);
+        if (Objects.isNull(subsystem)) {
+            return null;
+        }
+        return JSONObject.parseObject(JSONObject.toJSONString(subsystem));
     }
 
     @Override

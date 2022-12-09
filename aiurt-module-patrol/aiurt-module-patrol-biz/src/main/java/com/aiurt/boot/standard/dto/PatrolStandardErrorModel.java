@@ -1,7 +1,6 @@
 package com.aiurt.boot.standard.dto;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
@@ -22,8 +21,11 @@ public class PatrolStandardErrorModel {
     /**专业code*/
     @Excel(name = "适用专业", width = 15,needMerge = true)
     @ApiModelProperty(value = "专业code")
-    @MajorFilterColumn
     private java.lang.String professionCode;
+    /**专业code*/
+    @Excel(name = "适用子系统", width = 15,needMerge = true)
+    @ApiModelProperty(value = "适用系统code")
+    private java.lang.String subsystemCode;
     /**与设备类型相关：0否 1 是*/
     @Excel(name = "是否与设备类型相关", width = 15,needMerge = true)
     @ApiModelProperty(value = "与设备类型相关：0否 1 是")

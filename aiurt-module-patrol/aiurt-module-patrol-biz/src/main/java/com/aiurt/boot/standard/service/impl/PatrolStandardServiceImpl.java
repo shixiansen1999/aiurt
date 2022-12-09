@@ -192,7 +192,6 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             try {
                 List<PatrolStandardModel> list = ExcelImportUtil.importExcel(file.getInputStream(), PatrolStandardModel.class, params);
                 for (PatrolStandardModel model : list) {
-                    //数据重复校验
                     if (ObjectUtil.isNotEmpty(model)) {
                         StringBuilder stringBuilder = new StringBuilder();
                         PatrolStandard  patrolStandard = new PatrolStandard();
@@ -248,6 +247,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                      for (PatrolStandardItems standardItem : standardItems) {
                                          standardItem.setParentId(item.getId());
                                          standardItem.setStandardId(patrolStandard.getId());
+                                         standardItem.setInputType(1);
                                          patrolStandardItemsMapper.insert(standardItem);
                                      }
                                  }
@@ -299,6 +299,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             //错误报告获取信息
             lm.put("standardName",deviceAssemblyErrorModel.getName());
             lm.put("majorName",deviceAssemblyErrorModel.getProfessionCode());
+            lm.put("systemName",deviceAssemblyErrorModel.getSubsystemCode());
             lm.put("isdeviceType",deviceAssemblyErrorModel.getIsDeviceType());
             lm.put("statusName",deviceAssemblyErrorModel.getStatusName());
             lm.put("deviceTypeName",deviceAssemblyErrorModel.getDeviceTypeName());
@@ -352,13 +353,33 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             if(ObjectUtil.isNotEmpty(major))
             {
                 patrolStandard.setProfessionCode(major.getString("majorCode"));
+                if(ObjectUtil.isNotEmpty(model.getSubsystemCode()))
+                {
+                    JSONObject systemName = iSysBaseAPI.getSystemName(major.getString("majorCode"), model.getSubsystemCode());
+                    if(ObjectUtil.isNotEmpty(systemName))
+                    {
+                        patrolStandard.setSubsystemCode(systemName.getString("systemCode"));
+                    }
+                    else
+                    {
+                        stringBuilder.append("系统不存在该专业下的子系统，");
+                    }
+                }
                 if(!isDeviceType.equals(PatrolConstant.IS_DEVICE_TYPE)&&!isDeviceType.equals(PatrolConstant.IS_NOT_DEVICE_TYPE))
                 {
                     stringBuilder.append("是否与设备类型相关填写不规范，");
                 }
+                else
+                {
+                    patrolStandard.setDeviceType(isDeviceType.equals(PatrolConstant.IS_DEVICE_TYPE)?0:1);
+                }
                 if(!statusName.equals(PatrolConstant.ACTIVE)&&!statusName.equals(PatrolConstant.NOT_ACTIVE))
                 {
                     stringBuilder.append("生效状态填写不规范，");
+                }
+                else
+                {
+                    patrolStandard.setStatus(statusName.equals(PatrolConstant.ACTIVE)?1:0);
                 }
                 if(StrUtil.isNotEmpty(deviceTypeName))
                 {
@@ -380,14 +401,22 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 {
                     stringBuilder.append("是否与设备类型相关填写不规范，");
                 }
+                else
+                {
+                    patrolStandard.setDeviceType(isDeviceType.equals(PatrolConstant.IS_DEVICE_TYPE)?0:1);
+                }
                 if(!statusName.equals(PatrolConstant.ACTIVE)&&!statusName.equals(PatrolConstant.NOT_ACTIVE))
                 {
                     stringBuilder.append("生效状态填写不规范，");
                 }
+                else
+                {
+                    patrolStandard.setStatus(statusName.equals(PatrolConstant.ACTIVE)?1:0);
+                }
             }
         }
         else {
-            stringBuilder.append("巡视标准表名称，适用专业，是否与设备类型相关，生效状态，设备类型不能为空;");
+            stringBuilder.append("巡视标准表名称，适用专业，适用子系统，是否与设备类型相关，生效状态，设备类型不能为空;");
         }
     }
 
