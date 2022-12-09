@@ -328,7 +328,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 					DeviceModel model = iterator.next();
 					boolean b = checkObjAllFieldsIsNull(model);
 					if (b) {
-						list.remove(model);
+						iterator.remove();
 					}
 				}
 				if (CollUtil.isEmpty(list)) {
@@ -851,6 +851,14 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 
 	private List<DeviceAssemblyModel> deviceAssemblyCheck(DeviceModel deviceModel,int errorLines) {
 		List<DeviceAssemblyModel> deviceAssemblyList = deviceModel.getDeviceAssemblyModelList();
+		Iterator<DeviceAssemblyModel> iterator = deviceAssemblyList.iterator();
+		while (iterator.hasNext()) {
+			DeviceAssemblyModel model = iterator.next();
+			boolean b = checkObjAllFieldsIsNull(model);
+			if (b) {
+				iterator.remove();
+			}
+		}
 		if (CollUtil.isNotEmpty(deviceAssemblyList)) {
 			Map<Object, Integer> duplicateData = new HashMap<>();
 			int i = 0;
@@ -858,35 +866,26 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				StringBuilder stringBuilder = new StringBuilder();
 
 				String statusName = deviceAssembly.getStatusName();
-				String baseTypeCodeName = deviceAssembly.getBaseTypeCodeName();
-				String code = deviceAssembly.getAssemblyCode();
-				String materialName = deviceAssembly.getMaterialName();
-				String materialCode = deviceAssembly.getMaterialCode();
 
-				if (StrUtil.isNotEmpty(statusName) && StrUtil.isNotEmpty(baseTypeCodeName) && StrUtil.isNotEmpty(code) && StrUtil.isNotEmpty(materialName) && StrUtil.isNotEmpty(materialCode)) {
-					QueryWrapper<MaterialBase> queryWrapper = new QueryWrapper<>();
-					queryWrapper.eq("code", deviceAssembly.getMaterialCode());
-					queryWrapper.like("name", deviceAssembly.getMaterialName());
-					MaterialBase one = iMaterialBaseService.getOne(queryWrapper);
+				QueryWrapper<MaterialBase> queryWrapper = new QueryWrapper<>();
+				queryWrapper.eq("code", deviceAssembly.getMaterialCode());
+				queryWrapper.like("name", deviceAssembly.getMaterialName());
+				MaterialBase one = iMaterialBaseService.getOne(queryWrapper);
 
-
-					if (ObjectUtil.isEmpty(one)) {
-						stringBuilder.append("系统不存在该组件,");
-					} else {
-						deviceAssembly.setSpecifications(one.getSpecifications());
-						deviceAssembly.setBaseTypeCode(one.getBaseTypeCode());
-						deviceAssembly.setDeviceTypeCode(one.getBaseTypeCode());
-					}
-
-					List<DictModel> deviceStatus = sysDictMapper.queryDictItemsByCode("device_assembly_status");
-					DictModel model = Optional.ofNullable(deviceStatus).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(statusName)).findFirst().orElse(null);
-					if (model != null) {
-						deviceAssembly.setAssemblyStatus(model.getText());
-					} else {
-						stringBuilder.append("系统不存在该组件状态，");
-					}
+				if (ObjectUtil.isEmpty(one)) {
+					stringBuilder.append("系统不存在该组件,");
 				} else {
-					stringBuilder.append("组件信息不能为空,");
+					deviceAssembly.setSpecifications(one.getSpecifications());
+					deviceAssembly.setBaseTypeCode(one.getBaseTypeCode());
+					deviceAssembly.setDeviceTypeCode(one.getBaseTypeCode());
+				}
+
+				List<DictModel> deviceStatus = sysDictMapper.queryDictItemsByCode("device_assembly_status");
+				DictModel model = Optional.ofNullable(deviceStatus).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(statusName)).findFirst().orElse(null);
+				if (model != null) {
+					deviceAssembly.setAssemblyStatus(model.getText());
+				} else {
+					stringBuilder.append("系统不存在该组件状态，");
 				}
 
 				//重复数据校验
@@ -982,23 +981,16 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		if (null == object) {
 			return true;
 		}
-
 		try {
 			for (Field f : object.getClass().getDeclaredFields()) {
 				f.setAccessible(true);
-
-				System.out.print(f.getName() + ":");
-				System.out.println(f.get(object));
-
 				if (f.get(object) != null && StringUtils.isNotBlank(f.get(object).toString())) {
 					return false;
 				}
-
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 		return true;
 	}
 	//下拉框

@@ -120,7 +120,7 @@ public class DeviceAssemblyModel {
     @Excel(name = "是否是易耗品：0否 1是", width = 15)
     @ApiModelProperty(value = "是否是易耗品：0否 1是 默认为0")
     @Dict(dicCode = "consumables_type")
-    private java.lang.Integer consumablesType = 0;
+    private java.lang.Integer consumablesType;
 
     @Excel(name = "是否是易耗品：0否 1是", width = 15)
     @TableField(exist = false)
