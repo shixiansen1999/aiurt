@@ -226,7 +226,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
         if (emergencyTrainingRecords.size() == emergencyTrainingTeams.size()) {
             EmergencyTrainingProgram program = emergencyTrainingProgramService.getById(emergencyTrainingRecord.getEmergencyTrainingProgramId());
             program.setStatus(TeamConstant.COMPLETED);
-            emergencyTrainingProgramService.getById(program);
+            emergencyTrainingProgramService.updateById(program);
         }
     }
 
