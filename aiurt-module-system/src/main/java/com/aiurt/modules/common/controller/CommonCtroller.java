@@ -427,14 +427,10 @@ public class CommonCtroller {
      * @param
      * @return
      */
-    @ApiOperation(value="位置列表查询", notes="站所列表查询")
+    @ApiOperation(value="根据站点位置列表查询", notes="根据站点位置列表查询")
     @GetMapping(value = "/workArea/selectWorkAreaList")
     public Result<?> selectWorkAreaList(@RequestParam(name = "stationCode",required = false) String stationCode) {
-        LambdaQueryWrapper<WorkArea> queryWrapper = new LambdaQueryWrapper<>();
-        if (StrUtil.isNotBlank(stationCode)) {
-            queryWrapper.eq(WorkArea::getPosition, stationCode);
-        }
-        List<WorkArea> list = workAreaService.list(queryWrapper.eq(WorkArea::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<WorkArea> list = workAreaService.selectWorkAreaList(stationCode);
         return Result.OK(list);
     }
 

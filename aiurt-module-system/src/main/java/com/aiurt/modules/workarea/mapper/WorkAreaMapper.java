@@ -106,4 +106,11 @@ public interface WorkAreaMapper extends BaseMapper<WorkArea> {
      * @return
      */
     String getWorkAreaNameByCode(String workAreaCode);
+
+    /**
+     * 根据站点位置列表查询
+     * @param stationCode
+     * @return
+     */
+    List<WorkArea> selectWorkAreaList(String stationCode);
 }

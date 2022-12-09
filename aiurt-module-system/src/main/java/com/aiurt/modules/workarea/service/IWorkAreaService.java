@@ -1,12 +1,10 @@
 package com.aiurt.modules.workarea.service;
 
-import com.aiurt.boot.weeklyplan.entity.BdSite;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.workarea.dto.MajorUserDTO;
 import com.aiurt.modules.workarea.dto.WorkAreaDTO;
 import com.aiurt.modules.workarea.entity.WorkArea;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.system.vo.SiteModel;
@@ -93,4 +91,10 @@ public interface IWorkAreaService extends IService<WorkArea> {
      * @return
      */
     List<SiteModel>querySiteByTeam();
+    /**
+     * 根据站点位置列表查询
+     * @param stationCode
+     * @return
+     */
+    List<WorkArea> selectWorkAreaList(String stationCode);
 }

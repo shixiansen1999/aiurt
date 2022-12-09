@@ -4,8 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.weeklyplan.entity.BdSite;
-import com.aiurt.boot.weeklyplan.entity.BdTeam;
 import com.aiurt.boot.weeklyplan.mapper.BdSiteMapper;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
@@ -32,8 +30,6 @@ import com.aiurt.modules.workarea.mapper.WorkAreaOrgMapper;
 import com.aiurt.modules.workarea.mapper.WorkAreaStationMapper;
 import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
@@ -398,5 +394,10 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         });
 
         return modelList;
+    }
+
+    @Override
+    public List<WorkArea> selectWorkAreaList(String stationCode) {
+        return workAreaMapper.selectWorkAreaList(stationCode);
     }
 }

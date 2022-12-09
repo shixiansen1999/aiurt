@@ -122,4 +122,9 @@ where cm.major_code = #{majorCode} and cs.del_flag = 0 and cm.del_flag=0
 <select id="getWorkAreaNameByCode" resultType="java.lang.String">
     select name  from work_area where del_flag = 0 and code = #{workAreaCode}
     </select>
+
+<select id="selectWorkAreaList" resultType="com.aiurt.modules.workarea.entity.WorkArea">
+    select wa.id,wa.name,wa.code from work_area wa left join work_area_station was on was.work_area_code = wa.code
+    where was.station_code = #{stationCode} and was.del_flag = 0 and wa.del_flag = 0
+    </select>
 </mapper>
