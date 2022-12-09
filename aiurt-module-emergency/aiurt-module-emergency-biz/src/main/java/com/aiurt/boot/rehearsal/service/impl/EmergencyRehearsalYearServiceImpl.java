@@ -12,6 +12,7 @@ import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.aiurt.boot.rehearsal.mapper.EmergencyRehearsalYearMapper;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalMonthService;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalYearService;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
@@ -20,15 +21,29 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecgframework.poi.excel.ExcelExportUtil;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.export.styler.ExcelExportStylerDefaultImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.util.Date;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.util.*;
+import java.util.zip.Adler32;
+import java.util.zip.CheckedOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @Description: emergency_rehearsal_year
@@ -37,6 +52,7 @@ import java.util.List;
  * @Version: V1.0
  */
 @Service
+@Slf4j
 public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehearsalYearMapper, EmergencyRehearsalYear> implements IEmergencyRehearsalYearService, IFlowableBaseUpdateStatusService {
 
     @Autowired
@@ -48,30 +64,6 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
 
     @Override
     public IPage<EmergencyRehearsalYear> queryPageList(Page<EmergencyRehearsalYear> page, EmergencyRehearsalYearDTO emergencyRehearsalYearDTO) {
-//        QueryWrapper<EmergencyRehearsalYear> wrapper = new QueryWrapper<>();
-//        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-//        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
-//        List<CsUserDepartModel> deptModel = iSysBaseApi.getDepartByUserId(loginUser.getId());
-//        List<String> orgCodes = deptModel.stream().filter(l -> StrUtil.isNotEmpty(l.getOrgCode()))
-//                .map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-//        if (CollectionUtil.isEmpty(orgCodes)) {
-//            return page;
-//        }
-//        wrapper.lambda().in(EmergencyRehearsalYear::getOrgCode, orgCodes);
-//
-//        if (ObjectUtil.isNotEmpty(emergencyRehearsalYearDTO)) {
-//            Optional.ofNullable(emergencyRehearsalYearDTO.getCode())
-//                    .ifPresent(code -> wrapper.lambda().eq(EmergencyRehearsalYear::getCode, code));
-//            Optional.ofNullable(emergencyRehearsalYearDTO.getName())
-//                    .ifPresent(name -> wrapper.lambda().like(EmergencyRehearsalYear::getName, name));
-//            Optional.ofNullable(emergencyRehearsalYearDTO.getStatus())
-//                    .ifPresent(status -> wrapper.lambda().eq(EmergencyRehearsalYear::getStatus, status));
-//            Optional.ofNullable(emergencyRehearsalYearDTO.getOrgCode())
-//                    .ifPresent(orgCode -> wrapper.lambda().eq(EmergencyRehearsalYear::getOrgCode, orgCode));
-//            Optional.ofNullable(emergencyRehearsalYearDTO.getYear())
-//                    .ifPresent(year -> wrapper.lambda().like(EmergencyRehearsalYear::getYear, year));
-//        }
-//        Page<EmergencyRehearsalYear> pageList = this.page(page, wrapper);
         Page<EmergencyRehearsalYear> pageList = emergencyRehearsalYearMapper.queryPageList(page, emergencyRehearsalYearDTO, EmergencyConstant.YEAR_STATUS_3);
         return pageList;
     }
@@ -160,6 +152,80 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
             }
         }
         return id;
+    }
+
+    @Override
+    public void exportXls(HttpServletRequest request, HttpServletResponse response, String ids) {
+        List<EmergencyRehearsalYear> rehearsalYears;
+        if (StrUtil.isEmpty(ids)) {
+            rehearsalYears = this.lambdaQuery()
+                    .eq(EmergencyRehearsalYear::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .list();
+        } else {
+            List<String> split = StrUtil.split(ids, ',');
+            rehearsalYears = this.lambdaQuery()
+                    .eq(EmergencyRehearsalYear::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .in(EmergencyRehearsalYear::getId, split)
+                    .list();
+        }
+        if (CollectionUtil.isEmpty(rehearsalYears)) {
+            throw new AiurtBootException("没有可以导出的数据！");
+        }
+
+        List<Workbook> workbooks = new LinkedList<>();
+        List<String> titles = new LinkedList<>();
+        for (EmergencyRehearsalYear rehearsalYear : rehearsalYears) {
+            List<EmergencyRehearsalMonth> rehearsalMonthList = emergencyRehearsalMonthService.lambdaQuery()
+                    .eq(EmergencyRehearsalMonth::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .eq(EmergencyRehearsalMonth::getPlanId, rehearsalYear.getId())
+                    .list();
+            SysDepartModel dept = iSysBaseApi.getDepartByOrgCode(rehearsalYear.getOrgCode());
+            String title = ObjectUtil.isEmpty(dept) ? "" : dept.getDepartName() + rehearsalYear.getYear() + "年综合应急演练计划";
+            // excel数据
+            ExportParams exportParams = new ExportParams(title, null);
+            // 添加索引
+            exportParams.setAddIndex(true);
+            // 设置自定义样式
+            exportParams.setStyle(CustomExcelExportStylerImpl.class);
+            Workbook exportExcel = ExcelExportUtil.exportExcel(exportParams, EmergencyRehearsalMonth.class, rehearsalMonthList);
+            workbooks.add(exportExcel);
+            titles.add(title);
+        }
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = null;
+            InputStream inputStream = null;
+            // 创建临时文件
+            File zipTempFile = File.createTempFile("应急演练计划", ".zip");
+            FileOutputStream fileOutputStream = new FileOutputStream(zipTempFile);
+            CheckedOutputStream checkedOutputStream = new CheckedOutputStream(fileOutputStream, new Adler32());
+            // 压缩成zip格式
+            ZipOutputStream zipOutputStream = new ZipOutputStream(checkedOutputStream);
+
+            for (int i = 0; i < workbooks.size(); i++) {
+                Workbook workbook = workbooks.get(i);
+                byteArrayOutputStream = new ByteArrayOutputStream();
+                // 将excel写入字节数组输出流
+                workbook.write(byteArrayOutputStream);
+                // 转化为字节数据
+                byte[] content = byteArrayOutputStream.toByteArray();
+                // 写入输入流
+                inputStream = new ByteArrayInputStream(content);
+                // 添加Excel表数据
+                String filename = titles.get(i) + "_" + System.nanoTime() + ".xls";
+                zipOutputStream.putNextEntry(new ZipEntry(filename));
+                int flag = 0;
+                while ((flag = inputStream.read()) != -1) {
+                    zipOutputStream.write(flag);
+                }
+            }
+            zipOutputStream.close();
+            inputStream.close();
+            byteArrayOutputStream.close();
+        } catch (Exception e) {
+            log.error("年演练计划导出异常！", e.getMessage());
+            e.printStackTrace();
+        }
+
     }
 
     /**

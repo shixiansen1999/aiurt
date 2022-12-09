@@ -1,6 +1,6 @@
 package com.aiurt.boot.rehearsal.controller;
 
-import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearAddDTO;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalYearService;
@@ -14,11 +14,12 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * @Description: emergency_rehearsal_year
@@ -114,16 +115,14 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
         return Result.OK(emergencyRehearsalYear);
     }
 
-//    /**
-//    * 导出excel
-//    *
-//    * @param request
-//    * @param emergencyRehearsalYear
-//    */
-//    @RequestMapping(value = "/exportXls")
-//    public ModelAndView exportXls(HttpServletRequest request, EmergencyRehearsalYear emergencyRehearsalYear) {
+    /**
+     * 应急演练管理-导出年演练计划excel
+     */
+    @RequestMapping(value = "/exportXls")
+    public void exportXls(HttpServletRequest request, HttpServletResponse response, String ids) {
+        emergencyRehearsalYearService.exportXls(request, response, ids);
 //        return super.exportXls(request, emergencyRehearsalYear, EmergencyRehearsalYear.class, "emergency_rehearsal_year");
-//    }
+    }
 //
 //    /**
 //      * 通过excel导入数据

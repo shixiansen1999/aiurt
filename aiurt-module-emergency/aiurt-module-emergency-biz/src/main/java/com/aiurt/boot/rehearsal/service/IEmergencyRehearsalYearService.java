@@ -7,6 +7,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+
 /**
  * @Description: emergency_rehearsal_year
  * @Author: aiurt
@@ -44,4 +48,12 @@ public interface IEmergencyRehearsalYearService extends IService<EmergencyRehear
      */
     String edit(EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO);
 
+    /**
+     * 应急演练管理-导出年演练计划excel
+     *
+     * @param request
+     * @param ids
+     * @return
+     */
+    void exportXls(HttpServletRequest request, HttpServletResponse response, String ids);
 }
