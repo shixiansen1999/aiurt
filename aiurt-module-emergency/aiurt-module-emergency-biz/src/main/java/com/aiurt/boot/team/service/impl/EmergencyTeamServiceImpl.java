@@ -138,6 +138,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 }
                 LoginUser userById = iSysBaseAPI.getUserById(emergencyCrew.getUserId());
                 emergencyCrewVO.setScheduleItem(emergencyCrew.getScheduleItem());
+                emergencyCrewVO.setUserId(emergencyCrew.getUserId());
                 emergencyCrewVO.setRealname(userById.getRealname());
                 emergencyCrewVO.setId(emergencyCrew.getId());
                 emergencyCrewVO.setPost(emergencyCrew.getPost());

@@ -203,8 +203,8 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             }
         }
 
-        if (TeamConstant.SUBMITTED.equals(emergencyTrainingRecord.getStatus())) {
-            submit(emergencyTrainingRecord);
+        if (TeamConstant.SUBMITTED.equals(byId.getStatus())) {
+            submit(byId);
             return Result.OK("提交成功");
         }
         return Result.OK("编辑成功");
