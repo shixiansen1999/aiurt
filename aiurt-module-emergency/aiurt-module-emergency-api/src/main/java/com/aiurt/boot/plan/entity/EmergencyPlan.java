@@ -40,11 +40,13 @@ public class EmergencyPlan extends DictEntity implements Serializable {
 	/**应急预案类型*/
 	@Excel(name = "应急预案类型", width = 15)
     @ApiModelProperty(value = "应急预案类型")
+    @NotBlank(message = "应急预案类型不能为空")
     @Dict(dicCode = "emergency_plan_type")
     private Integer emergencyPlanType;
 	/**应急预案名称*/
 	@Excel(name = "应急预案名称", width = 15)
     @ApiModelProperty(value = "应急预案名称")
+    @NotBlank(message = "应急预案名称不能为空")
     private String emergencyPlanName;
 	/**应急预案版本*/
 	@Excel(name = "应急预案版本", width = 15)

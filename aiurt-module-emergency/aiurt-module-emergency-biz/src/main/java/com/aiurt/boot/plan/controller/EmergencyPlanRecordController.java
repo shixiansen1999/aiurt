@@ -13,6 +13,8 @@ import com.aiurt.boot.plan.dto.EmergencyPlanRecordDTO;
 import com.aiurt.boot.plan.dto.EmergencyPlanRecordQueryDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.plan.entity.EmergencyPlanRecord;
+import com.aiurt.boot.plan.vo.EmergencyPlanRecordVO;
+import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
 import com.aiurt.boot.rehearsal.vo.EmergencyRecordReadOneVO;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -27,6 +29,7 @@ import com.aiurt.common.system.base.controller.BaseController;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDeptUserModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import io.swagger.annotations.Api;
@@ -59,12 +62,12 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	//@AutoLog(value = "emergency_plan_record-分页列表查询")
 	@ApiOperation(value="应急启动记录-分页列表查询", notes="应急启动记录-分页列表查询")
 	@GetMapping(value = "/queryPageList")
-	public Result<IPage<EmergencyPlanRecordDTO>> queryPageList(EmergencyPlanRecordQueryDTO emergencyPlanRecordQueryDto,
-															@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-															@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-															HttpServletRequest req) {
-		Page<EmergencyPlanRecordDTO> page = new Page<>(pageNo, pageSize);
-		IPage<EmergencyPlanRecordDTO> pageList = emergencyPlanRecordService.queryPageList(page, emergencyPlanRecordQueryDto);
+	public Result<IPage<EmergencyPlanRecordVO>> queryPageList(EmergencyPlanRecordQueryDTO emergencyPlanRecordQueryDto,
+															  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+															  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+															  HttpServletRequest req) {
+		Page<EmergencyPlanRecordVO> page = new Page<>(pageNo, pageSize);
+		IPage<EmergencyPlanRecordVO> pageList = emergencyPlanRecordService.queryPageList(page, emergencyPlanRecordQueryDto);
 		return Result.OK(pageList);
 	}
 

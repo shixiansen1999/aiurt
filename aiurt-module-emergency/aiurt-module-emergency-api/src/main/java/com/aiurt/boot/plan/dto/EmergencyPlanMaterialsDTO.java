@@ -29,6 +29,9 @@ public class EmergencyPlanMaterialsDTO implements Serializable {
 	/**应急预案id*/
     @ApiModelProperty(value = "应急预案id")
     private String emergencyPlanId;
+    /**应急预案id*/
+    @ApiModelProperty(value = "应急预案启动记录id")
+    private String emergencyPlanRecordId;
 	/**应急物资编号*/
     @ApiModelProperty(value = "应急物资编号")
     private String materialsCode;

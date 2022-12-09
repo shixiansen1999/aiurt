@@ -3,6 +3,7 @@ package com.aiurt.boot.plan.mapper;
 import com.aiurt.boot.plan.dto.EmergencyPlanRecordDTO;
 import com.aiurt.boot.plan.dto.EmergencyPlanRecordQueryDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlanRecord;
+import com.aiurt.boot.plan.vo.EmergencyPlanRecordVO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRecordDTO;
 import com.aiurt.boot.rehearsal.vo.EmergencyImplementationRecordVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -26,7 +27,7 @@ public interface EmergencyPlanRecordMapper extends BaseMapper<EmergencyPlanRecor
      * @param orgCodes
      * @return
      */
-    IPage<EmergencyPlanRecordDTO> queryPageList(@Param("page") Page<EmergencyPlanRecordDTO> page
+    IPage<EmergencyPlanRecordVO> queryPageList(@Param("page") Page<EmergencyPlanRecordVO> page
             , @Param("condition") EmergencyPlanRecordQueryDTO emergencyPlanRecordQueryDTO, @Param("orgCodes") List<String> orgCodes);
 
 }

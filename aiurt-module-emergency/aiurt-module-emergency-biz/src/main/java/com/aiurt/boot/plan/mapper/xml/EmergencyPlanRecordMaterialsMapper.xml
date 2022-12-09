@@ -16,8 +16,8 @@
             t.del_flag = 0
             AND t1.del_flag = 0
             AND t2.del_flag = 0
-            <if test="condition.emergencyPlanId!=null and condition.emergencyPlanId != ''">
-                AND t.emergency_plan_record_id = #{condition.emergencyPlanId}
+            <if test="condition.emergencyPlanRecordId!=null and condition.emergencyPlanRecordId != ''">
+                AND t.emergency_plan_record_id = #{condition.emergencyPlanRecordId}
             </if>
         </where>
     </select>

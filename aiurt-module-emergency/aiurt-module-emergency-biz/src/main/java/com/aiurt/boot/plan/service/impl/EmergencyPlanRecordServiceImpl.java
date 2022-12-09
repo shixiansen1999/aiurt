@@ -7,13 +7,11 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
-import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
-import com.aiurt.boot.plan.dto.EmergencyPlanRecordDTO;
-import com.aiurt.boot.plan.dto.EmergencyPlanRecordDepartDTO;
-import com.aiurt.boot.plan.dto.EmergencyPlanRecordQueryDTO;
+import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.EmergencyPlanRecordMapper;
 import com.aiurt.boot.plan.service.*;
+import com.aiurt.boot.plan.vo.EmergencyPlanRecordVO;
 import com.aiurt.boot.rehearsal.constant.EmergencyDictConstant;
 import com.aiurt.boot.rehearsal.dto.EmergencyDeptDTO;
 import com.aiurt.boot.rehearsal.entity.*;
@@ -74,7 +72,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     private IEmergencyTeamService emergencyTeamService;
 
     @Override
-    public IPage<EmergencyPlanRecordDTO> queryPageList(Page<EmergencyPlanRecordDTO> page, EmergencyPlanRecordQueryDTO emergencyPlanRecordQueryDto) {
+    public IPage<EmergencyPlanRecordVO> queryPageList(Page<EmergencyPlanRecordVO> page, EmergencyPlanRecordQueryDTO emergencyPlanRecordQueryDto) {
        // 根据当前登录人的部门权限和记录的组织部门过滤数据
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
@@ -84,10 +82,10 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         if (CollectionUtil.isEmpty(orgCodes)) {
             return page;
         }
-        IPage<EmergencyPlanRecordDTO> pageList = emergencyPlanRecordMapper.queryPageList(page, emergencyPlanRecordQueryDto,orgCodes);
+        IPage<EmergencyPlanRecordVO> pageList = emergencyPlanRecordMapper.queryPageList(page, emergencyPlanRecordQueryDto,orgCodes);
         //启动应急预案名称
         if(CollUtil.isNotEmpty(pageList.getRecords())){
-            for (EmergencyPlanRecordDTO record : pageList.getRecords()) {
+            for (EmergencyPlanRecordVO record : pageList.getRecords()) {
                 String emergencyPlanId = record.getEmergencyPlanId();
                 String emergencyPlanVersion = record.getEmergencyPlanVersion();
                 List<EmergencyPlan> list = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getId, emergencyPlanId).list();
@@ -97,11 +95,37 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                 }
             }
         }
+
         Map<String, String> orgMap = sysBaseApi.getAllSysDepart().stream()
                 .collect(Collectors.toMap(k -> k.getOrgCode(), v -> v.getDepartName(), (a, b) -> a));
         pageList.getRecords().stream().forEach(l -> {
+            //应急预案启动记录处置程序
+            List<EmergencyPlanRecordDisposalProcedure> procedureList = emergencyPlanRecordDisposalProcedureService.lambdaQuery().eq(EmergencyPlanRecordDisposalProcedure::getEmergencyPlanRecordId, l.getId()).list();
+            l.setEmergencyPlanRecordDisposalProcedureList(procedureList);
+
+            //应急队伍
+            List<EmergencyPlanRecordTeam> teamList = emergencyPlanRecordTeamService.lambdaQuery().eq(EmergencyPlanRecordTeam::getEmergencyPlanRecordId, l.getId()).list();
+            List<EmergencyPlanTeamDTO> teams = new ArrayList<>();
+            if(CollUtil.isNotEmpty(teamList)){
+                EmergencyPlanTeamDTO emergencyPlanTeamDTO = new EmergencyPlanTeamDTO();
+                teamList.forEach(t->{
+                    String emergencyTeamId = t.getEmergencyTeamId();
+                    String emergencyTeamName = null;
+                    List<EmergencyTeam> list = emergencyTeamService.lambdaQuery().eq(EmergencyTeam::getId, emergencyTeamId).list();
+                    if(CollUtil.isNotEmpty(list)){
+                        for (EmergencyTeam emergencyTeam : list) {
+                            emergencyTeamName = emergencyTeam.getEmergencyTeamname();
+                        }
+                    }
+                    emergencyPlanTeamDTO.setEmergencyTeamId(emergencyTeamId);
+                    emergencyPlanTeamDTO.setEmergencyTeamName(emergencyTeamName);
+                    teams.add(emergencyPlanTeamDTO);
+                });
+            }
+            l.setEmergencyPlanRecordTeamId(teams);
+
             List<EmergencyPlanRecordDepart> recordDeparts = emergencyPlanRecordDepartService.lambdaQuery()
-                    .eq(EmergencyPlanRecordDepart::getId, l.getId()).list();
+                    .eq(EmergencyPlanRecordDepart::getEmergencyPlanLaunchRecordId, l.getId()).list();
             if (CollectionUtil.isNotEmpty(recordDeparts)) {
                 List<EmergencyPlanRecordDepartDTO> depts = new ArrayList<>();
                 recordDeparts.forEach(d -> depts.add(new EmergencyPlanRecordDepartDTO(d.getOrgCode(), orgMap.get(d.getOrgCode()))));
@@ -120,6 +144,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         emergencyPlanRecord.setEmergencyPlanVersion(String.valueOf(version));
         String username = loginUser.getUsername();
         emergencyPlanRecord.setRecorderId(username);
+        emergencyPlanRecord.setOrgCode(loginUser.getOrgCode());
         Date nowDate = DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd"));
         emergencyPlanRecord.setRecordTime(nowDate);
         this.save(emergencyPlanRecord);
@@ -136,11 +161,11 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             }
         }
         //参与部门
-        List<EmergencyPlanRecordDepartDTO> emergencyPlanRecordDepartId = emergencyPlanRecordDto.getEmergencyPlanRecordDepartId();
+        List<String> emergencyPlanRecordDepartId = emergencyPlanRecordDto.getEmergencyPlanRecordDepartId();
         if(CollUtil.isNotEmpty(emergencyPlanRecordDepartId)){
-            for (EmergencyPlanRecordDepartDTO s : emergencyPlanRecordDepartId) {
+            for (String s : emergencyPlanRecordDepartId) {
                 EmergencyPlanRecordDepart emergencyPlanRecordDepart = new EmergencyPlanRecordDepart();
-                emergencyPlanRecordDepart.setOrgCode(s.getOrgCode());
+                emergencyPlanRecordDepart.setOrgCode(s);
                 emergencyPlanRecordDepart.setEmergencyPlanLaunchRecordId(id);
                 emergencyPlanRecordDepartService.save(emergencyPlanRecordDepart);
             }
@@ -165,6 +190,14 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         List<EmergencyPlanRecordAtt> emergencyPlanRecordAttList = emergencyPlanRecordDto.getEmergencyPlanRecordAttList();
         if(CollUtil.isNotEmpty(emergencyPlanRecordAttList)){
             for (EmergencyPlanRecordAtt planRecordAtt : emergencyPlanRecordAttList) {
+                planRecordAtt.setEmergencyPlanRecordId(id);
+                emergencyPlanRecordAttService.save(planRecordAtt);
+            }
+        }
+        //应急预案启动记录事件总结材料添加
+        List<EmergencyPlanRecordAtt> emergencyPlanRecordAttList2 = emergencyPlanRecordDto.getEmergencyPlanRecordAttList2();
+        if(CollUtil.isNotEmpty(emergencyPlanRecordAttList2)){
+            for (EmergencyPlanRecordAtt planRecordAtt : emergencyPlanRecordAttList2) {
                 planRecordAtt.setEmergencyPlanRecordId(id);
                 emergencyPlanRecordAttService.save(planRecordAtt);
             }
@@ -209,11 +242,11 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         QueryWrapper<EmergencyPlanRecordDepart> planRecordDepartWrapper = new QueryWrapper<>();
         planRecordDepartWrapper.lambda().eq(EmergencyPlanRecordDepart::getEmergencyPlanLaunchRecordId, id);
         emergencyPlanRecordDepartService.remove(planRecordDepartWrapper);
-        List<EmergencyPlanRecordDepartDTO> emergencyPlanRecordDepartId = emergencyPlanRecordDto.getEmergencyPlanRecordDepartId();
+        List<String> emergencyPlanRecordDepartId = emergencyPlanRecordDto.getEmergencyPlanRecordDepartId();
         if(CollUtil.isNotEmpty(emergencyPlanRecordDepartId)){
-            for (EmergencyPlanRecordDepartDTO s : emergencyPlanRecordDepartId) {
+            for (String s : emergencyPlanRecordDepartId) {
                 EmergencyPlanRecordDepart emergencyPlanRecordDepart = new EmergencyPlanRecordDepart();
-                emergencyPlanRecordDepart.setOrgCode(s.getOrgCode());
+                emergencyPlanRecordDepart.setOrgCode(s);
                 emergencyPlanRecordDepart.setEmergencyPlanLaunchRecordId(id);
                 emergencyPlanRecordDepartService.save(emergencyPlanRecordDepart);
             }
@@ -240,7 +273,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             });
             emergencyPlanRecordMaterialsService.saveBatch(emergencyPlanRecordMaterialsList);
         }
-        //应急预案附件
+        //应急预案附件编辑
         QueryWrapper<EmergencyPlanRecordAtt> planRecordAttWrapper = new QueryWrapper<>();
         planRecordAttWrapper.lambda().eq(EmergencyPlanRecordAtt::getEmergencyPlanRecordId,id);
         emergencyPlanRecordAttService.remove(planRecordAttWrapper);
@@ -251,7 +284,14 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             });
             emergencyPlanRecordAttService.saveBatch(emergencyPlanRecordAttList);
         }
-        //应急预案启动记录事件问题措施添加
+        List<EmergencyPlanRecordAtt> emergencyPlanRecordAttList2 = emergencyPlanRecordDto.getEmergencyPlanRecordAttList2();
+        if (CollectionUtil.isNotEmpty(emergencyPlanRecordAttList2)) {
+            emergencyPlanRecordAttList2.forEach(l -> {
+                l.setEmergencyPlanRecordId(emergencyPlanRecord.getId());
+            });
+            emergencyPlanRecordAttService.saveBatch(emergencyPlanRecordAttList2);
+        }
+        //应急预案启动记录事件问题措施编辑
         QueryWrapper<EmergencyPlanRecordProblemMeasures> planRecordProblemMeasuresWrapper = new QueryWrapper<>();
         planRecordProblemMeasuresWrapper.lambda().eq(EmergencyPlanRecordProblemMeasures::getEmergencyPlanRecordId,id);
         emergencyPlanRecordProblemMeasuresService.remove(planRecordProblemMeasuresWrapper);
@@ -303,6 +343,14 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         Assert.notNull(planRecord, "未找到对应记录！");
         EmergencyPlanRecordDTO recordDto = new EmergencyPlanRecordDTO();
         BeanUtils.copyProperties(planRecord, recordDto);
+
+        //启动应急预案
+        List<EmergencyPlan> planList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getId, recordDto.getEmergencyPlanId()).list();
+        planList.stream().forEach(p->{
+            String emergencyPlanName = p.getEmergencyPlanName();
+            String emergencyPlanVersion = p.getEmergencyPlanVersion();
+            recordDto.setPlanVersion(emergencyPlanName+"v"+emergencyPlanVersion);
+        });
 
         // 获取应急队伍
         List<EmergencyPlanRecordTeam> teamList = emergencyPlanRecordTeamService.lambdaQuery()
@@ -360,9 +408,9 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         this.questionTranslate(problemMeasuresList);
 
         recordDto.setEmergencyPlanRecordTeamId(teamName);
-        recordDto.setEmergencyPlanRecordDepartId(depts);
         recordDto.setEmergencyPlanRecordDisposalProcedureList(procedureList);
         recordDto.setEmergencyPlanRecordAttList(recordAttList);
+        recordDto.setEmergencyPlanRecordAttList2(recordAttList2);
         recordDto.setEmergencyPlanRecordProblemMeasuresList(problemMeasuresList);
         return recordDto;
     }

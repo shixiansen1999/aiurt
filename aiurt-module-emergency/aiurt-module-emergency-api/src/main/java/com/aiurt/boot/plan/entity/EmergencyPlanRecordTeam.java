@@ -1,6 +1,7 @@
 package com.aiurt.boot.plan.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -40,6 +41,12 @@ public class EmergencyPlanRecordTeam implements Serializable {
 	@Excel(name = "应急队伍id", width = 15)
     @ApiModelProperty(value = "应急队伍id")
     private String emergencyTeamId;
+
+    @Excel(name = "应急队伍名称", width = 15)
+    @ApiModelProperty(value = "应急队伍名称")
+    @TableField(exist = false)
+    private String emergencyTeamName;
+
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

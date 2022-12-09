@@ -5,6 +5,7 @@ import com.aiurt.boot.plan.dto.EmergencyPlanRecordDTO;
 import com.aiurt.boot.plan.dto.EmergencyPlanRecordQueryDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.plan.entity.EmergencyPlanRecord;
+import com.aiurt.boot.plan.vo.EmergencyPlanRecordVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -26,7 +27,7 @@ public interface IEmergencyPlanRecordService extends IService<EmergencyPlanRecor
      * @param emergencyPlanRecordQueryDto
      * @return
      */
-    IPage<EmergencyPlanRecordDTO> queryPageList(Page<EmergencyPlanRecordDTO> page, EmergencyPlanRecordQueryDTO emergencyPlanRecordQueryDto);
+    IPage<EmergencyPlanRecordVO> queryPageList(Page<EmergencyPlanRecordVO> page, EmergencyPlanRecordQueryDTO emergencyPlanRecordQueryDto);
 
     /**
      * 应急预案启动记录新增

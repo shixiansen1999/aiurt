@@ -1,7 +1,8 @@
-package com.aiurt.boot.plan.dto;
+package com.aiurt.boot.plan.vo;
 
+import com.aiurt.boot.plan.dto.EmergencyPlanRecordDepartDTO;
+import com.aiurt.boot.plan.dto.EmergencyPlanTeamDTO;
 import com.aiurt.boot.plan.entity.*;
-import com.aiurt.boot.rehearsal.dto.EmergencyDeptDTO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -15,15 +16,15 @@ import java.util.List;
  * @Version: V1.0
  */
 @Data
-public class EmergencyPlanRecordDTO extends EmergencyPlanRecord {
+public class EmergencyPlanRecordVO extends EmergencyPlanRecord {
     /**应急预案启动记录应急队伍*/
     @ApiModelProperty(value = "应急预案启动记录应急救援队伍")
-    private List<String> emergencyPlanRecordTeamId;
+    private List<EmergencyPlanTeamDTO> emergencyPlanRecordTeamId;
 
     /**应急预案启动记录参与部门*/
     @ApiModelProperty(value = "应急预案启动记录参与部门")
-    @NotBlank(message = "参与部门不能为空",groups = {Save.class, Update.class})
-    private List<String> emergencyPlanRecordDepartId;
+    @NotBlank(message = "参与部门不能为空")
+    private List<EmergencyPlanRecordDepartDTO> emergencyPlanRecordDepartId;
     /**
      * 参与部门信息名称,英文分号分隔
      */

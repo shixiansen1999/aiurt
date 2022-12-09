@@ -33,6 +33,9 @@ public class EmergencyPlanRecordQueryDTO {
      */
     @ApiModelProperty(value = "启动应急预案")
     private String emergencyPlanId;
+
+    @ApiModelProperty(value = "应急预案启动记录id")
+    private String emergencyPlanRecordId;
     /**
      * 开始日期
      */

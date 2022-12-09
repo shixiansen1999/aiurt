@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.entity;
 
+import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -15,6 +16,8 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -31,23 +34,36 @@ import java.io.Serializable;
 public class EmergencyPlanRecord extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 添加时校验分组
+     */
+    public interface Save{}
+    /**
+     * 更新时校验分组
+     */
+    public interface Update{}
+
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
+    @NotNull(message = "记录主键不能为空！", groups = {Update.class})
     private String id;
 	/**事件分类*/
-	@Excel(name = "事件分类", width = 15)
-    @ApiModelProperty(value = "事件分类")
+	@Excel(name = "事件类型", width = 15)
+    @ApiModelProperty(value = "事件类型")
+//    @NotBlank(message = "事件类型不能为空",groups = {Save.class, Update.class})
     @Dict(dicCode = "emergency_event_class")
     private Integer eventClass;
 	/**事件性质*/
 	@Excel(name = "事件性质", width = 15)
     @ApiModelProperty(value = "事件性质")
+//    @NotBlank(message = "事件性质不能为空",groups = {Save.class, Update.class})
     @Dict(dicCode = "emergency_event_property")
     private Integer eventProperty;
 	/**应急预案id*/
 	@Excel(name = "应急预案id", width = 15)
     @ApiModelProperty(value = "应急预案id")
+//    @NotBlank(message = "应急预案id不能为空",groups = {Save.class, Update.class})
     private String emergencyPlanId;
 	/**应急预案版本*/
 	@Excel(name = "应急预案版本", width = 15)
@@ -60,10 +76,17 @@ public class EmergencyPlanRecord extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String planVersion;
 
+    /**记录人部门*/
+    @Excel(name = "记录人部门", width = 15)
+    @ApiModelProperty(value = "记录人部门")
+    @Dict(dictTable = "sys_depart", dicCode = "org_code", dicText ="depart_name")
+    private String orgCode;
+
 	/**启动日期*/
 	@Excel(name = "启动日期", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
+//    @NotBlank(message = "启动日期不能为空",groups = {Save.class, Update.class})
     @ApiModelProperty(value = "启动日期")
     private java.util.Date starttime;
 	/**对完成预案及其他应急管理工作建议*/

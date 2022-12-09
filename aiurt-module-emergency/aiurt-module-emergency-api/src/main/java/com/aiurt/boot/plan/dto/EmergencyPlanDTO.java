@@ -18,6 +18,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.List;
 
@@ -31,6 +32,7 @@ import java.util.List;
 public class EmergencyPlanDTO extends EmergencyPlan {
     /**应急队伍*/
     @ApiModelProperty(value = "应急队伍")
+    @NotBlank(message = "应急队伍不能为空")
     List<String> emergencyTeamId;
 
     /**

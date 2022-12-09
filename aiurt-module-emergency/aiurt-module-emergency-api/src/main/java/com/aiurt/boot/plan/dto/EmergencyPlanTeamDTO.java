@@ -1,4 +1,5 @@
-package com.aiurt.boot.plan.dto;/**
+package com.aiurt.boot.plan.dto;
+/**
  * 功能描述
  *
  * @author: qkx
@@ -17,7 +18,6 @@ import lombok.Data;
  * @date: 2022-12-06 14:50
  */
 @Data
-@AllArgsConstructor
 public class EmergencyPlanTeamDTO {
     @ApiModelProperty(value = "应急队伍id")
     private String emergencyTeamId;
