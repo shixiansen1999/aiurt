@@ -3,15 +3,19 @@ package com.aiurt.modules.listener;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.constants.FlowConstant;
+import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.user.service.IFlowUserService;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.common.engine.impl.event.FlowableEntityEventImpl;
+import org.flowable.engine.HistoryService;
 import org.flowable.engine.ProcessEngines;
+import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
@@ -51,15 +55,43 @@ public class TaskCreateListener implements FlowableEventListener {
 
         logger.debug("活动启动监听事件,设置办理人员......");
         TaskEntity taskEntity = (TaskEntity) entity;
+        // 流程任务id
         String taskId = taskEntity.getId();
+        // 流程定义id
         String processDefinitionId = taskEntity.getProcessDefinitionId();
+        // 流程实例id
+        String processInstanceId = taskEntity.getProcessInstanceId();
+        // 流程节点定义id
+        String taskDefinitionKey = taskEntity.getTaskDefinitionKey();
 
+
+        FlowElementUtil flowElementUtil = SpringContextUtils.getBean(FlowElementUtil.class);
+        // 判断首个节点是否为驳回
+        UserTask userTask = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
+        if (Objects.nonNull(userTask) && StrUtil.equalsAnyIgnoreCase(userTask.getId(), taskDefinitionKey)) {
+            HistoryService historyService = ProcessEngines.getDefaultProcessEngine().getHistoryService();
+            List<HistoricTaskInstance> instanceList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId)
+                    .taskDefinitionKey(taskDefinitionKey).orderByTaskCreateTime().desc().list();
+            if (CollectionUtil.isNotEmpty(instanceList) && instanceList.size()>1) {
+                HistoricTaskInstance historicTaskInstance = instanceList.get(0);
+                String assignee = historicTaskInstance.getAssignee();
+                if (StrUtil.isBlank(assignee)) {
+                    String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
+                            .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
+                    ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, initiator);
+                }else {
+                    ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, assignee);
+                }
+                return;
+            }
+        }
+
+        // 查询配置项
         IActCustomTaskExtService taskExtService = SpringContextUtils.getBean(IActCustomTaskExtService.class);
-
-        ActCustomTaskExt taskExt = taskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskEntity.getTaskDefinitionKey());
+        ActCustomTaskExt taskExt = taskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskDefinitionKey);
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //
+        // 如果没有配置选人信息
         if (Objects.isNull(taskExt) && Objects.nonNull(loginUser)) {
             // 设置当前登录人员
             ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, loginUser.getUsername());
@@ -67,7 +99,7 @@ public class TaskCreateListener implements FlowableEventListener {
         String groupType = taskExt.getGroupType();
         if (StrUtil.isBlank(groupType)) {
             String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
-                    .getVariable(taskEntity.getProcessInstanceId(), FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
+                    .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
             ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, initiator);
             return;
         }
@@ -94,7 +126,7 @@ public class TaskCreateListener implements FlowableEventListener {
             case "dynamic":
                 String dynamicVariable = taskExt.getDynamicVariable();
                 String variable = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
-                        .getVariable(taskEntity.getProcessInstanceId(), dynamicVariable, String.class);
+                        .getVariable(processInstanceId, dynamicVariable, String.class);
                 if (StrUtil.isNotBlank(variable)) {
                     userNameList = flowUserService.getUserName(variable);
                 }
@@ -102,14 +134,14 @@ public class TaskCreateListener implements FlowableEventListener {
             // 流程发起人
             default:
                 String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
-                        .getVariable(taskEntity.getProcessInstanceId(), FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
+                        .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
                 userNameList.add(initiator);
                 break;
         }
 
         if (CollectionUtil.isEmpty(userNameList)) {
             String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
-                    .getVariable(taskEntity.getProcessInstanceId(), FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
+                    .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
             userNameList.add(initiator);
         }
 
@@ -121,7 +153,6 @@ public class TaskCreateListener implements FlowableEventListener {
                 ProcessEngines.getDefaultProcessEngine().getTaskService().addCandidateUser(taskId, userName);
             }
         }
-
     }
 
     /**
