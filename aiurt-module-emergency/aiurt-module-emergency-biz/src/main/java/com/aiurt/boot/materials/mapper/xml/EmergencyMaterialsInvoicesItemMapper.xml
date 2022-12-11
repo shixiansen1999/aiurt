@@ -8,7 +8,6 @@
 	      t2.id as id,
 	      t2.content as content,
 	      t2.abnormal_condition as abnormalCondition,
-	      t2.`order`,
 	      t2.`check`,
 	      t2.check_result as checkResult,
 	      t2.hierarchy_type as hierarchyType,
