@@ -126,18 +126,14 @@ public class EmergencyMaterialsUsage extends DictEntity implements Serializable 
 
     /**巡视日期*/
     @TableField(exist = false)
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "开始时间")
-    private java.util.Date startTime;
+    private java.lang.String startTime;
 
 
     /**巡视日期*/
     @TableField(exist = false)
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "结束时间")
-    private java.util.Date endTime;
+    private java.lang.String endTime;
 
     /**备注*/
     @TableField(exist = false)
