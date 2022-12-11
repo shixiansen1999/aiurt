@@ -89,11 +89,6 @@ public class EmergencyMaterialsInvoicesItem extends DictEntity implements Serial
 	@Excel(name = "父级ID,顶级默认为0", width = 15)
     @ApiModelProperty(value = "父级ID,顶级默认为0")
     private java.lang.String pid;
-	/**内容排序*/
-	@Excel(name = "内容排序", width = 15)
-    @ApiModelProperty(value = "内容排序")
-    @TableField(value = "`order`")
-    private java.lang.Integer order;
 	/**是否为巡检项目：0否 1是*/
 	@Excel(name = "是否为巡检项目：0否 1是", width = 15)
     @ApiModelProperty(value = "是否为巡检项目：0否 1是")
