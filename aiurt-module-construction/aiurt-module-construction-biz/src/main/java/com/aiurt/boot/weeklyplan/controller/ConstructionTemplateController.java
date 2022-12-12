@@ -83,7 +83,7 @@ public class ConstructionTemplateController extends BaseController<ConstructionT
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         constructionTemplate.setUserId(loginUser.getId());
         constructionTemplateService.save(constructionTemplate);
-        return Result.OK("添加成功！记录ID为：【" + constructionTemplate.getId() + "】");
+        return Result.OK("添加成功！", constructionTemplate.getId());
     }
 
     /**

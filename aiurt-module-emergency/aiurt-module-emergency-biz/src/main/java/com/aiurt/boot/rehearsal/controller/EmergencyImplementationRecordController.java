@@ -69,7 +69,7 @@ public class EmergencyImplementationRecordController extends BaseController<Emer
     @PostMapping(value = "/add")
     public Result<String> add(@RequestBody @Validated(EmergencyImplementationRecord.Save.class) EmergencyRehearsalRegisterDTO emergencyRehearsalRegisterDTO) {
         String id = emergencyImplementationRecordService.rehearsalRegister(emergencyRehearsalRegisterDTO);
-        return Result.OK("添加成功！记录ID为：【" + id + "】");
+        return Result.OK("添加成功！", id);
     }
 
     /**

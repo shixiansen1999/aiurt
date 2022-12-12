@@ -67,7 +67,7 @@ public class EmergencyRehearsalMonthController extends BaseController<EmergencyR
     @PostMapping(value = "/add")
     public Result<String> add(@RequestBody EmergencyRehearsalMonth emergencyRehearsalMonth) {
         String monthPlanId = emergencyRehearsalMonthService.addMonthPlan(emergencyRehearsalMonth);
-        return Result.OK("添加成功！对应记录ID为【" + monthPlanId + "】");
+        return Result.OK("添加成功！", monthPlanId);
     }
 
     /**

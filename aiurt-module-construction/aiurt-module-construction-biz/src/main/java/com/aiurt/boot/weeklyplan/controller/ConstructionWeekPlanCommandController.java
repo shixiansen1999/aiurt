@@ -64,7 +64,7 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
     @PostMapping(value = "/declaration")
     public Result<String> declaration(@RequestBody ConstructionWeekPlanCommand constructionWeekPlanCommand) {
         String id = constructionWeekPlanCommandService.declaration(constructionWeekPlanCommand);
-        return Result.OK("添加成功！记录id为：【" + id + "】");
+        return Result.OK("添加成功！", id);
     }
 
     /**
