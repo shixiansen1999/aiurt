@@ -47,7 +47,7 @@ public class VersionInfo implements Serializable {
 	@Excel(name = "更新内容描述", width = 15)
     @ApiModelProperty(value = "更新内容描述")
     @Valid
-    @Length(max = 16, message = "更新内容描述不能超过200个字符")
+    @Length(max = 50, message = "更新内容描述不能超过50个字符")
     private String updateContent;
 	/**app版本还是服务版本，1=app，2=服务*/
 	@Excel(name = "app版本还是服务版本，1=app，2=服务", width = 15)
