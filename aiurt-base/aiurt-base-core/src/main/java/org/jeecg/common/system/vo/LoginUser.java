@@ -140,4 +140,9 @@ public class LoginUser {
 	 * 角色id
 	 */
 	private String roleIds;
+
+	/**
+	 * 工号，唯一键
+	 */
+	private String workNo;
 }

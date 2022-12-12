@@ -255,4 +255,14 @@
 			</foreach>
 		</if>
 	</select>
+
+	<select id="getUserByRealName" resultType="org.jeecg.common.system.vo.LoginUser">
+		select * from  sys_user  where  del_flag = 0
+		<if test="realName != null and realName != ''">
+			and realname = #{realName}
+		</if>
+		<if test="workNo != null and workNo != ''">
+			and work_no = #{workNo}
+		</if>
+    </select>
 </mapper>

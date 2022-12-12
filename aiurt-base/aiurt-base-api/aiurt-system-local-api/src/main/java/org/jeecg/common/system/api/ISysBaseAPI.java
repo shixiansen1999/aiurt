@@ -780,4 +780,14 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     JSONObject getPositionByName(String positionName,String lineCode,String stationCode);
+
+    /**
+     * 根据用户姓名,工号查询用户信息
+     * @param realName
+     * @param workNo
+     * @return
+     */
+    List<LoginUser> getUserByRealName(String realName,String workNo);
+
+
 }

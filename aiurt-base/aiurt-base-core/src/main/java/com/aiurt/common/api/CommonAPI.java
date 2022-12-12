@@ -157,7 +157,7 @@ public interface CommonAPI {
     List<CsUserSubsystemModel> getSubsystemByUserId(String id);
 
     /**
-     *20根据用户账号模糊查询用户姓名
+     *20根据用户姓名模糊查询用户账号
      * @param realName
      * @return
      */

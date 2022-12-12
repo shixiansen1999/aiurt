@@ -38,7 +38,11 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -186,12 +190,13 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         updateById(emergencyTeam);
         LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
-        wrapper.eq(EmergencyCrew::getEmergencyTeamId, emergencyTeam.getId());
+        wrapper.eq(EmergencyCrew::getEmergencyTeamId, byId.getId());
         emergencyCrewService.getBaseMapper().delete(wrapper);
         List<EmergencyCrew> emergencyCrewList = emergencyTeam.getEmergencyCrewList();
         if (CollUtil.isNotEmpty(emergencyCrewList)) {
             for (EmergencyCrew emergencyCrew : emergencyCrewList) {
                 emergencyCrew.setEmergencyTeamId(emergencyTeam.getId());
+                emergencyCrew.setDelFlag(TeamConstant.DEL_FLAG0);
                 emergencyCrewService.save(emergencyCrew);
             }
         }
@@ -360,7 +365,6 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         String departName = team.getOrgName();
         String emergencyTeamName = team.getEmergencyTeamname();
         String emergencyTeamCode = team.getEmergencyTeamcode();
-        Integer peopleNum = team.getPeopleNum();
         String lineName = team.getLineName();
         String stationName = team.getStationName();
         String positionName = team.getPositionName();
@@ -379,17 +383,17 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             if (ObjectUtil.isNotNull(major)) {
                 emergencyTeam.setMajorCode(major.getString("majorCode"));
             } else {
-                stringBuilder.append("系统不存在该专业");
+                stringBuilder.append("系统不存在该专业，");
             }
             if (ObjectUtil.isNotNull(depart)) {
                 emergencyTeam.setOrgCode(depart.getString("orgCode"));
             } else {
-                stringBuilder.append("系统不存在该部门");
+                stringBuilder.append("系统不存在该部门，");
             }
             if (ObjectUtil.isNull(one)) {
                 emergencyTeam.setEmergencyTeamname(emergencyTeamName);
             } else {
-                stringBuilder.append("系统已存在该应急队伍名称");
+                stringBuilder.append("系统已存在该应急队伍名称，");
             }
         } else {
             stringBuilder.append("所属专业，所属部门，应急队伍名称不能为空，");
@@ -399,28 +403,35 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             JSONObject lineByName = iSysBaseAPI.getLineByName(lineName);
             JSONObject stationByName = iSysBaseAPI.getStationByName(stationName);
             JSONObject positionByName = iSysBaseAPI.getPositionByName(positionName,lineByName.getString("lineCode"),stationByName.getString("stationCode"));
-
             if (ObjectUtil.isNotNull(lineByName)) {
                 emergencyTeam.setLineCode(lineByName.getString("lineCode"));
             } else {
-                stringBuilder.append("系统不存在该线路");
+                stringBuilder.append("系统不存在该线路，");
             }
             if (ObjectUtil.isNotNull(stationByName)) {
                 emergencyTeam.setStationCode(lineByName.getString("stationCode"));
             } else {
-                stringBuilder.append("系统不存在该站点");
+                stringBuilder.append("系统不存在该站点，");
             }
             if (ObjectUtil.isNotNull(positionByName)) {
                 emergencyTeam.setPositionCode(lineByName.getString("positionCode"));
             } else {
-                stringBuilder.append("系统不存在该线路站点下的位置");
+                stringBuilder.append("系统不存在该线路站点下的位置，");
             }
         } else {
             stringBuilder.append("线路，站点，驻扎地不能为空，");
         }
-
         if (StrUtil.isNotBlank(manager)&& StrUtil.isNotBlank(managerPhone)) {
-
+            List<LoginUser> userByRealName = iSysBaseAPI.getUserByRealName(manager, managerWorkNo);
+            if (userByRealName.size() != 1) {
+                stringBuilder.append("负责人姓名存在同名，请填写工号，");
+            } else {
+                emergencyTeam.setManagerId(userByRealName.get(0).getId());
+            }
+            boolean matches = Pattern.matches("^1[3-9]\\d{9}$", managerPhone);
+            if (!matches) {
+                stringBuilder.append("手机号码格式不正确，");
+            }
         } else {
             stringBuilder.append("负责人和联系电话不能为空，");
         }

@@ -2192,4 +2192,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return JSONObject.parseObject(JSONObject.toJSONString(stationPosition));
     }
+
+    @Override
+    public List<LoginUser> getUserByRealName(String realName,String workNo) {
+        return userMapper.getUserByRealName(realName, workNo);
+    }
+
+
 }
