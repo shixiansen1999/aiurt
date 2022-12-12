@@ -184,19 +184,15 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             return Result.error("未找到对应数据！");
         }
         updateById(emergencyTeam);
+        LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
+        wrapper.eq(EmergencyCrew::getEmergencyTeamId, emergencyTeam.getId());
+        emergencyCrewService.getBaseMapper().delete(wrapper);
         List<EmergencyCrew> emergencyCrewList = emergencyTeam.getEmergencyCrewList();
         if (CollUtil.isNotEmpty(emergencyCrewList)) {
             for (EmergencyCrew emergencyCrew : emergencyCrewList) {
-                if (StrUtil.isBlank(emergencyCrew.getEmergencyTeamId())) {
-                    emergencyCrew.setEmergencyTeamId(emergencyTeam.getId());
-                    emergencyCrewService.save(emergencyCrew);
-                } else {
-                    if (TeamConstant.DEL_FLAG1.equals(emergencyCrew.getDelFlag())) {
-                        emergencyCrewService.removeById(emergencyCrew);
-                    } else {
-                        emergencyCrewService.updateById(emergencyCrew);
-                    }
-                }
+                emergencyCrew.setEmergencyTeamId(emergencyTeam.getId());
+                emergencyCrewService.save(emergencyCrew);
             }
         }
         return Result.OK("编辑成功!");
@@ -402,8 +398,23 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         if (StrUtil.isNotBlank(lineName) && StrUtil.isNotBlank(stationName) && StrUtil.isNotBlank(positionName)) {
             JSONObject lineByName = iSysBaseAPI.getLineByName(lineName);
             JSONObject stationByName = iSysBaseAPI.getStationByName(stationName);
-            JSONObject positionByName = iSysBaseAPI.getPositionByName(positionName);
+            JSONObject positionByName = iSysBaseAPI.getPositionByName(positionName,lineByName.getString("lineCode"),stationByName.getString("stationCode"));
 
+            if (ObjectUtil.isNotNull(lineByName)) {
+                emergencyTeam.setLineCode(lineByName.getString("lineCode"));
+            } else {
+                stringBuilder.append("系统不存在该线路");
+            }
+            if (ObjectUtil.isNotNull(stationByName)) {
+                emergencyTeam.setStationCode(lineByName.getString("stationCode"));
+            } else {
+                stringBuilder.append("系统不存在该站点");
+            }
+            if (ObjectUtil.isNotNull(positionByName)) {
+                emergencyTeam.setPositionCode(lineByName.getString("positionCode"));
+            } else {
+                stringBuilder.append("系统不存在该线路站点下的位置");
+            }
         } else {
             stringBuilder.append("线路，站点，驻扎地不能为空，");
         }

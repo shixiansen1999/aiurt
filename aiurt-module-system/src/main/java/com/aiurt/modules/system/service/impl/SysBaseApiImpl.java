@@ -2177,8 +2177,14 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public JSONObject getPositionByName(String positionName) {
+    public JSONObject getPositionByName(String positionName,String lineCode,String stationCode) {
         LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
+        if (StrUtil.isNotBlank(lineCode)) {
+            wrapper.eq(CsStationPosition::getLineCode, lineCode);
+        }
+        if (StrUtil.isNotBlank(lineCode)) {
+            wrapper.eq(CsStationPosition::getStaionCode, stationCode);
+        }
         wrapper.eq(CsStationPosition::getPositionName, positionName).eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
         CsStationPosition stationPosition = csStationPositionMapper.selectOne(wrapper);
         if (Objects.isNull(stationPosition)) {

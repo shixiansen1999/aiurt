@@ -775,7 +775,9 @@ public interface ISysBaseAPI extends CommonAPI {
     /**
      * 根据位置名称，线路站点code获取位置信息（位置名存在重复可能性）
      * @param positionName
+     * @param lineCode
+     * @param stationCode
      * @return
      */
-    JSONObject getPositionByName(String positionName);
+    JSONObject getPositionByName(String positionName,String lineCode,String stationCode);
 }
