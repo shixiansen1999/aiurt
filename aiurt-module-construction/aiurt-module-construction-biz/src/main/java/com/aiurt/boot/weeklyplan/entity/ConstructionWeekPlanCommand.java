@@ -64,17 +64,17 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "作业日期")
     private Date taskDate;
-	/**作业开始时间HH:mm:ss*/
-	@Excel(name = "作业开始时间", width = 15, format = "HH:mm:ss")
-	@JsonFormat(timezone = "GMT+8",pattern = "HH:mm:ss")
-    @DateTimeFormat(pattern="HH:mm:ss")
-    @ApiModelProperty(value = "作业开始时间HH:mm:ss")
+	/**作业开始时间HH:mm*/
+	@Excel(name = "作业开始时间", width = 15, format = "HH:mm")
+	@JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
+    @DateTimeFormat(pattern="HH:mm")
+    @ApiModelProperty(value = "作业开始时间HH:mm")
     private Date taskStartTime;
-    /**作业结束时间HH:mm:ss*/
-    @Excel(name = "作业结束时间", width = 15, format = "HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8",pattern = "HH:mm:ss")
-    @DateTimeFormat(pattern="HH:mm:ss")
-    @ApiModelProperty(value = "作业结束时间HH:mm:ss")
+    /**作业结束时间HH:mm*/
+    @Excel(name = "作业结束时间", width = 15, format = "HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
+    @DateTimeFormat(pattern="HH:mm")
+    @ApiModelProperty(value = "作业结束时间HH:mm")
     private Date taskEndTime;
 	/**作业范围*/
 	@Excel(name = "作业范围", width = 15)
