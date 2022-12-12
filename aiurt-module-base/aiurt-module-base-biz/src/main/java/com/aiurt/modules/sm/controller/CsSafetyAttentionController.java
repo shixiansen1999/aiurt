@@ -1,5 +1,6 @@
 package com.aiurt.modules.sm.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -91,7 +92,16 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 				.collect(Collectors.toList());
 		LambdaQueryWrapper<CsSafetyAttention> queryWrapper = new LambdaQueryWrapper();
 		if (StrUtil.isNotEmpty(csSafetyAttention.getMajorCode())){
-		queryWrapper.eq(CsSafetyAttention::getMajorCode,csSafetyAttention.getMajorCode());
+		    queryWrapper.eq(CsSafetyAttention::getMajorCode,csSafetyAttention.getMajorCode());
+		}else {
+
+			List<String> systemList = list1.stream().map(s-> s.getSystemCode()).collect(Collectors.toList());
+			if (CollectionUtil.isNotEmpty(majorCode2)){
+				List<String> systemCodes = csSafetyAttentionMapper.selectSystemCodes(majorCode2);
+				systemList.addAll(systemCodes);
+				queryWrapper.eq(CsSafetyAttention::getDelFlag,0).in(CsSafetyAttention::getSystemCode,systemList);
+			}
+			queryWrapper.eq(CsSafetyAttention::getDelFlag,0).in(CsSafetyAttention::getSystemCode,systemList);
 		}
 		if (csSafetyAttention.getState()!=null){
 			queryWrapper.eq(CsSafetyAttention::getState,csSafetyAttention.getState());
@@ -121,10 +131,7 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionTypeCode())){
 			queryWrapper.eq(CsSafetyAttention::getAttentionTypeCode,csSafetyAttention.getAttentionTypeCode());
 		}
-		 List<String> systemCodes = csSafetyAttentionMapper.selectSystemCodes(majorCode2);
-		 List<String> systemList = list1.stream().map(s-> s.getSystemCode()).collect(Collectors.toList());
-		 systemList.addAll(systemCodes);
-				queryWrapper.eq(CsSafetyAttention::getDelFlag,0).in(CsSafetyAttention::getSystemCode,systemList);
+
 		Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);
 		IPage<CsSafetyAttention> pageList = csSafetyAttentionService.page(page, queryWrapper);
 		return Result.OK(pageList);
