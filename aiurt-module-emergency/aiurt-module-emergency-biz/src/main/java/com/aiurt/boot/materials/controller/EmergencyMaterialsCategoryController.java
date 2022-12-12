@@ -94,6 +94,9 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	@PostMapping(value = "/add")
 	@Transactional(rollbackFor = Exception.class)
 	public Result<String> add(@RequestBody EmergencyMaterialsCategory emergencyMaterialsCategory) {
+		if (StrUtil.isBlank(emergencyMaterialsCategory.getPid())){
+			emergencyMaterialsCategory.setPid("0");
+		}
 		emergencyMaterialsCategoryService.save(emergencyMaterialsCategory);
 		return Result.OK("添加成功！");
 	}
