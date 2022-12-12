@@ -72,4 +72,11 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
     List<PatrolStandard> getList(@Param("patrolStandard")PatrolStandard patrolStandard);
 
     List<DictModel> querySysDict(@Param("modules")Integer modules);
+
+    /**
+     * 根据字典名称，获取字典code
+     * @param dictName
+     * @return
+     */
+    String getDictCode(@Param("dictName")String dictName);
 }

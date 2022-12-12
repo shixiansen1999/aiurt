@@ -185,13 +185,13 @@ public interface PatrolConstant {
      */
     String IS_NOT_DEVICE_TYPE = "否";
     /**
-     * 是否与设备类型相关：生效
+     * 是否与设备类型相关：启用
      */
-    String ACTIVE = "生效";
+    String ACTIVE = "启用";
     /**
-     * 是否与设备类型相关：未生效
+     * 是否与设备类型相关：停用
      */
-    String NOT_ACTIVE = "未生效";
+    String NOT_ACTIVE = "停用";
     /**
      * 层级：一级
      */
@@ -200,4 +200,16 @@ public interface PatrolConstant {
      * 层级：子级
      */
     String SON_LEVEL = "子级";
+    /**
+     * 数据填写类型：1无
+     */
+    String DATE_TYPE_NO = "无";
+    /**
+     * 工单-数据填写类型：选择型
+     */
+    String DATE_TYPE_OT = "选择项";
+    /**
+     * 工单-数据填写类型：输入型
+     */
+    String DATE_TYPE_IP= "输入项";
 }

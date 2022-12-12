@@ -63,7 +63,7 @@ public class PatrolStandardItems implements Serializable {
     /**内容排序*/
     @Excel(name = "内容排序", width = 15,needMerge = true)
     @ApiModelProperty(value = "内容排序")
-    @TableField(value = "`order`")
+    @TableField(exist = false)
     private java.lang.String detailOrder;
     /**是否为巡检项目：0否 1是*/
     @ApiModelProperty(value = "是否为巡视项目：0否 1是")
@@ -87,23 +87,28 @@ public class PatrolStandardItems implements Serializable {
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "数据填写类型：1开关项(即二选一)、2选择项、3输入项")
     private java.lang.Integer inputType;
+    /**数据填写类型：1开关项(即二选一)、2选择项、3输入项*/
+	@Excel(name = "检查值类型", width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "数据填写类型：1开关项(即二选一)、2选择项、3输入项")
+    private java.lang.String inputTypeName;
+    /**检查值是否必填字典名：0否、1是*/
+    @Excel(name = "检查值是否必填", width = 15)
+    @ApiModelProperty(value = "检查值是否必填字典名：0否、1是")
+    @TableField(exist = false)
+    private java.lang.String requiredDictName;
 	/**选择项关联的数据字典code*/
-	//@Excel(name = "选择项关联的数据字典code", width = 15)
+	@Excel(name = "关联数据字典", width = 15)
     @ApiModelProperty(value = "选择项关联的数据字典code")
     private java.lang.String dictCode;
 	/**数据校验表达式*/
-	//@Excel(name = "数据校验表达式", width = 15)
+	@Excel(name = "数据校验表达式", width = 15)
     @ApiModelProperty(value = "数据校验表达式")
     private java.lang.String regular;
     /**检查值是否必填：0否、1是*/
     //@Excel(name = "检查值是否必填：0否、1是", width = 15)
     @ApiModelProperty(value = "检查值是否必填：0否、1是")
     private java.lang.Integer required;
-    /**检查值是否必填字典名：0否、1是*/
-    //@Excel(name = "检查值是否必填字典名：0否、1是", width = 15)
-    @ApiModelProperty(value = "检查值是否必填字典名：0否、1是")
-    @TableField(exist = false)
-    private java.lang.String requiredDictName;
 	/**删除状态： 0未删除 1已删除*/
 	//@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

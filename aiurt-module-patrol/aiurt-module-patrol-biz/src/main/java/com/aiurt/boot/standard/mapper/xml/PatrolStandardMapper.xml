@@ -155,4 +155,14 @@
             and  sd.modules = #{modules}
         </if>
     </select>
+     <select id="getDictCode" resultType="java.lang.String">
+        SELECT
+        sd.dict_code
+        FROM
+        sys_dict sd
+        <if test="dictName!=null">
+        where sd.del_flag = 0
+        and  sd.dict_name = #{dictName} limit 1
+        </if>
+    </select>
 </mapper>

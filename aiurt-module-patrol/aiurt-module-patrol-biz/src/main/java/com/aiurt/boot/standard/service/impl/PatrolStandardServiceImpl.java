@@ -59,6 +59,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -205,7 +207,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         //信息数据校验
                         standard(model, patrolStandard, stringBuilder);
                         //配置项数据校验
-                        List<PatrolStandardItems> itemsList = itemsModel(model, errorLines);
+                        itemsModel(patrolStandard,errorLines);
+
                         if (stringBuilder.length() > 0) {
                             // 截取字符
                             stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -214,7 +217,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         }
                         if(errorLines>0)
                         {
-                            for (PatrolStandardItems patrolStandardItems : itemsList) {
+                            for (PatrolStandardItems patrolStandardItems : patrolStandard.getPatrolStandardItemsList()) {
                                 PatrolStandardErrorModel errorModel = new PatrolStandardErrorModel();
                                 BeanUtils.copyProperties(model,errorModel);
                                 BeanUtils.copyProperties(patrolStandardItems,errorModel);
@@ -222,7 +225,6 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
 
                             }
                         }
-                        patrolStandard.setPatrolStandardItemsList(itemsList);
                         standardList.add(patrolStandard);
                     }
 
@@ -478,7 +480,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         stringBuilder.append("系统不存在该专业下的子系统，");
                     }
                 }
-                if(!isDeviceType.equals(PatrolConstant.IS_DEVICE_TYPE)&&!isDeviceType.equals(PatrolConstant.IS_NOT_DEVICE_TYPE))
+                if(!(PatrolConstant.IS_DEVICE_TYPE+PatrolConstant.IS_NOT_DEVICE_TYPE).contains(isDeviceType))
                 {
                     stringBuilder.append("是否与设备类型相关填写不规范，");
                 }
@@ -486,7 +488,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 {
                     patrolStandard.setDeviceType(isDeviceType.equals(PatrolConstant.IS_DEVICE_TYPE)?0:1);
                 }
-                if(!statusName.equals(PatrolConstant.ACTIVE)&&!statusName.equals(PatrolConstant.NOT_ACTIVE))
+                if(!(PatrolConstant.ACTIVE+PatrolConstant.NOT_ACTIVE).contains(statusName))
                 {
                     stringBuilder.append("生效状态填写不规范，");
                 }
@@ -510,7 +512,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             else
             {
                 stringBuilder.append("系统不存在该专业，");
-                if(!isDeviceType.equals(PatrolConstant.IS_DEVICE_TYPE)&&!isDeviceType.equals(PatrolConstant.IS_NOT_DEVICE_TYPE))
+                if(!(PatrolConstant.IS_DEVICE_TYPE+PatrolConstant.IS_NOT_DEVICE_TYPE).contains(isDeviceType))
                 {
                     stringBuilder.append("是否与设备类型相关填写不规范，");
                 }
@@ -518,7 +520,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 {
                     patrolStandard.setDeviceType(isDeviceType.equals(PatrolConstant.IS_DEVICE_TYPE)?0:1);
                 }
-                if(!statusName.equals(PatrolConstant.ACTIVE)&&!statusName.equals(PatrolConstant.NOT_ACTIVE))
+                if(!(PatrolConstant.ACTIVE+PatrolConstant.NOT_ACTIVE).contains(statusName))
                 {
                     stringBuilder.append("生效状态填写不规范，");
                 }
@@ -529,12 +531,12 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             }
         }
         else {
-            stringBuilder.append("巡视标准表名称，适用专业，适用子系统，是否与设备类型相关，生效状态，设备类型不能为空;");
+            stringBuilder.append("巡视标准表名称，适用专业，是否与设备类型相关，生效状态不能为空;");
         }
     }
 
-    private List<PatrolStandardItems> itemsModel(PatrolStandardModel model, int errorLines) {
-        List<PatrolStandardItems> standardItems = model.getPatrolStandardItemsList();
+    private void itemsModel(PatrolStandard patrolStandard, int errorLines) {
+        List<PatrolStandardItems> standardItems = patrolStandard.getPatrolStandardItemsList();
         if (CollUtil.isNotEmpty(standardItems)) {
             int i = 0;
             Map<Object, Integer> duplicateData = new HashMap<>();
@@ -552,7 +554,6 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     stringBuildera.append("该数据存在相同数据,");
                 }
                 if (StrUtil.isNotEmpty(hierarchyTypeName) && StrUtil.isNotEmpty(itemsCode) && StrUtil.isNotEmpty(checkName)&& StrUtil.isNotEmpty(content)) {
-                   List <PatrolStandardItems> one = patrolStandardItemsMapper.selectList(new LambdaQueryWrapper<PatrolStandardItems>().eq(PatrolStandardItems::getCode, itemsCode));
                    List<PatrolStandardItems> itemsList = new ArrayList<>();
                    if(items.equals(PatrolConstant.SON_LEVEL))
                    {
@@ -562,7 +563,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     {
                         stringBuildera.append("父级不存在,");
                     }
-                    if(!hierarchyTypeName.equals(PatrolConstant.ONE_LEVEL)&&!hierarchyTypeName.equals(PatrolConstant.SON_LEVEL))
+
+                    if(!(PatrolConstant.ONE_LEVEL+PatrolConstant.SON_LEVEL).contains(hierarchyTypeName))
                     {
                         stringBuildera.append("层级类型填写不规范,");
                     }
@@ -570,19 +572,81 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     {
                         items.setHierarchyType(PatrolConstant.ONE_LEVEL.equals(hierarchyTypeName)?PatrolConstant.TASK_UNDISPOSE:PatrolConstant.INPUT_TYPE_1);
                     }
-                    if(!checkName.equals(PatrolConstant.IS_DEVICE_TYPE)&&!checkName.equals(PatrolConstant.IS_NOT_DEVICE_TYPE))
+
+                    if(ObjectUtil.isNotEmpty(items.getDetailOrder()))
+                    {
+                        String regular ="^[0-9]*$";
+                        Pattern pattern = Pattern.compile(regular);
+                        Matcher matcher = pattern.matcher(items.getDetailOrder());
+                        if(matcher.find())
+                        {
+                            items.setOrder(Integer.valueOf(items.getDetailOrder()));
+                        }
+                        else
+                        {
+                            stringBuildera.append("内容排序填写不规范，");
+                        }
+                    }
+
+                    if(!(PatrolConstant.IS_DEVICE_TYPE+PatrolConstant.IS_NOT_DEVICE_TYPE).contains(checkName))
                     {
                         stringBuildera.append("是否为巡视项目填写不规范，");
                     }
                     else
                     {
-                        items.setCheck(PatrolConstant.ONE_LEVEL.equals(hierarchyTypeName)?PatrolConstant.TASK_UNDISPOSE:PatrolConstant.INPUT_TYPE_1);
-                    }
-                    if(CollUtil.isNotEmpty(one))
-                    {
-                        stringBuildera.append("编码数据库已经存在，");
+                        items.setCheck(PatrolConstant.IS_DEVICE_TYPE.equals(checkName)?1:0);
                     }
 
+                    if(!(PatrolConstant.DATE_TYPE_IP+PatrolConstant.DATE_TYPE_OT+PatrolConstant.DATE_TYPE_NO).contains(items.getInputTypeName()))
+                    {
+                        stringBuildera.append("检查值类型选择不正确，");
+                    }
+                    else
+                    {
+                        if(items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_IP))
+                        {
+                            items.setInputType(3);
+                        }
+                        else
+                        {
+                            items.setInputType(items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_OT)?2:1);
+                        }
+                    }
+
+                    if(!(PatrolConstant.IS_DEVICE_TYPE+PatrolConstant.IS_NOT_DEVICE_TYPE).contains(items.getRequiredDictName()))
+                    {
+                        stringBuildera.append("检查值是否必填选择不正确，");
+                    }
+                    else
+                    {
+                        items.setRequired(items.getRequiredDictName().equals(PatrolConstant.IS_DEVICE_TYPE)?1:0);
+                    }
+
+                    if(ObjectUtil.isNotEmpty(items.getDictCode()))
+                    {
+                       String dictCode = patrolStandardMapper.getDictCode(items.getDictCode());
+                       if(ObjectUtil.isNotEmpty(dictCode))
+                       {
+                           items.setDictCode(dictCode);
+                       }
+                       else
+                       {
+                           stringBuildera.append("关联数据字典选择不正确，");
+                       }
+                    }
+
+                    if(ObjectUtil.isNotEmpty(items.getRegular()))
+                    {
+                        String dictCode = patrolStandardMapper.getDictCode(items.getRegular());
+                        if(ObjectUtil.isNotEmpty(dictCode))
+                        {
+                            items.setRegular(dictCode);
+                        }
+                        else
+                        {
+                            stringBuildera.append("数据校验表达式选择不正确，");
+                        }
+                    }
                 }
                 else
                 {
@@ -596,7 +660,6 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 }
             }
         }
-        return standardItems;
     }
 
 
