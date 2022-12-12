@@ -1797,6 +1797,9 @@ public class SysUserController {
         if (StringUtils.isNotBlank(user.getOrgId())) {
             queryWrapper.eq(SysUser::getOrgId, user.getOrgId());
         }
+        if (StringUtils.isNotBlank(user.getOrgCode())) {
+            queryWrapper.eq(SysUser::getOrgCode, user.getOrgCode());
+        }
         if (StringUtils.isNotBlank(user.getId())) {
             queryWrapper.ne(SysUser::getId, user.getId());
         }
