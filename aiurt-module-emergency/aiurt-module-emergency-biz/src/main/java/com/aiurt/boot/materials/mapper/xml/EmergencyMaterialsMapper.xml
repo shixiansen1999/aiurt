@@ -34,7 +34,7 @@
                 AND t1.position_code = #{condition.positionCode}
             </if>
         </where>
-        order by t1.update_time desc,t1.create_time desc
+        order by t1.create_time desc,t1.update_time desc
     </select>
 
     <select id="getPatrolStandardList" resultType="com.aiurt.boot.materials.dto.PatrolStandardDTO">
@@ -92,6 +92,7 @@
                 and t2.department_code = #{condition.patrolTeamCode}
             </if>
         </where>
+        order by t1.create_time desc,t1.update_time desc
     </select>
 
     <select id="getMaterialInspection" resultType="com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem">

@@ -41,6 +41,6 @@
                 and t1.primary_org = #{condition.primaryOrg}
             </if>
         </where>
-        order by t3.update_time desc,t3.create_time desc
+        order by t3.create_time desc,t3.update_time desc
     </select>
 </mapper>
