@@ -41,6 +41,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -79,6 +81,33 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
             safetyAttentions.addAll(safetyAttentions1);
         }
          safetyAttentions =  safetyAttentions.stream().distinct().collect(Collectors.toList());
+         safetyAttentions.forEach(s->{
+             String htmlStr  = s.getAttentionContent();
+             //定义script的正则表达式
+             String regExScript = "<script[^>]*?>[\\s\\S]*?</script>";
+             //定义style的正则表达式
+             String regExStyle = "<style[^>]*?>[\\s\\S]*?</style>";
+             //定义HTML标签的正则表达式
+             String regExHtml = "<[^>]+>";
+
+             Pattern pScript = Pattern.compile(regExScript, Pattern.CASE_INSENSITIVE);
+             Matcher mScript = pScript.matcher(htmlStr);
+             //过滤script标签
+             htmlStr = mScript.replaceAll("");
+
+             Pattern pStyle = Pattern.compile(regExStyle, Pattern.CASE_INSENSITIVE);
+             Matcher mStyle = pStyle.matcher(htmlStr);
+             //过滤style标签
+             htmlStr = mStyle.replaceAll("");
+
+             Pattern pHtml = Pattern.compile(regExHtml, Pattern.CASE_INSENSITIVE);
+             Matcher mHtml = pHtml.matcher(htmlStr);
+             //过滤html标签
+             htmlStr = mHtml.replaceAll( "");
+             htmlStr = htmlStr.replace("\n","");
+             s.setAttentionContent(htmlStr);
+
+         });
         if (CollectionUtil.isNotEmpty(safetyAttentions)) {
             //导出文件名称
             mv.addObject(NormalExcelConstants.FILE_NAME, "安全事项管理");

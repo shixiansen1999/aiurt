@@ -153,12 +153,15 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		 QueryWrapper<CsSafetyAttention> queryWrapper = new QueryWrapper<>();
 		 queryWrapper.orderByDesc("create_time");
 		 queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-		 if(ObjectUtil.isNotEmpty(csSafetyAttention.getMajorCode()))
-		 {queryWrapper.eq("major_code",csSafetyAttention.getMajorCode()); }
-		 if(ObjectUtil.isNotEmpty(csSafetyAttention.getSystemCode()))
-		 { queryWrapper.eq("system_code",csSafetyAttention.getSystemCode()); }
-		 if(ObjectUtil.isNotEmpty(csSafetyAttention.getState()))
-		 { queryWrapper.eq("state",csSafetyAttention.getState()); }
+		 if(ObjectUtil.isNotEmpty(csSafetyAttention.getMajorCode())){
+		 	queryWrapper.eq("major_code",csSafetyAttention.getMajorCode());
+		 }
+		 if(ObjectUtil.isNotEmpty(csSafetyAttention.getSystemCode())){
+		 	queryWrapper.eq("system_code",csSafetyAttention.getSystemCode());
+		 }
+		 if(ObjectUtil.isNotEmpty(csSafetyAttention.getState())){
+		 	queryWrapper.eq("state",csSafetyAttention.getState());
+		 }
 		 Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);
 		 IPage<CsSafetyAttention> pageList = csSafetyAttentionService.page(page, queryWrapper);
 		 return Result.OK(pageList);
