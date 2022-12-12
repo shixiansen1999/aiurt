@@ -49,13 +49,11 @@ import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.mapper.SysDictMapper;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
@@ -80,7 +78,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.lang.reflect.Field;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -298,7 +295,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 	}
 
 	@Override
-	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response){
 		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
 
@@ -312,7 +309,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			MultipartFile file = entity.getValue();
 			String type = FilenameUtils.getExtension(file.getOriginalFilename());
 			if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-				return imporReturnRes(errorLines, successLines, errorMessage, false, null);
+				return iSysBaseAPI.importReturnRes(errorLines, successLines, errorMessage, false, null);
 			}
 			ImportParams params = new ImportParams();
 			params.setTitleRows(2);
@@ -326,7 +323,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				Iterator<DeviceModel> iterator = list.iterator();
 				while (iterator.hasNext()) {
 					DeviceModel model = iterator.next();
-					boolean b = checkObjAllFieldsIsNull(model);
+					boolean b = iSysBaseAPI.checkObjAllFieldsIsNull(model);
 					if (b) {
 						iterator.remove();
 					}
@@ -846,7 +843,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return imporReturnRes(errorLines, successLines, errorMessage,true,url);
+		return iSysBaseAPI.importReturnRes(errorLines, successLines, errorMessage,true,url);
 	}
 
 	private List<DeviceAssemblyModel> deviceAssemblyCheck(DeviceModel deviceModel,int errorLines) {
@@ -854,7 +851,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		Iterator<DeviceAssemblyModel> iterator = deviceAssemblyList.iterator();
 		while (iterator.hasNext()) {
 			DeviceAssemblyModel model = iterator.next();
-			boolean b = checkObjAllFieldsIsNull(model);
+			boolean b = iSysBaseAPI.checkObjAllFieldsIsNull(model);
 			if (b) {
 				iterator.remove();
 			}
@@ -930,69 +927,6 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		}
 	}
 
-	public static Result<?> imporReturnRes(int errorLines, int successLines, List<String> errorMessage, boolean isType,String failReportUrl ) throws IOException {
-		if (isType) {
-			if (errorLines != 0) {
-				JSONObject result = new JSONObject(5);
-				result.put("isSucceed", false);
-				result.put("errorCount", errorLines);
-				result.put("successCount", successLines);
-				int totalCount = successLines + errorLines;
-				result.put("totalCount", totalCount);
-				result.put("failReportUrl", failReportUrl);
-				Result res = Result.ok(result);
-				res.setMessage("文件失败，数据有错误。");
-				res.setCode(200);
-				return res;
-			} else {
-				//是否成功
-				JSONObject result = new JSONObject(5);
-				result.put("isSucceed", true);
-				result.put("errorCount", errorLines);
-				result.put("successCount", successLines);
-				int totalCount = successLines + errorLines;
-				result.put("totalCount", totalCount);
-				Result res = Result.ok(result);
-				res.setMessage("文件导入成功！");
-				res.setCode(200);
-				return res;
-			}
-		} else {
-			JSONObject result = new JSONObject(5);
-			result.put("isSucceed", false);
-			result.put("errorCount", errorLines);
-			result.put("successCount", successLines);
-			int totalCount = successLines + errorLines;
-			result.put("totalCount", totalCount);
-			Result res = Result.ok(result);
-			res.setMessage("导入失败，文件类型不对。");
-			res.setCode(200);
-			return res;
-		}
-
-	}
-	/**
-	 * 判断对象中属性值是否全为空
-	 *
-	 * @param object
-	 * @return
-	 */
-	public static boolean checkObjAllFieldsIsNull(Object object) {
-		if (null == object) {
-			return true;
-		}
-		try {
-			for (Field f : object.getClass().getDeclaredFields()) {
-				f.setAccessible(true);
-				if (f.get(object) != null && StringUtils.isNotBlank(f.get(object).toString())) {
-					return false;
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return true;
-	}
 	//下拉框
 	private void selectList(Workbook workbook,String name,int firstCol, int lastCol,List<DictModel> modelList){
 		Sheet sheet = workbook.getSheetAt(0);

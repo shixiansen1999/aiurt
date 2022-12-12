@@ -53,11 +53,33 @@ public interface IDeviceService extends IService<Device> {
      */
     QueryWrapper<Device> getQueryWrapper(String stationCode,String positionCodeCc, String temporary, String majorCode, String systemCode, String deviceTypeCode, String code, String name, String status);
 
-    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
+    /**
+     * 通过excel导入数据
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
 
+    /**
+     * 设备管理-设备主数据-添加
+     * @param device
+     * @return
+     */
     Result<Device> add(Device device);
 
+    /**
+     * 设备主数据导出
+     * @param device
+     * @param request
+     * @param response
+     */
     void exportXls(Device device, HttpServletRequest request, HttpServletResponse response);
 
+    /**
+     * 设备主数据模板下载
+     * @param response
+     * @throws IOException
+     */
     void exportTemplateXl(HttpServletResponse response) throws IOException;
 }

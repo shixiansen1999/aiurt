@@ -9,6 +9,7 @@ import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.*;
 
 import java.util.List;
@@ -730,4 +731,51 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getLineIdByCode(String lineCode);
+
+    /**
+     * 导入接口信息返回
+     * @param errorLines 错误行数
+     * @param successLines 成功行数
+     * @param errorMessage 错误信息
+     * @param isType 文件类型
+     * @param failReportUrl 错误报告下载路径
+     * @return
+     */
+    Result<?> importReturnRes(int errorLines, int successLines, List<String> errorMessage, boolean isType, String failReportUrl);
+
+    /**
+     * 判断对象中属性值是否全为空
+     *
+     * @param object
+     * @return
+     */
+    boolean checkObjAllFieldsIsNull(Object object);
+
+    /**
+     * 根据部门名称获取部门信息
+     * @param departName
+     * @return
+     */
+    JSONObject getDepartByName(String departName);
+
+    /**
+     * 根据线路名称获取线路信息
+     * @param lineName
+     * @return
+     */
+    JSONObject getLineByName(String lineName);
+
+    /**
+     * 根据站点名称获取站点信息
+     * @param stationName
+     * @return
+     */
+    JSONObject getStationByName(String stationName);
+
+    /**
+     * 根据位置名称，线路站点code获取位置信息（位置名存在重复可能性）
+     * @param positionName
+     * @return
+     */
+    JSONObject getPositionByName(String positionName);
 }

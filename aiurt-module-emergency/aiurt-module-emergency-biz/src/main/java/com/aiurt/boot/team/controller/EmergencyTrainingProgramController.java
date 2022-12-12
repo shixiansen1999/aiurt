@@ -122,7 +122,7 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 				return Result.error("未找到对应数据");
 			}
 			if (!TeamConstant.WAIT_PUBLISH.equals(program.getStatus())) {
-				return Result.error("当前存在计划不可删除");
+				return Result.error("当前计划不可删除");
 			}
 			emergencyTrainingProgramService.delete(program);
 		}

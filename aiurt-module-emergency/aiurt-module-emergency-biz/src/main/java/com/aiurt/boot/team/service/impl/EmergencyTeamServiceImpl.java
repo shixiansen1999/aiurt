@@ -1,5 +1,7 @@
 package com.aiurt.boot.team.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
@@ -11,14 +13,17 @@ import com.aiurt.boot.team.dto.EmergencyTeamTrainingDTO;
 import com.aiurt.boot.team.entity.EmergencyCrew;
 import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.mapper.EmergencyTeamMapper;
+import com.aiurt.boot.team.model.TeamModel;
 import com.aiurt.boot.team.service.IEmergencyCrewService;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
+import com.aiurt.common.constant.CommonConstant;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -28,9 +33,12 @@ import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -202,9 +210,13 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         wrapper.eq(EmergencyCrew::getEmergencyTeamId, emergencyTeam.getId());
         List<EmergencyCrew> emergencyCrews = emergencyCrewService.getBaseMapper().selectList(wrapper);
         if (CollUtil.isNotEmpty(emergencyCrews)) {
-            emergencyCrewService.removeByIds(emergencyCrews);
+            for (EmergencyCrew emergencyCrew : emergencyCrews) {
+                emergencyCrew.setDelFlag(TeamConstant.DEL_FLAG1);
+                emergencyCrewService.updateById(emergencyCrew);
+            }
         }
-        this.removeById(emergencyTeam);
+        emergencyTeam.setDelFlag(TeamConstant.DEL_FLAG1);
+        this.updateById(emergencyTeam);
     }
 
     @Override
@@ -275,4 +287,132 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         }
         return Result.OK(emergencyTeams);
     }
+
+    @Override
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+
+        List<String> errorMessage = new ArrayList<>();
+        int successLines = 0;
+        String url = null;
+        // 错误信息
+        int  errorLines = 0;
+
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            String type = FilenameUtils.getExtension(file.getOriginalFilename());
+            if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+                return iSysBaseAPI.importReturnRes(errorLines, successLines, errorMessage, false, null);
+            }
+            try {
+                //导入取得应急队伍信息
+                ImportParams teamParams = new ImportParams();
+                teamParams.setTitleRows(2);
+                teamParams.setHeadRows(1);
+                teamParams.setNeedSave(true);
+                //数据为空校验
+                List<TeamModel> list = ExcelImportUtil.importExcel(file.getInputStream(), TeamModel.class, teamParams);
+                TeamModel team = list.get(0);
+                boolean b = iSysBaseAPI.checkObjAllFieldsIsNull(team);
+                if (b) {
+                    return Result.error("文件导入失败:队伍内容不能为空！");
+                }
+
+                //导入取得应急队伍人员信息
+                ImportParams crewParams = new ImportParams();
+                crewParams.setTitleRows(6);
+                crewParams.setHeadRows(1);
+                crewParams.setNeedSave(true);
+
+                List<EmergencyCrew> crewList = ExcelImportUtil.importExcel(file.getInputStream(), EmergencyCrew.class, crewParams);
+                Iterator<EmergencyCrew> iterator = crewList.iterator();
+                while (iterator.hasNext()) {
+                    EmergencyCrew model = iterator.next();
+                    boolean a = iSysBaseAPI.checkObjAllFieldsIsNull(model);
+                    if (a) {
+                        iterator.remove();
+                    }
+                }
+                if (CollUtil.isEmpty(crewList)) {
+                    return Result.error("文件导入失败:队伍人员内容不能为空！");
+                }
+
+                //数据校验
+                StringBuilder stringBuilder = new StringBuilder();
+                EmergencyTeam emergencyTeam = new EmergencyTeam();
+                checkTeam(team,stringBuilder,emergencyTeam);
+
+
+
+
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+        }
+        return Result.ok("文件导入失败！");
+    }
+
+    //队伍信息数据校验
+    private void checkTeam(TeamModel team, StringBuilder stringBuilder,EmergencyTeam emergencyTeam) {
+        String majorName = team.getMajorName();
+        String departName = team.getOrgName();
+        String emergencyTeamName = team.getEmergencyTeamname();
+        String emergencyTeamCode = team.getEmergencyTeamcode();
+        Integer peopleNum = team.getPeopleNum();
+        String lineName = team.getLineName();
+        String stationName = team.getStationName();
+        String positionName = team.getPositionName();
+        String workArea = team.getWorkAreaName();
+        String manager = team.getManagerName();
+        String managerWorkNo = team.getManagerWorkNo();
+        String managerPhone = team.getManagerPhone();
+
+        if (StrUtil.isNotBlank(majorName) && StrUtil.isNotBlank(departName) && StrUtil.isNotBlank(emergencyTeamName)) {
+            JSONObject major = iSysBaseAPI.getCsMajorByName(majorName);
+            JSONObject depart = iSysBaseAPI.getDepartByName(departName);
+            LambdaQueryWrapper<EmergencyTeam> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(EmergencyTeam::getEmergencyTeamname, emergencyTeamName).eq(EmergencyTeam::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+            EmergencyTeam one = this.getBaseMapper().selectOne(wrapper);
+
+            if (ObjectUtil.isNotNull(major)) {
+                emergencyTeam.setMajorCode(major.getString("majorCode"));
+            } else {
+                stringBuilder.append("系统不存在该专业");
+            }
+            if (ObjectUtil.isNotNull(depart)) {
+                emergencyTeam.setOrgCode(depart.getString("orgCode"));
+            } else {
+                stringBuilder.append("系统不存在该部门");
+            }
+            if (ObjectUtil.isNull(one)) {
+                emergencyTeam.setEmergencyTeamname(emergencyTeamName);
+            } else {
+                stringBuilder.append("系统已存在该应急队伍名称");
+            }
+        } else {
+            stringBuilder.append("所属专业，所属部门，应急队伍名称不能为空，");
+        }
+
+        if (StrUtil.isNotBlank(lineName) && StrUtil.isNotBlank(stationName) && StrUtil.isNotBlank(positionName)) {
+            JSONObject lineByName = iSysBaseAPI.getLineByName(lineName);
+            JSONObject stationByName = iSysBaseAPI.getStationByName(stationName);
+            JSONObject positionByName = iSysBaseAPI.getPositionByName(positionName);
+
+        } else {
+            stringBuilder.append("线路，站点，驻扎地不能为空，");
+        }
+
+        if (StrUtil.isNotBlank(manager)&& StrUtil.isNotBlank(managerPhone)) {
+
+        } else {
+            stringBuilder.append("负责人和联系电话不能为空，");
+        }
+    }
+
 }

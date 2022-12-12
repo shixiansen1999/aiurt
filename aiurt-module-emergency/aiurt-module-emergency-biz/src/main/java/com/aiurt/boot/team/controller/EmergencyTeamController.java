@@ -3,6 +3,7 @@ package com.aiurt.boot.team.controller;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTeamDTO;
 import com.aiurt.boot.team.entity.EmergencyCrew;
 import com.aiurt.boot.team.entity.EmergencyTeam;
@@ -112,7 +113,8 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 		if(emergencyTeam==null) {
 			return Result.error("未找到对应数据");
 		}
-		emergencyTeamService.delete(emergencyTeam);
+		emergencyTeam.setDelFlag(TeamConstant.DEL_FLAG1);
+		emergencyTeamService.updateById(emergencyTeam);
 		return Result.OK("删除成功!");
 	}
 
@@ -186,7 +188,7 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
     */
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, EmergencyTeam.class);
+        return emergencyTeamService.importExcel(request, response);
     }
 
 	/**

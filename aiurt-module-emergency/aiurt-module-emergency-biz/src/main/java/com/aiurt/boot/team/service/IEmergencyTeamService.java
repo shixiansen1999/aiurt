@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -75,4 +77,6 @@ public interface IEmergencyTeamService extends IService<EmergencyTeam> {
      * @return
      */
     Result<List<EmergencyTeam>> getTeamByMajor();
+
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
 }

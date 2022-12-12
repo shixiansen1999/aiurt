@@ -192,10 +192,12 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         List<EmergencyTrainingTeam> teamList = emergencyTrainingTeamService.getBaseMapper().selectList(queryWrapper);
         if (CollUtil.isNotEmpty(teamList)) {
             for (EmergencyTrainingTeam emergencyTrainingTeam : teamList) {
-                emergencyTrainingTeamService.removeById(emergencyTrainingTeam);
+                emergencyTrainingTeam.setDelFlag(TeamConstant.DEL_FLAG1);
+                emergencyTrainingTeamService.updateById(emergencyTrainingTeam);
             }
         }
-        this.removeById(program.getId());
+        program.setDelFlag(TeamConstant.DEL_FLAG1);
+        this.updateById(program);
     }
 
     @Override

@@ -29,8 +29,10 @@ import com.aiurt.modules.message.service.ISysMessageTemplateService;
 import com.aiurt.modules.message.websocket.WebSocket;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.position.mapper.CsLineMapper;
 import com.aiurt.modules.position.mapper.CsStationMapper;
+import com.aiurt.modules.position.mapper.CsStationPositionMapper;
 import com.aiurt.modules.quartz.entity.QuartzJob;
 import com.aiurt.modules.quartz.service.IQuartzJobService;
 import com.aiurt.modules.sm.entity.CsSafetyAttention;
@@ -57,6 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
@@ -72,6 +75,7 @@ import org.springframework.util.PathMatcher;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.io.*;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -140,6 +144,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private ThirdAppDingtalkServiceImpl dingtalkService;
     @Autowired
     private CsStationMapper csStationMapper;
+
+    @Autowired
+    private CsStationPositionMapper csStationPositionMapper;
     @Autowired
     ISysCategoryService sysCategoryService;
 
@@ -172,7 +179,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private IWorkAreaService workAreaService;
 
     @Autowired
-    private ICsMajorService majorService; 
+    private ICsMajorService majorService;
     @Autowired
     private CsSubsystemMapper subsystemMapper;
     @Autowired
@@ -1701,11 +1708,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return null;
         }
         return JSONObject.parseObject(JSONObject.toJSONString(csMajor));
-    }    
+    }
+
     @Override
-    public JSONObject getSystemName(String majorCode,String systemName) {
+    public JSONObject getSystemName(String majorCode, String systemName) {
         LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsSubsystem::getSystemName, systemName).eq(CsSubsystem::getMajorCode,majorCode).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        wrapper.eq(CsSubsystem::getSystemName, systemName).eq(CsSubsystem::getMajorCode, majorCode).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
         CsSubsystem subsystem = subsystemMapper.selectOne(wrapper);
         if (Objects.isNull(subsystem)) {
             return null;
@@ -1974,18 +1982,18 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public List<PatrolStandardItemsModel> patrolStandardList(String id) {
         List<PatrolStandardItemsModel> patrolStandardItemsModels = new ArrayList<>();
         List<PatrolStandardItems> patrolStandardItems = patrolStandardItemsService.queryPageList(id);
-        if (CollUtil.isNotEmpty(patrolStandardItems)){
+        if (CollUtil.isNotEmpty(patrolStandardItems)) {
             //父级
-            patrolStandardItems.forEach(e->{
+            patrolStandardItems.forEach(e -> {
                 PatrolStandardItemsModel patrolStandardItemsModel = new PatrolStandardItemsModel();
-                BeanUtils.copyProperties(e,patrolStandardItemsModel);
+                BeanUtils.copyProperties(e, patrolStandardItemsModel);
 
                 //子级
-                if (CollUtil.isNotEmpty( e.getChildren())){
+                if (CollUtil.isNotEmpty(e.getChildren())) {
                     List<PatrolStandardItemsModel> patrolStandardItemsModels1 = new ArrayList<>();
-                    e.getChildren().forEach(q->{
+                    e.getChildren().forEach(q -> {
                         PatrolStandardItemsModel patrolStandardItemsModel1 = new PatrolStandardItemsModel();
-                        BeanUtils.copyProperties(q,patrolStandardItemsModel1);
+                        BeanUtils.copyProperties(q, patrolStandardItemsModel1);
                         patrolStandardItemsModels1.add(patrolStandardItemsModel1);
                     });
                     patrolStandardItemsModel.setChildren(patrolStandardItemsModels1);
@@ -2044,24 +2052,21 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return lineCode;
     }
+
     @Override
     public boolean isNullSafetyPrecautions(String majorCode, String systemCode) {
         LambdaQueryWrapper<CsSafetyAttention> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CsSafetyAttention::getDelFlag,CommonConstant.DEL_FLAG_0);
-        queryWrapper.eq(CsSafetyAttention::getState,1);
-        queryWrapper.eq(CsSafetyAttention::getMajorCode,majorCode);
-        if(ObjectUtil.isNotEmpty(systemCode))
-        {
-            queryWrapper.eq(CsSafetyAttention::getSystemCode,systemCode);
+        queryWrapper.eq(CsSafetyAttention::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.eq(CsSafetyAttention::getState, 1);
+        queryWrapper.eq(CsSafetyAttention::getMajorCode, majorCode);
+        if (ObjectUtil.isNotEmpty(systemCode)) {
+            queryWrapper.eq(CsSafetyAttention::getSystemCode, systemCode);
         }
         List<CsSafetyAttention> list = csSafetyAttentionMapper.selectList(queryWrapper);
-        if(CollUtil.isNotEmpty(list))
-        {
+        if (CollUtil.isNotEmpty(list)) {
             return true;
-        }
-        else
-        {
-            return  false;
+        } else {
+            return false;
         }
     }
 
@@ -2076,5 +2081,109 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return csLine.getId();
         }
         return "";
+    }
+
+    @Override
+    public Result<?> importReturnRes(int errorLines, int successLines, List<String> errorMessage, boolean isType, String failReportUrl) {
+        if (isType) {
+            if (errorLines != 0) {
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", false);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                result.put("failReportUrl", failReportUrl);
+                Result res = Result.ok(result);
+                res.setMessage("文件失败，数据有错误。");
+                res.setCode(200);
+                return res;
+            } else {
+                //是否成功
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", true);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                Result res = Result.ok(result);
+                res.setMessage("文件导入成功！");
+                res.setCode(200);
+                return res;
+            }
+        } else {
+            JSONObject result = new JSONObject(5);
+            result.put("isSucceed", false);
+            result.put("errorCount", errorLines);
+            result.put("successCount", successLines);
+            int totalCount = successLines + errorLines;
+            result.put("totalCount", totalCount);
+            Result res = Result.ok(result);
+            res.setMessage("导入失败，文件类型不对。");
+            res.setCode(200);
+            return res;
+        }
+    }
+
+    @Override
+    public boolean checkObjAllFieldsIsNull(Object object) {
+        if (null == object) {
+            return true;
+        }
+        try {
+            for (Field f : object.getClass().getDeclaredFields()) {
+                f.setAccessible(true);
+                if (f.get(object) != null && org.apache.commons.lang3.StringUtils.isNotBlank(f.get(object).toString())) {
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    @Override
+    public JSONObject getDepartByName(String departName) {
+        LambdaQueryWrapper<SysDepart> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SysDepart::getDepartName, departName).eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        SysDepart sysDepart = departMapper.selectOne(wrapper);
+        if (Objects.isNull(sysDepart)) {
+            return null;
+        }
+        return JSONObject.parseObject(JSONObject.toJSONString(sysDepart));
+    }
+
+    @Override
+    public JSONObject getLineByName(String lineName) {
+        LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsLine::getLineName, lineName).eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        CsLine csLine = lineMapper.selectOne(wrapper);
+        if (Objects.isNull(csLine)) {
+            return null;
+        }
+        return JSONObject.parseObject(JSONObject.toJSONString(csLine));
+    }
+
+    @Override
+    public JSONObject getStationByName(String stationName) {
+        LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsStation::getStationName, stationName).eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        CsStation csStation = csStationMapper.selectOne(wrapper);
+        if (Objects.isNull(csStation)) {
+            return null;
+        }
+        return JSONObject.parseObject(JSONObject.toJSONString(csStation));
+    }
+
+    @Override
+    public JSONObject getPositionByName(String positionName) {
+        LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsStationPosition::getPositionName, positionName).eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        CsStationPosition stationPosition = csStationPositionMapper.selectOne(wrapper);
+        if (Objects.isNull(stationPosition)) {
+            return null;
+        }
+        return JSONObject.parseObject(JSONObject.toJSONString(stationPosition));
     }
 }
