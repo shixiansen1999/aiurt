@@ -435,22 +435,16 @@ public class SysDepartController {
 					if (StrUtil.isNotBlank(userName)){
 						LoginUser loginUser = iSysBaseAPI.queryUser(userName);
 						sysDepart.setContactId(loginUser.getId());
-					}else {
-						return Result.error("文件导入失败:没有此联系人！");
 					}
 					String userName1 = iSysBaseAPI.getUserName(sysDepart.getManagerId());
 					if (StrUtil.isNotBlank(userName1)){
 						LoginUser loginUser = iSysBaseAPI.queryUser(userName1);
 						sysDepart.setManagerId(loginUser.getId());
-					}else {
-						return Result.error("文件导入失败:没有此管理负责人！");
 					}
 					String userName2 = iSysBaseAPI.getUserName(sysDepart.getTechnicalId());
 					if (StrUtil.isNotBlank(userName2)){
 						LoginUser loginUser = iSysBaseAPI.queryUser(userName2);
 						sysDepart.setTechnicalId(loginUser.getId());
-					}else {
-						return Result.error("文件导入失败:没有此技术负责人！");
 					}
                     //update-begin---author:liusq   Date:20210223  for：批量导入部门以后，不能追加下一级部门 #2245------------
 					sysDepart.setOrgType(sysDepart.getOrgCode().length()/codeLength+"");
