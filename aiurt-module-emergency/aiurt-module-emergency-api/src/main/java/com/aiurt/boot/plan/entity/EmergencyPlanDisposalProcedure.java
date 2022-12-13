@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.entity;
 
+import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -15,6 +16,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -31,6 +33,15 @@ import java.io.Serializable;
 public class EmergencyPlanDisposalProcedure extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 新增保存时的校验分组
+     */
+    public interface Save {}
+
+    /**
+     * 修改时的校验分组
+     */
+    public interface Update {}
 	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
@@ -42,6 +53,7 @@ public class EmergencyPlanDisposalProcedure extends DictEntity implements Serial
 	/**处置部门*/
 	@Excel(name = "处置部门", width = 15)
     @ApiModelProperty(value = "处置部门")
+    @NotBlank(message = "处置部门不能为空",groups = {Save.class,Update.class})
     @Dict(dictTable = "sys_depart",dicCode = "org_code",dicText = "depart_name")
     private String orgCode;
 
@@ -52,6 +64,7 @@ public class EmergencyPlanDisposalProcedure extends DictEntity implements Serial
 	/**处置岗位（角色）*/
 	@Excel(name = "处置岗位（角色）", width = 15)
     @ApiModelProperty(value = "处置岗位（角色）")
+    @NotBlank(message = "处置岗位不能为空",groups = {Save.class,Update.class})
     @Dict(dictTable = "sys_role",dicCode = "id",dicText = "role_name")
     private String roleId;
 
@@ -62,6 +75,7 @@ public class EmergencyPlanDisposalProcedure extends DictEntity implements Serial
 	/**应急处置内容*/
 	@Excel(name = "应急处置内容", width = 15)
     @ApiModelProperty(value = "应急处置内容")
+    @NotBlank(message = "处置内容不能为空",groups = {Save.class,Update.class})
     private String disposalProcedureContent;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)

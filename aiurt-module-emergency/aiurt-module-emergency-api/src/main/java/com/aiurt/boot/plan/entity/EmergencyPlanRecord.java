@@ -46,7 +46,7 @@ public class EmergencyPlanRecord extends DictEntity implements Serializable {
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
-    @NotNull(message = "记录主键不能为空！", groups = {Update.class})
+//    @NotNull(message = "记录主键不能为空！", groups = {Update.class})
     private String id;
 	/**事件分类*/
 	@Excel(name = "事件类型", width = 15)

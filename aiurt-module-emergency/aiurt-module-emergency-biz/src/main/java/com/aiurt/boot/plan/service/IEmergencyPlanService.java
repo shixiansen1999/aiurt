@@ -47,7 +47,7 @@ public interface IEmergencyPlanService extends IService<EmergencyPlan> {
      * @param emergencyPlanDto
      * @return
      */
-    String change(EmergencyPlanDTO emergencyPlanDto);
+    EmergencyPlanDTO change(EmergencyPlanDTO emergencyPlanDto);
 
     /**
      * 删除

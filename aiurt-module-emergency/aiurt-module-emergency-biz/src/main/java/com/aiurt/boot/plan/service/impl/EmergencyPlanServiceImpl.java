@@ -331,7 +331,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String change(EmergencyPlanDTO emergencyPlanDto) {
+    public EmergencyPlanDTO change(EmergencyPlanDTO emergencyPlanDto) {
         String id = emergencyPlanDto.getId();
 
         Assert.notNull(id, "记录ID为空！");
@@ -341,12 +341,15 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         if (!EmergencyPlanConstant.PASSED.equals(emPlan.getEmergencyPlanStatus())) {
             throw new AiurtBootException("未审核通过的预案不能变更！");
         }
-
-        EmergencyPlanDTO newEmergencyPlanDto = new EmergencyPlanDTO();
+//        List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, id).list();
+//        if(oldPlanList.size()>1){
+//            throw new AiurtBootException("该预案已经变更过！");
+//        }
         //获取部门
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String orgCode = loginUser.getOrgCode();
         //创建新的应急预案
+        EmergencyPlanDTO newEmergencyPlanDto = new EmergencyPlanDTO();
         newEmergencyPlanDto.setEmergencyPlanType(emergencyPlanDto.getEmergencyPlanType());
         newEmergencyPlanDto.setEmergencyPlanName(emergencyPlanDto.getEmergencyPlanName());
         newEmergencyPlanDto.setEmergencyPlanContent(emergencyPlanDto.getEmergencyPlanContent());
@@ -366,7 +369,6 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         StartBpmnDTO startBpmnDto  = new StartBpmnDTO();
         startBpmnDto.setModelKey("emergency_plan");
         Map<String,Object> map = new HashMap<>(32);
-//        map.put("busData",newEmergencyPlanDto);
         map.put("emergencyTeamId",newEmergencyPlanDto.getEmergencyTeamId());
         map.put("emergencyPlanDisposalProcedure",newEmergencyPlanDto.getEmergencyPlanDisposalProcedure());
         map.put("emergencyPlanMaterials",newEmergencyPlanDto.getEmergencyPlanMaterials());
@@ -381,14 +383,11 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         map.put("oldPlanId",newEmergencyPlanDto.getOldPlanId());
         startBpmnDto.setBusData(map);
         FlowTaskCompleteCommentDTO flowTaskCompleteCommentDTO = new FlowTaskCompleteCommentDTO();
-        flowTaskCompleteCommentDTO.setApprovalType("agree");
+        flowTaskCompleteCommentDTO.setApprovalType("save");
         startBpmnDto.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
         sysBaseApi.startAndTakeFirst(startBpmnDto);
 
-
-
-
-        return id;
+        return newEmergencyPlanDto;
     }
 
     @Override

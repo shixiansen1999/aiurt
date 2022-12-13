@@ -16,6 +16,7 @@ import com.aiurt.boot.plan.entity.EmergencyPlanRecord;
 import com.aiurt.boot.plan.vo.EmergencyPlanRecordVO;
 import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
 import com.aiurt.boot.rehearsal.vo.EmergencyRecordReadOneVO;
+import com.aiurt.boot.team.entity.EmergencyTeam;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.plan.service.IEmergencyPlanRecordService;
@@ -90,7 +91,7 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	 @AutoLog(value = "应急预案启动记录-编辑")
 	 @ApiOperation(value="应急预案启动记录-编辑", notes="应急预案台账-编辑")
 	 @RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	 public Result<String> edit(@RequestBody EmergencyPlanRecordDTO emergencyPlanRecordDto) {
+	 public Result<String> edit(@RequestBody  EmergencyPlanRecordDTO emergencyPlanRecordDto) {
 		 emergencyPlanRecordService.edit(emergencyPlanRecordDto);
 		 return Result.OK("编辑成功!");
 	 }

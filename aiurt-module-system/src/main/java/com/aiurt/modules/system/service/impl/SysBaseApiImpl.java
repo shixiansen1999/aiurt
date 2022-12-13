@@ -2101,7 +2101,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         FlowTaskCompleteCommentDTO completeCommentDTO = new FlowTaskCompleteCommentDTO();
         BeanUtils.copyProperties(startBpmnDTO.getFlowTaskCompleteDTO(), completeCommentDTO);
         bpmnDTO.setFlowTaskCompleteDTO(completeCommentDTO);
-        flowApiService.start(bpmnDTO);
+//        flowApiService.start(bpmnDTO);
+        flowApiService.startAndTakeFirst(bpmnDTO);
     }
 
     @Override

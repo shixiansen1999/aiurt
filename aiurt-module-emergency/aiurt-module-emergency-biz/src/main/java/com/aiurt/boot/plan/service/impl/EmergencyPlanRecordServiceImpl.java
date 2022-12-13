@@ -358,7 +358,10 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         BeanUtils.copyProperties(planRecord, recordDto);
 
         //启动应急预案
-        List<EmergencyPlan> planList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getId, recordDto.getEmergencyPlanId()).list();
+        List<EmergencyPlan> planList = emergencyPlanService.lambdaQuery()
+                .eq(EmergencyPlan::getId, recordDto.getEmergencyPlanId())
+                .eq(EmergencyPlan::getDelFlag,EmergencyPlanConstant.DEL_FLAG0)
+                .list();
         planList.stream().forEach(p->{
             String emergencyPlanName = p.getEmergencyPlanName();
             String emergencyPlanVersion = p.getEmergencyPlanVersion();
