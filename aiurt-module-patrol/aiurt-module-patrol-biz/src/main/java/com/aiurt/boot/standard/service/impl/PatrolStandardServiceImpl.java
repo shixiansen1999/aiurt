@@ -232,7 +232,34 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 }
                 else
                 {
-                    addImport(standardList);
+                    LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                    for (PatrolStandard patrolStandard : standardList) {
+                        String standardCode = PatrolCodeUtil.getStandardCode();
+                        patrolStandard.setCode(standardCode);
+                        patrolStandard.setUserId(user.getId());
+                        patrolStandardMapper.insert(patrolStandard);
+                        List<PatrolStandardItems> items = patrolStandard.getPatrolStandardItemsList();
+                        if(CollUtil.isNotEmpty(items))
+                        {
+                            List<PatrolStandardItems> parents = items.stream().filter(e -> e.getHierarchyType() == 0).collect(Collectors.toList());
+                            List<PatrolStandardItems> sons = items.stream().filter(e -> e.getHierarchyType() == 1).collect(Collectors.toList());
+                            for (PatrolStandardItems item : parents) {
+                                item.setParentId("0");
+                                item.setStandardId(patrolStandard.getId());
+                                patrolStandardItemsMapper.insert(item);
+                                List<PatrolStandardItems> standardItems = sons.stream().filter(e->e.getParent().equals(item.getContent())).collect(Collectors.toList());
+                                if(CollUtil.isNotEmpty(standardItems))
+                                {
+                                    for (PatrolStandardItems standardItem : standardItems) {
+                                        standardItem.setParentId(item.getId());
+                                        standardItem.setStandardId(patrolStandard.getId());
+                                        standardItem.setInputType(1);
+                                        patrolStandardItemsMapper.insert(standardItem);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             } catch (Exception e) {
             } finally {
@@ -244,38 +271,6 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         }
         return Result.ok("文件导入失败！");
     }
-
-    private void addImport(List<PatrolStandard> standardList) {
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        for (PatrolStandard patrolStandard : standardList) {
-            String standardCode = PatrolCodeUtil.getStandardCode();
-            patrolStandard.setCode(standardCode);
-            patrolStandard.setUserId(user.getId());
-            patrolStandardMapper.insert(patrolStandard);
-            List<PatrolStandardItems> items = patrolStandard.getPatrolStandardItemsList();
-            if(CollUtil.isNotEmpty(items))
-            {
-                List<PatrolStandardItems> parents = items.stream().filter(e -> e.getHierarchyType() == 0).collect(Collectors.toList());
-                List<PatrolStandardItems> sons = items.stream().filter(e -> e.getHierarchyType() == 1).collect(Collectors.toList());
-                for (PatrolStandardItems item : parents) {
-                    item.setParentId("0");
-                    item.setStandardId(patrolStandard.getId());
-                    patrolStandardItemsMapper.insert(item);
-                    List<PatrolStandardItems> standardItems = sons.stream().filter(e->e.getParent().equals(item.getContent())).collect(Collectors.toList());
-                    if(CollUtil.isNotEmpty(standardItems))
-                    {
-                        for (PatrolStandardItems standardItem : standardItems) {
-                            standardItem.setParentId(item.getId());
-                            standardItem.setStandardId(patrolStandard.getId());
-                            standardItem.setInputType(1);
-                            patrolStandardItemsMapper.insert(standardItem);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     @Override
     public void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException {
         //获取输入流，原始模板位置
@@ -552,17 +547,23 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     if(!(PatrolConstant.IS_DEVICE_TYPE+PatrolConstant.IS_NOT_DEVICE_TYPE).contains(checkName))
                     { stringBuildera.append("是否为巡视项目填写不规范，"); }
                     else { items.setCheck(PatrolConstant.IS_DEVICE_TYPE.equals(checkName)?1:0); }
-                    if(!(PatrolConstant.DATE_TYPE_IP+PatrolConstant.DATE_TYPE_OT+PatrolConstant.DATE_TYPE_NO).contains(items.getInputTypeName()))
-                    { stringBuildera.append("检查值类型选择不正确，"); }
-                    else
+                    if(ObjectUtil.isNotEmpty(items.getInputTypeName()))
                     {
-                        if(items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_IP))
-                        { items.setInputType(3); }
-                        else { items.setInputType(items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_OT)?2:1); }
+                        if(!(PatrolConstant.DATE_TYPE_IP+PatrolConstant.DATE_TYPE_OT+PatrolConstant.DATE_TYPE_NO).contains(items.getInputTypeName()))
+                        { stringBuildera.append("检查值类型选择不正确，"); }
+                        else
+                        {
+                            if(items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_IP))
+                            { items.setInputType(3); }
+                            else { items.setInputType(items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_OT)?2:1); }
+                        }
                     }
-                    if(!(PatrolConstant.IS_DEVICE_TYPE+PatrolConstant.IS_NOT_DEVICE_TYPE).contains(items.getRequiredDictName()))
-                    { stringBuildera.append("检查值是否必填选择不正确，"); }
-                    else { items.setRequired(items.getRequiredDictName().equals(PatrolConstant.IS_DEVICE_TYPE)?1:0); }
+                    if(ObjectUtil.isNotEmpty(items.getRequiredDictName()))
+                    {
+                        if(!(PatrolConstant.IS_DEVICE_TYPE+PatrolConstant.IS_NOT_DEVICE_TYPE).contains(items.getRequiredDictName()))
+                        { stringBuildera.append("检查值是否必填选择不正确，"); }
+                        else { items.setRequired(items.getRequiredDictName().equals(PatrolConstant.IS_DEVICE_TYPE)?1:0); }
+                    }
                     if(ObjectUtil.isNotEmpty(items.getDictCode()))
                     {
                        String dictCode = patrolStandardMapper.getDictCode(items.getDictCode());
