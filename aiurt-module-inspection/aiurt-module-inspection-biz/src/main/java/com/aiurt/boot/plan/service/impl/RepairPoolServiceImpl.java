@@ -184,8 +184,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (selectPlanReq.getWorkType() != null) {
             queryWrapper.eq("work_type", selectPlanReq.getWorkType());
         }
-        if (StrUtil.isNotEmpty(selectPlanReq.getStatuStr())) {
-            List<String> split = StrUtil.split(selectPlanReq.getStatuStr(), ',');
+        if (StrUtil.isNotEmpty(selectPlanReq.getStatuList())) {
+            List<String> split = StrUtil.split(selectPlanReq.getStatuList(), ',');
             if (CollUtil.isNotEmpty(split)) {
                 queryWrapper.in("status", split);
             }
