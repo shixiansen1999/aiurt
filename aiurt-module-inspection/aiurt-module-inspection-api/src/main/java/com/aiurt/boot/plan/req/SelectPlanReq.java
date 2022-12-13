@@ -6,7 +6,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author wgp
@@ -28,7 +27,7 @@ public class SelectPlanReq {
     @ApiModelProperty(value = "状态")
     private Integer status;
     @ApiModelProperty(value = "多个状态,用,隔开")
-    private String statuStr;
+    private String statuList;
     @ApiModelProperty(value = "作业类型")
     private Integer workType;
     @ApiModelProperty(value = "站点code")
