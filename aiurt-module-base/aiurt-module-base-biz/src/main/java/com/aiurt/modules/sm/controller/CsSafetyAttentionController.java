@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.sm.entity.CsSafetyAttention;
@@ -161,6 +162,7 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	@AutoLog(value = "安全事项-添加")
 	@ApiOperation(value="安全事项-添加", notes="安全事项-添加")
 	@PostMapping(value = "/add")
+	@LimitSubmit(key = "addAnnualPlan:#id")
 	public Result<String> add(@RequestBody CsSafetyAttention csSafetyAttention) {
 		csSafetyAttentionService.save(csSafetyAttention);
 		return Result.OK("添加成功");

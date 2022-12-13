@@ -3,17 +3,13 @@ package com.aiurt.modules.stock.controller;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.modules.stock.entity.StockLevel2Info;
-import com.aiurt.modules.stock.entity.StockSubmitMaterials;
 import com.aiurt.modules.stock.entity.StockSubmitPlan;
-import com.aiurt.modules.stock.service.IStockSubmitMaterialsService;
 import com.aiurt.modules.stock.service.IStockSubmitPlanService;
-import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.service.ISysDepartService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -28,7 +24,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -107,6 +102,7 @@ public class StockSubmitPlanController {
     @AutoLog(value = "二级库管理-提报计划-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
     @ApiOperation(value = "二级库管理-提报计划-添加", notes = "二级库管理-提报计划-添加")
     @PostMapping(value = "/add")
+    @LimitSubmit(key = "addAnnualPlan:#id")
     public Result<StockSubmitPlan> add(@RequestBody StockSubmitPlan stockSubmitPlan) {
         Result<StockSubmitPlan> result = new Result<StockSubmitPlan>();
         try {

@@ -6,6 +6,7 @@ import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeContentService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -106,6 +107,7 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 	@AutoLog(value = "inspection_code_content-添加", operateType =  2, operateTypeAlias = "添加", module = ModuleType.INSPECTION)
 	@ApiOperation(value="inspection_code_content-添加", notes="inspection_code_content-添加")
 	@PostMapping(value = "/add")
+	@LimitSubmit(key = "addAnnualPlan:#id")
 	public Result<String> add(@RequestBody InspectionCodeContent inspectionCodeContent) {
 		inspectionCodeContent.setDelFlag(0);
 		inspectionCodeContentMapper.insert(inspectionCodeContent);

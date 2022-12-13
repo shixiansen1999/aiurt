@@ -2,6 +2,7 @@ package com.aiurt.modules.device.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
@@ -231,6 +232,7 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
     @AutoLog(value = "设备管理-设备主数据-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/equipmentData/masterData")
     @ApiOperation(value = "设备管理-设备主数据-添加", notes = "设备管理-设备主数据-添加")
     @PostMapping(value = "/add")
+    @LimitSubmit(key = "addAnnualPlan:#id")
     public Result<Device> add(@RequestBody Device device) {
         return deviceService.add(device);
     }
