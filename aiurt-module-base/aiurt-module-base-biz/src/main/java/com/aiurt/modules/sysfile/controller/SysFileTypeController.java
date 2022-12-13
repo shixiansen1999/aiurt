@@ -154,7 +154,7 @@ public class SysFileTypeController {
 		this.sysFileService.lambdaUpdate().in(SysFile::getTypeId,ids).remove();
 		this.sysFileRoleService.lambdaUpdate().in(SysFileRole::getTypeId, ids).remove();
 
-		return Result.ok("删除失败!");
+		return Result.ok("删除成功!");
 	}
 
 
