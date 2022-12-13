@@ -1,5 +1,6 @@
 package org.jeecg.common.system.api;
 
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.api.dto.StartBpmnDTO;
 import com.aiurt.common.api.dto.message.*;
@@ -13,6 +14,7 @@ import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -800,4 +802,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return 新启动的流程实例。
      */
     void startAndTakeFirst(StartBpmnDTO startBpmnDTO);
+
+    /**
+     * 读取错误报告模板
+     * @param url
+     * @return
+     * @throws IOException
+     */
+    TemplateExportParams getErrorExcelModel(String url) throws IOException;
 }

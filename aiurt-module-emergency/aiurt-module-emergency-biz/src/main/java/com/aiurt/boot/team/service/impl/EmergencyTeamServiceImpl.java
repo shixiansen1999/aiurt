@@ -1,7 +1,9 @@
 package com.aiurt.boot.team.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
@@ -25,6 +27,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -33,6 +36,7 @@ import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,6 +44,9 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -53,6 +60,9 @@ import java.util.stream.Collectors;
  */
 @Service
 public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, EmergencyTeam> implements IEmergencyTeamService {
+
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
 
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
@@ -296,7 +306,6 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
 
         List<String> errorMessage = new ArrayList<>();
         int successLines = 0;
-        String url = null;
         // 错误信息
         int  errorLines = 0;
 
@@ -345,33 +354,50 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 errorLines = checkTeam(team,emergencyTeam,errorLines);
 
                 List<EmergencyCrew> emergencyCrews = new ArrayList<>();
+                int i = 0;
                 for (CrewModel crewModel : crewList) {
-                    EmergencyCrew emergencyCrew = new EmergencyCrew();
-                    errorLines = checkCrews(crewModel,emergencyCrew,errorLines);
-                    emergencyCrews.add(emergencyCrew);
+                    Map<Object, Integer> CrewModelData = new HashMap<>();
+                    StringBuilder stringBuilder1 = new StringBuilder();
+                    //重复数据校验
+                    Integer s = CrewModelData.get(crewModel);
+                    if (s == null) {
+                        CrewModelData.put(crewModel, i);
+                        EmergencyCrew emergencyCrew = new EmergencyCrew();
+                        errorLines = checkCrews(crewModel,emergencyCrew,errorLines,stringBuilder1);
+                        emergencyCrews.add(emergencyCrew);
+                        i++;
+                    } else {
+                        stringBuilder1.append("该行数据存在相同数据,");
+                    }
                 }
 
                 if (errorLines > 0) {
-
+                    //存在错误，导出错误清单
+                    return getErrorExcel(errorLines, errorMessage, team, crewList, successLines, null, type);
                 }
-
-
-
-
-
-
+                //校验通过，添加数据
+                save(emergencyTeam);
+                for (EmergencyCrew emergencyCrew : emergencyCrews) {
+                    emergencyCrew.setEmergencyTeamId(emergencyTeam.getId());
+                    emergencyCrewService.save(emergencyCrew);
+                }
+                return Result.ok("文件导入成功！");
             } catch (Exception e) {
-                e.printStackTrace();
+                return Result.error("文件导入失败:" + e.getMessage());
+            } finally {
+                try {
+                    file.getInputStream().close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
             }
-
-
         }
         return Result.ok("文件导入失败！");
     }
 
     /**队伍人员信息数据校验*/
-    private int checkCrews(CrewModel crewModel,EmergencyCrew emergencyCrew,int  errorLines ) {
-        StringBuilder stringBuilder1 = new StringBuilder();
+    private int checkCrews(CrewModel crewModel,EmergencyCrew emergencyCrew,int  errorLines, StringBuilder stringBuilder1) {
+
         String postName = crewModel.getPostName();
         String realName = crewModel.getRealName();
         String userPhone = crewModel.getUserPhone();
@@ -523,7 +549,51 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         return errorLines;
     }
 
+    /**错误报告模板导出*/
     private Result<?> getErrorExcel(int errorLines,List<String> errorMessage,TeamModel team, List<CrewModel> crewList,int successLines ,String url,String type) throws IOException {
-        return Result.ok();
+        TemplateExportParams exportParams = iSysBaseAPI.getErrorExcelModel("");
+        Map<String, Object> errorMap = new HashMap<String, Object>();
+        List<Map<String, String>> teamMapList = new ArrayList<>();
+        Map<String, String> teamMap = new HashMap<>();
+        teamMap.put("majorName", team.getMajorName());
+        teamMap.put("orgName", team.getOrgName());
+        teamMap.put("emergencyTeamname", team.getEmergencyTeamname());
+        teamMap.put("emergencyTeamcode", team.getEmergencyTeamcode());
+        teamMap.put("lineName", team.getLineName());
+        teamMap.put("stationName", team.getStationName());
+        teamMap.put("positionName", team.getPositionName());
+        teamMap.put("workAreaName", team.getWorkAreaName());
+        teamMap.put("managerName", team.getManagerName());
+        teamMap.put("managerPhone", team.getManagerPhone());
+        teamMapList.add(teamMap);
+        errorMap.put("teamMapList", teamMapList);
+
+        List<Map<String, String>> crewMapList = new ArrayList<>();
+        Map<String, String> crewMap = new HashMap<>();
+        for (CrewModel crewModel : crewList) {
+            crewMap.put("scheduleItem", crewModel.getScheduleItem());
+            crewMap.put("postName", crewModel.getPostName());
+            crewMap.put("realName", crewModel.getRealName());
+            crewMap.put("userPhone", crewModel.getUserPhone());
+            crewMap.put("remark", crewModel.getRemark());
+        }
+        crewMapList.add(teamMap);
+        errorMap.put("crewMapList", crewMapList);
+
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+        sheetsMap.put(0, errorMap);
+        Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+
+        try {
+            String fileName = "应急队伍导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
+            FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
+            url = fileName;
+            workbook.write(out);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return iSysBaseAPI.importReturnRes(errorLines, successLines, errorMessage,true,url);
     }
 }

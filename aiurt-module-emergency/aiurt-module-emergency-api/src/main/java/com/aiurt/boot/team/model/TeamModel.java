@@ -26,18 +26,6 @@ public class TeamModel {
     @Excel(name = "应急队伍编号", width = 15)
     @ApiModelProperty(value = "应急队伍编号")
     private String emergencyTeamcode;
-    /**队伍人数*/
-    @Excel(name = "队伍人数", width = 15)
-    @ApiModelProperty(value = "队伍人数")
-    private Integer peopleNum;
-    /**当班人数*/
-    @Excel(name = "当班人数", width = 15)
-    @ApiModelProperty(value = "当班人数")
-    private Integer onDutyNum;
-    /**备注*/
-    @Excel(name = "备注", width = 15)
-    @ApiModelProperty(value = "备注")
-    private String remark;
     /**线路名称*/
     @Excel(name = "线路", width = 15)
     @ApiModelProperty(value = "线路名称")

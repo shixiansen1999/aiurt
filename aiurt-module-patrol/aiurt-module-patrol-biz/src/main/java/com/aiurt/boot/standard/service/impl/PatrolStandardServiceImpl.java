@@ -98,7 +98,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     @Override
     public IPage<PatrolStandardDto> pageLists(Page page, PatrolStandardDto patrolStandard) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserMajorModel> list = iSysBaseAPI.getMajorByUserId(sysUser.getId());
+        List<CsUserMajorModel> list = sysBaseApi.getMajorByUserId(sysUser.getId());
         List<PatrolStandardDto> page1 = patrolStandardMapper.pageLists(page, patrolStandard, patrolStandard.getStations(), list.stream().map(s->s.getMajorCode()).collect(Collectors.toList()));
         return page.setRecords(page1);
     }

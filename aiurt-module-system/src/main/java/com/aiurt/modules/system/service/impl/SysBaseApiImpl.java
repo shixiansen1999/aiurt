@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -58,8 +59,8 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.base.Joiner;
-import liquibase.pro.packaged.I;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
@@ -72,6 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
@@ -2100,6 +2102,25 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         BeanUtils.copyProperties(startBpmnDTO.getFlowTaskCompleteDTO(), completeCommentDTO);
         bpmnDTO.setFlowTaskCompleteDTO(completeCommentDTO);
         flowApiService.start(bpmnDTO);
+    }
+
+    @Override
+    public TemplateExportParams getErrorExcelModel(String url) throws IOException {
+        //创建导入失败错误报告,进行模板导出
+        org.springframework.core.io.Resource resource = new ClassPathResource(url);
+        InputStream resourceAsStream = resource.getInputStream();
+
+        //2.获取临时文件
+        File fileTemp= new File(url);
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        return exportParams;
     }
 
     @Override
