@@ -55,10 +55,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -97,9 +94,13 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
 
     @Override
     public IPage<PatrolStandardDto> pageLists(Page page, PatrolStandardDto patrolStandard) {
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserMajorModel> list = sysBaseApi.getMajorByUserId(sysUser.getId());
-        List<PatrolStandardDto> page1 = patrolStandardMapper.pageLists(page, patrolStandard, patrolStandard.getStations(), list.stream().map(s->s.getMajorCode()).collect(Collectors.toList()));
+         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Set<String> userRoleSet = sysBaseApi.getUserRoleSet(sysUser.getUsername());
+        List<CsUserMajorModel> list =  new ArrayList<>();
+        if(!userRoleSet.contains("admin")){
+           list =  sysBaseApi.getMajorByUserId(sysUser.getId());
+        }
+         List<PatrolStandardDto> page1 = patrolStandardMapper.pageLists(page, patrolStandard, patrolStandard.getStations(), list.stream().map(s->s.getMajorCode()).collect(Collectors.toList()));
         return page.setRecords(page1);
     }
 

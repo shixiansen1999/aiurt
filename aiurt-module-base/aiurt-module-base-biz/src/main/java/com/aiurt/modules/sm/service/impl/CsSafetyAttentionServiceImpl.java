@@ -152,7 +152,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                     //安全事项分类
                     String systemName = csSafetyAttention.getSystemName() == null ? "" : csSafetyAttention.getSystemName();
                     if (StrUtil.isNotEmpty(systemName)) {
-                      String systemCode = baseMapper.selectSystemCode(systemName);
+                      String systemCode = baseMapper.selectSystemCode(systemName,csMajor.getMajorCode());
                       if (StrUtil.isNotEmpty(systemCode)){
                           csSafetyAttention.setSystemCode(systemCode);
                       }else {

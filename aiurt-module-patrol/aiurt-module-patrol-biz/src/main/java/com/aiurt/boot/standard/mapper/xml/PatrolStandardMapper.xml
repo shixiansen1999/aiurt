@@ -56,11 +56,12 @@
         b.major_name AS professionName,
         c.system_name AS subsystemName,
         d.name AS deviceTypeName,
-        (SELECT COUNT(psi.standard_id AND psi.standard_id= a.id AND psi.del_flag=0 OR NULL) as number FROM patrol_standard_items psi WHERE 1=1) as number
-        from patrol_standard as a
-        left join cs_major as  b on a.profession_code =b.major_code AND b.del_flag=0
-        left join cs_subsystem as  c on a.subsystem_code =c.system_code AND c.del_flag=0
-        left join device_type as d on a.device_type_code =d.code AND d.del_flag=0
+        (SELECT COUNT(psi.standard_id AND psi.standard_id= a.id AND psi.del_flag=0 OR NULL)
+            as number FROM patrol_standard_items psi WHERE 1=1) as number
+            from patrol_standard as a
+            left join cs_major as  b on a.profession_code =b.major_code AND b.del_flag=0
+            left join cs_subsystem as  c on a.subsystem_code =c.system_code AND c.del_flag=0
+            left join device_type as d on a.device_type_code =d.code AND d.del_flag=0
         WHERE 1=1 ) as ta
         where ta.delFlag =0   and  ta.number >0
         <if test="patrolStandard.name !=null ">

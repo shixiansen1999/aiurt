@@ -24,10 +24,12 @@ public interface CsSafetyAttentionMapper extends BaseMapper<CsSafetyAttention> {
 
     /**
      * 查询子系统
+     *
+     * @param code
      * @param systemName
      * @return
      */
-    String selectSystemCode(@Param("systemName") String systemName);
+    String selectSystemCode(@Param("systemName") String  systemName,@Param("code")String code);
     /**
      * 查询子系统
      * @param
