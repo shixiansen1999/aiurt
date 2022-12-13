@@ -67,4 +67,6 @@ public class TeamModel {
     @ApiModelProperty(value = "联系电话")
     private String managerPhone;
 
+    private String mistake;
+
 }

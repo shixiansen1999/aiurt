@@ -78,5 +78,11 @@ public interface IEmergencyTeamService extends IService<EmergencyTeam> {
      */
     Result<List<EmergencyTeam>> getTeamByMajor();
 
+    /**
+     * 导入
+     * @param request
+     * @param response
+     * @return
+     */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
 }

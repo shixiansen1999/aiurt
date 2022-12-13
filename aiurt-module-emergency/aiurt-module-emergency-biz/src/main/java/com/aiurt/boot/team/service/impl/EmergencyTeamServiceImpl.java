@@ -13,6 +13,7 @@ import com.aiurt.boot.team.dto.EmergencyTeamTrainingDTO;
 import com.aiurt.boot.team.entity.EmergencyCrew;
 import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.mapper.EmergencyTeamMapper;
+import com.aiurt.boot.team.model.CrewModel;
 import com.aiurt.boot.team.model.TeamModel;
 import com.aiurt.boot.team.service.IEmergencyCrewService;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
@@ -28,6 +29,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +40,8 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -327,10 +327,10 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 crewParams.setHeadRows(1);
                 crewParams.setNeedSave(true);
 
-                List<EmergencyCrew> crewList = ExcelImportUtil.importExcel(file.getInputStream(), EmergencyCrew.class, crewParams);
-                Iterator<EmergencyCrew> iterator = crewList.iterator();
+                List<CrewModel> crewList = ExcelImportUtil.importExcel(file.getInputStream(), CrewModel.class, crewParams);
+                Iterator<CrewModel> iterator = crewList.iterator();
                 while (iterator.hasNext()) {
-                    EmergencyCrew model = iterator.next();
+                    CrewModel model = iterator.next();
                     boolean a = iSysBaseAPI.checkObjAllFieldsIsNull(model);
                     if (a) {
                         iterator.remove();
@@ -341,9 +341,19 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 }
 
                 //数据校验
-                StringBuilder stringBuilder = new StringBuilder();
                 EmergencyTeam emergencyTeam = new EmergencyTeam();
-                checkTeam(team,stringBuilder,emergencyTeam);
+                errorLines = checkTeam(team,emergencyTeam,errorLines);
+
+                List<EmergencyCrew> emergencyCrews = new ArrayList<>();
+                for (CrewModel crewModel : crewList) {
+                    EmergencyCrew emergencyCrew = new EmergencyCrew();
+                    errorLines = checkCrews(crewModel,emergencyCrew,errorLines);
+                    emergencyCrews.add(emergencyCrew);
+                }
+
+                if (errorLines > 0) {
+
+                }
 
 
 
@@ -359,8 +369,60 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         return Result.ok("文件导入失败！");
     }
 
-    //队伍信息数据校验
-    private void checkTeam(TeamModel team, StringBuilder stringBuilder,EmergencyTeam emergencyTeam) {
+    /**队伍人员信息数据校验*/
+    private int checkCrews(CrewModel crewModel,EmergencyCrew emergencyCrew,int  errorLines ) {
+        StringBuilder stringBuilder1 = new StringBuilder();
+        String postName = crewModel.getPostName();
+        String realName = crewModel.getRealName();
+        String userPhone = crewModel.getUserPhone();
+
+        if (StrUtil.isNotBlank(postName)) {
+            List<DictModel> post = iSysBaseAPI.queryDictItemsByCode("emergency_post");
+            DictModel model = Optional.ofNullable(post).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(postName)).findFirst().orElse(null);
+            if (model != null) {
+                emergencyCrew.setPost(Convert.toInt(model.getValue()));
+            } else {
+                stringBuilder1.append("系统不存在该职务，");
+            }
+        } else {
+            stringBuilder1.append("职务不能为空");
+        }
+
+        if (StrUtil.isNotBlank(realName)) {
+            List<LoginUser> userByRealName = iSysBaseAPI.getUserByRealName(realName, crewModel.getManagerWorkNo());
+            if (userByRealName.size() != 1) {
+                stringBuilder1.append("负责人姓名存在同名，请填写工号，");
+            } else {
+                emergencyCrew.setUserId(userByRealName.get(0).getId());
+            }
+        } else {
+            stringBuilder1.append("姓名不能为空");
+        }
+
+        if (StrUtil.isNotBlank(userPhone)) {
+            boolean matches = Pattern.matches("^1[3-9]\\d{9}$", userPhone);
+            if (!matches) {
+                stringBuilder1.append("手机号码格式不正确，");
+            } else {
+                emergencyCrew.setUserPhone(userPhone);
+            }
+        } else {
+            stringBuilder1.append("联系电话不能为空");
+        }
+
+        if (stringBuilder1.length() > 0) {
+            // 截取字符
+            stringBuilder1 = stringBuilder1.deleteCharAt(stringBuilder1.length() - 1);
+            crewModel.setMistake(stringBuilder1.toString());
+            errorLines++;
+        }
+        return errorLines;
+    }
+
+
+    /**队伍信息数据校验*/
+    private int checkTeam(TeamModel team,EmergencyTeam emergencyTeam,int  errorLines ) {
+        StringBuilder stringBuilder = new StringBuilder();
         String majorName = team.getMajorName();
         String departName = team.getOrgName();
         String emergencyTeamName = team.getEmergencyTeamname();
@@ -378,8 +440,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             JSONObject depart = iSysBaseAPI.getDepartByName(departName);
             LambdaQueryWrapper<EmergencyTeam> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(EmergencyTeam::getEmergencyTeamname, emergencyTeamName).eq(EmergencyTeam::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
-            EmergencyTeam one = this.getBaseMapper().selectOne(wrapper);
-
+            EmergencyTeam team1 = this.getBaseMapper().selectOne(wrapper);
             if (ObjectUtil.isNotNull(major)) {
                 emergencyTeam.setMajorCode(major.getString("majorCode"));
             } else {
@@ -390,11 +451,23 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             } else {
                 stringBuilder.append("系统不存在该部门，");
             }
-            if (ObjectUtil.isNull(one)) {
+            if (ObjectUtil.isNull(team1)) {
                 emergencyTeam.setEmergencyTeamname(emergencyTeamName);
             } else {
                 stringBuilder.append("系统已存在该应急队伍名称，");
             }
+
+            if (StrUtil.isNotBlank(emergencyTeamCode)) {
+                LambdaQueryWrapper<EmergencyTeam> wrapper2 = new LambdaQueryWrapper<>();
+                wrapper2.eq(EmergencyTeam::getEmergencyTeamcode, emergencyTeamCode).eq(EmergencyTeam::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+                EmergencyTeam team2 = this.getBaseMapper().selectOne(wrapper2);
+                if (ObjectUtil.isNull(team2)) {
+                    emergencyTeam.setEmergencyTeamcode(emergencyTeamCode);
+                } else {
+                    stringBuilder.append("系统已存在该应急队伍编码，");
+                }
+            }
+
         } else {
             stringBuilder.append("所属专业，所属部门，应急队伍名称不能为空，");
         }
@@ -431,10 +504,26 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             boolean matches = Pattern.matches("^1[3-9]\\d{9}$", managerPhone);
             if (!matches) {
                 stringBuilder.append("手机号码格式不正确，");
+            } else {
+                emergencyTeam.setManagerPhone(managerPhone);
             }
         } else {
             stringBuilder.append("负责人和联系电话不能为空，");
         }
+
+        if (stringBuilder.length() > 0) {
+            // 截取字符
+            stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            team.setMistake(stringBuilder.toString());
+            errorLines++;
+        }
+       /* if (StrUtil.isNotBlank(workArea)) {
+
+        }*/
+        return errorLines;
     }
 
+    private Result<?> getErrorExcel(int errorLines,List<String> errorMessage,TeamModel team, List<CrewModel> crewList,int successLines ,String url,String type) throws IOException {
+        return Result.ok();
+    }
 }
