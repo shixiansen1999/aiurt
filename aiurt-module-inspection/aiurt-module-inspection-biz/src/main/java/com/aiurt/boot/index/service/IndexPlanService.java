@@ -81,7 +81,7 @@ public class IndexPlanService {
     private RepairPoolCodeMapper poolCodeMapper;
 
     /**
-     * 首页巡视概况
+     * 首页检修概况
      *
      * @param startDate 开始日期
      * @param endDate   结束日期
@@ -424,7 +424,12 @@ public class IndexPlanService {
 //        List<String> codeByOrgCode = getCodeByOrgCode();
         List<RepairPoolOrgRel> codeByOrgCode = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
-        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList())));
+        List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
+        if(CollUtil.isNotEmpty(repairPoolIds))
+        {
+            return new Page<>();
+        }
+        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId,repairPoolIds));
         boolean b = GlobalThreadLocal.setDataFilter(false);
         // 用于判断是否是一整月的查询
         // 如果是一整个月查询，那么返回的dayBegin是这个月的第一周的开始时间，dayEnd是这个月最后一周的结束时间
