@@ -2,6 +2,7 @@ package com.aiurt.boot.materials.entity;
 
 import java.io.Serializable;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -63,6 +64,11 @@ public class EmergencyMaterialsInvoices extends DictEntity implements Serializab
     @Excel(name = "巡视位置编码", width = 15)
     @ApiModelProperty(value = "巡视位置编码")
     private java.lang.String positionCode;
+    /**检查结果：0异常、1正常*/
+    @Excel(name = "检查结果：0异常、1正常", width = 15)
+    @ApiModelProperty(value = "检查结果：0异常、1正常")
+    @Dict(dicCode = "check_result")
+    private java.lang.Integer inspectionResults;
 	/**巡视人ID*/
 	@Excel(name = "巡视人ID", width = 15)
     @ApiModelProperty(value = "巡视人ID")

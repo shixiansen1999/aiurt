@@ -54,7 +54,6 @@
 
     <select id="getInspectionRecord" resultType="com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem">
        select
-        t1.id as id,
         t2.id as invoicesId,
         t2.materials_patrol_code as materialsPatrolCode,
         t2.patrol_date as patrolDate,
@@ -63,24 +62,26 @@
         t2.position_code as positionCode,
         t2.user_id as patrolId,
         t2.department_code as patrolTeamCode,
-        t1.check_result as checkResult
+        t2.inspection_results as checkResult
        from
-       emergency_materials_invoices_item t1
-	   LEFT JOIN emergency_materials_invoices t2 ON t1.invoices_id = t2.id
+	   emergency_materials_invoices t2
         <where>
-                t1.del_flag = 0
-                and t2.del_flag = 0
-            <if test="condition.id!=null">
-                and t1.id = #{condition.id}
-            </if>
+              t2.del_flag = 0
+              <if test="condition.categoryCode!=null or condition.materialsName!=null">
+              and t2.id in (
+              select t1.invoices_id from emergency_materials_invoices_item t1
+               <where>
+                 t1.del_flag = 0
+                <if test="condition.categoryCode!=null">
+                    and t1.category_code = #{condition.categoryCode}
+                </if>
+                <if test="condition.materialsName!=null">
+                    and t1.materials_name LIKE CONCAT ('%', #{condition.materialsName}, '%')
+                </if>
+                 </where>)
+              </if>
             <if test="condition.invoicesId!=null">
                 and t2.id = #{condition.invoicesId}
-            </if>
-            <if test="condition.categoryCode!=null">
-                and t1.category_code = #{condition.categoryCode}
-            </if>
-            <if test="condition.materialsName!=null">
-                and t1.materials_name LIKE CONCAT ('%', #{condition.materialsName}, '%')
             </if>
             <if test="condition.startTime != null">
                 and DATE_FORMAT(t2.patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d')
@@ -92,7 +93,7 @@
                 and t2.department_code = #{condition.patrolTeamCode}
             </if>
         </where>
-        order by t1.create_time desc,t1.update_time desc
+        order by t2.create_time desc,t2.update_time desc
     </select>
 
     <select id="getMaterialInspection" resultType="com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem">
