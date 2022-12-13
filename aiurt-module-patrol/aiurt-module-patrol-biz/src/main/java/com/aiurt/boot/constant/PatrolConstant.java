@@ -12,6 +12,26 @@ public interface PatrolConstant {
      */
     Integer PLAN_STATUS_ENABLE = 1;
     /**
+     * 巡检计划-巡检平次：一天1次
+     */
+    Integer PLAN_PERIOD_ONE = 1;
+    /**
+     * 巡检计划-巡检平次：一周1次
+     */
+    Integer PLAN_PERIOD_TWO = 2;
+    /**
+     * 巡检计划-巡检平次：一周2次
+     */
+    Integer PLAN_PERIOD_THREE = 3;
+    /**
+     * 巡检计划-巡检平次：一月1次
+     */
+    Integer PLAN_PERIOD_FOUR = 4;
+    /**
+     * 巡检计划-巡检平次：一月2次
+     */
+    Integer PLAN_PERIOD_FIVE = 5;
+    /**
      * 巡检任务初始状态(待指派）
      */
     Integer TASK_INIT = 0;

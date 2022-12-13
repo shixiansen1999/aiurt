@@ -187,19 +187,20 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param condition
      * @param regexp
      * @param departList
+     * @param standard
      * @return
      */
     IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, @Param("condition") PatrolCondition condition, @Param("regexp") String regexp, @Param("departList") List<PatrolTaskOrganization> departList,@Param("standard")List<PatrolTaskStandard> standard);
 
     /**
      * 获取首页巡视列表下的任务列表
-     *
      * @param page
      * @param condition
      * @param departList
+     * @param standard
      * @return
      */
-    IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition, @Param("departList") List<PatrolTaskOrganization> departList,@Param("standard")List<PatrolTaskStandard> standard);
+    IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition, @Param("departList") List<PatrolTaskOrganization> departList, @Param("standard")List<PatrolTaskStandard> standard);
 
     /**
      * 获取首页的日程的巡检列表
@@ -212,10 +213,10 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      * 获取首页指定日期范围的任务列表
-     *
      * @param startDate
      * @param endDate
      * @param departList
+     * @param taskIds
      * @return
      */
     List<PatrolTask> getOverviewInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("departList") List<PatrolTaskOrganization> departList, @Param("taskIds") List<PatrolTaskStandard> taskIds);

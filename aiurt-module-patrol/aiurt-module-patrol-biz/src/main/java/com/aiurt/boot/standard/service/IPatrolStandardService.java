@@ -57,11 +57,15 @@ public interface IPatrolStandardService extends IService<PatrolStandard> {
      * @param request
      * @param response
      * @return
+     * @throws IOException
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 
     /**
      * 巡检标准模板导出
+     * @param response
+     * @param request
+     * @throws IOException
      */
     void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException;
 }

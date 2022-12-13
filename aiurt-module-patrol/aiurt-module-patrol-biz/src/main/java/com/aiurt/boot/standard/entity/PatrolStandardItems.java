@@ -83,7 +83,6 @@ public class PatrolStandardItems implements Serializable {
     @ApiModelProperty(value = "父级ID，其中顶级为0")
     private java.lang.String parentId;
 	/**数据填写类型：1开关项(即二选一)、2选择项、3输入项*/
-	//@Excel(name = "数据填写类型：1开关项(即二选一)、2选择项、3输入项", width = 15)
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "数据填写类型：1开关项(即二选一)、2选择项、3输入项")
     private java.lang.Integer inputType;
@@ -106,11 +105,9 @@ public class PatrolStandardItems implements Serializable {
     @ApiModelProperty(value = "数据校验表达式")
     private java.lang.String regular;
     /**检查值是否必填：0否、1是*/
-    //@Excel(name = "检查值是否必填：0否、1是", width = 15)
     @ApiModelProperty(value = "检查值是否必填：0否、1是")
     private java.lang.Integer required;
 	/**删除状态： 0未删除 1已删除*/
-	//@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
     private java.lang.Integer delFlag;
 	/**创建人*/

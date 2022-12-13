@@ -27,9 +27,6 @@ public class PatrolTaskMissingDetection implements Job {
     @Autowired
     private IPatrolTaskService patrolTaskService;
 
-//    // 默认44个小时，即第二天晚上8点后算漏检
-//    @Value("${patrol.missing.hour:44}")
-//    private Integer missingTime;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -59,10 +56,6 @@ public class PatrolTaskMissingDetection implements Job {
             if (null == l.getPatrolDate()) {
                 return;
             }
-//            Date patrolDate = DateUtil.parseDate(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd 00:00:00"));
-//            LocalDateTime localDateTime = patrolDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-//            // 漏检时间
-//            Date missDate = Date.from(localDateTime.plusHours(missingTime).atZone(ZoneId.systemDefault()).toInstant());
             Date patrolDate = l.getPatrolDate();
             if (ObjectUtil.isNotEmpty(l.getEndTime())) {
                 String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
@@ -71,9 +64,8 @@ public class PatrolTaskMissingDetection implements Job {
             // 当前时间
             Date now = new Date();
             int compare = DateUtil.compare(now, patrolDate);
-            // 如果当前时间大于了漏检的时间
             if (compare >= 0) {
-                // 更新任务为已漏检状态
+
                 l.setOmitStatus(PatrolConstant.OMIT_STATUS);
                 boolean update = patrolTaskService.updateById(l);
                 if (update) {

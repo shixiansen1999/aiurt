@@ -20,20 +20,18 @@ public class PatrolDateUtils {
 
     /**
      * 计算周数
+     *
      * @param startDate
      * @param endDate
      * @return
      */
-    public static long countTwoDayWeek(String startDate, String endDate)
-    {
+    public static long countTwoDayWeek(String startDate, String endDate) {
         String nowDay = DateUtil.format(new Date(), "yyyy-MM-dd");
         Date todayDate = DateUtil.parse(nowDay);
         Date start = DateUtil.parse(startDate, "yyyy-MM-dd");
         Date end = DateUtil.parse(endDate, "yyyy-MM-dd");
         //开始时间大于等于当前时间
-        if (start.after(todayDate) || start.equals(todayDate)) {
-            return 0;
-        }
+        if (start.after(todayDate) || start.equals(todayDate)) { return 0; }
         //开始时间小于当前时间
         else {
             //结束时间小于当前时间
@@ -76,9 +74,7 @@ public class PatrolDateUtils {
                     boolean startSameTime = DateUtil.isSameTime(nowMonday, startMonday);
                     boolean endSameTime = DateUtil.isSameTime(nowMonday, endMonday);
                     //开始时间、结束时间都是同一天
-                    if (startSameTime && endSameTime) {
-                        return 0;
-                    }
+                    if (startSameTime && endSameTime) { return 0; }
                     //开始时间、结束时间都不是同一天
                     if (!startSameTime && !endSameTime) {
                         //结束时间的周日
@@ -105,20 +101,17 @@ public class PatrolDateUtils {
                 boolean startSameTime = DateUtil.isSameTime(nowMonday, startMonday);
                 long betweenDay = 0;
                 //同一天
-                if (startSameTime) {
-                    return betweenDay;
-                } else {
+                if (startSameTime) { return betweenDay; }
+                else {
                     //当前时间的上周日
                     Date nowSunday = DateUtil.endOfWeek(new Date());
                     DateTime nowLastSunday = DateUtil.offsetDay(nowSunday, -7);
                     betweenDay = DateUtil.between(startMonday, nowLastSunday, DateUnit.DAY) + 1;
-                    return betweenDay/7;
+                    return betweenDay / 7;
                 }
-
             }
             //结束时间大于当前时间
-            if(end.after(todayDate))
-            {
+            if (end.after(todayDate)) {
                 //当前时间的周一
                 Date nowMonday = DateUtil.beginOfWeek(new Date());
                 //开始时间的周一
@@ -127,14 +120,13 @@ public class PatrolDateUtils {
                 boolean startSameTime = DateUtil.isSameTime(nowMonday, startMonday);
                 long betweenDay = 0;
                 //同一天
-                if (startSameTime) {
-                    return betweenDay;
-                } else {
+                if (startSameTime) { return betweenDay; }
+                else {
                     //当前时间的上周日
                     Date nowSunday = DateUtil.endOfWeek(new Date());
                     DateTime nowLastSunday = DateUtil.offsetDay(nowSunday, -7);
                     betweenDay = DateUtil.between(startMonday, nowLastSunday, DateUnit.DAY) + 1;
-                    return betweenDay/7;
+                    return betweenDay / 7;
                 }
             }
         }
@@ -144,6 +136,7 @@ public class PatrolDateUtils {
 
     /**
      * 推算平均每周的漏检数的时间范围
+     *
      * @param startDate
      * @param endDate
      * @return
@@ -156,9 +149,7 @@ public class PatrolDateUtils {
         int endMonth = DateUtil.month(end) + 1;
         //开始时间大于等于当前时间
         String thisWeek = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 23:59:59");
-        if (start.after(todayDate) || start.equals(DateUtil.date())) {
-            return thisWeek;
-        }
+        if (start.after(todayDate) || start.equals(DateUtil.date())) { return thisWeek; }
         //开始时间小于当前时间
         else {
             //结束时间小于当前时间
@@ -198,7 +189,6 @@ public class PatrolDateUtils {
                         thisWeek = DateUtil.format(DateUtil.parse(s), "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(DateUtil.parse(e), "yyyy-MM-dd 23:59:59");
                         return thisWeek;
                     }
-
                 }
                 //结束年份小于等于开始年份
                 else {
@@ -210,9 +200,8 @@ public class PatrolDateUtils {
                         Date endMonday = DateUtil.beginOfWeek(end);
                         //同一天
                         boolean endSameTime = DateUtil.isSameTime(nowMonday, endMonday);
-                        if (endSameTime) {
-                            return thisWeek;
-                        } else {
+                        if (endSameTime) { return thisWeek; }
+                        else {
                             //推算开始时间的漏检日期
                             String startDateScope = getOmitDateScope(start);
                             String s = startDateScope.split("~")[0];
@@ -236,9 +225,7 @@ public class PatrolDateUtils {
                         boolean startSameTime = DateUtil.isSameTime(nowMonday, startMonday);
                         boolean endSameTime = DateUtil.isSameTime(nowMonday, endMonday);
                         //都是周一
-                        if (startSameTime && endSameTime) {
-                            return thisWeek;
-                        }
+                        if (startSameTime && endSameTime) { return thisWeek; }
                         //开始时间不是周一,结束时间是
                         if (!startSameTime && endSameTime) {
                             //当前时间的周日
@@ -312,13 +299,12 @@ public class PatrolDateUtils {
                     return thisWeek;
                 }
             }
-
         }
-
     }
 
     /**
      * 推算平均每月的漏检数的时间范围
+     *
      * @param startDate
      * @param endDate
      * @return
@@ -333,28 +319,23 @@ public class PatrolDateUtils {
         Date end = DateUtil.parse(endDate, "yyyy-MM-dd");
         String thisWeek = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 23:59:59");
         //开始时间大于等于当前时间
-        if(s.after(n)||s.equals(n))
-        {
+        if (s.after(n) || s.equals(n)) {
             return thisWeek;
         }
         //开始时间小于当前时间
-        else
-        {
+        else {
             //获取当月的一号
             Date firstDay = DateUtil.beginOfMonth(new Date());
             //开始时间大于当月一号
-            if(start.after(firstDay))
-            {
+            if (start.after(firstDay)) {
                 return thisWeek;
             }
             //开始时间小于当月一号
-            else
-            {
+            else {
                 //结束时间大于当月一号
-                if(end.after(firstDay))
-                {
+                if (end.after(firstDay)) {
                     //获取上个月最后一天
-                    Date lastMonthDay = DateUtil.offsetDay(firstDay,-1);
+                    Date lastMonthDay = DateUtil.offsetDay(firstDay, -1);
                     //推算开始时间的漏检日期
                     String startDateScope = getOmitDateScope(start);
                     String startOmitDate = startDateScope.split("~")[0];
@@ -366,8 +347,7 @@ public class PatrolDateUtils {
                     return thisWeek;
                 }
                 //结束时间小于当月一号
-                else
-                {
+                else {
                     //推算开始时间的漏检日期
                     String startDateScope = getOmitDateScope(start);
                     String startOmitDate = startDateScope.split("~")[0];

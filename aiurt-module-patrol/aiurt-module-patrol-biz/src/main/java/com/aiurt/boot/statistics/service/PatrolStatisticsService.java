@@ -178,8 +178,6 @@ public class PatrolStatisticsService {
             if (ObjectUtil.isEmpty(loginUser)) {
                 throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
             }
-            //List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
-            //替换，用注解的方法来获取用户管理的权限、管理的专业
             List<PatrolTaskStandard> standards = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0));
             List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
             //下面禁用数据权限
@@ -273,8 +271,6 @@ public class PatrolStatisticsService {
             if (ObjectUtil.isEmpty(loginUser)) {
                 throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
             }
-            //List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
-            //替换，用注解的方法来获取用户管理的权限、管理的专业
             List<PatrolTaskStandard> standards = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0));
             List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
             //下面禁用数据权限

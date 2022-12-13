@@ -126,10 +126,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             if (ObjectUtil.isNull(e.getCheckResult())) {
                 e.setCheckResult("-");
             }
-            Date startTime = e.getStartTime();
-            Date checkTime = e.getCheckTime();
-            if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
-                long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
+            if (ObjectUtil.isNotEmpty( e.getStartTime()) && ObjectUtil.isNotEmpty( e.getCheckTime())) {
+                long duration = DateUtil.between( e.getStartTime(),e.getCheckTime() , DateUnit.MINUTE);
                 e.setInspectionTime(DateUtils.getTimeByMinute(duration));
             }
             List<StationDTO> codeList = new ArrayList<>();
@@ -170,13 +168,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             e.setDeviceType(taskStandardName.getDeviceType());
             boolean nullSafetyPrecautions = sysBaseApi.isNullSafetyPrecautions(e.getProfessionCode(), e.getSubsystemCode());
             e.setIsNullSafetyPrecautions(nullSafetyPrecautions);
-            LambdaQueryWrapper<PatrolCheckResult> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             List<PatrolAccessoryDTO> patrolAccessoryDTOList = new ArrayList<>();
-            lambdaQueryWrapper.eq(PatrolCheckResult::getTaskDeviceId, e.getId());
             patrolAccessoryDTOList.addAll(patrolAccessoryMapper.getCheckAllAccessory(e.getId()));
             e.setAccessoryDTOList(patrolAccessoryDTOList);
-            String submitName = patrolTaskDeviceMapper.getSubmitName(e.getUserId());
-            e.setSubmitName(submitName);
+            e.setSubmitName(patrolTaskDeviceMapper.getSubmitName(e.getUserId()));
             PatrolTask patrolTask = patrolTaskMapper.selectById(e.getTaskId());
             List<PatrolTaskUser> userList = patrolTaskUserMapper.selectList(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
             List<PatrolTaskUser> showButton = userList.stream().filter(u -> u.getUserId().equals(sysUser.getId())).collect(Collectors.toList());
@@ -185,27 +180,16 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             } else {
                 e.setShowEditButton(0);
             }
-            List<String> orgCodes = patrolTaskMapper.getOrgCode(patrolTask.getCode());
-            e.setOrgList(orgCodes);
+            e.setOrgList(patrolTaskMapper.getOrgCode(patrolTask.getCode()));
             List<PatrolAccompanyDTO> accompanyDTOList = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
             String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining("；"));
             e.setUserName(userName);
             e.setAccompanyName(accompanyDTOList);
-            LambdaQueryWrapper<PatrolCheckResult> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(PatrolCheckResult::getTaskDeviceId, e.getId());
-            List<PatrolCheckResult> list = patrolCheckResultMapper.selectList(queryWrapper);
+            List<PatrolCheckResult> list = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
             List<PatrolCheckResult> rightCheck = list.stream().filter(s -> s.getCheckResult() != null && 1 == s.getCheckResult()).collect(Collectors.toList());
             List<PatrolCheckResult> aberrant = list.stream().filter(s -> s.getCheckResult() != null && 0 == s.getCheckResult()).collect(Collectors.toList());
-            if (CollUtil.isNotEmpty(rightCheck)) {
-                e.setRightCheckNumber(rightCheck.size());
-            } else {
-                e.setRightCheckNumber(0);
-            }
-            if (CollUtil.isNotEmpty(aberrant)) {
-                e.setAberrantNumber(aberrant.size());
-            } else {
-                e.setAberrantNumber(0);
-            }
+            e.setRightCheckNumber(rightCheck.size()==0?0:rightCheck.size());
+            e.setAberrantNumber(aberrant.size()==0?0:aberrant.size());
         });
         return pageList.setRecords(patrolTaskDeviceList);
     }
@@ -459,8 +443,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         } else {
             //更新任务状态（将未开始改为执行中）、添加开始检查时间(判断是否已经有了，有就不更新)，传任务主键id,巡检工单主键
             String taskDeviceId = patrolTaskDevice.getId();
+            int status = 2;
             PatrolTaskDevice device = patrolTaskDeviceMapper.selectOne(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getId, patrolTaskDevice.getId()));
-            if (ObjectUtil.isNull(checkDetail)&&patrolTaskDevice.getStatus()!=2) {
+            if (ObjectUtil.isNull(checkDetail)&&patrolTaskDevice.getStatus()!=status) {
                 if (!PatrolConstant.TASK_AUDIT.equals(patrolTask.getStatus()) && !PatrolConstant.TASK_COMPLETE.equals(patrolTask.getStatus())) {
                     LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
                     updateWrapper.set(PatrolTaskDevice::getStatus, 1)

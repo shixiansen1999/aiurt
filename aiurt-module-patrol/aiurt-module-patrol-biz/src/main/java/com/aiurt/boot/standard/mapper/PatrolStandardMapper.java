@@ -71,6 +71,11 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      */
     List<PatrolStandard> getList(@Param("patrolStandard")PatrolStandard patrolStandard);
 
+    /**
+     * 获取巡检模块的字典信息
+     * @param modules
+     * @return
+     */
     List<DictModel> querySysDict(@Param("modules")Integer modules);
 
     /**

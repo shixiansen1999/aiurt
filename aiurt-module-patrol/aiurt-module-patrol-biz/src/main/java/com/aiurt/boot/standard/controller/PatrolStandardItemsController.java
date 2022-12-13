@@ -186,8 +186,9 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
         PatrolStandardItems patrolStandardItems = new PatrolStandardItems();
         patrolStandardItems.setId(id);
         patrolStandardItems.setDelFlag(1);
+        String zeroP="0";
         PatrolStandardItems patrolStandardItem = patrolStandardItemsService.getById(id);
-        if ("0".equals(patrolStandardItem.getParentId())) {
+        if (zeroP.equals(patrolStandardItem.getParentId())) {
             patrolStandardItemsMapper.updatPid(id);
         }
         patrolStandardItemsService.updateById(patrolStandardItems);

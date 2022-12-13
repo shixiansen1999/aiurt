@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.plan.dto.DeviceListDTO;
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
@@ -21,9 +22,7 @@ import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
-import com.aiurt.modules.position.entity.CsStation;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -37,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -141,7 +139,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 patrolPlanStrategy.setEndTime(strategyEndTime);
                 patrolPlanStrategy.setStartTime(strategyStartTime);
                 patrolPlanStrategyMapper.insert(patrolPlanStrategy);
-            } else if (patrolPlanDto.getPeriod() == 2 || patrolPlanDto.getPeriod() == 3) {
+            } else if (patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_TWO) || patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_THREE)) {
                 List<Integer> week = patrolPlanDto.getWeek();
                 for (Integer f : week) {
                     PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
@@ -152,7 +150,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                     patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
                     patrolPlanStrategyMapper.insert(patrolPlanStrategy);
                 }
-            } else if (patrolPlanDto.getPeriod() == 4 || patrolPlanDto.getPeriod() == 5) {
+            } else if (patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_FOUR) || patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_FIVE)) {
                 List<Integer> week = patrolPlanDto.getWeek();
                 for (Integer f : week) {
                     PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
@@ -414,18 +412,6 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
             if (CollectionUtil.isEmpty(planStrategy)) {
                 throw new AiurtBootException("计划暂未设置巡检策略，不允许启用！");
             }
-//            // 判断计划的站点信息是否为空
-//            List<PatrolPlanStation> planStation = patrolPlanStationMapper.selectList(
-//                    new LambdaQueryWrapper<PatrolPlanStation>().eq(PatrolPlanStation::getPlanCode, planCode));
-//            if (CollectionUtil.isEmpty(planStation)) {
-//                throw new AiurtBootException("计划暂未设置使用站点，不允许启用！");
-//            }
-//            // 判断计划的组织机构信息是否为空
-//            List<PatrolPlanOrganization> planOrganization = patrolPlanOrganizationMapper.selectList(
-//                    new LambdaQueryWrapper<PatrolPlanOrganization>().eq(PatrolPlanOrganization::getPlanCode, planCode));
-//            if (CollectionUtil.isEmpty(planOrganization)) {
-//                throw new AiurtBootException("计划暂未设置组织机构，不允许启用！");
-//            }
 
             // 判断计划是否选择标准表
             List<PatrolPlanStandard> patrolPlanStandard = patrolPlanStandardMapper.selectList(

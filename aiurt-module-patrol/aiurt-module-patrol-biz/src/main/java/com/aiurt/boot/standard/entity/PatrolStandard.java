@@ -35,7 +35,6 @@ public class PatrolStandard extends DictEntity implements Serializable {
     @ApiModelProperty(value = "主键id")
     private java.lang.String id;
 	/**标准编号*/
-	//@Excel(name = "标准编号", width = 15,needMerge = true)
     @ApiModelProperty(value = "标准编号")
     private java.lang.String code;
 	/**巡检表名*/
@@ -47,11 +46,9 @@ public class PatrolStandard extends DictEntity implements Serializable {
     @MajorFilterColumn
     private java.lang.String professionCode;
 	/**适用系统code*/
-	//@Excel(name = "适用系统code", width = 15,needMerge = true)
     @ApiModelProperty(value = "适用系统code")
     private java.lang.String subsystemCode;
     /**与设备类型相关：0否 1 是*/
-    //@Excel(name = "是否与设备类型相关", width = 15,needMerge = true)
     @ApiModelProperty(value = "与设备类型相关：0否 1 是")
     private java.lang.Integer deviceType;
     /**与设备类型相关：0否 1 是*/
@@ -63,7 +60,6 @@ public class PatrolStandard extends DictEntity implements Serializable {
     @ApiModelProperty(value = "指定具体设备：0否 1 是")
     private java.lang.Integer specifyDevice;
     /**生效状态：0停用 1启用*/
-    //@Excel(name = "生效状态", width = 15,needMerge = true)
     @ApiModelProperty(value = "生效状态：0停用 1启用")
     private java.lang.Integer status;
     @Excel(name = "生效状态", width = 15,needMerge = true)

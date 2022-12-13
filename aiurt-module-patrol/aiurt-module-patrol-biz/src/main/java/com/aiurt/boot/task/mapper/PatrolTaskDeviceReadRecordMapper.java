@@ -14,5 +14,14 @@ import java.util.List;
  */
 public interface PatrolTaskDeviceReadRecordMapper extends BaseMapper<PatrolTaskDeviceReadRecord> {
 
+    /**
+     * 获取用户的阅读记录
+     * @param taskDeviceId
+     * @param majorCode
+     * @param subsystemCode
+     * @param taskId
+     * @param userId
+     * @return
+     */
     List<PatrolTaskDeviceReadRecord> getReadList(@Param("taskDeviceId") String taskDeviceId,@Param("majorCode") String majorCode, @Param("subsystemCode")String subsystemCode, @Param("taskId")String taskId,@Param("userId")String userId);
 }

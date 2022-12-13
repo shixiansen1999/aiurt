@@ -148,7 +148,8 @@ public class TaskPool implements Job {
                             // 一周中的星期几，工具类中以星期日为一周的开始，现以星期一为一周的开始
                             int week = DateUtil.dayOfWeek(date) == 1 ? 7 : DateUtil.dayOfWeek(date) - 1;
                             // 现以星期一为一周的开始
-                            if (week == 7) {
+                            int a = 7;
+                            if (week == a) {
                                 weekOfMonth -= 1;
                             }
                             if (weekOfMonth == strategy.getTime() && week == strategy.getWeek()) {
@@ -179,12 +180,6 @@ public class TaskPool implements Job {
         log.info("正在复制组织机构、站所任务的关联信息...");
         copyOrgAndStationInfo(task, plan);
         log.info("组织机构、站所任务的关联信息复制完毕！");
-
-//        // 添加任务与标准关联表信息
-//        log.info("添加任务与标准关联表信息...");
-//        saveRelationData(task, plan);
-//        log.info("任务与标准关联表信息添加完毕！");
-
         log.info("添加任务与标准以及设备的关联表信息...");
         // 生成巡检单，即巡检任务与标准以及设备关联表数据
         copyPatrolBill(task, plan);
