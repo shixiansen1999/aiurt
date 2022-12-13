@@ -21,6 +21,8 @@ import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
+import com.aiurt.common.api.dto.FlowTaskCompleteCommentDTO;
+import com.aiurt.common.api.dto.StartBpmnDTO;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
@@ -29,6 +31,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import liquibase.pro.packaged.S;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.ComboModel;
@@ -43,10 +46,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.lang.reflect.Field;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -110,8 +111,6 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
             emergencyPlan.setStatus(null);
             emergencyPlan.setOrgCode(orgCode);
-            Double version =1.0;
-            emergencyPlan.setEmergencyPlanVersion(String.valueOf(version));
             this.save(emergencyPlan);
 
             String planId = emergencyPlan.getId();
@@ -130,6 +129,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             if(CollUtil.isNotEmpty(emergencyPlanDisposalProcedure)){
                 for (EmergencyPlanDisposalProcedure planDisposalProcedure : emergencyPlanDisposalProcedure) {
                     planDisposalProcedure.setEmergencyPlanId(planId);
+                    planDisposalProcedure.setId(null);
                     emergencyPlanDisposalProcedureService.save(planDisposalProcedure);
                 }
             }
@@ -224,9 +224,6 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         BeanUtils.copyProperties(emergencyPlanDto, emergencyPlan);
         emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
         emergencyPlan.setStatus(null);
-        emergencyPlan.setOrgCode(orgCode);
-        Double version =1.0;
-        emergencyPlan.setEmergencyPlanVersion(String.valueOf(version));
         this.save(emergencyPlan);
 
         String id = emergencyPlan.getId();
@@ -344,59 +341,54 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         if (!EmergencyPlanConstant.PASSED.equals(emPlan.getEmergencyPlanStatus())) {
             throw new AiurtBootException("未审核通过的预案不能变更！");
         }
-        EmergencyPlan emergencyPlan = new EmergencyPlan();
+
+        EmergencyPlanDTO newEmergencyPlanDto = new EmergencyPlanDTO();
         //获取部门
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String orgCode = loginUser.getOrgCode();
         //创建新的应急预案
-        emergencyPlan.setEmergencyPlanType(emergencyPlanDto.getEmergencyPlanType());
-        emergencyPlan.setEmergencyPlanName(emergencyPlanDto.getEmergencyPlanName());
-        emergencyPlan.setEmergencyPlanContent(emergencyPlanDto.getEmergencyPlanContent());
-        emergencyPlan.setKeyWord(emergencyPlanDto.getKeyWord());
-        emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
-        emergencyPlan.setOrgCode(orgCode);
+        newEmergencyPlanDto.setEmergencyPlanType(emergencyPlanDto.getEmergencyPlanType());
+        newEmergencyPlanDto.setEmergencyPlanName(emergencyPlanDto.getEmergencyPlanName());
+        newEmergencyPlanDto.setEmergencyPlanContent(emergencyPlanDto.getEmergencyPlanContent());
+        newEmergencyPlanDto.setKeyWord(emergencyPlanDto.getKeyWord());
+        newEmergencyPlanDto.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
+        newEmergencyPlanDto.setOrgCode(orgCode);
         String emergencyPlanVersion = emergencyPlanDto.getEmergencyPlanVersion();
-        emergencyPlan.setEmergencyPlanVersion(String.valueOf(Double.valueOf(emergencyPlanVersion)+1));
-        emergencyPlan.setOldPlanId(emergencyPlanDto.getId());
-        emergencyPlan.setStatus(null);
-        this.save(emergencyPlan);
+        newEmergencyPlanDto.setEmergencyPlanVersion(String.valueOf(Double.valueOf(emergencyPlanVersion)+1));
+        newEmergencyPlanDto.setOldPlanId(emergencyPlanDto.getId());
+        newEmergencyPlanDto.setStatus(null);
+        newEmergencyPlanDto.setEmergencyPlanAtt(emergencyPlanDto.getEmergencyPlanAtt());
+        newEmergencyPlanDto.setEmergencyTeamId(emergencyPlanDto.getEmergencyTeamId());
+        newEmergencyPlanDto.setEmergencyPlanMaterials(emergencyPlanDto.getEmergencyPlanMaterials());
+        newEmergencyPlanDto.setEmergencyPlanDisposalProcedure(emergencyPlanDto.getEmergencyPlanDisposalProcedure());
 
-        String newId = emergencyPlan.getId();
-        //应急队伍关联
-        List<String> emergencyTeamId = emergencyPlanDto.getEmergencyTeamId();
-        if(CollUtil.isNotEmpty(emergencyTeamId)){
-            for (String s : emergencyTeamId) {
-                EmergencyPlanTeam emergencyPlanTeam = new EmergencyPlanTeam();
-                emergencyPlanTeam.setEmergencyTeamId(s);
-                emergencyPlanTeam.setEmergencyPlanId(newId);
-                emergencyPlanTeamService.save(emergencyPlanTeam);
-            }
-        }
-        //应急预案处置程序添加
-        List<EmergencyPlanDisposalProcedure> emergencyPlanDisposalProcedure = emergencyPlanDto.getEmergencyPlanDisposalProcedure();
-        if(CollUtil.isNotEmpty(emergencyPlanDisposalProcedure)){
-            for (EmergencyPlanDisposalProcedure planDisposalProcedure : emergencyPlanDisposalProcedure) {
-                planDisposalProcedure.setEmergencyPlanId(newId);
-                emergencyPlanDisposalProcedureService.save(planDisposalProcedure);
-            }
-        }
-        //应急物资添加
-        List<EmergencyPlanMaterials> emergencyPlanMaterials = emergencyPlanDto.getEmergencyPlanMaterials();
-        if(CollUtil.isNotEmpty(emergencyPlanMaterials)){
-            for (EmergencyPlanMaterials emergencyPlanMaterial : emergencyPlanMaterials) {
-                emergencyPlanMaterial.setEmergencyPlanId(newId);
-                emergencyPlanMaterialsService.save(emergencyPlanMaterial);
-            }
-        }
-        //应急预案附件添加
-        List<EmergencyPlanAtt> emergencyPlanAtt = emergencyPlanDto.getEmergencyPlanAtt();
-        if(CollUtil.isNotEmpty(emergencyPlanAtt)){
-            for (EmergencyPlanAtt planAtt : emergencyPlanAtt) {
-                planAtt.setEmergencyPlanId(newId);
-                emergencyPlanAttService.save(planAtt);
-            }
-        }
-        return newId;
+        //引用流程开始接口
+        StartBpmnDTO startBpmnDto  = new StartBpmnDTO();
+        startBpmnDto.setModelKey("emergency_plan");
+        Map<String,Object> map = new HashMap<>(32);
+//        map.put("busData",newEmergencyPlanDto);
+        map.put("emergencyTeamId",newEmergencyPlanDto.getEmergencyTeamId());
+        map.put("emergencyPlanDisposalProcedure",newEmergencyPlanDto.getEmergencyPlanDisposalProcedure());
+        map.put("emergencyPlanMaterials",newEmergencyPlanDto.getEmergencyPlanMaterials());
+        map.put("emergencyPlanAtt",newEmergencyPlanDto.getEmergencyPlanAtt());
+        map.put("emergencyPlanType",newEmergencyPlanDto.getEmergencyPlanType());
+        map.put("keyWord",newEmergencyPlanDto.getKeyWord());
+        map.put("emergencyPlanContent",newEmergencyPlanDto.getEmergencyPlanContent());
+        map.put("orgCode",newEmergencyPlanDto.getOrgCode());
+        map.put("emergencyPlanVersion",newEmergencyPlanDto.getEmergencyPlanVersion());
+        map.put("emergencyPlanName",newEmergencyPlanDto.getEmergencyPlanName());
+        map.put("emergencyPlanStatus",newEmergencyPlanDto.getEmergencyPlanStatus());
+        map.put("oldPlanId",newEmergencyPlanDto.getOldPlanId());
+        startBpmnDto.setBusData(map);
+        FlowTaskCompleteCommentDTO flowTaskCompleteCommentDTO = new FlowTaskCompleteCommentDTO();
+        flowTaskCompleteCommentDTO.setApprovalType("agree");
+        startBpmnDto.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
+        sysBaseApi.startAndTakeFirst(startBpmnDto);
+
+
+
+
+        return id;
     }
 
     @Override
@@ -490,8 +482,10 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                 .eq(EmergencyPlanTeam::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
                 .eq(EmergencyPlanTeam::getEmergencyPlanId, id).list();
         List<String> teamName = new ArrayList<>();
+        List<String> teamId = new ArrayList<>();
         if(CollUtil.isNotEmpty(teamList)){
             for (EmergencyPlanTeam planTeam : teamList) {
+                teamId.add(planTeam.getEmergencyTeamId());
                 List<EmergencyTeam> list = emergencyTeamService.lambdaQuery().eq(EmergencyTeam::getId, planTeam.getEmergencyTeamId()).list();
                 if(CollUtil.isNotEmpty(list)){
                     for (EmergencyTeam emergencyTeam : list) {
@@ -514,7 +508,8 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                 .eq(EmergencyPlanAtt::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
                 .eq(EmergencyPlanAtt::getEmergencyPlanId, id).list();
 
-        planDto.setEmergencyTeamId(teamName);
+        planDto.setEmergencyTeamId(teamId);
+        planDto.setEmergencyTeamName(teamName);
         planDto.setEmergencyPlanDisposalProcedure(procedureList);
         planDto.setEmergencyPlanAtt(recordAttList);
 
@@ -574,6 +569,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             case 6:
                 // 已通过
                 emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.PASSED);
+                emergencyPlan.setStatus(EmergencyPlanConstant.VALID);
                 if(ObjectUtil.isNotEmpty(emergencyPlan.getOldPlanId())){
                     List<EmergencyPlan> list = emergencyPlanService.lambdaQuery()
                             .eq(EmergencyPlan::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)

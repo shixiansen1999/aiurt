@@ -35,6 +35,10 @@ public class EmergencyPlanDTO extends EmergencyPlan {
     @NotBlank(message = "应急队伍不能为空")
     List<String> emergencyTeamId;
 
+    /**应急队伍名称*/
+    @ApiModelProperty(value = "应急队伍名称")
+    List<String> emergencyTeamName;
+
     /**
      * 处置程序
      */

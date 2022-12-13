@@ -14,10 +14,10 @@
         where ep.del_flag = 0
         and ahp.ID_ is not null
         <if test="condition.emergencyPlanName != null and condition.emergencyPlanName != ''">
-            and ep.emergency_plan_name = #{condition.emergencyPlanName}
+            and ep.emergency_plan_name like concat('%', #{condition.emergencyPlanName}, '%')
         </if>
         <if test="condition.emergencyPlanType != null and condition.emergencyPlanType != ''">
-            and ep.emergency_plan_type = #{condition.emergencyPlanType}
+            and ep.emergency_plan_type like concat('%', #{condition.emergencyPlanType}, '%')
         </if>
         <if test="condition.status != null">
             and ep.status = #{condition.status}
@@ -29,6 +29,6 @@
                 #{item}
             </foreach>
         </if>
-        order by ep.create_time desc
+        order by ep.emergency_plan_status asc
     </select>
 </mapper>

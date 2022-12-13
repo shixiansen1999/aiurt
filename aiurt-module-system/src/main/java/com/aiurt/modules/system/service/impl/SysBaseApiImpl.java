@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.service.impl.PatrolStandardItemsServiceImpl;
+import com.aiurt.common.api.dto.StartBpmnDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.aspect.UrlMatchEnum;
@@ -21,6 +22,8 @@ import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
+import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
+import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
@@ -55,6 +58,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.base.Joiner;
+import liquibase.pro.packaged.I;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -144,9 +148,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private ThirdAppDingtalkServiceImpl dingtalkService;
     @Autowired
     private CsStationMapper csStationMapper;
-
-    @Autowired
-    private CsStationPositionMapper csStationPositionMapper;
     @Autowired
     ISysCategoryService sysCategoryService;
 
@@ -192,6 +193,13 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Autowired
     @Lazy
     private PatrolStandardItemsServiceImpl patrolStandardItemsService;
+
+    @Autowired
+    private CsStationPositionMapper csStationPositionMapper;
+
+    @Autowired
+    @Lazy
+    private FlowApiService flowApiService;
 
 
     @Override
@@ -2081,6 +2089,17 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return csLine.getId();
         }
         return "";
+    }
+
+    @Override
+    public void startAndTakeFirst(StartBpmnDTO startBpmnDTO) {
+        com.aiurt.modules.flow.dto.StartBpmnDTO bpmnDTO = new com.aiurt.modules.flow.dto.StartBpmnDTO();
+        bpmnDTO.setModelKey(startBpmnDTO.getModelKey());
+        bpmnDTO.setBusData(startBpmnDTO.getBusData());
+        FlowTaskCompleteCommentDTO completeCommentDTO = new FlowTaskCompleteCommentDTO();
+        BeanUtils.copyProperties(startBpmnDTO.getFlowTaskCompleteDTO(), completeCommentDTO);
+        bpmnDTO.setFlowTaskCompleteDTO(completeCommentDTO);
+        flowApiService.start(bpmnDTO);
     }
 
     @Override
