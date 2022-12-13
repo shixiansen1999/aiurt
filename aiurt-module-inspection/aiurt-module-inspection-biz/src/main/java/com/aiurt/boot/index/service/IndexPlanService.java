@@ -96,6 +96,21 @@ public class IndexPlanService {
         // 将符合条件的检修计划查出
         LambdaQueryWrapper<RepairPool> queryWrapper = new LambdaQueryWrapper<>();
         doQuery(startDate, endDate, isAllData, queryWrapper);
+        //查询关联表，获取部门code
+        List<RepairPoolOrgRel> poolOrgRelList = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        //根据当前人，获取当前的专业code
+        List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
+        if (CollUtil.isEmpty(repairPoolIds)) {
+            return result;
+        }
+        LambdaQueryWrapper<RepairPoolRel> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(RepairPoolRel::getRepairPoolStaId, repairPoolIds);
+        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(wrapper);
+
+        queryWrapper.in(RepairPool::getCode, poolOrgRelList.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList()));
+        queryWrapper.in(RepairPool::getCode, repairPoolRels.stream().map(RepairPoolRel::getRepairPoolCode).collect(Collectors.toList()));
+
         List<RepairPool> repairPoolList = repairPoolMapper.selectList(queryWrapper);
 
         // 检修总数
@@ -105,7 +120,7 @@ public class IndexPlanService {
         // 未检修数量
         result.setUnfinish(CollUtil.isNotEmpty(repairPoolList) ? repairPoolList.stream().filter(re -> !InspectionConstant.COMPLETED.equals(re.getStatus())).count() : 0L);
         //检修中的数量
-        result.setOverhaul(CollUtil.isNotEmpty(repairPoolList) ? repairPoolList.stream().filter(re -> !InspectionConstant.COMPLETED.equals(re.getStatus())&&!InspectionConstant.TO_BE_ASSIGNED.equals(re.getStatus())).count() : 0L);
+        result.setOverhaul(CollUtil.isNotEmpty(repairPoolList) ? repairPoolList.stream().filter(re -> !InspectionConstant.COMPLETED.equals(re.getStatus()) && !InspectionConstant.TO_BE_ASSIGNED.equals(re.getStatus())).count() : 0L);
         // 已检修率
         if (result.getSum() <= 0 || result.getFinish() <= 0) {
             result.setFinishRate("0%");
@@ -147,11 +162,6 @@ public class IndexPlanService {
         queryWrapper.ge(RepairPool::getStartTime, startDate);
         queryWrapper.le(RepairPool::getStartTime, endDate);
         queryWrapper.isNotNull(RepairPool::getStartTime);
-        List<RepairPoolOrgRel> poolOrgRelList = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-        List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
-        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList())));
-        queryWrapper.in(RepairPool::getCode,poolOrgRelList.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList()));
-        queryWrapper.in(RepairPool::getCode,repairPoolRels.stream().map(RepairPoolRel::getRepairPoolCode).collect(Collectors.toList()));
         // 默认按照管理的组织机构进行数据过滤
 //        if (ObjectUtil.isEmpty(isAllData)
 //                || (ObjectUtil.isNotEmpty(isAllData)
@@ -184,10 +194,14 @@ public class IndexPlanService {
         if (ObjectUtil.isEmpty(taskDetailsReq.getIsAllData())) {
             taskDetailsReq.setIsAllData(InspectionConstant.IS_ALL_DATA_0);
         }
-       // List<String> codeByOrgCode = getCodeByOrgCode();
+        // List<String> codeByOrgCode = getCodeByOrgCode();
         List<RepairPoolOrgRel> codeByOrgCode = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
-        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList())));
+        List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
+        if (CollUtil.isEmpty(repairPoolIds)) {
+            return result;
+        }
+        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, repairPoolIds));
         boolean b = GlobalThreadLocal.setDataFilter(false);
         // 用于判断是否是一整月的查询
         // 如果是一整个月查询，那么返回的dayBegin是这个月的第一周的开始时间，dayEnd是这个月最后一周的结束时间
@@ -195,7 +209,7 @@ public class IndexPlanService {
         taskDetailsReq.setStartTime(judgeIsMonthQuery.getDayBegin());
         taskDetailsReq.setEndTime(judgeIsMonthQuery.getDayEnd());
 
-        List<TaskDetailsDTO> detailsDTOList = indexPlanMapper.getGropuByData(taskDetailsReq.getType(), page, taskDetailsReq, codeByOrgCode,repairPoolRels);
+        List<TaskDetailsDTO> detailsDTOList = indexPlanMapper.getGropuByData(taskDetailsReq.getType(), page, taskDetailsReq, codeByOrgCode, repairPoolRels);
 
         // 查询出符合条件的检修详情数据
         if (CollUtil.isNotEmpty(detailsDTOList)) {
@@ -418,7 +432,7 @@ public class IndexPlanService {
         taskDetailsReq.setStartTime(judgeIsMonthQuery.getDayBegin());
         taskDetailsReq.setEndTime(judgeIsMonthQuery.getDayEnd());
 
-        List<RepairPoolDetailsDTO> maintenancDataByStationCode = indexPlanMapper.getMaintenancDataByStationCode(page, taskDetailsReq.getType(), taskDetailsReq, codeByOrgCode,repairPoolRels);
+        List<RepairPoolDetailsDTO> maintenancDataByStationCode = indexPlanMapper.getMaintenancDataByStationCode(page, taskDetailsReq.getType(), taskDetailsReq, codeByOrgCode, repairPoolRels);
         if (CollUtil.isNotEmpty(maintenancDataByStationCode)) {
             for (RepairPoolDetailsDTO repairPool : maintenancDataByStationCode) {
                 String planCode = repairPool.getCode();
