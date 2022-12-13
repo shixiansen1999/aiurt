@@ -32,6 +32,7 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      * @param page
      * @param patrolStandard
      * @param stations
+     * @param majorCodes
      * @return
      */
     List<PatrolStandardDto> pageLists (@Param("page") Page page, @Param("patrolStandard") PatrolStandardDto patrolStandard,List<String>stations,@Param("majorCodes") List<String>majorCodes);

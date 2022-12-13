@@ -86,7 +86,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         Set<String> userRoleSet = sysBaseApi.getUserRoleSet(sysUser.getUsername());
         if (CollectionUtil.isNotEmpty(userRoleSet)){
             //没有管理员权限查看自己的权限
-            if (!userRoleSet.contains("admin")){
+            String a = "admin";
+            if (!userRoleSet.contains(a)){
                 patrolPlan.setMajorCodes(majorCodes);
                 patrolPlan.setOrgCodes(orgCodes.stream().map(s->s.getOrgCode()).collect(Collectors.toList()));
             }
