@@ -217,6 +217,9 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 } //巡检位置
 		 if(StrUtil.isNotBlank(emergencyMaterialsDTO.getPositionCode())){
 			 emergencyMaterialsInvoices.setPositionCode(emergencyMaterialsDTO.getPositionCode());
+		 }//巡检结果
+		 if(emergencyMaterialsDTO.getInspectionResults()!=null){
+			 emergencyMaterialsInvoices.setInspectionResults(emergencyMaterialsDTO.getInspectionResults());
 		 }
 
          //巡检人

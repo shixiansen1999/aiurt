@@ -53,6 +53,11 @@ public class EmergencyMaterialsDTO {
     @ApiModelProperty(value = "巡视人ID")
     private java.lang.String userId;
 
+    /**检查结果：0异常、1正常*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检查结果：0异常、1正常")
+    private java.lang.Integer inspectionResults;
+
     /**应急物资巡检单检查项*/
     @TableField(exist = false)
     @ApiModelProperty(value = "应急物资巡检单检查项")
