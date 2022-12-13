@@ -112,11 +112,14 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             }
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Set<String> userRoleSet = sysBaseApi.getUserRoleSet(sysUser.getUsername());
         List<CsUserMajorModel> list2 = new ArrayList<>();
         List<CsUserDepartModel> list1 =  new ArrayList<>();
-        if(!sysUser.getUsername().equals("admin")){
-           list1 =  sysBaseApi.getDepartByUserId(sysUser.getId());
-           list2 = sysBaseApi.getMajorByUserId(sysUser.getId());
+        if (CollectionUtil.isNotEmpty(userRoleSet)){
+        if (!userRoleSet.contains("admin")){
+            list1 =  sysBaseApi.getDepartByUserId(sysUser.getId());
+            list2 = sysBaseApi.getMajorByUserId(sysUser.getId());
+          }
         }
         List<String> orgCodes = list1.stream().map(s-> s.getOrgCode()).collect(Collectors.toList());
         List<String> majorCodes = list2.stream().map(s-> s.getMajorCode()).collect(Collectors.toList());

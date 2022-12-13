@@ -83,9 +83,16 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         // 按照专业过滤
         List<CsUserMajorModel> majorInfo = sysBaseApi.getMajorByUserId(loginUser.getId());
         List<String> majorCodes = majorInfo.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-        patrolPlan.setMajorCodes(majorCodes);
         List<CsUserDepartModel> orgCodes = sysBaseApi.getDepartByUserId(loginUser.getId());
-        patrolPlan.setOrgCodes(orgCodes.stream().map(s->s.getOrgCode()).collect(Collectors.toList()));
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Set<String> userRoleSet = sysBaseApi.getUserRoleSet(sysUser.getUsername());
+        if (CollectionUtil.isNotEmpty(userRoleSet)){
+            //没有管理员权限查看自己的权限
+            if (!userRoleSet.contains("admin")){
+                patrolPlan.setMajorCodes(majorCodes);
+                patrolPlan.setOrgCodes(orgCodes.stream().map(s->s.getOrgCode()).collect(Collectors.toList()));
+            }
+        }
         IPage<PatrolPlanDto> list = baseMapper.list(page, patrolPlan);
         List <PatrolPlanDto> list1 =list.getRecords();
         list1.forEach(l->{

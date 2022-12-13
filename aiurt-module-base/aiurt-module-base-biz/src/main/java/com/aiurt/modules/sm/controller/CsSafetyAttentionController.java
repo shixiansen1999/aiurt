@@ -38,10 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
  /**
@@ -91,45 +88,34 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 				.filter((String s) -> !majorCode1.contains(s))
 				.collect(Collectors.toList());
 		LambdaQueryWrapper<CsSafetyAttention> queryWrapper = new LambdaQueryWrapper();
+		Set<String> userRoleSet = sysBaseAPI.getUserRoleSet(sysUser.getUsername());
+		List<String> systemList = list1.stream().map(s-> s.getSystemCode()).collect(Collectors.toList());
 		if (StrUtil.isNotEmpty(csSafetyAttention.getMajorCode())){
 		    queryWrapper.eq(CsSafetyAttention::getMajorCode,csSafetyAttention.getMajorCode());
+			if (CollectionUtil.isNotEmpty(userRoleSet)){
+				if (!userRoleSet.contains("admin")){
+					queryWrapper.in(CsSafetyAttention::getSystemCode,systemList);
+				}
+			}
 		}else {
-
-			List<String> systemList = list1.stream().map(s-> s.getSystemCode()).collect(Collectors.toList());
 			if (CollectionUtil.isNotEmpty(majorCode2)){
 				List<String> systemCodes = csSafetyAttentionMapper.selectSystemCodes(majorCode2);
 				systemList.addAll(systemCodes);
-				queryWrapper.eq(CsSafetyAttention::getDelFlag,0).in(CsSafetyAttention::getSystemCode,systemList);
 			}
-			queryWrapper.eq(CsSafetyAttention::getDelFlag,0).in(CsSafetyAttention::getSystemCode,systemList);
+			if (CollectionUtil.isNotEmpty(userRoleSet)){
+				if (!userRoleSet.contains("admin")){
+					queryWrapper.in(CsSafetyAttention::getSystemCode,systemList);
+				}
+			}
 		}
 		if (csSafetyAttention.getState()!=null){
 			queryWrapper.eq(CsSafetyAttention::getState,csSafetyAttention.getState());
-		}
-		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionMeasures())){
-			queryWrapper.like(CsSafetyAttention::getAttentionMeasures,csSafetyAttention.getAttentionMeasures());
 		}
 		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionContent())){
 			queryWrapper.like(CsSafetyAttention::getAttentionContent,csSafetyAttention.getAttentionContent());
 		}
 		if (StrUtil.isNotEmpty(csSafetyAttention.getSystemCode())){
 			queryWrapper.eq(CsSafetyAttention::getSystemCode,csSafetyAttention.getSystemCode());
-		}
-		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionType())){
-			CsSafetyAttentionType csSafetyAttentionType =  csSafetyAttentionTypeMapper
-					.selectOne(new LambdaUpdateWrapper<CsSafetyAttentionType>()
-							.eq(CsSafetyAttentionType::getId,csSafetyAttention.getAttentionType())
-							.eq(CsSafetyAttentionType::getDelFlag,0));
-			String str = "/"+csSafetyAttentionType.getCode()+"/";
-			List <CsSafetyAttentionType> csSafetyAttentionTypes = csSafetyAttentionTypeMapper
-					.selectList(new LambdaQueryWrapper<CsSafetyAttentionType>()
-							.like(CsSafetyAttentionType::getCodeScc,str));
-			if (csSafetyAttentionTypes.size()>0){
-			queryWrapper.in(CsSafetyAttention::getAttentionType,csSafetyAttentionTypes.stream().map(CsSafetyAttentionType::getId).collect(Collectors.toList()));
-			}
-		}
-		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionTypeCode())){
-			queryWrapper.eq(CsSafetyAttention::getAttentionTypeCode,csSafetyAttention.getAttentionTypeCode());
 		}
 
 		Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);

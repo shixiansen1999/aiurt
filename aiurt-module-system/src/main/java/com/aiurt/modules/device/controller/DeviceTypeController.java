@@ -3,6 +3,7 @@ package com.aiurt.modules.device.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -41,6 +42,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -142,13 +144,20 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		List<String> systemCodes = csSafetyAttentionMapper.selectSystemCodes(majorCode2);
 		List<String> systemList1 = list1.stream().map(s-> s.getSystemCode()).collect(Collectors.toList());
 		systemList1.addAll(systemCodes);
-		List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>()
-				.eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0)
-				.in(CsMajor::getMajorCode,majorCode));
-		List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>()
-				.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0)
-				.in(CsSubsystem::getSystemCode,systemList1)
-				.orderByDesc(CsSubsystem::getCreateTime));
+		Set<String> userRoleSet = sysBaseAPI.getUserRoleSet(sysUser.getUsername());
+	    LambdaQueryWrapper<CsMajor> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+	    LambdaQueryWrapper<CsSubsystem> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+		lambdaQueryWrapper.eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0);
+		lambdaQueryWrapper1.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0)
+				.orderByDesc(CsSubsystem::getCreateTime);
+		if (CollectionUtil.isNotEmpty(userRoleSet)){
+			if (!userRoleSet.contains("admin")){
+				lambdaQueryWrapper.in(CsMajor::getMajorCode,majorCode);
+				lambdaQueryWrapper1.in(CsSubsystem::getSystemCode,systemList1);
+			}
+		}
+		List<CsMajor> majorList = csMajorService.list(lambdaQueryWrapper);
+		List<CsSubsystem> systemList = csSubsystemService.list(lambdaQueryWrapper1);
 		List<DeviceType> deviceTypeList = deviceTypeService.selectList();
 		List<DeviceType> deviceTypeTree = deviceTypeService.treeList(deviceTypeList,"0");
 		List<DeviceType> newList = new ArrayList<>();
