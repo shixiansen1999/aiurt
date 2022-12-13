@@ -141,7 +141,10 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		majorCode2 = majorCode.stream()
 				.filter((String s) -> !majorCode1.contains(s))
 				.collect(Collectors.toList());
-		List<String> systemCodes = csSafetyAttentionMapper.selectSystemCodes(majorCode2);
+		List<String> systemCodes = new ArrayList<>();
+		if (CollectionUtil.isNotEmpty(majorCode2)) {
+			systemCodes = csSafetyAttentionMapper.selectSystemCodes(majorCode2);
+		}
 		List<String> systemList1 = list1.stream().map(s-> s.getSystemCode()).collect(Collectors.toList());
 		systemList1.addAll(systemCodes);
 		Set<String> userRoleSet = sysBaseAPI.getUserRoleSet(sysUser.getUsername());
