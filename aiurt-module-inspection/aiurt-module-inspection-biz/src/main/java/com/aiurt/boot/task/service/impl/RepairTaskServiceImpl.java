@@ -552,12 +552,12 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
             //检修位置
             //判断设备code是否为空
-            if(checkListDTO.getEquipmentCode() !=null){
+            if(ObjectUtil.isNotEmpty(checkListDTO.getEquipmentCode())){
                 List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(checkListDTO.getEquipmentCode());
                 String station = manager.translateStation(stationDTOList);
                 //判断具体位置是否为空
-                if (checkListDTO.getSpecificLocation() != null) {
-                    if (station != null) {
+                if (ObjectUtil.isNotEmpty(checkListDTO.getSpecificLocation())) {
+                    if (ObjectUtil.isNotEmpty(station)) {
                         String string = checkListDTO.getSpecificLocation() + station;
                         checkListDTO.setMaintenancePosition(string);
                     } else {
@@ -568,14 +568,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
             }else{
                 List<StationDTO> stationDTOList1 = new ArrayList<>();
-                stationDTOList1.forEach(e -> {
-                    e.setStationCode(checkListDTO.getStationCode());
-                    e.setLineCode(checkListDTO.getLineCode());
-                    e.setPositionCode(checkListDTO.getPositionCode());
-                });
+                StationDTO stationDto = new StationDTO();
+                stationDto.setStationCode(checkListDTO.getStationCode());
+                stationDto.setLineCode(checkListDTO.getLineCode());
+                stationDto.setPositionCode(checkListDTO.getPositionCode());
+                stationDTOList1.add(stationDto);
                 String station = manager.translateStation(stationDTOList1);
-                if (checkListDTO.getSpecificLocation() != null) {
-                    if (station != null) {
+                if (ObjectUtil.isNotEmpty(checkListDTO.getSpecificLocation())) {
+                    if (ObjectUtil.isNotEmpty(station)) {
                         String string = checkListDTO.getSpecificLocation() + station;
                         checkListDTO.setMaintenancePosition(string);
                     } else {
