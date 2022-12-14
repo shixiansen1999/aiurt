@@ -1,22 +1,22 @@
 package com.aiurt.boot.materials.entity;
 
-import java.io.Serializable;
-import java.util.List;
-
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: emergency_materials_category
@@ -37,11 +37,12 @@ public class EmergencyMaterialsCategory extends DictEntity implements Serializab
     @ApiModelProperty(value = "主键")
     private java.lang.String id;
 	/**父级ID，第一级默认为0*/
-	@Excel(name = "父级ID，第一级默认为0", width = 15)
+
     @ApiModelProperty(value = "父级ID，第一级默认为0")
     private java.lang.String pid;
 
     /**父级名称*/
+    @Excel(name = "上级节点", width = 15)
     @TableField(exist = false)
     @ApiModelProperty(value = "父级名称")
     private java.lang.String fatherName;
@@ -54,16 +55,13 @@ public class EmergencyMaterialsCategory extends DictEntity implements Serializab
     @ApiModelProperty(value = "分类名称")
     private java.lang.String categoryName;
 	/**分类状态(0停用、1启用)*/
-	@Excel(name = "分类状态(0停用、1启用)", width = 15)
     @ApiModelProperty(value = "分类状态(0停用、1启用)")
     @Dict(dicCode = "category_status")
     private java.lang.Integer status;
 	/**排序*/
-	@Excel(name = "排序", width = 15)
     @ApiModelProperty(value = "排序")
     private java.lang.Integer sort;
 	/**删除状态： 0未删除 1已删除*/
-	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
     private java.lang.Integer delFlag;
 	/**创建人*/
@@ -89,4 +87,7 @@ public class EmergencyMaterialsCategory extends DictEntity implements Serializab
     @TableField(exist = false)
     @ApiModelProperty(value = "子节点")
     private List<EmergencyMaterialsCategory> children;
+
+    @TableField(exist = false)
+    private List<String> selections;
 }

@@ -1,31 +1,35 @@
 package com.aiurt.boot.materials.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsCategoryService;
-
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.List;
 
  /**
  * @Description: emergency_materials_category
@@ -220,11 +224,39 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
     * 导出excel
     *
     * @param request
-    * @param emergencyMaterialsCategory
+    * @param category
     */
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, EmergencyMaterialsCategory emergencyMaterialsCategory) {
-        return super.exportXls(request, emergencyMaterialsCategory, EmergencyMaterialsCategory.class, "emergency_materials_category");
+    public ModelAndView exportXls(HttpServletRequest request, EmergencyMaterialsCategory category) {
+		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+		LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0);
+		if(CollUtil.isNotEmpty(category.getSelections()))
+		{
+			List<String> selections = category.getSelections();
+			queryWrapper.in(EmergencyMaterialsCategory::getId,selections);
+		}
+		if(ObjectUtil.isNotEmpty(category.getCategoryCode()))
+		{
+			queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,category.getCategoryCode());
+		}
+		if(ObjectUtil.isNotEmpty(category.getCategoryName()))
+		{
+			queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,category.getCategoryName());
+		}
+		List<EmergencyMaterialsCategory> list = emergencyMaterialsCategoryService.list(queryWrapper);
+		list.forEach(e->{
+			if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0")==false){
+				EmergencyMaterialsCategory byId = emergencyMaterialsCategoryService.getById(e.getPid());
+				e.setFatherName(byId.getCategoryName());
+			}
+		});
+		//导出文件名称
+		mv.addObject(NormalExcelConstants.FILE_NAME, "应急物资分类");
+		mv.addObject(NormalExcelConstants.CLASS, EmergencyMaterialsCategory.class);
+		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("应急物资分类",  "导出信息", ExcelType.XSSF));
+		mv.addObject(NormalExcelConstants.DATA_LIST, list);
+		return  mv;
     }
 
     /**
