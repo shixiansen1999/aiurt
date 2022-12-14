@@ -232,4 +232,8 @@ public interface PatrolConstant {
      * 工单-数据填写类型：输入型
      */
     String DATE_TYPE_IP= "输入项";
+    /**
+     * 巡检配置项-无父级
+     */
+    String NO_PARENT= "无";
 }

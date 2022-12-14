@@ -87,6 +87,27 @@ public class PatrolStandardErrorModel {
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "质量标准")
     private java.lang.String qualityStandard;
+    /**数据填写类型：1开关项(即二选一)、2选择项、3输入项*/
+    @Excel(name = "检查值类型", width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "数据填写类型：1开关项(即二选一)、2选择项、3输入项")
+    private java.lang.String inputTypeName;
+    /**检查值是否必填字典名：0否、1是*/
+    @Excel(name = "检查值是否必填", width = 15)
+    @ApiModelProperty(value = "检查值是否必填字典名：0否、1是")
+    @TableField(exist = false)
+    private java.lang.String requiredDictName;
+    /**选择项关联的数据字典code*/
+    @Excel(name = "关联数据字典", width = 15)
+    @ApiModelProperty(value = "选择项关联的数据字典code")
+    private java.lang.String dictCode;
+    /**数据校验表达式*/
+    @Excel(name = "数据校验表达式", width = 15)
+    @ApiModelProperty(value = "数据校验表达式")
+    private java.lang.String regular;
+    /**检查值是否必填：0否、1是*/
+    @ApiModelProperty(value = "检查值是否必填：0否、1是")
+    private java.lang.Integer required;
     /**错误原因*/
     @ApiModelProperty(value = "错误原因")
     @TableField(exist = false)

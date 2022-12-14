@@ -204,8 +204,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             List<PatrolStandard> standardList = new ArrayList<>();
             try {
                 List<PatrolStandardModel> list = ExcelImportUtil.importExcel(file.getInputStream(), PatrolStandardModel.class, params);
-                if(CollUtil.isEmpty(list))
-                {
+                if (CollUtil.isEmpty(list)) {
                     tipMessage = "导入失败，该文件为空。";
                     return imporReturnRes(errorLines, successLines, tipMessage, false, null);
                 }
@@ -216,7 +215,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         //信息数据校验
                         standard(model, patrolStandard, stringBuilder);
                         //配置项数据校验
-                        itemsModel(patrolStandard, errorLines);
+                        itemsModel(patrolStandard, errorLines,stringBuilder);
                         if (stringBuilder.length() > 0) {
                             // 截取字符
                             stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -225,10 +224,13 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         }
                         if (errorLines > 0) {
                             for (PatrolStandardItems patrolStandardItems : patrolStandard.getPatrolStandardItemsList()) {
-                                PatrolStandardErrorModel errorModel = new PatrolStandardErrorModel();
-                                BeanUtils.copyProperties(model, errorModel);
-                                BeanUtils.copyProperties(patrolStandardItems, errorModel);
-                                deviceAssemblyErrorModels.add(errorModel);
+                                if(patrolStandardItems.getIsNUll()!=true)
+                                {
+                                    PatrolStandardErrorModel errorModel = new PatrolStandardErrorModel();
+                                    BeanUtils.copyProperties(model, errorModel);
+                                    BeanUtils.copyProperties(patrolStandardItems, errorModel);
+                                    deviceAssemblyErrorModels.add(errorModel);
+                                }
                             }
                         }
                         standardList.add(patrolStandard);
@@ -246,8 +248,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         patrolStandardMapper.insert(patrolStandard);
                         List<PatrolStandardItems> items = patrolStandard.getPatrolStandardItemsList();
                         if (CollUtil.isNotEmpty(items)) {
-                            List<PatrolStandardItems> parents = items.stream().filter(e -> e.getHierarchyType() == 0).collect(Collectors.toList());
-                            List<PatrolStandardItems> sons = items.stream().filter(e -> e.getHierarchyType() == 1).collect(Collectors.toList());
+                            List<PatrolStandardItems> parents = items.stream().filter(e -> e.getHierarchyType()!=null&&e.getHierarchyType() == 0).collect(Collectors.toList());
+                            List<PatrolStandardItems> sons = items.stream().filter(e -> e.getHierarchyType()!=null&&e.getHierarchyType() == 1).collect(Collectors.toList());
                             for (PatrolStandardItems item : parents) {
                                 item.setParentId("0");
                                 item.setStandardId(patrolStandard.getId());
@@ -257,22 +259,21 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                     for (PatrolStandardItems standardItem : standardItems) {
                                         standardItem.setParentId(item.getId());
                                         standardItem.setStandardId(patrolStandard.getId());
-                                        standardItem.setInputType(1);
                                         patrolStandardItemsMapper.insert(standardItem);
                                     }
                                 }
                             }
                         }
                     }
-                    successLines =standardList.size();
+                    successLines = standardList.size();
                 }
 
             } catch (Exception e) {
                 String msg = e.getMessage();
                 log.error(msg, e);
-                if(msg!=null && msg.contains("Duplicate entry")){
+                if (msg != null && msg.contains("Duplicate entry")) {
                     return Result.error("文件导入失败:有重复数据！");
-                }else{
+                } else {
                     return Result.error("文件导入失败:" + e.getMessage());
                 }
             } finally {
@@ -283,7 +284,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 }
             }
         }
-        return imporReturnRes(errorLines, successLines, tipMessage,true,url);
+        return imporReturnRes(errorLines, successLines, tipMessage, true, url);
     }
 
     @Override
@@ -419,6 +420,10 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             lm.put("detailOrc", deviceAssemblyErrorModel.getDetailOrder());
             lm.put("isStandard", deviceAssemblyErrorModel.getCheckName());
             lm.put("qualityStandard", deviceAssemblyErrorModel.getQualityStandard());
+            lm.put("checkValue", deviceAssemblyErrorModel.getInputTypeName());
+            lm.put("isCheck", deviceAssemblyErrorModel.getRequiredDictName());
+            lm.put("dictCode", deviceAssemblyErrorModel.getDictCode());
+            lm.put("regular", deviceAssemblyErrorModel.getRegular());
             lm.put("itemParentMistake", deviceAssemblyErrorModel.getItemParentMistake());
             listMap.add(lm);
         }
@@ -472,27 +477,33 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 if (!(PatrolConstant.IS_DEVICE_TYPE + PatrolConstant.IS_NOT_DEVICE_TYPE).contains(isDeviceType)) {
                     stringBuilder.append("是否与设备类型相关填写不规范，");
                 } else {
-                    patrolStandard.setDeviceType(isDeviceType.equals(PatrolConstant.IS_DEVICE_TYPE) ? 0 : 1);
+                    patrolStandard.setDeviceType(isDeviceType.equals(PatrolConstant.IS_DEVICE_TYPE) ? 1 : 0);
+                    if (patrolStandard.getDeviceType() == 1 && StrUtil.isNotEmpty(deviceTypeName)) {
+                        DeviceType d = sysBaseApi.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName);
+                        if (ObjectUtil.isNull(d)) {
+                            stringBuilder.append("系统不存在该专业下的设备类型，");
+                        } else {
+                            patrolStandard.setDeviceTypeCode(d.getCode());
+                        }
+                    }
+                    if (patrolStandard.getDeviceType() == 1 && StrUtil.isEmpty(deviceTypeName)) {
+                        stringBuilder.append("设备类型未填写，");
+                    }
+                    if (patrolStandard.getDeviceType() == 0 && StrUtil.isNotEmpty(deviceTypeName)) {
+                        stringBuilder.append("设备类型不用填写，");
+                    }
                 }
                 if (!(PatrolConstant.ACTIVE + PatrolConstant.NOT_ACTIVE).contains(statusName)) {
                     stringBuilder.append("生效状态填写不规范，");
                 } else {
                     patrolStandard.setStatus(statusName.equals(PatrolConstant.ACTIVE) ? 1 : 0);
                 }
-                if (StrUtil.isNotEmpty(deviceTypeName)) {
-                    DeviceType d = sysBaseApi.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName);
-                    if (ObjectUtil.isNull(d)) {
-                        stringBuilder.append("系统不存在该专业下的设备类型，");
-                    } else {
-                        patrolStandard.setDeviceTypeCode(d.getCode());
-                    }
-                }
             } else {
                 stringBuilder.append("系统不存在该专业，");
                 if (!(PatrolConstant.IS_DEVICE_TYPE + PatrolConstant.IS_NOT_DEVICE_TYPE).contains(isDeviceType)) {
                     stringBuilder.append("是否与设备类型相关填写不规范，");
                 } else {
-                    patrolStandard.setDeviceType(isDeviceType.equals(PatrolConstant.IS_DEVICE_TYPE) ? 0 : 1);
+                    patrolStandard.setDeviceType(isDeviceType.equals(PatrolConstant.IS_DEVICE_TYPE) ? 1 : 0);
                 }
                 if (!(PatrolConstant.ACTIVE + PatrolConstant.NOT_ACTIVE).contains(statusName)) {
                     stringBuilder.append("生效状态填写不规范，");
@@ -501,17 +512,25 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 }
             }
         } else {
-            stringBuilder.append("巡视标准表名称，适用专业，是否与设备类型相关，生效状态不能为空;");
+            stringBuilder.append("巡视标准表名称、适用专业、是否与设备类型相关、生效状态不能为空;");
         }
     }
 
-    private void itemsModel(PatrolStandard patrolStandard, int errorLines) {
+    private void itemsModel(PatrolStandard patrolStandard, int errorLines,StringBuilder stringBuilder) {
         List<PatrolStandardItems> standardItems = patrolStandard.getPatrolStandardItemsList();
         if (CollUtil.isNotEmpty(standardItems)) {
             int i = 0;
             Map<Object, Integer> duplicateData = new HashMap<>(16);
             for (PatrolStandardItems items : standardItems) {
-                StringBuilder stringBuildera = new StringBuilder();
+                boolean isNull = sysBaseApi.checkObjAllFieldsIsNull(items);
+                if(isNull)
+                {
+                    items.setIsNUll(true);
+                }
+                else
+                {
+                    items.setIsNUll(false);
+                }
                 String hierarchyTypeName = items.getHierarchyTypeName();
                 String itemsCode = items.getCode();
                 String checkName = items.getCheckName();
@@ -521,20 +540,31 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 if (s == null) {
                     duplicateData.put(items.getCode(), i);
                 } else {
-                    stringBuildera.append("该数据存在相同数据,");
+                    stringBuilder.append("该数据存在相同数据,");
                 }
                 if (StrUtil.isNotEmpty(hierarchyTypeName) && StrUtil.isNotEmpty(itemsCode) && StrUtil.isNotEmpty(checkName) && StrUtil.isNotEmpty(content)) {
                     List<PatrolStandardItems> itemsList = new ArrayList<>();
-                    if (items.equals(PatrolConstant.SON_LEVEL)) {
-                        itemsList = standardItems.stream().filter(e -> e.getContent().equals(items.getParent()) && !e.equals(items) && e.getHierarchyType().equals(PatrolConstant.ONE_LEVEL)).collect(Collectors.toList());
-                    }
-                    if (itemsList.size() == 0 && items.equals(PatrolConstant.SON_LEVEL)) {
-                        stringBuildera.append("父级不存在,");
-                    }
                     if (!(PatrolConstant.ONE_LEVEL + PatrolConstant.SON_LEVEL).contains(hierarchyTypeName)) {
-                        stringBuildera.append("层级类型填写不规范,");
+                        stringBuilder.append("层级类型填写不规范,");
                     } else {
                         items.setHierarchyType(PatrolConstant.ONE_LEVEL.equals(hierarchyTypeName) ? PatrolConstant.TASK_UNDISPOSE : PatrolConstant.INPUT_TYPE_1);
+                        if (items.getHierarchyType() == 0) {
+                            if (!items.getParent().equals(PatrolConstant.NO_PARENT)) {
+                                stringBuilder.append("层级为一级(父级填写无),");
+                            }
+                        } else {
+                            if(ObjectUtil.isEmpty(items.getParent()))
+                            {
+                                stringBuilder.append("子级要有父级,");
+                            }
+                            else
+                            {
+                                itemsList = standardItems.stream().filter(e -> e.getContent()!=null&&e.getContent().equals(items.getParent())&& !e.equals(items) && e.getHierarchyTypeName().equals(PatrolConstant.ONE_LEVEL)).collect(Collectors.toList());
+                                if (itemsList.size() == 0 && items.getHierarchyTypeName().equals(PatrolConstant.SON_LEVEL)) {
+                                    stringBuilder.append("父级不存在,");
+                                }
+                            }
+                        }
                     }
                     if (ObjectUtil.isNotEmpty(items.getDetailOrder())) {
                         String regular = "^[0-9]*$";
@@ -543,55 +573,100 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         if (matcher.find()) {
                             items.setOrder(Integer.valueOf(items.getDetailOrder()));
                         } else {
-                            stringBuildera.append("内容排序填写不规范，");
+                            stringBuilder.append("内容排序(填写必须是数字)，");
                         }
                     }
                     if (!(PatrolConstant.IS_DEVICE_TYPE + PatrolConstant.IS_NOT_DEVICE_TYPE).contains(checkName)) {
-                        stringBuildera.append("是否为巡视项目填写不规范，");
-                    } else {
+                        stringBuilder.append("是否为巡视项目填写不规范，");
+                    }
+                    else
+                    {
                         items.setCheck(PatrolConstant.IS_DEVICE_TYPE.equals(checkName) ? 1 : 0);
                     }
-                    if (ObjectUtil.isNotEmpty(items.getInputTypeName())) {
-                        if (!(PatrolConstant.DATE_TYPE_IP + PatrolConstant.DATE_TYPE_OT + PatrolConstant.DATE_TYPE_NO).contains(items.getInputTypeName())) {
-                            stringBuildera.append("检查值类型选择不正确，");
-                        } else {
-                            if (items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_IP)) {
-                                items.setInputType(3);
+                    if (items.getCheck() == 0 && items.getHierarchyType() == 0) {
+                        if (ObjectUtil.isNotEmpty(items.getRegular()) || ObjectUtil.isNotEmpty(items.getQualityStandard()) || ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getInputTypeName()) || ObjectUtil.isNotEmpty(items.getRequiredDictName())) {
+                            stringBuilder.append("质量标准、检查值类型、检查值是否必填、关联数据字典、数据校验表达式不用填写，");
+                        }
+                    }
+                    if (items.getCheck() == 1 && items.getHierarchyType() == 0) {
+                        List<PatrolStandardItems> sonList = standardItems.stream().filter(e -> e.getParent().equals(items.getContent())).collect(Collectors.toList());
+                        if(CollUtil.isNotEmpty(sonList))
+                        {
+                            stringBuilder.append("不能有子级，");
+                        }
+                    }
+                    if (items.getCheck() == 0 && items.getHierarchyType() == 1) {
+                        stringBuilder.append("是否为巡视项目(要选择为：是)，");
+                    }
+                    if (items.getCheck() == 1 && items.getHierarchyType() == 1) {
+                        if (ObjectUtil.isNotEmpty(items.getRequiredDictName())) {
+                            if (!(PatrolConstant.IS_DEVICE_TYPE + PatrolConstant.IS_NOT_DEVICE_TYPE).contains(items.getRequiredDictName())) {
+                                stringBuilder.append("检查值是否必填选择不正确，");
                             } else {
-                                items.setInputType(items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_OT) ? 2 : 1);
+                                items.setRequired(items.getRequiredDictName().equals(PatrolConstant.IS_DEVICE_TYPE) ? 1 : 0);
+                            }
+                        }
+                        if (ObjectUtil.isNotEmpty(items.getInputTypeName())) {
+                            if (!(PatrolConstant.DATE_TYPE_IP + PatrolConstant.DATE_TYPE_OT + PatrolConstant.DATE_TYPE_NO).contains(items.getInputTypeName())) {
+                                stringBuilder.append("检查值类型选择不正确，");
+                            }
+                            else
+                            {
+                                if (items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_IP)) {
+                                    items.setInputType(3);
+                                } else {
+                                    items.setInputType(items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_OT) ? 2 : 1);
+                                }
+                            }
+                            if (items.getInputType() == 1) {
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())) {
+                                    stringBuilder.append("关联数据字典、数据校验表达式不用填写，");
+                                }
+                            }
+                            if (items.getInputType() == 2) {
+                                if (ObjectUtil.isNotEmpty(items.getRegular())) {
+                                    stringBuilder.append("数据校验表达式不用填写，");
+                                } else {
+                                    if (ObjectUtil.isNotEmpty(items.getDictCode())) {
+                                        String dictCode = patrolStandardMapper.getDictCode(items.getDictCode());
+                                        if (ObjectUtil.isNotEmpty(dictCode)) {
+                                            items.setDictCode(dictCode);
+                                        } else {
+                                            stringBuilder.append("关联数据字典选择不正确，");
+                                        }
+                                    }
+                                }
+                            }
+                            if (items.getInputType() == 3) {
+                                if (ObjectUtil.isNotEmpty(items.getDictCode())) {
+                                    stringBuilder.append("关联数据字典不用填写，");
+                                } else {
+                                    if (ObjectUtil.isNotEmpty(items.getRegular())) {
+                                        String dictCode = patrolStandardMapper.getDictCode(items.getRegular());
+                                        if (ObjectUtil.isNotEmpty(dictCode)) {
+                                            items.setRegular(dictCode);
+                                        } else {
+                                            stringBuilder.append("数据校验表达式选择不正确，");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if(ObjectUtil.isNotEmpty(items.getRegular())||ObjectUtil.isNotEmpty(items.getDictCode()))
+                            {
+                                stringBuilder.append("关联数据字典、数据校验表达式不用填写，");
                             }
                         }
                     }
-                    if (ObjectUtil.isNotEmpty(items.getRequiredDictName())) {
-                        if (!(PatrolConstant.IS_DEVICE_TYPE + PatrolConstant.IS_NOT_DEVICE_TYPE).contains(items.getRequiredDictName())) {
-                            stringBuildera.append("检查值是否必填选择不正确，");
-                        } else {
-                            items.setRequired(items.getRequiredDictName().equals(PatrolConstant.IS_DEVICE_TYPE) ? 1 : 0);
-                        }
-                    }
-                    if (ObjectUtil.isNotEmpty(items.getDictCode())) {
-                        String dictCode = patrolStandardMapper.getDictCode(items.getDictCode());
-                        if (ObjectUtil.isNotEmpty(dictCode)) {
-                            items.setDictCode(dictCode);
-                        } else {
-                            stringBuildera.append("关联数据字典选择不正确，");
-                        }
-                    }
-                    if (ObjectUtil.isNotEmpty(items.getRegular())) {
-                        String dictCode = patrolStandardMapper.getDictCode(items.getRegular());
-                        if (ObjectUtil.isNotEmpty(dictCode)) {
-                            items.setRegular(dictCode);
-                        } else {
-                            stringBuildera.append("数据校验表达式选择不正确，");
-                        }
-                    }
                 } else {
-                    stringBuildera.append("层级类型，巡视项内容，巡视项编号、是否为巡视项目不能为空");
+                    stringBuilder.append("层级类型、巡视项内容、巡视项编号、是否为巡视项目要必填，");
                 }
-                if (stringBuildera.length() > 0) {
+                if (stringBuilder.length() > 0) {
                     // 截取字符
-                    stringBuildera.deleteCharAt(stringBuildera.length() - 1);
-                    items.setItemParentMistake(stringBuildera.toString());
+                    stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                    items.setItemParentMistake(stringBuilder.toString());
                     errorLines++;
                 }
             }

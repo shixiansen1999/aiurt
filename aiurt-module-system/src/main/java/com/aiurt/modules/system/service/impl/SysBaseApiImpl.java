@@ -2182,7 +2182,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         try {
             for (Field f : object.getClass().getDeclaredFields()) {
                 f.setAccessible(true);
-                if (f.get(object) != null && org.apache.commons.lang3.StringUtils.isNotBlank(f.get(object).toString())) {
+                if (f.get(object) != null && (StrUtil.isNotEmpty(f.get(object).toString()) && !"1".equals(f.get(object).toString()))) {
                     return false;
                 }
             }

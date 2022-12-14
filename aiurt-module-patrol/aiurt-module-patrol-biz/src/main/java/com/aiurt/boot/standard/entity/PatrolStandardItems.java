@@ -134,4 +134,8 @@ public class PatrolStandardItems implements Serializable {
     @ApiModelProperty(value = "错误原因")
     @TableField(exist = false)
     private  String  itemParentMistake;
+    /**错误原因*/
+    @ApiModelProperty(value = "数据是否为null")
+    @TableField(exist = false)
+    private  Boolean  isNUll;
 }
