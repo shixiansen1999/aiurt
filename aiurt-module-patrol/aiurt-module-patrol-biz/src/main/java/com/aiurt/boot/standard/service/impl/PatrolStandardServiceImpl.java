@@ -518,14 +518,29 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             stringBuilder.append("巡视标准表名称、适用专业、是否与设备类型相关、生效状态不能为空;");
         }
     }
-
+    public boolean checkObjAllFieldsIsNull(Object object) {
+        if (null == object) {
+            return true;
+        }
+        try {
+            for (Field f : object.getClass().getDeclaredFields()) {
+                f.setAccessible(true);
+                if (f.get(object) != null && (StrUtil.isNotEmpty(f.get(object).toString()) && !"1".equals(f.get(object).toString()))) {
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
     private void itemsModel(PatrolStandard patrolStandard, int errorLines,StringBuilder stringBuilder) {
         List<PatrolStandardItems> standardItems = patrolStandard.getPatrolStandardItemsList();
         if (CollUtil.isNotEmpty(standardItems)) {
             int i = 0;
             Map<Object, Integer> duplicateData = new HashMap<>(16);
             for (PatrolStandardItems items : standardItems) {
-                boolean isNull = XlsUtil.checkObjAllFieldsIsNull(items);
+                boolean isNull = checkObjAllFieldsIsNull(items);
                 if(isNull)
                 {
                     items.setIsNUll(true);
