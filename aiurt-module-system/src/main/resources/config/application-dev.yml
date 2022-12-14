@@ -210,12 +210,6 @@ jeecg:
     secretKey: ??
     endpoint: oss-cn-beijing.aliyuncs.com
     bucketName: jeecgdev
-  #工班长角色id
-  role:
-    banzhang: 1441680544915881986
-
-  workLog:
-    schedule: 1.落实防疫规定，2.工区进行消毒，3.人员测温，4.对工区及材料库进行卫生清洁，5.对各站设备进行检修
   # ElasticSearch 6设置
   elasticsearch:
     cluster-name: jeecg-ES

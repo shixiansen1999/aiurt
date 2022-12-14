@@ -42,7 +42,6 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,11 +82,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
 
-    @Value("${jeecg.role.banzhang}")
+ /*   @Value("${jeecg.role.banzhang}")
     private String roleId ;
 
     @Value("${jeecg.workLog.schedule}")
-    private String schedule ;
+    private String schedule ;*/
     /**
      * 新增工作日志
      * @param dto
@@ -298,7 +297,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
             record.setAntiepidemicWork(stringBuffer.toString());
 
-            record.setSchedule(schedule);
+            record.setSchedule("schedule");
 
             StringBuffer stringBuffer2 = new StringBuffer();
             if (WorkLogConstans.IS.equals(record.getIsEmergencyDisposal())) {
@@ -456,7 +455,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             //查询该部门下的人员
             List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
             //获取负责人
-            List<LoginUser> foreman = iSysBaseAPI.getForeman(sysUsers, roleId);
+            List<LoginUser> foreman = iSysBaseAPI.getForeman(sysUsers, "roleId");
             String foremanName = Optional.ofNullable(foreman).orElse(Collections.emptyList()).stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
             record.setForeman(foremanName);
 
@@ -489,7 +488,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
             record.setAntiepidemicWork(stringBuffer.toString());
 
-            record.setSchedule(schedule);
+            record.setSchedule("schedule");
 
             StringBuffer stringBuffer2 = new StringBuffer();
             if (WorkLogConstans.IS.equals(record.getIsEmergencyDisposal())) {
@@ -994,7 +993,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         String orgId = user.getOrgId();
         List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
         //获取负责人
-        List<LoginUser> foreman = iSysBaseAPI.getForeman(sysUsers, roleId);
+        List<LoginUser> foreman = iSysBaseAPI.getForeman(sysUsers, "roleId");
         String foremanName = Optional.ofNullable(foreman).orElse(Collections.emptyList()).stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
         workLog.setForeman(foremanName);
 
@@ -1052,7 +1051,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
 
         workLog.setAntiepidemicWork(stringBuffer.toString());
-        workLog.setSchedule(schedule);
+        workLog.setSchedule("schedule");
         return workLog;
     }
 }
