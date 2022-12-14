@@ -379,6 +379,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 									DeviceAssemblyErrorModel deviceAssemblyErrorModel = new DeviceAssemblyErrorModel();
 									BeanUtil.copyProperties(deviceModel, deviceAssemblyErrorModel);
 									BeanUtil.copyProperties(deviceAssemblyModel, deviceAssemblyErrorModel);
+									deviceAssemblyErrorModel.setAssemblyStatus(deviceAssemblyModel.getStatusName());
 									deviceAssemblyErrorModels.add(deviceAssemblyErrorModel);
 								} else {
 									//生成添加的组件信息
@@ -666,6 +667,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		if (StrUtil.isNotEmpty(positionCodeName)) {
 			LambdaQueryWrapper<CsStationPosition> positionWrapper = new LambdaQueryWrapper<>();
 			positionWrapper.eq(CsStationPosition::getPositionName, positionCodeName).eq(CsStationPosition::getDelFlag, 0);
+			positionWrapper.eq(CsStationPosition::getLineCode, device.getLineCode()).eq(CsStationPosition::getStaionCode, device.getStationCode());
 			CsStationPosition one = csStationPositionService.getOne(positionWrapper);
 			if (ObjectUtil.isEmpty(one)) {
 				stringBuilder.append("系统不存在该位置，");
@@ -880,7 +882,8 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				List<DictModel> deviceStatus = sysDictMapper.queryDictItemsByCode("device_assembly_status");
 				DictModel model = Optional.ofNullable(deviceStatus).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(statusName)).findFirst().orElse(null);
 				if (model != null) {
-					deviceAssembly.setAssemblyStatus(model.getText());
+					deviceAssembly.setAssemblyStatus(model.getValue());
+					deviceAssembly.setStatusName(model.getText());
 				} else {
 					stringBuilder.append("系统不存在该组件状态，");
 				}
