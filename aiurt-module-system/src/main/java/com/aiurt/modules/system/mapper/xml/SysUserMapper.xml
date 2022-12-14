@@ -265,4 +265,15 @@
 			and work_no = #{workNo}
 		</if>
     </select>
+
+	<select id="getForeman" resultType="org.jeecg.common.system.vo.LoginUser">
+		select * from sys_user su
+		left join sys_user_role sur on sur.user_id = su.id
+		left join sys_role sr on sr.id = sur.role_id
+		where sr.id = #{roleId}
+		and su.id in
+		<foreach collection="sysUsers" index="index" item="item" open="(" separator="," close=")">
+			#{item.id}
+		</foreach>
+    </select>
 </mapper>

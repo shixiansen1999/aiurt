@@ -91,6 +91,11 @@ public class WorkLogResult {
     @ApiModelProperty(value = "提交时间")
     private  Date  submitTime;
 
+    /**交班人姓名*/
+    @Excel(name = "交班人", width = 15)
+    @ApiModelProperty(value = "交班人姓名")
+    private  String  handoverName;
+
     /**接班人*/
     @Excel(name = "接班人", width = 15)
     @ApiModelProperty(value = "接班人")
@@ -191,4 +196,94 @@ public class WorkLogResult {
 
     @ApiModelProperty(value = "签名")
     private String signature;
+
+    public String[] assortTimes;
+
+    /**创建时间,CURRENT_TIMESTAMP*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "创建时间,CURRENT_TIMESTAMP")
+    private  Date  createTime;
+
+    /**是否已落实工区消毒(0:否，1：是)*/
+    @ApiModelProperty(value = "是否已落实工区消毒(0:否，1：是)")
+    private  Integer isDisinfect;
+
+    /**是否已清洁工区卫生(0:否，1：是)*/
+    @ApiModelProperty(value = "是否已清洁工区卫生(0:否，1：是)")
+    private  Integer isClean;
+
+    /**班组上岗人员体温情况(0:异常，1：正常)*/
+    @ApiModelProperty(value = "班组上岗人员体温情况(0:异常，1：正常)")
+    private  Integer  isAbnormal;
+
+    /**是否有应急处置情况(0:否，1：是)*/
+    @ApiModelProperty(value = "是否有应急处置情况(0:否，1：是)")
+    private  Integer  isEmergencyDisposal;
+
+    /**是否进行文件宣贯(0:否，1：是)*/
+    @ApiModelProperty(value = "是否进行文件宣贯(0:否，1：是)")
+    private  Integer  isDocumentPublicity;
+
+    /**应急情况说明*/
+    @ApiModelProperty(value = "应急情况说明")
+    private  Object  emergencyDisposalContent;
+
+    /**文件宣贯*/
+    @ApiModelProperty(value = "文件宣贯")
+    private  Object documentPublicityContent;
+
+    /**其他工作内容*/
+    @ApiModelProperty(value = "其他工作内容")
+    private  Object  otherWorkContent;
+
+    /**注意事项*/
+    @ApiModelProperty(value = "注意事项")
+    private  Object  note;
+
+    /**交班人id*/
+    @ApiModelProperty(value = "交班人id")
+    private  String  handoverId;
+
+    /**防疫相关工作*/
+    @ApiModelProperty(value = "防疫相关工作")
+    private String antiepidemicWork;
+
+    /** 时间 年月日 星期几*/
+    @ApiModelProperty(value = "时间 年月日 星期几")
+    private String time;
+
+    /**参加人员*/
+    @ApiModelProperty(value = "参加人员")
+    private String userList;
+
+    /**负责人*/
+    @ApiModelProperty(value = "负责人")
+    private String foreman;
+
+    /**班会名称*/
+    @ApiModelProperty(value = "班会名称")
+    private String className;
+
+    /**班会时间*/
+    @ApiModelProperty(value = "班会时间")
+    private String classTime;
+
+    /**工作安排*/
+    @ApiModelProperty(value = "工作安排")
+    private String schedule;
+
+    /**班组*/
+    @ApiModelProperty(value = "班组")
+    private  String  OrgName;
+
+    @TableField(exist = false)
+    private String secert;
+
+    @TableField(exist = false)
+    private String secertduration;
+
+    @TableField(exist = false)
+    private String duration;
+
 }

@@ -52,6 +52,46 @@ public class WorkLogDTO extends WorkLogResult {
     @ApiModelProperty(value = "工作内容")
     private  Object  workContent;
 
+    /**是否已落实工区消毒(0:否，1：是)*/
+    @ApiModelProperty(value = "是否已落实工区消毒(0:否，1：是)")
+    private  Integer isDisinfect;
+
+    /**是否已清洁工区卫生(0:否，1：是)*/
+    @ApiModelProperty(value = "是否已清洁工区卫生(0:否，1：是)")
+    private  Integer isClean;
+
+    /**班组上岗人员体温情况(0:异常，1：正常)*/
+    @ApiModelProperty(value = "班组上岗人员体温情况(0:异常，1：正常)")
+    private  Integer  isAbnormal;
+
+    /**是否有应急处置情况(0:否，1：是)*/
+    @ApiModelProperty(value = "是否有应急处置情况(0:否，1：是)")
+    private  Integer  isEmergencyDisposal;
+
+    /**是否进行文件宣贯(0:否，1：是)*/
+    @ApiModelProperty(value = "是否进行文件宣贯(0:否，1：是)")
+    private  Integer  isDocumentPublicity;
+
+    /**应急情况说明*/
+    @ApiModelProperty(value = "应急情况说明")
+    private  Object  emergencyDisposalContent;
+
+    /**文件宣贯*/
+    @ApiModelProperty(value = "文件宣贯")
+    private  Object documentPublicityContent;
+
+    /**其他工作内容*/
+    @ApiModelProperty(value = "其他工作内容")
+    private  Object  otherWorkContent;
+
+    /**注意事项*/
+    @ApiModelProperty(value = "注意事项")
+    private  Object  note;
+
+    /**交班人id*/
+    @ApiModelProperty(value = "交班人id")
+    private  String  handoverId;
+
     /**交接班内容*/
     @ApiModelProperty(value = "交接班内容")
     private  String  content;
@@ -134,5 +174,9 @@ public class WorkLogDTO extends WorkLogResult {
     @Excel(name = "签名", width = 15)
     @ApiModelProperty(value = "签名")
     private String signature;
+
+    private String patrolRepairContent;
+
+    private Boolean editFlag;
 
 }

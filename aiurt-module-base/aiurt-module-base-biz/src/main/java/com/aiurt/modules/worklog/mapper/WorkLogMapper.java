@@ -2,6 +2,7 @@ package com.aiurt.modules.worklog.mapper;
 
 import com.aiurt.common.result.AssortNumResult;
 import com.aiurt.common.result.LogCountResult;
+import com.aiurt.common.result.WorkLogDetailResult;
 import com.aiurt.common.result.WorkLogResult;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.param.LogCountParam;
@@ -51,7 +52,7 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      * @param id
      * @return
      */
-    WorkLogResult queryById(String id);
+    WorkLogResult queryById(Integer id);
 
     /**
      * 通过id确认
@@ -97,5 +98,13 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      */
     Integer selectWorkLogCount();
 
+    /**
+     * 根据id查询详情
+     * @param id
+     * @return
+     */
+    WorkLogDetailResult queryWorkLogById(Integer id);
+
+    List<LogCountResult> selectOrgLogCount(@Param("param") LogCountParam param);
 }
 

@@ -2,10 +2,7 @@ package com.aiurt.modules.worklog.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.result.LogCountResult;
-import com.aiurt.common.result.LogResult;
-import com.aiurt.common.result.LogSubmitCount;
-import com.aiurt.common.result.WorkLogResult;
+import com.aiurt.common.result.*;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
 import com.aiurt.modules.worklog.entity.WorkLog;
@@ -18,6 +15,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
@@ -133,13 +131,45 @@ public class WorkLogController {
     @ApiOperation(value="工作日志-添加", notes="工作日志-添加")
     @PostMapping(value = "/add")
     public Result<WorkLog> add(@RequestBody WorkLogDTO dto, HttpServletRequest req) {
+        Result<WorkLog> result = new Result<WorkLog>();
         try {
-            workLogDepotService.add(dto,req);
-          return   Result.ok("添加成功！");
+            if (dto.getId() != null){
+                WorkLog workLog = workLogDepotService.getById(dto.getId());
+                //如果工作日志已经提交，则不能再保存
+                if (workLog.getStatus()==1&&dto.getStatus()==0){
+                    Result.error("该工作日志已经提交，无法保存");
+                    return result;
+                }
+                workLogDepotService.editWorkLog(dto);
+                result.success("保存成功！");
+            }else {
+                workLogDepotService.add(dto,req);
+                result.success("添加成功！");
+            }
         } catch (Exception e) {
-            log.error(e.getMessage(),"系统异常");
-           return Result.error("系统异常");
+            log.error(e.getMessage(),e);
+            result.error500(e.getMessage());
         }
+        return result;
+    }
+
+    @AutoLog(value = "工作日志-获取保存")
+    @ApiOperation(value="工作日志-获取保存", notes="工作日志-获取保存")
+    @GetMapping(value = "/getSavedWorkLog")
+    public Result<WorkLogResult> getSaved(){
+        Result<WorkLogResult> result = new Result<WorkLogResult>();
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = loginUser.getId();
+        WorkLog workLog =workLogDepotService.getOne(new LambdaQueryWrapper<WorkLog>()
+                .eq(WorkLog::getCreateBy,userId).eq(WorkLog::getStatus,0)
+                .orderByDesc(WorkLog::getCreateTime).last("limit 0,1"));
+        WorkLogResult detailResult = new WorkLogResult();
+        if (ObjectUtils.isNotEmpty(workLog)){
+            detailResult = workLogDepotService.getDetailById(Long.valueOf(workLog.getId()).intValue());
+            result.setResult(detailResult);
+        }
+
+        return result;
     }
 
     /**
@@ -153,7 +183,6 @@ public class WorkLogController {
     public Result<WorkLog> edit(@Valid @RequestBody WorkLogDTO dto) {
         try {
             workLogDepotService.editWorkLog(dto);
-            Result.ok("修改成功");
         }catch (Exception e) {
             log.error(e.getMessage(),"系统异常");
             Result.error(e.getMessage());
@@ -280,20 +309,39 @@ public class WorkLogController {
     }
 
     /**
-     * 工作日志查看
+     * 工作日志编辑查看
      * @param id
      * @return
      */
     @AutoLog(value = "工作日志查看")
     @ApiOperation(value="工作日志查看", notes="工作日志查看")
     @GetMapping(value = "/queryDetail")
-    public Result<WorkLogDTO> queryDetail(@RequestParam String id) {
+    public Result<WorkLogDTO> queryDetail(@RequestParam Integer id) {
         Result<WorkLogDTO> result = new Result<WorkLogDTO>();
         WorkLogDTO detailById = workLogDepotService.getDetailById(id);
+        if (detailById.getConfirmStatus()==1 || detailById.getCheckStatus()==1){
+            detailById.setEditFlag(false);
+        }else {
+            detailById.setEditFlag(true);
+        }
         result.setResult(detailById);
         return result;
     }
 
+    /**
+     * 工作日志通过id查看
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "工作日志通过id查看")
+    @ApiOperation(value="工作日志通过id查看", notes="工作日志通过id查看")
+    @GetMapping(value = "/queryWorkLogDetail")
+    public Result<WorkLogDetailResult> queryWorkLogDetail(@RequestParam Integer id) {
+        Result<WorkLogDetailResult> result = new Result<WorkLogDetailResult>();
+        WorkLogDetailResult detailById = workLogDepotService.queryWorkLogDetail(id);
+        result.setResult(detailById);
+        return result;
+    }
     /**
      * 工作日志确认
      * @param id
@@ -305,11 +353,11 @@ public class WorkLogController {
     public Result<?> confirm(@RequestParam String id) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         WorkLog byId = workLogDepotService.getById(id);
-        if(!byId.getSucceedId().equals(user.getId()))
-        {
-            throw new AiurtBootException("小主，您不是该日志的接班人！");
-        }
         if (byId != null) {
+            if(!byId.getSucceedId().equals(user.getId()))
+            {
+                throw new AiurtBootException("您不是该日志的接班人！");
+            }
             byId.setConfirmStatus(1).setSucceedTime(new Date());
             workLogDepotService.updateById(byId);
             return Result.ok("确认成功");
@@ -385,5 +433,19 @@ public class WorkLogController {
     public Result<LogSubmitCount> getLogSubmitNum(@RequestParam(name = "dayStart", required = false) String startTime, @RequestParam(name = "dayEnd", required = false) String endTime) {
         Result<LogSubmitCount> logSubmitNum = workLogDepotService.getLogSubmitNum(startTime, endTime);
         return logSubmitNum;
+    }
+
+    /**
+     * @Description: 今日工作内容
+     * @author: niuzeyu
+     */
+    @AutoLog(value = "今日工作内容")
+    @ApiOperation(value = "今日工作内容", notes = "今日工作内容")
+    @GetMapping(value = "/getTodayJobContent")
+    public Result getTodayJobContent(@RequestParam(name = "nowday", required = false) String nowday) {
+        Result<Map> result = new Result<>();
+        Map map = workLogDepotService.getTodayJobContent(nowday);
+        result.setResult(map);
+        return result;
     }
 }

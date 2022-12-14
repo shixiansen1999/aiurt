@@ -56,5 +56,7 @@ public class WorkLogParam {
 
     @ApiModelProperty(value = "权限班组集合(后台处理)")
     private List<String> departList;
+
+    private List<String> selections;
 }
 

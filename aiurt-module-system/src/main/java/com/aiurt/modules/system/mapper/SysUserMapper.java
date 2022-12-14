@@ -227,4 +227,11 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	 * @return
 	 */
 	List<LoginUser> getUserByRealName(@Param("realName")String realName, @Param("workNo")String workNo);
+	/**
+	 * 获取某一班组下的工班长负责人
+	 * @param sysUsers
+	 * @param roleId
+	 * @return
+	 */
+    List<LoginUser> getForeman(@Param("sysUsers")List<LoginUser> sysUsers,  @Param("roleId")String roleId);
 }

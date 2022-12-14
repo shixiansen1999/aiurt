@@ -1,9 +1,6 @@
 package com.aiurt.modules.worklog.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -106,8 +103,59 @@ public class WorkLog {
     /**工作内容*/
     @Excel(name = "工作内容", width = 15)
     @ApiModelProperty(value = "工作内容")
+    @TableField(exist = false)
     //@NotNull(message = "工作内容不能为空")
     private  Object  workContent;
+
+    /**是否已落实工区消毒(0:否，1：是)*/
+    @Excel(name = "是否已落实工区消毒(0:否，1：是)", width = 15)
+    @ApiModelProperty(value = "是否已落实工区消毒(0:否，1：是)")
+    private  Integer isDisinfect;
+
+    /**是否已清洁工区卫生(0:否，1：是)*/
+    @Excel(name = "是否已清洁工区卫生(0:否，1：是)", width = 15)
+    @ApiModelProperty(value = "是否已清洁工区卫生(0:否，1：是)")
+    private  Integer isClean;
+
+    /**班组上岗人员体温情况(0:异常，1：正常)*/
+    @Excel(name = "班组上岗人员体温情况(0:异常，1：正常)", width = 15)
+    @ApiModelProperty(value = "班组上岗人员体温情况(0:异常，1：正常)")
+    private  Integer  isAbnormal;
+
+    /**是否有应急处置情况(0:否，1：是)*/
+    @Excel(name = "是否有应急处置情况(0:否，1：是)", width = 15)
+    @ApiModelProperty(value = "是否有应急处置情况(0:否，1：是)")
+    private  Integer  isEmergencyDisposal;
+
+    /**是否进行文件宣贯(0:否，1：是)*/
+    @Excel(name = "是否进行文件宣贯(0:否，1：是)", width = 15)
+    @ApiModelProperty(value = "是否进行文件宣贯(0:否，1：是)")
+    private  Integer  isDocumentPublicity;
+
+    /**应急情况说明*/
+    @Excel(name = "应急情况说明", width = 15)
+    @ApiModelProperty(value = "应急情况说明")
+    private  Object  emergencyDisposalContent;
+
+    /**文件宣贯*/
+    @Excel(name = "文件宣贯", width = 15)
+    @ApiModelProperty(value = "文件宣贯")
+    private  Object documentPublicityContent;
+
+    /**其他工作内容*/
+    @Excel(name = "其他工作内容", width = 15)
+    @ApiModelProperty(value = "其他工作内容")
+    private  Object  otherWorkContent;
+
+    /**注意事项*/
+    @Excel(name = "注意事项", width = 15)
+    @ApiModelProperty(value = "注意事项")
+    private  Object  note;
+
+    /**交班人id*/
+    @Excel(name = "交班人id", width = 15)
+    @ApiModelProperty(value = "交班人id")
+    private  String  handoverId;
 
     /**交接班内容*/
     @Excel(name = "交接班内容", width = 15)
@@ -208,6 +256,8 @@ public class WorkLog {
     @ApiModelProperty(value = "配合施工内容")
     private  Object  assortContent;
 
+    @ApiModelProperty(value = "巡检修内容")
+    private String patrolRepairContent;
 
 
 

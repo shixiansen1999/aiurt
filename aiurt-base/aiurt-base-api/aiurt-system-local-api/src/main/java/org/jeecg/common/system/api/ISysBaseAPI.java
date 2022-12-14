@@ -627,7 +627,7 @@ public interface ISysBaseAPI extends CommonAPI {
     String getUserName(String realName);
 
     /**
-     * 根据专业获取id
+     * 根据站点id获取站点信息
      * @param station
      * @return
      */
@@ -810,4 +810,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @throws IOException
      */
     TemplateExportParams getErrorExcelModel(String url) throws IOException;
+
+    /**
+     * 获取某一班组下的工班长负责人
+     * @param sysUsers
+     * @param roleId
+     * @return
+     */
+    List<LoginUser> getForeman(List<LoginUser> sysUsers, String roleId);
 }

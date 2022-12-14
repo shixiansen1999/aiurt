@@ -23,6 +23,7 @@ import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
+import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.major.entity.CsMajor;
@@ -198,6 +199,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Autowired
     private CsStationPositionMapper csStationPositionMapper;
+
+    @Autowired
+    private FaultRepairRecordMapper faultRepairRecordMapper;
 
     @Autowired
     @Lazy
@@ -1798,7 +1802,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     /**
-     * 根据专业获取id
+     * 根据站点id获取站点信息
      *
      * @param station
      * @return
@@ -2124,6 +2128,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return exportParams;
     }
 
+    @Override
+    public List<LoginUser> getForeman(List<LoginUser> sysUsers, String roleId) {
+        return userMapper.getForeman(sysUsers, roleId);
+    }
     @Override
     public Result<?> importReturnRes(int errorLines, int successLines, List<String> errorMessage, boolean isType, String failReportUrl) {
         if (isType) {

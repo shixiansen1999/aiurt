@@ -1,9 +1,6 @@
 package com.aiurt.modules.worklog.service;
 
-import com.aiurt.common.result.LogCountResult;
-import com.aiurt.common.result.LogResult;
-import com.aiurt.common.result.LogSubmitCount;
-import com.aiurt.common.result.WorkLogResult;
+import com.aiurt.common.result.*;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
 import com.aiurt.modules.worklog.entity.WorkLog;
@@ -15,6 +12,7 @@ import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author cgkj0
@@ -70,7 +68,7 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @param id
      * @return
      */
-    WorkLogDTO getDetailById(String id);
+    WorkLogDTO getDetailById(Integer id);
 
     /**
      * 工作日志确认
@@ -122,5 +120,19 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @return
      */
      WorkLogUserTaskDTO getUseTask();
+
+    /**
+     * 工作日志通过id查看
+     * @param id
+     * @return
+     */
+    WorkLogDetailResult queryWorkLogDetail(Integer id);
+
+    /**
+     * 今日工作内容
+     * @param nowday
+     * @return
+     */
+    Map getTodayJobContent(String nowday);
 }
 
