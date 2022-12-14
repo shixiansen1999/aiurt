@@ -52,7 +52,7 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      * @param id
      * @return
      */
-    WorkLogResult queryById(Integer id);
+    WorkLogResult queryById(String id);
 
     /**
      * 通过id确认
@@ -103,7 +103,7 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      * @param id
      * @return
      */
-    WorkLogDetailResult queryWorkLogById(Integer id);
+    WorkLogDetailResult queryWorkLogById(String id);
 
     List<LogCountResult> selectOrgLogCount(@Param("param") LogCountParam param);
 }

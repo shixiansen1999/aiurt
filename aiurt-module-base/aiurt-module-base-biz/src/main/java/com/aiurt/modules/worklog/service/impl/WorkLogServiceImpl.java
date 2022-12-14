@@ -553,19 +553,19 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
      * @return
      */
     @Override
-    public WorkLogDTO getDetailById(Integer id) {
+    public WorkLogDTO getDetailById(String id) {
         WorkLogResult workLog = depotMapper.queryById(id);
         WorkLogDTO workLogDTO = new WorkLogDTO();
         BeanUtil.copyProperties(workLog,workLogDTO);
         if(ObjectUtil.isNotEmpty(workLog.getAssortLocation()))
         {
-            List<String> ids = Arrays.asList(workLog.getAssortLocation().split(","));
-            List<JSONObject> jsonObjects = new ArrayList<>();
-            for (String stationId : ids) {
-                JSONObject csStationById = iSysBaseAPI.getCsStationById(stationId);
-                jsonObjects.add(csStationById);
+            List<String> codes = Arrays.asList(workLog.getAssortLocation().split(","));
+            String assortLocationName = null;
+            for (String code : codes) {
+                String position = iSysBaseAPI.getPosition(code);
+                assortLocationName = assortLocationName + position;
             }
-            workLogDTO.setAssortLocationName(StringUtils.join(jsonObjects.stream().map(js -> js.getString("stationName")).collect(Collectors.toList()),","));
+            workLogDTO.setAssortLocationName(assortLocationName);
 
         }
         if(ObjectUtil.isNotEmpty(workLog.getSucceedId()))
@@ -967,7 +967,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
 
     @Override
-    public WorkLogDetailResult queryWorkLogDetail(Integer id) {
+    public WorkLogDetailResult queryWorkLogDetail(String id) {
         WorkLogDetailResult workLog = depotMapper.queryWorkLogById(id);
         //签名列表
         List<String> query1 = enclosureMapper.query(id,1);

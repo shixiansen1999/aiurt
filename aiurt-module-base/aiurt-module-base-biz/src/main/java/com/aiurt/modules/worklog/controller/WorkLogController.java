@@ -165,7 +165,7 @@ public class WorkLogController {
                 .orderByDesc(WorkLog::getCreateTime).last("limit 0,1"));
         WorkLogResult detailResult = new WorkLogResult();
         if (ObjectUtils.isNotEmpty(workLog)){
-            detailResult = workLogDepotService.getDetailById(Long.valueOf(workLog.getId()).intValue());
+            detailResult = workLogDepotService.getDetailById(workLog.getId());
             result.setResult(detailResult);
         }
 
@@ -316,7 +316,7 @@ public class WorkLogController {
     @AutoLog(value = "工作日志查看")
     @ApiOperation(value="工作日志查看", notes="工作日志查看")
     @GetMapping(value = "/queryDetail")
-    public Result<WorkLogDTO> queryDetail(@RequestParam Integer id) {
+    public Result<WorkLogDTO> queryDetail(@RequestParam String id) {
         Result<WorkLogDTO> result = new Result<WorkLogDTO>();
         WorkLogDTO detailById = workLogDepotService.getDetailById(id);
         if (detailById.getConfirmStatus()==1 || detailById.getCheckStatus()==1){
@@ -336,7 +336,7 @@ public class WorkLogController {
     @AutoLog(value = "工作日志通过id查看")
     @ApiOperation(value="工作日志通过id查看", notes="工作日志通过id查看")
     @GetMapping(value = "/queryWorkLogDetail")
-    public Result<WorkLogDetailResult> queryWorkLogDetail(@RequestParam Integer id) {
+    public Result<WorkLogDetailResult> queryWorkLogDetail(@RequestParam String id) {
         Result<WorkLogDetailResult> result = new Result<WorkLogDetailResult>();
         WorkLogDetailResult detailById = workLogDepotService.queryWorkLogDetail(id);
         result.setResult(detailById);

@@ -68,7 +68,7 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @param id
      * @return
      */
-    WorkLogDTO getDetailById(Integer id);
+    WorkLogDTO getDetailById(String id);
 
     /**
      * 工作日志确认
@@ -126,7 +126,7 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @param id
      * @return
      */
-    WorkLogDetailResult queryWorkLogDetail(Integer id);
+    WorkLogDetailResult queryWorkLogDetail(String id);
 
     /**
      * 今日工作内容
