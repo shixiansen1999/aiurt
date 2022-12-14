@@ -473,6 +473,12 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     JSONObject systemName = sysBaseApi.getSystemName(major.getString("majorCode"), model.getSubsystemCode());
                     if (ObjectUtil.isNotEmpty(systemName)) {
                         patrolStandard.setSubsystemCode(systemName.getString("systemCode"));
+                        DeviceType d = sysBaseApi.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName);
+                        if (ObjectUtil.isNull(d)) {
+                            stringBuilder.append("系统不存在该专业的子系统的设备类型，");
+                        } else {
+                            patrolStandard.setDeviceTypeCode(d.getCode());
+                        }
                     } else {
                         stringBuilder.append("系统不存在该专业下的子系统，");
                     }
