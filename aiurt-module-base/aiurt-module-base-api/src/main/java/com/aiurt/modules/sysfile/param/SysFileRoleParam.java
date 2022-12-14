@@ -27,7 +27,19 @@ public class SysFileRoleParam implements Serializable {
 	@ApiModelProperty("查看状态 0:不允许 1:允许")
 	private Integer lookStatus;
 
-	@ApiModelProperty("编辑/上传状态 0:不允许 1:允许")
+	@ApiModelProperty("编辑状态 0:不允许 1:允许")
 	private Integer editStatus;
+
+	@ApiModelProperty("上传状态 0:不允许 1:允许")
+	private Integer uploadStatus;
+
+	@ApiModelProperty("下载状态 0:不允许 1:允许")
+	private Integer downloadStatus;
+
+	@ApiModelProperty("删除状态 0:不允许 1:允许")
+	private Integer deleteStatus;
+
+	@ApiModelProperty("在线编辑状态 0:不允许 1:允许")
+	private Integer onlineEditing;
 }
 

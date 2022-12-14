@@ -1,6 +1,8 @@
 package com.aiurt.modules.sysfile.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
@@ -13,6 +15,7 @@ import com.aiurt.modules.sysfile.vo.SimpUserVO;
 import com.aiurt.modules.sysfile.vo.SysFileTypeDetailVO;
 import com.aiurt.modules.sysfile.vo.SysFileTypeTreeVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.NotEmpty;
 import java.util.*;
 import java.util.stream.Collectors;
 /**
@@ -73,17 +77,62 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 			throw new AiurtBootException("添加分类未成功,请稍后重试");
 		}
 
+		//编辑
 		List<String> editIds = param.getEditIds();
+		//查看
 		List<String> lookIds = param.getLookIds();
-		editIds.forEach(lookIds::remove);
-		//允许上传权限,自动享有查看权限
-		for (String editId : editIds) {
-			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setEditStatus(1).setTypeId(type.getId()).setUserId(editId));
-		}
-		for (String lookId : lookIds) {
-			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setTypeId(type.getId()).setUserId(lookId));
-		}
+		//上传
+		List<String> uploads = param.getUploads();
+		//下载
+		List<String> downloads = param.getDownloads();
+		//删除状态
+		List<String> deletes = param.getDeletes();
+		//在线编辑状态
+		List<String> onlineEditing = param.getOnlineEditing();
 
+		editIds.forEach(lookIds::remove);
+		editIds.forEach(deletes::remove);
+		editIds.forEach(downloads::remove);
+		editIds.forEach(onlineEditing::remove);
+
+		downloads.forEach(lookIds::remove);
+
+
+		uploads.forEach(lookIds::remove);
+		uploads.forEach(deletes::remove);
+		uploads.forEach(downloads::remove);
+		uploads.forEach(onlineEditing::remove);
+
+		deletes.forEach(lookIds::remove);
+		deletes.forEach(downloads::remove);
+		deletes.forEach(onlineEditing::remove);
+
+
+		onlineEditing.forEach(lookIds::remove);
+		//允许编辑权限,自动享有查看权限，删除权限，下载权限，在线编辑权限
+		for (String editId : editIds) {
+			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setEditStatus(1).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0).setTypeId(type.getId()).setUserId(editId));
+		}
+        //允许下载的权限，自动享有查看权限
+		for (String downloadId : downloads) {
+			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(0).setUploadStatus(0).setTypeId(type.getId()).setUserId(downloadId));
+		}
+		//允许上传的权限，自动享有查看权限
+		for (String uploadId : uploads) {
+			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(1).setTypeId(type.getId()).setUserId(uploadId));
+		}
+		//允许删除的权限，自动享有查看权限
+		for (String deleteId : deletes) {
+			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0).setTypeId(type.getId()).setUserId(deleteId));
+		}
+		//允许在线编辑的权限，自动享有查看权限
+		for (String onlineEditingId : onlineEditing) {
+			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(1).setUploadStatus(0).setTypeId(type.getId()).setUserId(onlineEditingId));
+		}
+		//仅仅允许查看的权限
+		for (String lookId : lookIds) {
+			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDownloadStatus(0).setDeleteStatus(0).setUploadStatus(0).setOnlineEditing(0).setTypeId(type.getId()).setUserId(lookId));
+		}
 
 		return Result.ok();
 	}
@@ -99,20 +148,84 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 		sysFileType.setParentId(param.getParentId()).setGrade(param.getGrade()).setName(param.getName().trim());
 		this.updateById(sysFileType);
 
+		//编辑
 		List<String> editIds = param.getEditIds();
+		//查看
 		List<String> lookIds = param.getLookIds();
+		//上传
+		List<String> uploads = param.getUploads();
+		//下载
+		List<String> downloads = param.getDownloads();
+		//删除状态
+		List<String> deletes = param.getDeletes();
+		//在线编辑状态
+		List<String> onlineEditing = param.getOnlineEditing();
+
+
 		editIds.forEach(lookIds::remove);
+		editIds.forEach(deletes::remove);
+		editIds.forEach(downloads::remove);
+		editIds.forEach(onlineEditing::remove);
 		lookIds.addAll(editIds);
+		deletes.addAll(editIds);
+		downloads.addAll(editIds);
+		onlineEditing.addAll(editIds);
+
+		downloads.forEach(lookIds::remove);
+		lookIds.addAll(downloads);
+
+		uploads.forEach(lookIds::remove);
+		uploads.forEach(deletes::remove);
+		uploads.forEach(downloads::remove);
+		uploads.forEach(onlineEditing::remove);
+
+		lookIds.addAll(uploads);
+		deletes.addAll(uploads);
+		downloads.addAll(uploads);
+		onlineEditing.addAll(uploads);
+
+		deletes.forEach(lookIds::remove);
+		deletes.forEach(downloads::remove);
+		deletes.forEach(onlineEditing::remove);
+
+		lookIds.addAll(deletes);
+		downloads.addAll(deletes);
+		onlineEditing.addAll(deletes);
+
+
+		onlineEditing.forEach(lookIds::remove);
+		lookIds.addAll(onlineEditing);
+
 		roleService.delRole(lookIds, param.getId());
+		roleService.delRole(deletes, param.getId());
+		roleService.delRole(downloads, param.getId());
+		roleService.delRole(onlineEditing, param.getId());
+
 		SysFileRoleParam roleParam = new SysFileRoleParam();
 		//给予编辑权限
 		for (String editId : editIds) {
-			roleService.updateRole(roleParam.setEditStatus(1).setLookStatus(1).setUserId(editId).setTypeId(sysFileType.getId()));
+			roleService.updateRole(roleParam.setEditStatus(1).setLookStatus(1).setDownloadStatus(0).setDeleteStatus(0).setUploadStatus(0).setOnlineEditing(0).setUserId(editId).setTypeId(sysFileType.getId()));
+		}
+		//允许下载的权限，自动享有查看权限
+		for (String downloadId : downloads) {
+			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(0).setUploadStatus(0).setTypeId(sysFileType.getId()).setUserId(downloadId));
+		}
+		//允许上传的权限，自动享有查看权限
+		for (String uploadId : uploads) {
+			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(1).setTypeId(sysFileType.getId()).setUserId(uploadId));
+		}
+		//允许删除的权限，自动享有查看权限
+		for (String deleteId : deletes) {
+			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0).setTypeId(sysFileType.getId()).setUserId(deleteId));
+		}
+		//允许在线编辑的权限，自动享有查看权限
+		for (String onlineEditingId : onlineEditing) {
+			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(1).setUploadStatus(0).setTypeId(sysFileType.getId()).setUserId(onlineEditingId));
 		}
 		//给予查看权限
 		for (String lookId : lookIds) {
 			if (!editIds.contains(lookId)) {
-				roleService.updateRole(roleParam.setEditStatus(0).setLookStatus(1).setUserId(lookId).setTypeId(sysFileType.getId()));
+				roleService.updateRole(roleParam.setLookStatus(1).setEditStatus(0).setDownloadStatus(0).setDeleteStatus(0).setUploadStatus(0).setOnlineEditing(0).setTypeId(sysFileType.getId()));
 			}
 		}
 
@@ -174,6 +287,98 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 					});
 					if (vo.getLookUsers()==null && vo.getEditUsers()!=null){
 						vo.setLookUsers(vo.getEditUsers());
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap1 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getUploadStatus())).collect(Collectors.groupingBy(SysFileRole::getUploadStatus));
+				if (listMap1 != null && listMap1.size() > 0) {
+					//获取上传列表中数据
+					if (CollectionUtils.isNotEmpty(listMap1.get(1))) {
+						Optional.ofNullable(listMap1.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setUploadStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap2 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getDownloadStatus())).collect(Collectors.groupingBy(SysFileRole::getDownloadStatus));
+				if (listMap2 != null && listMap2.size() > 0) {
+					//获取下载列表中数据
+					if (CollectionUtils.isNotEmpty(listMap2.get(1))) {
+						Optional.ofNullable(listMap2.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setDownloadStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap3 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getDeleteStatus())).collect(Collectors.groupingBy(SysFileRole::getDeleteStatus));
+				if (listMap3 != null && listMap3.size() > 0) {
+					//获取删除列表中数据
+					if (CollectionUtils.isNotEmpty(listMap3.get(1))) {
+						Optional.ofNullable(listMap3.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setDeleteStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap4 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getOnlineEditing())).collect(Collectors.groupingBy(SysFileRole::getOnlineEditing));
+				if (listMap4 != null && listMap4.size() > 0) {
+					//获取删除列表中数据
+					if (CollectionUtils.isNotEmpty(listMap4.get(1))) {
+						Optional.ofNullable(listMap4.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setOnlineEditing(userList);
+							}
+						});
 					}
 				}
 			}

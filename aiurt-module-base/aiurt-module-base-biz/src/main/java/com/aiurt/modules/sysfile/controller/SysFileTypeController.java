@@ -74,15 +74,15 @@ public class SysFileTypeController {
 	@ApiOperation(value = "文档类型表-添加分类文档", notes = "文档类型表-添加分类文档")
 	@PostMapping(value = "/add")
 	public Result<?> add(HttpServletRequest req, @RequestBody @Validated SysFileTypeParam param) {
-		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		String userId = loginUser.getId();
-		List<String> editIds = param.getEditIds();
-		if (CollectionUtils.isNotEmpty(editIds)){
-			if (!editIds.contains(userId)) {
-				editIds.add(userId);
-			}
-		}
-		param.setEditIds(editIds);
+//		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+//		String userId = loginUser.getId();
+//		List<String> editIds = param.getEditIds();
+//		if (CollectionUtils.isNotEmpty(editIds)){
+//			if (!editIds.contains(userId)) {
+//				editIds.add(userId);
+//			}
+//		}
+//		param.setEditIds(editIds);
 		sysFileTypeService.add(req, param);
 		return Result.ok("添加成功！");
 	}

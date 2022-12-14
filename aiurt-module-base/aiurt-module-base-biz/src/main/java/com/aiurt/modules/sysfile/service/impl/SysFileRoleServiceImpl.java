@@ -47,6 +47,10 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 		fileRole.setDelFlag(0).setTypeId(param.getTypeId()).setUserId(param.getUserId());
 		fileRole.setLookStatus(1);
 		fileRole.setEditStatus(Optional.ofNullable(param.getEditStatus()).orElse(0));
+		fileRole.setUploadStatus(Optional.ofNullable(param.getUploadStatus()).orElse(0));
+		fileRole.setDownloadStatus(Optional.ofNullable(param.getDownloadStatus()).orElse(0));
+		fileRole.setDeleteStatus(Optional.ofNullable(param.getDeleteStatus()).orElse(0));
+		fileRole.setOnlineEditing(Optional.ofNullable(param.getOnlineEditing()).orElse(0));
 		if (!this.save(fileRole)) {
 			throw new AiurtBootException("权限设置未成功,请稍后重试");
 		}
@@ -93,7 +97,7 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 						list.remove(r.getId());
 					});
 					SysFileRole role = new SysFileRole();
-					role.setDelFlag(0).setEditStatus(0).setLookStatus(1).setUserId(userId);
+					role.setDelFlag(0).setEditStatus(0).setLookStatus(1).setDownloadStatus(0).setDeleteStatus(0).setUploadStatus(0).setOnlineEditing(0).setUserId(userId);
 					for (Long typeId : list) {
 						role.setId(null).setTypeId(typeId);
 						if (!this.save(role)) {
@@ -103,7 +107,7 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 				}
 			} else {
 				SysFileRole role = new SysFileRole();
-				role.setDelFlag(0).setEditStatus(0).setLookStatus(1).setUserId(userId);
+				role.setDelFlag(0).setEditStatus(0).setLookStatus(1).setDownloadStatus(0).setDeleteStatus(0).setUploadStatus(0).setOnlineEditing(0).setUserId(userId);
 				for (Long typeId : list) {
 					role.setId(null).setTypeId(typeId);
 					if (!this.save(role)) {

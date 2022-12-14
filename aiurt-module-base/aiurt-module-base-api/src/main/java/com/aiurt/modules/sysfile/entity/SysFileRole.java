@@ -34,6 +34,12 @@ public class SysFileRole {
 	@ApiModelProperty(value = "主键id")
 	private Long id;
 	/**
+	 * 文件id
+	 */
+	@Excel(name = "文件id", width = 15)
+	@ApiModelProperty(value = "文件id")
+	private Long fileId;
+	/**
 	 * 类型id
 	 */
 	@Excel(name = "类型id", width = 15)
@@ -57,6 +63,30 @@ public class SysFileRole {
 	@Excel(name = "编辑状态", width = 15)
 	@ApiModelProperty(value = "编辑状态")
 	private Integer editStatus;
+	/**
+	 * 上传状态
+	 */
+	@Excel(name = "上传状态", width = 15)
+	@ApiModelProperty(value = "上传状态")
+	private Integer uploadStatus;
+	/**
+	 * 下载状态
+	 */
+	@Excel(name = "下载状态", width = 15)
+	@ApiModelProperty(value = "下载状态")
+	private Integer downloadStatus;
+	/**
+	 * 删除状态
+	 */
+	@Excel(name = "删除状态", width = 15)
+	@ApiModelProperty(value = "删除状态")
+	private Integer deleteStatus;
+	/**
+	 * 在线编辑状态
+	 */
+	@Excel(name = "在线编辑状态", width = 15)
+	@ApiModelProperty(value = "在线编辑状态")
+	private Integer onlineEditing;
 	/**
 	 * 删除状态
 	 */

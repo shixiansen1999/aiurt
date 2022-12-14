@@ -25,4 +25,16 @@ public class SysFileTypeDetailVO extends SysFileType implements Serializable {
 
 	@ApiModelProperty("可编辑")
 	private Set<SimpUserVO> editUsers;
+
+	@ApiModelProperty("可上传")
+	private Set<SimpUserVO> uploadStatus;
+
+	@ApiModelProperty("可下载")
+	private Set<SimpUserVO> downloadStatus;
+
+	@ApiModelProperty("可删除")
+	private Set<SimpUserVO> deleteStatus;
+
+	@ApiModelProperty("可在线编辑")
+	private Set<SimpUserVO> onlineEditing;
 }
