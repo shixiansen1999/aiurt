@@ -5,9 +5,11 @@ import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -85,4 +87,24 @@ public interface IEmergencyTeamService extends IService<EmergencyTeam> {
      * @return
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
+    /**
+     * 模板下载
+     * @param response
+     * @throws IOException
+     */
+    void exportTemplateXls(HttpServletResponse response) throws IOException;
+    /**
+     * 应急队伍导出
+     * @param request
+     * @param emergencyTeamDTO
+     * @return
+     */
+    ModelAndView exportTeamXls(HttpServletRequest request, EmergencyTeamDTO emergencyTeamDTO);
+    /**
+     * 应急队伍人员导出excel
+     * @param request
+     * @param id
+     * @return
+     */
+    ModelAndView exportCrewXls(HttpServletRequest request, String id);
 }

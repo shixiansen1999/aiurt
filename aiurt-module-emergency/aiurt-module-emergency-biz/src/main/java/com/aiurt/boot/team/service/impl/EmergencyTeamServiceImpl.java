@@ -21,11 +21,13 @@ import com.aiurt.boot.team.service.IEmergencyCrewService;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
@@ -35,19 +37,22 @@ import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -565,6 +570,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         teamMap.put("workAreaName", team.getWorkAreaName());
         teamMap.put("managerName", team.getManagerName());
         teamMap.put("managerPhone", team.getManagerPhone());
+        teamMap.put("mistake", team.getMistake());
         teamMapList.add(teamMap);
         errorMap.put("teamMapList", teamMapList);
 
@@ -576,6 +582,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             crewMap.put("realName", crewModel.getRealName());
             crewMap.put("userPhone", crewModel.getUserPhone());
             crewMap.put("remark", crewModel.getRemark());
+            crewMap.put("mistake", crewModel.getMistake());
         }
         crewMapList.add(teamMap);
         errorMap.put("crewMapList", crewMapList);
@@ -595,5 +602,109 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             e.printStackTrace();
         }
         return iSysBaseAPI.importReturnRes(errorLines, successLines, errorMessage,true,url);
+    }
+
+
+    @Override
+    public void exportTemplateXls(HttpServletResponse response) throws IOException {
+        //获取输入流，原始模板位置
+        Resource resource = new ClassPathResource("");
+        InputStream resourceAsStream = resource.getInputStream();
+
+        //2.获取临时文件
+        File fileTemp= new File("");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+        Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+        String fileName = "应急队伍导入模板.xlsx";
+
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename="+"应急队伍导入模板.xlsx");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public ModelAndView exportTeamXls(HttpServletRequest request, EmergencyTeamDTO emergencyTeamDTO) {
+        IPage<EmergencyTeam> emergencyTeamIPage = this.queryPageList(emergencyTeamDTO, null, null);
+        List<EmergencyTeam> records = emergencyTeamIPage.getRecords();
+        List<EmergencyTeam> exportList = null;
+        // 过滤选中数据
+        String selections = request.getParameter("selections");
+        if (oConvertUtils.isNotEmpty(selections)) {
+            List<String> selectionList = Arrays.asList(selections.split(","));
+            exportList = records.stream().filter(item -> selectionList.contains(item.getId())).collect(Collectors.toList());
+        } else {
+            exportList = records;
+        }
+
+        List<TeamModel> teamModels = new ArrayList<>();
+        if (CollUtil.isNotEmpty(exportList)) {
+            int sort = 1;
+            for (EmergencyTeam record : exportList) {
+                TeamModel teamModel = new TeamModel();
+                BeanUtil.copyProperties(record,teamModel);
+                teamModel.setSort(Convert.toStr(sort));
+                teamModels.add(teamModel);
+                sort++;
+            }
+        }
+        String title = "应急队伍台账";
+        // Step.3 AutoPoi 导出Excel
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        //此处设置的filename无效 ,前端会重更新设置一下
+        mv.addObject(NormalExcelConstants.FILE_NAME, title);
+        mv.addObject(NormalExcelConstants.CLASS, TeamModel.class);
+        ExportParams exportParams=new ExportParams(title, title);
+        exportParams.setImageBasePath(upLoadPath);
+        mv.addObject(NormalExcelConstants.PARAMS,exportParams);
+        mv.addObject(NormalExcelConstants.DATA_LIST, teamModels);
+        return mv;
+    }
+
+    @Override
+    public ModelAndView exportCrewXls(HttpServletRequest request, String id) {
+        EmergencyTeam emergencyTeam = this.getById(id);
+        EmergencyTeam team = this.getCrew(emergencyTeam);
+        List<EmergencyCrewVO> emergencyCrewVOList = team.getEmergencyCrewVOList();
+        List<CrewModel> crewModels = new ArrayList<>();
+        if (CollUtil.isNotEmpty(emergencyCrewVOList)) {
+            int sort = 1;
+            for (EmergencyCrewVO record : emergencyCrewVOList) {
+                CrewModel crewModel = new CrewModel();
+                BeanUtil.copyProperties(record,crewModel);
+                crewModel.setSort(Convert.toStr(sort));
+                crewModel.setMajorName(emergencyTeam.getMajorName());
+                crewModel.setLineStation(emergencyTeam.getLineName()+emergencyTeam.getStationName());
+                crewModels.add(crewModel);
+                sort++;
+            }
+        }
+        String title = emergencyTeam.getOrgName() + emergencyTeam.getEmergencyTeamname() + "成员明细表";
+        // Step.3 AutoPoi 导出Excel
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        //此处设置的filename无效 ,前端会重更新设置一下
+        mv.addObject(NormalExcelConstants.FILE_NAME, title);
+        mv.addObject(NormalExcelConstants.CLASS, CrewModel.class);
+        ExportParams exportParams=new ExportParams(title, title);
+        exportParams.setImageBasePath(upLoadPath);
+        mv.addObject(NormalExcelConstants.PARAMS,exportParams);
+        mv.addObject(NormalExcelConstants.DATA_LIST, crewModels);
+        return mv;
     }
 }

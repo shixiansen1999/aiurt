@@ -9,6 +9,9 @@ import org.jeecgframework.poi.excel.annotation.Excel;
  */
 @Data
 public class CrewModel {
+    @Excel(name = "序号", width = 15)
+    private String sort;
+
     /**所属班次*/
     @Excel(name = "所属班次", width = 15)
     @ApiModelProperty(value = "所属班次")
@@ -28,6 +31,14 @@ public class CrewModel {
     @Excel(name = "联系电话", width = 15)
     @ApiModelProperty(value = "联系电话")
     private String userPhone;
+    /**所属专业*/
+    @Excel(name = "所属专业", width = 15)
+    @ApiModelProperty(value = "所属专业")
+    private String majorName;
+    /**线路站点*/
+    @Excel(name = "线路站点", width = 15)
+    @ApiModelProperty(value = "线路站点")
+    private String lineStation;
     /**备注*/
     @Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")

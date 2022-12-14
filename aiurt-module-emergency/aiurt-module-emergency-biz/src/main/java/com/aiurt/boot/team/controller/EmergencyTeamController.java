@@ -29,6 +29,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -169,17 +170,41 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	}
 
     /**
-    * 导出excel
+    * 应急队伍台账导出excel
     *
     * @param request
-    * @param emergencyTeam
+    * @param emergencyTeamDTO
     */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, EmergencyTeam emergencyTeam) {
-        return super.exportXls(request, emergencyTeam, EmergencyTeam.class, "emergency_team");
+    @RequestMapping(value = "/exportTeamXls")
+    public ModelAndView exportTeamXls(HttpServletRequest request, EmergencyTeamDTO emergencyTeamDTO) {
+        return emergencyTeamService.exportTeamXls(request, emergencyTeamDTO);
     }
 
-    /**
+	/**
+	 * 应急队伍人员导出excel
+	 *
+	 * @param request
+	 * @param id
+	 */
+	@RequestMapping(value = "/exportCrewXls")
+	public ModelAndView exportCrewXls(HttpServletRequest request, String id) {
+		return emergencyTeamService.exportCrewXls(request, id);
+	}
+
+
+	/**
+	 * 导出excel
+	 *
+	 */
+	@AutoLog(value = "应急队伍模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "")
+	@ApiOperation(value="应急队伍模板下载", notes="应急队伍模板下载")
+	@RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
+	public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		emergencyTeamService.exportTemplateXls(response);
+	}
+
+
+	/**
       * 通过excel导入数据
     *
     * @param request

@@ -926,6 +926,13 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
         Map resultMap = new HashMap<String, List>();
 
+        //获取巡检内容
+        String userPatrolTask = patrolApi.getUserTask();
+        //获取检修内容
+        String inspectionTaskDevice = inspectionApi.getInspectionTaskDevice();
+        //获取故障内容
+        String faultContent = dailyFaultApi.getFaultTask();
+
 /*
         List<PatrolTaskVO> patrolTaskVOS = patrolTaskMapper.selectCompletedPatrolByOrgIdAndTime(orgId, startTime, endTime);
         resultMap.put("patrol", patrolTaskVOS);
