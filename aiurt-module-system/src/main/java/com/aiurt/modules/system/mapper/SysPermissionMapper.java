@@ -60,5 +60,4 @@ public interface SysPermissionMapper extends BaseMapper<SysPermission> {
 	public int queryCountByUsername(@Param("username") String username, @Param("permission") SysPermission sysPermission);
 
     List<SysPermissionTree> getAllSystemSubmenu();
-
 }

@@ -18,9 +18,7 @@
 	    <result column="keep_alive" property="keepAlive"/>
 	    <result column="is_leaf" property="leaf"/>
 	</resultMap>
-
-
-	<select id="queryListByParentId" parameterType="Object"  resultMap="TreeModel">
+    <select id="queryListByParentId" parameterType="Object"  resultMap="TreeModel">
 		   SELECT
                    id
                    ,parent_id
@@ -110,7 +108,7 @@
 		) temp
 	</select>
     <select id="getAllSystemSubmenu" resultType="com.aiurt.modules.system.model.SysPermissionTree">
-     select id,id as `key`,id as `value`,parent_id as parentId,name,hidden from sys_permission where menu_type = 1 and del_flag = 0
+     select id,id as `key`,id as `value`,parent_id as parentId,name,hidden,is_route as route from sys_permission where menu_type = 1 and del_flag = 0
 	</select>
 
 

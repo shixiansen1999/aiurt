@@ -289,6 +289,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
         if (CollUtil.isEmpty(arr)) {
             throw new AiurtBootException("查询不到相关菜单数据");
         }
+
         this.updateBatchById(arr);
     }
 
@@ -301,16 +302,17 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 
     /**
      * 递归查询所有子节点
+     *
      * @param pidVal
      * @return
      */
-    private List<SysPermissionTree> getChildrens(String pidVal,List<SysPermissionTree> all){
+    private List<SysPermissionTree> getChildrens(String pidVal, List<SysPermissionTree> all) {
 
         List<SysPermissionTree> children = all.stream().filter(treeEntity -> {
             return treeEntity.getParentId().equals(pidVal);
         }).map(treeEntity -> {
             //1、找到子菜单
-            treeEntity.setChildren(ObjectUtil.isNotEmpty(getChildrens(treeEntity.getId(), all))?getChildrens(treeEntity.getId(), all):new ArrayList<>());
+            treeEntity.setChildren(ObjectUtil.isNotEmpty(getChildrens(treeEntity.getId(), all)) ? getChildrens(treeEntity.getId(), all) : new ArrayList<>());
             return treeEntity;
         }).collect(Collectors.toList());
         return children;
