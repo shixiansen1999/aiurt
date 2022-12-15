@@ -88,9 +88,10 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 				.collect(Collectors.toList());
 		LambdaQueryWrapper<CsSafetyAttention> queryWrapper = new LambdaQueryWrapper();
 		Set<String> userRoleSet = sysBaseAPI.getUserRoleSet(sysUser.getUsername());
+		queryWrapper.eq(CsSafetyAttention::getDelFlag,0);
 		List<String> systemList = list1.stream().map(s-> s.getSystemCode()).collect(Collectors.toList());
 		if (StrUtil.isNotEmpty(csSafetyAttention.getMajorCode())){
-		    queryWrapper.eq(CsSafetyAttention::getMajorCode,csSafetyAttention.getMajorCode());
+			queryWrapper.eq(CsSafetyAttention::getMajorCode,csSafetyAttention.getMajorCode());
 			if (CollectionUtil.isNotEmpty(userRoleSet)){
 				if (!userRoleSet.contains("admin")){
 					queryWrapper.in(CsSafetyAttention::getSystemCode,systemList);

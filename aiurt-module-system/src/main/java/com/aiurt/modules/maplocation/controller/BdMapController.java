@@ -3,12 +3,7 @@ package com.aiurt.modules.maplocation.controller;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.weeklyplan.entity.BdLine;
-import com.aiurt.boot.weeklyplan.entity.BdStation;
-import com.aiurt.boot.weeklyplan.mapper.BdLineMapper;
-import com.aiurt.boot.weeklyplan.mapper.BdStationMapper;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.modules.maplocation.constant.BdMapConstant;
 import com.aiurt.modules.maplocation.dto.*;
 import com.aiurt.modules.maplocation.service.IBdMapListService;
 import com.aiurt.modules.position.entity.CsLine;
@@ -27,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -131,7 +125,7 @@ public class BdMapController {
     }
 
     /**
-     * 查询3、4、8号线下面的所有站点的位置信息
+     * 查询线路下面的所有站点的位置信息
      *
      * @param
      * @return
