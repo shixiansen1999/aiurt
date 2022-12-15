@@ -109,6 +109,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 		for (String editId : editIds) {
 			if (!stringSet.contains(editId)){
 				roleService.addRole(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setEditStatus(1).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0).setTypeId(type.getId()).setUserId(editId));
+				stringSet.add(editId);
 			}else {
 				LambdaQueryWrapper<SysFileRole> queryWrapper = new LambdaQueryWrapper<>();
 				queryWrapper.eq(SysFileRole::getUserId,editId).eq(SysFileRole::getTypeId,type.getId()).eq(SysFileRole::getDelFlag,0);
@@ -121,24 +122,28 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 		for (String deleteId : deletes) {
 			if (!stringSet.contains(deleteId)) {
 				roleService.addRole(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setEditStatus(0).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0).setTypeId(type.getId()).setUserId(deleteId));
+				stringSet.add(deleteId);
 			}
 		}
 		//允许在线编辑的权限
 		for (String onlineEditingId : onlineEditing) {
 			if (!stringSet.contains(onlineEditingId)){
 				roleService.addRole(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(1).setUploadStatus(0).setTypeId(type.getId()).setUserId(onlineEditingId));
+				stringSet.add(onlineEditingId);
 			}
 		}
 		//允许下载的权限
 		for (String downloadId : downloads) {
 			if (!stringSet.contains(downloadId)) {
 				roleService.addRole(new SysFileRoleParam().setLookStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(0).setUploadStatus(0).setTypeId(type.getId()).setUserId(downloadId));
+				stringSet.add(downloadId);
 			}
 		}
 		//仅仅允许查看的权限
 		for (String lookId : lookIds) {
 			if (!stringSet.contains(lookId)) {
 				roleService.addRole(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDownloadStatus(0).setDeleteStatus(0).setUploadStatus(0).setOnlineEditing(0).setTypeId(type.getId()).setUserId(lookId));
+				stringSet.add(lookId);
 			}
 		}
 		return Result.ok();
