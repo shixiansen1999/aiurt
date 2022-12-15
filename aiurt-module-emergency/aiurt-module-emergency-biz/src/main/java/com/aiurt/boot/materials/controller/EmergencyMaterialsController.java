@@ -313,7 +313,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		if (StrUtil.isNotBlank(emergencyMaterials.getCategoryCode())){
 			//根据分类编码查询分类名称
 			LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
-			queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,emergencyMaterials.getCategoryCode());
+			queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,emergencyMaterials.getCategoryCode()).eq(EmergencyMaterialsCategory::getDelFlag,0);
 			EmergencyMaterialsCategory one = emergencyMaterialsCategoryService.getOne(queryWrapper, true);
 			emergencyMaterials.setCategoryName(one.getCategoryName());
 		}
