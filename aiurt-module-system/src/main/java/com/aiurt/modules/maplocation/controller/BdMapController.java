@@ -130,8 +130,8 @@ public class BdMapController {
      * @param
      * @return
      */
-    @AutoLog(value = "查询3、4、8号线下面的所有站点的位置信息")
-    @ApiOperation(value = "查询3、4、8号线下面的所有站点的位置信息", notes = "查询3、4、8号线下面的所有站点的位置信息")
+    @AutoLog(value = "线路下面的所有站点的位置信息")
+    @ApiOperation(value = "线路下面的所有站点的位置信息", notes = "查询3、4、8号线下面的所有站点的位置信息")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = StationDTO.class),
     })
@@ -139,7 +139,6 @@ public class BdMapController {
     public Result<?> getStationPosition() {
         List<StationDTO> stationList = new ArrayList<>();
         LambdaQueryWrapper<CsLine> lineLambdaQueryWrapper = new LambdaQueryWrapper<CsLine>();
-        lineLambdaQueryWrapper.in(CsLine::getLineName, Arrays.asList(BdMapConstant.THREELINE, BdMapConstant.FOURLINE, BdMapConstant.EIGHTLINE));
         lineLambdaQueryWrapper.eq(CsLine::getDelFlag,0);
         List<CsLine> bdLineList = bdLineMapper.selectList(lineLambdaQueryWrapper);
         if (CollUtil.isNotEmpty(bdLineList)) {
