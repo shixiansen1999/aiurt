@@ -2,16 +2,14 @@ package com.aiurt.modules.sysfile.controller;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.sysfile.constant.PatrolConstant;
 import com.aiurt.modules.sysfile.entity.SysFile;
+import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
 import com.aiurt.modules.sysfile.param.FileAppParam;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
 import com.aiurt.modules.sysfile.service.ISysFileRoleService;
 import com.aiurt.modules.sysfile.service.ISysFileService;
 import com.aiurt.modules.sysfile.service.ISysFileTypeService;
-import com.aiurt.modules.sysfile.vo.FIlePlanVO;
-import com.aiurt.modules.sysfile.vo.FileAppVO;
-import com.aiurt.modules.sysfile.vo.SysFileVO;
-import com.aiurt.modules.sysfile.vo.TypeNameVO;
+import com.aiurt.modules.sysfile.vo.*;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
@@ -175,7 +173,8 @@ public class SysFileController {
 			if (loginUser != null) {
 					vo.setCreateByName(loginUser.getRealname());
 				}
-
+			Result<SysFileTypeDetailVO> detail = sysFileService.detail(request, e.getId());
+			vo.setDetail(detail);
 			records.add(vo);
 		});
 		pages.setRecords(records);
@@ -244,7 +243,7 @@ public class SysFileController {
 	@AutoLog(value = "文档表-添加")
 	@ApiOperation(value = "文档表-添加", notes = "文档表-添加")
 	@PostMapping(value = "/add")
-	public Result<SysFile> add(@RequestBody SysFile sysFile) {
+	public Result<SysFile> add(HttpServletRequest req,@RequestBody SysFile sysFile) {
 		Result<SysFile> result = new Result<SysFile>();
 		if (StringUtils.isNotBlank(sysFile.getName())) {
 			String name = sysFile.getName();
@@ -288,6 +287,7 @@ public class SysFileController {
 		sysFile.setFileSize(size);
 		try {
 			sysFileService.save(sysFile);
+			sysFileService.add(req,sysFile);
 			result.success("添加成功！");
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -305,7 +305,7 @@ public class SysFileController {
 	@AutoLog(value = "文档表-编辑")
 	@ApiOperation(value = "文档表-编辑", notes = "文档表-编辑")
 	@PutMapping(value = "/edit")
-	public Result<SysFile> edit(@RequestBody SysFile sysFile) {
+	public Result<SysFile> edit(HttpServletRequest req,@RequestBody SysFile sysFile) {
 		Result<SysFile> result = new Result<SysFile>();
 		SysFile sysFileEntity = sysFileService.getById(sysFile.getId());
 		if (sysFileEntity == null) {
@@ -352,6 +352,11 @@ public class SysFileController {
 			}
 			try {
 				sysFileService.updateById(sysFile);
+				LambdaQueryWrapper<SysFileRole> queryWrapper = new LambdaQueryWrapper<>();
+				queryWrapper.eq(SysFileRole::getFileId,sysFile.getId());
+				List<SysFileRole> sysFileRoles = iSysFileRoleService.getBaseMapper().selectList(queryWrapper);
+				iSysFileRoleService.removeByIds(sysFileRoles);
+				sysFileService.add(req,sysFile);
 				result.success("修改成功！");
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);

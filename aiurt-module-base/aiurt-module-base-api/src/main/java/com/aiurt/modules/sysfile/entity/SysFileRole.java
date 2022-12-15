@@ -82,6 +82,12 @@ public class SysFileRole {
 	@ApiModelProperty(value = "删除状态")
 	private Integer deleteStatus;
 	/**
+	 * 重命名状态
+	 */
+	@Excel(name = "重命名状态", width = 15)
+	@ApiModelProperty(value = "重命名状态")
+	private Integer renameStatus;
+	/**
 	 * 在线编辑状态
 	 */
 	@Excel(name = "在线编辑状态", width = 15)

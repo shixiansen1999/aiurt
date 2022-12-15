@@ -21,6 +21,9 @@ public class SysFileRoleParam implements Serializable {
 	@ApiModelProperty("类型id")
 	private Long typeId;
 
+	@ApiModelProperty("类型id")
+	private Long fileId;
+
 	@ApiModelProperty("用户id")
 	private String userId;
 
@@ -38,6 +41,9 @@ public class SysFileRoleParam implements Serializable {
 
 	@ApiModelProperty("删除状态 0:不允许 1:允许")
 	private Integer deleteStatus;
+
+	@ApiModelProperty("重命名状态 0:不允许 1:允许")
+	private Integer renameStatus;
 
 	@ApiModelProperty("在线编辑状态 0:不允许 1:允许")
 	private Integer onlineEditing;

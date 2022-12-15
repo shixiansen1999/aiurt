@@ -35,6 +35,9 @@ public class SysFileTypeDetailVO extends SysFileType implements Serializable {
 	@ApiModelProperty("可删除")
 	private Set<SimpUserVO> deleteStatus;
 
+	@ApiModelProperty("可重命名")
+	private Set<SimpUserVO> renameStatus;
+
 	@ApiModelProperty("可在线编辑")
 	private Set<SimpUserVO> onlineEditing;
 }
