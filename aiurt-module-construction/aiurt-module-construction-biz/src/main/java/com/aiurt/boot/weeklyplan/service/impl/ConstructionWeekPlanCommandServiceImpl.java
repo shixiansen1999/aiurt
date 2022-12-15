@@ -319,17 +319,17 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             // 审核中
             command.setFormStatus(ConstructionConstant.FORM_STATUS_2);
         } else if (5 == states) {
-            if (ConstructionConstant.PLAN_TYPE_1.equals(command.getFormStatus())) {
+            if (ConstructionConstant.PLAN_TYPE_1.equals(command.getPlanChange())) {
                 command.setDispatchId(loginUser.getId());
-            } else if (ConstructionConstant.PLAN_TYPE_2.equals(command.getFormStatus())
-                    || ConstructionConstant.PLAN_TYPE_3.equals(command.getFormStatus())) {
+            } else if (ConstructionConstant.PLAN_TYPE_2.equals(command.getPlanChange())
+                    || ConstructionConstant.PLAN_TYPE_3.equals(command.getPlanChange())) {
                 command.setManagerId(loginUser.getId());
             }
             // 已通过
             command.setFormStatus(ConstructionConstant.FORM_STATUS_5);
         } else if (6 == states) {
-            if (ConstructionConstant.PLAN_TYPE_2.equals(command.getFormStatus())
-                    || ConstructionConstant.PLAN_TYPE_3.equals(command.getFormStatus())) {
+            if (ConstructionConstant.PLAN_TYPE_2.equals(command.getPlanChange())
+                    || ConstructionConstant.PLAN_TYPE_3.equals(command.getPlanChange())) {
                 command.setDispatchId(loginUser.getId());
             }
             // 分部主任审批
