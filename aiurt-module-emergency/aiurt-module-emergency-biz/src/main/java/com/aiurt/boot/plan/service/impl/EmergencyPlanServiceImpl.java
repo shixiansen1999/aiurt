@@ -1,15 +1,15 @@
 package com.aiurt.boot.plan.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.ExportParams;
+import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
-import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
-import com.aiurt.boot.plan.dto.EmergencyPlanQueryDTO;
-import com.aiurt.boot.plan.dto.EmergencyPlanRecordDTO;
-import com.aiurt.boot.plan.dto.EmergencyPlanRecordDepartDTO;
+import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.plan.service.*;
@@ -32,9 +32,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import liquibase.pro.packaged.S;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.ComboModel;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
@@ -46,6 +46,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -581,4 +586,62 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         }
         this.updateById(emergencyPlan);
     }
+
+    @Override
+    public void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanDTO emergencyPlanDto) {
+        // 封装数据
+        List<EmergencyPlanExcelDTO> pageList = this.getinspectionStrategyList(emergencyPlanDto);
+
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String title = "应急预案数据";
+        ExportParams exportParams = new ExportParams(title + "报表", "导出人:" + sysUser.getRealname(), ExcelType.XSSF);
+        //调用ExcelExportUtil.exportExcel方法生成workbook
+        Workbook wb = ExcelExportUtil.exportExcel(exportParams, EmergencyPlanExcelDTO.class, pageList);
+        String fileName = "应急预案数据";
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            //xlsx格式设置
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            wb.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+    /**
+     * 获取excel表格数据
+     *
+     * @param emergencyPlanDto
+     * @return
+     */
+    private List<EmergencyPlanExcelDTO> getinspectionStrategyList(EmergencyPlanDTO emergencyPlanDto) {
+
+        List<EmergencyPlanExcelDTO> result =emergencyPlanMapper.selectListNoPage(emergencyPlanDto);
+        if (CollUtil.isEmpty(result)) {
+            return result;
+        }
+        // 处置程序
+        for (EmergencyPlanExcelDTO emergencyPlanExcelDTO : result) {
+            if (ObjectUtil.isEmpty(emergencyPlanExcelDTO)) {
+                continue;
+            }
+            List<EmergencyPlanDisposalProcedureExcelDTO> planDisposalProcedureList = emergencyPlanMapper.selectPlanDisposalProcedureById(emergencyPlanExcelDTO.getId());
+            if (CollUtil.isEmpty(planDisposalProcedureList)) {
+                continue;
+            }
+            List<EmergencyPlanMaterialsExcelDTO> planMaterialsList = emergencyPlanMapper.selectPlanMaterialsById(emergencyPlanExcelDTO.getId());
+            if (CollUtil.isEmpty(planMaterialsList)) {
+                continue;
+            }
+            emergencyPlanExcelDTO.setPlanDisposalProcedureList(planDisposalProcedureList);
+            emergencyPlanExcelDTO.setPlanMaterialsDTOList(planMaterialsList);
+        }
+        return result;
+    }
+
 }

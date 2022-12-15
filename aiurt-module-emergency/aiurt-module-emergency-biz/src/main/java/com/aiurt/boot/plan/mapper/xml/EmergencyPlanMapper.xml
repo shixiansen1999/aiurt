@@ -31,4 +31,66 @@
         </if>
         order by ep.emergency_plan_status asc
     </select>
+
+    <select id="selectListNoPage" resultType="com.aiurt.boot.plan.dto.EmergencyPlanExcelDTO">
+        select ep.id as id,
+               ep.emergency_plan_type as emergencyPlanType,
+               ep.emergency_plan_name as emergencyPlanName ,
+               ep.key_word as keyWord,
+               ep.emergency_plan_version as emergencyPlanVersion,
+               ep.status as status,
+               sd.depart_name as orgName,
+               su.realname as userName,
+               ep.emergency_plan_status as emergencyPlanStatus
+        from emergency_plan ep
+        left join sys_depart sd on ep.org_code = sd.org_code
+        left join sys_user su on ep.create_by = su.username
+        where ep.del_flag = 0
+        <if test="condition.emergencyPlanName != null and condition.emergencyPlanName != ''">
+            and ep.emergency_plan_name like concat('%', #{condition.emergencyPlanName}, '%')
+        </if>
+        <if test="condition.emergencyPlanType != null and condition.emergencyPlanType != ''">
+            and ep.emergency_plan_type like concat('%', #{condition.emergencyPlanType}, '%')
+        </if>
+        <if test="condition.status != null">
+            and ep.status = #{condition.status}
+        </if>
+        order by ep.emergency_plan_status asc
+    </select>
+
+    <select id="selectPlanDisposalProcedureById" resultType="com.aiurt.boot.plan.dto.EmergencyPlanDisposalProcedureExcelDTO">
+        select epdp.id as id,
+               epdp.emergency_plan_id as emergencyPlanId,
+               epdp.disposal_procedure_content as disposalProcedureContent,
+               sr.role_Name as roleName,
+               sd.depart_name as orgName
+        from emergency_plan_disposal_procedure epdp
+        left join sys_depart sd on epdp.org_code = sd.org_code
+        left join sys_role sr on epdp.role_id = sr.id
+        where epdp.del_flag = 0
+        <if test="id != null and id != ''">
+            and epdp.emergency_plan_id = #{id}
+        </if>
+        order by epdp.create_time asc
+    </select>
+    <select id="selectPlanMaterialsById" resultType="com.aiurt.boot.plan.dto.EmergencyPlanMaterialsExcelDTO">
+        select
+        t.id as id,
+        t.emergency_plan_id as emergencyPlanId,
+        t1.materials_code as materialsCode,
+        t1.materials_name as materialsName,
+        t2.category_code as categoryCode,
+        t2.category_name as categoryName,
+        t.materials_number as materialsNumber,
+        t1.unit as unit
+        FROM
+        emergency_plan_materials t
+        LEFT JOIN emergency_materials t1 on t.materials_code = t1.materials_code
+        LEFT JOIN emergency_materials_category t2 ON t1.category_code = t2.category_code
+        where t.del_flag = 0
+        <if test="id != null and id != ''">
+            and t.emergency_plan_id = #{id}
+        </if>
+        order by t.create_time asc
+    </select>
 </mapper>

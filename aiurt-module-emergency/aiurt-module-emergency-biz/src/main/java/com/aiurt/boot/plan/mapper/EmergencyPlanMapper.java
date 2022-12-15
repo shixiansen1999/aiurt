@@ -1,7 +1,6 @@
 package com.aiurt.boot.plan.mapper;
 
-import com.aiurt.boot.plan.dto.EmergencyPlanQueryDTO;
-import com.aiurt.boot.plan.dto.EmergencyPlanRecordQueryDTO;
+import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.plan.vo.EmergencyPlanRecordVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -21,4 +20,21 @@ public interface EmergencyPlanMapper extends BaseMapper<EmergencyPlan> {
 
     IPage<EmergencyPlan> queryPageList(@Param("page") Page<EmergencyPlan> page
             , @Param("condition") EmergencyPlanQueryDTO emergencyPlanQueryDTO, @Param("orgCodes") List<String> orgCodes);
+
+    /**
+     * 按条件查询应急预案
+     * @param emergencyPlanDto
+     * @return
+     */
+    List<EmergencyPlanExcelDTO> selectListNoPage(@Param("condition") EmergencyPlanDTO emergencyPlanDto);
+
+    /**
+     * 按条件查询预案处置程序
+     * @param id
+     * @return
+     */
+    List<EmergencyPlanDisposalProcedureExcelDTO> selectPlanDisposalProcedureById(String id);
+
+    List<EmergencyPlanMaterialsExcelDTO> selectPlanMaterialsById(String id);
+
 }
