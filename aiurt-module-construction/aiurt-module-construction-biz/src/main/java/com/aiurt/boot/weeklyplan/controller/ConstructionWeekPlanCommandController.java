@@ -172,7 +172,7 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
     @ApiOperation(value = "下载施工周计划导入模板", notes = "下载施工周计划导入模板")
     @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
     public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
-        ClassPathResource classPathResource =  new ClassPathResource("templates/ConstructionWeekPlanCommand.xlsx");
+        ClassPathResource classPathResource =  new ClassPathResource("templates/constructionWeekPlanCommand.xlsx");
         InputStream bis = classPathResource.getInputStream();
         BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
         int len = 0;

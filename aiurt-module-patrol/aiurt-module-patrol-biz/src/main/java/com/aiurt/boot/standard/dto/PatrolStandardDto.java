@@ -43,4 +43,6 @@ public class PatrolStandardDto extends PatrolStandard {
     @ApiModelProperty(value = "设备集合")
     List<Device> devicesSs;
     String number1;
+    @TableField(exist = false)
+    private java.lang.String createByName;
 }
