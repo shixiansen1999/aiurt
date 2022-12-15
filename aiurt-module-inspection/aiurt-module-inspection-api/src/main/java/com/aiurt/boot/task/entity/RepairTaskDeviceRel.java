@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -118,4 +119,11 @@ public class RepairTaskDeviceRel implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
+
+    @ApiModelProperty(value = "检修任务编号")
+    @TableField(exist = false)
+    private java.lang.String taskCode;
+    @ApiModelProperty(value = "检修任务周数")
+    @TableField(exist = false)
+    private Integer weeks;
 }

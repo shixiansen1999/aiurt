@@ -119,7 +119,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         if (depot.getStatus()==1){
             depot.setSubmitTime(new Date());
         }
-        depot.setSubmitTime(dto.getSubmitTime());
         depot.setWorkContent(dto.getWorkContent());
         depot.setContent(dto.getContent());
 
@@ -271,8 +270,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             record.setConfirmStatusDesc(WorkLogConfirmStatusEnum.findMessage(record.getConfirmStatus()));
             //审核状态
             record.setCheckStatusDesc(WorkLogCheckStatusEnum.findMessage(record.getCheckStatus()));
-            String orgId = user.getOrgId();
-            List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
             //交班人名称
             String handoverIds = record.getHandoverId();
             if (StrUtil.isNotEmpty(handoverIds)) {
@@ -764,7 +761,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setNote(dto.getNote());
         workLog.setHandoverId(dto.getHandoverId());
 
-        depotMapper.updateById(workLog);
+        this.updateById(workLog);
         //删除原附件列表
         enclosureMapper.deleteByName(workLog.getId());
         //重新插入附件列表
@@ -793,6 +790,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //如果接班人不为空 发送待办消息
         if(ObjectUtil.isNotEmpty(dto.getSucceedId()))
         {
+            List<JSONObject> jsonObjects = iSysBaseAPI.queryUsersByIds(dto.getSucceedId());
+            String usernames = jsonObjects.stream().map(js -> js.getString("username")).collect(Collectors.joining(","));
+            dto.setSucceedUserName(usernames);
             sendMessage(dto);
         }
     }
@@ -847,7 +847,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public WorkLogUserTaskDTO getUseTask() {
         WorkLogUserTaskDTO patrolWorkLogDTO = new WorkLogUserTaskDTO();
-        //获取巡检内容
+        /*//获取巡检内容
         String userPatrolTask = patrolApi.getUserTask();
         //获取检修内容
         String inspectionTaskDevice = inspectionApi.getInspectionTaskDevice();
@@ -855,7 +855,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         String faultContent = dailyFaultApi.getFaultTask();
         patrolWorkLogDTO.setPatrolContent(userPatrolTask);
         patrolWorkLogDTO.setRepairContent(inspectionTaskDevice);
-        patrolWorkLogDTO.setFaultContent(faultContent);
+        patrolWorkLogDTO.setFaultContent(faultContent);*/
         return  patrolWorkLogDTO;
     }
 
@@ -895,9 +895,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
     @Override
     public Map getTodayJobContent(String nowday) {
-        //巡视数量根据用户权限查询
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String orgId = user.getOrgId();
 
         Date date = DateUtil.date();
         DateTime startTime;
@@ -924,52 +921,21 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             endTime = DateUtil.parse(nowday+" 16:29:59");
         }
 
-        Map resultMap = new HashMap<String, List>();
+        HashMap<String, String> map = new HashMap<>(16);
 
         //获取巡检内容
-        String userPatrolTask = patrolApi.getUserTask();
+        HashMap<String, String> userTask = patrolApi.getUserTask(startTime, endTime);
         //获取检修内容
-        String inspectionTaskDevice = inspectionApi.getInspectionTaskDevice();
+        HashMap<String, String> inspectionTaskDevice = inspectionApi.getInspectionTaskDevice(startTime, endTime);
         //获取故障内容
-        String faultContent = dailyFaultApi.getFaultTask();
-
-/*
-        List<PatrolTaskVO> patrolTaskVOS = patrolTaskMapper.selectCompletedPatrolByOrgIdAndTime(orgId, startTime, endTime);
-        resultMap.put("patrol", patrolTaskVOS);
-
-        List<RepairTaskVo> repair = repairTaskMapper.getAppCompletedRepair(orgId, startTime, endTime);
-        resultMap.put("repair", repair);
-
-        List<SysUser> sysUsers = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getOrgId, orgId));
-        List<String> userIds = sysUsers.stream().map(SysUser::getId).collect(Collectors.toList());
-        List<FaultVo> fault = faultMapper.getAppCompletedFault(userIds, startTime, endTime);
-        resultMap.put("fault", fault);
-
-
-        StringBuffer patrolContent = new StringBuffer();
-        for (PatrolTaskVO vo : patrolTaskVOS) {
-            patrolContent.append(vo.getLine()).append("通信专业车站各系统专用设备").append("-").append(vo.getLineName()).append(" ").append(" 巡视人:").append(vo.getStaffName()).append("。").append('\n');
-        }
-        resultMap.put("patrolContent", patrolContent);
-
-        StringBuffer repairContent = new StringBuffer();
-        for (RepairTaskVo vo : repair) {
-            repairContent.append(vo.getLineName()).append("-").append(vo.getStationName()).append(" ").append("第").append(vo.getWeeks()).append("周检修任务").append(" ").append(" 检修人:").append(vo.getStaffNames()).append("。").append('\n');
-        }
-        resultMap.put("repairContent", repairContent);
-
-        StringBuffer faultContent = new StringBuffer();
-        for (FaultVo vo : fault) {
-            faultContent.append(vo.getLineName()).append("-").append(vo.getStationName()).append(" ").append(vo.getPhenomenon()).append(" 维修人:").append(vo.getMaintainer()).append("-");
-            if (vo.getStatus() == 2) {
-                faultContent.append("维修完成。");
-            } else {
-                faultContent.append("维修中。");
-            }
-            faultContent.append("\n");
-        }
-        resultMap.put("faultContent", faultContent);*/
-        return resultMap;
+        HashMap<String, String> faultTask = dailyFaultApi.getFaultTask(startTime, endTime);
+        map.put("patrolContent", userTask.get("content"));
+        map.put("repairContent", inspectionTaskDevice.get("content"));
+        map.put("faultContent", faultTask.get("content"));
+        map.put("patrolCode", userTask.get("code"));
+        map.put("repairCode", inspectionTaskDevice.get("code"));
+        map.put("faultCode", faultTask.get("code"));
+        return map;
     }
 
 

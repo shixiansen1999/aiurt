@@ -1,9 +1,11 @@
 package com.aiurt.modules.common.api;
 
+import cn.hutool.core.date.DateTime;
 import com.aiurt.modules.fault.dto.FaultReportDTO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,10 +26,12 @@ public interface DailyFaultApi {
     Map<String, Integer> getDailyFaultNum(Integer year, Integer month);
 
     /**
-     * 获取当前用户，当天的故障维修单
+     * 获取当前用户在时间范围内的故障维修单
+     * @param startTime
+     * @param endTime
      * @return
      */
-    String getFaultTask();
+    HashMap<String, String> getFaultTask(DateTime startTime, DateTime endTime);
 
     /**
      * 大屏班组画像维修工时统计，用户ID:维修时长

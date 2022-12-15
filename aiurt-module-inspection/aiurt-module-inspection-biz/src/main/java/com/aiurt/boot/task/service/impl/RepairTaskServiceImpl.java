@@ -2,6 +2,7 @@ package com.aiurt.boot.task.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -85,7 +86,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     private RepairPoolStationRelMapper repairPoolStationRelMapper;
     @Resource
     private RepairPoolOrgRelMapper orgRelMapper;
-
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
 
     @Override
     public Page<RepairTask> selectables(Page<RepairTask> pageList, RepairTask condition) {
@@ -1864,10 +1866,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
-    public String getInspectionTaskDevice() {
+    public HashMap<String, String> getInspectionTaskDevice(DateTime startTime, DateTime endTime) {
+        HashMap<String, String> map = new HashMap<>();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //获取当前用户的检修任务编号
-        List<RepairTaskUser> taskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().eq(RepairTaskUser::getUserId, sysUser.getId()));
+        List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(sysUser.getOrgId());
+        List<String> userIds = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getId).collect(Collectors.toList());
+        //获取当前班组用户的检修任务编号
+        List<RepairTaskUser> taskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().in(RepairTaskUser::getUserId, userIds).eq(RepairTaskUser::getDelFlag, 0));
         List<String> userTaskName = new ArrayList<>();
         if (CollUtil.isNotEmpty(taskUsers)) {
             //根据任务编号，获取检修任务信息
@@ -1878,9 +1883,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 RepairTask task = repairTaskMapper.selectOne(new LambdaQueryWrapper<RepairTask>().eq(RepairTask::getCode, user.getRepairTaskCode()));
                 taskList.add(task);
             }
-            for (RepairTask repairTask : taskList) {
+            List<String> repairTaskIds = taskList.stream().map(RepairTask::getId).collect(Collectors.toList());
+            for (String repairTaskId : repairTaskIds) {
                 //获取当前用户作为领取/指派人，当天，已提交的工单
-                List<RepairTaskDeviceRel> deviceRelList = repairTaskDeviceRelMapper.getTodaySubmit(new Date(), repairTask.getId(), null);
+                List<RepairTaskDeviceRel> deviceRelList = repairTaskDeviceRelMapper.getTodaySubmit(startTime,endTime,repairTaskId, null);
                 if(ObjectUtil.isNotEmpty(deviceRelList))
                 {
                     taskDeviceRelList.addAll(deviceRelList);
@@ -1890,59 +1896,47 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //获取当前用户作为同行人参与的单号
             List<RepairTaskPeerRel> relList = repairTaskPeerRelMapper.selectList(new LambdaQueryWrapper<RepairTaskPeerRel>().eq(RepairTaskPeerRel::getUserId, sysUser.getId()));
             //获取单号信息
-            for (RepairTaskPeerRel taskPeerRel : relList) {
-                List<RepairTaskDeviceRel> deviceRelList = repairTaskDeviceRelMapper.getTodaySubmit(new Date(), null, taskPeerRel.getRepairTaskDeviceCode());
-                if(ObjectUtil.isNotEmpty(deviceRelList))
-                {
-                    oldTaskDeviceRelList.addAll(deviceRelList);
+            if (CollUtil.isNotEmpty(relList)) {
+                for (RepairTaskPeerRel taskPeerRel : relList) {
+                    List<RepairTaskDeviceRel> deviceRelList = repairTaskDeviceRelMapper.getTodaySubmit(startTime,endTime, null, taskPeerRel.getRepairTaskDeviceCode());
+                    if(ObjectUtil.isNotEmpty(deviceRelList))
+                    {
+                        oldTaskDeviceRelList.addAll(deviceRelList);
+                    }
                 }
             }
+
             taskDeviceRelList.addAll(oldTaskDeviceRelList);
+
+            StringBuilder content = new StringBuilder();
+            StringBuilder code = new StringBuilder();
             if(CollUtil.isNotEmpty(taskDeviceRelList))
             {  //去重
                 Set<RepairTaskDeviceRel> list = taskDeviceRelList.stream().collect(Collectors.toSet());
                 if (CollUtil.isNotEmpty(list)) {
                     for (RepairTaskDeviceRel deviceRel : list) {
-                        //获取检查表名
-                        RepairTaskStandardRel standardRel = repairTaskStandardRelMapper.selectById(deviceRel.getTaskStandardRelId());
-                        //获取提交人
-                        String submitName = repairTaskDeviceRelMapper.getSubmitName(deviceRel.getStaffId());
-                        //获取站点名
-                        if (ObjectUtil.isNotEmpty(deviceRel.getDeviceCode())) {
-                            String userNameTask =null;
-                            String stationCode = repairTaskDeviceRelMapper.getStationCode(deviceRel.getDeviceCode());
-                            String stationName = repairTaskDeviceRelMapper.getStationName(stationCode);
-                            if(ObjectUtil.isNull(stationName))
-                            {
-                                 userNameTask = standardRel.getTitle() + "-"  + " 检修人：" + submitName;
-                            }
-                            else
-                            {
-                                userNameTask = standardRel.getTitle() + "-" + stationName + " 检修人：" + submitName;
-                            }
-
-                            userTaskName.add(userNameTask);
-                        } else {
-                            String userNameTask =null;
-                            String stationName = repairTaskDeviceRelMapper.getStationName(deviceRel.getStationCode());
-                            if(ObjectUtil.isNull(stationName))
-                            {
-
-                                userNameTask = standardRel.getTitle() + "-" + " 检修人：" + submitName;
-                            }
-                            else
-                            {
-                                userNameTask = standardRel.getTitle() + "-" + stationName + " 检修人：" + submitName;
-
-                            }
-                            userTaskName.add(userNameTask);
-                        }
+                        String stationName = iSysBaseAPI.getPosition(deviceRel.getStationCode());
+                        String lineName = iSysBaseAPI.getPosition(deviceRel.getLineCode());
+                        LoginUser userById = iSysBaseAPI.getUserById(deviceRel.getStaffId());
+                        content.append(lineName).append("-").append(stationName).append(" ").append("第").append(deviceRel.getWeeks()).append("周检修任务").append(" ").append(" 检修人:").append(userById.getRealname()).append("。").append('\n');
+                        code.append(deviceRel.getCode()).append(",");
                     }
                 }
             }
+            if (content.length() > 1) {
+                // 截取字符
+                content = content.deleteCharAt(content.length() - 1);
+                map.put("content", content.toString());
+            }
+            if (code.length() > 1) {
+                // 截取字符
+                code = content.deleteCharAt(code.length() - 1);
+                map.put("code", code.toString());
+            }
+
         }
 
-        return  CollUtil.join(userTaskName, "。");
+        return map;
     }
 
     /**

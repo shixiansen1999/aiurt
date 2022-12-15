@@ -1,9 +1,11 @@
 package com.aiurt.boot.api;
 
+import cn.hutool.core.date.DateTime;
 import com.aiurt.boot.dto.UserTeamParameter;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -19,10 +21,12 @@ public interface PatrolApi {
     Map<String, Integer> getPatrolFinishNumber(int year, int month);
 
     /**
-     *  查看当前用户，当天的巡检的工单
+     *  查看当前用户班组的时间范围内的的巡检的工单
+     * @param startTime
+     * @param endTime
      * @return
      */
-    public String getUserTask();
+    public HashMap<String, String> getUserTask(DateTime startTime, DateTime endTime);
 
     /**
      * 大屏班组画像巡视工时统计，用户ID:巡视时长

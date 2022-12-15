@@ -34,12 +34,12 @@ public interface PatrolTaskUserMapper extends BaseMapper<PatrolTaskUser> {
     List<String> getDeptName(@Param("list") List<String> list);
 
     /**
-     * 获取当前用户
+     * 获取当前用户班组的任务
      *
-     * @param id
+     * @param code
      * @return
      */
-    List<PatrolTask> getUserTask(String id);
+    List<PatrolTask> getUserTask(String code);
 
     /**
      * 获取人员在指定时间范围内的任务时长(单位秒)

@@ -174,10 +174,4 @@
         where sd.dict_code = 'fault_status'
           and sdt.item_value = #{status}
     </select>
-    <select id="getUserToday" resultType="com.aiurt.modules.fault.entity.FaultRepairRecord">
-        select *
-        from fault_repair_record
-        where id = #{id}
-        and DATE_FORMAT(update_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{date}, '%Y-%m-%d')
-    </select>
 </mapper>

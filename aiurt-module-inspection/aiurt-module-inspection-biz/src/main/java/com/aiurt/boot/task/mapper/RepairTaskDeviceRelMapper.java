@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import cn.hutool.core.date.DateTime;
 import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
@@ -53,10 +54,11 @@ public interface RepairTaskDeviceRelMapper extends BaseMapper<RepairTaskDeviceRe
 
     /**
      * 获取当天提交的工单
-     * @param date
+     * @param startTime
+     * @param endTime
      * @param taskId
      * @param taskDeviceCode
      * @return
      */
-    List<RepairTaskDeviceRel> getTodaySubmit(@Param("date")Date date, @Param("taskId")String taskId,@Param("taskDeviceCode")String taskDeviceCode);
+    List<RepairTaskDeviceRel> getTodaySubmit(@Param("startTime")DateTime startTime,@Param("endTime") DateTime endTime, @Param("taskId")String taskId, @Param("taskDeviceCode")String taskDeviceCode);
 }
