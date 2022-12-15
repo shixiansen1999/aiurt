@@ -1,6 +1,5 @@
 package com.aiurt.modules.material.service.impl;
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.ImportExcelUtil;
@@ -8,25 +7,17 @@ import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.manufactor.service.ICsManufactorService;
-import com.aiurt.modules.device.entity.Device;
-import com.aiurt.modules.device.entity.DeviceAssembly;
-import com.aiurt.modules.device.mapper.DeviceAssemblyMapper;
-import com.aiurt.modules.device.mapper.DeviceMapper;
-import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.mapper.MaterialBaseMapper;
 import com.aiurt.modules.material.mapper.MaterialBaseTypeMapper;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
-import com.aiurt.modules.schedule.entity.ScheduleItem;
-import com.aiurt.modules.schedule.service.impl.ScheduleServiceImpl;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -34,12 +25,9 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.util.SpringContextUtils;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +36,9 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -228,13 +218,8 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 						continue;
 					}
 				}
-                if (StrUtil.isEmpty(materialBase.getManufactorCodeName())){
-					errorStrs.add("第 " + i + " 行：生产厂商名称未输入，忽略导入。");
-					materialBase.setText("生产厂商名称未输入，忽略导入");
-					list.add(materialBase);
-					continue;
-				}
 				//生产厂商
+				if (StrUtil.isNotEmpty(materialBase.getManufactorCodeName())){
 				String manufactorCodeName = materialBase.getManufactorCodeName()==null?"":materialBase.getManufactorCodeName();
 				CsManufactor csManufactor = csManufactorService.getOne(new QueryWrapper<CsManufactor>().eq("name",manufactorCodeName).eq("del_flag",0).last("limit 1"));
 				if(!"".equals(manufactorCodeName) && csManufactor == null){
@@ -245,7 +230,9 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 				}else{
 					materialBase.setManufactorCode(csManufactor.getId());
 				}
+				}
 				//单位
+				if (StrUtil.isNotEmpty(materialBase.getUnit())){
 				String unit = materialBase.getUnit()==null?"":materialBase.getUnit();
 				if(!"".equals(unit)){
 					List<DictModel> materianUnit = sysBaseApi.queryDictItemsByCode("materian_unit");
@@ -258,6 +245,7 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 						list.add(materialBase);
 						continue;
 					}
+				}
 				}
 				if(StrUtil.isNotEmpty(materialBase.getConsumablesName())){
 					//是否为易耗品 默认为否 在为是的时候修改状态

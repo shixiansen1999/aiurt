@@ -8,13 +8,11 @@ import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.sm.entity.CsSafetyAttention;
-import com.aiurt.modules.sm.entity.CsSafetyAttentionType;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionTypeMapper;
 import com.aiurt.modules.sm.service.ICsSafetyAttentionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -118,7 +116,7 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		if (StrUtil.isNotEmpty(csSafetyAttention.getSystemCode())){
 			queryWrapper.eq(CsSafetyAttention::getSystemCode,csSafetyAttention.getSystemCode());
 		}
-
+            queryWrapper.orderByDesc(CsSafetyAttention::getCreateTime);
 		Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);
 		IPage<CsSafetyAttention> pageList = csSafetyAttentionService.page(page, queryWrapper);
 		return Result.OK(pageList);
