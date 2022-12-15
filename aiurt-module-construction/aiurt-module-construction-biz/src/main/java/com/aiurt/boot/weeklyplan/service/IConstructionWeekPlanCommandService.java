@@ -6,6 +6,9 @@ import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @Description: construction_week_plan_command
@@ -82,4 +85,12 @@ public interface IConstructionWeekPlanCommandService extends IService<Constructi
      * @param id
      */
     void delete(String id);
+
+    /**
+     * 通过excel导入数据
+     * @param file
+     * @param params
+     * @return
+     */
+    Result importExcelMaterial(MultipartFile file, ImportParams params) throws Exception;
 }
