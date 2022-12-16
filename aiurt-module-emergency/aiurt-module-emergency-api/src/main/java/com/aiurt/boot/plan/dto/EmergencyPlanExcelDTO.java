@@ -60,19 +60,17 @@ public class EmergencyPlanExcelDTO {
     private Integer status;
 
     /**编制部门*/
-//    @Excel(name = "编制部门", width = 15,needMerge = true)
-//    @ApiModelProperty(value = "编制部门")
-//    @Dict(dictTable = "sys_depart", dicCode = "org_code", dicText ="depart_name")
-//    private String orgCode;
+    @ApiModelProperty(value = "编制部门")
+    @Dict(dictTable = "sys_depart", dicCode = "org_code", dicText ="depart_name")
+    private String orgCode;
 
     @Excel(name = "编制部门", width = 15,needMerge = true)
     @ApiModelProperty(value = "编制部门")
     private String orgName;
 
     /**创建人*/
-//    @Excel(name = "编制人", width = 15,needMerge = true)
-//    @ApiModelProperty(value = "创建人")
-//    private String createBy;
+    @ApiModelProperty(value = "创建人")
+    private String createBy;
 
     @Excel(name = "编制人", width = 15,needMerge = true)
     @ApiModelProperty(value = "编制人")

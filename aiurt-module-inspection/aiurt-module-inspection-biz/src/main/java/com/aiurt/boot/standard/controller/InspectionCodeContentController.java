@@ -225,7 +225,13 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
         String remark = "检修标准导入模板\n" +
                 "填写须知：\n" +
                 "1.请勿增加、删除、或修改表格中的字段顺序、字段名称；\n" +
-                "2.请严格按照数据规范填写，并填写完所有必填项，红底白字列为必填项；\n" ;
+                "2.请严格按照数据规范填写，并填写完所有必填项，红底白字列为必填项；\n" +
+		        "字段说明：\n" +
+				"1.层级类型：必填字段；\n" +
+				"2.检修项内容：必填字段；\n" +
+				"3.检修项编号：自动生成，无需填写；\n"+
+				"4.是否为检查项：必填字段；\n"+
+				"5.检查值类型：必填字段；\n";
 		 return super.exportTemplateXls("", InspectionCodeContent.class,"检配置检修项导入模板",remark);
 	 }
 

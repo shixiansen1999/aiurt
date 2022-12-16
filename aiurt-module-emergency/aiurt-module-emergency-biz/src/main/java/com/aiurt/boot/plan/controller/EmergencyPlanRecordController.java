@@ -181,8 +181,8 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	 @AutoLog(value = "应急预案-应急预案启动记录提交")
 	 @ApiOperation(value = "应急预案-应急预案启动记录提交", notes = "应急预案-应急预案启动记录提交")
 	 @PostMapping(value = "/submit")
-	 public Result<String> startProcess(@RequestParam(name = "id", required = true) String id) {
-		 emergencyPlanRecordService.submit(id);
+	 public Result<String> startProcess(@RequestBody EmergencyPlanRecordDTO emergencyPlanRecordDto) {
+		 emergencyPlanRecordService.submit(emergencyPlanRecordDto);
 		 return Result.OK("提交成功!");
 	 }
 
@@ -208,6 +208,18 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 			 out.flush();
 		 }
 		 out.close();
+	 }
+
+	 /**
+	  * 应急预案台账导出数据
+	  * @param request
+	  * @param response
+	  * @param emergencyPlanRecordDto
+	  */
+	 @AutoLog(value = "应急预案-应急预案台账导出数据")
+	 @GetMapping(value = "/exportXls")
+	 public void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanRecordDTO emergencyPlanRecordDto) {
+		 emergencyPlanRecordService.exportXls(request,response,emergencyPlanRecordDto);
 	 }
 
 }

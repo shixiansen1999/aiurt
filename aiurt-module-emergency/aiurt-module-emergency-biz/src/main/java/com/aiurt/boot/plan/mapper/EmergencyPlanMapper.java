@@ -35,6 +35,11 @@ public interface EmergencyPlanMapper extends BaseMapper<EmergencyPlan> {
      */
     List<EmergencyPlanDisposalProcedureExcelDTO> selectPlanDisposalProcedureById(String id);
 
+    /**
+     * 按条件查询应急预案物资
+     * @param id
+     * @return
+     */
     List<EmergencyPlanMaterialsExcelDTO> selectPlanMaterialsById(String id);
 
 }
