@@ -246,6 +246,7 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	  * @param response
 	  * @param emergencyPlanDto
 	  */
+	 @AutoLog(value = "应急预案-应急预案台账导出数据")
 	 @GetMapping(value = "/exportXls")
 	 public void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanDTO emergencyPlanDto) {
 		  emergencyPlanService.exportXls(request,response,emergencyPlanDto);
@@ -281,9 +282,10 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
     * @param response
     * @return
     */
+	@ApiOperation(value = "应急预案表-导入excel", notes = "应急预案表-导入excel")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, EmergencyPlan.class);
+        return emergencyPlanService.importExcel(request, response);
     }
 
 
