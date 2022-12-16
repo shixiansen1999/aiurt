@@ -818,4 +818,11 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<LoginUser> getForeman(List<LoginUser> sysUsers, String roleId);
+
+    /**
+     * 获取用户岗位为post的人员
+     * @param i
+     * @return
+     */
+    List<LoginUser> getUserByPost(int post);
 }

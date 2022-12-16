@@ -16,6 +16,7 @@ import com.aiurt.boot.weeklyplan.mapper.BdTemplateMapper;
 import com.aiurt.boot.weeklyplan.mapper.ConstructionWeekPlanCommandMapper;
 import com.aiurt.boot.weeklyplan.service.IConstructionCommandAssistService;
 import com.aiurt.boot.weeklyplan.service.IConstructionWeekPlanCommandService;
+import com.aiurt.boot.weeklyplan.vo.ConstructionUserVO;
 import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
@@ -878,5 +879,17 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             log.error("周施工计划导出失败！", e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public List<ConstructionUserVO> getConstructionUser() {
+        // 施工负责人的岗位字典值为1
+        int post = 1;
+        List<LoginUser> loginUsers = iSysBaseApi.getUserByPost(post);
+        List<ConstructionUserVO> constructionUsers = new ArrayList<>();
+        for (LoginUser loginUser : loginUsers) {
+            constructionUsers.add(new ConstructionUserVO(loginUser.getId(), loginUser.getRealname()));
+        }
+        return constructionUsers;
     }
 }

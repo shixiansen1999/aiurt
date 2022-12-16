@@ -3,6 +3,7 @@ package com.aiurt.boot.weeklyplan.controller;
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanCommandDTO;
 import com.aiurt.boot.weeklyplan.entity.ConstructionWeekPlanCommand;
 import com.aiurt.boot.weeklyplan.service.IConstructionWeekPlanCommandService;
+import com.aiurt.boot.weeklyplan.vo.ConstructionUserVO;
 import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -29,6 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Map;
 
 /**
@@ -172,6 +176,18 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
     public Result<String> delete(@RequestParam @ApiParam(name = "id", value = "计划主键ID") String id) {
         constructionWeekPlanCommandService.delete(id);
         return Result.OK("删除成功！");
+    }
+
+    /**
+     * 施工周计划-获取岗位为施工负责人的用户
+     *
+     * @return
+     */
+    @ApiOperation(value = "施工周计划-获取岗位为施工负责人的用户", notes = "施工周计划-获取岗位为施工负责人的用户")
+    @RequestMapping(value = "/getConstructionUser", method = RequestMethod.GET)
+    public Result<?> getConstructionUser() {
+        List<ConstructionUserVO> loginUsers = constructionWeekPlanCommandService.getConstructionUser();
+        return Result.OK(loginUsers);
     }
 
     @ApiOperation(value = "下载施工周计划导入模板", notes = "下载施工周计划导入模板")

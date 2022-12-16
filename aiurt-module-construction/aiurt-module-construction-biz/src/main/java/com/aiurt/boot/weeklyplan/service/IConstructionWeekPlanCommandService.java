@@ -2,6 +2,7 @@ package com.aiurt.boot.weeklyplan.service;
 
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanCommandDTO;
 import com.aiurt.boot.weeklyplan.entity.ConstructionWeekPlanCommand;
+import com.aiurt.boot.weeklyplan.vo.ConstructionUserVO;
 import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -14,6 +15,7 @@ import java.util.Date;
 import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
 
 /**
  * @Description: construction_week_plan_command
@@ -93,6 +95,7 @@ public interface IConstructionWeekPlanCommandService extends IService<Constructi
 
     /**
      * 通过excel导入数据
+     *
      * @param file
      * @param params
      * @return
@@ -110,4 +113,11 @@ public interface IConstructionWeekPlanCommandService extends IService<Constructi
      * @return
      */
     void exportXls(HttpServletRequest request, HttpServletResponse response, String lineCode, Date startDate, Date endDate);
+
+    /**
+     * 施工周计划-获取岗位为施工负责人的用户
+     *
+     * @return
+     */
+    List<ConstructionUserVO> getConstructionUser();
 }

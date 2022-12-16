@@ -2132,6 +2132,25 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public List<LoginUser> getForeman(List<LoginUser> sysUsers, String roleId) {
         return userMapper.getForeman(sysUsers, roleId);
     }
+
+    @Override
+    public List<LoginUser> getUserByPost(int post) {
+        QueryWrapper<SysUser> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.lambda().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(SysUser::getPost, String.valueOf(post));
+        List<SysUser> users = userMapper.selectList(userQueryWrapper);
+        if (CollectionUtil.isEmpty(users)) {
+            return Collections.emptyList();
+        }
+        List<LoginUser> loginUsers = new ArrayList<>();
+        for (SysUser user : users) {
+            LoginUser loginUser = new LoginUser();
+            BeanUtils.copyProperties(user, loginUser);
+            loginUsers.add(loginUser);
+        }
+        return loginUsers;
+    }
+
     @Override
     public Result<?> importReturnRes(int errorLines, int successLines, List<String> errorMessage, boolean isType, String failReportUrl) {
         if (isType) {
