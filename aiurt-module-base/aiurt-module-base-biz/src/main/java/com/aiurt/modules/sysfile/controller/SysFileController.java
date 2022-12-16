@@ -174,7 +174,8 @@ public class SysFileController {
 					vo.setCreateByName(loginUser.getRealname());
 				}
 			Result<SysFileTypeDetailVO> detail = sysFileService.detail(request, e.getId());
-			vo.setDetail(detail);
+			SysFileTypeDetailVO result1 = detail.getResult();
+			vo.setDetail(result1);
 			records.add(vo);
 		});
 		pages.setRecords(records);

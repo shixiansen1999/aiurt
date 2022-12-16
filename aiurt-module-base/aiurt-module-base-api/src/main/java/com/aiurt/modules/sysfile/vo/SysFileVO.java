@@ -33,5 +33,5 @@ public class SysFileVO extends SysFile implements Serializable {
 
 	@ApiModelProperty(value = "权限列表")
 	@TableField(exist = false)
-	private Result<SysFileTypeDetailVO> detail;
+	private SysFileTypeDetailVO detail;
 }
