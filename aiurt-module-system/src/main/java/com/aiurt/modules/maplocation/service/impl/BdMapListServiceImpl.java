@@ -207,7 +207,7 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                         .eq(CsStation::getLineCode, csPositionWifis.getLineCode());
                 CsStation bdStation = csStationService.getBaseMapper().selectOne(stationLambdaQueryWrapper);
                 stationIdStr = bdStation.getStationCode() == null ? null :bdStation.getStationCode();
-            } else if (StrUtil.isEmpty(stationIdStr)){
+            } else if (ObjectUtil.isNotEmpty(userStation) && StrUtil.isEmpty(stationIdStr)){
                 List<CsStation> bdStationList = csStationService.getBaseMapper().selectList(new LambdaQueryWrapper<CsStation>()
                         .isNotNull(CsStation::getLongitude)
                         .isNotNull(CsStation::getLatitude)
@@ -281,7 +281,7 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                     UserStationDTO userStation = baseMapper.getStationId(entity.getId());
                     LambdaQueryWrapper<CsPositionWifi> lambdaQueryWrapper = new LambdaQueryWrapper();
                     lambdaQueryWrapper.eq(CsPositionWifi::getDelFlag, 0);
-                    if (StrUtil.isNotEmpty(userStation.getBssid())) {
+                    if (ObjectUtil.isNotEmpty(userStation) && StrUtil.isNotEmpty(userStation.getBssid())) {
                         lambdaQueryWrapper.eq(CsPositionWifi::getMac, userStation.getBssid());
                         CsPositionWifi csPositionWifis = csPositionWifiService.getOne(lambdaQueryWrapper);
                         LambdaQueryWrapper<CsStation> stationLambdaQueryWrapper = new LambdaQueryWrapper<CsStation>();
