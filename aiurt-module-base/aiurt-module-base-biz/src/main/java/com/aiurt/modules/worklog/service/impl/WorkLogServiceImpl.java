@@ -431,7 +431,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             record.setCheckStatusDesc(WorkLogCheckStatusEnum.findMessage(record.getCheckStatus()));
             //配合施工时间
             String assortTime = record.getAssortTime();
-            record.setAssortTimes(assortTime.split(","));
+            if (StrUtil.isNotBlank(assortTime)) {
+                record.setAssortTimes(assortTime.split(","));
+            }
 
             //获取时间年月日星期几
             Date logTime = record.getLogTime();
