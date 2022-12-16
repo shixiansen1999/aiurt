@@ -56,6 +56,7 @@ import java.util.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 设备
@@ -117,8 +118,9 @@ public class MaterialBaseController {
         if ("1".equals(majorCode)){
             LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             List<CsUserMajorModel> majorByUserId = iSysBaseAPI.getMajorByUserId(loginUser.getId());
-            if(CollUtil.isNotEmpty(majorByUserId)){
-                queryWrapper.in("major_code",majorByUserId);
+            List<String> collect = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+            if(CollUtil.isNotEmpty(collect)){
+                queryWrapper.in("major_code",collect);
             }
         }
         if(code != null && !"".equals(code)){
