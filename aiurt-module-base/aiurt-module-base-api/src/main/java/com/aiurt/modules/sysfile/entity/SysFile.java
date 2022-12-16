@@ -154,6 +154,9 @@ public class SysFile {
 	@NotEmpty(message = "小主，请添加可在线编辑人员哦！")
 	private List<String> onlineEditing;
 
+	@ApiModelProperty("标记")
+	@TableField(exist = false)
+	private String sign;
 
 	public static final String TYPE = "type";
 	public static final String DEL_FLAG = "del_flag";

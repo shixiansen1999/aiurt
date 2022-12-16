@@ -353,11 +353,13 @@ public class SysFileController {
 			}
 			try {
 				sysFileService.updateById(sysFile);
-				LambdaQueryWrapper<SysFileRole> queryWrapper = new LambdaQueryWrapper<>();
-				queryWrapper.eq(SysFileRole::getFileId,sysFile.getId());
-				List<SysFileRole> sysFileRoles = iSysFileRoleService.getBaseMapper().selectList(queryWrapper);
-				iSysFileRoleService.removeByIds(sysFileRoles);
-				sysFileService.add(req,sysFile);
+				if("1".equals(sysFile.getSign())){
+					LambdaQueryWrapper<SysFileRole> queryWrapper = new LambdaQueryWrapper<>();
+					queryWrapper.eq(SysFileRole::getFileId,sysFile.getId());
+					List<SysFileRole> sysFileRoles = iSysFileRoleService.getBaseMapper().selectList(queryWrapper);
+					iSysFileRoleService.removeByIds(sysFileRoles);
+					sysFileService.add(req,sysFile);
+				}
 				result.success("修改成功！");
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);

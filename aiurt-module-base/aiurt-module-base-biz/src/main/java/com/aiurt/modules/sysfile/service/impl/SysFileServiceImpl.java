@@ -565,6 +565,7 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 				queryWrapper.eq(SysFileRole::getUserId,editId).eq(SysFileRole::getFileId,param.getId()).eq(SysFileRole::getDelFlag,0);
 				SysFileRole sysFileRole = roleService.getBaseMapper().selectOne(queryWrapper);
 				sysFileRole.setEditStatus(1);
+				sysFileRole.setPrimaryEditStatus(1);
 				roleService.updateById(sysFileRole);
 			}
 		  }
@@ -576,6 +577,12 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setEditStatus(0).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0)
 						.setPrimaryLookStatus(0).setPrimaryEditStatus(0).setPrimaryDeleteStatus(1).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(deleteId));
 				stringSet.add(deleteId);
+			}else {
+				LambdaQueryWrapper<SysFileRole> queryWrapper = new LambdaQueryWrapper<>();
+				queryWrapper.eq(SysFileRole::getUserId,deleteId).eq(SysFileRole::getFileId,param.getId()).eq(SysFileRole::getDelFlag,0);
+				SysFileRole sysFileRole = roleService.getBaseMapper().selectOne(queryWrapper);
+				sysFileRole.setPrimaryDeleteStatus(1);
+				roleService.updateById(sysFileRole);
 			}
 		 }
 		}
@@ -586,6 +593,12 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(1).setUploadStatus(0)
 						.setPrimaryLookStatus(0).setPrimaryEditStatus(0).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(1).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(onlineEditingId));
 				stringSet.add(onlineEditingId);
+			}else {
+				LambdaQueryWrapper<SysFileRole> queryWrapper = new LambdaQueryWrapper<>();
+				queryWrapper.eq(SysFileRole::getUserId,onlineEditingId).eq(SysFileRole::getFileId,param.getId()).eq(SysFileRole::getDelFlag,0);
+				SysFileRole sysFileRole = roleService.getBaseMapper().selectOne(queryWrapper);
+				sysFileRole.setPrimaryOnlineEditing(1);
+				roleService.updateById(sysFileRole);
 			}
 		  }
 		}
@@ -596,6 +609,12 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(0).setUploadStatus(0)
 						.setPrimaryLookStatus(0).setPrimaryEditStatus(0).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(1).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(downloadId));
 				stringSet.add(downloadId);
+			}else {
+				LambdaQueryWrapper<SysFileRole> queryWrapper = new LambdaQueryWrapper<>();
+				queryWrapper.eq(SysFileRole::getUserId,downloadId).eq(SysFileRole::getFileId,param.getId()).eq(SysFileRole::getDelFlag,0);
+				SysFileRole sysFileRole = roleService.getBaseMapper().selectOne(queryWrapper);
+				sysFileRole.setPrimaryDownloadStatus(1);
+				roleService.updateById(sysFileRole);
 			}
 		 }
 		}
@@ -606,6 +625,12 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDownloadStatus(0).setDeleteStatus(0).setUploadStatus(0).setOnlineEditing(0)
 							.setPrimaryLookStatus(1).setPrimaryEditStatus(0).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(lookId));
 					stringSet.add(lookId);
+				}else {
+					LambdaQueryWrapper<SysFileRole> queryWrapper = new LambdaQueryWrapper<>();
+					queryWrapper.eq(SysFileRole::getUserId,lookId).eq(SysFileRole::getFileId,param.getId()).eq(SysFileRole::getDelFlag,0);
+					SysFileRole sysFileRole = roleService.getBaseMapper().selectOne(queryWrapper);
+					sysFileRole.setPrimaryLookStatus(1);
+					roleService.updateById(sysFileRole);
 				}
 			}
 		}
