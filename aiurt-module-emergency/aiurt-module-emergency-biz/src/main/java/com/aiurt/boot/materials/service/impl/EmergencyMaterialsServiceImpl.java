@@ -2,6 +2,7 @@ package com.aiurt.boot.materials.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.dto.MaterialAccountDTO;
 import com.aiurt.boot.materials.dto.MaterialPatrolDTO;
@@ -45,23 +46,33 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             if (StrUtil.isNotBlank(e.getUserId())){
                 //根据负责人id查询负责人名称
                 LoginUser userById = iSysBaseAPI.getUserById(e.getUserId());
-                e.setUserName(userById.getRealname());
+                if (StrUtil.isNotBlank(userById.getRealname())){
+                    e.setUserName(userById.getRealname());
+                }
             }if (StrUtil.isNotBlank(e.getPrimaryOrg())){
                 //根据部门编码查询部门名称
                 SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(e.getPrimaryOrg());
-                e.setPrimaryName(departByOrgCode.getDepartName());
+                if (ObjectUtil.isNotEmpty(departByOrgCode)){
+                    e.setPrimaryName(departByOrgCode.getDepartName());
+                }
             }if (StrUtil.isNotBlank(e.getLineCode())){
                 //根据线路编码查询线路名称
                 String position = iSysBaseAPI.getPosition(e.getLineCode());
-                e.setLineName(position);
+                if (StrUtil.isNotBlank(position)){
+                    e.setLineName(position);
+                }
             }if(StrUtil.isNotBlank(e.getStationCode())){
                 //根据站点编码查询站点名称
                 String position = iSysBaseAPI.getPosition(e.getStationCode());
-                e.setStationName(position);
+                if (StrUtil.isNotBlank(position)){
+                    e.setStationName(position);
+                }
             }if(StrUtil.isNotBlank(e.getPositionCode())){
                 //根据位置编码查询位置名称
                 String position = iSysBaseAPI.getPosition(e.getPositionCode());
-                e.setPositionName(position);
+                if (StrUtil.isNotBlank(position)){
+                    e.setPositionName(position);
+                }
             }
             //巡检项
             if (CollUtil.isNotEmpty(patrolStandardItemsModels)){
