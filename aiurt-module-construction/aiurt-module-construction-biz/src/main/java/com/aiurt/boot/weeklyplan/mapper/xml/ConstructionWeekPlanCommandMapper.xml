@@ -88,4 +88,26 @@
         </if>
         order by cwpc.create_time desc
     </select>
+
+    <select id="getExportData" resultType="com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanExportDTO">
+        select cwpc.*,
+               if(cwpc.task_start_time > cwpc.task_end_time,
+                  concat_ws('-次日', date_format(cwpc.task_start_time, '%H:%i'),
+                            date_format(cwpc.task_end_time, '%H:%i')),
+                  concat_ws('-', date_format(cwpc.task_start_time, '%H:%i'),
+                            date_format(cwpc.task_end_time, '%H:%i'))) as formatTime,
+               group_concat(cca.station_code)                          as assistStationCode
+        from construction_week_plan_command cwpc
+                 left join construction_command_assist cca on cwpc.id = cca.plan_id
+        where del_flag = 0
+        <if test="lineCode != null and lineCode != ''">
+            and cwpc.line_code = #{lineCode}
+        </if>
+        <if test="startDate != null and endDate != null">
+            and date_format(cwpc.task_date, '%Y-%m-%d')
+                between date_format(#{startDate}, '%Y-%m-%d')
+                and date_format(#{endDate}, '%Y-%m-%d')
+        </if>
+        group by cwpc.id
+    </select>
 </mapper>

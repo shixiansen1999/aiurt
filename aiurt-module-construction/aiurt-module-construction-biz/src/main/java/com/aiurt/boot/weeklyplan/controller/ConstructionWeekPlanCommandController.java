@@ -14,9 +14,13 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
 
 /**
  * @Description: construction_week_plan_command
@@ -161,4 +165,16 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
         return Result.OK("删除成功！");
     }
 
+    /**
+     * @return
+     */
+    @RequestMapping(value = "/exportXls")
+    public void exportXls(HttpServletRequest request, HttpServletResponse response,
+                          @ApiParam(name = "lineCode", value = "线路编码") String lineCode,
+                          @ApiParam(name = "startDate", value = "所属周起始时间，格式yyyy-MM-dd")
+                          @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+                          @ApiParam(name = "endDate", value = "所属周截止时间，格式yyyy-MM-dd")
+                          @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
+        constructionWeekPlanCommandService.exportXls(request, response, lineCode, startDate, endDate);
+    }
 }

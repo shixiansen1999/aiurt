@@ -6,6 +6,11 @@ import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
 
 /**
  * @Description: construction_week_plan_command
@@ -82,4 +87,16 @@ public interface IConstructionWeekPlanCommandService extends IService<Constructi
      * @param id
      */
     void delete(String id);
+
+    /**
+     * 施工周计划导出
+     *
+     * @param request
+     * @param response
+     * @param lineCode
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    void exportXls(HttpServletRequest request, HttpServletResponse response, String lineCode, Date startDate, Date endDate);
 }

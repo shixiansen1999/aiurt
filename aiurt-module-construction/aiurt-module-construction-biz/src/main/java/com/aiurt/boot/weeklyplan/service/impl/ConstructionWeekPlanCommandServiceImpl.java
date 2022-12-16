@@ -7,36 +7,44 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.ConstructionConstant;
 import com.aiurt.boot.constant.ConstructionDictConstant;
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanCommandDTO;
+import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanExportDTO;
 import com.aiurt.boot.weeklyplan.entity.ConstructionCommandAssist;
 import com.aiurt.boot.weeklyplan.entity.ConstructionWeekPlanCommand;
 import com.aiurt.boot.weeklyplan.mapper.ConstructionWeekPlanCommandMapper;
 import com.aiurt.boot.weeklyplan.service.IConstructionCommandAssistService;
 import com.aiurt.boot.weeklyplan.service.IConstructionWeekPlanCommandService;
 import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
-import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
+import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.ExcelExportUtil;
+import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -391,6 +399,110 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                 .eq(ConstructionCommandAssist::getPlanId, id).list();
         if (CollectionUtil.isNotEmpty(commandAssists)) {
             constructionCommandAssistService.removeBatchByIds(commandAssists);
+        }
+    }
+
+    @Override
+    public void exportXls(HttpServletRequest request, HttpServletResponse response, String lineCode, Date startDate, Date endDate) {
+        List<ConstructionWeekPlanExportDTO> dataList = constructionWeekPlanCommandMapper.getExportData(lineCode, startDate, endDate);
+        List<CsStation> stations = iSysBaseApi.queryAllStation();
+        Map<String, String> stationMap = stations.stream().collect(Collectors.toMap(k -> k.getStationCode(), v -> v.getStationName(), (a, b) -> a));
+        dataList.stream().forEach(l -> {
+            String stationCode = l.getAssistStationCode();
+            if (StrUtil.isNotEmpty(stationCode)) {
+                List<String> stationCodes = StrUtil.split(stationCode, ',');
+                List<String> stationNames = new ArrayList<>();
+                stationCodes.forEach(sc -> Optional.ofNullable(stationMap.get(sc)).ifPresent(stationName -> stationNames.add(stationName)));
+                l.setAssistStationName(stationNames.stream().collect(Collectors.joining("、")));
+            }
+        });
+        String title = "运营施工及行车计划申报表";
+        if (StrUtil.isNotEmpty(lineCode)) {
+            Map<String, String> lineNameMap = iSysBaseApi.getLineNameByCode(Arrays.asList(lineCode));
+            String lineName = lineNameMap.get(lineCode);
+            if (StrUtil.isNotEmpty(lineName)) {
+                title = lineName + title;
+            }
+        }
+        Map<Date, List<ConstructionWeekPlanExportDTO>> listMap = dataList.stream()
+                .sorted((a, b) -> DateUtil.compare(a.getTaskDate(), b.getTaskDate()))
+                .collect(Collectors.groupingBy(ConstructionWeekPlanExportDTO::getTaskDate));
+        Map<String, String> weekMap = iSysBaseApi.getDictItems(ConstructionDictConstant.WEEK).stream()
+                .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+        ExportParams params = new ExportParams(title, null, "运营施工及行车计划申报表");
+        // 设置自定义样式
+        params.setStyle(CustomExcelExportStylerImpl.class);
+        Workbook workbook = ExcelExportUtil.exportExcel(params, ConstructionWeekPlanExportDTO.class, new ArrayList<>());
+        try {
+            int flag = 0;
+            for (Date date : listMap.keySet()) {
+                String secondTitle = DateUtil.format(date, "yyyy年MM月dd日");
+                int week = DateUtil.dayOfWeek(date) == 1 ? 7 : DateUtil.dayOfWeek(date) - 1;
+                secondTitle += "(" + weekMap.get(String.valueOf(week)) + ")";
+                String sheetName = "运营施工及行车计划申报表";
+                ExportParams exportParams = new ExportParams(title, secondTitle, sheetName);
+                // 设置自定义样式
+                exportParams.setStyle(CustomExcelExportStylerImpl.class);
+                Workbook sheets = ExcelExportUtil.exportExcel(exportParams, ConstructionWeekPlanExportDTO.class, listMap.get(date));
+                CustomExcelExportStylerImpl excelExportStyler = new CustomExcelExportStylerImpl(workbook);
+                if (flag == 0) {
+                    workbook = sheets;
+                    flag++;
+                    // 调整格式
+                    for (Sheet sheet : workbook) {
+                        int lastRowNum = sheet.getLastRowNum();
+                        for (int i = 1; i < lastRowNum; i++) {
+                            Row row = sheet.getRow(i);
+                            for (Cell cell : row) {
+                                if (i == 1 || i == 2) {
+                                    cell.getCellStyle().cloneStyleFrom(excelExportStyler.getTitleStyle((short) 40));
+                                } else {
+                                    cell.getCellStyle().cloneStyleFrom(excelExportStyler.stringNoneStyle(workbook, true));
+                                }
+                            }
+                            row.setHeightInPoints(25);
+                        }
+                        sheet.createFreezePane(sheet.getRow(0).getLastCellNum(), 1);
+                    }
+                    continue;
+                }
+                // 实际就一个sheet
+                for (Sheet sheet : workbook) {
+                    int rowNum = sheet.getLastRowNum() + 1;
+                    Sheet afterSheet = sheets.getSheet(sheetName);
+                    for (int i = 1; i <= afterSheet.getLastRowNum(); i++) {
+                        Row workbookRow = sheet.createRow((short) rowNum);
+                        Row afterSheetRow = afterSheet.getRow(i);
+                        short lastCellNum = afterSheetRow.getLastCellNum();
+                        for (int j = 0; j < lastCellNum; j++) {
+                            Cell cell = afterSheetRow.getCell(j);
+                            Cell workRowCell = workbookRow.createCell(j);
+                            workRowCell.setCellValue(cell.getStringCellValue());
+                            if (i == 1 || i == 2) {
+                                Workbook sheetWorkbook = sheet.getWorkbook();
+                                CellStyle cellStyle = new CustomExcelExportStylerImpl(sheetWorkbook).getTitleStyle((short) 40);
+                                workRowCell.setCellStyle(cellStyle);
+                            } else {
+                                workRowCell.getCellStyle().cloneStyleFrom(cell.getCellStyle());
+                            }
+                        }
+                        if (i == 1) {
+                            CellRangeAddress rangeAddress = new CellRangeAddress(rowNum, rowNum, 0, lastCellNum - 1);
+                            sheet.addMergedRegion(rangeAddress);
+                        }
+                        workbookRow.setHeightInPoints(25);
+                        rowNum++;
+                    }
+                }
+            }
+            String filename = title + ".xls";
+            response.setHeader("content-disposition", "attachment;filename=" + new String(filename.getBytes("UTF-8"), "ISO-8859-1"));
+            ServletOutputStream outputStream = response.getOutputStream();
+            workbook.write(outputStream);
+            outputStream.flush();
+        } catch (IOException e) {
+            log.error("周施工计划导出失败！", e.getMessage());
+            e.printStackTrace();
         }
     }
 }
