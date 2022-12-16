@@ -503,7 +503,7 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                         continue;
                     }
                 }
-                if (StrUtil.isEmpty(planCommand.getEndAndTime())){
+                if (StrUtil.isNotEmpty(planCommand.getEndAndTime())){
                     List<String> strings = Arrays.asList(planCommand.getEndAndTime().split("-"));
                     DateFormat fmt =new SimpleDateFormat("HH:mm");
                     planCommand.setTaskStartTime(fmt.parse(strings.get(0)));
