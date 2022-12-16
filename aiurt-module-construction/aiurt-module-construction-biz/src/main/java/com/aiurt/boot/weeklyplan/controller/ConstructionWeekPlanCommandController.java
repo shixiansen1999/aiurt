@@ -229,7 +229,7 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
      * @return
      */
     @ApiOperation(value = "施工周计划-导出周计划", notes = "施工周计划-导出周计划")
-    @RequestMapping(value = "/exportXls")
+    @RequestMapping(value = "/exportXls", method = RequestMethod.POST)
     public void exportXls(HttpServletRequest request, HttpServletResponse response,
                           @ApiParam(name = "lineCode", value = "线路编码") String lineCode,
                           @ApiParam(name = "startDate", value = "所属周起始时间，格式yyyy-MM-dd")
