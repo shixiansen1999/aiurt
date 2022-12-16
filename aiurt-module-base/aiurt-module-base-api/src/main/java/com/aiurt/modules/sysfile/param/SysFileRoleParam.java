@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
 
 import java.io.Serializable;
 
@@ -27,23 +28,44 @@ public class SysFileRoleParam implements Serializable {
 	@ApiModelProperty("用户id")
 	private String userId;
 
+	@ApiModelProperty(value = "原查看状态 0:不允许 1:允许")
+	private Integer primaryLookStatus;
+
 	@ApiModelProperty("查看状态 0:不允许 1:允许")
 	private Integer lookStatus;
+
+	@ApiModelProperty(value = "原编辑状态 0:不允许 1:允许")
+	private Integer primaryEditStatus;
 
 	@ApiModelProperty("编辑状态 0:不允许 1:允许")
 	private Integer editStatus;
 
+	@ApiModelProperty(value = "原上传状态 0:不允许 1:允许")
+	private Integer primaryUploadStatus;
+
 	@ApiModelProperty("上传状态 0:不允许 1:允许")
 	private Integer uploadStatus;
+
+	@ApiModelProperty(value = "原下载状态 0:不允许 1:允许")
+	private Integer primaryDownloadStatus;
 
 	@ApiModelProperty("下载状态 0:不允许 1:允许")
 	private Integer downloadStatus;
 
+	@ApiModelProperty(value = "原删除状态 0:不允许 1:允许")
+	private Integer primaryDeleteStatus;
+
 	@ApiModelProperty("删除状态 0:不允许 1:允许")
 	private Integer deleteStatus;
 
+	@ApiModelProperty(value = "原重命名状态 0:不允许 1:允许")
+	private Integer primaryRenameStatus;
+
 	@ApiModelProperty("重命名状态 0:不允许 1:允许")
 	private Integer renameStatus;
+
+	@ApiModelProperty(value = "原在线编辑状态 0:不允许 1:允许")
+	private Integer primaryOnlineEditing;
 
 	@ApiModelProperty("在线编辑状态 0:不允许 1:允许")
 	private Integer onlineEditing;

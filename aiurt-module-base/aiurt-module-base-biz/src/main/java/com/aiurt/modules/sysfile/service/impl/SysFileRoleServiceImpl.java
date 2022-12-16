@@ -52,6 +52,13 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 		fileRole.setDeleteStatus(Optional.ofNullable(param.getDeleteStatus()).orElse(0));
 		fileRole.setOnlineEditing(Optional.ofNullable(param.getOnlineEditing()).orElse(0));
 		fileRole.setRenameStatus(Optional.ofNullable(param.getRenameStatus()).orElse(0));
+		fileRole.setPrimaryLookStatus(Optional.ofNullable(param.getPrimaryLookStatus()).orElse(0));
+		fileRole.setPrimaryEditStatus(Optional.ofNullable(param.getPrimaryEditStatus()).orElse(0));
+		fileRole.setPrimaryDeleteStatus(Optional.ofNullable(param.getPrimaryDeleteStatus()).orElse(0));
+		fileRole.setPrimaryDownloadStatus(Optional.ofNullable(param.getPrimaryDownloadStatus()).orElse(0));
+		fileRole.setPrimaryRenameStatus(Optional.ofNullable(param.getPrimaryRenameStatus()).orElse(0));
+		fileRole.setPrimaryOnlineEditing(Optional.ofNullable(param.getPrimaryOnlineEditing()).orElse(0));
+		fileRole.setPrimaryUploadStatus(Optional.ofNullable(param.getPrimaryUploadStatus()).orElse(0));
 		if (!this.save(fileRole)) {
 			throw new AiurtBootException("权限设置未成功,请稍后重试");
 		}
@@ -80,6 +87,13 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 		fileRole.setDeleteStatus(Optional.ofNullable(param.getDeleteStatus()).orElse(0));
 		fileRole.setOnlineEditing(Optional.ofNullable(param.getOnlineEditing()).orElse(0));
 		fileRole.setRenameStatus(Optional.ofNullable(param.getRenameStatus()).orElse(0));
+		fileRole.setPrimaryLookStatus(Optional.ofNullable(param.getPrimaryLookStatus()).orElse(0));
+		fileRole.setPrimaryEditStatus(Optional.ofNullable(param.getPrimaryEditStatus()).orElse(0));
+		fileRole.setPrimaryDeleteStatus(Optional.ofNullable(param.getPrimaryDeleteStatus()).orElse(0));
+		fileRole.setPrimaryDownloadStatus(Optional.ofNullable(param.getPrimaryDownloadStatus()).orElse(0));
+		fileRole.setPrimaryRenameStatus(Optional.ofNullable(param.getPrimaryRenameStatus()).orElse(0));
+		fileRole.setPrimaryOnlineEditing(Optional.ofNullable(param.getPrimaryOnlineEditing()).orElse(0));
+		fileRole.setPrimaryUploadStatus(Optional.ofNullable(param.getPrimaryUploadStatus()).orElse(0));
 		if (!this.save(fileRole)) {
 			throw new AiurtBootException("权限设置未成功,请稍后重试");
 		}

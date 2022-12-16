@@ -362,6 +362,166 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						});
 					}
 				}
+
+				Map<Integer, List<SysFileRole>> listMap7 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryLookStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryLookStatus));
+				if (listMap7 != null && listMap7.size() > 0) {
+					//获取原可查看列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap7.get(1))) {
+						Optional.ofNullable(listMap7.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryLookStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap8 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryEditStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryEditStatus));
+				if (listMap8 != null && listMap8.size() > 0) {
+					//获取原可编辑列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap8.get(1))) {
+						Optional.ofNullable(listMap8.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryEditStatus(userList);
+							}
+						});
+					}
+				}
+				Map<Integer, List<SysFileRole>> listMap9 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryUploadStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryUploadStatus));
+				if (listMap9 != null && listMap9.size() > 0) {
+					//获取原可下载列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap9.get(1))) {
+						Optional.ofNullable(listMap9.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryUploadStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap10 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryDownloadStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryDownloadStatus));
+				if (listMap10 != null && listMap10.size() > 0) {
+					//获取原可上传列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap10.get(1))) {
+						Optional.ofNullable(listMap10.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryDownloadStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap11 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryDeleteStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryDeleteStatus));
+				if (listMap11 != null && listMap11.size() > 0) {
+					//获取原可删除列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap11.get(1))) {
+						Optional.ofNullable(listMap11.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryDeleteStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap12 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryRenameStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryRenameStatus));
+				if (listMap12 != null && listMap12.size() > 0) {
+					//获取原可删除列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap12.get(1))) {
+						Optional.ofNullable(listMap12.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryRenameStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap13 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryOnlineEditing())).collect(Collectors.groupingBy(SysFileRole::getPrimaryOnlineEditing));
+				if (listMap13 != null && listMap13.size() > 0) {
+					//获取原可删除列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap13.get(1))) {
+						Optional.ofNullable(listMap13.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryOnlineEditing(userList);
+							}
+						});
+					}
+				}
 			}
 		});
 		return Result.ok(vo);
@@ -389,15 +549,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 		if(CollUtil.isNotEmpty(uploads)){
 		for (String uploadId : uploads) {
 			roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDeleteStatus(1)
-					.setDownloadStatus(1).setRenameStatus(1).setOnlineEditing(1).setUploadStatus(1).setFileId(param.getId()).setUserId(uploadId));
+					.setPrimaryLookStatus(0).setPrimaryEditStatus(0).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(1).setDownloadStatus(1).setRenameStatus(1).setOnlineEditing(1).setUploadStatus(1).setFileId(param.getId()).setUserId(uploadId));
 			stringSet.add(uploadId);
 		  }
 		}
-		//允许编辑权限,自动享有查看权限，删除权限，下载权限，在线编辑权限
+		//允许编辑权限
 		if(CollUtil.isNotEmpty(editIds)){
 		for (String editId : editIds) {
 			if (!stringSet.contains(editId)){
-				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setEditStatus(1).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0).setFileId(param.getId()).setUserId(editId));
+				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setEditStatus(1).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0)
+						.setPrimaryLookStatus(0).setPrimaryEditStatus(1).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(editId));
 				stringSet.add(editId);
 			}else {
 				LambdaQueryWrapper<SysFileRole> queryWrapper = new LambdaQueryWrapper<>();
@@ -409,10 +570,11 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 		  }
 		}
 		//允许删除的权限，自动享有查看权限
-		if(CollUtil.isNotEmpty(editIds)){
+		if(CollUtil.isNotEmpty(deletes)){
 		for (String deleteId : deletes) {
 			if (!stringSet.contains(deleteId)) {
-				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setEditStatus(0).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0).setFileId(param.getId()).setUserId(deleteId));
+				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setEditStatus(0).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0)
+						.setPrimaryLookStatus(0).setPrimaryEditStatus(0).setPrimaryDeleteStatus(1).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(deleteId));
 				stringSet.add(deleteId);
 			}
 		 }
@@ -421,7 +583,8 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 		if(CollUtil.isNotEmpty(onlineEditing)){
 		for (String onlineEditingId : onlineEditing) {
 			if (!stringSet.contains(onlineEditingId)){
-				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(1).setUploadStatus(0).setFileId(param.getId()).setUserId(onlineEditingId));
+				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(1).setUploadStatus(0)
+						.setPrimaryLookStatus(0).setPrimaryEditStatus(0).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(1).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(onlineEditingId));
 				stringSet.add(onlineEditingId);
 			}
 		  }
@@ -430,7 +593,8 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 		if(CollUtil.isNotEmpty(downloads)){
 		for (String downloadId : downloads) {
 			if (!stringSet.contains(downloadId)) {
-				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(0).setUploadStatus(0).setFileId(param.getId()).setUserId(downloadId));
+				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(0).setUploadStatus(0)
+						.setPrimaryLookStatus(0).setPrimaryEditStatus(0).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(1).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(downloadId));
 				stringSet.add(downloadId);
 			}
 		 }
@@ -439,7 +603,8 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 		if(CollUtil.isNotEmpty(lookIds)) {
 			for (String lookId : lookIds) {
 				if (!stringSet.contains(lookId)) {
-					roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDownloadStatus(0).setDeleteStatus(0).setUploadStatus(0).setOnlineEditing(0).setFileId(param.getId()).setUserId(lookId));
+					roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDownloadStatus(0).setDeleteStatus(0).setUploadStatus(0).setOnlineEditing(0)
+							.setPrimaryLookStatus(1).setPrimaryEditStatus(0).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(lookId));
 					stringSet.add(lookId);
 				}
 			}
