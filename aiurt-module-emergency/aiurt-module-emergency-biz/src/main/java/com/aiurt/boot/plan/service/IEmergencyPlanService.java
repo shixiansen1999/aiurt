@@ -10,7 +10,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
+import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -78,4 +81,19 @@ public interface IEmergencyPlanService extends IService<EmergencyPlan> {
      */
     EmergencyPlanDTO queryById(String id);
 
+    /**
+     * 应急预案台账导出数据
+     * @param request
+     * @param response
+     * @param emergencyPlanDto
+     */
+    void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanDTO emergencyPlanDto);
+
+    /**
+     * 应急预案启动记录导入
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
 }

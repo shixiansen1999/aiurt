@@ -28,6 +28,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -259,7 +260,20 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 		return  mv;
     }
 
-    /**
+
+	 /**
+	  * 下载模板
+	  *
+	  * @param request
+	  * @param response
+	  * @return
+	  */
+	 @RequestMapping(value = "/downloadTemple", method = RequestMethod.GET)
+	 public void downloadTemple(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		 emergencyMaterialsCategoryService.getImportTemplate(response,request);
+	 }
+
+	 /**
       * 通过excel导入数据
     *
     * @param request
@@ -267,8 +281,8 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
     * @return
     */
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, EmergencyMaterialsCategory.class);
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		return emergencyMaterialsCategoryService.importExcel(request, response);
     }
 
 }

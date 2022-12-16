@@ -88,6 +88,14 @@
         </if>
         order by cwpc.create_time desc
     </select>
+    <select id="selectUserId" resultType="java.lang.String">
+        select id from sys_user where del_flag = 0
+        and realname = #{name} and phone = #{phone}
+    </select>
+    <select id="selectUserIdByPermitCode" resultType="java.lang.String">
+        select id from sys_user where del_flag = 0
+                                  and realname = #{name} and permit_code = #{permitCode}
+    </select>
 
     <select id="getExportData" resultType="com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanExportDTO">
         select cwpc.*,

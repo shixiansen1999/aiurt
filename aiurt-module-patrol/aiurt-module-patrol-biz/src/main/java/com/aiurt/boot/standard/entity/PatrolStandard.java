@@ -2,6 +2,7 @@ package com.aiurt.boot.standard.entity;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.afterturn.easypoi.excel.annotation.ExcelCollection;
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.*;
@@ -82,6 +83,7 @@ public class PatrolStandard extends DictEntity implements Serializable {
     private java.lang.Integer delFlag;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
+    @Dict(dicCode = "realname",dictTable="sys_user",dicText="username")
     private java.lang.String createBy;
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")

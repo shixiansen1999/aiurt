@@ -97,18 +97,18 @@ public class SysFileTypeController {
 	@ApiOperation(value = "文档类型表-修改分类文档", notes = "文档类型表-修改分类文档")
 	@PostMapping(value = "/edit")
 	public Result<?> edit(HttpServletRequest req, @RequestBody @Validated SysFileTypeParam param) {
-		if (param.getId() == null) {
-			return Result.error("修改失败");
-		}
-		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		String userId = loginUser.getId();
-		List<String> editIds = param.getEditIds();
-		if (CollectionUtils.isNotEmpty(editIds)){
-			if (!editIds.contains(userId)) {
-				editIds.add(userId);
-			}
-		}
-		param.setEditIds(editIds);
+//		if (param.getId() == null) {
+//			return Result.error("修改失败");
+//		}
+//		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+//		String userId = loginUser.getId();
+//		List<String> editIds = param.getEditIds();
+//		if (CollectionUtils.isNotEmpty(editIds)){
+//			if (!editIds.contains(userId)) {
+//				editIds.add(userId);
+//			}
+//		}
+//		param.setEditIds(editIds);
 		sysFileTypeService.edit(req, param);
 		return Result.ok("修改成功！");
 	}

@@ -14,4 +14,6 @@ public class UserStationDTO {
     Double positionX;
     // 人员的纵坐标
     Double positionY;
+
+    String bssid;
 }

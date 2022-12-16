@@ -51,11 +51,54 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 		fileRole.setDownloadStatus(Optional.ofNullable(param.getDownloadStatus()).orElse(0));
 		fileRole.setDeleteStatus(Optional.ofNullable(param.getDeleteStatus()).orElse(0));
 		fileRole.setOnlineEditing(Optional.ofNullable(param.getOnlineEditing()).orElse(0));
+		fileRole.setRenameStatus(Optional.ofNullable(param.getRenameStatus()).orElse(0));
+		fileRole.setPrimaryLookStatus(Optional.ofNullable(param.getPrimaryLookStatus()).orElse(0));
+		fileRole.setPrimaryEditStatus(Optional.ofNullable(param.getPrimaryEditStatus()).orElse(0));
+		fileRole.setPrimaryDeleteStatus(Optional.ofNullable(param.getPrimaryDeleteStatus()).orElse(0));
+		fileRole.setPrimaryDownloadStatus(Optional.ofNullable(param.getPrimaryDownloadStatus()).orElse(0));
+		fileRole.setPrimaryRenameStatus(Optional.ofNullable(param.getPrimaryRenameStatus()).orElse(0));
+		fileRole.setPrimaryOnlineEditing(Optional.ofNullable(param.getPrimaryOnlineEditing()).orElse(0));
+		fileRole.setPrimaryUploadStatus(Optional.ofNullable(param.getPrimaryUploadStatus()).orElse(0));
 		if (!this.save(fileRole)) {
 			throw new AiurtBootException("权限设置未成功,请稍后重试");
 		}
-		//添加权限
-		this.addRole(fileRole.getTypeId(), param.getUserId());
+//		//添加权限
+//		this.addRole(fileRole.getTypeId(), param.getUserId());
+
+		return true;
+	}
+
+	@Transactional(rollbackFor = Exception.class)
+	@Override
+	public boolean addRole1(SysFileRoleParam param) {
+		if (param == null || param.getFileId() == null || StringUtils.isBlank(param.getUserId())) {
+			return false;
+		}
+		if (param.getLookStatus() == null && param.getEditStatus() == null) {
+			return false;
+		}
+		//此目录权限设置
+		SysFileRole fileRole = new SysFileRole();
+		fileRole.setDelFlag(0).setFileId(param.getFileId()).setUserId(param.getUserId());
+		fileRole.setLookStatus(1);
+		fileRole.setEditStatus(Optional.ofNullable(param.getEditStatus()).orElse(0));
+		fileRole.setUploadStatus(Optional.ofNullable(param.getUploadStatus()).orElse(0));
+		fileRole.setDownloadStatus(Optional.ofNullable(param.getDownloadStatus()).orElse(0));
+		fileRole.setDeleteStatus(Optional.ofNullable(param.getDeleteStatus()).orElse(0));
+		fileRole.setOnlineEditing(Optional.ofNullable(param.getOnlineEditing()).orElse(0));
+		fileRole.setRenameStatus(Optional.ofNullable(param.getRenameStatus()).orElse(0));
+		fileRole.setPrimaryLookStatus(Optional.ofNullable(param.getPrimaryLookStatus()).orElse(0));
+		fileRole.setPrimaryEditStatus(Optional.ofNullable(param.getPrimaryEditStatus()).orElse(0));
+		fileRole.setPrimaryDeleteStatus(Optional.ofNullable(param.getPrimaryDeleteStatus()).orElse(0));
+		fileRole.setPrimaryDownloadStatus(Optional.ofNullable(param.getPrimaryDownloadStatus()).orElse(0));
+		fileRole.setPrimaryRenameStatus(Optional.ofNullable(param.getPrimaryRenameStatus()).orElse(0));
+		fileRole.setPrimaryOnlineEditing(Optional.ofNullable(param.getPrimaryOnlineEditing()).orElse(0));
+		fileRole.setPrimaryUploadStatus(Optional.ofNullable(param.getPrimaryUploadStatus()).orElse(0));
+		if (!this.save(fileRole)) {
+			throw new AiurtBootException("权限设置未成功,请稍后重试");
+		}
+//		//添加权限
+//		this.addRole(fileRole.getTypeId(), param.getUserId());
 
 		return true;
 	}

@@ -225,5 +225,4 @@ public class FaultRepairRecord implements Serializable {
 
     @ApiModelProperty(value = "签名路径")
     private String signPath;
-
 }

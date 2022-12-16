@@ -67,38 +67,61 @@ public class DailyFaultApiImpl implements DailyFaultApi {
     }
 
     @Override
-    public String getFaultTask() {
+    public HashMap<String, String> getFaultTask(DateTime startTime, DateTime endTime) {
+        HashMap<String, String> map = new HashMap<>();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //获取当前用户作为被指派/领取人，负责过的故障报修单
-        List<FaultRepairRecord> faultList = recordMapper.selectList(new LambdaQueryWrapper<FaultRepairRecord>().eq(FaultRepairRecord::getAppointUserName, sysUser.getUsername()));
+        List<LoginUser> sysUsers = sysBaseApi.getUserPersonnel(sysUser.getOrgId());
+        List<String> realNames = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getRealname).collect(Collectors.toList());
+        //获取当前用户部门的人作为被指派/领取人，负责过的故障报修单
+        List<FaultRepairRecord> faultList = recordMapper.selectList(new LambdaQueryWrapper<FaultRepairRecord>().in(FaultRepairRecord::getAppointUserName, realNames).eq(FaultRepairRecord::getDelFlag, 0));
        //获取已经填写的维修单
-        List<FaultRepairRecord> recordList = faultList.stream().filter(f -> f.getArriveTime() != null).collect(Collectors.toList());
+        List<FaultRepairRecord> recordList = Optional.ofNullable(faultList).orElse(Collections.emptyList()).stream().filter(f -> f.getArriveTime() != null).collect(Collectors.toList());
         //去重复
-        List<FaultRepairRecord> list=recordList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(()->new TreeSet<>(Comparator.comparing(o->o.getFaultCode()+";"+o.getAppointUserName()))), ArrayList::new));
+        List<FaultRepairRecord> list=Optional.ofNullable(recordList).orElse(Collections.emptyList()).stream().collect(Collectors.collectingAndThen(Collectors.toCollection(()->new TreeSet<>(Comparator.comparing(o->o.getFaultCode()+";"+o.getAppointUserName()))), ArrayList::new));
         //获取当前用户作为参与人，参与过的故障报修单
-        List<FaultRepairParticipants> participantsList = participantsMapper.selectList(new LambdaQueryWrapper<FaultRepairParticipants>().eq(FaultRepairParticipants::getUserName, sysUser.getUsername()));
+        List<FaultRepairParticipants> participantsList = participantsMapper.selectList(new LambdaQueryWrapper<FaultRepairParticipants>().in(FaultRepairParticipants::getUserName, realNames));
         //去重复
         Set <FaultRepairRecord> faultRepairRecords = new HashSet<>();
-        participantsList.stream().forEach(p->{
-             FaultRepairRecord record = recordMapper.selectById(p.getFaultRepairRecordId());
-             faultRepairRecords.add(record);
-        });
-        list.addAll(faultRepairRecords);
-        //查出当天用户是否进行维修
-        List<String> faultNames = new ArrayList<>();
-        for (FaultRepairRecord record : list) {
-             FaultRepairRecord faultRepairRecord = faultMapper.getUserToday(record.getId(),new Date());
-             if(ObjectUtil.isNotEmpty(faultRepairRecord))
-             {
-                 Fault fault = faultMapper.selectOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, record.getFaultCode()));
-                 String stationName = faultMapper.getStationName(fault.getStationCode());
-                 LoginUser loginUser = sysBaseApi.queryUser(fault.getAppointUserName());
-                 String faultStatus = faultMapper.getStatusName(fault.getStatus());
-                 String faultName = stationName+" "+fault.getFaultPhenomenon()+" "+loginUser.getRealname()+"-"+faultStatus;
-                 faultNames.add(faultName);
-             }
+        if (CollUtil.isNotEmpty(participantsList)) {
+            participantsList.stream().forEach(p->{
+                FaultRepairRecord record = recordMapper.selectById(p.getFaultRepairRecordId());
+                faultRepairRecords.add(record);
+            });
+            list.addAll(faultRepairRecords);
         }
-        return   CollUtil.join(faultNames, "。");
+
+        StringBuilder content = new StringBuilder();
+        StringBuilder code = new StringBuilder();
+
+        //获取时间范围内的维修单
+        if (CollUtil.isNotEmpty(list)) {
+            for (FaultRepairRecord record : list) {
+                if (record.getCreateTime().after(startTime) && record.getCreateTime().before(endTime)) {
+                    Fault fault = faultMapper.selectOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, record.getFaultCode()));
+                    String stationName = sysBaseApi.getPosition(fault.getStationCode());
+                    String lineName = sysBaseApi.getPosition(fault.getLineCode());
+                    content.append(lineName).append("-").append(stationName).append(" ").append(record.getFaultPhenomenon()).append(" 维修人:").append(record.getAppointUserName()).append("-");
+                    if (record.getSolveStatus() == 1) {
+                        content.append("维修完成。");
+                    } else {
+                        content.append("维修中。");
+                    }
+                    content.append("\n");
+                    code.append(fault.getCode()).append(",");
+                }
+            }
+            if (content.length() > 1) {
+                // 截取字符
+                content = content.deleteCharAt(content.length() - 1);
+                map.put("content", content.toString());
+            }
+            if (code.length() > 1) {
+                // 截取字符
+                code = content.deleteCharAt(code.length() - 1);
+                map.put("code", code.toString());
+            }
+        }
+        return map;
     }
 
     /**

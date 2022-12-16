@@ -1,5 +1,6 @@
 package com.aiurt.modules.material.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -29,7 +30,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.apache.xmlbeans.impl.validator.ValidatorUtil;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -75,6 +78,9 @@ public class MaterialBaseController {
     @Autowired
     private IDeviceAssemblyService iDeviceAssemblyService;
 
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
+
     /**
      * 分页列表查询
      *
@@ -100,12 +106,19 @@ public class MaterialBaseController {
         Result<IPage<MaterialBase>> result = new Result<IPage<MaterialBase>>();
         QueryWrapper<MaterialBase> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-        if(majorCode != null && !"".equals(majorCode)){
+        if(majorCode != null && !"".equals(majorCode) && !"1".equals(majorCode)){
             queryWrapper.eq("major_code", majorCode);
             if(systemCode != null && !"".equals(systemCode)){
                 queryWrapper.eq("system_code", systemCode);
             }else{
                 queryWrapper.apply(" (system_code is null or system_code ='') ");
+            }
+        }
+        if ("1".equals(majorCode)){
+            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            List<CsUserMajorModel> majorByUserId = iSysBaseAPI.getMajorByUserId(loginUser.getId());
+            if(CollUtil.isNotEmpty(majorByUserId)){
+                queryWrapper.in("major_code",majorByUserId);
             }
         }
         if(code != null && !"".equals(code)){

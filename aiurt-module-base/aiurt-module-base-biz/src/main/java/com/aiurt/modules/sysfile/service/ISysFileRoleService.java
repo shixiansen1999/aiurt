@@ -23,6 +23,14 @@ public interface ISysFileRoleService extends IService<SysFileRole> {
 	boolean addRole(SysFileRoleParam param);
 
 	/**
+	 * 添加文件权限
+	 *
+	 * @param param 参数
+	 * @return boolean
+	 */
+	boolean addRole1(SysFileRoleParam param);
+
+	/**
 	 * 修改文档权限
 	 *
 	 * @param param 参数

@@ -85,6 +85,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         // 以下包含的代码权限拦截局部过滤
         boolean filter = GlobalThreadLocal.setDataFilter(false);
         page1.forEach(a -> {
+           String username = baseMapper.selectUserName(a.getCreateBy());
+            a.setCreateByName(null == username ? a.getCreateBy() : username);
             a.setNumber(baseMapper.number(a.getCode()));
         });
         // 以上包含的代码权限拦截局部过滤

@@ -88,4 +88,10 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      * @return
      */
     String getDictCode(@Param("dictName")String dictName);
+
+    /**
+     * 查询用户名字
+     * @param createBy
+     */
+    String selectUserName(@Param("username") String createBy);
 }

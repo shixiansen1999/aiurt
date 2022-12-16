@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.mapper;
 
 
+import cn.hutool.core.date.DateTime;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.task.dto.DeviceDTO;
 import com.aiurt.boot.task.dto.PatrolBillDTO;
@@ -13,7 +14,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -170,12 +170,13 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
     /**
      * 获取当天已提交的工单
-     * @param date
+     * @param startTime
+     * @param endTime
      * @param taskId
      * @param taskDeviceCode
      * @return
      */
-    List<PatrolTaskDevice> getTodaySubmit(@Param("date") Date date,@Param("taskId") String taskId,@Param("taskDeviceCode") String taskDeviceCode);
+    List<PatrolTaskDevice> getTodaySubmit(@Param("startTime") DateTime startTime, @Param("endTime")DateTime endTime, @Param("taskId") String taskId, @Param("taskDeviceCode") String taskDeviceCode);
 
     /**
      *获取故障列表

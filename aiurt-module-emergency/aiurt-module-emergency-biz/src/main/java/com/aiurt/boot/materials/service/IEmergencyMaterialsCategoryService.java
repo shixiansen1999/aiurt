@@ -3,7 +3,11 @@ package com.aiurt.boot.materials.service;
 
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -16,4 +20,18 @@ public interface IEmergencyMaterialsCategoryService extends IService<EmergencyMa
 
     List<EmergencyMaterialsCategory> selectTreeList();
 
+    /**
+     * 应急物资分类模板下载
+     * @param response
+     * @param request
+     */
+    void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException;
+
+    /**
+     * 应急物资分类导入
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

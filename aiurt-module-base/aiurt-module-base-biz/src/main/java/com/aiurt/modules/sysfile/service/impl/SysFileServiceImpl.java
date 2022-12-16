@@ -1,5 +1,6 @@
 package com.aiurt.modules.sysfile.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
@@ -8,11 +9,15 @@ import com.aiurt.modules.sysfile.mapper.SysFileMapper;
 import com.aiurt.modules.sysfile.mapper.SysFileRoleMapper;
 import com.aiurt.modules.sysfile.mapper.SysFileTypeMapper;
 import com.aiurt.modules.sysfile.param.FileAppParam;
+import com.aiurt.modules.sysfile.param.SysFileRoleParam;
+import com.aiurt.modules.sysfile.param.SysFileTypeParam;
 import com.aiurt.modules.sysfile.service.ISysFileRoleService;
 import com.aiurt.modules.sysfile.service.ISysFileService;
 import com.aiurt.modules.sysfile.vo.FIlePlanVO;
 import com.aiurt.modules.sysfile.vo.FileAppVO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.sysfile.vo.SimpUserVO;
+import com.aiurt.modules.sysfile.vo.SysFileTypeDetailVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -20,15 +25,15 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -44,6 +49,11 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 	private final SysFileTypeMapper sysFileTypeMapper;
 	@Autowired
 	private SysFileRoleMapper sysFileRoleMapper;
+
+	@Autowired
+	private ISysBaseAPI iSysBaseAPI;
+
+	private final ISysFileRoleService roleService;
 
 	@Override
 	public IPage<FileAppVO> selectAppList(FileAppParam param) {
@@ -171,6 +181,436 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 		return list;
 	}
 
+	@Override
+	public Result<?> add(HttpServletRequest req, SysFile param) {
+		this.getList(param);
+		return Result.ok();
+	}
+
+	@Override
+	public Result<SysFileTypeDetailVO> detail(HttpServletRequest req, Long id) {
+		SysFile sysFile = this.getById(id);
+		if (sysFile==null){
+			return Result.error("未查询到此条记录");
+		}
+
+		//返回对象
+		SysFileTypeDetailVO vo = new SysFileTypeDetailVO();
+		Optional.ofNullable(sysFile).ifPresent(fileType -> {
+			BeanUtils.copyProperties(fileType, vo);
+			List<SysFileRole> list = roleService.lambdaQuery()
+					.eq(SysFileRole::getDelFlag, 0)
+					.eq(SysFileRole::getFileId, fileType.getId()).list();
+			if (list != null && list.size() > 0) {
+				Map<Integer, List<SysFileRole>> listMap = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getEditStatus())).collect(Collectors.groupingBy(SysFileRole::getEditStatus));
+				if (listMap != null && listMap.size() > 0) {
+					//获取编辑列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap.get(1))) {
+						Optional.ofNullable(listMap.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setEditUsers(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap6 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getLookStatus())).collect(Collectors.groupingBy(SysFileRole::getLookStatus));
+				if (listMap6 != null && listMap6.size() > 0) {
+					//获取查看列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap6.get(1))) {
+						Optional.ofNullable(listMap6.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								Optional.ofNullable(vo.getEditUsers()).ifPresent(userList::addAll);
+								vo.setLookUsers(userList);
+							}
+						});
+					}
+				}
+				Map<Integer, List<SysFileRole>> listMap1 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getUploadStatus())).collect(Collectors.groupingBy(SysFileRole::getUploadStatus));
+				if (listMap1 != null && listMap1.size() > 0) {
+					//获取上传列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap1.get(1))) {
+						Optional.ofNullable(listMap1.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setUploadStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap2 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getDownloadStatus())).collect(Collectors.groupingBy(SysFileRole::getDownloadStatus));
+				if (listMap2 != null && listMap2.size() > 0) {
+					//获取下载列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap2.get(1))) {
+						Optional.ofNullable(listMap2.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setDownloadStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap3 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getDeleteStatus())).collect(Collectors.groupingBy(SysFileRole::getDeleteStatus));
+				if (listMap3 != null && listMap3.size() > 0) {
+					//获取删除列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap3.get(1))) {
+						Optional.ofNullable(listMap3.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setDeleteStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap4 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getOnlineEditing())).collect(Collectors.groupingBy(SysFileRole::getOnlineEditing));
+				if (listMap4 != null && listMap4.size() > 0) {
+					//获取在线编辑列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap4.get(1))) {
+						Optional.ofNullable(listMap4.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setOnlineEditing(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap5 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getRenameStatus())).collect(Collectors.groupingBy(SysFileRole::getRenameStatus));
+				if (listMap5 != null && listMap5.size() > 0) {
+					//获取重命名列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap5.get(1))) {
+						Optional.ofNullable(listMap5.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setRenameStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap7 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryLookStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryLookStatus));
+				if (listMap7 != null && listMap7.size() > 0) {
+					//获取原可查看列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap7.get(1))) {
+						Optional.ofNullable(listMap7.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryLookStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap8 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryEditStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryEditStatus));
+				if (listMap8 != null && listMap8.size() > 0) {
+					//获取原可编辑列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap8.get(1))) {
+						Optional.ofNullable(listMap8.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryEditStatus(userList);
+							}
+						});
+					}
+				}
+				Map<Integer, List<SysFileRole>> listMap9 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryUploadStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryUploadStatus));
+				if (listMap9 != null && listMap9.size() > 0) {
+					//获取原可下载列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap9.get(1))) {
+						Optional.ofNullable(listMap9.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryUploadStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap10 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryDownloadStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryDownloadStatus));
+				if (listMap10 != null && listMap10.size() > 0) {
+					//获取原可上传列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap10.get(1))) {
+						Optional.ofNullable(listMap10.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryDownloadStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap11 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryDeleteStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryDeleteStatus));
+				if (listMap11 != null && listMap11.size() > 0) {
+					//获取原可删除列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap11.get(1))) {
+						Optional.ofNullable(listMap11.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryDeleteStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap12 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryRenameStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryRenameStatus));
+				if (listMap12 != null && listMap12.size() > 0) {
+					//获取原可删除列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap12.get(1))) {
+						Optional.ofNullable(listMap12.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryRenameStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap13 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryOnlineEditing())).collect(Collectors.groupingBy(SysFileRole::getPrimaryOnlineEditing));
+				if (listMap13 != null && listMap13.size() > 0) {
+					//获取原可删除列表中数据
+					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap13.get(1))) {
+						Optional.ofNullable(listMap13.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryOnlineEditing(userList);
+							}
+						});
+					}
+				}
+			}
+		});
+		return Result.ok(vo);
+	}
+
+
+	private Result<?> getList(SysFile param){
+		//编辑
+		List<String> editIds = param.getEditIds();
+		//查看
+		List<String> lookIds = param.getLookIds();
+		//上传
+		List<String> uploads = param.getUploads();
+		//下载
+		List<String> downloads = param.getDownloads();
+		//删除状态
+		List<String> deletes = param.getDeletes();
+		//在线编辑状态
+		List<String> onlineEditing = param.getOnlineEditing();
+
+		Set<String> stringSet = new HashSet<>();
+
+
+		//允许上传的权限，自动享有查看权限
+		if(CollUtil.isNotEmpty(uploads)){
+		for (String uploadId : uploads) {
+			roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDeleteStatus(1)
+					.setPrimaryLookStatus(0).setPrimaryEditStatus(0).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(1).setDownloadStatus(1).setRenameStatus(1).setOnlineEditing(1).setUploadStatus(1).setFileId(param.getId()).setUserId(uploadId));
+			stringSet.add(uploadId);
+		  }
+		}
+		//允许编辑权限
+		if(CollUtil.isNotEmpty(editIds)){
+		for (String editId : editIds) {
+			if (!stringSet.contains(editId)){
+				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setEditStatus(1).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0)
+						.setPrimaryLookStatus(0).setPrimaryEditStatus(1).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(editId));
+				stringSet.add(editId);
+			}else {
+				LambdaQueryWrapper<SysFileRole> queryWrapper = new LambdaQueryWrapper<>();
+				queryWrapper.eq(SysFileRole::getUserId,editId).eq(SysFileRole::getFileId,param.getId()).eq(SysFileRole::getDelFlag,0);
+				SysFileRole sysFileRole = roleService.getBaseMapper().selectOne(queryWrapper);
+				sysFileRole.setEditStatus(1);
+				roleService.updateById(sysFileRole);
+			}
+		  }
+		}
+		//允许删除的权限，自动享有查看权限
+		if(CollUtil.isNotEmpty(deletes)){
+		for (String deleteId : deletes) {
+			if (!stringSet.contains(deleteId)) {
+				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setEditStatus(0).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0)
+						.setPrimaryLookStatus(0).setPrimaryEditStatus(0).setPrimaryDeleteStatus(1).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(deleteId));
+				stringSet.add(deleteId);
+			}
+		 }
+		}
+		//允许在线编辑的权限，自动享有查看权限
+		if(CollUtil.isNotEmpty(onlineEditing)){
+		for (String onlineEditingId : onlineEditing) {
+			if (!stringSet.contains(onlineEditingId)){
+				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(1).setUploadStatus(0)
+						.setPrimaryLookStatus(0).setPrimaryEditStatus(0).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(1).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(onlineEditingId));
+				stringSet.add(onlineEditingId);
+			}
+		  }
+		}
+		//允许下载的权限，自动享有查看权限
+		if(CollUtil.isNotEmpty(downloads)){
+		for (String downloadId : downloads) {
+			if (!stringSet.contains(downloadId)) {
+				roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(0).setUploadStatus(0)
+						.setPrimaryLookStatus(0).setPrimaryEditStatus(0).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(1).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(downloadId));
+				stringSet.add(downloadId);
+			}
+		 }
+		}
+		//仅仅允许查看的权限
+		if(CollUtil.isNotEmpty(lookIds)) {
+			for (String lookId : lookIds) {
+				if (!stringSet.contains(lookId)) {
+					roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDownloadStatus(0).setDeleteStatus(0).setUploadStatus(0).setOnlineEditing(0)
+							.setPrimaryLookStatus(1).setPrimaryEditStatus(0).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(0).setFileId(param.getId()).setUserId(lookId));
+					stringSet.add(lookId);
+				}
+			}
+		}
+		return Result.ok();
+	}
 	private List<FIlePlanVO> selectParent(Long typeId, String userId, List<Long> roleTypeIds, Long unTypeId) {
 
 		List<FIlePlanVO> list = new ArrayList<>();

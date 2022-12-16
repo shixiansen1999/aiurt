@@ -1,6 +1,7 @@
 package com.aiurt.boot.api;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -11,12 +12,10 @@ import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.ScreenDurationTask;
 import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
-import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
-import com.aiurt.boot.task.entity.PatrolTaskStandard;
 import com.aiurt.boot.task.mapper.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -53,7 +52,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
     private PatrolTaskUserMapper patrolTaskUserMapper;
     @Autowired
     private PatrolScreenService screenService;
-
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
     /**
      * 首页-统计日程的巡视完成数
      *
@@ -88,40 +88,58 @@ public class PatrolApiServiceImpl implements PatrolApi {
     }
 
     @Override
-    public String getUserTask() {
-        //获取当前用户的巡检任务信息
+    public  HashMap<String, String> getUserTask(DateTime startTime, DateTime endTime) {
+        HashMap<String, String> map = new HashMap<>();
+        //获取当前用户在时间范围内的的巡检任务信息
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<PatrolTask> taskList = patrolTaskUserMapper.getUserTask(sysUser.getId());
-        List<String> list = new ArrayList<>();
+        List<PatrolTask> taskList = patrolTaskUserMapper.getUserTask(sysUser.getOrgCode());
         if (CollUtil.isNotEmpty(taskList)) {
             List<PatrolTaskDevice> taskDeviceList = new ArrayList<>();
             for (PatrolTask task : taskList) {
-                //获取当前用户的任务中，获取当天，已提交的所有的工单
-                List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getTodaySubmit(new Date(), task.getId(), null);
+                //获取当前用户的任务中，已提交的所有的工单
+                List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getTodaySubmit(startTime,endTime, task.getId(), null);
                 if (ObjectUtil.isNotEmpty(devices)) {
                     taskDeviceList.addAll(devices);
                 }
             }
-            //获取当前用户作为同行人参与的单号
-            List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().eq(PatrolAccompany::getUserId, sysUser.getId()));
-            //获取当前用户参与的单号，并且当天，已提交
-            for (PatrolAccompany accompany : accompanyList) {
-                List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getTodaySubmit(new Date(), null, accompany.getTaskDeviceCode());
+            //获取当前部门人员作为同行人参与的单号
+            List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(sysUser.getOrgId());
+            List<String> userIds = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getId).collect(Collectors.toList());
+            List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().in(PatrolAccompany::getUserId, userIds).select(PatrolAccompany::getTaskDeviceCode));
+            //获取当前部门人员的单号，已提交
+            List<String> taskDeviceCodes = Optional.ofNullable(accompanyList).orElse(Collections.emptyList()).stream().map(PatrolAccompany::getTaskDeviceCode).collect(Collectors.toList());
+            for (String accompanyCode : taskDeviceCodes) {
+                List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getTodaySubmit(startTime,endTime, null, accompanyCode);
                 if (ObjectUtil.isNotEmpty(devices)) {
                     taskDeviceList.addAll(devices);
                 }
             }
+
+            StringBuilder content = new StringBuilder();
+            StringBuilder code = new StringBuilder();
             //获取这个任务下的工单所对应的站点
-            for (PatrolTaskDevice patrolTaskDevice : taskDeviceList) {
-                String stationName = patrolTaskDeviceMapper.getLineStationName(patrolTaskDevice.getStationCode());
-                PatrolTaskStandard taskStandard = taskStandardMapper.selectById(patrolTaskDevice.getTaskStandardId());
-                PatrolStandard standardName = patrolStandardMapper.selectById(taskStandard.getStandardId());
-                String submitName = patrolTaskDeviceMapper.getSubmitName(patrolTaskDevice.getUserId());
-                String deviceStationName = standardName.getName() + "-" + stationName + " 巡视人：" + submitName;
-                list.add(deviceStationName);
+            if (CollUtil.isNotEmpty(taskDeviceList)) {
+                for (PatrolTaskDevice patrolTaskDevice : taskDeviceList) {
+                    String lineName = iSysBaseAPI.getPosition(patrolTaskDevice.getLineCode());
+                    String positionName = iSysBaseAPI.getPosition(patrolTaskDevice.getPositionCode());
+                    LoginUser userById = iSysBaseAPI.getUserById(patrolTaskDevice.getUserId());
+                    content.append(lineName).append("通信专业车站各系统专用设备").append("-").append(positionName).append(" ").append(" 巡视人:").append(userById.getRealname()).append("。").append('\n');
+                    code.append(patrolTaskDevice.getTaskCode()).append(",");
+                }
+            }
+
+            if (content.length() > 1) {
+                // 截取字符
+                content = content.deleteCharAt(content.length() - 1);
+                map.put("content", content.toString());
+            }
+            if (code.length() > 1) {
+                // 截取字符
+                code = content.deleteCharAt(code.length() - 1);
+                map.put("code", code.toString());
             }
         }
-        return CollUtil.join(list, "。");
+        return map;
     }
 
     @Override

@@ -243,16 +243,18 @@
         and cs.del_flag = 0
     </select>
     <select id="getTodaySubmit" resultType="com.aiurt.boot.task.entity.PatrolTaskDevice">
-        SELECT pt.*
-        FROM patrol_task_device pt
+        SELECT ptd.*,pt.code as taskCode
+        FROM patrol_task_device ptd
+        left join patrol_task_standard pts on pts.id = ptd.task_standard_id
+        left join patrol_task pt on pt.id = ptd.task_id
         WHERE
-        DATE_FORMAT(pt.check_time, '%Y-%m-%d') = DATE_FORMAT(#{date}, '%Y-%m-%d')
-        AND pt.`status` = 2
+        ptd.check_time between #{startTime} and #{endTime}
+        AND ptd.`status` = 2
         <if test="taskId != null and taskId != ''">
-         and pt.task_id = #{taskId}
+         and ptd.task_id = #{taskId}
         </if>
         <if test="taskDeviceCode != null and taskDeviceCode != ''">
-        and pt.patrol_number = #{taskDeviceCode}
+        and ptd.patrol_number = #{taskDeviceCode}
         </if>
     </select>
     <select id="getFaultList" resultType="com.aiurt.boot.task.entity.PatrolTaskDevice">

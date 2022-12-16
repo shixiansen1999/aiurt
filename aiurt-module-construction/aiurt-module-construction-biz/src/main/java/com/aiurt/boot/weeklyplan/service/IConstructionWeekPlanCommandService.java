@@ -11,6 +11,9 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
+import org.jeecg.common.api.vo.Result;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @Description: construction_week_plan_command
@@ -87,6 +90,14 @@ public interface IConstructionWeekPlanCommandService extends IService<Constructi
      * @param id
      */
     void delete(String id);
+
+    /**
+     * 通过excel导入数据
+     * @param file
+     * @param params
+     * @return
+     */
+    Result importExcelMaterial(MultipartFile file, ImportParams params) throws Exception;
 
     /**
      * 施工周计划导出

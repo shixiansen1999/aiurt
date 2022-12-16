@@ -123,19 +123,34 @@ public class WorkLogDTO extends WorkLogResult {
     @ApiModelProperty(value = "配合施工地点")
     private  String  assortLocationName;
 
+    /**巡检编号*/
+    @Excel(name = "巡检编号", width = 15)
+    @ApiModelProperty(value = "巡检编号")
+    private  String  patrolIds;
+
     /**巡检内容*/
     @Excel(name = "巡检内容", width = 15)
     @ApiModelProperty(value = "巡检内容")
     private  String  patrolContent;
+
+    /**检修编号*/
+    @Excel(name = "检修编号", width = 15)
+    @ApiModelProperty(value = "检修编号")
+    private  String  repairCode;
 
     /**检修内容*/
     @Excel(name = "检修内容", width = 15)
     @ApiModelProperty(value = "检修内容")
     private  String  repairContent;
 
+    /**故障编号*/
+    @Excel(name = "故障编号", width = 15)
+    @ApiModelProperty(value = "故障编号")
+    private  String  faultCode;
+
     /**故障内容*/
-    @Excel(name = "故障报修", width = 15)
-    @ApiModelProperty(value = "故障报修")
+    @Excel(name = "故障内容", width = 15)
+    @ApiModelProperty(value = "故障内容")
     private  String  faultContent;
 
     /**配合施工单位*/

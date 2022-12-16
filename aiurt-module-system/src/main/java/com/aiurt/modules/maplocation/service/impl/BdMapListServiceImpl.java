@@ -20,6 +20,8 @@ import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.position.service.ICsLineService;
 import com.aiurt.modules.position.service.ICsStationPositionService;
 import com.aiurt.modules.position.service.ICsStationService;
+import com.aiurt.modules.positionwifi.entity.CsPositionWifi;
+import com.aiurt.modules.positionwifi.service.ICsPositionWifiService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -67,6 +69,8 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
     private RedisTemplate redisTemplate;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
+    @Autowired
+    private ICsPositionWifiService csPositionWifiService;
 
     /**
      * 查询人员的位置信息
@@ -190,25 +194,42 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
         // 如果是按站点查，直接用站点的id,如果是按人员查，就是人员的位置信息和哪个站点离得最近，就取那个站点的id
         if (StrUtil.isNotEmpty(id)) {
             UserStationDTO userStation = baseMapper.getStationId(id);
-            List<CsStation> bdStationList = csStationService.getBaseMapper().selectList(new LambdaQueryWrapper<CsStation>()
-                                            .isNotNull(CsStation::getLongitude)
-                                            .isNotNull(CsStation::getLatitude));
-            if (ObjectUtil.isNotEmpty(userStation)
-                    && userStation.getPositionX() != null
-                    && userStation.getPositionY() != null
-                    && CollUtil.isNotEmpty(bdStationList)) {
+            LambdaQueryWrapper<CsPositionWifi> lambdaQueryWrapper = new LambdaQueryWrapper();
+            lambdaQueryWrapper.eq(CsPositionWifi::getDelFlag, 0);
+            if (StrUtil.isNotEmpty(userStation.getBssid())) {
+                lambdaQueryWrapper.eq(CsPositionWifi::getMac, userStation.getBssid());
+                CsPositionWifi csPositionWifis = csPositionWifiService.getOne(lambdaQueryWrapper);
+                LambdaQueryWrapper<CsStation> stationLambdaQueryWrapper = new LambdaQueryWrapper<CsStation>();
+                stationLambdaQueryWrapper.isNotNull(CsStation::getLongitude)
+                        .isNotNull(CsStation::getLatitude)
+                        .eq(CsStation::getDelFlag, 0);
+                stationLambdaQueryWrapper.eq(CsStation::getStationCode, csPositionWifis.getStationCode())
+                        .eq(CsStation::getLineCode, csPositionWifis.getLineCode());
+                CsStation bdStation = csStationService.getBaseMapper().selectOne(stationLambdaQueryWrapper);
+                stationIdStr = bdStation.getStationCode() == null ? null :bdStation.getStationCode();
+            } else if (ObjectUtil.isNotEmpty(userStation) && StrUtil.isEmpty(stationIdStr)){
+                List<CsStation> bdStationList = csStationService.getBaseMapper().selectList(new LambdaQueryWrapper<CsStation>()
+                        .isNotNull(CsStation::getLongitude)
+                        .isNotNull(CsStation::getLatitude)
+                        .eq(CsStation::getDelFlag, 0));
+                if (ObjectUtil.isNotEmpty(userStation)
+                        && userStation.getPositionX() != null
+                        && userStation.getPositionY() != null
+                        && CollUtil.isNotEmpty(bdStationList)) {
 
-                GlobalCoordinates userDistance = new GlobalCoordinates(userStation.getPositionY(), userStation.getPositionX());
-                double distance = 2000.0d; // 2000米范围内
-                for (CsStation bdStation : bdStationList) {
-                    BigDecimal latitude = bdStation.getLatitude();
-                    BigDecimal longitude = bdStation.getLongitude();
-                    if (Objects.nonNull(latitude) && Objects.nonNull(longitude)) {
-                        GlobalCoordinates stationDistance = new GlobalCoordinates(latitude.doubleValue(), longitude.doubleValue());
-                        double meter = MapDistance.getDistanceMeter(userDistance, stationDistance, Ellipsoid.Sphere);
-                        if (meter <= distance) {
-                            stationIdStr = bdStation.getStationCode();
-                            distance = meter;
+                    GlobalCoordinates userDistance = new GlobalCoordinates(userStation.getPositionY(), userStation.getPositionX());
+                    // 2000米范围内
+                    double distance = 2000.0d;
+                    for (CsStation bdStation : bdStationList) {
+                        BigDecimal latitude = bdStation.getLatitude();
+                        BigDecimal longitude = bdStation.getLongitude();
+                        if (Objects.nonNull(latitude) && Objects.nonNull(longitude)) {
+                            GlobalCoordinates stationDistance = new GlobalCoordinates(latitude.doubleValue(), longitude.doubleValue());
+                            double meter = MapDistance.getDistanceMeter(userDistance, stationDistance, Ellipsoid.Sphere);
+                            if (meter <= distance) {
+                                stationIdStr = bdStation.getStationCode();
+                                distance = meter;
+                            }
                         }
                     }
                 }
@@ -258,6 +279,20 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                 if (userNameSet.contains(entity.getUserName())) {
                     assign.setStatus("已登录"); assign.setNum(1);
                     UserStationDTO userStation = baseMapper.getStationId(entity.getId());
+                    LambdaQueryWrapper<CsPositionWifi> lambdaQueryWrapper = new LambdaQueryWrapper();
+                    lambdaQueryWrapper.eq(CsPositionWifi::getDelFlag, 0);
+                    if (ObjectUtil.isNotEmpty(userStation) && StrUtil.isNotEmpty(userStation.getBssid())) {
+                        lambdaQueryWrapper.eq(CsPositionWifi::getMac, userStation.getBssid());
+                        CsPositionWifi csPositionWifis = csPositionWifiService.getOne(lambdaQueryWrapper);
+                        LambdaQueryWrapper<CsStation> stationLambdaQueryWrapper = new LambdaQueryWrapper<CsStation>();
+                        stationLambdaQueryWrapper.isNotNull(CsStation::getLongitude)
+                                .isNotNull(CsStation::getLatitude)
+                                .eq(CsStation::getDelFlag, 0);
+                        stationLambdaQueryWrapper.eq(CsStation::getStationCode, csPositionWifis.getStationCode())
+                                .eq(CsStation::getLineCode, csPositionWifis.getLineCode());
+                        CsStation bdStation = csStationService.getBaseMapper().selectOne(stationLambdaQueryWrapper);
+                        assign.setStationName(bdStation.getStationName()==null ?null :bdStation.getStationName());
+                    }else if (StrUtil.isEmpty(assign.getStationName())){
                     QueryWrapper<CsStation> bdStationQueryWrapper = new QueryWrapper<>();
                     bdStationQueryWrapper.lambda().isNotNull(CsStation::getLongitude);
                     bdStationQueryWrapper.lambda().isNotNull(CsStation::getLatitude);
@@ -268,7 +303,8 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                             && CollUtil.isNotEmpty(bdStationList)) {
 
                         GlobalCoordinates userDistance = new GlobalCoordinates(userStation.getPositionY(), userStation.getPositionX());
-                        double distance = 2000.0d; // 2000米范围内
+                        // 2000米范围内
+                        double distance = 2000.0d;
                         for (CsStation bdStation : bdStationList) {
                             BigDecimal latitude = bdStation.getLatitude();
                             BigDecimal longitude = bdStation.getLongitude();
@@ -282,6 +318,7 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                             }
                         }
                     }
+                  }
                 } else {
                     assign.setStatus("未登录");assign.setNum(2);
                 }
@@ -306,7 +343,6 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
             list2 =  result.stream().filter(l->l.getNum()==1).collect(Collectors.toList());
             return list2;
         }}
-
         result.stream().sorted(Comparator.comparing(AssignUserDTO::getNum)).collect(Collectors.toList());
         return result;
     }

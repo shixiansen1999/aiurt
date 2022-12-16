@@ -1,5 +1,8 @@
 package com.aiurt.boot.plan.controller;
 
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +35,7 @@ import com.aiurt.common.system.base.controller.BaseController;
 import org.jeecg.common.system.vo.ComboModel;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import io.swagger.annotations.Api;
@@ -63,7 +67,6 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_plan-分页列表查询")
 	@ApiOperation(value="应急预案台账-分页列表查询", notes="应急预案台账-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<EmergencyPlan>> queryPageList(EmergencyPlanQueryDTO emergencyPlanQueryDto,
@@ -223,7 +226,6 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_plan-通过id查询")
 	@ApiOperation(value="应急预案台账-通过id查询", notes="应急预案台账-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<EmergencyPlanDTO> queryById(@RequestParam(name="id",required=true) String id) {
@@ -235,16 +237,43 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 	}
 
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param emergencyPlan
-    */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, EmergencyPlan emergencyPlan) {
-        return super.exportXls(request, emergencyPlan, EmergencyPlan.class, "emergency_plan");
-    }
+
+
+
+	 /**
+	  * 应急预案台账导出数据
+	  * @param request
+	  * @param response
+	  * @param emergencyPlanDto
+	  */
+	 @AutoLog(value = "应急预案-应急预案台账导出数据")
+	 @GetMapping(value = "/exportXls")
+	 public void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanDTO emergencyPlanDto) {
+		  emergencyPlanService.exportXls(request,response,emergencyPlanDto);
+	 }
+
+	 /**
+	  * 应急预案导入模板下载
+	  *
+	  */
+	 @AutoLog(value = "下载导入模板", operateType =  6, operateTypeAlias = "下载导入模板", permissionUrl = "")
+	 @ApiOperation(value="下载导入模板", notes="下载导入模板")
+	 @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
+	 public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		 //获取输入流，原始模板位置
+		 ClassPathResource classPathResource =  new ClassPathResource("templates/InspectionSty.xls");
+		 InputStream bis = classPathResource.getInputStream();
+		 //设置发送到客户端的响应的内容类型
+		 response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		 response.setHeader("Content-Disposition", "attachment;filename="+"应急预案导入模板.xlsx");
+		 BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+		 int len = 0;
+		 while ((len = bis.read()) != -1) {
+			 out.write(len);
+			 out.flush();
+		 }
+		 out.close();
+	 }
 
     /**
       * 通过excel导入数据
@@ -253,9 +282,10 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
     * @param response
     * @return
     */
+	@ApiOperation(value = "应急预案表-导入excel", notes = "应急预案表-导入excel")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, EmergencyPlan.class);
+        return emergencyPlanService.importExcel(request, response);
     }
 
 

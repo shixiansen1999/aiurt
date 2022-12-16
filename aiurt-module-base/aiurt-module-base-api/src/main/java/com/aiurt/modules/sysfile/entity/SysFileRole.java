@@ -52,11 +52,24 @@ public class SysFileRole {
 	@ApiModelProperty(value = "用户id")
 	private String userId;
 	/**
+	 * 原查看状态
+	 */
+	@Excel(name = "原查看状态", width = 15)
+	@ApiModelProperty(value = "原查看状态")
+	private Integer primaryLookStatus;
+	/**
 	 * 查看状态
 	 */
 	@Excel(name = "查看状态", width = 15)
 	@ApiModelProperty(value = "查看状态")
 	private Integer lookStatus;
+
+	/**
+	 * 原编辑状态
+	 */
+	@Excel(name = "原编辑状态", width = 15)
+	@ApiModelProperty(value = "原编辑状态")
+	private Integer primaryEditStatus;
 	/**
 	 * 编辑状态
 	 */
@@ -64,11 +77,23 @@ public class SysFileRole {
 	@ApiModelProperty(value = "编辑状态")
 	private Integer editStatus;
 	/**
+	 * 原上传状态
+	 */
+	@Excel(name = "原上传状态", width = 15)
+	@ApiModelProperty(value = "原上传状态")
+	private Integer primaryUploadStatus;
+	/**
 	 * 上传状态
 	 */
 	@Excel(name = "上传状态", width = 15)
 	@ApiModelProperty(value = "上传状态")
 	private Integer uploadStatus;
+	/**
+	 * 原下载状态
+	 */
+	@Excel(name = "原下载状态", width = 15)
+	@ApiModelProperty(value = "原下载状态")
+	private Integer primaryDownloadStatus;
 	/**
 	 * 下载状态
 	 */
@@ -76,11 +101,35 @@ public class SysFileRole {
 	@ApiModelProperty(value = "下载状态")
 	private Integer downloadStatus;
 	/**
+	 * 原删除状态
+	 */
+	@Excel(name = "原删除状态", width = 15)
+	@ApiModelProperty(value = "原删除状态")
+	private Integer primaryDeleteStatus;
+	/**
 	 * 删除状态
 	 */
 	@Excel(name = "删除状态", width = 15)
 	@ApiModelProperty(value = "删除状态")
 	private Integer deleteStatus;
+	/**
+	 * 原重命名状态
+	 */
+	@Excel(name = "原重命名状态", width = 15)
+	@ApiModelProperty(value = "原重命名状态")
+	private Integer primaryRenameStatus;
+	/**
+	 * 重命名状态
+	 */
+	@Excel(name = "重命名状态", width = 15)
+	@ApiModelProperty(value = "重命名状态")
+	private Integer renameStatus;
+	/**
+	 * 原在线编辑状态
+	 */
+	@Excel(name = "原在线编辑状态", width = 15)
+	@ApiModelProperty(value = "原在线编辑状态")
+	private Integer primaryOnlineEditing;
 	/**
 	 * 在线编辑状态
 	 */

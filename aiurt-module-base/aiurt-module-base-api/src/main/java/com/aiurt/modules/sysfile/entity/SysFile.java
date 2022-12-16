@@ -1,6 +1,7 @@
 package com.aiurt.modules.sysfile.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -13,8 +14,10 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: 文件表
@@ -72,14 +75,12 @@ public class SysFile {
 	 */
 	@Excel(name = "下载状态", width = 15)
 	@ApiModelProperty(value = "下载状态")
-	@NotNull(message = "下载状态不能为空")
 	private Integer downStatus;
 	/**
 	 * 编辑状态
 	 */
 	@Excel(name = "编辑状态", width = 15)
 	@ApiModelProperty(value = "编辑状态")
-	@NotNull(message = "编辑状态不能为空")
 	private Integer editStatus;
 	/**
 	 * 下载次数
@@ -121,6 +122,37 @@ public class SysFile {
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@ApiModelProperty(value = "修改时间")
 	private Date updateTime;
+
+
+	@ApiModelProperty("可查看人员")
+	@TableField(exist = false)
+	@NotEmpty(message = "小主，请添加可查看人员哦！")
+	private List<String> lookIds;
+
+	@ApiModelProperty("可编辑人员")
+	@TableField(exist = false)
+	@NotEmpty(message = "小主，请添加可编辑人员哦！")
+	private List<String> editIds;
+
+	@ApiModelProperty("可上传人员")
+	@TableField(exist = false)
+	@NotEmpty(message = "小主，请添加可上传人员哦！")
+	private List<String> uploads;
+
+	@ApiModelProperty("可下载人员")
+	@TableField(exist = false)
+	@NotEmpty(message = "小主，请添加可下载人员哦！")
+	private List<String> downloads;
+
+	@ApiModelProperty("可删除人员")
+	@TableField(exist = false)
+	@NotEmpty(message = "小主，请添加可删除人员哦！")
+	private List<String> deletes;
+
+	@ApiModelProperty("可在线编辑人员")
+	@TableField(exist = false)
+	@NotEmpty(message = "小主，请添加可在线编辑人员哦！")
+	private List<String> onlineEditing;
 
 
 	public static final String TYPE = "type";

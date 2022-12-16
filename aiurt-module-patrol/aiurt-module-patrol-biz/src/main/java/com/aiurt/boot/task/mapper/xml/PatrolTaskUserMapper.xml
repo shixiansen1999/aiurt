@@ -30,8 +30,8 @@
     <select id="getUserTask" resultType="com.aiurt.boot.task.entity.PatrolTask">
         select pt.*
         from patrol_task pt
-                 LEFT JOIN patrol_task_user ptu on ptu.task_code = pt.`code`
-        where ptu.user_id = #{id}
+                 LEFT JOIN patrol_task_organization pto on pto.task_code = pt.`code`
+        where pt.del_flag = 0 and pto.del_flag = 0 and pto.org_code = #{code}
     </select>
     <select id="getScreenUserDuration" resultType="com.aiurt.boot.screen.model.ScreenDurationTask">
         SELECT

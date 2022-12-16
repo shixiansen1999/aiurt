@@ -13,14 +13,23 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 /**
  * @Description: construction_week_plan_command
@@ -163,6 +172,52 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
     public Result<String> delete(@RequestParam @ApiParam(name = "id", value = "计划主键ID") String id) {
         constructionWeekPlanCommandService.delete(id);
         return Result.OK("删除成功！");
+    }
+    @ApiOperation(value = "下载施工周计划导入模板", notes = "下载施工周计划导入模板")
+    @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
+    public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        ClassPathResource classPathResource =  new ClassPathResource("templates/constructionWeekPlanCommand.xlsx");
+        InputStream bis = classPathResource.getInputStream();
+        BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+        int len = 0;
+        while ((len = bis.read()) != -1) {
+            out.write(len);
+            out.flush();
+        }
+        out.close();
+    }
+    /**
+     * 通过excel导入数据
+     * @param request
+     * @param response
+     * @return
+     */
+    @ApiOperation(value = "通过excel导入数据", notes = "通过excel导入数据")
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            ImportParams params = new ImportParams();
+            params.setTitleRows(2);
+            params.setHeadRows(1);
+            params.setNeedSave(true);
+            try {
+                return constructionWeekPlanCommandService.importExcelMaterial(file, params);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                return Result.error("文件导入失败:" + e.getMessage());
+            } finally {
+                try {
+                    file.getInputStream().close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+        return Result.error("文件导入失败！");
     }
 
     /**

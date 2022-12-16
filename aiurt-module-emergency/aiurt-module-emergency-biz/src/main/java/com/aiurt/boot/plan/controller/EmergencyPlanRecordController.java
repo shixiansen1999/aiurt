@@ -1,5 +1,8 @@
 package com.aiurt.boot.plan.controller;
 
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +33,7 @@ import com.aiurt.common.system.base.controller.BaseController;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDeptUserModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -177,9 +181,45 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	 @AutoLog(value = "应急预案-应急预案启动记录提交")
 	 @ApiOperation(value = "应急预案-应急预案启动记录提交", notes = "应急预案-应急预案启动记录提交")
 	 @PostMapping(value = "/submit")
-	 public Result<String> startProcess(@RequestParam(name = "id", required = true) String id) {
-		 emergencyPlanRecordService.submit(id);
+	 public Result<String> startProcess(@RequestBody EmergencyPlanRecordDTO emergencyPlanRecordDto) {
+		 emergencyPlanRecordService.submit(emergencyPlanRecordDto);
 		 return Result.OK("提交成功!");
+	 }
+
+
+	 /**
+	  * 应急预案启动记录导入模板下载
+	  *
+	  */
+	 @AutoLog(value = "应急预案启动记录导入模板下载", operateType =  6, operateTypeAlias = "应急预案启动记录导入模板下载", permissionUrl = "")
+	 @ApiOperation(value="应急预案启动记录导入模板下载", notes="应急预案启动记录导入模板下载")
+	 @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
+	 public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		 //获取输入流，原始模板位置
+		 ClassPathResource classPathResource =  new ClassPathResource("templates/InspectionSty.xls");
+		 InputStream bis = classPathResource.getInputStream();
+		 //设置发送到客户端的响应的内容类型
+		 response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		 response.setHeader("Content-Disposition", "attachment;filename="+"应急预案启动记录导入模板.xlsx");
+		 BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+		 int len = 0;
+		 while ((len = bis.read()) != -1) {
+			 out.write(len);
+			 out.flush();
+		 }
+		 out.close();
+	 }
+
+	 /**
+	  * 应急预案台账导出数据
+	  * @param request
+	  * @param response
+	  * @param emergencyPlanRecordDto
+	  */
+	 @AutoLog(value = "应急预案-应急预案台账导出数据")
+	 @GetMapping(value = "/exportXls")
+	 public void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanRecordDTO emergencyPlanRecordDto) {
+		 emergencyPlanRecordService.exportXls(request,response,emergencyPlanRecordDto);
 	 }
 
 }
