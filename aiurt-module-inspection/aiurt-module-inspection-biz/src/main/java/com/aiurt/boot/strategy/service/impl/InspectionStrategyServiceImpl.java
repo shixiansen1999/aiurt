@@ -114,16 +114,16 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Set<String> userRoleSet = sysBaseApi.getUserRoleSet(sysUser.getUsername());
         List<CsUserMajorModel> list2 = new ArrayList<>();
-        List<CsUserDepartModel> list1 =  new ArrayList<>();
-        if (CollectionUtil.isNotEmpty(userRoleSet)){
-        if (!userRoleSet.contains("admin")){
-            list1 =  sysBaseApi.getDepartByUserId(sysUser.getId());
-            list2 = sysBaseApi.getMajorByUserId(sysUser.getId());
-          }
+        List<CsUserDepartModel> list1 = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(userRoleSet)) {
+            if (!userRoleSet.contains("admin")) {
+                list1 = sysBaseApi.getDepartByUserId(sysUser.getId());
+                list2 = sysBaseApi.getMajorByUserId(sysUser.getId());
+            }
         }
-        List<String> orgCodes = list1.stream().map(s-> s.getOrgCode()).collect(Collectors.toList());
-        List<String> majorCodes = list2.stream().map(s-> s.getMajorCode()).collect(Collectors.toList());
-        IPage<InspectionStrategyDTO> list = baseMapper.selectPageList(page, inspectionStrategyDTO,orgCodes,majorCodes);
+        List<String> orgCodes = list1.stream().map(s -> s.getOrgCode()).collect(Collectors.toList());
+        List<String> majorCodes = list2.stream().map(s -> s.getMajorCode()).collect(Collectors.toList());
+        IPage<InspectionStrategyDTO> list = baseMapper.selectPageList(page, inspectionStrategyDTO, orgCodes, majorCodes);
 
         if (ObjectUtil.isNotEmpty(list)) {
             List<InspectionStrategyDTO> records = list.getRecords();
@@ -540,7 +540,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         Integer type = ins.getType();
 
         // 根据类型生成计划
-        strategyService.macth(type,ins, newStaIds, orgList, stationList);
+        strategyService.macth(type, ins, newStaIds, orgList, stationList);
 //        // 周检
 //        if (type.equals(InspectionConstant.WEEK)) {
 //            strategyService.weekPlan(ins, newStaIds, orgList, stationList);
@@ -616,18 +616,22 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             throw new AiurtBootException("请先配置检修标准");
         }
 
+        // 组织机构
+        Long orgCount = inspectionStrOrgRelMapper.selectCount(
+                new LambdaQueryWrapper<InspectionStrOrgRel>()
+                        .eq(InspectionStrOrgRel::getInspectionStrCode, ins.getCode())
+                        .eq(InspectionStrOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (orgCount < 1) {
+            throw new AiurtBootException("请先配置组织机构");
+        }
+
         inspectionStrRels.forEach(re -> {
-            InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
-                    new LambdaQueryWrapper<InspectionCode>()
-                            .eq(InspectionCode::getCode, re.getInspectionStaCode())
-                            .eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+            InspectionCode inspectionCode = inspectionCodeMapper.selectOne(new LambdaQueryWrapper<InspectionCode>().eq(InspectionCode::getCode, re.getInspectionStaCode()).eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
             if (ObjectUtil.isEmpty(inspectionCode)) {
                 throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
             }
             if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice())) {
-                List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(
-                        new LambdaQueryWrapper<InspectionStrDeviceRel>()
-                                .eq(InspectionStrDeviceRel::getInspectionStrRelId, re.getId()));
+                List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(new LambdaQueryWrapper<InspectionStrDeviceRel>().eq(InspectionStrDeviceRel::getInspectionStrRelId, re.getId()));
                 if (CollUtil.isEmpty(inspectionStrDeviceRels)) {
                     throw new AiurtBootException(String.format("名字为%s的检修标准需要指定设备", ObjectUtil.isNotEmpty(inspectionCode) ? inspectionCode.getTitle() : ""));
                 }
@@ -792,7 +796,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
 
         // 失败条数
-        Integer  errorLines = 0;
+        Integer errorLines = 0;
         // 标记是否有错误信息
         Boolean errorSign = false;
         // 失败导出的excel下载地址
@@ -805,7 +809,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             // 判断是否xls、xlsx两种类型的文件，不是则直接返回
             String type = FilenameUtils.getExtension(file.getOriginalFilename());
             if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-                return imporReturnRes(errorLines, false, failReportUrl,"文件导入失败，文件类型不对");
+                return imporReturnRes(errorLines, false, failReportUrl, "文件导入失败，文件类型不对");
             }
 
             // 设置excel参数
@@ -825,8 +829,8 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                 list = ExcelImportUtil.importExcel(file.getInputStream(), InspectionStyImportExcelDTO.class, params);
 
                 // 空表格直接返回
-                if(CollUtil.isEmpty(list)){
-                    return imporReturnRes(errorLines, false, failReportUrl,"暂无导入数据");
+                if (CollUtil.isEmpty(list)) {
+                    return imporReturnRes(errorLines, false, failReportUrl, "暂无导入数据");
                 }
                 // 校验数据
                 for (InspectionStyImportExcelDTO inspectionStyImportExcelDTO : list) {
@@ -837,7 +841,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                     errorSign = this.requiredInspectionCodeCheck(errorSign, inspectionStyImportExcelDTO, inspectionStrategyDTO);
 
                     if (errorMessage.length() > 0 || errorSign) {
-                        if(errorMessage.length() > 0 ){
+                        if (errorMessage.length() > 0) {
                             errorMessage = errorMessage.deleteCharAt(errorMessage.length() - 1);
                             inspectionStyImportExcelDTO.setInspectionStyErrorReason(errorMessage.toString());
                         }
@@ -857,14 +861,14 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                     for (InspectionStrategyDTO saveDatum : saveData) {
                         this.add(saveDatum);
                     }
-                    return imporReturnRes(errorLines, true, failReportUrl,"文件导入成功");
+                    return imporReturnRes(errorLines, true, failReportUrl, "文件导入成功");
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return imporReturnRes(errorLines, false, failReportUrl,"暂无导入数据");
+        return imporReturnRes(errorLines, false, failReportUrl, "暂无导入数据");
     }
 
     /**
@@ -1100,35 +1104,35 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                         case "月检":
                             if (tactics < 1 || tactics > 4) {
                                 errorMessage.append("检修周期类型月检的周期策略范围是1~4");
-                            }else{
+                            } else {
                                 inspectionStrategyDTO.setTactics(tactics);
                             }
                             break;
                         case "双月检":
                             if (tactics < 1 || tactics > 8) {
                                 errorMessage.append("检修周期类型双月检的周期策略范围是1~8");
-                            }else{
+                            } else {
                                 inspectionStrategyDTO.setTactics(tactics);
                             }
                             break;
                         case "季检":
                             if (tactics < 1 || tactics > 12) {
                                 errorMessage.append("检修周期类型季检的周期策略范围是1~12");
-                            }else{
+                            } else {
                                 inspectionStrategyDTO.setTactics(tactics);
                             }
                             break;
                         case "半年检":
                             if (tactics < 1 || tactics > 24) {
                                 errorMessage.append("检修周期类型半年检的周期策略范围是1~24");
-                            }else{
+                            } else {
                                 inspectionStrategyDTO.setTactics(tactics);
                             }
                             break;
                         case "年检":
                             if (tactics < 1 || tactics > 8) {
                                 errorMessage.append("检修周期类型年检的周期策略范围是1~48");
-                            }else{
+                            } else {
                                 inspectionStrategyDTO.setTactics(tactics);
                             }
                             break;
@@ -1229,13 +1233,14 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
     /**
      * 检修策略导入统一返回格式
-     * @param errorLines 错误条数
-     * @param isSucceed 是否成功
+     *
+     * @param errorLines    错误条数
+     * @param isSucceed     是否成功
      * @param failReportUrl 错误报告下载地址
-     * @param message 提示信息
+     * @param message       提示信息
      * @return
      */
-    public static Result<?> imporReturnRes(int errorLines, boolean isSucceed, String failReportUrl,String message) {
+    public static Result<?> imporReturnRes(int errorLines, boolean isSucceed, String failReportUrl, String message) {
         JSONObject result = new JSONObject(5);
         result.put("isSucceed", isSucceed);
         result.put("errorCount", errorLines);
@@ -1290,7 +1295,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             e.printStackTrace();
         }
 
-        return imporReturnRes(errorLines, false, url,"文件导入失败，数据有错误");
+        return imporReturnRes(errorLines, false, url, "文件导入失败，数据有错误");
     }
 
     @NotNull
