@@ -1,11 +1,16 @@
 package com.aiurt.boot.plan.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ExportParams;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
+import cn.afterturn.easypoi.util.PoiMergeCellUtil;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
@@ -23,34 +28,43 @@ import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.aiurt.common.api.dto.FlowTaskCompleteCommentDTO;
 import com.aiurt.common.api.dto.StartBpmnDTO;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
+import com.aiurt.modules.device.entity.Device;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import liquibase.pro.packaged.S;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -80,6 +94,9 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     private IEmergencyPlanService emergencyPlanService;
     @Autowired
     private EmergencyPlanMapper emergencyPlanMapper;
+
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -573,15 +590,20 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             case 6:
                 // 已通过
                 emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.PASSED);
+                //通过后设置为有效
                 emergencyPlan.setStatus(EmergencyPlanConstant.VALID);
+                //新版本更新后，更改旧版本的状态为停用
                 if(ObjectUtil.isNotEmpty(emergencyPlan.getOldPlanId())){
                     List<EmergencyPlan> list = emergencyPlanService.lambdaQuery()
                             .eq(EmergencyPlan::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
                             .eq(EmergencyPlan::getId, emergencyPlan.getOldPlanId()).list();
-                    list.stream().forEach(l->{
-                        l.setStatus(EmergencyPlanConstant.STOPPED);
-                    });
+                    for (EmergencyPlan plan : list) {
+                        plan.setStatus(EmergencyPlanConstant.STOPPED);
+                        this.updateById(plan);
+                    }
                 }
+                Date nowDate = DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
+                emergencyPlan.setApprovedTime(nowDate);
                 break;
         }
         this.updateById(emergencyPlan);
@@ -644,4 +666,337 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         return result;
     }
 
+
+    @Override
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+
+        // 失败条数
+        Integer  errorLines = 0;
+        // 标记是否有错误信息
+        Boolean errorSign = false;
+        // 失败导出的excel下载地址
+        String failReportUrl = "";
+
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+
+            // 判断是否xls、xlsx两种类型的文件，不是则直接返回
+            String type = FilenameUtils.getExtension(file.getOriginalFilename());
+            if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+                return imporReturnRes(errorLines, false, failReportUrl,"文件导入失败，文件类型不对");
+            }
+
+            // 设置excel参数
+            ImportParams params = new ImportParams();
+            params.setTitleRows(2);
+            params.setHeadRows(3);
+            params.setNeedSave(true);
+
+            // 需要保存的数据
+            List<EmergencyPlanDTO> saveData = CollUtil.newArrayList();
+            // excel表格数据
+            List<EmergencyPlanImportExcelDTO> list = null;
+            try {
+                // 记录校验得到的错误信息
+                StringBuilder errorMessage = new StringBuilder();
+
+                list = ExcelImportUtil.importExcel(file.getInputStream(), EmergencyPlanImportExcelDTO.class, params);
+
+                // 空表格直接返回
+                if(CollUtil.isEmpty(list)){
+                    return imporReturnRes(errorLines, false, failReportUrl,"暂无导入数据");
+                }
+                // 校验数据
+                for (EmergencyPlanImportExcelDTO emergencyPlanImportExcelDTO : list) {
+                    EmergencyPlanDTO emergencyPlanDTO = new EmergencyPlanDTO();
+                    // 校验应急预案
+                    this.checkData(errorMessage, emergencyPlanImportExcelDTO, emergencyPlanDTO);
+                    // 校验应急预案处置程序
+                    this.checkDisposalProcedureCode(errorSign, emergencyPlanImportExcelDTO, emergencyPlanDTO);
+                    // 校验应急预案物资清单
+                    this.checkMaterialsCode(errorSign, emergencyPlanImportExcelDTO, emergencyPlanDTO);
+
+                    if (errorMessage.length() > 0 ) {
+                        if(errorMessage.length() > 0 || errorSign ){
+                            errorMessage = errorMessage.deleteCharAt(errorMessage.length() - 1);
+                            emergencyPlanImportExcelDTO.setEmergencyPlanErrorReason(errorMessage.toString());
+                        }
+                        errorLines++;
+                    } else {
+                        saveData.add(emergencyPlanDTO);
+                    }
+                }
+
+                // 存在错误，错误报告下载
+                if (errorLines > 0) {
+                    return getErrorExcel(errorLines, list, failReportUrl, type);
+                }
+
+                // 保存到系统
+                if (CollUtil.isNotEmpty(saveData)) {
+                    for (EmergencyPlanDTO saveDatum : saveData) {
+                        this.saveAndAdd(saveDatum);
+                    }
+                    return imporReturnRes(errorLines, true, failReportUrl,"文件导入成功");
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return imporReturnRes(errorLines, false, failReportUrl,"暂无导入数据");
+    }
+
+    /**
+     * 检修策略导入统一返回格式
+     * @param errorLines 错误条数
+     * @param isSucceed 是否成功
+     * @param failReportUrl 错误报告下载地址
+     * @param message 提示信息
+     * @return
+     */
+    public static Result<?> imporReturnRes(int errorLines, boolean isSucceed, String failReportUrl,String message) {
+        JSONObject result = new JSONObject(5);
+        result.put("isSucceed", isSucceed);
+        result.put("errorCount", errorLines);
+        result.put("failReportUrl", failReportUrl);
+        Result res = Result.ok(result);
+        res.setMessage(message);
+        res.setCode(200);
+        return res;
+    }
+
+    /**
+     * 校验excel数据
+     *
+     * @param errorMessage                错误信息
+     * @param emergencyPlanImportExcelDTO excel数据
+     * @param emergencyPlanDTO       转换成要保存的实体数据
+     */
+    private void checkData(StringBuilder errorMessage, EmergencyPlanImportExcelDTO emergencyPlanImportExcelDTO, EmergencyPlanDTO emergencyPlanDTO) {
+        // 空数据不处理
+        if (ObjectUtil.isEmpty(emergencyPlanImportExcelDTO)) {
+            return;
+        }
+        // 应急预案必填校验
+        requiredCheck(errorMessage, emergencyPlanImportExcelDTO, emergencyPlanDTO);
+    }
+    private void requiredCheck(StringBuilder errorMessage, EmergencyPlanImportExcelDTO emergencyPlanImportExcelDTO, EmergencyPlanDTO emergencyPlanDTO) {
+        //获取部门
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String orgCode = loginUser.getOrgCode();
+        //编制部门
+        emergencyPlanDTO.setOrgCode(orgCode);
+        //预案版本默认值
+        emergencyPlanDTO.setEmergencyPlanVersion("1.0");
+        // 应急预案类型转换
+        HashMap<String, Integer> checkMap = CollUtil.newHashMap();
+        checkMap.put("综合应急预案", 1);
+        checkMap.put("专项应急预案", 2);
+        checkMap.put("现场处置方案", 3);
+        if(ObjectUtil.isEmpty(emergencyPlanImportExcelDTO.getEmergencyPlanType())){
+              errorMessage.append("预案类型必须填写，");
+          }else {
+            Integer isConfirm = checkMap.get(emergencyPlanImportExcelDTO.getEmergencyPlanType());
+            if (ObjectUtil.isNotEmpty(isConfirm)) {
+                emergencyPlanDTO.setEmergencyPlanType(isConfirm);
+            } else {
+                errorMessage.append("应急预案类型格式错误，");
+            }
+        }
+        if(ObjectUtil.isEmpty(emergencyPlanImportExcelDTO.getEmergencyPlanName())){
+            errorMessage.append("应急预案名称必须填写，");
+        }
+        if(ObjectUtil.isEmpty(emergencyPlanImportExcelDTO.getEmergencyTeamId())){
+            errorMessage.append("应急队伍必须填写，");
+        }else{
+            String emergencyTeamId = emergencyPlanImportExcelDTO.getEmergencyTeamId();
+            String[] split = emergencyTeamId.split(";");
+            List<String> teamList = new ArrayList<>();
+            for (String s : split) {
+                List<EmergencyTeam> list = emergencyTeamService.lambdaQuery().eq(EmergencyTeam::getEmergencyTeamname, s).list();
+                for (EmergencyTeam emergencyTeam : list) {
+                    String id = emergencyTeam.getId();
+                    teamList.add(id);
+                }
+
+            }
+            if (ObjectUtil.isNotEmpty(teamList)) {
+                emergencyPlanDTO.setEmergencyTeamId(teamList);
+            } else {
+                errorMessage.append("不存在这个队伍!");
+            }
+
+        }
+
+    }
+
+    private Boolean checkDisposalProcedureCode(Boolean errorSign, EmergencyPlanImportExcelDTO emergencyPlanImportExcelDTO, EmergencyPlanDTO emergencyPlanDTO) {
+        if (ObjectUtil.isEmpty(emergencyPlanImportExcelDTO)
+                || CollUtil.isEmpty(emergencyPlanImportExcelDTO.getPlanDisposalProcedureList())) {
+            return false;
+        }
+        List<EmergencyPlanDisposalProcedureImportExcelDTO> planDisposalProcedureList = emergencyPlanImportExcelDTO.getPlanDisposalProcedureList();
+        // 封装处置程序到应急预案实体
+        List<EmergencyPlanDisposalProcedure> disposalProcedureList = CollUtil.newArrayList();
+
+        // 检修标准是否存在系统
+        for (EmergencyPlanDisposalProcedureImportExcelDTO emergencyPlanDisposalProcedureImportExcelDTO : planDisposalProcedureList) {
+
+            // 错误信息
+            StringBuilder errorMessage = new StringBuilder();
+            if(ObjectUtil.isEmpty(emergencyPlanDisposalProcedureImportExcelDTO.getOrgCode())){
+                errorMessage.append("处置部门不能为空!");
+            }
+            if(ObjectUtil.isEmpty(emergencyPlanDisposalProcedureImportExcelDTO.getRoleId())){
+                errorMessage.append("处置角色不能为空!");
+            }
+            if(ObjectUtil.isEmpty(emergencyPlanDisposalProcedureImportExcelDTO.getDisposalProcedureContent())){
+                errorMessage.append("处置内容不能为空!");
+            }
+
+            if (errorMessage.length() > 0) {
+                // 截取字符
+                errorMessage = errorMessage.deleteCharAt(errorMessage.length() - 1);
+                emergencyPlanDisposalProcedureImportExcelDTO.setErrorReason(errorMessage.toString());
+                errorSign = true;
+            } else {
+                EmergencyPlanDisposalProcedure emergencyPlanDisposalProcedure = new EmergencyPlanDisposalProcedure();
+                emergencyPlanDisposalProcedure.setOrgCode(emergencyPlanDisposalProcedureImportExcelDTO.getOrgCode());
+                emergencyPlanDisposalProcedure.setRoleId(emergencyPlanDisposalProcedureImportExcelDTO.getRoleId());
+                emergencyPlanDisposalProcedure.setDisposalProcedureContent(emergencyPlanDisposalProcedureImportExcelDTO.getDisposalProcedureContent());
+                disposalProcedureList.add(emergencyPlanDisposalProcedure);
+            }
+        }
+        emergencyPlanDTO.setEmergencyPlanDisposalProcedure(disposalProcedureList);
+        return errorSign;
+    }
+    private Boolean checkMaterialsCode(Boolean errorSign, EmergencyPlanImportExcelDTO emergencyPlanImportExcelDTO, EmergencyPlanDTO emergencyPlanDTO) {
+        return errorSign;
+    }
+
+    /**
+     * 下载错误清单
+     * @param errorLines
+     * @param list
+     * @param url
+     * @param type
+     * @return
+     * @throws IOException
+     */
+    private Result<?> getErrorExcel(int errorLines, List<EmergencyPlanImportExcelDTO> list, String url, String type) throws IOException {
+        //创建导入失败错误报告,进行模板导出
+        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/InspectionStyError.xls");
+        InputStream resourceAsStream = resource.getInputStream();
+
+        //2.获取临时文件
+        File fileTemp = new File("/templates/InspectionStyError.xls");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+
+            String path = fileTemp.getAbsolutePath();
+            TemplateExportParams exportParams = new TemplateExportParams(path);
+
+            // 封装数据
+            Map<String, Object> errorMap = handleData(list);
+
+            // 将数据填入表格
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            sheetsMap.put(0, errorMap);
+            Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+
+            // 合并数据
+            // size从第6行开始合并，对应模板
+            int size = 5;
+            for (EmergencyPlanImportExcelDTO deviceModel : list) {
+                for (int i = 0; i <= 9; i++) {
+                    //合并单元格
+                    PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0), size, size + deviceModel.getPlanDisposalProcedureList().size() - 1, i, i);
+                }
+//                PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0), size, size + deviceModel.getPlanDisposalProcedureList()).size() - 1, 14, 14);
+                size = size + deviceModel.getPlanDisposalProcedureList().size();
+            }
+
+            String fileName = "应急预案数据导入错误清单" + "_" + System.currentTimeMillis() + "." + type;
+            FileOutputStream out = new FileOutputStream(upLoadPath + File.separator + fileName);
+            url = fileName;
+            workbook.write(out);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return imporReturnRes(errorLines, false, url,"文件导入失败，数据有错误");
+    }
+
+    @NotNull
+    private Map<String, Object> handleData(List<EmergencyPlanImportExcelDTO> list) {
+        Map<String, Object> errorMap = CollUtil.newHashMap();
+        List<Map<String, Object>> listMap = CollUtil.newArrayList();
+        for (int i = 0; i < list.size(); i++) {
+            Map<String, Object> lm = CollUtil.newHashMap();
+            EmergencyPlanImportExcelDTO emergencyPlanImportExcelDTO = list.get(i);
+            if (ObjectUtil.isEmpty(emergencyPlanImportExcelDTO)) {
+                continue;
+            }
+            if (CollUtil.isNotEmpty(emergencyPlanImportExcelDTO.getPlanDisposalProcedureList())) {
+                List<EmergencyPlanDisposalProcedureImportExcelDTO> inspectionExcelDTOList = emergencyPlanImportExcelDTO.getPlanDisposalProcedureList();
+                for (EmergencyPlanDisposalProcedureImportExcelDTO emergencyPlanDisposalProcedureImportExcelDTO : inspectionExcelDTOList) {
+                    lm = CollUtil.newHashMap();
+                    //错误报告获取信息
+//                    lm.put("year", inspectionStyImportExcelDTO.getYear());
+//                    lm.put("name", inspectionStyImportExcelDTO.getName());
+//                    lm.put("stationName", inspectionStyImportExcelDTO.getStationName());
+//                    lm.put("orgName", inspectionStyImportExcelDTO.getOrgName());
+//                    lm.put("type", inspectionStyImportExcelDTO.getType());
+//                    lm.put("tactics", inspectionStyImportExcelDTO.getTactics());
+//                    lm.put("isConfirm", inspectionStyImportExcelDTO.getIsConfirm());
+//                    lm.put("isReceipt", inspectionStyImportExcelDTO.getIsReceipt());
+//                    lm.put("workType", inspectionStyImportExcelDTO.getWorkType());
+//                    lm.put("isOutsource", inspectionStyImportExcelDTO.getIsOutsource());
+//                    lm.put("InspectionStyErrorReason", inspectionStyImportExcelDTO.getInspectionStyErrorReason());
+//                    lm.put("code", inspectionImportExcelDTO.getCode());
+//                    lm.put("title", inspectionImportExcelDTO.getTitle());
+//                    lm.put("deviceExcelDTOS", inspectionImportExcelDTO.getDeviceExcelDTOS());
+//                    lm.put("errorReason", inspectionImportExcelDTO.getErrorReason());
+                    listMap.add(lm);
+                }
+            } else {
+                //错误报告获取信息
+//                lm.put("year", inspectionStyImportExcelDTO.getYear());
+//                lm.put("name", inspectionStyImportExcelDTO.getName());
+//                lm.put("stationName", inspectionStyImportExcelDTO.getStationName());
+//                lm.put("orgName", inspectionStyImportExcelDTO.getOrgName());
+//                lm.put("type", inspectionStyImportExcelDTO.getType());
+//                lm.put("tactics", inspectionStyImportExcelDTO.getTactics());
+//                lm.put("isConfirm", inspectionStyImportExcelDTO.getIsConfirm());
+//                lm.put("isReceipt", inspectionStyImportExcelDTO.getIsReceipt());
+//                lm.put("workType", inspectionStyImportExcelDTO.getWorkType());
+//                lm.put("isOutsource", inspectionStyImportExcelDTO.getIsOutsource());
+//                lm.put("InspectionStyErrorReason", inspectionStyImportExcelDTO.getInspectionStyErrorReason());
+                listMap.add(lm);
+            }
+
+        }
+        errorMap.put("maplist", listMap);
+        return errorMap;
+    }
+
+
+    /**
+     * 校验必填信息
+     *
+     * @param emergencyPlanDTO
+     */
+    private void check(EmergencyPlanDTO emergencyPlanDTO) {
+
+        if (ObjectUtil.isEmpty(emergencyPlanDTO)) {
+            throw new AiurtBootException("必填参数为空");
+        }
+    }
 }

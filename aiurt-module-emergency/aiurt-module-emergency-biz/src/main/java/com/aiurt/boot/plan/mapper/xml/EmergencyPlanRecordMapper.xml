@@ -2,9 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.plan.mapper.EmergencyPlanRecordMapper">
     <select id="queryPageList" resultType="com.aiurt.boot.plan.vo.EmergencyPlanRecordVO">
-        select epr.*
+        select epr.*,
+               su.realname as recorderId
         from emergency_plan_record epr
         left join emergency_plan ep on ep.id = epr.emergency_plan_id
+        left join sys_user su on su.username = epr.recorder_id
         where epr.del_flag = 0
         <if test="condition.eventClass != null and condition.eventClass != ''">
             and epr.event_class = #{condition.eventClass}
@@ -24,5 +26,31 @@
             </foreach>
         </if>
        order by epr.create_time desc
+    </select>
+
+    <select id="selectListNoPage" resultType="com.aiurt.boot.plan.dto.EmergencyPlanRecordExcelDTO">
+        select ep.id as id,
+        ep.emergency_plan_type as emergencyPlanType,
+        ep.emergency_plan_name as emergencyPlanName ,
+        ep.key_word as keyWord,
+        ep.emergency_plan_version as emergencyPlanVersion,
+        ep.status as status,
+        sd.depart_name as orgName,
+        su.realname as userName,
+        ep.emergency_plan_status as emergencyPlanStatus
+        from emergency_plan ep
+        left join sys_depart sd on ep.org_code = sd.org_code
+        left join sys_user su on ep.create_by = su.username
+        where ep.del_flag = 0
+        <if test="condition.emergencyPlanName != null and condition.emergencyPlanName != ''">
+            and ep.emergency_plan_name like concat('%', #{condition.emergencyPlanName}, '%')
+        </if>
+        <if test="condition.emergencyPlanType != null and condition.emergencyPlanType != ''">
+            and ep.emergency_plan_type like concat('%', #{condition.emergencyPlanType}, '%')
+        </if>
+        <if test="condition.status != null">
+            and ep.status = #{condition.status}
+        </if>
+        order by ep.emergency_plan_status asc
     </select>
 </mapper>

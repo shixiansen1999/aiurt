@@ -3,11 +3,13 @@
 <mapper namespace="com.aiurt.boot.plan.mapper.EmergencyPlanMapper">
     <select id="queryPageList" resultType="com.aiurt.boot.plan.entity.EmergencyPlan">
         select ep.*,
+               su.realname as createBy,
         ahp.PROC_INST_ID_ as process_instance_id,
         ara.ID_           as task_id,
         ara.NAME_         as task_name,
         arp.KEY_          as model_key
         from emergency_plan ep
+        left join sys_user su on su.username = ep.create_by
         Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = ep.id
         LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
         LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_

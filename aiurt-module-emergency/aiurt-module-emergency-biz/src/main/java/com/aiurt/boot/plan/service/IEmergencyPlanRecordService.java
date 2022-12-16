@@ -12,6 +12,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDeptUserModel;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -68,8 +70,16 @@ public interface IEmergencyPlanRecordService extends IService<EmergencyPlanRecor
 
     /**
      * 应急预案启动记录-提交
-     * @param id
+     * @param emergencyPlanRecordDto
      * @return
      */
-    String submit(String id);
+    String submit(EmergencyPlanRecordDTO emergencyPlanRecordDto);
+
+    /**
+     * 应急预案启动记录导出数据
+     * @param request
+     * @param response
+     * @param emergencyPlanRecordDto
+     */
+    void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanRecordDTO emergencyPlanRecordDto);
 }
