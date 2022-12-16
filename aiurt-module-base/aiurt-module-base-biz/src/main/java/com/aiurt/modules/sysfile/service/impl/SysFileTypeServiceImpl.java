@@ -99,13 +99,16 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 		Set<String> stringSet = new HashSet<>();
 
 
-		//允许上传的权限，自动享有查看权限
+		//允许上传的权限
+		if (CollUtil.isNotEmpty(uploads)){
 		for (String uploadId : uploads) {
 			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDeleteStatus(1)
 					.setDownloadStatus(1).setRenameStatus(1).setOnlineEditing(1).setUploadStatus(1).setTypeId(type.getId()).setUserId(uploadId));
 			stringSet.add(uploadId);
+		  }
 		}
-		//允许编辑权限,自动享有查看权限，删除权限，下载权限，在线编辑权限
+		//允许编辑权限
+		if (CollUtil.isNotEmpty(editIds)){
 		for (String editId : editIds) {
 			if (!stringSet.contains(editId)){
 				roleService.addRole(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setEditStatus(1).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0).setTypeId(type.getId()).setUserId(editId));
@@ -117,34 +120,43 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 				sysFileRole.setEditStatus(1);
 				roleService.updateById(sysFileRole);
 			}
+		  }
 		}
 		//允许删除的权限
+		if (CollUtil.isNotEmpty(deletes)){
 		for (String deleteId : deletes) {
 			if (!stringSet.contains(deleteId)) {
 				roleService.addRole(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setEditStatus(0).setDeleteStatus(1).setDownloadStatus(1).setOnlineEditing(1).setUploadStatus(0).setTypeId(type.getId()).setUserId(deleteId));
 				stringSet.add(deleteId);
 			}
+		  }
 		}
 		//允许在线编辑的权限
+		if (CollUtil.isNotEmpty(onlineEditing)){
 		for (String onlineEditingId : onlineEditing) {
 			if (!stringSet.contains(onlineEditingId)){
 				roleService.addRole(new SysFileRoleParam().setLookStatus(1).setRenameStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(1).setUploadStatus(0).setTypeId(type.getId()).setUserId(onlineEditingId));
 				stringSet.add(onlineEditingId);
 			}
+		  }
 		}
 		//允许下载的权限
-		for (String downloadId : downloads) {
-			if (!stringSet.contains(downloadId)) {
-				roleService.addRole(new SysFileRoleParam().setLookStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(0).setUploadStatus(0).setTypeId(type.getId()).setUserId(downloadId));
-				stringSet.add(downloadId);
+		if (CollUtil.isNotEmpty(downloads)) {
+			for (String downloadId : downloads) {
+				if (!stringSet.contains(downloadId)) {
+					roleService.addRole(new SysFileRoleParam().setLookStatus(1).setDownloadStatus(1).setEditStatus(0).setDeleteStatus(0).setOnlineEditing(0).setUploadStatus(0).setTypeId(type.getId()).setUserId(downloadId));
+					stringSet.add(downloadId);
+				}
 			}
 		}
 		//仅仅允许查看的权限
+		if (CollUtil.isNotEmpty(lookIds)) {
 		for (String lookId : lookIds) {
 			if (!stringSet.contains(lookId)) {
 				roleService.addRole(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDownloadStatus(0).setDeleteStatus(0).setUploadStatus(0).setOnlineEditing(0).setTypeId(type.getId()).setUserId(lookId));
 				stringSet.add(lookId);
 			}
+		 }
 		}
 		return Result.ok();
 	}
