@@ -764,7 +764,7 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         }
         errorLines+=errorStrs.size();
         successLines+=(listMaterial.size()-errorLines);
-        return ImportExcelUtil.imporReturnRes(errorLines,successLines,errorStrs);
+        return ImportExcelUtil.imporReturnRes(errorLines,successLines,errorStrs,null);
     }
 
 }
