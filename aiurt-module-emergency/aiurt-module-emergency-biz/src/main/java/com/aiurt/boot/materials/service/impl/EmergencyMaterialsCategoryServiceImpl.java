@@ -41,10 +41,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -313,6 +310,23 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
                 {
                     category.setPid(categoryFatherName.getId());
                 }
+                if(categoryFatherName.getStatus()==0)
+                {
+                    stringBuilder.append("该上级节点已被禁用，");
+                }
+                else
+                {
+                    List<EmergencyMaterialsCategory> deptAll = emergencyMaterialsCategoryMapper.selectList(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0));
+                    Set<EmergencyMaterialsCategory> deptUpList = getDeptUpList(deptAll, category);
+                    List<EmergencyMaterialsCategory> disabledList = deptUpList.stream().filter(e -> e.getStatus() == 0).collect(Collectors.toList());
+                    if(disabledList.size()>0)
+                    {
+                        stringBuilder.append("该上级节点已被禁用，");
+                    }
+
+                }
+
+
             }
             else
             {
@@ -337,7 +351,24 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
             model.setWrongReason(stringBuilder.toString());
         }
     }
-
+    public static Set<EmergencyMaterialsCategory> getDeptUpList(List<EmergencyMaterialsCategory> deptAll, EmergencyMaterialsCategory categoryFatherName)
+    {
+        if(ObjectUtil.isNotEmpty(categoryFatherName)){
+            Set<EmergencyMaterialsCategory> set = new HashSet<>();
+            String parentId = categoryFatherName.getPid();
+            List<EmergencyMaterialsCategory> parentDepts = deptAll.stream().filter(item -> item.getId().equals(parentId)).collect(Collectors.toList());
+            if(CollectionUtil.isNotEmpty(parentDepts)){
+                EmergencyMaterialsCategory parentDept = parentDepts.get(0);
+                set.add(parentDept);
+                Set<EmergencyMaterialsCategory> deptUpTree = getDeptUpList(deptAll, parentDept);
+                if(deptUpTree!=null){
+                    set.addAll(deptUpTree);
+                }
+                return set;
+            }
+        }
+        return  null;
+    }
     public static Result<?> imporReturnRes(int errorLines, int successLines, String tipMessage, boolean isType, String failReportUrl) throws IOException {
         if (isType) {
             if (errorLines != 0) {
