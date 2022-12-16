@@ -8,8 +8,8 @@ import com.aiurt.boot.constant.ConstructionConstant;
 import com.aiurt.boot.constant.ConstructionDictConstant;
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanCommandDTO;
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanCommandExcelDTO;
-import com.aiurt.boot.weeklyplan.entity.BdTemplate;
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanExportDTO;
+import com.aiurt.boot.weeklyplan.entity.BdTemplate;
 import com.aiurt.boot.weeklyplan.entity.ConstructionCommandAssist;
 import com.aiurt.boot.weeklyplan.entity.ConstructionWeekPlanCommand;
 import com.aiurt.boot.weeklyplan.mapper.BdTemplateMapper;
@@ -17,6 +17,7 @@ import com.aiurt.boot.weeklyplan.mapper.ConstructionWeekPlanCommandMapper;
 import com.aiurt.boot.weeklyplan.service.IConstructionCommandAssistService;
 import com.aiurt.boot.weeklyplan.service.IConstructionWeekPlanCommandService;
 import com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
@@ -31,10 +32,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -42,11 +41,10 @@ import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.springframework.beans.BeanUtils;
-import org.jeecgframework.poi.excel.ExcelExportUtil;
-import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -56,17 +54,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -434,8 +430,8 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         List<ConstructionWeekPlanCommandExcelDTO> listMaterial = ExcelImportUtil.importExcel(file.getInputStream(), ConstructionWeekPlanCommandExcelDTO.class, params);
         List<String> errorStrs = new ArrayList<>();
         // 去掉 sql 中的重复数据
-        Integer errorLines=0;
-        Integer successLines=0;
+        Integer errorLines = 0;
+        Integer successLines = 0;
 
         List<ConstructionWeekPlanCommandExcelDTO> list = new ArrayList<>();
         for (int i = 0; i < listMaterial.size(); i++) {
@@ -444,19 +440,19 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                 ConstructionWeekPlanCommandExcelDTO planCommand = listMaterial.get(i);
                 String finalstr = "";
                 //作业性质
-                if (StrUtil.isEmpty(planCommand.getNatureName())){
+                if (StrUtil.isEmpty(planCommand.getNatureName())) {
                     errorStrs.add("第 " + i + " 行：作业性质未输入，忽略导入。");
                     planCommand.setText("作业性质未输入，忽略导入");
                     list.add(planCommand);
                     continue;
-                }else {
+                } else {
                     List<DictModel> dictItems = iSysBaseApi.getDictItems(ConstructionDictConstant.NATURE);
-                    dictItems.forEach(s->{
-                        if (s.getText().equals(planCommand.getNatureName())){
+                    dictItems.forEach(s -> {
+                        if (s.getText().equals(planCommand.getNatureName())) {
                             planCommand.setNature(Integer.valueOf(s.getValue()));
                         }
                     });
-                    if (ObjectUtil.isEmpty(planCommand.getNature())){
+                    if (ObjectUtil.isEmpty(planCommand.getNature())) {
                         errorStrs.add("第 " + i + " 行：作业性质未找到,请核对后输入，忽略导入。");
                         planCommand.setText("作业性质未找到,请核对后输入，忽略导入");
                         list.add(planCommand);
@@ -464,19 +460,19 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                     }
                 }
                 //作业类别
-                if (StrUtil.isEmpty(planCommand.getTypeName())){
+                if (StrUtil.isEmpty(planCommand.getTypeName())) {
                     errorStrs.add("第 " + i + " 行：作业类别未输入，忽略导入。");
                     planCommand.setText("作业类别未输入，忽略导入");
                     list.add(planCommand);
                     continue;
-                }else {
+                } else {
                     List<DictModel> dictItems = iSysBaseApi.getDictItems(ConstructionDictConstant.CATEGORY);
-                    dictItems.forEach(s->{
-                        if (s.getText().equals(planCommand.getTypeName())){
+                    dictItems.forEach(s -> {
+                        if (s.getText().equals(planCommand.getTypeName())) {
                             planCommand.setType(Integer.valueOf(s.getValue()));
                         }
                     });
-                    if (ObjectUtil.isEmpty(planCommand.getType())){
+                    if (ObjectUtil.isEmpty(planCommand.getType())) {
                         errorStrs.add("第 " + i + " 行：作业类别未找到,请核对后输入，忽略导入。");
                         planCommand.setText("作业类别未找到,请核对后输入，忽略导入");
                         list.add(planCommand);
@@ -484,12 +480,12 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                     }
                 }
                 //作业单位
-                if (StrUtil.isEmpty(planCommand.getOrgName())){
+                if (StrUtil.isEmpty(planCommand.getOrgName())) {
                     errorStrs.add("第 " + i + " 行：作业单位未输入，忽略导入。");
                     planCommand.setText("作业单位未输入，忽略导入");
                     list.add(planCommand);
                     continue;
-                }else {
+                } else {
                     JSONObject sysDepartModel = iSysBaseApi.getDepartByName(planCommand.getOrgName());
                     if (ObjectUtil.isNotNull(sysDepartModel)) {
                         planCommand.setOrgCode(sysDepartModel.getString("orgCode"));
@@ -500,57 +496,57 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                         continue;
                     }
                 }
-                if (StrUtil.isEmpty(planCommand.getDate())){
+                if (StrUtil.isEmpty(planCommand.getDate())) {
                     errorStrs.add("第 " + i + " 行：作业日期未输入,忽略导入。");
                     planCommand.setText("作业日期未输入,忽略导入");
                     list.add(planCommand);
                     continue;
-                }else {
+                } else {
                     try {
-                        planCommand.setTaskDate(DateUtil.parse(planCommand.getDate(),"yyyy-MM-dd"));
-                    }catch (Exception e){
+                        planCommand.setTaskDate(DateUtil.parse(planCommand.getDate(), "yyyy-MM-dd"));
+                    } catch (Exception e) {
                         errorStrs.add("第 " + i + " 行：作业日期格式不对请按照模板上说明输入，忽略导入。");
                         planCommand.setText("作业日期格式不对请按照模板上说明输入，忽略导入");
                         list.add(planCommand);
                         continue;
                     }
                 }
-                if (StrUtil.isNotEmpty(planCommand.getEndAndTime())){
+                if (StrUtil.isNotEmpty(planCommand.getEndAndTime())) {
                     List<String> strings = Arrays.asList(planCommand.getEndAndTime().split("-"));
-                    DateFormat fmt =new SimpleDateFormat("HH:mm");
+                    DateFormat fmt = new SimpleDateFormat("HH:mm");
                     planCommand.setTaskStartTime(fmt.parse(strings.get(0)));
                     planCommand.setTaskEndTime(fmt.parse(strings.get(1)));
-                }else {
+                } else {
                     errorStrs.add("第 " + i + " 行：作业时间未输入,忽略导入。");
                     planCommand.setText("作业时间未输入,忽略导入");
                     list.add(planCommand);
                     continue;
                 }
-                if(StrUtil.isEmpty(planCommand.getTaskRange())){
+                if (StrUtil.isEmpty(planCommand.getTaskRange())) {
                     errorStrs.add("第 " + i + " 行：作业范围未输入,忽略导入。");
                     planCommand.setText("作业范围未输入,忽略导入");
                     list.add(planCommand);
                     continue;
                 }
 
-                if(StrUtil.isEmpty(planCommand.getTaskContent())){
+                if (StrUtil.isEmpty(planCommand.getTaskContent())) {
                     errorStrs.add("第 " + i + " 行：作业内容未输入,忽略导入。");
                     planCommand.setText("作业内容未输入,忽略导入");
                     list.add(planCommand);
                     continue;
                 }
-                if(StrUtil.isEmpty(planCommand.getProtectiveMeasure())){
+                if (StrUtil.isEmpty(planCommand.getProtectiveMeasure())) {
                     errorStrs.add("第 " + i + " 行：防护措施未输入,忽略导入。");
                     planCommand.setText("防护措施未输入,忽略导入");
                     list.add(planCommand);
                     continue;
                 }
-                if(StrUtil.isEmpty(planCommand.getLineName())){
+                if (StrUtil.isEmpty(planCommand.getLineName())) {
                     errorStrs.add("第 " + i + " 行：作业线路未输入,忽略导入。");
                     planCommand.setText("作业线路未输入,忽略导入");
                     list.add(planCommand);
                     continue;
-                }else {
+                } else {
                     JSONObject csLine = iSysBaseApi.getLineByName(planCommand.getLineName());
                     if (ObjectUtil.isNotNull(csLine)) {
                         planCommand.setLineCode(csLine.getString("lineCode"));
@@ -561,19 +557,19 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                         continue;
                     }
                 }
-                if(StrUtil.isNotEmpty(planCommand.getChargeStaffName())){
+                if (StrUtil.isNotEmpty(planCommand.getChargeStaffName())) {
                     List<String> users = Arrays.asList(planCommand.getChargeStaffName().split("-"));
-                    if (users.size()==2){
-                        String userId = baseMapper.selectUserId(users.get(0),users.get(1));
-                        if (StrUtil.isNotEmpty(userId)){
+                    if (users.size() == 2) {
+                        String userId = baseMapper.selectUserId(users.get(0), users.get(1));
+                        if (StrUtil.isNotEmpty(userId)) {
                             planCommand.setChargeStaffId(userId);
-                        }else {
+                        } else {
                             errorStrs.add("第 " + i + " 行：查不到此负责人,核对后输入,忽略导入。");
                             planCommand.setText("查不到此负责人,核对后输入,忽略导入");
                             list.add(planCommand);
                             continue;
                         }
-                    }else {
+                    } else {
                         errorStrs.add("第 " + i + " 行：请按模板格式输入施工负责人,忽略导入。");
                         planCommand.setText("请按模板格式输入施工负责人,忽略导入");
                         list.add(planCommand);
@@ -581,12 +577,12 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                     }
                 }
                 LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-                if (StrUtil.isNotEmpty(planCommand.getPowerSupplyRequirementContent())){
+                if (StrUtil.isNotEmpty(planCommand.getPowerSupplyRequirementContent())) {
                     BdTemplate bdTemplates = bdTemplateMapper.selectOne(new LambdaQueryWrapper<BdTemplate>().eq(BdTemplate::getUserId, user.getId())
                             .eq(BdTemplate::getContent, planCommand.getPowerSupplyRequirementContent()));
-                    if (bdTemplates!=null){
+                    if (bdTemplates != null) {
                         planCommand.setPowerSupplyRequirementId(bdTemplates.getId());
-                    }else {
+                    } else {
                         errorStrs.add("第 " + i + " 行：输入的供电要求未找到模板,忽略导入。");
                         planCommand.setText("输入的供电要求未找到模板,忽略导入");
                         list.add(planCommand);
@@ -594,7 +590,7 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                     }
                 }
                 //配合部门
-                if (StrUtil.isNotEmpty(planCommand.getCoordinationDepartmentName())){
+                if (StrUtil.isNotEmpty(planCommand.getCoordinationDepartmentName())) {
                     JSONObject sysDepartModel = iSysBaseApi.getDepartByName(planCommand.getCoordinationDepartmentName());
                     if (ObjectUtil.isNotNull(sysDepartModel)) {
                         planCommand.setOrgCode(sysDepartModel.getString("orgCode"));
@@ -605,14 +601,14 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                         continue;
                     }
                 }
-                if(StrUtil.isNotEmpty(planCommand.getFirstStationName())){
+                if (StrUtil.isNotEmpty(planCommand.getFirstStationName())) {
                     JSONObject stationByName = iSysBaseApi.getStationByName(planCommand.getFirstStationName());
                     if (ObjectUtil.isNotNull(stationByName)) {
-                        if(stationByName.getString("lineCode").equals(planCommand.getLineCode())){
+                        if (stationByName.getString("lineCode").equals(planCommand.getLineCode())) {
                             planCommand.setFirstStationCode(stationByName.getString("stationCode"));
-                        }else {
-                            errorStrs.add("第 " + i + " 行：该请点车站未存在"+planCommand.getLineName()+"，忽略导入。");
-                            planCommand.setText("该请点车站未存在"+planCommand.getLineName()+"，忽略导入");
+                        } else {
+                            errorStrs.add("第 " + i + " 行：该请点车站未存在" + planCommand.getLineName() + "，忽略导入。");
+                            planCommand.setText("该请点车站未存在" + planCommand.getLineName() + "，忽略导入");
                             list.add(planCommand);
                             continue;
                         }
@@ -622,20 +618,20 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                         list.add(planCommand);
                         continue;
                     }
-                }else {
+                } else {
                     errorStrs.add("第 " + i + " 行：请点车站未输入，忽略导入。");
                     planCommand.setText("请点车站未输入，忽略导入");
                     list.add(planCommand);
                     continue;
                 }
-                if(StrUtil.isNotEmpty(planCommand.getSecondStationName())){
+                if (StrUtil.isNotEmpty(planCommand.getSecondStationName())) {
                     JSONObject stationByName = iSysBaseApi.getStationByName(planCommand.getSecondStationName());
                     if (ObjectUtil.isNotNull(stationByName)) {
-                        if(stationByName.getString("lineCode").equals(planCommand.getLineCode())){
-                        planCommand.setFirstStationCode(stationByName.getString("stationCode"));
-                        }else {
-                            errorStrs.add("第 " + i + " 行：该销点车站未存在"+planCommand.getLineName()+"，忽略导入。");
-                            planCommand.setText("该销点车站未存在"+planCommand.getLineName()+"，忽略导入");
+                        if (stationByName.getString("lineCode").equals(planCommand.getLineCode())) {
+                            planCommand.setFirstStationCode(stationByName.getString("stationCode"));
+                        } else {
+                            errorStrs.add("第 " + i + " 行：该销点车站未存在" + planCommand.getLineName() + "，忽略导入。");
+                            planCommand.setText("该销点车站未存在" + planCommand.getLineName() + "，忽略导入");
                             list.add(planCommand);
                             continue;
                         }
@@ -645,13 +641,13 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                         list.add(planCommand);
                         continue;
                     }
-                }else {
+                } else {
                     errorStrs.add("第 " + i + " 行：销点车站未输入，忽略导入。");
                     planCommand.setText("销点车站未输入，忽略导入");
                     list.add(planCommand);
                     continue;
                 }
-                if (StrUtil.isNotEmpty(planCommand.getConstruction())){
+                if (StrUtil.isNotEmpty(planCommand.getConstruction())) {
                     List<String> asList = Arrays.asList(planCommand.getConstruction().split(","));
                     List<ConstructionCommandAssist> commandAssistList = new ArrayList<>();
                     int finalI = i;
@@ -668,15 +664,15 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                                 list.add(planCommand);
                                 continue;
                             }
-                            List<String>list2 = Arrays.asList(list1.get(1).split("-"));
-                            if (list2.size()==2){
-                                String userId = baseMapper.selectUserIdByPermitCode(list2.get(0),list2.get(1));
-                                if (StrUtil.isEmpty(userId)){
+                            List<String> list2 = Arrays.asList(list1.get(1).split("-"));
+                            if (list2.size() == 2) {
+                                String userId = baseMapper.selectUserIdByPermitCode(list2.get(0), list2.get(1));
+                                if (StrUtil.isEmpty(userId)) {
                                     errorStrs.add("第 " + finalI + " 行：辅站的负责人未找到，忽略导入。");
                                     planCommand.setText("辅站的负责人未找到，忽略导入");
                                     list.add(planCommand);
                                     continue;
-                                }else {
+                                } else {
                                     commandAssist.setUserId(userId);
                                 }
                             }
@@ -696,15 +692,15 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                     }
                     planCommand.setConstructionAssist(commandAssistList);
                 }
-                if (ObjectUtil.isEmpty(planCommand.getNum())){
+                if (ObjectUtil.isEmpty(planCommand.getNum())) {
                     errorStrs.add("第 " + i + " 行：作业人数未输入，忽略导入。");
                     planCommand.setText("作业人数未输入，忽略导入");
                     list.add(planCommand);
                     continue;
-                }else {
+                } else {
                     try {
                         planCommand.setTaskStaffNum(Integer.valueOf(planCommand.getNum()));
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         errorStrs.add("第 " + i + " 行：作业人数格式不对请用数字类型，忽略导入。");
                         planCommand.setText("作业人数格式不对请用数字类型，忽略导入");
                         list.add(planCommand);
@@ -712,27 +708,27 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                     }
                 }
 
-                BeanUtils.copyProperties(weekPlanCommand,planCommand);
+                BeanUtils.copyProperties(weekPlanCommand, planCommand);
                 int save = baseMapper.insert(weekPlanCommand);
-                if (CollectionUtil.isNotEmpty(planCommand.getConstructionAssist())){
-                    planCommand.getConstructionAssist().forEach(s->{
+                if (CollectionUtil.isNotEmpty(planCommand.getConstructionAssist())) {
+                    planCommand.getConstructionAssist().forEach(s -> {
                         s.setPlanId(weekPlanCommand.getId());
                     });
                     constructionCommandAssistService.saveBatch(planCommand.getConstructionAssist());
                 }
-                if(save<=0){
+                if (save <= 0) {
                     throw new Exception(CommonConstant.SQL_INDEX_UNIQ_MATERIAL_BASE_CODE);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        if (list.size()>0){
+        if (list.size() > 0) {
             //创建导入失败错误报告,进行模板导出
             Resource resource = new ClassPathResource("templates\\constructionWeekPlanCommandError.xlsx");
             InputStream resourceAsStream = resource.getInputStream();
             //2.获取临时文件
-            File fileTemp= new File("templates\\constructionWeekPlanCommandError.xlsx");
+            File fileTemp = new File("templates\\constructionWeekPlanCommandError.xlsx");
             try {
                 //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
                 FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
@@ -742,41 +738,41 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             String path = fileTemp.getAbsolutePath();
             TemplateExportParams exportParams = new TemplateExportParams(path);
             List<Map<String, Object>> mapList = new ArrayList<>();
-            list.forEach(l->{
+            list.forEach(l -> {
                 Map<String, Object> lm = new HashMap<String, Object>();
-                lm.put("natureName",l.getNatureName());
-                lm.put("type",l.getTypeName());
-                lm.put("text",l.getText());
-                lm.put("orgName",l.getOrgName());
-                lm.put("date",l.getDate());
-                lm.put("endAndTime",l.getEndAndTime());
-                lm.put("coordinationDepartmentName",l.getCoordinationDepartmentName());
-                lm.put("chargeStaffName",l.getChargeStaffName());
-                lm.put("taskRange",l.getTaskRange());
-                lm.put("taskContent",l.getTaskContent());
-                lm.put("protectiveMeasure",l.getProtectiveMeasure());
-                lm.put("powerSupplyRequirementContent",l.getPowerSupplyRequirementContent());
-                lm.put("construction",l.getConstruction());
-                lm.put("firstStationName",l.getFirstStationName());
-                lm.put("secondStationName",l.getSecondStationName());
-                lm.put("num",l.getNum());
-                lm.put("largeAppliances",l.getLargeAppliances());
+                lm.put("natureName", l.getNatureName());
+                lm.put("type", l.getTypeName());
+                lm.put("text", l.getText());
+                lm.put("orgName", l.getOrgName());
+                lm.put("date", l.getDate());
+                lm.put("endAndTime", l.getEndAndTime());
+                lm.put("coordinationDepartmentName", l.getCoordinationDepartmentName());
+                lm.put("chargeStaffName", l.getChargeStaffName());
+                lm.put("taskRange", l.getTaskRange());
+                lm.put("taskContent", l.getTaskContent());
+                lm.put("protectiveMeasure", l.getProtectiveMeasure());
+                lm.put("powerSupplyRequirementContent", l.getPowerSupplyRequirementContent());
+                lm.put("construction", l.getConstruction());
+                lm.put("firstStationName", l.getFirstStationName());
+                lm.put("secondStationName", l.getSecondStationName());
+                lm.put("num", l.getNum());
+                lm.put("largeAppliances", l.getLargeAppliances());
                 mapList.add(lm);
             });
             Map<String, Object> errorMap = new HashMap<String, Object>();
             errorMap.put("maplist", mapList);
-            Workbook workbook = ExcelExportUtil.exportExcel(exportParams,errorMap);
-            String fileName = "施工周计划错误模板"+"_" + System.currentTimeMillis()+".xls";
-            FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
-            String  url = fileName;
+            Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
+            String fileName = "施工周计划错误模板" + "_" + System.currentTimeMillis() + ".xls";
+            FileOutputStream out = new FileOutputStream(upLoadPath + File.separator + fileName);
+            String url = fileName;
             workbook.write(out);
-            errorLines+=errorStrs.size();
-            successLines+=(listMaterial.size()-errorLines);
-            return ImportExcelUtil.imporReturnRes(errorLines,successLines,errorStrs,url);
+            errorLines += errorStrs.size();
+            successLines += (listMaterial.size() - errorLines);
+            return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs, url);
         }
-        errorLines+=errorStrs.size();
-        successLines+=(listMaterial.size()-errorLines);
-        return ImportExcelUtil.imporReturnRes(errorLines,successLines,errorStrs,null);
+        errorLines += errorStrs.size();
+        successLines += (listMaterial.size() - errorLines);
+        return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs, null);
     }
 
 
