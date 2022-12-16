@@ -173,10 +173,11 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
         constructionWeekPlanCommandService.delete(id);
         return Result.OK("删除成功！");
     }
+
     @ApiOperation(value = "下载施工周计划导入模板", notes = "下载施工周计划导入模板")
     @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
     public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
-        ClassPathResource classPathResource =  new ClassPathResource("templates/constructionWeekPlanCommand.xlsx");
+        ClassPathResource classPathResource = new ClassPathResource("templates/constructionWeekPlanCommand.xlsx");
         InputStream bis = classPathResource.getInputStream();
         BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
         int len = 0;
@@ -186,8 +187,10 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
         }
         out.close();
     }
+
     /**
      * 通过excel导入数据
+     *
      * @param request
      * @param response
      * @return
@@ -221,8 +224,11 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
     }
 
     /**
+     * 施工周计划-导出周计划
+     *
      * @return
      */
+    @ApiOperation(value = "施工周计划-导出周计划", notes = "施工周计划-导出周计划")
     @RequestMapping(value = "/exportXls")
     public void exportXls(HttpServletRequest request, HttpServletResponse response,
                           @ApiParam(name = "lineCode", value = "线路编码") String lineCode,
