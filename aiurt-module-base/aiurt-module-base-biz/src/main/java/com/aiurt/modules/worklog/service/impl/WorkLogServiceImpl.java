@@ -183,6 +183,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //userTaskService.completeWork(userId, DateUtils.date2Str(depot.getSubmitTime(), new SimpleDateFormat("yyyy-MM-dd")));
         //发送待办消息
         if (StringUtils.isNotBlank(dto.getSucceedId())) {
+            LoginUser userById = iSysBaseAPI.getUserById(dto.getSucceedId());
+            dto.setSucceedUserName(userById.getUsername());
             sendMessage(dto);
         }
         return Result.ok("新增成功");
