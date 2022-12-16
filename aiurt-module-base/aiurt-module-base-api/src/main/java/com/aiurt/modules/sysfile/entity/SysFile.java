@@ -75,14 +75,12 @@ public class SysFile {
 	 */
 	@Excel(name = "下载状态", width = 15)
 	@ApiModelProperty(value = "下载状态")
-	@NotNull(message = "下载状态不能为空")
 	private Integer downStatus;
 	/**
 	 * 编辑状态
 	 */
 	@Excel(name = "编辑状态", width = 15)
 	@ApiModelProperty(value = "编辑状态")
-	@NotNull(message = "编辑状态不能为空")
 	private Integer editStatus;
 	/**
 	 * 下载次数
