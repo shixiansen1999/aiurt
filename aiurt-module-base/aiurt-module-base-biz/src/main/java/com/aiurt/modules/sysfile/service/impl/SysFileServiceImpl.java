@@ -562,7 +562,7 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 				stringSet.add(editId);
 			}else {
 				LambdaQueryWrapper<SysFileRole> queryWrapper = new LambdaQueryWrapper<>();
-				queryWrapper.eq(SysFileRole::getUserId,editId).eq(SysFileRole::getTypeId,param.getId()).eq(SysFileRole::getDelFlag,0);
+				queryWrapper.eq(SysFileRole::getUserId,editId).eq(SysFileRole::getFileId,param.getId()).eq(SysFileRole::getDelFlag,0);
 				SysFileRole sysFileRole = roleService.getBaseMapper().selectOne(queryWrapper);
 				sysFileRole.setEditStatus(1);
 				roleService.updateById(sysFileRole);
