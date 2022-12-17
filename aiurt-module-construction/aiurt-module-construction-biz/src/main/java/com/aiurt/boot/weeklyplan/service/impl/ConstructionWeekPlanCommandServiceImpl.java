@@ -780,18 +780,8 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
     @Override
     public void exportXls(HttpServletRequest request, HttpServletResponse response, String lineCode, Date startDate, Date endDate) {
         List<ConstructionWeekPlanExportDTO> dataList = constructionWeekPlanCommandMapper.getExportData(lineCode, startDate, endDate);
-        List<CsStation> stations = iSysBaseApi.queryAllStation();
-        Map<String, String> stationMap = stations.stream().collect(Collectors.toMap(k -> k.getStationCode(), v -> v.getStationName(), (a, b) -> a));
-        dataList.stream().forEach(l -> {
-            String stationCode = l.getAssistStationCode();
-            if (StrUtil.isNotEmpty(stationCode)) {
-                List<String> stationCodes = StrUtil.split(stationCode, ',');
-                List<String> stationNames = new ArrayList<>();
-                stationCodes.forEach(sc -> Optional.ofNullable(stationMap.get(sc)).ifPresent(stationName -> stationNames.add(stationName)));
-                l.setAssistStationName(stationNames.stream().collect(Collectors.joining("、")));
-            }
-        });
-        String title = "运营施工及行车计划申报表";
+        String sheetName = "运营施工及行车计划申报表";
+        String title = sheetName;
         if (StrUtil.isNotEmpty(lineCode)) {
             Map<String, String> lineNameMap = iSysBaseApi.getLineNameByCode(Arrays.asList(lineCode));
             String lineName = lineNameMap.get(lineCode);
@@ -799,77 +789,97 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                 title = lineName + title;
             }
         }
-        Map<Date, List<ConstructionWeekPlanExportDTO>> listMap = dataList.stream()
-                .sorted((a, b) -> DateUtil.compare(a.getTaskDate(), b.getTaskDate()))
-                .collect(Collectors.groupingBy(ConstructionWeekPlanExportDTO::getTaskDate));
-        Map<String, String> weekMap = iSysBaseApi.getDictItems(ConstructionDictConstant.WEEK).stream()
-                .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        ExportParams params = new ExportParams(title, null, "运营施工及行车计划申报表");
-        // 设置自定义样式
+        ExportParams params = new ExportParams(title, null, sheetName);
         params.setStyle(CustomExcelExportStylerImpl.class);
         Workbook workbook = ExcelExportUtil.exportExcel(params, ConstructionWeekPlanExportDTO.class, new ArrayList<>());
-        try {
+        if (CollectionUtil.isNotEmpty(dataList)) {
+            List<CsStation> stations = iSysBaseApi.queryAllStation();
+            Map<String, String> stationMap = stations.stream()
+                    .filter(l -> StrUtil.isNotEmpty(l.getStationCode()))
+                    .collect(Collectors.toMap(k -> k.getStationCode(), v -> v.getStationName(), (a, b) -> a));
+            dataList.stream().forEach(l -> {
+                Optional.ofNullable(l.getAssistStationCode()).ifPresent(stationCode -> {
+                    List<String> stationCodes = StrUtil.split(stationCode, ',');
+                    List<String> stationNames = new ArrayList<>();
+                    stationCodes.forEach(sc -> Optional.ofNullable(stationMap.get(sc)).ifPresent(stationName -> stationNames.add(stationName)));
+                    l.setAssistStationName(stationNames.stream().collect(Collectors.joining("、")));
+
+                });
+                Optional.ofNullable(l.getTaskDate()).ifPresent(taskDate -> l.setTaskDate(DateUtil.parse(DateUtil.format(taskDate, "yyyy-MM-dd 00:00:00"))));
+            });
             int flag = 0;
+            Map<Integer, Boolean> titleNum = new HashMap<Integer, Boolean>(16) {{
+                put(1, false);
+                put(2, false);
+            }};
+            Set<Integer> contentNum = new HashSet<>();
+            Map<String, String> weekMap = iSysBaseApi.getDictItems(ConstructionDictConstant.WEEK).stream()
+                    .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+            LinkedHashMap<Date, List<ConstructionWeekPlanExportDTO>> listMap = dataList.stream()
+                    .filter(l -> ObjectUtil.isNotEmpty(l.getTaskDate()))
+                    .sorted((a, b) -> DateUtil.compare(b.getTaskDate(), a.getTaskDate()))
+                    .collect(Collectors.groupingBy(ConstructionWeekPlanExportDTO::getTaskDate, LinkedHashMap::new, Collectors.toList()));
             for (Date date : listMap.keySet()) {
                 String secondTitle = DateUtil.format(date, "yyyy年MM月dd日");
                 int week = DateUtil.dayOfWeek(date) == 1 ? 7 : DateUtil.dayOfWeek(date) - 1;
                 secondTitle += "(" + weekMap.get(String.valueOf(week)) + ")";
-                String sheetName = "运营施工及行车计划申报表";
                 ExportParams exportParams = new ExportParams(title, secondTitle, sheetName);
                 // 设置自定义样式
                 exportParams.setStyle(CustomExcelExportStylerImpl.class);
                 Workbook sheets = ExcelExportUtil.exportExcel(exportParams, ConstructionWeekPlanExportDTO.class, listMap.get(date));
-                CustomExcelExportStylerImpl excelExportStyler = new CustomExcelExportStylerImpl(workbook);
                 if (flag == 0) {
                     workbook = sheets;
-                    flag++;
-                    // 调整格式
-                    for (Sheet sheet : workbook) {
-                        int lastRowNum = sheet.getLastRowNum();
-                        for (int i = 1; i < lastRowNum; i++) {
-                            Row row = sheet.getRow(i);
-                            for (Cell cell : row) {
-                                if (i == 1 || i == 2) {
-                                    cell.getCellStyle().cloneStyleFrom(excelExportStyler.getTitleStyle((short) 40));
-                                } else {
-                                    cell.getCellStyle().cloneStyleFrom(excelExportStyler.stringNoneStyle(workbook, true));
-                                }
-                            }
-                            row.setHeightInPoints(25);
-                        }
-                        sheet.createFreezePane(sheet.getRow(0).getLastCellNum(), 1);
+                    Sheet sheet = workbook.getSheet(sheetName);
+                    int lastRowNum = sheet.getLastRowNum();
+                    for (int i = 2; i <= lastRowNum; i++) {
+                        contentNum.add(i);
                     }
+                    flag++;
                     continue;
                 }
                 // 实际就一个sheet
-                for (Sheet sheet : workbook) {
-                    int rowNum = sheet.getLastRowNum() + 1;
-                    Sheet afterSheet = sheets.getSheet(sheetName);
-                    for (int i = 1; i <= afterSheet.getLastRowNum(); i++) {
-                        Row workbookRow = sheet.createRow((short) rowNum);
-                        Row afterSheetRow = afterSheet.getRow(i);
-                        short lastCellNum = afterSheetRow.getLastCellNum();
-                        for (int j = 0; j < lastCellNum; j++) {
-                            Cell cell = afterSheetRow.getCell(j);
-                            Cell workRowCell = workbookRow.createCell(j);
-                            workRowCell.setCellValue(cell.getStringCellValue());
-                            if (i == 1 || i == 2) {
-                                Workbook sheetWorkbook = sheet.getWorkbook();
-                                CellStyle cellStyle = new CustomExcelExportStylerImpl(sheetWorkbook).getTitleStyle((short) 40);
-                                workRowCell.setCellStyle(cellStyle);
-                            } else {
-                                workRowCell.getCellStyle().cloneStyleFrom(cell.getCellStyle());
-                            }
-                        }
-                        if (i == 1) {
-                            CellRangeAddress rangeAddress = new CellRangeAddress(rowNum, rowNum, 0, lastCellNum - 1);
-                            sheet.addMergedRegion(rangeAddress);
-                        }
-                        workbookRow.setHeightInPoints(25);
-                        rowNum++;
+                Sheet sheet = workbook.getSheet(sheetName);
+                int rowNum = sheet.getLastRowNum() + 1;
+                Sheet afterSheet = sheets.getSheet(sheetName);
+                for (int i = 1; i <= afterSheet.getLastRowNum(); i++) {
+                    Row workbookRow = sheet.createRow((short) rowNum);
+                    Row afterSheetRow = afterSheet.getRow(i);
+                    short lastCellNum = afterSheetRow.getLastCellNum();
+                    for (int j = 0; j < lastCellNum; j++) {
+                        Cell cell = afterSheetRow.getCell(j);
+                        Cell workRowCell = workbookRow.createCell(j);
+                        workRowCell.setCellValue(cell.getStringCellValue());
                     }
+                    if (i == 1) {
+                        titleNum.put(rowNum, true);
+                    } else if (i == 2) {
+                        titleNum.put(rowNum, false);
+                    } else {
+                        contentNum.add(rowNum);
+                    }
+                    rowNum++;
                 }
             }
+            // 格式
+            CustomExcelExportStylerImpl exportStyler = new CustomExcelExportStylerImpl(workbook);
+            CellStyle titleStyle = exportStyler.getTitleStyle((short) 40);
+            CellStyle contentStyle = exportStyler.stringNoneStyle(workbook, true);
+            Sheet sheet = workbook.getSheet(sheetName);
+            sheet.createFreezePane(0, 1);
+            for (int i = 1, lastRowNum = sheet.getLastRowNum(); i <= lastRowNum; i++) {
+                Row row = sheet.getRow(i);
+                row.setHeightInPoints(25);
+                if (titleNum.containsKey(i)) {
+                    row.forEach(l -> l.setCellStyle(titleStyle));
+                    if (titleNum.get(i)) {
+                        sheet.addMergedRegion(new CellRangeAddress(i, i, 0, row.getLastCellNum() - 1));
+                    }
+                    continue;
+                }
+                row.forEach(l -> l.setCellStyle(contentStyle));
+            }
+        }
+        try {
             String filename = title + ".xls";
             response.setHeader("content-disposition", "attachment;filename=" + new String(filename.getBytes("UTF-8"), "ISO-8859-1"));
             ServletOutputStream outputStream = response.getOutputStream();
