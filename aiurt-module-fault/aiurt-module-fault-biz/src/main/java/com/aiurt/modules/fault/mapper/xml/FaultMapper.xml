@@ -5,7 +5,7 @@
         select f.*,fkbt.name as  phenomenonTypeName
         from fault f
         LEFT JOIN fault_knowledge_base_type fkbt on f.fault_phenomenon = f.code
-        where code = #{code}
+        where f.code = #{code}
     </select>
 
     <select id="queryCsWorkByMajorCode" parameterType="java.lang.String"
