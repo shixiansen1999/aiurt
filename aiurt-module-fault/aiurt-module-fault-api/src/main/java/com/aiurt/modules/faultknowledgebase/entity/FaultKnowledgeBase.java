@@ -131,6 +131,10 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
 	@Excel(name = "审核说明", width = 15)
     @ApiModelProperty(value = "审核说明")
     private String approvedRemark;
+    /**携带工具*/
+    @Excel(name = "携带工具", width = 15)
+    @ApiModelProperty(value = "携带工具")
+    private String tools;
     /**附件*/
     @Excel(name = "附件", width = 15)
     @ApiModelProperty(value = "附件")

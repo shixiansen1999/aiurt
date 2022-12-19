@@ -6,6 +6,7 @@ import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebasetype.dto.MajorDTO;
+import com.aiurt.modules.faultknowledgebasetype.dto.SelectTableDTO;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -212,6 +213,23 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	 @PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
 	 public Result<List<MajorDTO>> faultKnowledgeBaseTypeTreeList(@RequestParam(name="majorCode",required=false)String majorCode,@RequestParam(name="systemCode",required=false)String systemCode) {
 		 List<MajorDTO> list = faultKnowledgeBaseTypeService.faultKnowledgeBaseTypeTreeList(majorCode,systemCode);
+		 return Result.OK(list);
+	 }
+
+	 /**
+	  * 故障现象分类树（无专业子系统）
+	  *
+	  * @return
+	  */
+	 @AutoLog(value = "故障知识分类-故障现象分类树", operateType =  1, operateTypeAlias = "查询-故障分类树", permissionUrl = "/fault/knowledgeBaseTypeTreeList")
+	 @ApiOperation(value = "故障知识分类-故障现象分类树", notes = "故障现象分类树")
+	 @GetMapping(value = "/knowledgeBaseTypeTreeList")
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = MajorDTO.class)
+	 })
+	 @PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
+	 public Result<List<SelectTableDTO>> knowledgeBaseTypeTreeList(@RequestParam(name="systemCode",required=false)String systemCode) {
+		 List<SelectTableDTO> list = faultKnowledgeBaseTypeService.knowledgeBaseTypeTreeList(systemCode);
 		 return Result.OK(list);
 	 }
 }

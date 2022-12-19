@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultknowledgebasetype.service;
 
 import com.aiurt.modules.faultknowledgebasetype.dto.MajorDTO;
+import com.aiurt.modules.faultknowledgebasetype.dto.SelectTableDTO;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
@@ -28,4 +29,5 @@ public interface IFaultKnowledgeBaseTypeService extends IService<FaultKnowledgeB
      */
     Result<String> add(FaultKnowledgeBaseType faultKnowledgeBaseType);
 
+    List<SelectTableDTO> knowledgeBaseTypeTreeList(String systemCode);
 }

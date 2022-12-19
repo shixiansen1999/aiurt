@@ -2,6 +2,7 @@ package com.aiurt.modules.faultknowledgebasetype.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.faultknowledgebasetype.dto.MajorDTO;
@@ -124,7 +125,9 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
             selectTable.setPid(f.getPid());
             selectTable.setIsBaseType(true);
             selectTable.setSystemCode(f.getSystemCode());
-            selectTable.setMajorCode(majorDTO.getMajorCode());
+            if (ObjectUtil.isNotEmpty(majorDTO)) {
+                selectTable.setMajorCode(majorDTO.getMajorCode());
+            }
             childrenTress.add(selectTable);
         });
         return childrenTress;
@@ -161,5 +164,37 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
         faultKnowledgeBaseTypeMapper.insert(faultKnowledgeBaseType);
 
         return Result.OK("添加成功！");
+    }
+
+    @Override
+    public List<SelectTableDTO> knowledgeBaseTypeTreeList(String systemCode) {
+        LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, "0").orderByDesc(FaultKnowledgeBaseType::getCreateTime);
+        List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(queryWrapper);
+
+        //下面禁用数据过滤
+        boolean b = GlobalThreadLocal.setDataFilter(false);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        List<CsUserSubsystemModel> subsystemByUserId = commonApi.getSubsystemByUserId(sysUser.getId());
+        if (StringUtils.isNotBlank(systemCode)) {
+            List<CsUserSubsystemModel> subsystemModels = subsystemByUserId.stream().filter(s -> !s.getSystemCode().equals(systemCode)).collect(Collectors.toList());
+            subsystemByUserId.removeAll(subsystemModels);
+        }
+
+        if (CollectionUtil.isNotEmpty(subsystemByUserId)) {
+            List<SelectTableDTO> treeRes = new ArrayList<>();
+            for (CsUserSubsystemModel csUserSubsystemModel : subsystemByUserId) {
+                //获取子节点
+                List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getSystemCode().equals(csUserSubsystemModel.getSystemCode())).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(baseTypeList)) {
+                    List<SelectTableDTO> childrenTress = getDetail(null, baseTypeList);
+                    treeRes.addAll(getTreeRes(childrenTress, "0"));
+                }
+            }
+            return treeRes;
+        }
+        GlobalThreadLocal.setDataFilter(b);
+        return null;
     }
 }
