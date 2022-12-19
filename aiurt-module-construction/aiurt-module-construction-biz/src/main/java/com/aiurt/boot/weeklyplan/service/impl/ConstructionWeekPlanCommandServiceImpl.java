@@ -708,8 +708,56 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                         continue;
                     }
                 }
+                // 生成计划令编码
+                StringBuilder code = new StringBuilder();
+                List<DictModel> types = iSysBaseApi.getDictItems(ConstructionDictConstant.CATEGORY);
+                String typeName = types.stream().filter(l -> l.getValue().equals(String.valueOf(planCommand.getType())))
+                        .map(DictModel::getText).collect(Collectors.joining());
 
-                BeanUtils.copyProperties(weekPlanCommand, planCommand);
+                // 临时修补计划和日计划
+                if (ConstructionConstant.PLAN_TYPE_2.equals(planCommand.getPlanChange())
+                        || ConstructionConstant.PLAN_TYPE_3.equals(planCommand.getPlanChange())) {
+                    code = new StringBuilder("L-");
+                }
+
+                // 获取施工的日期对应的日
+                String day = DateUtil.format(planCommand.getTaskDate(), "dd");
+
+                // 构建计划令编号
+                // XXX fixme 此处得保证线路编号是数值，比如1号线对应01、2号线对应02这种，否则以线路编号拼接
+                String lineCode = planCommand.getLineCode();
+                try {
+                    lineCode = String.valueOf(Integer.valueOf(lineCode));
+                } catch (Exception e) {
+                    log.info("获取线路编号生成计划令编码异常：", e.getMessage());
+                    e.printStackTrace();
+                }
+
+                String separator = "-";
+                code.append(lineCode).append(typeName).append(separator).append(day).append(separator);
+
+                // 计划令自增序号，如果是一位或两位数的则保留两位，三位则保留三位，即6->06、66->66,大于99小于1000则保留三位
+                List<ConstructionWeekPlanCommand> codeNumbers = this.lambdaQuery().like(ConstructionWeekPlanCommand::getCode, code.toString())
+                        .orderByDesc(ConstructionWeekPlanCommand::getCode)
+                        .last("limit 1")
+                        .list();
+
+                if (CollectionUtil.isNotEmpty(codeNumbers) && ObjectUtil.isNotEmpty(codeNumbers.get(0).getCode())) {
+                    String planCode = codeNumbers.get(0).getCode();
+                    Integer serialNumber = Integer.valueOf(planCode.substring(planCode.lastIndexOf(separator) + 1));
+                    if (100 > serialNumber) {
+                        code.append(String.format("%02d", serialNumber + 1));
+                    } else {
+                        code.append(serialNumber + 1);
+                    }
+                } else {
+                    code.append(String.format("%02d", 1));
+                }
+
+                planCommand.setCode(code.toString());
+                planCommand.setApplyId(user.getId());
+                planCommand.setPlanChange(1);
+                BeanUtils.copyProperties(planCommand, weekPlanCommand);
                 int save = baseMapper.insert(weekPlanCommand);
                 if (CollectionUtil.isNotEmpty(planCommand.getConstructionAssist())) {
                     planCommand.getConstructionAssist().forEach(s -> {

@@ -50,7 +50,15 @@ public class ImportExcelUtil {
                 Result res = Result.error(200,"请输入数据再导入!");
                 return  res;
             }
-            return Result.ok("共" + successLines + "行数据全部导入成功！");
+            JSONObject result = new JSONObject(5);
+            int totalCount = successLines + errorLines;
+            result.put("totalCount", totalCount);
+            result.put("errorCount", errorLines);
+            result.put("isSucceed",true);
+            result.put("successCount", successLines);
+            Result res = Result.ok(result);
+            res.setMessage("共" + successLines + "行数据全部导入成功！");
+            return res;
         } else {
             JSONObject result = new JSONObject(5);
             int totalCount = successLines + errorLines;
