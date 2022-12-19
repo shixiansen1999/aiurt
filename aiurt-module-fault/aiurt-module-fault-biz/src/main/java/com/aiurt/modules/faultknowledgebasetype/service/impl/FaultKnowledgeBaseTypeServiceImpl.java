@@ -167,7 +167,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
     }
 
     @Override
-    public List<SelectTableDTO> knowledgeBaseTypeTreeList(String systemCode) {
+    public List<SelectTableDTO> knowledgeBaseTypeTreeList(String majorCode,String systemCode) {
         LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, "0").orderByDesc(FaultKnowledgeBaseType::getCreateTime);
         List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(queryWrapper);
@@ -195,6 +195,6 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
             return treeRes;
         }
         GlobalThreadLocal.setDataFilter(b);
-        return null;
+        return new ArrayList<>();
     }
 }

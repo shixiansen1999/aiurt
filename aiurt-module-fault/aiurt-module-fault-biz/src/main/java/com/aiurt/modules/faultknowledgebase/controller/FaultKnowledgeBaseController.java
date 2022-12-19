@@ -221,9 +221,11 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 			return Result.error("未找到对应数据");
 		}
 		String faultCodes = faultKnowledgeBase.getFaultCodes();
-		String[] split = faultCodes.split(",");
-		List<String> list = Arrays.asList(split);
-		faultKnowledgeBase.setFaultCodeList(list);
+		if (StrUtil.isNotBlank(faultCodes)) {
+			String[] split = faultCodes.split(",");
+			List<String> list = Arrays.asList(split);
+			faultKnowledgeBase.setFaultCodeList(list);
+		}
 		return Result.OK(faultKnowledgeBase);
 	}
 

@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultknowledgebase.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
@@ -74,9 +75,11 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         GlobalThreadLocal.setDataFilter(b);
         faultKnowledgeBases.forEach(f->{
             String faultCodes = f.getFaultCodes();
-            String[] split = faultCodes.split(",");
-            List<String> list = Arrays.asList(split);
-            f.setFaultCodeList(list);
+            if (StrUtil.isNotBlank(faultCodes)) {
+                String[] split = faultCodes.split(",");
+                List<String> list = Arrays.asList(split);
+                f.setFaultCodeList(list);
+            }
         });
         //正序
         String asc = "asc";

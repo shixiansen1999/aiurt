@@ -21,7 +21,8 @@
         fkb.system_code,
         fkb.file_path,
         fkb.approved_remark,
-        fkb.status
+        fkb.status,
+        fkb.tools
         FROM
         fault_knowledge_base fkb WHERE del_flag = 0 and fkb.approved_result = 0
         <if test="condition.approvedResult != null">
@@ -50,7 +51,8 @@
         fkb.system_code,
         fkb.file_path,
         fkb.approved_remark,
-        fkb.status
+        fkb.status,
+        fkb.tools
         FROM
         fault_knowledge_base fkb WHERE del_flag = 0 and fkb.approved_result = 1
         <if test="condition.approvedResult != null">

@@ -118,6 +118,9 @@
         <if test="condition.deviceTypeCode != null and condition.deviceTypeCode != ''">
             and device_type_code = #{condition.deviceTypeCode}
         </if>
+        <if test="condition.knowledgeBaseTypeCode != null and condition.knowledgeBaseTypeCode != ''">
+            and knowledge_base_type_code = #{condition.knowledgeBaseTypeCode}
+        </if>
     </select>
 
     <select id="selectBySubSystemCode" resultType="com.aiurt.modules.fault.dto.FaultFrequencyDTO">
