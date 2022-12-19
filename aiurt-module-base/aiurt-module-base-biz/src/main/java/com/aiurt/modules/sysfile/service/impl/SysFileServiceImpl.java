@@ -201,13 +201,29 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 			List<SysFileRole> list = roleService.lambdaQuery()
 					.eq(SysFileRole::getDelFlag, 0)
 					.eq(SysFileRole::getFileId, fileType.getId()).list();
+
+			//查询当前文件的类型
+			List<SysFileRole> sysFileRoleList = roleService.lambdaQuery()
+					.eq(SysFileRole::getDelFlag,0)
+					.eq(SysFileRole::getTypeId,fileType.getTypeId()).list();
+
 			if (list != null && list.size() > 0) {
 				Map<Integer, List<SysFileRole>> listMap = list.stream()
 						.filter(item-> ObjectUtil.isNotEmpty(item.getEditStatus())).collect(Collectors.groupingBy(SysFileRole::getEditStatus));
 				if (listMap != null && listMap.size() > 0) {
 					//获取编辑列表中数据
+
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getEditStatus())).collect(Collectors.groupingBy(SysFileRole::getEditStatus));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
+
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap.get(1))) {
-						Optional.ofNullable(listMap.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap.get(1)) : listMap.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -229,8 +245,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						.filter(item-> ObjectUtil.isNotEmpty(item.getLookStatus())).collect(Collectors.groupingBy(SysFileRole::getLookStatus));
 				if (listMap6 != null && listMap6.size() > 0) {
 					//获取查看列表中数据
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getLookStatus())).collect(Collectors.groupingBy(SysFileRole::getLookStatus));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap6.get(1))) {
-						Optional.ofNullable(listMap6.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap6.get(1)) : listMap6.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -252,8 +276,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						.filter(item-> ObjectUtil.isNotEmpty(item.getUploadStatus())).collect(Collectors.groupingBy(SysFileRole::getUploadStatus));
 				if (listMap1 != null && listMap1.size() > 0) {
 					//获取上传列表中数据
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getUploadStatus())).collect(Collectors.groupingBy(SysFileRole::getUploadStatus));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap1.get(1))) {
-						Optional.ofNullable(listMap1.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap1.get(1)) : listMap1.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -275,8 +307,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						.filter(item-> ObjectUtil.isNotEmpty(item.getDownloadStatus())).collect(Collectors.groupingBy(SysFileRole::getDownloadStatus));
 				if (listMap2 != null && listMap2.size() > 0) {
 					//获取下载列表中数据
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getDownloadStatus())).collect(Collectors.groupingBy(SysFileRole::getDownloadStatus));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap2.get(1))) {
-						Optional.ofNullable(listMap2.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap2.get(1)) : listMap2.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -298,8 +338,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						.filter(item-> ObjectUtil.isNotEmpty(item.getDeleteStatus())).collect(Collectors.groupingBy(SysFileRole::getDeleteStatus));
 				if (listMap3 != null && listMap3.size() > 0) {
 					//获取删除列表中数据
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getDeleteStatus())).collect(Collectors.groupingBy(SysFileRole::getDeleteStatus));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap3.get(1))) {
-						Optional.ofNullable(listMap3.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap3.get(1)) : listMap3.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -321,8 +369,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						.filter(item-> ObjectUtil.isNotEmpty(item.getOnlineEditing())).collect(Collectors.groupingBy(SysFileRole::getOnlineEditing));
 				if (listMap4 != null && listMap4.size() > 0) {
 					//获取在线编辑列表中数据
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getOnlineEditing())).collect(Collectors.groupingBy(SysFileRole::getOnlineEditing));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap4.get(1))) {
-						Optional.ofNullable(listMap4.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap4.get(1)) : listMap4.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -344,8 +400,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						.filter(item-> ObjectUtil.isNotEmpty(item.getRenameStatus())).collect(Collectors.groupingBy(SysFileRole::getRenameStatus));
 				if (listMap5 != null && listMap5.size() > 0) {
 					//获取重命名列表中数据
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getRenameStatus())).collect(Collectors.groupingBy(SysFileRole::getRenameStatus));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap5.get(1))) {
-						Optional.ofNullable(listMap5.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap5.get(1)) : listMap5.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -367,8 +431,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryLookStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryLookStatus));
 				if (listMap7 != null && listMap7.size() > 0) {
 					//获取原可查看列表中数据
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryLookStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryLookStatus));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap7.get(1))) {
-						Optional.ofNullable(listMap7.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap7.get(1)) : listMap7.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -390,8 +462,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryEditStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryEditStatus));
 				if (listMap8 != null && listMap8.size() > 0) {
 					//获取原可编辑列表中数据
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryEditStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryEditStatus));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap8.get(1))) {
-						Optional.ofNullable(listMap8.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap8.get(1)) : listMap8.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -412,8 +492,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryUploadStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryUploadStatus));
 				if (listMap9 != null && listMap9.size() > 0) {
 					//获取原可下载列表中数据
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryUploadStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryUploadStatus));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap9.get(1))) {
-						Optional.ofNullable(listMap9.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap9.get(1)) : listMap9.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -435,8 +523,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryDownloadStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryDownloadStatus));
 				if (listMap10 != null && listMap10.size() > 0) {
 					//获取原可上传列表中数据
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryDownloadStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryDownloadStatus));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap10.get(1))) {
-						Optional.ofNullable(listMap10.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap10.get(1)) : listMap10.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -458,8 +554,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryDeleteStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryDeleteStatus));
 				if (listMap11 != null && listMap11.size() > 0) {
 					//获取原可删除列表中数据
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryDeleteStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryDeleteStatus));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap11.get(1))) {
-						Optional.ofNullable(listMap11.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap11.get(1)) : listMap11.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -481,8 +585,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryRenameStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryRenameStatus));
 				if (listMap12 != null && listMap12.size() > 0) {
 					//获取原可删除列表中数据
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryRenameStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryRenameStatus));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap12.get(1))) {
-						Optional.ofNullable(listMap12.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap12.get(1)) : listMap12.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -504,8 +616,16 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryOnlineEditing())).collect(Collectors.groupingBy(SysFileRole::getPrimaryOnlineEditing));
 				if (listMap13 != null && listMap13.size() > 0) {
 					//获取原可删除列表中数据
+					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
+					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
+						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
+								.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryOnlineEditing())).collect(Collectors.groupingBy(SysFileRole::getPrimaryOnlineEditing));
+						if (integerListMap != null && integerListMap.size() > 0){
+							sysFileRoleList1 = integerListMap.get(1);
+						}
+					}
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap13.get(1))) {
-						Optional.ofNullable(listMap13.get(1)).ifPresent(roles -> {
+						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap13.get(1)) : listMap13.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
