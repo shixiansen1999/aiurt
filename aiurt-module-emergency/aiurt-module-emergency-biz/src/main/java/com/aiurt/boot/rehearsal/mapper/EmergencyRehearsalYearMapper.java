@@ -26,5 +26,6 @@ public interface EmergencyRehearsalYearMapper extends BaseMapper<EmergencyRehear
      */
     Page<EmergencyRehearsalYear> queryPageList(@Param("page") Page<EmergencyRehearsalYear> page,
                                                @Param("condition") EmergencyRehearsalYearDTO emergencyRehearsalYearDTO,
-                                               @Param("passStatus") Integer status);
+                                               @Param("passStatus") Integer status,
+                                               @Param("userName") String userName);
 }
