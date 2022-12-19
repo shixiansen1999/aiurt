@@ -121,6 +121,7 @@
             fkb.create_time,
             fkb.status,
             fkb.file_path,
+            fkb.tools,
             (SELECT name from device_type WHERE `code` = fkb.device_type_code) as deviceTypeName,
             (SELECT material_name from device_assembly WHERE material_code = fkb.material_code group by material_code) as materialName
     FROM
