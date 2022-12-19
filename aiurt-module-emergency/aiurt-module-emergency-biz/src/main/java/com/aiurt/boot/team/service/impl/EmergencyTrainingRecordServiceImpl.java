@@ -16,7 +16,6 @@ import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.aiurt.boot.team.vo.EmergencyTrainingRecordVO;
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.enums.CellExtraTypeEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -302,11 +301,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             }
             RecordExcelListener recordExcelListener = new RecordExcelListener();
             try {
-                EasyExcel.read(file.getInputStream(), RecordModel.class, recordExcelListener)
-                        .extraRead(CellExtraTypeEnum.MERGE)
-                        .ignoreEmptyRow(false).autoTrim(true)
-                        .sheet()
-                        .doRead();
+                EasyExcel.read(file.getInputStream(), RecordData.class, recordExcelListener).sheet().doRead();
             } catch (IOException e) {
                 e.printStackTrace();
             }

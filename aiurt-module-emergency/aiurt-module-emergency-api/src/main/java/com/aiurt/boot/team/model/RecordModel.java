@@ -3,13 +3,14 @@ package com.aiurt.boot.team.model;
 import com.alibaba.excel.annotation.ExcelIgnore;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * @author lkj
  */
 @Data
-public class RecordModel {
+public class RecordModel implements Serializable {
     /**
      * 训练科目
      */

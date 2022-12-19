@@ -2,11 +2,13 @@ package com.aiurt.boot.team.model;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * @author lkj
  */
 @Data
-public class ProcessRecordModel {
+public class ProcessRecordModel implements Serializable {
     /**序号*/
     private String sort;
     /**时间*/
