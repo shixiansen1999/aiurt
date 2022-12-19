@@ -89,11 +89,7 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
 
     @Override
     public IPage<ConstructionWeekPlanCommandVO> queryPageList(Page<ConstructionWeekPlanCommandVO> page, ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO) {
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (ObjectUtil.isEmpty(loginUser)) {
-            throw new AiurtBootException("检测到未登录，请登录后操作！");
-        }
-        IPage<ConstructionWeekPlanCommandVO> pageList = constructionWeekPlanCommandMapper.queryPageList(page, loginUser.getId(), constructionWeekPlanCommandDTO);
+        IPage<ConstructionWeekPlanCommandVO> pageList = constructionWeekPlanCommandMapper.queryPageList(page, constructionWeekPlanCommandDTO);
         return pageList;
     }
 

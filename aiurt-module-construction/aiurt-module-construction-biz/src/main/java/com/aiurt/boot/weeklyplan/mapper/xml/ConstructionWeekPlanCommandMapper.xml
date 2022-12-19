@@ -27,10 +27,6 @@
         <if test="condition.formStatus != null">
             and cwpc.form_status = #{condition.formStatus}
         </if>
-        <if test="userId != null and userId != ''">
-            and (cwpc.apply_id = #{userId} or cwpc.line_user_id = #{userId} or cwpc.dispatch_id = #{userId} or
-                 cwpc.director_id = #{userId} or cwpc.manager_id = #{userId})
-        </if>
         <if test="condition.formStatusList != null and condition.formStatusList.size() != 0">
             and cwpc.form_status in
             <foreach collection="condition.formStatusList" item="item" separator="," open="(" close=")">
