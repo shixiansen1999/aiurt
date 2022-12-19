@@ -2,9 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.fault.mapper.FaultMapper">
     <select id="selectByCode" parameterType="java.lang.String" resultType="com.aiurt.modules.fault.entity.Fault">
-        select *
-        from fault
-
+        select f.*,fkbt.name as  phenomenonTypeName
+        from fault f
+        LEFT JOIN fault_knowledge_base_type fkbt on f.fault_phenomenon = f.code
         where code = #{code}
     </select>
 
@@ -40,6 +40,9 @@
         </if>
         <if test="systemCode != null and systemCode != ''">
             and system_code = #{systemCode}
+        </if>
+        <if test="knowledgeBaseTypeCode != null and knowledgeBaseTypeCode != ''">
+        and knowledge_base_type_code = #{knowledgeBaseTypeCode}
         </if>
         <if test="deviceCodeList != null and deviceCodeList.size() != 0">
             and device_type_code in (

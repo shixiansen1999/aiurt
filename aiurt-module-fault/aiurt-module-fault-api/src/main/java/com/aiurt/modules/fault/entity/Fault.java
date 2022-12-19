@@ -107,10 +107,10 @@ public class Fault extends DictEntity implements Serializable {
     private Date happenTime;
 
 	/**故障现象*/
-	@Excel(name = "故障现象", width = 15)
-    @ApiModelProperty(value = "故障现象",  required = true)
-    @NotBlank(message = "请填写故障现象!")
-    @Length(max = 255, message = "故障现象长度不能超过255")
+	@Excel(name = "故障现象分类", width = 15)
+    @ApiModelProperty(value = "故障现象分类",  required = true)
+    @NotBlank(message = "故障现象分类!")
+    @Dict(dictTable = "fault_knowledge_base_type", dicCode = "code", dicText = "name")
     private String faultPhenomenon;
 
 	/**报修人*/
@@ -343,6 +343,10 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "班主负责人")
     @TableField(exist = false)
     private String orgChargeName;
+
+    @ApiModelProperty(value = "故障原因分类名称")
+    @TableField(exist = false)
+    private String phenomenonTypeName;
 
     @ApiModelProperty(value = "是否存在故障分析")
     @TableField(exist = false)

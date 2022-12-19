@@ -17,13 +17,12 @@ import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.service.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
+import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeService;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
-import com.aiurt.modules.sparepart.dto.SparePartMalfunctionDTO;
-import com.aiurt.modules.sparepart.dto.SparePartReplaceDTO;
-import com.aiurt.modules.sparepart.dto.SparePartScrapDTO;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -89,6 +88,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Autowired
     private ISparePartBaseApi sparePartBaseApi;
 
+    @Autowired
+    private IFaultKnowledgeBaseTypeService faultKnowledgeBaseTypeService;
     /**
      * 故障上报
      *
@@ -112,6 +113,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         String faultModeCode = fault.getFaultModeCode();
 
+        LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
+        FaultKnowledgeBaseType one = faultKnowledgeBaseTypeService.getOne(queryWrapper.eq(FaultKnowledgeBaseType::getCode, fault.getFaultPhenomenon()).eq(FaultKnowledgeBaseType::getDelFlag, 0));
         // 自报自修跳过
         if (StrUtil.equalsIgnoreCase(faultModeCode, SELF_FAULT_MODE_CODE)) {
             fault.setAppointUserName(user.getUsername());
@@ -122,8 +125,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             FaultRepairRecord record = FaultRepairRecord.builder()
                     // 做类型
                     .faultCode(fault.getCode())
-                    // 故障想象
-                    .faultPhenomenon(fault.getFaultPhenomenon())
+                    // 故障现象
+                    .faultPhenomenon(one.getName())
                     .startTime(new Date())
                     .delFlag(CommonConstant.DEL_FLAG_0)
                     // 负责人
@@ -339,7 +342,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .assignTime(new Date())
                 .delFlag(CommonConstant.DEL_FLAG_0)
                 // 故障想象
-                .faultPhenomenon(fault.getFaultPhenomenon())
+                .faultPhenomenon(fault.getPhenomenonTypeName())
                 // 负责人
                 .appointUserName(assignDTO.getOperatorUserName())
                 // 附件
@@ -388,7 +391,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 // 负责人
                 .appointUserName(assignDTO.getOperatorUserName())
                 // 故障想象
-                .faultPhenomenon(fault.getFaultPhenomenon())
+                .faultPhenomenon(fault.getPhenomenonTypeName())
                 .delFlag(CommonConstant.DEL_FLAG_0)
                 // 领取时间
                 .receviceTime(new Date())
