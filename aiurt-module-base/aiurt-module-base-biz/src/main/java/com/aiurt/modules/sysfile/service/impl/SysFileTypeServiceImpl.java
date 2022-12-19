@@ -247,7 +247,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap.get(1))) {
-						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap.get(1)) : listMap.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -280,7 +281,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap6.get(1))) {
-				     Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap6.get(1)) : listMap6.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap6.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 					List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 					String[] array = new String[ids.size()];
 					for(int i = 0; i < ids.size();i++){
@@ -312,7 +314,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap1.get(1))) {
-						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap1.get(1)) : listMap1.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap1.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -343,7 +346,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap2.get(1))) {
-						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap2.get(1)) : listMap2.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap2.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -374,7 +378,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap3.get(1))) {
-						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap3.get(1)) : listMap3.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap3.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -405,7 +410,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap4.get(1))) {
-						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap4.get(1)) : listMap4.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap4.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -436,7 +442,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap5.get(1))) {
-						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap5.get(1)) : listMap5.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap5.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -467,7 +474,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap7.get(1))) {
-						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap7.get(1)) : listMap7.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap7.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -498,7 +506,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap8.get(1))) {
-						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap8.get(1)) : listMap8.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap8.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -528,7 +537,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap9.get(1))) {
-						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap9.get(1)) : listMap9.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap9.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -559,7 +569,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap10.get(1))) {
-						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap10.get(1)) : listMap10.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap10.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -590,7 +601,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap11.get(1))) {
-						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap11.get(1)) : listMap11.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap11.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -621,7 +633,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap12.get(1))) {
-						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap12.get(1)) : listMap12.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap12.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -652,7 +665,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 						}
 					}
 					if (CollectionUtils.isNotEmpty(listMap13.get(1))) {
-						Optional.ofNullable(CollUtil.isNotEmpty(sysFileRoleList1) ? CollUtil.intersection(sysFileRoleList1,listMap13.get(1)) : listMap13.get(1)).ifPresent(roles -> {
+						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap13.get(1));
+						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
@@ -698,5 +712,22 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 		}
 
 		return list;
+	}
+
+	private List<SysFileRole> getSysFileRole(List<SysFileRole> list1,List<SysFileRole> list2) {
+		ArrayList<SysFileRole> sysFileRoles = new ArrayList<>();
+		if (CollUtil.isNotEmpty(list1)) {
+			Map<String, SysFileRole> roleMap = list1.stream().collect(Collectors.toMap(SysFileRole::getUserId, t -> t, (key1, key2) -> key1));
+			for (SysFileRole sysFileRole : list2) {
+				SysFileRole fileRole = roleMap.get(sysFileRole.getUserId());
+				if (ObjectUtil.isNotEmpty(fileRole)) {
+					sysFileRoles.add(fileRole);
+				}
+			}
+		} else {
+			sysFileRoles.addAll(list2);
+		}
+
+		return sysFileRoles;
 	}
 }
