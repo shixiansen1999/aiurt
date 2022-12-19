@@ -827,7 +827,7 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
 
     @Override
     public void exportXls(HttpServletRequest request, HttpServletResponse response, String lineCode, Date startDate, Date endDate) {
-        List<ConstructionWeekPlanExportDTO> dataList = constructionWeekPlanCommandMapper.getExportData(lineCode, startDate, endDate);
+        List<ConstructionWeekPlanExportDTO> dataList = constructionWeekPlanCommandMapper.getExportData(lineCode, startDate, endDate, ConstructionConstant.FORM_STATUS_5);
         String sheetName = "运营施工及行车计划申报表";
         String title = sheetName;
         if (StrUtil.isNotEmpty(lineCode)) {

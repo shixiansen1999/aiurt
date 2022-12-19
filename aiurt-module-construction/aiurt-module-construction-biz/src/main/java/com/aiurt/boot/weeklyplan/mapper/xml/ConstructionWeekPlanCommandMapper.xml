@@ -111,6 +111,9 @@
         <if test="lineCode != null and lineCode != ''">
             and cwpc.line_code = #{lineCode}
         </if>
+        <if test="formStatus != null">
+            and cwpc.form_status = #{formStatus}
+        </if>
         <if test="startDate != null and endDate != null">
             and date_format(cwpc.task_date, '%Y-%m-%d')
                 between date_format(#{startDate}, '%Y-%m-%d')
