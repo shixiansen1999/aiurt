@@ -175,7 +175,8 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
     * @param request
     * @param emergencyTeamDTO
     */
-    @RequestMapping(value = "/exportTeamXls")
+	@ApiOperation(value="应急队伍台账导出excel", notes="应急队伍台账导出excel")
+    @RequestMapping(value = "/exportTeamXls",method = RequestMethod.GET)
     public ModelAndView exportTeamXls(HttpServletRequest request, EmergencyTeamDTO emergencyTeamDTO) {
         return emergencyTeamService.exportTeamXls(request, emergencyTeamDTO);
     }
@@ -186,14 +187,15 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	 * @param request
 	 * @param id
 	 */
-	@RequestMapping(value = "/exportCrewXls")
+	@ApiOperation(value="应急队伍人员导出excel", notes="应急队伍人员导出excel")
+	@RequestMapping(value = "/exportCrewXls",method = RequestMethod.GET)
 	public ModelAndView exportCrewXls(HttpServletRequest request, String id) {
 		return emergencyTeamService.exportCrewXls(request, id);
 	}
 
 
 	/**
-	 * 导出excel
+	 * 应急队伍模板下载
 	 *
 	 */
 	@AutoLog(value = "应急队伍模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "")
@@ -205,12 +207,13 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 
 
 	/**
-      * 通过excel导入数据
+    *  应急队伍通过excel导入数据
     *
     * @param request
     * @param response
     * @return
     */
+	@ApiOperation(value="应急队伍通过excel导入数据", notes="应急队伍通过excel导入数据")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return emergencyTeamService.importExcel(request, response);

@@ -556,7 +556,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
 
     /**错误报告模板导出*/
     private Result<?> getErrorExcel(int errorLines,List<String> errorMessage,TeamModel team, List<CrewModel> crewList,int successLines ,String url,String type) throws IOException {
-        TemplateExportParams exportParams = iSysBaseAPI.getErrorExcelModel("");
+        TemplateExportParams exportParams = iSysBaseAPI.getErrorExcelModel("templates/emergencyTeamError.xlsx");
         Map<String, Object> errorMap = new HashMap<String, Object>();
         List<Map<String, String>> teamMapList = new ArrayList<>();
         Map<String, String> teamMap = new HashMap<>();
@@ -608,7 +608,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
     @Override
     public void exportTemplateXls(HttpServletResponse response) throws IOException {
         //获取输入流，原始模板位置
-        Resource resource = new ClassPathResource("");
+        Resource resource = new ClassPathResource("templates/emergencyTeam.xlsx");
         InputStream resourceAsStream = resource.getInputStream();
 
         //2.获取临时文件

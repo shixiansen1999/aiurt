@@ -207,7 +207,7 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
     */
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, EmergencyTrainingRecord.class);
+        return 	emergencyTrainingRecordService.importExcel(request,response);
     }
 
 }

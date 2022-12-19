@@ -9,6 +9,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * @Description: emergency_training_record
  * @Author: aiurt
@@ -63,4 +66,12 @@ public interface IEmergencyTrainingRecordService extends IService<EmergencyTrain
      * @return
      */
     IPage<EmergencyTrainingProgram>  getTrainingProgram(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO,Integer pageNo, Integer pageSize);
+
+    /**
+     * 导入
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
 }

@@ -7,15 +7,21 @@ import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.dto.EmergencyTrainingRecordDTO;
 import com.aiurt.boot.team.entity.*;
+import com.aiurt.boot.team.listener.RecordExcelListener;
 import com.aiurt.boot.team.mapper.EmergencyTrainingProgramMapper;
 import com.aiurt.boot.team.mapper.EmergencyTrainingRecordMapper;
+import com.aiurt.boot.team.model.ProcessRecordModel;
+import com.aiurt.boot.team.model.RecordModel;
 import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.aiurt.boot.team.vo.EmergencyTrainingRecordVO;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.enums.CellExtraTypeEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -25,9 +31,16 @@ import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -268,5 +281,38 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             }
         }
         return page.setRecords(trainingProgram);
+    }
+
+    @Override
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+
+        List<String> errorMessage = new ArrayList<>();
+        int successLines = 0;
+        // 错误信息
+        int  errorLines = 0;
+
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            String type = FilenameUtils.getExtension(file.getOriginalFilename());
+            if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+                return iSysBaseAPI.importReturnRes(errorLines, successLines, errorMessage, false, null);
+            }
+            RecordExcelListener recordExcelListener = new RecordExcelListener();
+            try {
+                EasyExcel.read(file.getInputStream(), RecordModel.class, recordExcelListener)
+                        .extraRead(CellExtraTypeEnum.MERGE)
+                        .ignoreEmptyRow(false).autoTrim(true)
+                        .sheet()
+                        .doRead();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            RecordModel recordModel = recordExcelListener.getRecordModel();
+            List<ProcessRecordModel> processRecordModelList = recordModel.getProcessRecordModelList();
+        }
+        return Result.ok();
     }
 }
