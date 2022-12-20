@@ -40,8 +40,8 @@ public class SysDepartModel {
      * 是否删除
      */
     private Integer delFlag;
-
-
+    /**管理负责人id*/
+    private String managerId;
 
 
 }

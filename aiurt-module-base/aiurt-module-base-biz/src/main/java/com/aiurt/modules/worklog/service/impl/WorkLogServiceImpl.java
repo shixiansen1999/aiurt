@@ -452,9 +452,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             //查询该部门下的人员
             List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
             //获取负责人
-            List<String> foreman = iSysBaseAPI.getDeptHeadByDepId(orgId);
-            List<LoginUser> loginUserList = iSysBaseAPI.getLoginUserList(foreman);
-            String foremanName = Optional.ofNullable(loginUserList).orElse(Collections.emptyList()).stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+            SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(orgId);
+            LoginUser userById = iSysBaseAPI.getUserById(sysDepartModel.getManagerId());
+            String foremanName = Optional.ofNullable(userById).orElse(null).getRealname();
             record.setForeman(foremanName);
 
             //获取参与人员
@@ -967,9 +967,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         String orgId = user.getOrgId();
         List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
         //获取负责人
-        List<String> foreman = iSysBaseAPI.getDeptHeadByDepId(orgId);
-        List<LoginUser> loginUserList = iSysBaseAPI.getLoginUserList(foreman);
-        String foremanName = Optional.ofNullable(loginUserList).orElse(Collections.emptyList()).stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+        SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(orgId);
+        LoginUser userById = iSysBaseAPI.getUserById(sysDepartModel.getManagerId());
+        String foremanName = Optional.ofNullable(userById).orElse(null).getRealname();
         workLog.setForeman(foremanName);
 
         //获取参与人员
