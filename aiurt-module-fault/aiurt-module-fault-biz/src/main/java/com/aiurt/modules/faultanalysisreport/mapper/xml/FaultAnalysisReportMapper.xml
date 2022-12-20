@@ -94,7 +94,7 @@
     f.sub_system_code,
     f.line_code,
     f.station_code,
-    f.fault_phenomenon,
+    fkbt.name as faultPhenomenon,
     f.fault_applicant,
     f.happen_time,
     f.station_position_code,
@@ -106,6 +106,7 @@
     f.hang_up_reason
     FROM
     fault f
+    left join fault_knowledge_base_type fkbt on fkbt.code = f.fault_phenomenon
     where
     f.status = 12
     <if test="condition.code != null and condition.code != ''">
