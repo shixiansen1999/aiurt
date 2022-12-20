@@ -2,6 +2,7 @@ package com.aiurt.boot.standard.service;
 
 
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
+import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -48,14 +49,22 @@ public interface IInspectionCodeService extends IService<InspectionCode> {
      * @return
      * @throws IOException
      */
-    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
+    Result<?> importExcels(HttpServletRequest request, HttpServletResponse response) throws IOException;
 
     /**
      * 检修标准导出
      * @param request
      * @param response
-     * @param inspectionCode
+     * @param inspectionCodeExcelDto
      */
-    ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response, InspectionCode inspectionCode);
+    void exportXls(HttpServletRequest request, HttpServletResponse response, InspectionCodeExcelDTO inspectionCodeExcelDto);
+
+    /**
+     * 下载导入模板
+     * @param response
+     * @param request
+     * @throws IOException
+     */
+    void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException;
 
 }

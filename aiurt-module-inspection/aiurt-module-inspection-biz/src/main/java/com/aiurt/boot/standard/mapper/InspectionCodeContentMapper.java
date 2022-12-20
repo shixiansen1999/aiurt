@@ -1,5 +1,6 @@
 package com.aiurt.boot.standard.mapper;
 
+import com.aiurt.boot.standard.dto.InspectionCodeContentDTO;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
@@ -44,4 +45,12 @@ public interface InspectionCodeContentMapper extends BaseMapper<InspectionCodeCo
 	 * @param id
 	 */
     void updatePid(@Param("id")String id);
+
+	/**
+	 * 通过检修标准id获取配置项
+	 * @param id
+	 * @return
+	 */
+	List<InspectionCodeContentDTO> selectByInspectionId(String id);
+
 }

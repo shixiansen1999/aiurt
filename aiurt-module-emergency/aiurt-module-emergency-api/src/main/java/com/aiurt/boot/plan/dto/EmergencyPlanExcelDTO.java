@@ -90,10 +90,7 @@ public class EmergencyPlanExcelDTO {
     @ExcelCollection(name = "应急物资")
     @ApiModelProperty(value = "应急物资")
     List<EmergencyPlanMaterialsExcelDTO> planMaterialsDTOList = new ArrayList<>();
-//
-//    @ExcelCollection(name = "应急预案附件")
-//    @ApiModelProperty(value = "应急预案附件")
-//    List<EmergencyPlanAtt> planAttList = new ArrayList<>();
+
 
 
 }

@@ -14,6 +14,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
+import com.aiurt.boot.plan.controller.RecordExcelListener;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
@@ -34,12 +35,14 @@ import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
 import com.aiurt.modules.device.entity.Device;
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import liquibase.pro.packaged.S;
+import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -609,6 +612,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         this.updateById(emergencyPlan);
     }
 
+
     @Override
     public void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanDTO emergencyPlanDto) {
         // 封装数据
@@ -667,6 +671,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     }
 
 
+
     @Override
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
@@ -689,6 +694,10 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                 return imporReturnRes(errorLines, false, failReportUrl,"文件导入失败，文件类型不对");
             }
 
+            EmergencyPlanImportExcelDTO emergencyPlanImportExcelDTO = new EmergencyPlanImportExcelDTO();
+//            EasyExcel.read(file.getInputStream(),EmergencyPlanImportExcelDTO.class,new RecordExcelListener(emergencyPlanImportExcelDTO)).sheet().doRead();
+
+
             // 设置excel参数
             ImportParams params = new ImportParams();
             params.setTitleRows(2);
@@ -710,25 +719,25 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                     return imporReturnRes(errorLines, false, failReportUrl,"暂无导入数据");
                 }
                 // 校验数据
-                for (EmergencyPlanImportExcelDTO emergencyPlanImportExcelDTO : list) {
-                    EmergencyPlanDTO emergencyPlanDTO = new EmergencyPlanDTO();
-                    // 校验应急预案
-                    this.checkData(errorMessage, emergencyPlanImportExcelDTO, emergencyPlanDTO);
-                    // 校验应急预案处置程序
-                    this.checkDisposalProcedureCode(errorSign, emergencyPlanImportExcelDTO, emergencyPlanDTO);
-                    // 校验应急预案物资清单
-                    this.checkMaterialsCode(errorSign, emergencyPlanImportExcelDTO, emergencyPlanDTO);
-
-                    if (errorMessage.length() > 0 ) {
-                        if(errorMessage.length() > 0 || errorSign ){
-                            errorMessage = errorMessage.deleteCharAt(errorMessage.length() - 1);
-                            emergencyPlanImportExcelDTO.setEmergencyPlanErrorReason(errorMessage.toString());
-                        }
-                        errorLines++;
-                    } else {
-                        saveData.add(emergencyPlanDTO);
-                    }
-                }
+//                for (EmergencyPlanImportExcelDTO emergencyPlanImportExcelDTO : list) {
+//                    EmergencyPlanDTO emergencyPlanDTO = new EmergencyPlanDTO();
+//                    // 校验应急预案
+//                    this.checkData(errorMessage, emergencyPlanImportExcelDTO, emergencyPlanDTO);
+//                    // 校验应急预案处置程序
+//                    this.checkDisposalProcedureCode(errorSign, emergencyPlanImportExcelDTO, emergencyPlanDTO);
+//                    // 校验应急预案物资清单
+//                    this.checkMaterialsCode(errorSign, emergencyPlanImportExcelDTO, emergencyPlanDTO);
+//
+//                    if (errorMessage.length() > 0 ) {
+//                        if(errorMessage.length() > 0 || errorSign ){
+//                            errorMessage = errorMessage.deleteCharAt(errorMessage.length() - 1);
+//                            emergencyPlanImportExcelDTO.setEmergencyPlanErrorReason(errorMessage.toString());
+//                        }
+//                        errorLines++;
+//                    } else {
+//                        saveData.add(emergencyPlanDTO);
+//                    }
+//                }
 
                 // 存在错误，错误报告下载
                 if (errorLines > 0) {
@@ -949,36 +958,10 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                 for (EmergencyPlanDisposalProcedureImportExcelDTO emergencyPlanDisposalProcedureImportExcelDTO : inspectionExcelDTOList) {
                     lm = CollUtil.newHashMap();
                     //错误报告获取信息
-//                    lm.put("year", inspectionStyImportExcelDTO.getYear());
-//                    lm.put("name", inspectionStyImportExcelDTO.getName());
-//                    lm.put("stationName", inspectionStyImportExcelDTO.getStationName());
-//                    lm.put("orgName", inspectionStyImportExcelDTO.getOrgName());
-//                    lm.put("type", inspectionStyImportExcelDTO.getType());
-//                    lm.put("tactics", inspectionStyImportExcelDTO.getTactics());
-//                    lm.put("isConfirm", inspectionStyImportExcelDTO.getIsConfirm());
-//                    lm.put("isReceipt", inspectionStyImportExcelDTO.getIsReceipt());
-//                    lm.put("workType", inspectionStyImportExcelDTO.getWorkType());
-//                    lm.put("isOutsource", inspectionStyImportExcelDTO.getIsOutsource());
-//                    lm.put("InspectionStyErrorReason", inspectionStyImportExcelDTO.getInspectionStyErrorReason());
-//                    lm.put("code", inspectionImportExcelDTO.getCode());
-//                    lm.put("title", inspectionImportExcelDTO.getTitle());
-//                    lm.put("deviceExcelDTOS", inspectionImportExcelDTO.getDeviceExcelDTOS());
-//                    lm.put("errorReason", inspectionImportExcelDTO.getErrorReason());
                     listMap.add(lm);
                 }
             } else {
                 //错误报告获取信息
-//                lm.put("year", inspectionStyImportExcelDTO.getYear());
-//                lm.put("name", inspectionStyImportExcelDTO.getName());
-//                lm.put("stationName", inspectionStyImportExcelDTO.getStationName());
-//                lm.put("orgName", inspectionStyImportExcelDTO.getOrgName());
-//                lm.put("type", inspectionStyImportExcelDTO.getType());
-//                lm.put("tactics", inspectionStyImportExcelDTO.getTactics());
-//                lm.put("isConfirm", inspectionStyImportExcelDTO.getIsConfirm());
-//                lm.put("isReceipt", inspectionStyImportExcelDTO.getIsReceipt());
-//                lm.put("workType", inspectionStyImportExcelDTO.getWorkType());
-//                lm.put("isOutsource", inspectionStyImportExcelDTO.getIsOutsource());
-//                lm.put("InspectionStyErrorReason", inspectionStyImportExcelDTO.getInspectionStyErrorReason());
                 listMap.add(lm);
             }
 

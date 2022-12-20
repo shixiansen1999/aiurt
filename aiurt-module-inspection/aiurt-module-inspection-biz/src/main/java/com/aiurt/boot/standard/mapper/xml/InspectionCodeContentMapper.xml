@@ -44,4 +44,13 @@
 		ORDER BY a.sort_no ,a.create_time desc
 	</select>
 
+	<select id="selectByInspectionId" resultType="com.aiurt.boot.standard.dto.InspectionCodeContentDTO">
+		select * from inspection_code_content a
+		where a.del_flag =0
+		<if test="id != null and id != ''">
+			and a.inspection_code_id=#{id}
+		</if>
+		ORDER BY a.sort_no ,a.create_time desc
+	</select>
+
 </mapper>

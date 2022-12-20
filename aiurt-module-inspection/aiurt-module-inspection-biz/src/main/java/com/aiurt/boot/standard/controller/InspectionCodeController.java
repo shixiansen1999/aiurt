@@ -3,6 +3,7 @@ package com.aiurt.boot.standard.controller;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
+import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -183,36 +185,31 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     /**
      * 检修标准管理-导出excel
      * @param request
-     * @param inspectionCode
+     * @param inspectionCodeExcelDto
      * @return
      */
+//    @AutoLog(value = "检修标准管理-导出excel",  operateType =  4, operateTypeAlias = "导出excel", module = ModuleType.INSPECTION)
+//    @ApiOperation(value="检修标准管理-导出excel", notes="检修标准管理-导出excel")
+//    @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
+//    public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response,InspectionCode inspectionCode) {
+//        return inspectionCodeService.exportXls(request,response,inspectionCode);
+//    }
     @AutoLog(value = "检修标准管理-导出excel",  operateType =  4, operateTypeAlias = "导出excel", module = ModuleType.INSPECTION)
     @ApiOperation(value="检修标准管理-导出excel", notes="检修标准管理-导出excel")
     @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
-    public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response,InspectionCode inspectionCode) {
-        return inspectionCodeService.exportXls(request,response,inspectionCode);
+    public void exportXls(HttpServletRequest request, HttpServletResponse response, InspectionCodeExcelDTO inspectionCodeExcelDto) {
+         inspectionCodeService.exportXls(request,response,inspectionCodeExcelDto);
     }
 
     /**
      *检修标准导入模板下载
      * @return
      */
-    @AutoLog(value = "检修标准导入模板下载", operateType =  4, operateTypeAlias = "导出excel", module = ModuleType.INSPECTION)
-    @ApiOperation(value="检修标准导入模板下载", notes="检修标准导入模板下载")
+    @AutoLog(value = "检修标准表模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "")
+    @ApiOperation(value="检修标准表模板下载", notes="检修标准表模板下载")
     @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
-    public ModelAndView exportTemplateXl() {
-        String remark = "检修标准导入模板\n" +
-                "填写须知：\n" +
-                "1.请勿增加、删除、或修改表格中的字段顺序、字段名称；\n" +
-                "2.请严格按照数据规范填写，并填写完所有必填项，红底白字列为必填项；\n" +
-                "字段说明：\n" +
-                "1.检修标准名称：必填字段；\n" +
-                "2.检修标准编码：自动生成，无需填写；\n"+
-                "3.检修周期类型：必填字段；\n"+
-                "4.适用专业：必填字段；\n"+
-                "5.与设备类型相关：必填字段；\n"+
-                "6.生效状态：必填字段；\n";
-        return super.exportTemplateXls("", InspectionCode.class,"检修标准导入模板",remark);
+    public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        inspectionCodeService.getImportTemplate(response,request);
     }
 
     /**
@@ -226,7 +223,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     @ApiOperation(value="检修标准-通过excel导入数据", notes="检修标准-通过excel导入数据")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws Exception{
-        return inspectionCodeService.importExcel(request,response);
+        return inspectionCodeService.importExcels(request,response);
     }
 
 }
