@@ -100,7 +100,8 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                     Fault fault = faultMapper.selectOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, record.getFaultCode()));
                     String stationName = sysBaseApi.getPosition(fault.getStationCode());
                     String lineName = sysBaseApi.getPosition(fault.getLineCode());
-                    content.append(lineName).append("-").append(stationName).append(" ").append(record.getFaultPhenomenon()).append(" 维修人:").append(record.getAppointUserName()).append("-");
+                    LoginUser userByName = sysBaseApi.getUserByName(record.getAppointUserName());
+                    content.append(lineName).append("-").append(stationName).append(" ").append(record.getFaultPhenomenon()).append(" 维修人:").append(userByName.getRealname()).append("-");
                     if (record.getSolveStatus() == 1) {
                         content.append("维修完成。");
                     } else {

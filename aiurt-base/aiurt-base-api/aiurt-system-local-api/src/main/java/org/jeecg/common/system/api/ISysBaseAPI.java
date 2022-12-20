@@ -812,16 +812,8 @@ public interface ISysBaseAPI extends CommonAPI {
     TemplateExportParams getErrorExcelModel(String url) throws IOException;
 
     /**
-     * 获取某一班组下的工班长负责人
-     * @param sysUsers
-     * @param roleId
-     * @return
-     */
-    List<LoginUser> getForeman(List<LoginUser> sysUsers, String roleId);
-
-    /**
      * 获取用户岗位为post的人员
-     * @param i
+     * @param post
      * @return
      */
     List<LoginUser> getUserByPost(int post);
