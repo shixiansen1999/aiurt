@@ -71,15 +71,15 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         HashMap<String, String> map = new HashMap<>();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<LoginUser> sysUsers = sysBaseApi.getUserPersonnel(sysUser.getOrgId());
-        List<String> realNames = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getRealname).collect(Collectors.toList());
+        List<String> userNames = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getUsername).collect(Collectors.toList());
         //获取当前用户部门的人作为被指派/领取人，负责过的故障报修单
-        List<FaultRepairRecord> faultList = recordMapper.selectList(new LambdaQueryWrapper<FaultRepairRecord>().in(FaultRepairRecord::getAppointUserName, realNames).eq(FaultRepairRecord::getDelFlag, 0));
+        List<FaultRepairRecord> faultList = recordMapper.selectList(new LambdaQueryWrapper<FaultRepairRecord>().in(FaultRepairRecord::getAppointUserName, userNames).eq(FaultRepairRecord::getDelFlag, 0));
        //获取已经填写的维修单
         List<FaultRepairRecord> recordList = Optional.ofNullable(faultList).orElse(Collections.emptyList()).stream().filter(f -> f.getArriveTime() != null).collect(Collectors.toList());
         //去重复
         List<FaultRepairRecord> list=Optional.ofNullable(recordList).orElse(Collections.emptyList()).stream().collect(Collectors.collectingAndThen(Collectors.toCollection(()->new TreeSet<>(Comparator.comparing(o->o.getFaultCode()+";"+o.getAppointUserName()))), ArrayList::new));
         //获取当前用户作为参与人，参与过的故障报修单
-        List<FaultRepairParticipants> participantsList = participantsMapper.selectList(new LambdaQueryWrapper<FaultRepairParticipants>().in(FaultRepairParticipants::getUserName, realNames));
+        List<FaultRepairParticipants> participantsList = participantsMapper.selectList(new LambdaQueryWrapper<FaultRepairParticipants>().in(FaultRepairParticipants::getUserName, userNames));
         //去重复
         Set <FaultRepairRecord> faultRepairRecords = new HashSet<>();
         if (CollUtil.isNotEmpty(participantsList)) {
@@ -87,15 +87,15 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                 FaultRepairRecord record = recordMapper.selectById(p.getFaultRepairRecordId());
                 faultRepairRecords.add(record);
             });
-            list.addAll(faultRepairRecords);
+            faultRepairRecords.addAll(list);
         }
 
         StringBuilder content = new StringBuilder();
         StringBuilder code = new StringBuilder();
 
         //获取时间范围内的维修单
-        if (CollUtil.isNotEmpty(list)) {
-            for (FaultRepairRecord record : list) {
+        if (CollUtil.isNotEmpty(faultRepairRecords)) {
+            for (FaultRepairRecord record : faultRepairRecords) {
                 if (record.getCreateTime().after(startTime) && record.getCreateTime().before(endTime)) {
                     Fault fault = faultMapper.selectOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, record.getFaultCode()));
                     String stationName = sysBaseApi.getPosition(fault.getStationCode());
