@@ -99,7 +99,9 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					total + this.lambdaQuery().eq(SysFile::getDelFlag, 0)
 							.eq(SysFile::getTypeId, param.getTypeId()).count());
 			return page;
-		} else if (ObjectUtil.isNotNull(param.getTypeId())){
+		}
+
+		if (ObjectUtil.isNotNull(param.getTypeId())){
 			long l = len - total;
 			long l1 = l % param.getPageSize() > 0 ? (l / param.getPageSize()) + 1 : l / param.getPageSize();
 			long size = l > 10 ? 10 : l;
@@ -114,8 +116,11 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 			});
 			page.setRecords(list).setTotal(total + filePage.getTotal());
 			return page;
+		}else {
+			//
+			page.setRecords(list);
 		}
-           return page;
+		return page;
 	}
 
 	private final ISysFileRoleService sysFileRoleService;
