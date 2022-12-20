@@ -258,13 +258,13 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 record.setLineName(lineName);
             }*/
             if (StringUtils.isNotBlank(record.getAssortLocation())){
-                List<String> ids = Arrays.asList(record.getAssortLocation().split(","));
-                List<JSONObject> jsonObjects = new ArrayList<>();
-                for (String id : ids) {
-                    JSONObject csStationById = iSysBaseAPI.getCsStationById(id);
-                    jsonObjects.add(csStationById);
+                List<String> codes = Arrays.asList(record.getAssortLocation().split(","));
+                List<String> positions = new ArrayList<>();
+                for (String code : codes) {
+                    String position = iSysBaseAPI.getPosition(code);
+                    positions.add(position);
                 }
-                record.setAssortLocationName(StringUtils.join(jsonObjects.stream().map(js -> js.getString("stationName")).collect(Collectors.toList()),","));
+                record.setAssortLocationName(StringUtils.join(positions,","));
             }
             //提交状态
             record.setStatusDesc(WorkLogStatusEnum.findMessage(record.getStatus()));
