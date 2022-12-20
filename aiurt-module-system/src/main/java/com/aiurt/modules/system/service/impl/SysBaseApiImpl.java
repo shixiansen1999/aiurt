@@ -2129,11 +2129,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<LoginUser> getForeman(List<LoginUser> sysUsers, String roleId) {
-        return userMapper.getForeman(sysUsers, roleId);
-    }
-
-    @Override
     public List<LoginUser> getUserByPost(int post) {
         QueryWrapper<SysUser> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper.lambda().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)

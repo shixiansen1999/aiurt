@@ -82,11 +82,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
 
- /*   @Value("${jeecg.role.banzhang}")
-    private String roleId ;
-
-    @Value("${jeecg.workLog.schedule}")
-    private String schedule ;*/
+    private String schedule = "1.落实防疫规定，2.工区进行消毒，3.人员测温，4.对工区及材料库进行卫生清洁，5.对各站设备进行检修" ;
     /**
      * 新增工作日志
      * @param dto
@@ -296,7 +292,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
             record.setAntiepidemicWork(stringBuffer.toString());
 
-            record.setSchedule("schedule");
+            record.setSchedule(schedule);
 
             StringBuffer stringBuffer2 = new StringBuffer();
             if (WorkLogConstans.IS.equals(record.getIsEmergencyDisposal())) {
@@ -441,14 +437,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             String format2 = DateUtil.format(logTime, "yyyy-MM-dd");
             Week week = DateUtil.dayOfWeekEnum(DateUtil.date());
             record.setTime(format + week.toChinese());
-            //获取是早班会16.30 还是晚班会8.30
+            //获取是早班会17.30 还是晚班会9.30
             String am = format2+" " + morningTime;
             String pm = format2+" " + nightTime;
             if (record.getSubmitTime().after(DateUtil.parse(am)) && record.getSubmitTime().before(DateUtil.parse(pm))) {
-                record.setClassTime("16时30分");
+                record.setClassTime("17时30分");
                 record.setClassName("晚班会");
             } else {
-                record.setClassTime("8时30分");
+                record.setClassTime("9时30分");
                 record.setClassName("早班会");
             }
             LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -456,8 +452,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             //查询该部门下的人员
             List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
             //获取负责人
-            List<LoginUser> foreman = iSysBaseAPI.getForeman(sysUsers, "roleId");
-            String foremanName = Optional.ofNullable(foreman).orElse(Collections.emptyList()).stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+            List<String> foreman = iSysBaseAPI.getDeptHeadByDepId(orgId);
+            List<LoginUser> loginUserList = iSysBaseAPI.getLoginUserList(foreman);
+            String foremanName = Optional.ofNullable(loginUserList).orElse(Collections.emptyList()).stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
             record.setForeman(foremanName);
 
             //获取参与人员
@@ -489,7 +486,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
             record.setAntiepidemicWork(stringBuffer.toString());
 
-            record.setSchedule("schedule");
+            record.setSchedule(schedule);
 
             StringBuffer stringBuffer2 = new StringBuffer();
             if (WorkLogConstans.IS.equals(record.getIsEmergencyDisposal())) {
@@ -907,13 +904,13 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             nowday = DateUtil.today();
         }
 
-        //获取是晚班会16.30 还是早班会8.30
-        String am = nowday+" 08:29:59";
-        String pm = nowday+" 16:30:00";
+        //获取是晚班会17.30 还是早班会9.30
+        String am = nowday+" 09:29:59";
+        String pm = nowday+" 17:30:00";
 
         //昨天时间
         DateTime lastDay = DateUtil.offsetDay(date, -1);
-        String lastPM = DateUtil.format(lastDay, "yyyy-MM-dd")+ " 16:30:00";
+        String lastPM = DateUtil.format(lastDay, "yyyy-MM-dd")+ " 17:30:00";
 
         if (date.after(DateUtil.parse(am)) && date.before(DateUtil.parse(pm))) {
             //晚班
@@ -921,8 +918,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             endTime = DateUtil.parse(am);
         } else {
             //早班
-            startTime = DateUtil.parse(nowday+" 08:30:00");
-            endTime = DateUtil.parse(nowday+" 16:29:59");
+            startTime = DateUtil.parse(nowday+" 09:30:00");
+            endTime = DateUtil.parse(nowday+" 17:29:59");
         }
 
         HashMap<String, String> map = new HashMap<>(16);
@@ -956,22 +953,23 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         String format2 = DateUtil.format(logTime, "yyyy-MM-dd");
         Week week = DateUtil.dayOfWeekEnum(DateUtil.date());
         workLog.setTime(format + week.toChinese());
-        //获取是早班会16.30 还是晚班会8.30
+        //获取是早班会17.30 还是晚班会9.30
         String am = format2+" "+ morningTime;
         String pm = format2+" "+ nightTime;
         if (workLog.getSubmitTime().after(DateUtil.parse(am)) && workLog.getSubmitTime().before(DateUtil.parse(pm))) {
-            workLog.setClassTime("16时30分");
+            workLog.setClassTime("17时30分");
             workLog.setClassName("晚班会");
         } else {
-            workLog.setClassTime("8时30分");
+            workLog.setClassTime("9时30分");
             workLog.setClassName("早班会");
         }
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String orgId = user.getOrgId();
         List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
         //获取负责人
-        List<LoginUser> foreman = iSysBaseAPI.getForeman(sysUsers, "roleId");
-        String foremanName = Optional.ofNullable(foreman).orElse(Collections.emptyList()).stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+        List<String> foreman = iSysBaseAPI.getDeptHeadByDepId(orgId);
+        List<LoginUser> loginUserList = iSysBaseAPI.getLoginUserList(foreman);
+        String foremanName = Optional.ofNullable(loginUserList).orElse(Collections.emptyList()).stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
         workLog.setForeman(foremanName);
 
         //获取参与人员
@@ -1028,7 +1026,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
 
         workLog.setAntiepidemicWork(stringBuffer.toString());
-        workLog.setSchedule("schedule");
+        workLog.setSchedule(schedule);
         return workLog;
     }
 }
