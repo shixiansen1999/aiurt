@@ -17,13 +17,14 @@ import java.util.List;
 public class RecordExcelListener extends AnalysisEventListener<RecordData> {
 
     private RecordModel recordModel = new RecordModel();
+    private List<ProcessRecordModel> processRecordModels = new ArrayList<>();
 
     @Override
     public void invoke(RecordData data, AnalysisContext context) {
 
         int sheetNo = context.readSheetHolder().getSheetNo();
 
-        List<ProcessRecordModel> processRecordModels = new ArrayList<>();
+
 
         Integer rowNumber = context.readSheetHolder().getApproximateTotalRowNumber();
 
@@ -47,7 +48,7 @@ public class RecordExcelListener extends AnalysisEventListener<RecordData> {
             } else if (index == 5) {
                 String emergencyTrainingProgram = data.getRow2();
                 recordModel.setEmergencyTrainingProgram(emergencyTrainingProgram);
-            } else if (index > 6 && index < rowNumber - 3) {
+            } else if (index > 6 && index < rowNumber - 4) {
                 ProcessRecordModel processRecordModel = new ProcessRecordModel();
                 String sort = data.getRow2();
                 String trainingTime = data.getRow3();
@@ -56,7 +57,7 @@ public class RecordExcelListener extends AnalysisEventListener<RecordData> {
                 processRecordModel.setTrainingTime(trainingTime);
                 processRecordModel.setTrainingContent(trainingContent);
                 processRecordModels.add(processRecordModel);
-            } else if (index == rowNumber - 2) {
+            } else if (index == rowNumber - 4) {
                 String trainingAppraise = data.getRow2();
                 recordModel.setTrainingAppraise(trainingAppraise);
                 recordModel.setProcessRecordModelList(processRecordModels);

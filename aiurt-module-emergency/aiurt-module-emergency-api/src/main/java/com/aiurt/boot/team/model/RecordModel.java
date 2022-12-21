@@ -11,6 +11,8 @@ import java.util.List;
  */
 @Data
 public class RecordModel implements Serializable {
+    /**训练计划编号*/
+    private String trainingProgramCode;
     /**
      * 训练科目
      */
@@ -35,6 +37,8 @@ public class RecordModel implements Serializable {
      * 训练效果评估及改进建议
      */
     private String trainingAppraise;
+
+    private String mistake;
 
     /**训练过程记录*/
     @ExcelIgnore

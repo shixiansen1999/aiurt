@@ -10,7 +10,6 @@ import com.aiurt.boot.team.entity.*;
 import com.aiurt.boot.team.listener.RecordExcelListener;
 import com.aiurt.boot.team.mapper.EmergencyTrainingProgramMapper;
 import com.aiurt.boot.team.mapper.EmergencyTrainingRecordMapper;
-import com.aiurt.boot.team.model.ProcessRecordModel;
 import com.aiurt.boot.team.model.RecordModel;
 import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
@@ -306,8 +305,42 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 e.printStackTrace();
             }
             RecordModel recordModel = recordExcelListener.getRecordModel();
-            List<ProcessRecordModel> processRecordModelList = recordModel.getProcessRecordModelList();
+            checkTeam(recordModel,errorLines);
+
+
         }
         return Result.ok();
+    }
+
+    private int checkTeam(RecordModel recordModel, int  errorLines ) {
+
+        String trainingTime = recordModel.getTrainingTime();
+        String position = recordModel.getPosition();
+        String emergencyTeam = recordModel.getEmergencyTeam();
+        String trainees = recordModel.getTrainees();
+        String emergencyTrainingProgram = recordModel.getEmergencyTrainingProgram();
+        String trainingProgramCode = recordModel.getTrainingProgramCode();
+        String trainingAppraise = recordModel.getTrainingAppraise();
+
+        StringBuilder stringBuilder = new StringBuilder();
+        if (StrUtil.isNotEmpty(emergencyTrainingProgram)) {
+
+        } else {
+            stringBuilder.append("训练科目不能为空，");
+        }
+
+        if (StrUtil.isNotEmpty(emergencyTrainingProgram)) {
+
+        } else {
+            stringBuilder.append("训练科目不能为空，");
+        }
+
+        if (StrUtil.isNotEmpty(trainingTime)) {
+
+        } else {
+            stringBuilder.append("训练时间不能为空，");
+        }
+
+        return 1;
     }
 }

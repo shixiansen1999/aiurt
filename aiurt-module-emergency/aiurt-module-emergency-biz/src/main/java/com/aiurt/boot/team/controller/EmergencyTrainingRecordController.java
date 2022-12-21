@@ -205,6 +205,7 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
     * @param response
     * @return
     */
+	@ApiOperation(value="应急队伍训练记录-通过excel导入数据", notes="应急队伍训练记录-通过excel导入数据")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return 	emergencyTrainingRecordService.importExcel(request,response);
