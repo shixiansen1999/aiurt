@@ -951,7 +951,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         Date logTime = workLog.getLogTime();
         String format = DateUtil.format(logTime, "yyyy年MM月dd日");
         String format2 = DateUtil.format(logTime, "yyyy-MM-dd");
-        Week week = DateUtil.dayOfWeekEnum(DateUtil.date());
+        Week week = DateUtil.dayOfWeekEnum(DateUtil.parse(format2));
         workLog.setTime(format + week.toChinese());
         //获取是早班会17.30 还是晚班会9.30
         String am = format2+" "+ morningTime;
