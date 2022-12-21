@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -307,7 +308,6 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             RecordModel recordModel = recordExcelListener.getRecordModel();
             checkTeam(recordModel,errorLines);
 
-
         }
         return Result.ok();
     }
@@ -323,14 +323,26 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
         String trainingAppraise = recordModel.getTrainingAppraise();
 
         StringBuilder stringBuilder = new StringBuilder();
-        if (StrUtil.isNotEmpty(emergencyTrainingProgram)) {
-
+        String trainingProgramName = null;
+        Date time = null;
+        if (StrUtil.isNotEmpty(trainingProgramCode)) {
+            LambdaQueryWrapper<EmergencyTrainingProgram> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(EmergencyTrainingProgram::getTrainingProgramCode, trainingProgramCode).eq(EmergencyTrainingProgram::getDelFlag, 0);
+            EmergencyTrainingProgram one = emergencyTrainingProgramService.getOne(queryWrapper);
+            if (ObjectUtil.isNotEmpty(one)) {
+                trainingProgramName = one.getTrainingProgramName();
+                time = one.getTrainingPlanTime();
+            } else {
+                stringBuilder.append("该训练计划不存在，");
+            }
         } else {
-            stringBuilder.append("训练科目不能为空，");
+            stringBuilder.append("训练计划编码不能为空，");
         }
 
         if (StrUtil.isNotEmpty(emergencyTrainingProgram)) {
-
+            if (!emergencyTrainingProgram.equals(trainingProgramName)) {
+                stringBuilder.append("训练科目和训练计划编码不相符，");
+            }
         } else {
             stringBuilder.append("训练科目不能为空，");
         }
@@ -340,7 +352,6 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
         } else {
             stringBuilder.append("训练时间不能为空，");
         }
-
         return 1;
     }
 }
