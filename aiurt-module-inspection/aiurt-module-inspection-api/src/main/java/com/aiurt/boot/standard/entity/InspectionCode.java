@@ -136,6 +136,6 @@ public class InspectionCode extends DictEntity implements Serializable {
     @ExcelCollection(name = "配置项")
     @ApiModelProperty(value = "配置项")
     @TableField(exist = false)
-    private List<InspectionCodeContentDTO> inspectionCodeContentDTOList;
+    private List<InspectionCodeContent> inspectionCodeContentList;
 
 }

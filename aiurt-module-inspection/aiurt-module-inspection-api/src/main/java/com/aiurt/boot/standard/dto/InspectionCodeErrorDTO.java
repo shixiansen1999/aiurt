@@ -32,7 +32,7 @@ import java.util.List;
 @Data
 public class InspectionCodeErrorDTO {
     /**检修标准名称*/
-    @Excel(name = "检修标准表名称", width = 15,needMerge = true)
+    @Excel(name = "检修标准名称", width = 15,needMerge = true)
     @ApiModelProperty(value = "检修标准名称")
     private String title;
     /**检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)*/
@@ -60,29 +60,30 @@ public class InspectionCodeErrorDTO {
     @Excel(name = "与设备类型相关", width = 15,needMerge = true)
     @ApiModelProperty(value = "是否与设备相关(0否1是)")
     @TableField(exist = false)
-    private String isRelatedDevice;
+    private String isAppointDevice;
 
-    /**设备类型code，关联device_type的code*/
-    @Excel(name = "设备类型", width = 15,needMerge = true)
-    @ApiModelProperty(value = "设备类型code，关联device_type的code")
-    @TableField(exist = false)
-    private String deviceTypeName;
 
     /**状态 0-未生效 1-已生效*/
     @Excel(name = "生效状态", width = 15,needMerge = true)
     @ApiModelProperty(value = "状态 0-未生效 1-已生效")
     @TableField(exist = false)
-    private String effectStatus;
+    private String status;
+
+    /**设备类型code，关联device_type的code*/
+    @Excel(name = "设备类型", width = 15,needMerge = true)
+    @ApiModelProperty(value = "设备类型code，关联device_type的code")
+    @TableField(exist = false)
+    private String deviceTypeCode;
 
     /**错误原因*/
-    @ApiModelProperty(value = "错误原因")
+    @ApiModelProperty(value = "标准表错误原因")
     @TableField(exist = false)
-    private  String  standMistake;
+    private  String  InspectionCodeErrorReason;
 
 
 
     /**是否有子节点*/
-    @Excel(name = "是否有子节点", width = 15)
+    @Excel(name = "层级类型", width = 15)
     @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "是否有子节点")
     private java.lang.String hasChild;
@@ -100,7 +101,7 @@ public class InspectionCodeErrorDTO {
     private java.lang.String name;
 
     /**检查项编号*/
-    @Excel(name = "检查项编号", width = 15)
+    @Excel(name = "检修项编号", width = 15)
     @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "检查项编号")
     private java.lang.String code;
@@ -110,7 +111,7 @@ public class InspectionCodeErrorDTO {
     private java.lang.Integer sortNo;
 
     /**排序编号*/
-    @Excel(name = "排序编号", width = 15)
+    @Excel(name = "内容排序", width = 15)
     @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "排序编号")
     @TableField(exist = false)
@@ -118,11 +119,26 @@ public class InspectionCodeErrorDTO {
 
 
     /**检查项类型，是否是检查项：0否 1是*/
-    @Excel(name = "是否是检查项", width = 15)
+    @Excel(name = "是否为检查项", width = 15)
     @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "检查项类型，是否是检查项：0否 1是")
     @TableField(exist = false)
     private java.lang.String isType;
+
+    /**
+     * 检查值是否必填：0否1是
+     */
+    @ApiModelProperty(value = "检查值是否必填：0否 1是")
+    @Dict(dicCode = "inspection_value")
+    private java.lang.Integer inspectionType;
+
+    /**
+     * 检查值是否必填：0否1是
+     */
+    @Excel(name = "检查值是否必填", width = 15)
+    @ApiModelProperty(value = "检查值是否必填：0否 1是")
+    @TableField(exist = false)
+    private java.lang.String isInspectionType;
 
     /**质量标准*/
     @Excel(name = "质量标准", width = 15)
@@ -144,28 +160,14 @@ public class InspectionCodeErrorDTO {
     @Dict(dicCode = "patrol_input_type")
     private java.lang.String sStatusItem;
 
-    /**
-     * 检查值是否必填：0否1是
-     */
-    @ApiModelProperty(value = "检查值是否必填：0否 1是")
-    @Dict(dicCode = "inspection_value")
-    private java.lang.Integer inspectionType;
-
-    /**
-     * 检查值是否必填：0否1是
-     */
-    @Excel(name = "检查值是否必填", width = 15)
-    @ApiModelProperty(value = "检查值是否必填：0否 1是")
-    @TableField(exist = false)
-    private java.lang.String isInspectionType;
 
 
     /**选择项关联的数据字典*/
-    @Excel(name = "选择项关联的数据字典", width = 15)
+    @Excel(name = "关联数据字典", width = 15)
     @ApiModelProperty(value = "选择项关联的数据字典")
     private java.lang.String dictCode;
     /**数据校验字段*/
-    @Excel(name = "数据校验字段", width = 15)
+    @Excel(name = "数据校验表达式", width = 15)
     @ApiModelProperty(value = "数据校验字段")
     private java.lang.String dataCheck;
 
@@ -182,7 +184,7 @@ public class InspectionCodeErrorDTO {
     private java.lang.String inspectionTypeName;
 
     /**错误原因*/
-    @ApiModelProperty(value = "错误原因")
+    @ApiModelProperty(value = "配置项错误原因")
     @TableField(exist = false)
-    private  String  itemParentMistake;
+    private  String  codeContentErrorReason;
 }

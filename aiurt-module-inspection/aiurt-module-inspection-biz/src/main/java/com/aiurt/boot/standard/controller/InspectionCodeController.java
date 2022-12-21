@@ -18,12 +18,15 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -188,12 +191,6 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
      * @param inspectionCodeExcelDto
      * @return
      */
-//    @AutoLog(value = "检修标准管理-导出excel",  operateType =  4, operateTypeAlias = "导出excel", module = ModuleType.INSPECTION)
-//    @ApiOperation(value="检修标准管理-导出excel", notes="检修标准管理-导出excel")
-//    @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
-//    public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response,InspectionCode inspectionCode) {
-//        return inspectionCodeService.exportXls(request,response,inspectionCode);
-//    }
     @AutoLog(value = "检修标准管理-导出excel",  operateType =  4, operateTypeAlias = "导出excel", module = ModuleType.INSPECTION)
     @ApiOperation(value="检修标准管理-导出excel", notes="检修标准管理-导出excel")
     @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
@@ -225,5 +222,6 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws Exception{
         return inspectionCodeService.importExcels(request,response);
     }
+
 
 }

@@ -1,5 +1,7 @@
 package com.aiurt.boot.plan.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -25,7 +27,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="emergency_plan_att对象", description="emergency_plan_att")
-public class EmergencyPlanAtt implements Serializable {
+public class EmergencyPlanAtt extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
@@ -71,5 +73,6 @@ public class EmergencyPlanAtt implements Serializable {
     private java.util.Date updateTime;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
+    @Dict(dictTable = "sys_user", dicCode = "username", dicText ="realname")
     private String createBy;
 }

@@ -8,6 +8,7 @@ package com.aiurt.boot.standard.dto;/**
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.afterturn.easypoi.excel.annotation.ExcelCollection;
+import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.system.base.annotation.ExcelExtend;
@@ -32,25 +33,28 @@ import java.util.List;
 public class InspectionCodeImportDTO {
 
     /**检修标准名称*/
-    @Excel(name = "检修标准表名称", width = 15,needMerge = true)
-    @ExcelExtend(isRequired = true)
+    @Excel(name = "检修标准名称", width = 15,needMerge = true)
     @ApiModelProperty(value = "检修标准名称")
     private String title;
 
     /**检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)*/
-    @Excel(name = "检修周期类型", width = 15,needMerge = true)
-    @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)")
     private String type;
 
+    /**检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)*/
+    @Excel(name = "检修周期类型", width = 15,needMerge = true)
+    @ApiModelProperty(value = "检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)")
+    @TableField(exist = false)
+    private String cycleType;
+
     /**专业code,关联cs_major的code*/
-    @Excel(name = "专业code", width = 15,needMerge = true)
+    @Excel(name = "适用专业", width = 15,needMerge = true)
     @ApiModelProperty(value = "专业code,关联cs_major的code")
     private String majorCode;
 
 
     /**专业子系统code,关联cs_subsystem_user的code*/
-    @Excel(name = "专业子系统code", width = 15,needMerge = true)
+    @Excel(name = "适用子系统", width = 15,needMerge = true)
     @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "专业子系统code,关联cs_subsystem_user的code")
     private String subsystemCode;
@@ -74,13 +78,15 @@ public class InspectionCodeImportDTO {
 
 
 
-    /**错误原因*/
-    @ApiModelProperty(value = "错误原因")
+    /**
+     * 检修标准错误原因
+     */
+    @ApiModelProperty(value = "检修标准错误原因")
     @TableField(exist = false)
-    private  String  standMistake;
+    private String InspectionCodeErrorReason;
 
     @ExcelCollection(name = "配置项")
     @ApiModelProperty(value = "配置项")
     @TableField(exist = false)
-    private List<InspectionCodeContentDTO> inspectionCodeContentDTOList;
+    private List<InspectionCodeContent> inspectionCodeContentList;
 }

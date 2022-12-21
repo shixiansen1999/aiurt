@@ -53,4 +53,11 @@ public interface InspectionCodeContentMapper extends BaseMapper<InspectionCodeCo
 	 */
 	List<InspectionCodeContentDTO> selectByInspectionId(String id);
 
+	/**
+	 * 根据字典名称，获取字典code
+	 * @param dictName
+	 * @return
+	 */
+	String getDictCode(@Param("dictName")String dictName);
+
 }
