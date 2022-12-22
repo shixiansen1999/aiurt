@@ -3,6 +3,7 @@ package com.aiurt.modules.listener;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.common.engine.impl.event.FlowableEntityEventImpl;
+import org.flowable.engine.delegate.event.impl.FlowableEntityWithVariablesEventImpl;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.util.SpringContextUtils;
@@ -25,10 +26,10 @@ public class TaskCompletedListener implements FlowableEventListener {
     @Override
     public void onEvent(FlowableEvent event) {
         logger.info("start task create listener");
-        if (!(event instanceof FlowableEntityEventImpl)) {
+        if (!(event instanceof FlowableEntityWithVariablesEventImpl)) {
             return;
         }
-        FlowableEntityEventImpl flowableEntityEvent = (FlowableEntityEventImpl) event;
+        FlowableEntityWithVariablesEventImpl flowableEntityEvent = (FlowableEntityWithVariablesEventImpl) event;
         Object entity = flowableEntityEvent.getEntity();
         if (!(entity instanceof TaskEntity)) {
             logger.debug("活动启动监听事件,实体类型不对");
@@ -41,7 +42,7 @@ public class TaskCompletedListener implements FlowableEventListener {
 
         try {
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
-            todoBaseApi.updateBpmnTaskState(taskEntity.getId(), taskEntity.getProcessInstanceId(), "1", taskEntity.getAssignee());
+            todoBaseApi.updateBpmnTaskState(taskEntity.getId(), taskEntity.getProcessInstanceId(), taskEntity.getAssignee(),"1");
         } catch (Exception e) {
            logger.error(e.getMessage(), e);
         }
