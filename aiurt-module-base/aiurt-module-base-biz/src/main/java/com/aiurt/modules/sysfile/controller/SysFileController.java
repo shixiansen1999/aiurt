@@ -86,10 +86,10 @@ public class SysFileController {
 	                                              HttpServletRequest request) {
 		//处理未选择类型数据
 		if (sysFile.getTypeId()==null){
-			return Result.ok(new Page<>());
+			sysFile.setTypeId(0L);
 		}
 
-		Result<IPage<SysFileVO>> result = new Result<IPage<SysFileVO>>();
+		Result<IPage<SysFileVO>> result = new Result<>();
 
 		String userId = ((LoginUser)SecurityUtils.getSubject().getPrincipal()).getId();
 
