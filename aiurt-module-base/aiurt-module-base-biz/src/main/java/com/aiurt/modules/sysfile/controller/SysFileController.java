@@ -84,10 +84,7 @@ public class SysFileController {
 	                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
 	                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
 	                                              HttpServletRequest request) {
-		//处理未选择类型数据
-		if (sysFile.getTypeId()==null){
-			sysFile.setTypeId(0L);
-		}
+
 
 		Result<IPage<SysFileVO>> result = new Result<>();
 
@@ -99,10 +96,10 @@ public class SysFileController {
 		LambdaQueryWrapper<SysFile> queryWrapper = new LambdaQueryWrapper<SysFile>()
 				.orderByDesc(SysFile::getId)
 				.eq(SysFile::getDelFlag, 0);
-		if (sysFile.getTypeId() != null) {
-			List<Long> list = iSysFileRoleService.queryRoleByUserId(userId, sysFile.getTypeId());
-			queryWrapper.in(SysFile::getTypeId, list);
-		}
+
+		List<Long> typeIdList = iSysFileRoleService.queryRoleByUserId(userId, sysFile.getTypeId());
+		queryWrapper.in(SysFile::getTypeId, typeIdList);
+
 
 		if (StringUtils.isNotBlank(sysFile.getName())) {
 			queryWrapper.like(SysFile::getName, sysFile.getName());
