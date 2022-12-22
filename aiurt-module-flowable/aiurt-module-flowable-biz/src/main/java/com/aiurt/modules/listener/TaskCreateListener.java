@@ -6,7 +6,10 @@ import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import com.aiurt.modules.todo.dto.BpmnTodoDTO;
 import com.aiurt.modules.user.service.IFlowUserService;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.model.UserTask;
@@ -15,13 +18,16 @@ import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.common.engine.impl.event.FlowableEntityEventImpl;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.ProcessEngines;
+import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -63,9 +69,17 @@ public class TaskCreateListener implements FlowableEventListener {
         String processInstanceId = taskEntity.getProcessInstanceId();
         // 流程节点定义id
         String taskDefinitionKey = taskEntity.getTaskDefinitionKey();
+        // 查询流程实例
+        ProcessInstance instance = ProcessEngines.getDefaultProcessEngine().getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 
 
         FlowElementUtil flowElementUtil = SpringContextUtils.getBean(FlowElementUtil.class);
+
+
+        // 查询配置项
+        IActCustomTaskExtService taskExtService = SpringContextUtils.getBean(IActCustomTaskExtService.class);
+        ActCustomTaskExt taskExt = taskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskDefinitionKey);
+
         // 判断首个节点是否为驳回
         UserTask userTask = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
         if (Objects.nonNull(userTask) && StrUtil.equalsAnyIgnoreCase(userTask.getId(), taskDefinitionKey)) {
@@ -79,16 +93,16 @@ public class TaskCreateListener implements FlowableEventListener {
                     String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
                             .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
                     ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, initiator);
+                    buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(initiator));
                 }else {
                     ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, assignee);
+                    buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(assignee));
                 }
                 return;
             }
         }
 
-        // 查询配置项
-        IActCustomTaskExtService taskExtService = SpringContextUtils.getBean(IActCustomTaskExtService.class);
-        ActCustomTaskExt taskExt = taskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskDefinitionKey);
+
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         // 如果没有配置选人信息
@@ -96,11 +110,13 @@ public class TaskCreateListener implements FlowableEventListener {
             // 设置当前登录人员
             ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, loginUser.getUsername());
         }
+        // 没有配置则选择发起人
         String groupType = taskExt.getGroupType();
         if (StrUtil.isBlank(groupType)) {
             String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
                     .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
             ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, initiator);
+            buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(initiator));
             return;
         }
         IFlowUserService flowUserService = SpringContextUtils.getBean(IFlowUserService.class);
@@ -152,6 +168,36 @@ public class TaskCreateListener implements FlowableEventListener {
             for (String userName : userNameList) {
                 ProcessEngines.getDefaultProcessEngine().getTaskService().addCandidateUser(taskId, userName);
             }
+        }
+
+        // 创建任务
+        buildToDoList(taskEntity, instance, taskExt, userNameList);
+
+    }
+
+    private void buildToDoList(TaskEntity taskEntity, ProcessInstance instance, ActCustomTaskExt taskExt, List<String> userNameList) {
+        try {
+            BpmnTodoDTO bpmnTodoDTO = new BpmnTodoDTO();
+            bpmnTodoDTO.setTaskKey(taskEntity.getTaskDefinitionKey());
+            bpmnTodoDTO.setTaskId(taskEntity.getId());
+            bpmnTodoDTO.setProcessInstanceId(taskEntity.getProcessInstanceId());
+            bpmnTodoDTO.setProcessDefinitionKey(taskEntity.getProcessDefinitionId());
+            bpmnTodoDTO.setTaskName(taskEntity.getName());
+            bpmnTodoDTO.setBusinessKey(instance.getBusinessKey());
+            bpmnTodoDTO.setCurrentUserName(StrUtil.join(",", userNameList));
+            bpmnTodoDTO.setTodoType("0");
+            bpmnTodoDTO.setProcessDefinitionName(instance.getName());
+            String formJson = taskExt.getFormJson();
+            if (StrUtil.isBlank(formJson)) {
+                JSONObject json = JSONObject.parseObject(formJson);
+                if (Objects.nonNull(json)) {
+                    bpmnTodoDTO.setUrl(json.getString("formUrl"));
+                }
+            }
+            ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
+            todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
         }
     }
 

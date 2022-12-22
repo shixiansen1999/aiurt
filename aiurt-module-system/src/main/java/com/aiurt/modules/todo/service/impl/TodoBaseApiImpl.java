@@ -7,6 +7,7 @@ import com.aiurt.modules.todo.dto.BpmnTodoDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.aiurt.modules.todo.entity.SysTodoList;
 import com.aiurt.modules.todo.service.ISysTodoListService;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
@@ -51,6 +52,25 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
         }
         sysTodoList.setTodoType(todoType);
         sysTodoListService.updateById(sysTodoList);
+    }
+
+    /**
+     * 更新流程待办任务
+     *
+     * @param taskId
+     * @param processInstanceId
+     * @param username
+     * @param todoType
+     */
+    @Override
+    public void updateBpmnTaskState(String taskId, String processInstanceId, String username, String todoType) {
+        LambdaUpdateWrapper<SysTodoList> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(SysTodoList::getTodoType, todoType)
+                .set(SysTodoList::getActualUserName, username)
+                .eq(SysTodoList::getTaskId, taskId)
+                .eq(SysTodoList::getProcessInstanceId, processInstanceId);
+
+        sysTodoListService.update(updateWrapper);
     }
 
     private void doCreateTodoTask(SysTodoList sysTodoList) {
