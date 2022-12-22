@@ -1,5 +1,6 @@
 package com.aiurt.modules.todo.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -35,6 +36,7 @@ public class SysTodoList implements Serializable {
     private String id;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
+    @Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
     private String createBy;
 	/**创建日期*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
@@ -51,6 +53,7 @@ public class SysTodoList implements Serializable {
     private Date updateTime;
 	/**所属部门*/
     @ApiModelProperty(value = "所属部门")
+    @Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "org_code")
     private String sysOrgCode;
 	/**步骤（任务）名称*/
 	@Excel(name = "步骤（任务）名称", width = 15)
@@ -69,8 +72,8 @@ public class SysTodoList implements Serializable {
     @ApiModelProperty(value = "业务id")
     private String businessKey;
 	/**当前办理的用户账号(逗号隔开)*/
-	@Excel(name = "当前办理的用户账号(逗号隔开)", width = 15)
-    @ApiModelProperty(value = "当前办理的用户账号(逗号隔开)")
+	@Excel(name = "当前办理的用户账号", width = 15)
+    @ApiModelProperty(value = "当前办理的用户账号")
     private String currentUserName;
 	/**流程实例id*/
 	@Excel(name = "流程实例id", width = 15)
@@ -99,5 +102,5 @@ public class SysTodoList implements Serializable {
 	/**跳转的url*/
 	@Excel(name = "跳转的url", width = 15)
     @ApiModelProperty(value = "跳转的url")
-    private String utl;
+    private String url;
 }

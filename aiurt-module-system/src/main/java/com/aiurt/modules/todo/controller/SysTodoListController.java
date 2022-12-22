@@ -32,24 +32,37 @@ public class SysTodoListController extends BaseController<SysTodoList, ISysTodoL
 	@Autowired
 	private ISysTodoListService sysTodoListService;
 
+	 /**
+	  * 分页列表查询待办池列表
+	  *
+	  * @param sysTodoList
+	  * @param pageNo
+	  * @param pageSize
+	  * @return
+	  */
+	 @GetMapping(value = "/getTodoList")
+	 public Result<IPage<SysTodoList>> getTodoList(SysTodoList sysTodoList,
+													 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+													 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
+		 Page<SysTodoList> page = new Page<SysTodoList>(pageNo, pageSize);
+		 IPage<SysTodoList> pageList = sysTodoListService.getTodoList(page, sysTodoList);
+		 return Result.OK(pageList);
+	 }
 	/**
 	 * 分页列表查询
 	 *
 	 * @param sysTodoList
 	 * @param pageNo
 	 * @param pageSize
-	 * @param req
 	 * @return
 	 */
 	@ApiOperation(value="待办池列表-分页列表查询", notes="待办池列表-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<SysTodoList>> queryPageList(SysTodoList sysTodoList,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<SysTodoList> queryWrapper = QueryGenerator.initQueryWrapper(sysTodoList, req.getParameterMap());
+								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
 		Page<SysTodoList> page = new Page<SysTodoList>(pageNo, pageSize);
-		IPage<SysTodoList> pageList = sysTodoListService.page(page, queryWrapper);
+		IPage<SysTodoList> pageList = sysTodoListService.queryPageList(page, sysTodoList);
 		return Result.OK(pageList);
 	}
 
@@ -124,4 +137,5 @@ public class SysTodoListController extends BaseController<SysTodoList, ISysTodoL
 		}
 		return Result.OK(sysTodoList);
 	}
+	// queryTaskModuleList
 }
