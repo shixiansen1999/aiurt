@@ -16,12 +16,16 @@ import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.aiurt.modules.system.service.impl.ThirdAppDingtalkServiceImpl;
 import com.aiurt.modules.system.service.impl.ThirdAppWechatEnterpriseServiceImpl;
 import com.aiurt.modules.system.util.XssUtils;
+import com.aiurt.modules.todo.entity.SysTodoList;
+import com.aiurt.modules.todo.service.ISysTodoListService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jeecg.dingtalk.api.core.response.Response;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -63,6 +67,7 @@ import static com.aiurt.common.constant.CommonConstant.ANNOUNCEMENT_SEND_STATUS_
 @RestController
 @RequestMapping("/sys/annountCement")
 @Slf4j
+@Api(tags = "系统通告表")
 public class SysAnnouncementController {
 	@Autowired
 	private ISysAnnouncementService sysAnnouncementService;
@@ -76,6 +81,8 @@ public class SysAnnouncementController {
 	ThirdAppDingtalkServiceImpl dingtalkService;
 	@Autowired
 	private SysBaseApiImpl sysBaseApi;
+	@Autowired
+	private ISysTodoListService sysTodoListService;
 	@Autowired
 	@Lazy
 	private RedisUtil redisUtil;
@@ -310,6 +317,7 @@ public class SysAnnouncementController {
 	 * @功能：补充用户数据，并返回系统消息
 	 * @return
 	 */
+	@ApiOperation(value = "补充用户数据，并返回系统消息", notes = "补充用户数据，并返回系统消息")
 	@RequestMapping(value = "/listByUser", method = RequestMethod.GET)
 	public Result<Map<String, Object>> listByUser(@RequestParam(required = false, defaultValue = "5") Integer pageSize) {
 		Result<Map<String,Object>> result = new Result<Map<String,Object>>();
@@ -350,18 +358,29 @@ public class SysAnnouncementController {
 			}
 		}
 		// 2.查询用户未读的系统消息
-		Page<SysAnnouncement> anntMsgList = new Page<SysAnnouncement>(0, pageSize);
         //通知公告消息
+		Page<SysAnnouncement> anntMsgList = new Page<SysAnnouncement>(0, pageSize);
 		anntMsgList = sysAnnouncementService.querySysCementPageByUserId(anntMsgList,userId,"1");
-		Page<SysAnnouncement> sysMsgList = new Page<SysAnnouncement>(0, pageSize);
+
         //系统消息
+		Page<SysAnnouncement> sysMsgList = new Page<SysAnnouncement>(0, pageSize);
 		sysMsgList = sysAnnouncementService.querySysCementPageByUserId(sysMsgList,userId,"2");
-		Map<String,Object> sysMsgMap = new HashMap(5);
+
+		// 我的待办任务数量
+		Page<SysTodoList> listPage = new Page<SysTodoList>(0, pageSize);
+		SysTodoList sysTodoList = new SysTodoList();
+		sysTodoList.setCurrentUserName(sysUser.getUsername());
+		// 待办或待阅
+		sysTodoList.setTodoType("0,2");
+		IPage<SysTodoList> todoTaskList = sysTodoListService.queryPageList(listPage,sysTodoList);
+
+		Map<String,Object> sysMsgMap = new HashMap(8);
 		sysMsgMap.put("sysMsgList", sysMsgList.getRecords());
 		sysMsgMap.put("sysMsgTotal", sysMsgList.getTotal());
 		sysMsgMap.put("anntMsgList", anntMsgList.getRecords());
 		sysMsgMap.put("anntMsgTotal", anntMsgList.getTotal());
-		// add我待办任务数量
+		sysMsgMap.put("todoTaskList", todoTaskList.getRecords());
+		sysMsgMap.put("todoTaskTotal", todoTaskList.getTotal());
 		result.setSuccess(true);
 		result.setResult(sysMsgMap);
 		return result;

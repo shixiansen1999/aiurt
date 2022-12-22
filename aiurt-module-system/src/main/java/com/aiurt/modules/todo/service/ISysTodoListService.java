@@ -17,12 +17,6 @@ import java.util.List;
 public interface ISysTodoListService extends IService<SysTodoList> {
 
     /**
-     * 分页查询待办列表
-     * @param page
-     * @param sysTodoList
-     * @return
-     */
-    IPage<SysTodoList> getTodoList(Page<SysTodoList> page, SysTodoList sysTodoList);
     /**
      * 分页查询待办列表
      * @param page

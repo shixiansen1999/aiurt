@@ -35,19 +35,7 @@ public class SysTodoListServiceImpl extends ServiceImpl<SysTodoListMapper, SysTo
 
     @Autowired
     private SysDictMapper sysDictMapper;
-    @Override
-    public IPage<SysTodoList> getTodoList(Page<SysTodoList> page, SysTodoList sysTodoList) {
-        List<String> todoTypeList = null;
-        if (ObjectUtil.isNotEmpty(sysTodoList) && StrUtil.isNotEmpty(sysTodoList.getCurrentUserName())) {
-            todoTypeList = StrUtil.split(sysTodoList.getCurrentUserName(), ',');
-        }
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (ObjectUtil.isNotEmpty(sysUser)) {
-            sysTodoList.setCurrentUserName(sysUser.getUsername());
-        }
-        List<SysTodoList> todoList = baseMapper.getTodoList(page, sysTodoList, todoTypeList);
-        return page.setRecords(todoList);
-    }
+
 
     @Override
     public IPage<SysTodoList> queryPageList(Page<SysTodoList> page, SysTodoList sysTodoList) {
