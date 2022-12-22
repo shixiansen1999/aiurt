@@ -84,7 +84,7 @@ public class SysTodoList implements Serializable {
     @ApiModelProperty(value = "任务类型（fault故障，bpmn流程，inspection检修，patrol：巡视）")
     private String taskType;
 	/**任务类型（待办池类型：0：待办、1：已办、2：待阅、3：已阅）*/
-	@Excel(name = "任务类型（待办池类型：0：待办、1：已办、2：待阅、3：已阅）", width = 15)
+	@Excel(name = "任务状态（待办池类型：0：待办、1：已办、2：待阅、3：已阅）", width = 15)
     @ApiModelProperty(value = "任务类型（待办池类型：0：待办、1：已办、2：待阅、3：已阅）")
     private String todoType;
 	/**名称*/
