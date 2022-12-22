@@ -361,6 +361,7 @@ public class SysAnnouncementController {
 		sysMsgMap.put("sysMsgTotal", sysMsgList.getTotal());
 		sysMsgMap.put("anntMsgList", anntMsgList.getRecords());
 		sysMsgMap.put("anntMsgTotal", anntMsgList.getTotal());
+		// add我待办任务数量
 		result.setSuccess(true);
 		result.setResult(sysMsgMap);
 		return result;
