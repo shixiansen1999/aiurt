@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.WebsocketConst;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.SqlInjectionUtil;
 import com.aiurt.common.util.oConvertUtils;
@@ -45,6 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/sys/sysAnnouncementSend")
 @Slf4j
+@Api(tags="用户通告阅读标记表")
 public class SysAnnouncementSendController {
 	@Autowired
 	private ISysAnnouncementSendService sysAnnouncementSendService;
@@ -211,6 +214,7 @@ public class SysAnnouncementSendController {
 	 * @return
 	 */
 	@GetMapping(value = "/getMyAnnouncementSend")
+	@ApiOperation(value="获取我的消息-分页", notes="获取我的消息-分页")
 	public Result<IPage<AnnouncementSendModel>> getMyAnnouncementSend(AnnouncementSendModel announcementSendModel,
 																	  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 																	  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
