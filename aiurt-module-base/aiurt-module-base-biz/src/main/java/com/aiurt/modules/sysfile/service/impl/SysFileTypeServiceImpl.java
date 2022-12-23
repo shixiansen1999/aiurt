@@ -2,7 +2,6 @@ package com.aiurt.modules.sysfile.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
@@ -15,12 +14,11 @@ import com.aiurt.modules.sysfile.vo.SimpUserVO;
 import com.aiurt.modules.sysfile.vo.SysFileTypeDetailVO;
 import com.aiurt.modules.sysfile.vo.SysFileTypeTreeVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -30,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.NotEmpty;
 import java.util.*;
 import java.util.stream.Collectors;
 /**
@@ -68,9 +65,9 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 	@Override
 	public Result<?> add(HttpServletRequest req, SysFileTypeParam param) {
 		SysFileType type = new SysFileType();
-		List<SysFileType> sysFileTypeList = sysFileTypeMapper.selectList(new LambdaQueryWrapper<SysFileType>().eq(SysFileType::getGrade, param.getGrade()).eq(SysFileType::getName, param.getName()));
-		if(CollUtil.isNotEmpty(sysFileTypeList))
-		{
+		// 判断是否重同一级名
+		boolean exists = sysFileTypeMapper.exists(new LambdaQueryWrapper<SysFileType>().eq(SysFileType::getGrade, param.getGrade()).eq(SysFileType::getName, param.getName()).eq(SysFileType::getParentId, param.getParentId()));
+		if(exists) {
 			throw new AiurtBootException("添加分类未成功,同级已添加该分类名称");
 		}
 		type.setGrade(param.getGrade()).setName(param.getName()).setDelFlag(0).setParentId(param.getParentId());
@@ -83,8 +80,13 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 	}
 
 	private Result<?> getList(SysFileTypeParam param,SysFileType type){
+		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		String id = loginUser.getId();
 		//编辑
 		List<String> editIds = param.getEditIds();
+		if (!editIds.contains(id)) {
+
+		}
 		//查看
 		List<String> lookIds = param.getLookIds();
 		//上传
@@ -98,7 +100,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 
 		Set<String> stringSet = new HashSet<>();
 
-
+		// 文档分类的创建者拥有所有的权限
 		//允许上传的权限
 		if (CollUtil.isNotEmpty(uploads)){
 		for (String uploadId : uploads) {
@@ -696,15 +698,19 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 	 * @return {@link List}<{@link SysFileTypeTreeVO}>
 	 */
 	private List<SysFileTypeTreeVO> getTree(List<Long> role, Long parentId) {
+		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		List<SysFileTypeTreeVO> list = new ArrayList<>();
+		// 查询父级, 创建人拥有所有的权限
 		List<SysFileType> types = this.lambdaQuery()
 				.eq(SysFileType::getParentId, parentId)
-				.in(SysFileType::getId, role).list();
+				.in(SysFileType::getId, role).or(q->q.eq(SysFileType::getCreateBy, loginUser.getUsername())
+						.eq(SysFileType::getParentId, parentId)).list();
 		if (types != null && types.size() > 0) {
 			types.forEach(type -> {
 				Optional.ofNullable(type).ifPresent(t -> {
 					SysFileTypeTreeVO vo = new SysFileTypeTreeVO();
 					BeanUtils.copyProperties(t, vo);
+					// 权限处理， 判断是否有权限编辑，删除，
 					vo.setChildren(getTree(role, vo.getId()));
 					list.add(vo);
 				});
