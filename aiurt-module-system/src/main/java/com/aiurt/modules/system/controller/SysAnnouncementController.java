@@ -49,10 +49,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.aiurt.common.constant.CommonConstant.ANNOUNCEMENT_SEND_STATUS_1;
 
@@ -325,22 +322,20 @@ public class SysAnnouncementController {
 		String userId = sysUser.getId();
 		// 1.将系统消息补充到用户通告阅读标记表中
 		LambdaQueryWrapper<SysAnnouncement> querySaWrapper = new LambdaQueryWrapper<SysAnnouncement>();
-        //全部人员
+        // 全部人员
 		querySaWrapper.eq(SysAnnouncement::getMsgType,CommonConstant.MSG_TYPE_ALL);
-        //未删除
+        // 未删除
 		querySaWrapper.eq(SysAnnouncement::getDelFlag,CommonConstant.DEL_FLAG_0.toString());
-        //已发布
+        // 已发布
 		querySaWrapper.eq(SysAnnouncement::getSendStatus, CommonConstant.HAS_SEND);
-        //新注册用户不看结束通知
+        // 新注册用户不看结束通知
 		querySaWrapper.ge(SysAnnouncement::getEndTime, sysUser.getCreateTime());
-		//update-begin--Author:liusq  Date:20210108 for：[JT-424] 【开源issue】bug处理--------------------
 		querySaWrapper.notInSql(SysAnnouncement::getId,"select annt_id from sys_announcement_send where user_id='"+userId+"'");
-		//update-begin--Author:liusq  Date:20210108  for： [JT-424] 【开源issue】bug处理--------------------
 		List<SysAnnouncement> announcements = sysAnnouncementService.list(querySaWrapper);
 		if(announcements.size()>0) {
 			for(int i=0;i<announcements.size();i++) {
-				//update-begin--Author:wangshuai  Date:20200803  for： 通知公告消息重复LOWCOD-759--------------------
-				//因为websocket没有判断是否存在这个用户，要是判断会出现问题，故在此判断逻辑
+				// 通知公告消息重复
+				// 因为websocket没有判断是否存在这个用户，要是判断会出现问题，故在此判断逻辑
 				LambdaQueryWrapper<SysAnnouncementSend> query = new LambdaQueryWrapper<>();
 				query.eq(SysAnnouncementSend::getAnntId,announcements.get(i).getId());
 				query.eq(SysAnnouncementSend::getUserId,userId);
@@ -354,23 +349,24 @@ public class SysAnnouncementController {
 					sysAnnouncementSendService.save(announcementSend);
 					log.info("announcementSend.toString()",announcementSend.toString());
 				}
-				//update-end--Author:wangshuai  Date:20200803  for： 通知公告消息重复LOWCOD-759------------
 			}
 		}
 		// 2.查询用户未读的系统消息
-        //通知公告消息
+        // 通知
 		Page<SysAnnouncement> anntMsgList = new Page<SysAnnouncement>(0, pageSize);
-		anntMsgList = sysAnnouncementService.querySysCementPageByUserId(anntMsgList,userId,"1");
+		// 1通知公告
+		anntMsgList = sysAnnouncementService.querySysCementPageByUserId(anntMsgList,userId,Arrays.asList("1"));
 
-        //系统消息
+        // 消息
 		Page<SysAnnouncement> sysMsgList = new Page<SysAnnouncement>(0, pageSize);
-		sysMsgList = sysAnnouncementService.querySysCementPageByUserId(sysMsgList,userId,"2");
+		// 2,3消息+特请消息
+		sysMsgList = sysAnnouncementService.querySysCementPageByUserId(sysMsgList,userId, Arrays.asList("2","3"));
 
-		// 我的待办任务数量
+		// 我的待办任务
 		Page<SysTodoList> listPage = new Page<SysTodoList>(0, pageSize);
 		SysTodoList sysTodoList = new SysTodoList();
 		sysTodoList.setCurrentUserName(sysUser.getUsername());
-		// 待办或待阅
+		// 0,2待办或待阅
 		sysTodoList.setTodoType("0,2");
 		IPage<SysTodoList> todoTaskList = sysTodoListService.queryPageList(listPage,sysTodoList);
 

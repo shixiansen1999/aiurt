@@ -5,6 +5,8 @@ import com.aiurt.modules.system.entity.SysAnnouncement;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * @Description: 系统通告表
  * @Author: jeecg-boot
@@ -40,7 +42,7 @@ public interface ISysAnnouncementService extends IService<SysAnnouncement> {
      * @param msgCategory 消息类型
      * @return Page<SysAnnouncement>
      */
-	public Page<SysAnnouncement> querySysCementPageByUserId(Page<SysAnnouncement> page,String userId,String msgCategory);
+	public Page<SysAnnouncement> querySysCementPageByUserId(Page<SysAnnouncement> page, String userId, List<String> msgCategory);
 
 
 }
