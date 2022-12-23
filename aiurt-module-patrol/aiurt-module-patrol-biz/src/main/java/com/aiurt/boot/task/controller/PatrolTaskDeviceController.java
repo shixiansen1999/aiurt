@@ -63,8 +63,8 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
         return Result.OK(pageList);
     }
 
-	@AutoLog(value = "巡检任务表- app巡检任务-巡检清单列表", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
-	@ApiOperation(value = "巡检任务表- app巡检任务-巡检清单列表", notes = "巡检任务表- app巡检任务-巡检清单列表")
+	@AutoLog(value = "巡检任务表- app巡检任务-巡检清单详情", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
+	@ApiOperation(value = "巡检任务表- app巡检任务-巡检清单详情", notes = "巡检任务表- app巡检任务-巡检清单详情")
 	@GetMapping(value = "/patrolTaskDeviceDetail")
 	public Result<PatrolTaskDeviceDTO> patrolTaskDeviceDetail(@RequestParam(name="id",required=true)String id,
 																 HttpServletRequest req) {
