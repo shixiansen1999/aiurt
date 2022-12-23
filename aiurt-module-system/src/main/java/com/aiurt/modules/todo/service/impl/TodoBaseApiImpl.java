@@ -3,6 +3,7 @@ package com.aiurt.modules.todo.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
+import com.aiurt.modules.message.websocket.WebSocket;
 import com.aiurt.modules.todo.dto.BpmnTodoDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.aiurt.modules.todo.entity.SysTodoList;
@@ -27,7 +28,8 @@ import java.util.Date;
 public class TodoBaseApiImpl implements ISTodoBaseAPI {
     @Autowired
     private ISysTodoListService sysTodoListService;
-
+    @Autowired
+    private WebSocket webSocket;
     @Override
     public void createBbmnTodoTask(BpmnTodoDTO bpmnTodoDTO) {
         SysTodoList sysTodoList = new SysTodoList();
@@ -51,7 +53,11 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             return;
         }
         sysTodoList.setTodoType(todoType);
-        sysTodoListService.updateById(sysTodoList);
+        boolean update = sysTodoListService.updateById(sysTodoList);
+        if(update){
+            webSocket.pushMessage("please update the to-do list");
+        }
+
     }
 
     /**
@@ -70,7 +76,10 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
                 .eq(SysTodoList::getTaskId, taskId)
                 .eq(SysTodoList::getProcessInstanceId, processInstanceId);
 
-        sysTodoListService.update(updateWrapper);
+        boolean update = sysTodoListService.update(updateWrapper);
+        if(update){
+            webSocket.pushMessage("please update the to-do list");
+        }
     }
 
     private void doCreateTodoTask(SysTodoList sysTodoList) {
@@ -85,7 +94,13 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
         }
         sysTodoList.setCreateTime(new Date());
         // 保存
-        sysTodoListService.save(sysTodoList);
+        boolean save = sysTodoListService.save(sysTodoList);
+
+        // 通过webSocket推送消息给前端刷新列表
+        if(save){
+            webSocket.pushMessage("please update the to-do list");
+        }
+
     }
 
 
