@@ -2,6 +2,7 @@ package com.aiurt.modules.todo.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.modules.message.websocket.WebSocket;
 import com.aiurt.modules.todo.dto.BpmnTodoDTO;
@@ -30,6 +31,7 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
     private ISysTodoListService sysTodoListService;
     @Autowired
     private WebSocket webSocket;
+
     @Override
     public void createBbmnTodoTask(BpmnTodoDTO bpmnTodoDTO) {
         SysTodoList sysTodoList = new SysTodoList();
@@ -46,15 +48,28 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
     }
 
     @Override
-    public void updateTodoTaskState(String todoId, String todoType) {
-        SysTodoList sysTodoList = sysTodoListService.getById(todoId);
-        if (ObjectUtil.isEmpty(sysTodoList)) {
-            log.error("未查询到相关待办任务信息");
-            return;
+    public void updateTodoTaskState(String todoId, String businessKey, String username, String todoType) {
+        boolean update = false;
+        if (StrUtil.isNotEmpty(todoId)) {
+            SysTodoList sysTodoList = sysTodoListService.getById(todoId);
+            if (ObjectUtil.isEmpty(sysTodoList)) {
+                log.error("未查询到相关待办任务信息");
+                return;
+            }
+            sysTodoList.setTodoType(todoType);
+            sysTodoList.setActualUserName(username);
+            update = sysTodoListService.updateById(sysTodoList);
         }
-        sysTodoList.setTodoType(todoType);
-        boolean update = sysTodoListService.updateById(sysTodoList);
-        if(update){
+
+        if (StrUtil.isNotEmpty(businessKey)) {
+            LambdaUpdateWrapper<SysTodoList> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.set(SysTodoList::getTodoType, todoType)
+                    .set(SysTodoList::getActualUserName, username)
+                    .eq(SysTodoList::getBusinessKey, businessKey);
+            update = sysTodoListService.update(updateWrapper);
+        }
+
+        if (update) {
             webSocket.pushMessage("please update the to-do list");
         }
 
@@ -77,7 +92,7 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
                 .eq(SysTodoList::getProcessInstanceId, processInstanceId);
 
         boolean update = sysTodoListService.update(updateWrapper);
-        if(update){
+        if (update) {
             webSocket.pushMessage("please update the to-do list");
         }
     }
@@ -97,7 +112,7 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
         boolean save = sysTodoListService.save(sysTodoList);
 
         // 通过webSocket推送消息给前端刷新列表
-        if(save){
+        if (save) {
             webSocket.pushMessage("please update the to-do list");
         }
 
