@@ -112,7 +112,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         if (CollectionUtil.isEmpty(orgCodes)) {
             return page;
         }
-        IPage<EmergencyPlan> pageList = emergencyPlanMapper.queryPageList(page, emergencyPlanQueryDto,orgCodes);
+        IPage<EmergencyPlan> pageList = emergencyPlanMapper.queryPageList(page, emergencyPlanQueryDto, orgCodes, loginUser.getUsername());
 
         return pageList;
 

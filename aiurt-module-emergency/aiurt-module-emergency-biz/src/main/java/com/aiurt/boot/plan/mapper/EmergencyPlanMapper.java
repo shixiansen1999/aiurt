@@ -18,8 +18,10 @@ import java.util.List;
  */
 public interface EmergencyPlanMapper extends BaseMapper<EmergencyPlan> {
 
-    IPage<EmergencyPlan> queryPageList(@Param("page") Page<EmergencyPlan> page
-            , @Param("condition") EmergencyPlanQueryDTO emergencyPlanQueryDTO, @Param("orgCodes") List<String> orgCodes);
+    IPage<EmergencyPlan> queryPageList(@Param("page") Page<EmergencyPlan> page,
+                                       @Param("condition") EmergencyPlanQueryDTO emergencyPlanQueryDTO,
+                                       @Param("orgCodes") List<String> orgCodes,
+                                       @Param("userName") String userName);
 
     /**
      * 按条件查询应急预案
