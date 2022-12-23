@@ -103,4 +103,7 @@ public class SysTodoList implements Serializable {
 	@Excel(name = "跳转的url", width = 15)
     @ApiModelProperty(value = "跳转的url")
     private String url;
+
+	@ApiModelProperty(value = "url类型：0动态表单，1路由表单")
+	private String urlType;
 }

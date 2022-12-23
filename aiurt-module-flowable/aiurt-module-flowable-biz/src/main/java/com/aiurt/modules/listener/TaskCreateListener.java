@@ -188,10 +188,11 @@ public class TaskCreateListener implements FlowableEventListener {
             bpmnTodoDTO.setTodoType("0");
             bpmnTodoDTO.setProcessDefinitionName(instance.getName());
             String formJson = taskExt.getFormJson();
-            if (StrUtil.isBlank(formJson)) {
+            if (StrUtil.isNotBlank(formJson)) {
                 JSONObject json = JSONObject.parseObject(formJson);
                 if (Objects.nonNull(json)) {
                     bpmnTodoDTO.setUrl(json.getString("formUrl"));
+                    bpmnTodoDTO.setUrlType(json.getString("formType"));
                 }
             }
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
