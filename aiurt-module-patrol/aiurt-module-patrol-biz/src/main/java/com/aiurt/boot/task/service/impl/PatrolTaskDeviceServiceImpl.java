@@ -493,4 +493,78 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     public Device getDeviceInfoByCode(String deviceCode) {
         return patrolTaskDeviceMapper.getDeviceInfoByCode(deviceCode);
     }
+
+    @Override
+    public PatrolTaskDeviceDTO getPatrolTaskDeviceDetail(String id) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        PatrolTaskDeviceDTO e = patrolTaskDeviceMapper.getTaskDeviceDetail(id);
+            if (ObjectUtil.isNull(e.getCheckResult())) {
+                e.setCheckResult("-");
+            }
+            if (ObjectUtil.isNotEmpty( e.getStartTime()) && ObjectUtil.isNotEmpty( e.getCheckTime())) {
+                long duration = DateUtil.between( e.getStartTime(),e.getCheckTime() , DateUnit.MINUTE);
+                e.setInspectionTime(DateUtils.getTimeByMinute(duration));
+            }
+            List<StationDTO> codeList = new ArrayList<>();
+            StationDTO stationDTO = new StationDTO();
+            stationDTO.setLineCode(e.getLineCode());
+            stationDTO.setStationCode(e.getStationCode());
+            stationDTO.setPositionCode(e.getPositionCode());
+            codeList.add(stationDTO);
+            List<String> allPosition = patrolTaskDeviceMapper.getAllPosition(e.getStationCode());
+            e.setAllPosition(allPosition == null ? new ArrayList<>() : allPosition);
+            String positions = manager.translateStation(codeList);
+            if (ObjectUtil.isNotEmpty(e.getDeviceCode())) {
+                e.setDevicePosition(positions);
+                List<StationDTO> stationDtos = new ArrayList<>();
+                StationDTO station = new StationDTO();
+                station.setLineCode(e.getLineCode());
+                station.setStationCode(e.getStationCode());
+                stationDtos.add(station);
+                String stationName = manager.translateStation(stationDtos);
+                e.setStationName(stationName);
+            } else {
+                if (ObjectUtil.isNotEmpty(e.getCustomPosition())) {
+                    e.setInspectionPosition(positions + "/" + e.getCustomPosition());
+                    e.setStationName(positions);
+                    e.setDevicePosition(null);
+                } else {
+                    e.setStationName(positions);
+                    e.setInspectionPosition("-");
+                }
+            }
+            List<PatrolTaskFault> faultList = patrolTaskFaultMapper.selectList(new LambdaQueryWrapper<PatrolTaskFault>().eq(PatrolTaskFault::getPatrolNumber, e.getPatrolNumber()));
+            List<String> collect = faultList.stream().map(PatrolTaskFault::getFaultCode).collect(Collectors.toList());
+            e.setFaultList(collect);
+            PatrolStandard taskStandardName = patrolTaskDeviceMapper.getStandardName(e.getId());
+            e.setSubsystemCode(taskStandardName.getSubsystemCode());
+            e.setProfessionCode(taskStandardName.getProfessionCode());
+            e.setTaskStandardName(taskStandardName.getName());
+            e.setDeviceType(taskStandardName.getDeviceType());
+            boolean nullSafetyPrecautions = sysBaseApi.isNullSafetyPrecautions(e.getProfessionCode(), e.getSubsystemCode());
+            e.setIsNullSafetyPrecautions(nullSafetyPrecautions);
+            List<PatrolAccessoryDTO> patrolAccessoryDTOList = new ArrayList<>();
+            patrolAccessoryDTOList.addAll(patrolAccessoryMapper.getCheckAllAccessory(e.getId()));
+            e.setAccessoryDTOList(patrolAccessoryDTOList);
+            e.setSubmitName(patrolTaskDeviceMapper.getSubmitName(e.getUserId()));
+            PatrolTask patrolTask = patrolTaskMapper.selectById(e.getTaskId());
+            List<PatrolTaskUser> userList = patrolTaskUserMapper.selectList(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
+            List<PatrolTaskUser> showButton = userList.stream().filter(u -> u.getUserId().equals(sysUser.getId())).collect(Collectors.toList());
+            if (showButton.size() > 0 || SecurityUtils.getSubject().hasRole(PatrolConstant.MANAGER)) {
+                e.setShowEditButton(1);
+            } else {
+                e.setShowEditButton(0);
+            }
+            e.setOrgList(patrolTaskMapper.getOrgCode(patrolTask.getCode()));
+            List<PatrolAccompanyDTO> accompanyDTOList = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
+            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining("；"));
+            e.setUserName(userName);
+            e.setAccompanyName(accompanyDTOList);
+            List<PatrolCheckResult> list = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
+            List<PatrolCheckResult> rightCheck = list.stream().filter(s -> s.getCheckResult() != null && 1 == s.getCheckResult()).collect(Collectors.toList());
+            List<PatrolCheckResult> aberrant = list.stream().filter(s -> s.getCheckResult() != null && 0 == s.getCheckResult()).collect(Collectors.toList());
+            e.setRightCheckNumber(rightCheck.size()==0?0:rightCheck.size());
+            e.setAberrantNumber(aberrant.size()==0?0:aberrant.size());
+        return e;
+    }
 }

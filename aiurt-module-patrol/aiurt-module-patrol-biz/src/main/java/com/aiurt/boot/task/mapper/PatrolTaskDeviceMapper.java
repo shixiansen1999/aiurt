@@ -184,4 +184,11 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     List<PatrolTaskDevice> getFaultList(String taskId);
+
+    /**
+     * 工单详情
+     * @param id
+     * @return
+     */
+    PatrolTaskDeviceDTO getTaskDeviceDetail(@Param("id")String id);
 }

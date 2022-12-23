@@ -97,4 +97,11 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @return
      */
     List<PatrolStationDTO> getBillGangedInfo(String taskId);
+
+    /**
+     * 工单详情
+     * @param id
+     * @return
+     */
+    PatrolTaskDeviceDTO getPatrolTaskDeviceDetail(String id);
 }
