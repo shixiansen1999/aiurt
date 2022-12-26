@@ -1,6 +1,8 @@
 package com.aiurt.boot.team.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.team.constant.TeamConstant;
@@ -14,7 +16,9 @@ import com.aiurt.boot.team.model.RecordModel;
 import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.aiurt.boot.team.vo.EmergencyTrainingRecordVO;
+import com.aiurt.common.util.TimeUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -67,6 +71,9 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
     private EmergencyTrainingProgramServiceImpl emergencyTrainingProgramService;
     @Autowired
     private EmergencyTrainingProgramMapper emergencyTrainingProgramMapper;
+    @Autowired
+    private EmergencyTeamServiceImpl emergencyTeamService;
+
 
     @Override
     public IPage<EmergencyTrainingRecordVO> queryPageList(EmergencyTrainingRecordDTO emergencyTrainingRecordDTO, Integer pageNo, Integer pageSize) {
@@ -330,6 +337,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             queryWrapper.eq(EmergencyTrainingProgram::getTrainingProgramCode, trainingProgramCode).eq(EmergencyTrainingProgram::getDelFlag, 0);
             EmergencyTrainingProgram one = emergencyTrainingProgramService.getOne(queryWrapper);
             if (ObjectUtil.isNotEmpty(one)) {
+                recordModel.setEmergencyTrainingProgramId(one.getId());
                 trainingProgramName = one.getTrainingProgramName();
                 time = one.getTrainingPlanTime();
             } else {
@@ -348,10 +356,77 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
         }
 
         if (StrUtil.isNotEmpty(trainingTime)) {
-
+            boolean legalDate = TimeUtil.isLegalDate(trainingTime.length(), trainingTime, "yyyy-MM-dd");
+            if (!legalDate) {
+                stringBuilder.append("训练时间格式不对，");
+            }
+            if (time != null) {
+                DateTime parse = DateUtil.parse(trainingTime, "yyyy-MM-dd");
+                if (parse.isBefore(time)) {
+                    stringBuilder.append("训练时间不能比计划时间早，");
+                }
+            }
         } else {
             stringBuilder.append("训练时间不能为空，");
         }
+
+        if (StrUtil.isNotEmpty(position)) {
+            List<String> list = StrUtil.splitTrim(position, "/");
+            if (list.size() > 3) {
+                stringBuilder.append("训练地点格式不对，");
+            }
+            String lineCode = null;
+            String stationCode = null;
+            for (int i = 0; i < list.size(); i++) {
+                if (i == 0) {
+                    JSONObject lineByName = iSysBaseAPI.getLineByName(list.get(0));
+                    if (ObjectUtil.isEmpty(lineByName)) {
+                        stringBuilder.append("训练地点中线路不存在，");
+                    } else {
+                        lineCode = lineByName.getString("lineCode");
+                    }
+                }
+                if (i == 1) {
+                    JSONObject stationByName = iSysBaseAPI.getStationByName(list.get(1));
+                    if (ObjectUtil.isEmpty(stationByName)) {
+                        stringBuilder.append("训练地点中站点不存在，");
+                    } else {
+                        stationCode = stationByName.getString("stationCode");
+                    }
+                }
+                if (i == 2) {
+                    JSONObject positionByName = iSysBaseAPI.getPositionByName(list.get(2),lineCode,stationCode);
+                    if (ObjectUtil.isEmpty(positionByName)) {
+                        stringBuilder.append("训练地点中线路不存在，");
+                    }
+                }
+            }
+        } else {
+            stringBuilder.append("训练地点不能为空，");
+        }
+
+        if (StrUtil.isNotEmpty(emergencyTeam)) {
+            LambdaQueryWrapper<EmergencyTeam> teamQueryWrapper = new LambdaQueryWrapper<>();
+            teamQueryWrapper.eq(EmergencyTeam::getDelFlag, TeamConstant.DEL_FLAG0);
+            teamQueryWrapper.eq(EmergencyTeam::getEmergencyTeamname, emergencyTeam);
+            EmergencyTeam one = emergencyTeamService.getOne(teamQueryWrapper);
+            if (ObjectUtil.isNotEmpty(one)) {
+                recordModel.setEmergencyTeamId(one.getId());
+            } else {
+                stringBuilder.append("应急队伍不存在，");
+            }
+        } else {
+            stringBuilder.append("应急队伍名称不能为空，");
+        }
+
+        if (StrUtil.isNotEmpty(trainees)) {
+
+
+        } else {
+            stringBuilder.append("参加训练人员不能为空，");
+        }
+
+
         return 1;
     }
 }

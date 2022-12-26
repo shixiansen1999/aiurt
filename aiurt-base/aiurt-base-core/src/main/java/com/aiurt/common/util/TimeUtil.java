@@ -2,6 +2,7 @@ package com.aiurt.common.util;
 
 import cn.hutool.core.util.ObjectUtil;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -167,4 +168,17 @@ public class TimeUtil {
         System.out.println(getFirstDay(1));
         System.out.println(getLastDay(2));
     }*/
+    /**时间格式校验*/
+    public static boolean isLegalDate(int length, String sDate,String format) {
+        if ((sDate == null) || (sDate.length() != length)) {
+            return false;
+        }
+        DateFormat formatter = new SimpleDateFormat(format);
+        try {
+            Date date = formatter.parse(sDate);
+            return sDate.equals(formatter.format(date));
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }
