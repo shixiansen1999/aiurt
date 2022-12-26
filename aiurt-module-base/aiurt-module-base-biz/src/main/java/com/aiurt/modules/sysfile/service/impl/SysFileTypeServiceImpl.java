@@ -2,7 +2,6 @@ package com.aiurt.modules.sysfile.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
@@ -15,12 +14,11 @@ import com.aiurt.modules.sysfile.vo.SimpUserVO;
 import com.aiurt.modules.sysfile.vo.SysFileTypeDetailVO;
 import com.aiurt.modules.sysfile.vo.SysFileTypeTreeVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -30,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.NotEmpty;
 import java.util.*;
 import java.util.stream.Collectors;
 /**
@@ -68,9 +65,9 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 	@Override
 	public Result<?> add(HttpServletRequest req, SysFileTypeParam param) {
 		SysFileType type = new SysFileType();
-		List<SysFileType> sysFileTypeList = sysFileTypeMapper.selectList(new LambdaQueryWrapper<SysFileType>().eq(SysFileType::getGrade, param.getGrade()).eq(SysFileType::getName, param.getName()));
-		if(CollUtil.isNotEmpty(sysFileTypeList))
-		{
+		// 判断是否重同一级名
+		boolean exists = sysFileTypeMapper.exists(new LambdaQueryWrapper<SysFileType>().eq(SysFileType::getGrade, param.getGrade()).eq(SysFileType::getName, param.getName()).eq(SysFileType::getParentId, param.getParentId()));
+		if(exists) {
 			throw new AiurtBootException("添加分类未成功,同级已添加该分类名称");
 		}
 		type.setGrade(param.getGrade()).setName(param.getName()).setDelFlag(0).setParentId(param.getParentId());
@@ -83,8 +80,13 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 	}
 
 	private Result<?> getList(SysFileTypeParam param,SysFileType type){
+		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		String id = loginUser.getId();
 		//编辑
 		List<String> editIds = param.getEditIds();
+		if (!editIds.contains(id)) {
+
+		}
 		//查看
 		List<String> lookIds = param.getLookIds();
 		//上传
@@ -98,7 +100,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 
 		Set<String> stringSet = new HashSet<>();
 
-
+		// 文档分类的创建者拥有所有的权限
 		//允许上传的权限
 		if (CollUtil.isNotEmpty(uploads)){
 		for (String uploadId : uploads) {
@@ -209,6 +211,95 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 
 		this.getList(param,sysFileType);
 		return Result.ok();
+	}
+
+	public Result<SysFileTypeDetailVO> detail(Long id){
+		SysFileType sysFileType = this.getById(id);
+		if (sysFileType==null){
+			return Result.error("未查询到此条记录");
+		}
+		//返回对象
+		SysFileTypeDetailVO vo = new SysFileTypeDetailVO();
+		Optional.ofNullable(sysFileType).ifPresent(fileType -> {
+			BeanUtils.copyProperties(fileType, vo);
+			List<SysFileRole> list = roleService.lambdaQuery()
+					.eq(SysFileRole::getDelFlag, 0)
+					.eq(SysFileRole::getTypeId, fileType.getId()).list();
+			if (list != null && list.size() > 0) {
+
+
+				Map<Integer, List<SysFileRole>> listMap8 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryEditStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryEditStatus));
+				if (listMap8 != null && listMap8.size() > 0) {
+					//获取原可编辑列表中数据
+					if (CollectionUtils.isNotEmpty(listMap8.get(1))) {
+						Optional.ofNullable(listMap8.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryEditStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap9 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryUploadStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryUploadStatus));
+				if (listMap9 != null && listMap9.size() > 0) {
+					//获取原可上传列表中数据
+					if (CollectionUtils.isNotEmpty(listMap9.get(1))) {
+						Optional.ofNullable(listMap9.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryUploadStatus(userList);
+							}
+						});
+					}
+				}
+
+				Map<Integer, List<SysFileRole>> listMap11 = list.stream()
+						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryDeleteStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryDeleteStatus));
+				if (listMap11 != null && listMap11.size() > 0) {
+					//获取原可删除列表中数据
+					if (CollectionUtils.isNotEmpty(listMap11.get(1))) {
+						Optional.ofNullable(listMap11.get(1)).ifPresent(roles -> {
+							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
+								Set<SimpUserVO> userList = new HashSet<>();
+								for (LoginUser sysUser : loginUsers) {
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+								}
+								vo.setPrimaryDeleteStatus(userList);
+							}
+						});
+					}
+				}
+
+	         }
+       });
+		return Result.ok(vo);
 	}
 
 	@Override
@@ -527,7 +618,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 				Map<Integer, List<SysFileRole>> listMap9 = list.stream()
 						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryUploadStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryUploadStatus));
 				if (listMap9 != null && listMap9.size() > 0) {
-					//获取原可下载列表中数据
+					//获取原可上传列表中数据
 					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
 					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
 						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
@@ -559,7 +650,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 				Map<Integer, List<SysFileRole>> listMap10 = list.stream()
 						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryDownloadStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryDownloadStatus));
 				if (listMap10 != null && listMap10.size() > 0) {
-					//获取原可上传列表中数据
+					//获取原可下载列表中数据
 					List<SysFileRole> sysFileRoleList1 = new ArrayList<>();
 					if (sysFileRoleList != null && sysFileRoleList.size() > 0){
 						Map<Integer, List<SysFileRole>> integerListMap = sysFileRoleList.stream()
@@ -696,15 +787,23 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 	 * @return {@link List}<{@link SysFileTypeTreeVO}>
 	 */
 	private List<SysFileTypeTreeVO> getTree(List<Long> role, Long parentId) {
+		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		List<SysFileTypeTreeVO> list = new ArrayList<>();
+		// 查询父级, 创建人拥有所有的权限
 		List<SysFileType> types = this.lambdaQuery()
 				.eq(SysFileType::getParentId, parentId)
-				.in(SysFileType::getId, role).list();
+				.in(SysFileType::getId, role).or(q->q.eq(SysFileType::getCreateBy, loginUser.getUsername())
+						.eq(SysFileType::getParentId, parentId)).list();
 		if (types != null && types.size() > 0) {
 			types.forEach(type -> {
 				Optional.ofNullable(type).ifPresent(t -> {
 					SysFileTypeTreeVO vo = new SysFileTypeTreeVO();
 					BeanUtils.copyProperties(t, vo);
+					Result<SysFileTypeDetailVO> detail = this.detail(t.getId());
+					vo.setEditUsers(ObjectUtil.isNotEmpty(detail.getResult().getPrimaryEditStatus()) ? detail.getResult().getPrimaryEditStatus() : null);
+					vo.setUploadStatus(ObjectUtil.isNotEmpty(detail.getResult().getPrimaryUploadStatus()) ? detail.getResult().getPrimaryUploadStatus() : null);
+					vo.setDeleteStatus(ObjectUtil.isNotEmpty(detail.getResult().getPrimaryDeleteStatus()) ? detail.getResult().getPrimaryDeleteStatus() : null);
+					// 权限处理， 判断是否有权限编辑，删除，
 					vo.setChildren(getTree(role, vo.getId()));
 					list.add(vo);
 				});
