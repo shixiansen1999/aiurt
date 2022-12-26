@@ -2132,7 +2132,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public List<LoginUser> getUserByPost(int post) {
         QueryWrapper<SysUser> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper.lambda().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
-                .eq(SysUser::getPost, String.valueOf(post));
+                .eq(SysUser::getJobName, String.valueOf(post));
         List<SysUser> users = userMapper.selectList(userQueryWrapper);
         if (CollectionUtil.isEmpty(users)) {
             return Collections.emptyList();
