@@ -108,53 +108,6 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         }
 
         if (ObjectUtil.isEmpty(planCommand)) {
-            // 生成计划令编码
-            StringBuilder code = new StringBuilder();
-            List<DictModel> types = iSysBaseApi.getDictItems(ConstructionDictConstant.CATEGORY);
-            String typeName = types.stream().filter(l -> l.getValue().equals(String.valueOf(constructionWeekPlanCommand.getType())))
-                    .map(DictModel::getText).collect(Collectors.joining());
-
-            // 临时修补计划和日计划
-            if (ConstructionConstant.PLAN_TYPE_2.equals(constructionWeekPlanCommand.getPlanChange())
-                    || ConstructionConstant.PLAN_TYPE_3.equals(constructionWeekPlanCommand.getPlanChange())) {
-                code = new StringBuilder("L-");
-            }
-
-            // 获取施工的日期对应的日
-            String day = DateUtil.format(constructionWeekPlanCommand.getTaskDate(), "dd");
-
-            // 构建计划令编号
-            // XXX fixme 此处得保证线路编号是数值，比如1号线对应01、2号线对应02这种，否则以线路编号拼接
-            String lineCode = constructionWeekPlanCommand.getLineCode();
-            try {
-                lineCode = String.valueOf(Integer.valueOf(lineCode));
-            } catch (Exception e) {
-                log.info("获取线路编号生成计划令编码异常：", e.getMessage());
-                e.printStackTrace();
-            }
-
-            String separator = "-";
-            code.append(lineCode).append(typeName).append(separator).append(day).append(separator);
-
-            // 计划令自增序号，如果是一位或两位数的则保留两位，三位则保留三位，即6->06、66->66,大于99小于1000则保留三位
-            List<ConstructionWeekPlanCommand> codeNumbers = this.lambdaQuery().like(ConstructionWeekPlanCommand::getCode, code.toString())
-                    .orderByDesc(ConstructionWeekPlanCommand::getCode)
-                    .last("limit 1")
-                    .list();
-
-            if (CollectionUtil.isNotEmpty(codeNumbers) && ObjectUtil.isNotEmpty(codeNumbers.get(0).getCode())) {
-                String planCode = codeNumbers.get(0).getCode();
-                Integer serialNumber = Integer.valueOf(planCode.substring(planCode.lastIndexOf(separator) + 1));
-                if (100 > serialNumber) {
-                    code.append(String.format("%02d", serialNumber + 1));
-                } else {
-                    code.append(serialNumber + 1);
-                }
-            } else {
-                code.append(String.format("%02d", 1));
-            }
-
-            constructionWeekPlanCommand.setCode(code.toString());
             constructionWeekPlanCommand.setApplyId(loginUser.getId());
             this.save(constructionWeekPlanCommand);
 
@@ -355,6 +308,9 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             }
             // 已通过
             command.setFormStatus(ConstructionConstant.FORM_STATUS_5);
+            // 通过的时候才给记录添加上计划令号
+            String code = this.getWeekPlanCode(command);
+            command.setCode(code);
         } else if (6 == states) {
             if (ConstructionConstant.PLAN_TYPE_2.equals(command.getPlanChange())
                     || ConstructionConstant.PLAN_TYPE_3.equals(command.getPlanChange())) {
@@ -386,6 +342,61 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             throw new AiurtBootException("你没有权限审批或你不是节点的审批人！");
         }
         this.updateById(command);
+    }
+
+    /**
+     * 生成计划令号
+     *
+     * @param command
+     * @return
+     */
+    private String getWeekPlanCode(ConstructionWeekPlanCommand command) {
+        // 生成计划令编码
+        StringBuilder code = new StringBuilder();
+        List<DictModel> types = iSysBaseApi.getDictItems(ConstructionDictConstant.CATEGORY);
+        String typeName = types.stream().filter(l -> l.getValue().equals(String.valueOf(command.getType())))
+                .map(DictModel::getText).collect(Collectors.joining());
+
+        // 临时修补计划和日计划
+        if (ConstructionConstant.PLAN_TYPE_2.equals(command.getPlanChange())
+                || ConstructionConstant.PLAN_TYPE_3.equals(command.getPlanChange())) {
+            code = new StringBuilder("L-");
+        }
+
+        // 获取施工的日期对应的日
+        String day = DateUtil.format(command.getTaskDate(), "dd");
+
+        // 构建计划令编号
+        // XXX fixme 此处得保证线路编号是数值，比如1号线对应01、2号线对应02这种，否则以线路编号拼接
+        String lineCode = command.getLineCode();
+        try {
+            lineCode = String.valueOf(Integer.valueOf(lineCode));
+        } catch (Exception e) {
+            log.info("获取线路编号生成计划令编码异常：", e.getMessage());
+            e.printStackTrace();
+        }
+
+        String separator = "-";
+        code.append(lineCode).append(typeName).append(separator).append(day).append(separator);
+
+        // 计划令自增序号，如果是一位或两位数的则保留两位，三位则保留三位，即6->06、66->66,大于99小于1000则保留三位
+        List<ConstructionWeekPlanCommand> codeNumbers = this.lambdaQuery().like(ConstructionWeekPlanCommand::getCode, code.toString())
+                .orderByDesc(ConstructionWeekPlanCommand::getCode)
+                .last("limit 1")
+                .list();
+
+        if (CollectionUtil.isNotEmpty(codeNumbers) && ObjectUtil.isNotEmpty(codeNumbers.get(0).getCode())) {
+            String planCode = codeNumbers.get(0).getCode();
+            Integer serialNumber = Integer.valueOf(planCode.substring(planCode.lastIndexOf(separator) + 1));
+            if (100 > serialNumber) {
+                code.append(String.format("%02d", serialNumber + 1));
+            } else {
+                code.append(serialNumber + 1);
+            }
+        } else {
+            code.append(String.format("%02d", 1));
+        }
+        return code.toString();
     }
 
     /**
