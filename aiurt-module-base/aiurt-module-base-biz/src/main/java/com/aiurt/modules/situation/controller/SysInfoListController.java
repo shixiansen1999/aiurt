@@ -4,6 +4,7 @@ package com.aiurt.modules.situation.controller;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.situation.entity.SysAnnouncement;
@@ -21,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,10 +73,6 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                         HttpServletRequest req) {
         Result<IPage<SysAnnouncement>> result = new Result<IPage<SysAnnouncement>>();
-        //sysAnnouncement.setTitile("*" + sysAnnouncement.getTitile() + "*");
-        // 特情消息类型
-        //sysAnnouncement.setMsgCategory("2");
-        //sysAnnouncement.setSituationType("3");
         sysAnnouncement.setDelFlag(CommonConstant.DEL_FLAG_0.toString());
         String sTime = null;
         String eTime = null;
@@ -87,7 +83,6 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             sysAnnouncement.setSTime(null);
             sysAnnouncement.setETime(null);
         }
-        //QueryWrapper<SysAnnouncement> queryWrapper = QueryGenerator.initQueryWrapper(sysAnnouncement, req.getParameterMap());
         QueryWrapper<SysAnnouncement> queryWrapper = new QueryWrapper<>();
         Page<SysAnnouncement> page = new Page<SysAnnouncement>(pageNo, pageSize);
         if (StrUtil.isNotEmpty(sTime)) {
@@ -109,7 +104,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
                 return result;
             }
         }
-        queryWrapper.lambda().eq(SysAnnouncement::getMsgCategory, "3").eq(SysAnnouncement::getDelFlag,CommonConstant.DEL_FLAG_0.toString()).orderByDesc(SysAnnouncement::getCreateTime);
+        queryWrapper.lambda().eq(SysAnnouncement::getMsgCategory, CommonConstant.MSG_CATEGORY_3).eq(SysAnnouncement::getDelFlag,CommonConstant.DEL_FLAG_0.toString()).orderByDesc(SysAnnouncement::getCreateTime);
         IPage<SysAnnouncement> pageList = bdInfoListService.page(page, queryWrapper);
         List<SysAnnouncement> records = pageList.getRecords();
         for (SysAnnouncement announcement : records) {
@@ -143,7 +138,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             messageDTO.setToUser(sysAnnouncement.getUserIds());
             messageDTO.setToAll(false);
             messageDTO.setContent(sysAnnouncement.getMsgContent());
-            messageDTO.setCategory("3");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_3);
             messageDTO.setTitle(sysAnnouncement.getTitile());
             messageDTO.setBusType(SysAnnmentTypeEnum.SITUATION.getType());
             messageDTO.setLevel(sysAnnouncement.getLevel());
@@ -181,7 +176,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             messageDTO.setFromUser(sysUser.getId());
             messageDTO.setToUser(sysAnnouncement.getUserIds());
             messageDTO.setContent(sysAnnouncement.getMsgContent());
-            messageDTO.setCategory("3");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_3);
             messageDTO.setTitle(sysAnnouncement.getTitile());
             messageDTO.setBusType(SysAnnmentTypeEnum.SITUATION.getType());
             messageDTO.setLevel(sysAnnouncement.getLevel());
