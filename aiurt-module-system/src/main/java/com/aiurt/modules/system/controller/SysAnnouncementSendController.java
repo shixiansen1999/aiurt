@@ -1,43 +1,33 @@
 package com.aiurt.modules.system.controller;
 
-import java.util.Arrays;
-import java.util.Date;
-
-import javax.servlet.http.HttpServletRequest;
-
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.WebsocketConst;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.SqlInjectionUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.message.websocket.WebSocket;
 import com.aiurt.modules.system.entity.SysAnnouncementSend;
 import com.aiurt.modules.system.model.AnnouncementSendModel;
-import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.api.vo.Result;
 import com.aiurt.modules.system.service.ISysAnnouncementSendService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
- /**
+import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.Date;
+
+/**
  * @Title: Controller
  * @Description: 用户通告阅读标记表
  * @Author: jeecg-boot
@@ -236,6 +226,7 @@ public class SysAnnouncementSendController {
 	 * @return
 	 */
 	@PutMapping(value = "/readAll")
+	@ApiOperation(value="一键已读", notes="一键已读")
 	public Result<SysAnnouncementSend> readAll() {
 		Result<SysAnnouncementSend> result = new Result<SysAnnouncementSend>();
 		LoginUser sysUser = (LoginUser)SecurityUtils.getSubject().getPrincipal();

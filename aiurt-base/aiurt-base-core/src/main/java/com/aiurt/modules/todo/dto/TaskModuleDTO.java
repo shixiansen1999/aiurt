@@ -1,7 +1,5 @@
 package com.aiurt.modules.todo.dto;
 
-import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.modules.basic.entity.DictEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

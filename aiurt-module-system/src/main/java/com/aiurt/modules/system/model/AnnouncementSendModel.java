@@ -8,6 +8,7 @@ import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: 用户通告阅读标记表
@@ -55,7 +56,7 @@ public class AnnouncementSendModel implements Serializable {
     /**
      * 消息类型1:通知公告2:系统消息
      */
-	@ApiModelProperty("消息类型1:通知公告2:系统消息")
+	@ApiModelProperty("消息类型1:通知公告2:系统消息3特情消息")
     private java.lang.String msgCategory;
 	/**
 	 * 业务id
@@ -90,4 +91,5 @@ public class AnnouncementSendModel implements Serializable {
 	@ApiModelProperty("摘要")
 	private java.lang.String msgAbstract;
 
+	private List<String> msgCategoryList;
 }
