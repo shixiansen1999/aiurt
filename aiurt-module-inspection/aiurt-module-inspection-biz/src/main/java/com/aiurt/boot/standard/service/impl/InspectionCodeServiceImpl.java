@@ -620,6 +620,8 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                         } else {
                             stringBuilder.append("内容排序(填写必须是数字)，");
                         }
+                    }else{
+                        items.setSortNo(1);
                     }
                     if (!InspectionConstant.IS_APPOINT_DEVICE.equals(checkCode) && !InspectionConstant.NO_ISAPPOINT_DEVICE.equals(checkCode)) {
                         stringBuilder.append("是否为检查项填写不规范，");
