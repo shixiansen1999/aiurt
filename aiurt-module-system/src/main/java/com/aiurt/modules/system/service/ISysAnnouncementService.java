@@ -44,5 +44,4 @@ public interface ISysAnnouncementService extends IService<SysAnnouncement> {
      */
 	public Page<SysAnnouncement> querySysCementPageByUserId(Page<SysAnnouncement> page, String userId, List<String> msgCategory);
 
-
 }
