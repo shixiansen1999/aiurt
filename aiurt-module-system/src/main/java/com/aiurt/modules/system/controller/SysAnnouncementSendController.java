@@ -1,19 +1,16 @@
 package com.aiurt.modules.system.controller;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.WebsocketConst;
 import com.aiurt.common.util.SqlInjectionUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.message.websocket.WebSocket;
-import com.aiurt.modules.system.entity.SysAnnouncement;
 import com.aiurt.modules.system.entity.SysAnnouncementSend;
 import com.aiurt.modules.system.model.AnnouncementSendModel;
 import com.aiurt.modules.system.service.ISysAnnouncementSendService;
 import com.aiurt.modules.system.service.ISysAnnouncementService;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -30,8 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Date;
 
 /**
  * @Title: Controller
@@ -250,17 +247,12 @@ public class SysAnnouncementSendController {
         updateWrapper.set(SysAnnouncementSend::getReadFlag, CommonConstant.HAS_READ_FLAG);
         updateWrapper.set(SysAnnouncementSend::getReadTime, new Date());
         // 根据消息类型来已读消息
+        String sql = "";
         if (StrUtil.isNotEmpty(msgCategory)) {
-            List<String> msgs = StrUtil.split(msgCategory, ',');
-            if(CollUtil.isNotEmpty(msgs)){
-				List<SysAnnouncement> list = sysAnnouncementService.list(new LambdaQueryWrapper<SysAnnouncement>().in(SysAnnouncement::getMsgCategory, msgs));
-				List<String> andIds = CollUtil.isNotEmpty(list) ? list.stream().map(SysAnnouncement::getId).collect(Collectors.toList()) : CollUtil.newArrayList();
-				if (CollUtil.isNotEmpty(andIds)) {
-					updateWrapper.in(SysAnnouncementSend::getAnntId, andIds);
-				}
-			}
+             sql = "and annt_id in (select id from sys_announcement where del_flag =0 and send_status =1 and msg_category in("+msgCategory+"))";
         }
-        updateWrapper.last("where user_id ='" + userId + "'");
+
+        updateWrapper.last("where user_id ='" + userId + "' "+sql);
         SysAnnouncementSend announcementSend = new SysAnnouncementSend();
         sysAnnouncementSendService.update(announcementSend, updateWrapper);
         JSONObject socketParams = new JSONObject();

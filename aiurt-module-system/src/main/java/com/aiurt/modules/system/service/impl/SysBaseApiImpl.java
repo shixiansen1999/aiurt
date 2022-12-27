@@ -2136,6 +2136,22 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return ObjectUtil.isNotEmpty(announcement) ? announcement.getId() : "";
     }
 
+    /**
+     * 根据部门，角色编码查询人员账号
+     *
+     * @param orgCode  组织机构编码
+     * @param roleCode 角色编码
+     * @return 人员账号用逗号隔开
+     */
+    @Override
+    public String getUserNameByOrgCodeAndRoleCode(List<String> orgCode, List<String> roleCode) {
+        if (CollUtil.isEmpty(orgCode) || CollUtil.isEmpty(roleCode)) {
+            return "";
+        }
+        List<String> result = userMapper.getUserNameByOrgCodeAndRoleCode(orgCode, roleCode);
+        return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
+    }
+
 
     @Override
     public JSONObject getDepartByName(String departName) {
