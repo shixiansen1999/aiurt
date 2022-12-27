@@ -106,7 +106,7 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 			long l1 = l % param.getPageSize() > 0 ? (l / param.getPageSize()) + 1 : l / param.getPageSize();
 			long size = l > 10 ? 10 : l;
 			long no = l1 - 1;
-			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(no, size), param.getTypeId());
+			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(no, size), param.getTypeId(),param.getFileName());
 			Optional.ofNullable(filePage.getRecords()).ifPresent(sysFiles -> {
 				sysFiles.forEach(f -> {
 					FileAppVO appVO = new FileAppVO();

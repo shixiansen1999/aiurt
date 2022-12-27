@@ -14,5 +14,5 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface SysFileMapper extends BaseMapper<SysFile> {
 
-	IPage<SysFile> selectFilePage(Page page, @Param("typeId") Long typeId);
+	IPage<SysFile> selectFilePage(Page page, @Param("typeId") Long typeId,@Param("fileName") String fileName);
 }
