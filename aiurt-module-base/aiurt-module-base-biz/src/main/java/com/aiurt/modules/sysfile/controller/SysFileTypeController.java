@@ -74,15 +74,6 @@ public class SysFileTypeController {
 	@ApiOperation(value = "文档类型表-添加分类文档", notes = "文档类型表-添加分类文档")
 	@PostMapping(value = "/add")
 	public Result<?> add(HttpServletRequest req, @RequestBody @Validated SysFileTypeParam param) {
-//		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-//		String userId = loginUser.getId();
-//		List<String> editIds = param.getEditIds();
-//		if (CollectionUtils.isNotEmpty(editIds)){
-//			if (!editIds.contains(userId)) {
-//				editIds.add(userId);
-//			}
-//		}
-//		param.setEditIds(editIds);
 		sysFileTypeService.add(req, param);
 		return Result.ok("添加成功！");
 	}
@@ -97,18 +88,6 @@ public class SysFileTypeController {
 	@ApiOperation(value = "文档类型表-修改分类文档", notes = "文档类型表-修改分类文档")
 	@PostMapping(value = "/edit")
 	public Result<?> edit(HttpServletRequest req, @RequestBody @Validated SysFileTypeParam param) {
-//		if (param.getId() == null) {
-//			return Result.error("修改失败");
-//		}
-//		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-//		String userId = loginUser.getId();
-//		List<String> editIds = param.getEditIds();
-//		if (CollectionUtils.isNotEmpty(editIds)){
-//			if (!editIds.contains(userId)) {
-//				editIds.add(userId);
-//			}
-//		}
-//		param.setEditIds(editIds);
 		sysFileTypeService.edit(req, param);
 		return Result.ok("修改成功！");
 	}
@@ -125,10 +104,6 @@ public class SysFileTypeController {
 	@GetMapping(value = "/detail")
 	public Result<SysFileTypeDetailVO> detail(HttpServletRequest req,
 	                                          @RequestParam("id") @NotNull(message = "id不能为空") Long id) {
-		//LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		//if (loginUser == null) {
-		//	return Result.ok();
-		//}
 		return sysFileTypeService.detail(req, id);
 	}
 

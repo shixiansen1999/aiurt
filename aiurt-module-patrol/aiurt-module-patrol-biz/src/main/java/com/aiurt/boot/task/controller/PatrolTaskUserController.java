@@ -117,6 +117,8 @@ public class PatrolTaskUserController extends BaseController<PatrolTaskUser, IPa
 			 patrolTaskUser.setDelFlag(0);
 			 patrolTaskUserService.save(patrolTaskUser);
 		 });
+		 // 发送消息
+		 patrolTaskService.sendMessageApp(patrolAccompanyList);
 		 return Result.OK("指派成功！");
 	 }
 	/**

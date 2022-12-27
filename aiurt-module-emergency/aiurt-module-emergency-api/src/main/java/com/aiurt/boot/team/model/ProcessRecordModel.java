@@ -17,4 +17,7 @@ public class ProcessRecordModel implements Serializable {
     private Integer nextDay;
     /**训练内容*/
     private String trainingContent;
+
+    private String mistake;
+
 }

@@ -23,6 +23,6 @@ public interface SysAnnouncementMapper extends BaseMapper<SysAnnouncement> {
      * @param msgCategory 消息类型
      * @return
      */
-	List<SysAnnouncement> querySysCementListByUserId(Page<SysAnnouncement> page, @Param("userId")String userId,@Param("msgCategory")String msgCategory);
+	List<SysAnnouncement> querySysCementListByUserId(Page<SysAnnouncement> page, @Param("userId")String userId,@Param("msgCategory")List<String> msgCategory);
 
 }

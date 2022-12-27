@@ -22,10 +22,10 @@ public interface BdWorkTicketMapper extends BaseMapper<BdWorkTicket> {
      * 分页查询工作票任务列表
      * @param pageList
      * @param userName
-     * @param taskId
+     * @param bdWorkTicket
      * @return
      */
-    List<BdWorkTicket> queryPageList(@Param("pageList") Page<BdWorkTicket> pageList, @Param("userName") String userName, @Param("taskId") String taskId);
+    List<BdWorkTicket> queryPageList(@Param("pageList") Page<BdWorkTicket> pageList, @Param("userName") String userName, @Param("bdWorkTicket") BdWorkTicket bdWorkTicket);
 
     /**
      * 历史任务

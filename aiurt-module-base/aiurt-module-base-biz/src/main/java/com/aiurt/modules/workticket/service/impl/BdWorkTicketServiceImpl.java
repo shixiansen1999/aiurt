@@ -121,9 +121,9 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
      * @return
      */
     @Override
-    public Page<BdWorkTicket> queryPageList(Page<BdWorkTicket> pageList, String username) {
+    public Page<BdWorkTicket> queryPageList(Page<BdWorkTicket> pageList, String username,BdWorkTicket bdWorkTicket) {
 
-        List<BdWorkTicket> bdWorkTicketList = baseMapper.queryPageList(pageList,username, "");
+        List<BdWorkTicket> bdWorkTicketList = baseMapper.queryPageList(pageList,username, bdWorkTicket);
 
         return pageList.setRecords(bdWorkTicketList);
     }

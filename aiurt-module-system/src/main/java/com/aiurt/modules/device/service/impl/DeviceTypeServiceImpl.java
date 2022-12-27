@@ -1,6 +1,11 @@
 package com.aiurt.modules.device.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.ImportExcelUtil;
+import com.aiurt.modules.device.controller.DeviceTypeController;
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceComposeMapper;
@@ -10,16 +15,37 @@ import com.aiurt.modules.major.mapper.CsMajorMapper;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.DictModel;
+import org.jeecgframework.poi.excel.ExcelExportUtil;
+import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.TemplateExportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +67,14 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
     private CsSubsystemMapper subsystemMapper;
     @Autowired
     private CsMajorMapper majorMapper;
-
+    @Autowired
+    @Lazy
+    private DeviceTypeController deviceTypeController;
+    @Autowired
+    @Lazy
+    private ISysBaseAPI iSysBaseAPI;
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
 
 
     /**
@@ -203,6 +236,215 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         }
         return res;
     }
+
+    @Override
+    public Result<?> importExcelMaterial(MultipartFile file, ImportParams params) throws Exception {
+        List<DeviceType> listMaterial = ExcelImportUtil.importExcel(file.getInputStream(), DeviceType.class, params);
+        List<String> errorStrs = new ArrayList<>();
+        // 去掉 sql 中的重复数据
+        Integer errorLines = 0;
+        Integer successLines = 0;
+        List<DeviceType> list = new ArrayList<>();
+        for (int i = 0; i < listMaterial.size(); i++) {
+            try {
+                DeviceType deviceType = listMaterial.get(i);
+                //专业
+                String majorCodeName = deviceType.getMajorName() == null ? "" : deviceType.getMajorName();
+                if ("".equals(majorCodeName)) {
+                    errorStrs.add("第 " + i + " 行：专业名称为空，忽略导入。");
+                    list.add(deviceType.setText("专业名称为空，忽略导入"));
+                    continue;
+                }
+                CsUserMajorModel csMajor = deviceTypeMapper.selectCsMajor(majorCodeName);
+                if (csMajor == null) {
+                    errorStrs.add("第 " + i + " 行：无法根据专业名称找到对应数据，忽略导入。");
+                    list.add(deviceType.setText("无法根据专业名称找到对应数据，忽略导入"));
+                    continue;
+                } else {
+                    deviceType.setMajorCode(csMajor.getMajorCode());
+                    //安全事项分类
+                    String systemName = deviceType.getSystemName() == null ? "" : deviceType.getSystemName();
+                    if (StrUtil.isNotEmpty(systemName)) {
+                        String systemCode = deviceTypeMapper.selectSystemCode(systemName,csMajor.getMajorCode());
+                        if (StrUtil.isNotEmpty(systemCode)){
+                            deviceType.setSystemCode(systemCode);
+                        }else {
+                            errorStrs.add("第 " + i + " 行：输入的子系统找不到！请核对后输出，忽略导入。");
+                            list.add(deviceType.setText("输入的子系统找不到！请核对后输出，忽略导入"));
+                            continue;
+                        }
+                    }
+                    if(StrUtil.isNotEmpty(deviceType.getPUrl())){
+                        DeviceType deviceType1 = deviceTypeService.getOne(new LambdaQueryWrapper<DeviceType>()
+                                .eq(DeviceType::getDelFlag,0).eq(DeviceType::getMajorCode,deviceType.getMajorCode())
+                                .eq(DeviceType::getName,deviceType.getPUrl()));
+                        if (ObjectUtil.isEmpty(deviceType1)){
+                            deviceType.setPid(deviceType1.getId());
+                        }else {
+                            errorStrs.add("第 " + i + " 行：输入的上级节点找不到！请核对后输出，忽略导入。");
+                            list.add(deviceType.setText("输入的上级节点找不到！请核对后输出，忽略导入"));
+                            continue;
+                        }
+                    }else {
+                        deviceType.setPid("0");
+                    }
+                    if(StrUtil.isNotEmpty(deviceType.getCode())){
+                        DeviceType deviceType1 = deviceTypeService.getOne(new LambdaQueryWrapper<DeviceType>()
+                                .eq(DeviceType::getDelFlag,0).eq(DeviceType::getCode,deviceType.getCode()));
+                        if (ObjectUtil.isNotEmpty(deviceType1)){
+                            errorStrs.add("第 " + i + " 行：输入的分类编号已经存在！请重新输入，忽略导入。");
+                            list.add(deviceType.setText("输入的分类编号已经存在！请重新输入，忽略导入"));
+                            continue;
+                        }
+                    }else {
+                        errorStrs.add("第 " + i + " 行：分类编号未输入！忽略导入。");
+                        list.add(deviceType.setText("分类编号未输入！忽略导入"));
+                        continue;
+                    }
+                    if(StrUtil.isNotEmpty(deviceType.getName())){
+                        DeviceType deviceType1 = deviceTypeService.getOne(new LambdaQueryWrapper<DeviceType>()
+                                .eq(DeviceType::getDelFlag,0).eq(DeviceType::getName,deviceType.getName())
+                                .eq(DeviceType::getMajorCode,deviceType.getMajorCode())
+                                .eq(DeviceType::getSystemCode,deviceType.getSystemCode()));
+                        if (ObjectUtil.isNotEmpty(deviceType1)){
+                            errorStrs.add("第 " + i + " 行：输入的分类名称已经存在！请重新输入，忽略导入。");
+                            list.add(deviceType.setText("输入的分类名称已经存在！请重新输入，忽略导入"));
+                            continue;
+                        }
+                    }else {
+                        errorStrs.add("第 " + i + " 行：分类名称未输入！忽略导入。");
+                        list.add(deviceType.setText("分类名称未输入！忽略导入"));
+                        continue;
+                    }
+                    //状态
+                    String stateName = deviceType.getStatusName()==null?"": deviceType.getStatusName();
+                    if ("".equals(stateName)){
+                        errorStrs.add("第 " + i + " 行：分类状态为空，忽略导入。");
+                        list.add(deviceType.setText("分类状态为空，忽略导入"));
+                        continue;
+                    }else {
+                        List<DictModel> dictItems = iSysBaseAPI.getDictItems("device_type_status");
+                        dictItems.forEach(s -> {
+                            if (s.getText().equals(stateName)) {
+                                deviceType.setStatus(Integer.valueOf(s.getValue()));
+                            }
+                        });
+                        if (ObjectUtil.isEmpty(deviceType.getStatus())){
+                        errorStrs.add("第 " + i + " 行：分类状态识别不出，忽略导入。");
+                        list.add(deviceType.setText("分类状态识别不出，忽略导入"));
+                        continue;
+                        }
+                    }
+                    if (StrUtil.isNotEmpty(deviceType.getIsSpecialDeviceName())){
+                        List<DictModel> dictItems = iSysBaseAPI.getDictItems("is_special_device");
+                        dictItems.forEach(s -> {
+                            if (s.getText().equals(deviceType.getIsSpecialDeviceName())) {
+                                deviceType.setStatus(Integer.valueOf(s.getValue()));
+                            }
+                        });
+                        if (ObjectUtil.isEmpty(deviceType.getIsSpecialDevice())){
+                            errorStrs.add("第 " + i + " 行：是否为特种设备识别不出，忽略导入。");
+                            list.add(deviceType.setText("是否为特种设备识别不出，忽略导入"));
+                            continue;
+                    }else {
+                            errorStrs.add("第 " + i + " 行：是否为特种设备为空，忽略导入。");
+                            list.add(deviceType.setText("是否为特种设备为空，忽略导入"));
+                            continue;
+                        }
+                    }
+                    if(StrUtil.isNotEmpty(deviceType.getIsEndName())){
+                        List<DictModel> dictItems = iSysBaseAPI.getDictItems("is_end");
+                        dictItems.forEach(s -> {
+                            if (s.getText().equals(deviceType.getIsEndName())) {
+                                deviceType.setStatus(Integer.valueOf(s.getValue()));
+                            }
+                        });
+                        if (ObjectUtil.isEmpty(deviceType.getIsEnd())){
+                            errorStrs.add("第 " + i + " 行：是否为尾节点识别不出，忽略导入。");
+                            list.add(deviceType.setText("是否为尾节点识别不出，忽略导入"));
+                            continue;
+                        }else {
+                            errorStrs.add("第 " + i + " 行：是否为尾节点为空，忽略导入。");
+                            list.add(deviceType.setText("是否为尾节点为空，忽略导入"));
+                            continue;
+                        }
+                    }
+                    String codecc =  getCcStr(deviceType);
+                    deviceType.setCodeCc(codecc);
+                    int save = deviceTypeMapper.insert(deviceType);
+                    if (save <= 0) {
+                        throw new Exception(CommonConstant.SQL_INDEX_UNIQ_MATERIAL_BASE_CODE);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (list.size()>0){
+            //创建导入失败错误报告,进行模板导出
+            Resource resource = new ClassPathResource("templates/deviceTypeError.xlsx");
+            InputStream resourceAsStream = resource.getInputStream();
+            //2.获取临时文件
+            File fileTemp= new File("templates/deviceTypeError.xlsx");
+            try {
+                //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+                FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+            String path = fileTemp.getAbsolutePath();
+            TemplateExportParams exportParams = new TemplateExportParams(path);
+            List<Map<String, Object>> mapList = new ArrayList<>();
+            list.forEach(l->{
+                Map<String, Object> lm = new HashMap<String, Object>();
+                lm.put("majorName",l.getMajorName());
+                lm.put("systemName",l.getSystemName());
+                lm.put("pUrl",l.getPUrl());
+                lm.put("code",l.getCode());
+                lm.put("name",l.getName());
+                lm.put("statusName",l.getStatusName());
+                lm.put("isSpecialDeviceName",l.getIsSpecialDeviceName());
+                lm.put("isEndName",l.getIsEndName());
+                lm.put("text",l.getText());
+                mapList.add(lm);
+            });
+            Map<String, Object> errorMap = new HashMap<String, Object>();
+            errorMap.put("maplist", mapList);
+            Workbook workbook = ExcelExportUtil.exportExcel(exportParams,errorMap);
+            String fileName = "安全事项导入错误模板"+"_" + System.currentTimeMillis()+".xlsx";
+            FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
+            String  url = fileName;
+            workbook.write(out);
+            errorLines+=errorStrs.size();
+            successLines+=(listMaterial.size()-errorLines);
+            return ImportExcelUtil.imporReturnRes(errorLines,successLines,errorStrs,url);
+        }
+        errorLines += errorStrs.size();
+        successLines += (listMaterial.size() - errorLines);
+        return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs);
+    }
+
+    @Override
+    public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response, DeviceType deviceType) {
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        Result<IPage<DeviceType>> result = deviceTypeController.queryPageList(deviceType,1,9999);
+        List<DeviceType> deviceTypes = result.getResult().getRecords();
+        if (CollectionUtil.isNotEmpty(deviceTypes)) {
+            //导出文件名称
+            mv.addObject(NormalExcelConstants.FILE_NAME, "设备分类");
+            //excel注解对象Class
+            mv.addObject(NormalExcelConstants.CLASS, DeviceType.class);
+            //自定义导出字段
+            String exportField = "majorCode,systemCode";
+            mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
+            //自定义表格参数
+            mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("设备分类", "设备分类"));
+            //导出数据列表
+            mv.addObject(NormalExcelConstants.DATA_LIST, deviceTypes);
+        }
+        return mv;
+    }
+
     String Ccstr(DeviceType deviceType, String str){
         DeviceType deviceTypeRes = new DeviceType();
         if("0".equals(deviceType.getPid())){

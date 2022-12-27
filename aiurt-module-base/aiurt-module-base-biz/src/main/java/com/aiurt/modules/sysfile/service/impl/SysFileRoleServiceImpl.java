@@ -1,5 +1,6 @@
 package com.aiurt.modules.sysfile.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
 import com.aiurt.modules.sysfile.mapper.SysFileRoleMapper;
@@ -15,9 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -235,28 +234,22 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 	 * @return {@link List}<{@link Long}>
 	 */
 	private List<Long> lowerList(Long typeId, String userId) {
-
-		List<Long> list = new ArrayList<>();
-		List<Long> ids = new ArrayList<>();
-		ids.add(typeId);
-		while (true) {
-			List<SysFileType> types = sysFileTypeMapper.selectList(new LambdaQueryWrapper<SysFileType>()
-					.in(SysFileType::getParentId, ids));
-			if (types != null && types.size() > 0) {
-				ids = types.stream().map(SysFileType::getId).collect(Collectors.toList());
-				List<SysFileRole> fileRoles = this.lambdaQuery()
-						.eq(SysFileRole::getDelFlag, 0)
-						.like(SysFileRole::getUserId, userId)
-						.in(SysFileRole::getTypeId, ids).list();
-				if (fileRoles != null && fileRoles.size() > 0) {
-					List<Long> longs = fileRoles.stream().map(SysFileRole::getId).collect(Collectors.toList());
-					list.addAll(longs);
-				}
-			} else {
-				break;
-			}
+		if (Objects.isNull(typeId)) {
+			typeId = 0L;
 		}
-		return list;
+		List<Long> typeIdList = sysFileTypeMapper.selectChildId(typeId);
+		typeIdList.add(typeId);
+
+
+		List<SysFileRole> fileRoles = this.lambdaQuery()
+				.eq(SysFileRole::getDelFlag, 0)
+				.like(SysFileRole::getUserId, userId)
+				.in(SysFileRole::getTypeId, typeIdList).list();
+		if (CollectionUtil.isNotEmpty(fileRoles)) {
+			List<Long> longs = fileRoles.stream().map(SysFileRole::getTypeId).collect(Collectors.toList());
+			return longs;
+		}
+		return Collections.emptyList();
 	}
 
 

@@ -1,12 +1,11 @@
 package com.aiurt.modules.device.controller;
 
 
-import javax.servlet.http.HttpServletRequest;
-
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -15,33 +14,38 @@ import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
-import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.api.vo.Result;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
-
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -70,6 +74,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	@Autowired
 	private IDeviceComposeService deviceComposeService;
 	@Autowired
+	@Lazy
 	private ISysBaseAPI sysBaseAPI;
 	@Autowired
 	private CsSafetyAttentionMapper csSafetyAttentionMapper;
@@ -438,5 +443,64 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
         List<DeviceType> list = deviceTypeService.list(wrapper);
         return list;
     }
+	@ApiOperation(value = "下载施工周计划导入模板", notes = "下载施工周计划导入模板")
+	@RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
+	public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		ClassPathResource classPathResource = new ClassPathResource("templates/deviceType.xlsx");
+		InputStream bis = classPathResource.getInputStream();
+		BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+		int len = 0;
+		while ((len = bis.read()) != -1) {
+			out.write(len);
+			out.flush();
+		}
+		out.close();
+	}
 
+	/**
+	 * 通过excel导入数据
+	 *
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ApiOperation(value = "通过excel导入数据", notes = "通过excel导入数据")
+	@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+		for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+			// 获取上传文件对象
+			MultipartFile file = entity.getValue();
+			ImportParams params = new ImportParams();
+			params.setTitleRows(2);
+			params.setHeadRows(1);
+			params.setNeedSave(true);
+			try {
+				return deviceTypeService.importExcelMaterial(file, params);
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+				return Result.error("文件导入失败:" + e.getMessage());
+			} finally {
+				try {
+					file.getInputStream().close();
+				} catch (IOException e) {
+					log.error(e.getMessage(), e);
+				}
+			}
+		}
+		return Result.error("文件导入失败！");
+	}
+
+	/**
+	 * 施工周计划-导出周计划
+	 *
+	 * @return
+	 */
+	@ApiOperation(value = "施工周计划-导出周计划", notes = "施工周计划-导出周计划")
+	@RequestMapping(value = "/exportXls", method = {RequestMethod.GET, RequestMethod.POST})
+	public void exportXls(HttpServletRequest request, HttpServletResponse response ,
+						  DeviceType deviceType) {
+		  deviceTypeService.exportXls(request, response,deviceType);
+	}
 }

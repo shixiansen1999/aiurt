@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
@@ -21,6 +22,7 @@ import java.io.Serializable;
  */
 @Data
 @TableName("sys_announcement")
+@ApiModel(value="sys_announcement对象", description="系统通告表")
 public class SysAnnouncement implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -33,11 +35,13 @@ public class SysAnnouncement implements Serializable {
      * 标题
      */
     @Excel(name = "标题", width = 15)
+    @ApiModelProperty("标题")
     private java.lang.String titile;
     /**
      * 内容
      */
     @Excel(name = "内容", width = 30)
+    @ApiModelProperty("内容")
     private java.lang.String msgContent;
     /**
      * 开始时间
@@ -45,6 +49,7 @@ public class SysAnnouncement implements Serializable {
     @Excel(name = "开始时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty("开始时间")
     private java.util.Date startTime;
     /**
      * 结束时间
@@ -52,16 +57,19 @@ public class SysAnnouncement implements Serializable {
     @Excel(name = "结束时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty("结束时间")
     private java.util.Date endTime;
     /**
      * 发布人
      */
     @Excel(name = "发布人", width = 15)
+    @ApiModelProperty("发布人")
     private java.lang.String sender;
     /**
      * 优先级（L低，M中，H高）
      */
     @Excel(name = "优先级（L低，M中，H高,）", width = 15, dicCode = "priority")
+    @ApiModelProperty("优先级（L低，M中，H高,）")
     private java.lang.String priority;
 
     /**
@@ -69,18 +77,21 @@ public class SysAnnouncement implements Serializable {
      */
     @Excel(name = "消息类型", width = 15, dicCode = "msg_category")
     @Dict(dicCode = "msg_category")
+    @ApiModelProperty("消息类型")
     private java.lang.String msgCategory;
     /**
      * 通告对象类型（USER:指定用户，ALL:全体用户）
      */
     @Excel(name = "通告对象类型", width = 15, dicCode = "msg_type")
     @Dict(dicCode = "msg_type")
+    @ApiModelProperty("通告对象类型")
     private java.lang.String msgType;
     /**
      * 发布状态（0未发布，1已发布，2已撤销）
      */
     @Excel(name = "发布状态", width = 15, dicCode = "send_status")
     @Dict(dicCode = "send_status")
+    @ApiModelProperty("发布状态")
     private java.lang.String sendStatus;
     /**
      * 发布时间
@@ -88,6 +99,7 @@ public class SysAnnouncement implements Serializable {
     @Excel(name = "发布时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty("发布时间")
     private java.util.Date sendTime;
     /**
      * 撤销时间
@@ -95,6 +107,7 @@ public class SysAnnouncement implements Serializable {
     @Excel(name = "撤销时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty("撤销时间")
     private java.util.Date cancelTime;
     /**
      * 删除状态（0，正常，1已删除）
@@ -123,26 +136,32 @@ public class SysAnnouncement implements Serializable {
     /**
      * 指定用户
      **/
+    @ApiModelProperty("指定用户")
     private java.lang.String userIds;
     /**
      * 业务类型(email:邮件 bpm:流程)
      */
+    @ApiModelProperty("业务类型")
     private java.lang.String busType;
     /**
      * 业务id
      */
+    @ApiModelProperty("业务id")
     private java.lang.String busId;
     /**
      * 打开方式 组件：component 路由：url
      */
+    @ApiModelProperty("打开方式 组件：component 路由：url")
     private java.lang.String openType;
     /**
      * 组件/路由 地址
      */
+    @ApiModelProperty("组件/路由 地址")
     private java.lang.String openPage;
     /**
      * 摘要
      */
+    @ApiModelProperty("摘要")
     private java.lang.String msgAbstract;
     /**
      * 钉钉task_id，用于撤回消息
@@ -178,5 +197,6 @@ public class SysAnnouncement implements Serializable {
      */
     @Excel(name = "特情等级", width = 15, dicCode = "level")
     @Dict(dicCode = "level")
+    @ApiModelProperty("特情等级")
     private java.lang.String level;
 }

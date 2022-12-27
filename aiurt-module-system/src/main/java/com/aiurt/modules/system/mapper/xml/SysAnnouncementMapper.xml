@@ -32,7 +32,12 @@
 	   select * from sys_announcement
 	   where send_status = '1'
 	   and del_flag = '0'
-	   and msg_category = #{msgCategory}
+	   <if test="msgCategory.size()>0 and msgCategory!=null">
+		   and msg_category in
+		   <foreach collection="msgCategory" open="(" close=")" separator="," item="id">
+			   #{id}
+		   </foreach>
+	   </if>
 	   and id IN ( select annt_id from sys_announcement_send where user_id = #{userId} and read_flag = '0')
 	   order by create_time DESC
 	</select>

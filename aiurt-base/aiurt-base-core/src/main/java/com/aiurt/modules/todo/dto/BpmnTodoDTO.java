@@ -26,4 +26,7 @@ public class BpmnTodoDTO extends TodoDTO {
     /**流程定义key*/
     @ApiModelProperty(value = "流程定义key")
     private String processDefinitionKey;
+
+    @ApiModelProperty(value = "url类型：0动态表单，1路由表单")
+    private String urlType;
 }

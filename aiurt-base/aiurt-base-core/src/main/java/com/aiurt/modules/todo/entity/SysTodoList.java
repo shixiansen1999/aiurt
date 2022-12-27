@@ -84,8 +84,9 @@ public class SysTodoList implements Serializable {
     @ApiModelProperty(value = "任务类型（fault故障，bpmn流程，inspection检修，patrol：巡视）")
     private String taskType;
 	/**任务类型（待办池类型：0：待办、1：已办、2：待阅、3：已阅）*/
-	@Excel(name = "任务类型（待办池类型：0：待办、1：已办、2：待阅、3：已阅）", width = 15)
+	@Excel(name = "任务状态（待办池类型：0：待办、1：已办、2：待阅、3：已阅）", width = 15)
     @ApiModelProperty(value = "任务类型（待办池类型：0：待办、1：已办、2：待阅、3：已阅）")
+    @Dict(dicCode = "todo_task_state")
     private String todoType;
 	/**名称*/
 	@Excel(name = "名称", width = 15)
@@ -103,4 +104,10 @@ public class SysTodoList implements Serializable {
 	@Excel(name = "跳转的url", width = 15)
     @ApiModelProperty(value = "跳转的url")
     private String url;
+    /**跳转的url针对app页面*/
+    @Excel(name = "跳转的url", width = 15)
+    @ApiModelProperty(value = "app跳转的url")
+    private String appUrl;
+	@ApiModelProperty(value = "url类型：0动态表单，1路由表单")
+	private String urlType;
 }
