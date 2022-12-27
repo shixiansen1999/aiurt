@@ -190,10 +190,10 @@ public class SysFileController {
 	@AutoLog(value = "文档表-app分页列表查询")
 	@ApiOperation(value = "文档表-app分页列表查询", notes = "文档表-分页列表查询")
 	@GetMapping(value = "/queryAppPage")
-	public Result<IPage<FileAppVO>> queryAppPage(FileAppParam param) {
+	public Result<IPage<FileAppVO>> queryAppPage(HttpServletRequest req,FileAppParam param) {
 		Result<IPage<FileAppVO>> result = new Result<IPage<FileAppVO>>();
 		result.setSuccess(true);
-		result.setResult(sysFileService.selectAppList(param));
+		result.setResult(sysFileService.selectAppList(req,param));
 		return result;
 	}
 
