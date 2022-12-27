@@ -18,6 +18,7 @@ import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.aiurt.boot.team.vo.EmergencyTrainingRecordVO;
 import com.aiurt.common.util.TimeUtil;
+import com.aiurt.common.util.XlsUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -306,7 +307,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             MultipartFile file = entity.getValue();
             String type = FilenameUtils.getExtension(file.getOriginalFilename());
             if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-                return iSysBaseAPI.importReturnRes(errorLines, successLines, errorMessage, false, null);
+                return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, false, null);
             }
             RecordExcelListener recordExcelListener = new RecordExcelListener();
             try {
@@ -316,8 +317,6 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             }
             RecordModel recordModel = recordExcelListener.getRecordModel();
             errorLines = checkTeam(recordModel, errorLines);
-
-
 
         }
         return Result.ok();

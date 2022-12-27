@@ -17,6 +17,7 @@ import com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.XlsUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -294,7 +295,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 Iterator<EmergencyMaterialsModel> iterator = list.iterator();
                 while (iterator.hasNext()) {
                     EmergencyMaterialsModel model = iterator.next();
-                    boolean b = iSysBaseAPI.checkObjAllFieldsIsNull(model);
+                    boolean b = XlsUtil.checkObjAllFieldsIsNull(model);
                     if (b) {
                         iterator.remove();
                     }

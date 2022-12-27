@@ -82,7 +82,6 @@ import org.springframework.util.PathMatcher;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.io.*;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -2109,24 +2108,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         flowApiService.startAndTakeFirst(bpmnDTO);
     }
 
-    @Override
-    public TemplateExportParams getErrorExcelModel(String url) throws IOException {
-        //创建导入失败错误报告,进行模板导出
-        org.springframework.core.io.Resource resource = new ClassPathResource(url);
-        InputStream resourceAsStream = resource.getInputStream();
-
-        //2.获取临时文件
-        File fileTemp= new File(url);
-        try {
-            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
-            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        String path = fileTemp.getAbsolutePath();
-        TemplateExportParams exportParams = new TemplateExportParams(path);
-        return exportParams;
-    }
 
     @Override
     public List<LoginUser> getUserByPost(int post) {
@@ -2146,65 +2127,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return loginUsers;
     }
 
-    @Override
-    public Result<?> importReturnRes(int errorLines, int successLines, List<String> errorMessage, boolean isType, String failReportUrl) {
-        if (isType) {
-            if (errorLines != 0) {
-                JSONObject result = new JSONObject(5);
-                result.put("isSucceed", false);
-                result.put("errorCount", errorLines);
-                result.put("successCount", successLines);
-                int totalCount = successLines + errorLines;
-                result.put("totalCount", totalCount);
-                result.put("failReportUrl", failReportUrl);
-                Result res = Result.ok(result);
-                res.setMessage("文件失败，数据有错误。");
-                res.setCode(200);
-                return res;
-            } else {
-                //是否成功
-                JSONObject result = new JSONObject(5);
-                result.put("isSucceed", true);
-                result.put("errorCount", errorLines);
-                result.put("successCount", successLines);
-                int totalCount = successLines + errorLines;
-                result.put("totalCount", totalCount);
-                Result res = Result.ok(result);
-                res.setMessage("文件导入成功！");
-                res.setCode(200);
-                return res;
-            }
-        } else {
-            JSONObject result = new JSONObject(5);
-            result.put("isSucceed", false);
-            result.put("errorCount", errorLines);
-            result.put("successCount", successLines);
-            int totalCount = successLines + errorLines;
-            result.put("totalCount", totalCount);
-            Result res = Result.ok(result);
-            res.setMessage("导入失败，文件类型不对。");
-            res.setCode(200);
-            return res;
-        }
-    }
-
-    @Override
-    public boolean checkObjAllFieldsIsNull(Object object) {
-        if (null == object) {
-            return true;
-        }
-        try {
-            for (Field f : object.getClass().getDeclaredFields()) {
-                f.setAccessible(true);
-                if (f.get(object) != null && (StrUtil.isNotEmpty(f.get(object).toString()) && !"1".equals(f.get(object).toString()))) {
-                    return false;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return true;
-    }
 
     @Override
     public JSONObject getDepartByName(String departName) {

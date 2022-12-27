@@ -1,6 +1,5 @@
 package org.jeecg.common.system.api;
 
-import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.api.dto.StartBpmnDTO;
 import com.aiurt.common.api.dto.message.*;
@@ -11,10 +10,8 @@ import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -736,25 +733,6 @@ public interface ISysBaseAPI extends CommonAPI {
     String getLineIdByCode(String lineCode);
 
     /**
-     * 导入接口信息返回
-     * @param errorLines 错误行数
-     * @param successLines 成功行数
-     * @param errorMessage 错误信息
-     * @param isType 文件类型
-     * @param failReportUrl 错误报告下载路径
-     * @return
-     */
-    Result<?> importReturnRes(int errorLines, int successLines, List<String> errorMessage, boolean isType, String failReportUrl);
-
-    /**
-     * 判断对象中属性值是否全为空
-     *
-     * @param object
-     * @return
-     */
-    boolean checkObjAllFieldsIsNull(Object object);
-
-    /**
      * 根据部门名称获取部门信息
      * @param departName
      * @return
@@ -803,13 +781,6 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     void startAndTakeFirst(StartBpmnDTO startBpmnDTO);
 
-    /**
-     * 读取错误报告模板
-     * @param url
-     * @return
-     * @throws IOException
-     */
-    TemplateExportParams getErrorExcelModel(String url) throws IOException;
 
     /**
      * 获取用户岗位为post的人员
