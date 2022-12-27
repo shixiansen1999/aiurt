@@ -13,6 +13,7 @@ import com.aiurt.boot.team.listener.RecordExcelListener;
 import com.aiurt.boot.team.mapper.EmergencyTrainingProgramMapper;
 import com.aiurt.boot.team.mapper.EmergencyTrainingRecordMapper;
 import com.aiurt.boot.team.model.RecordModel;
+import com.aiurt.boot.team.service.IEmergencyCrewService;
 import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.aiurt.boot.team.vo.EmergencyTrainingRecordVO;
@@ -73,7 +74,8 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
     private EmergencyTrainingProgramMapper emergencyTrainingProgramMapper;
     @Autowired
     private EmergencyTeamServiceImpl emergencyTeamService;
-
+    @Autowired
+    private IEmergencyCrewService emergencyCrewService;
 
     @Override
     public IPage<EmergencyTrainingRecordVO> queryPageList(EmergencyTrainingRecordDTO emergencyTrainingRecordDTO, Integer pageNo, Integer pageSize) {
@@ -313,7 +315,9 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 e.printStackTrace();
             }
             RecordModel recordModel = recordExcelListener.getRecordModel();
-            checkTeam(recordModel,errorLines);
+            errorLines = checkTeam(recordModel, errorLines);
+
+
 
         }
         return Result.ok();
@@ -412,6 +416,23 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             EmergencyTeam one = emergencyTeamService.getOne(teamQueryWrapper);
             if (ObjectUtil.isNotEmpty(one)) {
                 recordModel.setEmergencyTeamId(one.getId());
+                if (StrUtil.isNotEmpty(trainees)) {
+                    LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
+                    wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
+                    wrapper.eq(EmergencyCrew::getEmergencyTeamId, one.getId());
+                    List<EmergencyCrew> emergencyCrews = emergencyCrewService.getBaseMapper().selectList(wrapper);
+                    List<String> realNames = new ArrayList<>();
+                    for (EmergencyCrew emergencyCrew : emergencyCrews) {
+                        LoginUser userById = iSysBaseAPI.getUserById(emergencyCrew.getUserId());
+                        realNames.add(userById.getRealname());
+                    }
+                    List<String> list = StrUtil.splitTrim(trainees, ",");
+                    for (String s : list) {
+                        if (!realNames.contains(s)) {
+                            stringBuilder.append("应急队伍不存在" + s+"该人员,");
+                        }
+                    }
+                }
             } else {
                 stringBuilder.append("应急队伍不存在，");
             }
@@ -419,14 +440,20 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             stringBuilder.append("应急队伍名称不能为空，");
         }
 
-        if (StrUtil.isNotEmpty(trainees)) {
-
-
-        } else {
+        if (StrUtil.isEmpty(trainees)) {
             stringBuilder.append("参加训练人员不能为空，");
         }
 
+        if (StrUtil.isEmpty(trainingAppraise)) {
+            stringBuilder.append("训练效果及建议不能为空，");
+        }
 
-        return 1;
+        if (stringBuilder.length() > 0) {
+            // 截取字符
+            stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            recordModel.setMistake(stringBuilder.toString());
+            errorLines++;
+        }
+        return errorLines;
     }
 }
