@@ -27,4 +27,7 @@ public class FileAppParam implements Serializable {
 	@ApiModelProperty("文件夹id")
 	private Long typeId;
 
+	@ApiModelProperty("文件名称")
+	private String fileName;
+
 }
