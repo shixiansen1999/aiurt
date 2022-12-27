@@ -101,10 +101,10 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         if(CollUtil.isNotEmpty(pageList.getRecords())){
             for (EmergencyPlanRecordVO record : pageList.getRecords()) {
                 String emergencyPlanId = record.getEmergencyPlanId();
-                String emergencyPlanVersion = record.getEmergencyPlanVersion();
                 List<EmergencyPlan> list = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getId, emergencyPlanId).list();
                 for (EmergencyPlan emergencyPlan : list) {
                     String emergencyPlanName = emergencyPlan.getEmergencyPlanName();
+                    String emergencyPlanVersion = emergencyPlan.getEmergencyPlanVersion();
                     record.setPlanVersion(emergencyPlanName+"v"+emergencyPlanVersion);
                 }
             }
@@ -372,7 +372,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                 .list();
         planList.stream().forEach(p->{
             String emergencyPlanName = p.getEmergencyPlanName();
-            String emergencyPlanVersion = p.getEmergencyPlanVersion();
+            String emergencyPlanVersion =p.getEmergencyPlanVersion();
             recordDto.setPlanVersion(emergencyPlanName+"v"+emergencyPlanVersion);
         });
 
