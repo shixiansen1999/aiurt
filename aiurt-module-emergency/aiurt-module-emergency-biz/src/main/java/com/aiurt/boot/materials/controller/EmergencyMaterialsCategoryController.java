@@ -64,6 +64,7 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 								   HttpServletRequest req) {
 		emergencyMaterialsCategory.setDelFlag(0);
 		QueryWrapper<EmergencyMaterialsCategory> queryWrapper = QueryGenerator.initQueryWrapper(emergencyMaterialsCategory, req.getParameterMap());
+		queryWrapper.eq(StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryCode()),"category_code",emergencyMaterialsCategory.getCategoryCode());
 		Page<EmergencyMaterialsCategory> page = new Page<EmergencyMaterialsCategory>(pageNo, pageSize);
 		IPage<EmergencyMaterialsCategory> pageList = emergencyMaterialsCategoryService.page(page, queryWrapper);
 		pageList.getRecords().forEach(e->{
