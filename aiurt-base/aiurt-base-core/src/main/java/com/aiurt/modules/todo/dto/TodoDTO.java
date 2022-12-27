@@ -31,5 +31,8 @@ public class TodoDTO {
     /**跳转的url*/
     @ApiModelProperty(value = "跳转的url")
     private String url;
+    /**app跳转的url*/
+    @ApiModelProperty(value = "app跳转的url")
+    private String appUrl;
 
 }

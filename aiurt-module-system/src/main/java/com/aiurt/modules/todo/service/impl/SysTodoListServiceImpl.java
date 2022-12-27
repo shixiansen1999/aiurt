@@ -12,13 +12,10 @@ import com.aiurt.modules.todo.service.ISysTodoListService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.shiro.SecurityUtils;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.system.vo.DictModel;
-import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import java.util.List;
 import java.util.Map;
@@ -56,7 +53,7 @@ public class SysTodoListServiceImpl extends ServiceImpl<SysTodoListMapper, SysTo
         // 字典翻译
         Map<String, String> dictMap = CollUtil.newHashMap(8);
         List<DictModel> todoType = sysDictMapper.queryEnableDictItemsByCode("todo_type");
-        if(CollUtil.isNotEmpty(todoType)){
+        if (CollUtil.isNotEmpty(todoType)) {
             dictMap = todoType.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
         }
 
@@ -65,7 +62,7 @@ public class SysTodoListServiceImpl extends ServiceImpl<SysTodoListMapper, SysTo
             TaskModuleDTO temp = new TaskModuleDTO();
             temp.setField(entry.getKey());
             temp.setCount(CollUtil.isNotEmpty(entry.getValue()) ? entry.getValue().size() : 0);
-            if(StrUtil.isNotEmpty(entry.getKey())&& MapUtil.isNotEmpty(dictMap)){
+            if (StrUtil.isNotEmpty(entry.getKey()) && MapUtil.isNotEmpty(dictMap)) {
                 temp.setName(dictMap.get(entry.getKey()));
             }
             result.add(temp);
@@ -103,7 +100,10 @@ public class SysTodoListServiceImpl extends ServiceImpl<SysTodoListMapper, SysTo
 
         // 任务类型
         if (StrUtil.isNotEmpty(sysTodoList.getTaskType())) {
-            sysTodoListLambdaQueryWrapper.eq(SysTodoList::getTaskType, sysTodoList.getTaskType());
+            List<String> sysTaskStr = StrUtil.split(sysTodoList.getTaskType(), ',');
+            if (CollUtil.isNotEmpty(sysTaskStr)) {
+                sysTodoListLambdaQueryWrapper.in(SysTodoList::getTaskType, sysTaskStr);
+            }
         }
 
         // 我发起的
