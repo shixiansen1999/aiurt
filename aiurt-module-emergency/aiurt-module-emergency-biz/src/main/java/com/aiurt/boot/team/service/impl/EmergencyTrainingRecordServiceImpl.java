@@ -12,6 +12,7 @@ import com.aiurt.boot.team.entity.*;
 import com.aiurt.boot.team.listener.RecordExcelListener;
 import com.aiurt.boot.team.mapper.EmergencyTrainingProgramMapper;
 import com.aiurt.boot.team.mapper.EmergencyTrainingRecordMapper;
+import com.aiurt.boot.team.model.ProcessRecordModel;
 import com.aiurt.boot.team.model.RecordModel;
 import com.aiurt.boot.team.service.IEmergencyCrewService;
 import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
@@ -42,10 +43,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -316,7 +314,24 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 e.printStackTrace();
             }
             RecordModel recordModel = recordExcelListener.getRecordModel();
+            //校验是否有空行
+            List<ProcessRecordModel> processRecordModelList = recordModel.getProcessRecordModelList();
+            Iterator<ProcessRecordModel> iterator = processRecordModelList.iterator();
+            while (iterator.hasNext()) {
+                ProcessRecordModel model = iterator.next();
+                boolean a = XlsUtil.checkObjAllFieldsIsNull(model);
+                if (a) {
+                    iterator.remove();
+                }
+            }
+            if (CollUtil.isEmpty(processRecordModelList)) {
+                return Result.error("文件导入失败:训练过程记录不能为空！");
+            }
+
             errorLines = checkTeam(recordModel, errorLines);
+
+
+
 
         }
         return Result.ok();
@@ -447,6 +462,51 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             stringBuilder.append("训练效果及建议不能为空，");
         }
 
+        List<ProcessRecordModel> processRecordModelList = recordModel.getProcessRecordModelList();
+        if (CollUtil.isNotEmpty(processRecordModelList)) {
+            StringBuilder stringBuilder1 = new StringBuilder();
+            for (ProcessRecordModel processRecordModel : processRecordModelList) {
+                String trainingTime1 = processRecordModel.getTrainingTime();
+                String trainingContent = processRecordModel.getTrainingContent();
+                if (StrUtil.isNotEmpty(trainingTime1)) {
+                    boolean legalDate = TimeUtil.isLegalDate(trainingTime1.length(), trainingTime1, "HH::mm");
+                    if (!legalDate) {
+                        stringBuilder1.append("时间格式不对，");
+                    }
+                }
+                if (StrUtil.isEmpty(trainingContent)) {
+                    stringBuilder1.append("训练内容不能为空，");
+                }
+                if (stringBuilder1.length() > 0) {
+                    // 截取字符
+                    stringBuilder1 = stringBuilder1.deleteCharAt(stringBuilder.length() - 1);
+                    processRecordModel.setMistake(stringBuilder1.toString());
+                    errorLines++;
+                }
+            }
+        }else {
+            stringBuilder.append("训练过程记录不能为空，");
+        }
+
+        if (StrUtil.isNotEmpty(recordModel.getEmergencyTeamId()) && StrUtil.isNotEmpty(recordModel.getEmergencyTrainingProgramId())) {
+            LambdaQueryWrapper<EmergencyTrainingTeam> teamQueryWrapper = new LambdaQueryWrapper<>();
+            teamQueryWrapper.eq(EmergencyTrainingTeam::getDelFlag, TeamConstant.DEL_FLAG0);
+            teamQueryWrapper.eq(EmergencyTrainingTeam::getEmergencyTrainingProgramId, recordModel.getEmergencyTrainingProgramId());
+            teamQueryWrapper.eq(EmergencyTrainingTeam::getEmergencyTeamId, recordModel.getEmergencyTeamId());
+            EmergencyTrainingTeam one = emergencyTrainingTeamService.getBaseMapper().selectOne(teamQueryWrapper);
+            if (ObjectUtil.isEmpty(one)) {
+                stringBuilder.append("该应急队伍不存在该应急计划，");
+            }
+
+            LambdaQueryWrapper<EmergencyTrainingRecord> recordLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            recordLambdaQueryWrapper.eq(EmergencyTrainingRecord::getEmergencyTeamId, recordModel.getEmergencyTeamId());
+            recordLambdaQueryWrapper.eq(EmergencyTrainingRecord::getEmergencyTrainingProgramId, recordModel.getEmergencyTrainingProgramId());
+            recordLambdaQueryWrapper.eq(EmergencyTrainingRecord::getDelFlag,TeamConstant.DEL_FLAG0);
+            EmergencyTrainingRecord emergencyTrainingRecord = this.getBaseMapper().selectOne(recordLambdaQueryWrapper);
+            if (ObjectUtil.isNotEmpty(emergencyTrainingRecord)) {
+                stringBuilder.append("该应急队伍已存在该应急计划的训练记录，");
+            }
+        }
         if (stringBuilder.length() > 0) {
             // 截取字符
             stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
