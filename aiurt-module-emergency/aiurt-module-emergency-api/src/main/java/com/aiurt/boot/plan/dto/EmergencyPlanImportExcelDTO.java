@@ -69,11 +69,11 @@ public class EmergencyPlanImportExcelDTO {
     @ExcelCollection(name = "处置程序")
     @ApiModelProperty(value = "处置程序")
     @TableField(exist = false)
-    List<EmergencyPlanDisposalProcedureImportExcelDTO> planDisposalProcedureList = new ArrayList<>();
+    List<EmergencyPlanDisposalProcedureImportExcelDTO> planDisposalProcedureList ;
 
     @ExcelCollection(name = "应急物资")
     @ApiModelProperty(value = "应急物资")
-    List<EmergencyPlanMaterialsImportExcelDTO> planMaterialsDTOList = new ArrayList<>();
+    List<EmergencyPlanMaterialsImportExcelDTO> planMaterialsList;
 
 
 
