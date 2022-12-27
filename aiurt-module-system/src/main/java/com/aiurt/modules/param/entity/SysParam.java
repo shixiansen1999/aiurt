@@ -83,6 +83,42 @@ public class SysParam extends DictEntity implements Serializable {
     @TableField(value = "`explain`")
     private java.lang.String explain;
     /**
+     * 登录页logo参数
+     */
+    @Excel(name = "登录页logo参数", width = 15)
+    @ApiModelProperty(value = "登录页logo参数")
+    private java.lang.String loginLogo;
+    /**
+     * 登录页title
+     */
+    @Excel(name = "登录页title参数", width = 15)
+    @ApiModelProperty(value = "登录页title参数")
+    private java.lang.String loginTitle;
+    /**
+     * 主页logo参数
+     */
+    @Excel(name = "主页logo参数", width = 15)
+    @ApiModelProperty(value = "主页logo参数")
+    private java.lang.String homeLogo;
+    /**
+     * 主页logo附近的title参数
+     */
+    @Excel(name = "主页logo附近的title参数", width = 15)
+    @ApiModelProperty(value = "主页logo附近的title参数")
+    private java.lang.String homeLeftTitle;
+    /**
+     * 主页右边的title参数
+     */
+    @Excel(name = "主页右边的title参数", width = 15)
+    @ApiModelProperty(value = "主页右边的title参数")
+    private java.lang.String homeRightTitle;
+    /**
+     * 是否当前系统应用参数 0否，1是
+     */
+    @Excel(name = "是否当前系统应用参数", width = 15)
+    @ApiModelProperty(value = "是否当前系统应用参数 0否，1是")
+    private java.lang.Integer isSystemApps;
+    /**
      * 删除状态： 0未删除 1已删除
      */
     @Excel(name = "删除状态： 0未删除 1已删除", width = 15)
