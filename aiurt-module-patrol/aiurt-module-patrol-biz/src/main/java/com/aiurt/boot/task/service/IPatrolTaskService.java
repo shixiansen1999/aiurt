@@ -179,4 +179,6 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @return
      */
     PatrolTaskDTO getDetail(String id);
+
+    void sendMessageApp(PatrolTaskAppointSaveDTO patrolAccompanyList);
 }

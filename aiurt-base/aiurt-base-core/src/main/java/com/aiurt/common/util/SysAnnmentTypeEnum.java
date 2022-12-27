@@ -35,6 +35,10 @@ public enum SysAnnmentTypeEnum {
      * 检修指派
      */
     INSPECTION_ASSIGN("inspection_assign", "component",""),
+    /**
+     * 巡视指派
+     */
+    PATROL_ASSIGN("patrol_assign", "component",""),
 
     BDOPERATEPLANDECLARATIONFORM("planFromSearch", "component", "prodManage/weekAuditing"),
 
