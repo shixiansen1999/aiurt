@@ -1,6 +1,5 @@
 package com.aiurt.modules.system.service.impl;
 
-import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -61,11 +60,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
@@ -74,7 +71,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
@@ -2127,6 +2123,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return loginUsers;
     }
 
+    /**
+     * 根据业务类型及业务id查询消息
+     *
+     * @param busType 业务类型
+     * @param busId   业务id
+     * @return 消息的id
+     */
+    @Override
+    public String getSysAnnounByBusTypeAndBusId(String busType, String busId) {
+        SysAnnouncement announcement = sysAnnouncementMapper.selectOne(new QueryWrapper<SysAnnouncement>().eq("bus_type", busType).eq("bus_id", busId));
+        return ObjectUtil.isNotEmpty(announcement) ? announcement.getId() : "";
+    }
+
 
     @Override
     public JSONObject getDepartByName(String departName) {
@@ -2162,7 +2171,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public JSONObject getPositionByName(String positionName,String lineCode,String stationCode) {
+    public JSONObject getPositionByName(String positionName, String lineCode, String stationCode) {
         LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
         if (StrUtil.isNotBlank(lineCode)) {
             wrapper.eq(CsStationPosition::getLineCode, lineCode);
@@ -2179,7 +2188,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<LoginUser> getUserByRealName(String realName,String workNo) {
+    public List<LoginUser> getUserByRealName(String realName, String workNo) {
         return userMapper.getUserByRealName(realName, workNo);
     }
 

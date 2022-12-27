@@ -31,6 +31,10 @@ public enum SysAnnmentTypeEnum {
      * 工作日志
      */
     WORKLOG("worklog", "component",""),
+    /**
+     * 检修指派
+     */
+    INSPECTION_ASSIGN("inspection_assign", "component",""),
 
     BDOPERATEPLANDECLARATIONFORM("planFromSearch", "component", "prodManage/weekAuditing"),
 

@@ -8,6 +8,7 @@ import com.aiurt.common.util.RedisUtil;
 import com.aiurt.common.util.TokenUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.message.websocket.WebSocket;
+import com.aiurt.modules.system.dto.SysAnnouncementDTO;
 import com.aiurt.modules.system.entity.SysAnnouncement;
 import com.aiurt.modules.system.entity.SysAnnouncementSend;
 import com.aiurt.modules.system.service.ISysAnnouncementSendService;
@@ -324,8 +325,8 @@ public class SysAnnouncementController {
      */
     @ApiOperation(value = "补充用户数据，并返回系统消息", notes = "补充用户数据，并返回系统消息")
     @RequestMapping(value = "/listByUser", method = RequestMethod.GET)
-    public Result<Map<String, Object>> listByUser(@RequestParam(required = false, defaultValue = "5") Integer pageSize) {
-        Result<Map<String, Object>> result = new Result<Map<String, Object>>();
+    public Result<SysAnnouncementDTO> listByUser(@RequestParam(required = false, defaultValue = "5") Integer pageSize) {
+        SysAnnouncementDTO result = new SysAnnouncementDTO();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String userId = sysUser.getId();
         // 1.将系统消息补充到用户通告阅读标记表中
@@ -376,16 +377,14 @@ public class SysAnnouncementController {
         sysTodoList.setTodoType(CommonConstant.TODO_TYPE_0 + "," + CommonConstant.TODO_TYPE_2);
         IPage<SysTodoList> todoTaskList = sysTodoListService.queryPageList(listPage, sysTodoList);
 
-        Map<String, Object> sysMsgMap = new HashMap(8);
-        sysMsgMap.put("sysMsgList", sysMsgList.getRecords());
-        sysMsgMap.put("sysMsgTotal", sysMsgList.getTotal());
-        sysMsgMap.put("anntMsgList", anntMsgList.getRecords());
-        sysMsgMap.put("anntMsgTotal", anntMsgList.getTotal());
-        sysMsgMap.put("todoTaskList", todoTaskList.getRecords());
-        sysMsgMap.put("todoTaskTotal", todoTaskList.getTotal());
-        result.setSuccess(true);
-        result.setResult(sysMsgMap);
-        return result;
+        // 封装结果
+        result.setSysMsgList(sysMsgList.getRecords());
+        result.setSysMsgTotal(sysMsgList.getTotal());
+        result.setAnntMsgList(anntMsgList.getRecords());
+        result.setAnntMsgTotal(anntMsgList.getTotal());
+        result.setTodoTaskList(todoTaskList.getRecords());
+        result.setTodoTaskTotal(todoTaskList.getTotal());
+        return Result.OK(result);
     }
 
 

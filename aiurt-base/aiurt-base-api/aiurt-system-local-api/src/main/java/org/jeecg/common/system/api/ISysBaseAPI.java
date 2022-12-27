@@ -788,4 +788,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<LoginUser> getUserByPost(int post);
+
+    /**
+     * 根据业务类型及业务id查询消息
+     * @param busType 业务类型
+     * @param busId 业务id
+     * @return 消息的id
+     */
+    public String getSysAnnounByBusTypeAndBusId(String busType, String busId);
 }

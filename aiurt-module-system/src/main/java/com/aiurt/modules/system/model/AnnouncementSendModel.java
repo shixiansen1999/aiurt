@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.model;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -37,12 +38,13 @@ public class AnnouncementSendModel implements Serializable {
 	private java.lang.String msgContent;
 	/**发布人*/
 	@ApiModelProperty("发布人")
+	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
 	private java.lang.String sender;
 	/**优先级（L低，M中，H高）*/
 	@ApiModelProperty("优先级（L低，M中，H高）")
 	private java.lang.String priority;
 	/**阅读状态*/
-	@ApiModelProperty("阅读状态")
+	@ApiModelProperty("阅读状态0未读1已读")
 	private java.lang.String readFlag;
 	/**发布时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
