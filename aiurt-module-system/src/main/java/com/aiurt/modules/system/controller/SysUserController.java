@@ -16,7 +16,6 @@ import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
-import com.aiurt.modules.sm.entity.CsSafetyAttention;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
@@ -39,7 +38,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import liquibase.pro.packaged.L;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -785,10 +783,10 @@ public class SysUserController {
                         }
                         if (list.size()>0){
                             //创建导入失败错误报告,进行模板导出
-                            Resource resource = new ClassPathResource("templates/sysUserError.xls");
+                            Resource resource = new ClassPathResource("templates/sysUserError.xlsx");
                             InputStream resourceAsStream = resource.getInputStream();
                             //2.获取临时文件
-                            File fileTemp= new File("templates/sysUserError.xls");
+                            File fileTemp= new File("templates/sysUserError.xlsx");
                             try {
                                 //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
                                 FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
@@ -1817,7 +1815,7 @@ public class SysUserController {
     @ApiOperation(value = "下载用户导入模板", notes = "下载用户导入模板")
     @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
     public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
-        ClassPathResource classPathResource = new ClassPathResource("templates/sysUser.xls");
+        ClassPathResource classPathResource = new ClassPathResource("templates/sysUser.xlsx");
         InputStream bis = classPathResource.getInputStream();
         BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
         int len = 0;
