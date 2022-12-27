@@ -454,9 +454,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             //获取负责人
             SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(orgId);
             LoginUser userById = iSysBaseAPI.getUserById(sysDepartModel.getManagerId());
-            String foremanName = Optional.ofNullable(userById).orElse(null).getRealname();
-            record.setForeman(foremanName);
-
+            if (ObjectUtil.isNotEmpty(userById)) {
+                record.setForeman(userById.getRealname());
+            }
             //获取参与人员
             List<String> nameList = sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList());
             String str = StringUtils.join(nameList, ",");
