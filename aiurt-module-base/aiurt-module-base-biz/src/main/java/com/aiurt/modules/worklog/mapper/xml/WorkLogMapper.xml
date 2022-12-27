@@ -29,9 +29,8 @@
         <if test="param.submitId!= null and param.successorId == null">
             and wl.submit_id = #{param.submitId}
         </if>
-        <if test="param.dayStart != null and param.dayStart != '' and param.dayEnd != null and param.dayEnd != ''">
-            and DATE_FORMAT(wl.submit_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{param.dayStart},'%Y-%m-%d')
-            and DATE_FORMAT(wl.submit_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{param.dayEnd},'%Y-%m-%d')
+        <if test="param.day != null and param.day != ''">
+            and DATE_FORMAT(wl.submit_time ,'%Y-%m-%d') = DATE_FORMAT(#{param.day},'%Y-%m-%d')
         </if>
         <if test="param.checkStatus!= null and param.checkStatus!= ''">
             AND wl.check_status = #{param.checkStatus}
@@ -76,8 +75,8 @@
         <if test="param.submitId!= null and param.submitId!= ''">
             AND wl.submit_id = #{param.submitId}
         </if>
-        <if test="param.dayStart != null and param.dayStart != '' and param.dayEnd != null and param.dayEnd != ''">
-            AND wl.submit_time &gt;= #{param.dayStart} and wl.submit_time &lt; #{param.dayEnd}
+        <if test="param.day != null and param.day != ''">
+            and DATE_FORMAT(wl.submit_time ,'%Y-%m-%d') = DATE_FORMAT(#{param.day},'%Y-%m-%d')
         </if>
         <if test="param.checkStatus!= null and param.checkStatus!= ''">
             AND wl.check_status = #{param.checkStatus}
