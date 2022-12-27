@@ -72,6 +72,13 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 				EmergencyMaterialsCategory byId = emergencyMaterialsCategoryService.getById(e.getPid());
                 e.setFatherName(byId.getCategoryName());
 			}
+			//是否有存在子级，有就查询出子级一起返回
+			if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0")){
+				LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+				lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getPid, e.getId());
+				List<EmergencyMaterialsCategory> list = emergencyMaterialsCategoryService.list(lambdaQueryWrapper);
+				e.setChildren(list);
+			}
 		});
 		return Result.OK(pageList);
 	}
