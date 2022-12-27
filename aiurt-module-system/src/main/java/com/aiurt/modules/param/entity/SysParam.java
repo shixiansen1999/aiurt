@@ -117,6 +117,7 @@ public class SysParam extends DictEntity implements Serializable {
      */
     @Excel(name = "是否当前系统应用参数", width = 15)
     @ApiModelProperty(value = "是否当前系统应用参数 0否，1是")
+    @Dict(dicCode = "sys_system_apps")
     private java.lang.Integer isSystemApps;
     /**
      * 删除状态： 0未删除 1已删除
