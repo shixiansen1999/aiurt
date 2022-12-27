@@ -106,6 +106,8 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
     public List<EmergencyMaterialsCategory> selectTreeList() {
         LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,0);
+        queryWrapper.orderByAsc(EmergencyMaterialsCategory::getSort);
+        queryWrapper.orderByAsc(EmergencyMaterialsCategory::getCreateTime);
         List<EmergencyMaterialsCategory> emergencyMaterialsCategories = emergencyMaterialsCategoryMapper.selectList(queryWrapper);
         return treeFirst(emergencyMaterialsCategories);
     }

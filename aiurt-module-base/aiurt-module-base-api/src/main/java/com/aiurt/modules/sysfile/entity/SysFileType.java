@@ -1,6 +1,7 @@
 package com.aiurt.modules.sysfile.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -85,4 +86,16 @@ public class SysFileType {
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@ApiModelProperty(value = "修改时间")
 	private Date updateTime;
+
+	@ApiModelProperty(value = "是否可编辑，1：是，0：否")
+	@TableField(exist = false)
+	private Integer edit;
+
+	@ApiModelProperty(value = "是否可删除，1：是，0：否")
+	@TableField(exist = false)
+	private Integer delete;
+
+	@ApiModelProperty(value = "是否可上传，1：是，0：否")
+	@TableField(exist = false)
+	private Integer upload;
 }

@@ -21,6 +21,7 @@ import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.XlsUtil;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.alibaba.fastjson.JSONObject;
@@ -524,7 +525,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             int i = 0;
             Map<Object, Integer> duplicateData = new HashMap<>(16);
             for (PatrolStandardItems items : standardItems) {
-                boolean isNull = sysBaseApi.checkObjAllFieldsIsNull(items);
+                boolean isNull = XlsUtil.checkObjAllFieldsIsNull(items);
                 if(isNull)
                 {
                     items.setIsNUll(true);

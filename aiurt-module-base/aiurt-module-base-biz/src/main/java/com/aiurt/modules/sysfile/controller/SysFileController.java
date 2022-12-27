@@ -84,12 +84,9 @@ public class SysFileController {
 	                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
 	                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
 	                                              HttpServletRequest request) {
-		//处理未选择类型数据
-		if (sysFile.getTypeId()==null){
-			return Result.ok(new Page<>());
-		}
 
-		Result<IPage<SysFileVO>> result = new Result<IPage<SysFileVO>>();
+
+		Result<IPage<SysFileVO>> result = new Result<>();
 
 		String userId = ((LoginUser)SecurityUtils.getSubject().getPrincipal()).getId();
 
@@ -99,10 +96,10 @@ public class SysFileController {
 		LambdaQueryWrapper<SysFile> queryWrapper = new LambdaQueryWrapper<SysFile>()
 				.orderByDesc(SysFile::getId)
 				.eq(SysFile::getDelFlag, 0);
-		if (sysFile.getTypeId() != null) {
-			List<Long> list = iSysFileRoleService.queryRoleByUserId(userId, sysFile.getTypeId());
-			queryWrapper.in(SysFile::getTypeId, list);
-		}
+
+		List<Long> typeIdList = iSysFileRoleService.queryRoleByUserId(userId, sysFile.getTypeId());
+		queryWrapper.in(SysFile::getTypeId, typeIdList);
+
 
 		if (StringUtils.isNotBlank(sysFile.getName())) {
 			queryWrapper.like(SysFile::getName, sysFile.getName());
@@ -193,10 +190,10 @@ public class SysFileController {
 	@AutoLog(value = "文档表-app分页列表查询")
 	@ApiOperation(value = "文档表-app分页列表查询", notes = "文档表-分页列表查询")
 	@GetMapping(value = "/queryAppPage")
-	public Result<IPage<FileAppVO>> queryAppPage(FileAppParam param) {
+	public Result<IPage<FileAppVO>> queryAppPage(HttpServletRequest req,FileAppParam param) {
 		Result<IPage<FileAppVO>> result = new Result<IPage<FileAppVO>>();
 		result.setSuccess(true);
-		result.setResult(sysFileService.selectAppList(param));
+		result.setResult(sysFileService.selectAppList(req,param));
 		return result;
 	}
 

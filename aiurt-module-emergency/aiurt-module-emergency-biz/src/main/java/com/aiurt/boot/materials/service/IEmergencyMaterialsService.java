@@ -7,8 +7,12 @@ import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.ibatis.annotations.Param;
+import org.jeecg.common.api.vo.Result;
+import org.springframework.web.servlet.ModelAndView;
 
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @Description: emergency_materials
@@ -48,4 +52,27 @@ public interface IEmergencyMaterialsService extends IService<EmergencyMaterials>
      * @return
      */
     Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList,@Param("id") String id);
+
+
+    /**
+     * 应急物资台账导出数据
+     * @param condition
+     * @return
+     */
+    ModelAndView getMaterialPatrolList(MaterialAccountDTO condition);
+
+    /**
+     * 下载应急物资台账导入模板
+     * @param response
+     * @param request
+     */
+    void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException;
+
+    /**
+     * 应急物资台账数据导入
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

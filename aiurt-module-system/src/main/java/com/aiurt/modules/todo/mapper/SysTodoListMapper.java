@@ -17,12 +17,4 @@ import java.util.List;
  */
 public interface SysTodoListMapper extends BaseMapper<SysTodoList> {
 
-    /**
-     * 分页查询
-     * @param page
-     * @param sysTodoList
-     * @param todoTypeList
-     * @return
-     */
-    List<SysTodoList> getTodoList(@Param("page") Page<SysTodoList> page, @Param("sysTodoList") SysTodoList sysTodoList, @Param("todoTypeList") List<String> todoTypeList);
 }

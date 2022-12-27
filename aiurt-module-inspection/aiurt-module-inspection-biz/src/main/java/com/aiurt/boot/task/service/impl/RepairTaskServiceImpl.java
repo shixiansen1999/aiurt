@@ -32,11 +32,13 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +90,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     private RepairPoolOrgRelMapper orgRelMapper;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
+    @Autowired
+    private ISTodoBaseAPI isTodoBaseAPI;
 
     @Override
     public Page<RepairTask> selectables(Page<RepairTask> pageList, RepairTask condition) {
@@ -1824,10 +1828,17 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPoolMapper.updateById(repairPool);
             }
 
+            // 更改消息状态为已读
+            sysBaseApi.updateSysAnnounReadFlag(SysAnnmentTypeEnum.INSPECTION_ASSIGN.getType(),repairTask.getCode());
+
+            // 新建待办任务
+            String currentUserName ="";
+//            isTodoBaseAPI.createTodoTask(new TodoDTO("检修任务",repairTask.getCode(),currentUserName,));
         } else {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
     }
+
 
     /**
      * 扫码设备查询检修单

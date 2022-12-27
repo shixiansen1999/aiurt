@@ -26,15 +26,15 @@ public class SysFileTypeParam implements Serializable {
 	private Long id;
 
 	@ApiModelProperty("上级菜单")
-	@NotNull(message = "小主，上级菜单是不能为空的哦！")
+	@NotNull(message = "上级菜单是不能为空的哦！")
 	private Long parentId;
 
 	@ApiModelProperty("分类名称")
-	@NotBlank(message = "小主，类型是不能为空的哦！")
+	@NotBlank(message = "类型是不能为空的哦！")
 	private String name;
 
 	@ApiModelProperty("等级")
-	@NotNull(message = "小主，等级标识是不能为空的哦！")
+	@NotNull(message = "等级标识是不能为空的哦！")
 	private Integer grade;
 
 	@ApiModelProperty("可查看人员")

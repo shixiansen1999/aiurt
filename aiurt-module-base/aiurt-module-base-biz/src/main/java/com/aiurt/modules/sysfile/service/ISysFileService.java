@@ -22,7 +22,7 @@ import java.util.List;
  */
 public interface ISysFileService extends IService<SysFile> {
 
-	IPage<FileAppVO> selectAppList(FileAppParam param);
+	IPage<FileAppVO> selectAppList(HttpServletRequest req,FileAppParam param);
 
 	List<FIlePlanVO> selectList();
 

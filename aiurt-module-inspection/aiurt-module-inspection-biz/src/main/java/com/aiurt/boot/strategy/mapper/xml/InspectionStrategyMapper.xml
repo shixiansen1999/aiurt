@@ -181,12 +181,12 @@
     <select id="viewDetail" resultType="com.aiurt.modules.device.entity.Device">
         SELECT a.* FROM device a
              LEFT JOIN inspection_str_device_rel b on a.`code`=b.device_code
-         WHERE b.id= #{id}
+         WHERE a.del_flag = 0 and b.id= #{id}
     </select>
     <select id="viewDetails" resultType="com.aiurt.modules.device.entity.Device">
         SELECT a.* FROM device a
          LEFT JOIN inspection_str_device_rel b on a.`code`=b.device_code
-         WHERE b.inspection_str_rel_id= #{id}
+         WHERE a.del_flag = 0 and b.inspection_str_rel_id= #{id}
     </select>
 
     <select id="selectCodeList" resultType="com.aiurt.boot.strategy.dto.InspectionStrategyDTO">

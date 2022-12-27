@@ -8,6 +8,9 @@
 			<if test="typeId != null">
 				type_id = #{typeId}
 			</if>
+			<if test="fileName != null">
+				and `name` LIKE CONCAT ('%', #{fileName}, '%')
+			</if>
 		</where>
 	<!--limit #{no},#{size}-->
 	</select>
