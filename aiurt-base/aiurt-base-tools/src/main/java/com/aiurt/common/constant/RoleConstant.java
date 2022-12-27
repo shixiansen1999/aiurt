@@ -33,4 +33,8 @@ public interface RoleConstant {
 	 * 主任
 	 */
 	String DIRECTOR ="zhuren";
+	/**
+	 * 工班长
+	 */
+	String FOREMAN = "foreman";
 }

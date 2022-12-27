@@ -22,6 +22,9 @@ import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.CommonTodoStatus;
+import com.aiurt.common.constant.RoleConstant;
+import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.common.api.IBaseApi;
@@ -306,8 +309,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         todoDTO.setTaskName(patrolTask.getName());
         todoDTO.setBusinessKey(patrolTask.getId());
         todoDTO.setCurrentUserName(loginUser.getUsername());
-        todoDTO.setTaskType("patrol");
-        todoDTO.setTodoType("0");
+        todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
+        todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
 //        todoDTO.setUrl();
         isTodoBaseAPI.createTodoTask(todoDTO);
     }
@@ -710,6 +713,25 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
             }
             patrolTaskMapper.update(new PatrolTask(), updateWrapper);
+        }
+        // 提交任务如果需要审核则发送一条审核待办消息
+        if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
+            QueryWrapper<PatrolTaskOrganization> wrapper = new QueryWrapper<>();
+            wrapper.lambda().eq(PatrolTaskOrganization::getTaskCode,patrolTask.getCode())
+                    .eq(PatrolTaskOrganization::getDelFlag,CommonConstant.DEL_FLAG_0);
+            List<PatrolTaskOrganization> organizations = patrolTaskOrganizationMapper.selectList(wrapper);
+            List<String> orgCodes = organizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
+            String userName = sysBaseApi.getUserNameByOrgCodeAndRoleCode(orgCodes, Arrays.asList(RoleConstant.FOREMAN));
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setTaskName(patrolTask.getName());
+            todoDTO.setBusinessKey(patrolTask.getId());
+            todoDTO.setCurrentUserName(userName);
+            todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
+            todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+            // TODO: 2022/12/27 后期补上前端url
+//            todoDTO.setUrl();
+//            todoDTO.setAppUrl();
+            isTodoBaseAPI.createTodoTask(todoDTO);
         }
 
     }
