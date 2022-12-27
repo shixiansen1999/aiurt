@@ -120,7 +120,7 @@ public interface ISysBaseAPI extends CommonAPI {
     /**
      * 15根据业务类型及业务id修改消息已读
      *
-     * @param busType
+     * @param busType SysAnnmentTypeEnum
      * @param busId
      */
     public void updateSysAnnounReadFlag(String busType, String busId);
@@ -791,7 +791,7 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据业务类型及业务id查询消息
-     * @param busType 业务类型
+     * @param busType 业务类型 SysAnnmentTypeEnum
      * @param busId 业务id
      * @return 消息的id
      */
