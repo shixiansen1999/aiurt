@@ -20,6 +20,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.netty.util.internal.StringUtil;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,6 +92,26 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 		//设置用户id,让前台显示
         this.setUserIdsByDepList(list);
         //update-begin---author:wangshuai ---date:20220307  for：[JTC-119]在部门管理菜单下设置部门负责人 创建用户的时候不需要处理
+		// 调用wrapTreeDataToTreeList方法生成树状数据
+		List<SysDepartTreeModel> listResult = FindsDepartsChildrenUtil.wrapTreeDataToTreeList(list);
+		return listResult;
+	}
+
+	@Override
+	public List<SysDepartTreeModel> querySignTreeList(String sign) {
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
+		query.eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0.toString());
+		if(StrUtil.isNotBlank(sign)){
+			query.eq(SysDepart::getOrgCode,sysUser.getOrgCode());
+		}
+		query.orderByAsc(SysDepart::getDepartOrder);
+		query.orderByDesc(SysDepart::getCreateTime);
+		List<SysDepart> list = this.list(query);
+		//update-begin---author:wangshuai ---date:20220307  for：[JTC-119]在部门管理菜单下设置部门负责人 创建用户的时候不需要处理
+		//设置用户id,让前台显示
+		this.setUserIdsByDepList(list);
+		//update-begin---author:wangshuai ---date:20220307  for：[JTC-119]在部门管理菜单下设置部门负责人 创建用户的时候不需要处理
 		// 调用wrapTreeDataToTreeList方法生成树状数据
 		List<SysDepartTreeModel> listResult = FindsDepartsChildrenUtil.wrapTreeDataToTreeList(list);
 		return listResult;
