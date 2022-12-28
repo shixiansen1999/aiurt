@@ -230,4 +230,28 @@ limit 1
 and name = #{materialsName}
 </if>
 </select>
+<select id="getMaterialInspectionList" resultType="com.aiurt.boot.materials.dto.EmergencyMaterialsInvoicesItemDTO">
+   select
+         t1.materials_name as materialsName,
+         t1.materials_code as materialsCode,
+         t2.category_name as categoryName,
+         t3.specification as specification,
+         t3.number as number,
+         t3.`check`,
+         t3.abnormal_condition as abnormalCondition,
+         t3.check_result as checkResult
+        from emergency_materials t1
+        LEFT JOIN emergency_materials_category t2 ON t1.category_code = t2.category_code
+        LEFT JOIN emergency_materials_invoices_item t3 ON t1.materials_code = t3.materials_code
+        LEFT JOIN emergency_materials_invoices t4 ON t3.invoices_id = t4.id
+        <where>
+              t1.del_flag = 0
+              and t2.del_flag = 0
+              and t3.del_flag = 0
+              and t4.del_flag = 0
+            <if test="id != null">
+                and t4.id = #{id}
+            </if>
+        </where>
+</select>
 </mapper>
