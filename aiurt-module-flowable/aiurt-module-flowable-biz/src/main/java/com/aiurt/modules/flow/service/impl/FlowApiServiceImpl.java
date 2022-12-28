@@ -530,8 +530,9 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
 
             ActCustomBusinessData actCustomBusinessData = businessDataService.queryByProcessInstanceId(processInstanceId, taskId);
-
-            taskInfoDTO.setBusData(actCustomBusinessData.getData());
+            if (Objects.nonNull(actCustomBusinessData)) {
+                taskInfoDTO.setBusData(actCustomBusinessData.getData());
+            }
         }
 
         taskInfoDTO.setTaskKey(task.getTaskDefinitionKey());

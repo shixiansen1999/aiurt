@@ -1,6 +1,7 @@
 package com.aiurt.modules.sysfile.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -63,6 +64,14 @@ public class FileAppVO implements Serializable {
 	@ApiModelProperty(value = "下载状态")
 	@NotNull(message = "下载状态不能为空")
 	private Integer downStatus;
+
+	@ApiModelProperty(value = "文档权限列表")
+	@TableField(exist = false)
+	private SysFileTypeDetailVO fileTypeDetail;
+
+	@ApiModelProperty(value = "文件权限列表")
+	@TableField(exist = false)
+	private SysFileTypeDetailVO fileDetail;
 
 	@ApiModelProperty("上一级id")
 	private Long parentId;

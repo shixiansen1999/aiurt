@@ -21,6 +21,7 @@ import com.aiurt.boot.team.service.IEmergencyCrewService;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.XlsUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -320,7 +321,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             MultipartFile file = entity.getValue();
             String type = FilenameUtils.getExtension(file.getOriginalFilename());
             if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-                return iSysBaseAPI.importReturnRes(errorLines, successLines, errorMessage, false, null);
+                return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, false, null);
             }
             try {
                 //导入取得应急队伍信息
@@ -331,7 +332,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 //数据为空校验
                 List<TeamModel> list = ExcelImportUtil.importExcel(file.getInputStream(), TeamModel.class, teamParams);
                 TeamModel team = list.get(0);
-                boolean b = iSysBaseAPI.checkObjAllFieldsIsNull(team);
+                boolean b = XlsUtil.checkObjAllFieldsIsNull(team);
                 if (b) {
                     return Result.error("文件导入失败:队伍内容不能为空！");
                 }
@@ -346,7 +347,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 Iterator<CrewModel> iterator = crewList.iterator();
                 while (iterator.hasNext()) {
                     CrewModel model = iterator.next();
-                    boolean a = iSysBaseAPI.checkObjAllFieldsIsNull(model);
+                    boolean a = XlsUtil.checkObjAllFieldsIsNull(model);
                     if (a) {
                         iterator.remove();
                     }
@@ -557,7 +558,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
 
     /**错误报告模板导出*/
     private Result<?> getErrorExcel(int errorLines,List<String> errorMessage,TeamModel team, List<CrewModel> crewList,int successLines ,String url,String type) throws IOException {
-        TemplateExportParams exportParams = iSysBaseAPI.getErrorExcelModel("templates/emergencyTeamError.xlsx");
+        TemplateExportParams exportParams = XlsUtil.getErrorExcelModel("templates/emergencyTeamError.xlsx");
         Map<String, Object> errorMap = new HashMap<String, Object>();
         List<Map<String, String>> teamMapList = new ArrayList<>();
         Map<String, String> teamMap = new HashMap<>();
@@ -602,7 +603,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return iSysBaseAPI.importReturnRes(errorLines, successLines, errorMessage,true,url);
+        return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,url);
     }
 
 

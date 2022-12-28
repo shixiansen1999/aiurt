@@ -35,7 +35,7 @@ public interface IBdWorkTicketService extends IService<BdWorkTicket> {
      * @param username
      * @return
      */
-    Page<BdWorkTicket> queryPageList(Page<BdWorkTicket> pageList, String username);
+    Page<BdWorkTicket> queryPageList(Page<BdWorkTicket> pageList, String username,BdWorkTicket bdWorkTicket);
 
     /**
      * 更新状态

@@ -11,6 +11,7 @@ import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.common.constant.RoleConstant;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -21,6 +22,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -205,6 +207,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      */
     @AutoLog(value = "PC巡检任务列表-任务审核", operateType = 3, operateTypeAlias = "修改")
     @ApiOperation(value = "PC巡检任务列表-任务审核", notes = "PC巡检任务列表-任务审核")
+    @RequiresRoles({RoleConstant.FOREMAN}) // 工班长角色才能审核
     @PostMapping(value = "/taskAudit")
     public Result<?> taskAudit(@ApiParam(name = "taskCode", value = "任务编号") @RequestParam("taskCode") String code,
                                @ApiParam(name = "auditStatus", value = "审核状态:0不通过，1通过") @RequestParam("auditStatus") Integer auditStatus,
@@ -477,6 +480,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      */
     @AutoLog(value = "巡检任务表- app巡检任务-审核", operateType = 3, operateTypeAlias = "修改-更新任务状态", module = ModuleType.PATROL, permissionUrl = "/Inspection/list")
     @ApiOperation(value = "巡检任务表- app巡检任务-审核", notes = "巡检任务表- app巡检任务-审核")
+    @RequiresRoles({RoleConstant.FOREMAN}) // 工班长角色才能审核
     @PostMapping(value = "/patrolTaskAudit")
     public Result<?> patrolTaskAudit(String id, Integer status, String remark, String backReason) {
         LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();

@@ -38,5 +38,6 @@
         <if test="condition.step != null and condition.step != ''">
             and erm.step like concat('%', #{condition.step}, '%')
         </if>
+        order by erm.create_time desc
     </select>
 </mapper>

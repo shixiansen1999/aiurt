@@ -2,31 +2,4 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.todo.mapper.SysTodoListMapper">
 
-    <select id="getTodoList" resultType="com.aiurt.modules.todo.entity.SysTodoList">
-        select * from sys_todo_list
-        <where>
-        <if test="sysTodoList.currentUserName!=null and sysTodoList.currentUserName!=''">
-           FIND_IN_SET(#{sysTodoList.currentUserName},current_user_name)>0
-        </if>
-        <if test="todoTypeList.size()>0 and todoTypeList!=null">
-            and todo_type in
-        <foreach collection="todoTypeList" separator="," open="(" close=")" item="todoType">
-            #{todoType}
-        </foreach>
-        </if>
-        <if test="sysTodoList.createBy!=null and sysTodoList.createBy!=''">
-            and create_by =#{sysTodoList.createBy}
-        </if>
-        <if test="sysTodoList.taskName!=null and sysTodoList.taskName!=''">
-          and task_name =#{sysTodoList.taskName}
-        </if>
-        <if test="sysTodoList.taskType!=null and sysTodoList.taskType!=''">
-          and task_type =#{sysTodoList.taskType}
-        </if>
-        <if test="sysTodoList.processDefinitionName!=null and sysTodoList.processDefinitionName!=''">
-          and process_definition_name =#{sysTodoList.processDefinitionName}
-        </if>
-        </where>
-        order by create_time desc
-    </select>
 </mapper>

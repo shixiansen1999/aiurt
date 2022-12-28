@@ -4,7 +4,8 @@
     <sql id="list">
        t1.id as id ,t2.id as categoryId,t1.materials_code as materialsCode,t1.materials_name as materialsName,t2.category_code as categoryCode,
        t2.category_name as categoryName,t1.specification as specification,t1.number as number,t1.primary_org as primaryOrg,t1.user_id as userId,
-       t1.phone as phone,t1.line_code as lineCode,t1.station_code as stationCode,t1.position_code as positionCode,t1.unit as unit
+       t1.phone as phone,t1.line_code as lineCode,t1.station_code as stationCode,t1.position_code as positionCode,t1.unit as unit,t1.flood_protection as floodProtection,
+       t1.remark as remark
     </sql>
     <select id="getMaterialAccountList" resultType="com.aiurt.boot.materials.dto.MaterialAccountDTO">
        SELECT
@@ -32,6 +33,12 @@
             </if>
             <if test="condition.positionCode!=null">
                 AND t1.position_code = #{condition.positionCode}
+            </if>
+            <if test="condition.selections != null and condition.selections.size() != 0">
+             and  t1.id in
+           <foreach collection="condition.selections" item="item" open="(" close=")" separator=",">
+            #{item}
+            </foreach>
             </if>
         </where>
         order by t1.create_time desc,t1.update_time desc
@@ -104,7 +111,8 @@
          t3.number as number,
          t3.`check`,
          t3.abnormal_condition as abnormalCondition,
-         t3.check_result as checkResult
+         t3.check_result as checkResult,
+         t3.content as content
         from emergency_materials t1
         LEFT JOIN emergency_materials_category t2 ON t1.category_code = t2.category_code
         LEFT JOIN emergency_materials_invoices_item t3 ON t1.materials_code = t3.materials_code
@@ -119,4 +127,107 @@
             </if>
         </where>
     </select>
+    <select id="getMaterialPatrolList" resultType="com.aiurt.boot.materials.dto.MaterialAccountDTO">
+      SELECT
+        <include refid="list"></include>
+       FROM
+	   emergency_materials t1
+	   LEFT JOIN emergency_materials_category t2 ON t1.category_code = t2.category_code
+        <where>
+              t1.del_flag = 0
+              AND t2.del_flag = 0
+            <if test="condition.categoryCode!=null">
+              AND t2.category_code = #{condition.categoryCode}
+            </if>
+            <if test="condition.materialsName!=null">
+              AND t1.materials_name LIKE CONCAT ('%', #{condition.materialsName}, '%')
+            </if>
+            <if test="condition.primaryOrg!=null">
+                AND t1.primary_org = #{condition.primaryOrg}
+            </if>
+            <if test="condition.lineCode!=null">
+                AND t1.line_code = #{condition.lineCode}
+            </if>
+            <if test="condition.stationCode!=null">
+                AND t1.station_code = #{condition.stationCode}
+            </if>
+            <if test="condition.positionCode!=null">
+                AND t1.position_code = #{condition.positionCode}
+            </if>
+            <if test="condition.selections != null and condition.selections.size() != 0">
+             and  t1.id in
+           <foreach collection="condition.selections" item="item" open="(" close=")" separator=",">
+            #{item}
+            </foreach>
+            </if>
+        </where>
+        order by t1.create_time desc,t1.update_time desc
+    </select>
+    <select id="getUserId" resultType="java.lang.String">
+    select id
+    from sys_user
+    where del_flag = 0
+    <if test="userName != null and userName != ''">
+    and realname = #{userName}
+</if>
+    <if test="orgCode != null and orgCode != ''">
+    and org_code = #{orgCode}
+</if>
+limit 1
+    </select>
+    <select id="getOrgCode" resultType="java.lang.String">
+     select org_code
+    from sys_depart
+    where del_flag = 0
+    <if test="primaryName != null and primaryName != ''">
+    and depart_name = #{primaryName} limit 1
+</if>
+    </select>
+    <select id="getStationCode" resultType="java.lang.String">
+    select station_code
+    from cs_station
+    where del_flag = 0
+    <if test="lineCode != null and lineCode != ''">
+    and line_code = #{lineCode}
+</if>
+   <if test="stationName != null and stationName != ''">
+    and station_name = #{stationName}
+</if>
+limit 1
+    </select>
+    <select id="getPositionCode" resultType="java.lang.String">
+    select position_code
+    from cs_station_position
+    where del_flag = 0
+        <if test="lineCode != null and lineCode != ''">
+    and line_code = #{lineCode}
+</if>
+   <if test="stationCode != null and stationCode != ''">
+    and staion_code = #{stationCode}
+</if>
+<if test="positionName != null and positionName != ''">
+and position_name = #{positionName}
+</if>
+limit 1
+    </select>
+    <select id="getLineCode" resultType="java.lang.String">
+     select line_code
+    from cs_line
+    where del_flag = 0
+    <if test="lineName != null and lineName != ''">
+    and line_name = #{lineName}
+</if>
+limit 1
+    </select>
+    <select id="getMaterials" resultType="com.aiurt.boot.materials.dto.MaterialBaseDTO">
+     select *
+     from material_base
+     where del_flag = 0
+    <if test="materialsCode != null and materialsCode != ''">
+    and code = #{materialsCode}
+</if>
+<if test="materialsName != null and materialsName != ''">
+and name = #{materialsName}
+</if>
+</select>
 </mapper>

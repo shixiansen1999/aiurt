@@ -44,4 +44,15 @@ public class RecordModel implements Serializable {
     @ExcelIgnore
     List<ProcessRecordModel> processRecordModelList;
 
+    /**线路编码*/
+    private String lineCode;
+    /**站点编码*/
+    private String stationCode;
+    /**位置编码*/
+    private String positionCode;
+
+    /**训练计划id*/
+    private String emergencyTrainingProgramId;
+    /**应急队伍id*/
+    private String emergencyTeamId;
 }

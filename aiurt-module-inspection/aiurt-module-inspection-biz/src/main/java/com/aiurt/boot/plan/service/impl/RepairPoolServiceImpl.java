@@ -24,11 +24,12 @@ import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
-import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtNoDataException;
 import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.UpdateHelperUtils;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.IBaseApi;
@@ -617,7 +618,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             this.generate(repairPool, repairTask.getId(), repairPool.getCode());
 
             // 发送消息给对用的检修人
-            this.sendMessage(userIds);
+            this.sendMessage(userIds,repairPool.getCode());
         }
         return Result.ok();
     }
@@ -627,14 +628,21 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      *
      * @param userIds
      */
-    private void sendMessage(List<String> userIds) {
+    private void sendMessage(List<String> userIds,String code) {
         if (CollUtil.isNotEmpty(userIds)) {
             // 查找用户id对应的用户username
             String[] strings = userIds.toArray(new String[userIds.size()]);
             List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(strings);
             if (CollUtil.isNotEmpty(loginUsers)) {
                 String userNameStr = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
-                sysBaseApi.sendSysAnnouncement(new MessageDTO(manager.checkLogin().getRealname(), userNameStr, "检修任务", "您有一条新的检修任务，请注意检修开始时间!", CommonConstant.MSG_CATEGORY_2));
+                sysBaseApi.sendBusAnnouncement(
+                        new BusMessageDTO(
+                                manager.checkLogin().getRealname(),
+                                userNameStr,
+                                "检修任务", "您有一条新的检修任务需要确认接收！",
+                                CommonConstant.MSG_CATEGORY_2,
+                                SysAnnmentTypeEnum.INSPECTION_ASSIGN.getType(),
+                                code));
             }
         }
     }

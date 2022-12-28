@@ -32,11 +32,13 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +90,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     private RepairPoolOrgRelMapper orgRelMapper;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
+    @Autowired
+    private ISTodoBaseAPI isTodoBaseAPI;
 
     @Override
     public Page<RepairTask> selectables(Page<RepairTask> pageList, RepairTask condition) {
@@ -121,6 +125,24 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 String[] split4 = e.getSystemCode().split(",");
                 List<String> list4 = Arrays.asList(split4);
                 e.setSystemName(manager.translateMajor(list4, InspectionConstant.SUBSYSTEM));
+            }
+
+            //查询同行人
+            List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
+                    new LambdaQueryWrapper<RepairTaskPeerRel>()
+                            .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, e.getOverhaulCode()));
+            //名称集合
+            List<String> collect3 = repairTaskPeer.stream().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect3)) {
+                StringBuffer stringBuffer = new StringBuffer();
+                for (String t : collect3) {
+                    stringBuffer.append(t);
+                    stringBuffer.append(",");
+                }
+                if (stringBuffer.length() > 0) {
+                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                }
+                e.setPeerName(stringBuffer.toString());
             }
 
             //检修周期类型
@@ -1824,10 +1846,17 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPoolMapper.updateById(repairPool);
             }
 
+            // 更改消息状态为已读
+            sysBaseApi.updateSysAnnounReadFlag(SysAnnmentTypeEnum.INSPECTION_ASSIGN.getType(),repairTask.getCode());
+
+            // 新建待办任务
+            String currentUserName ="";
+//            isTodoBaseAPI.createTodoTask(new TodoDTO("检修任务",repairTask.getCode(),currentUserName,));
         } else {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
     }
+
 
     /**
      * 扫码设备查询检修单

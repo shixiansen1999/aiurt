@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecg.common.system.vo.PatrolStandardItemsModel;
+import org.jeecgframework.poi.excel.annotation.Excel;
 
 import java.util.List;
 
@@ -21,61 +22,74 @@ public class MaterialAccountDTO {
     @ApiModelProperty(value = "物资分类id")
     private java.lang.String categoryId;
 
+    /**物资编码*/
+    @Excel(name="应急物资编号",width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "物资编码")
+    private java.lang.String materialsCode;
     /**物资名称*/
+    @Excel(name="应急物资名称",width = 15)
     @TableField(exist = false)
     @ApiModelProperty(value = "物资名称")
     private java.lang.String materialsName;
 
-    /**物资编码*/
+    /**规格型号*/
+    @Excel(name="规格型号",width = 15)
     @TableField(exist = false)
-    @ApiModelProperty(value = "物资编码")
-    private java.lang.String materialsCode;
-
+    @ApiModelProperty(value = "规格型号")
+    private java.lang.String specification;
+    /**单位*/
+    @Excel(name="单位",width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "单位")
+    @Dict(dicCode = "materials_unit")
+    private java.lang.String unit;
     /**物资分类名称*/
+    @Excel(name="应急物资分类",width = 15)
     @TableField(exist = false)
     @ApiModelProperty(value = "物资分类名称")
     private java.lang.String categoryName;
-
+    /**数量*/
+    /**是否防汛物资(0否、1是)*/
+    @Excel(name = "是否为防汛物资", width = 15,dicCode = "flood_protection")
+    @ApiModelProperty(value = "是否防汛物资(0否、1是)")
+    @Dict(dicCode = "flood_protection")
+    private java.lang.Integer floodProtection;
+    @Excel(name="数量",width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "数量")
+    private java.lang.Integer number;
+    /**主管部门名称*/
+    @Excel(name="主管部门",width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "主管部门名称")
+    private java.lang.String primaryName;
+    /**负责人名称*/
+    @Excel(name="负责人",width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "负责人名称")
+    private java.lang.String userName;
+    /**联系电话*/
+    @Excel(name="联系电话",width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "联系电话")
+    private java.lang.String phone;
+    /**备注*/
+    @Excel(name = "备注", width = 15)
+    @ApiModelProperty(value = "备注")
+    private java.lang.String remark;
     /**物资分类编码*/
     @TableField(exist = false)
     @ApiModelProperty(value = "物资分类编码")
     private java.lang.String categoryCode;
-
-    /**规格型号*/
-    @TableField(exist = false)
-    @ApiModelProperty(value = "规格型号")
-    private java.lang.String specification;
-
-    /**数量*/
-    @TableField(exist = false)
-    @ApiModelProperty(value = "数量")
-    private java.lang.Integer number;
-
     /**主管部门编码*/
     @TableField(exist = false)
     @ApiModelProperty(value = "主管部门编码")
     private java.lang.String primaryOrg;
-
-    /**主管部门名称*/
-    @TableField(exist = false)
-    @ApiModelProperty(value = "主管部门名称")
-    private java.lang.String primaryName;
-
     /**负责人ID*/
     @TableField(exist = false)
     @ApiModelProperty(value = "负责人ID")
     private java.lang.String userId;
-
-    /**负责人名称*/
-    @TableField(exist = false)
-    @ApiModelProperty(value = "负责人名称")
-    private java.lang.String userName;
-
-    /**联系电话*/
-    @TableField(exist = false)
-    @ApiModelProperty(value = "联系电话")
-    private java.lang.String phone;
-
     /**线路编码*/
     @TableField(exist = false)
     @ApiModelProperty(value = "线路编码")
@@ -106,11 +120,10 @@ public class MaterialAccountDTO {
     @ApiModelProperty(value = "位置名称")
     private java.lang.String positionName;
 
-    /**单位*/
+    /**巡检标准id*/
     @TableField(exist = false)
-    @ApiModelProperty(value = "单位")
-    @Dict(dicCode = "materials_unit")
-    private java.lang.String unit;
+    @ApiModelProperty(value = "导出传入ids")
+    private List<String> selections;
 
     /**巡检标准id*/
     @TableField(exist = false)

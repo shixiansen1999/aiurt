@@ -64,12 +64,26 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 								   HttpServletRequest req) {
 		emergencyMaterialsCategory.setDelFlag(0);
 		QueryWrapper<EmergencyMaterialsCategory> queryWrapper = QueryGenerator.initQueryWrapper(emergencyMaterialsCategory, req.getParameterMap());
+		queryWrapper.eq(StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryCode()),"category_code",emergencyMaterialsCategory.getCategoryCode());
 		Page<EmergencyMaterialsCategory> page = new Page<EmergencyMaterialsCategory>(pageNo, pageSize);
 		IPage<EmergencyMaterialsCategory> pageList = emergencyMaterialsCategoryService.page(page, queryWrapper);
 		pageList.getRecords().forEach(e->{
 			if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0")==false){
 				EmergencyMaterialsCategory byId = emergencyMaterialsCategoryService.getById(e.getPid());
                 e.setFatherName(byId.getCategoryName());
+			}
+			//是否有存在子级，有就查询出子级一起返回
+			if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0")){
+				LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+				lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getPid, e.getId());
+				List<EmergencyMaterialsCategory> list = emergencyMaterialsCategoryService.list(lambdaQueryWrapper);
+				list.forEach(q->{
+					if (StrUtil.isNotBlank(q.getPid()) && q.getPid().equals("0")==false){
+						EmergencyMaterialsCategory byId = emergencyMaterialsCategoryService.getById(q.getPid());
+						q.setFatherName(byId.getCategoryName());
+					}
+				});
+				e.setChildren(list);
 			}
 		});
 		return Result.OK(pageList);

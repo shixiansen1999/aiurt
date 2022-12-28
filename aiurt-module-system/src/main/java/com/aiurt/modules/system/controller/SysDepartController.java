@@ -111,7 +111,7 @@ public class SysDepartController {
 	@ApiOperation(value="部门管理-查询所有部门", notes="部门管理-查询所有部门")
 	@RequestMapping(value = "/queryTreeList", method = RequestMethod.GET)
 	@PermissionData(pageComponent = "system/DepartList")
-	public Result<List<SysDepartTreeModel>> queryTreeList(@RequestParam(name = "ids", required = false) String ids) {
+	public Result<List<SysDepartTreeModel>> queryTreeList(@RequestParam(name = "ids", required = false) String ids ,@RequestParam(name = "sign", required = false) String sign) {
 		Result<List<SysDepartTreeModel>> result = new Result<>();
 		try {
 			// 从内存中读取
@@ -121,6 +121,9 @@ public class SysDepartController {
 			}else{
 				List<SysDepartTreeModel> list = sysDepartService.queryTreeList();
 				result.setResult(list);
+			}if (StrUtil.isNotBlank(sign)){
+				List<SysDepartTreeModel> list1 = sysDepartService.querySignTreeList(sign);
+				result.setResult(list1);
 			}
 			result.setSuccess(true);
 		} catch (Exception e) {

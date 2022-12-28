@@ -207,7 +207,7 @@ public class BdWorkTicketController extends BaseController<BdWorkTicket, IBdWork
 		 }
 		 // 自己写查询
 		 Page<BdWorkTicket> pageList = new Page<>(pageNo, pageSize);
-		 pageList = bdWorkTicketService.queryPageList(pageList, sysUser.getUsername());
+		 pageList = bdWorkTicketService.queryPageList(pageList, sysUser.getUsername(),bdWorkTicket);
 		 return Result.OK(pageList);
 	 }
 

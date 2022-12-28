@@ -115,6 +115,10 @@ public class EmergencyPlan extends DictEntity implements Serializable {
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
 
+    @ApiModelProperty(value = "判断是否有审核按钮")
+    @TableField(exist = false)
+    private Boolean haveButton;
+
     /**
      * 实例id
      */
