@@ -111,6 +111,9 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		if (csSafetyAttention.getState()!=null){
 			queryWrapper.eq(CsSafetyAttention::getState,csSafetyAttention.getState());
 		}
+		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionMeasures())){
+			queryWrapper.like(CsSafetyAttention::getAttentionMeasures,csSafetyAttention.getAttentionMeasures());
+		}
 		if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionContent())){
 			queryWrapper.like(CsSafetyAttention::getAttentionContent,csSafetyAttention.getAttentionContent());
 		}
