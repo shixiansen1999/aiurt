@@ -343,6 +343,11 @@ public class RepairTask implements Serializable {
     @ApiModelProperty(value = "检修人名称")
     private String overhaulName;
 
+    /**同行人名称*/
+    @ApiModelProperty(value = "同行人名称")
+    @TableField(exist = false)
+    private String peerName;
+
 
 
 
