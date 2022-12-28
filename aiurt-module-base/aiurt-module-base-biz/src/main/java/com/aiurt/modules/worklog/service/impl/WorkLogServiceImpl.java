@@ -561,7 +561,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             String assortLocationName = null;
             for (String code : codes) {
                 String position = iSysBaseAPI.getPosition(code);
-                assortLocationName = assortLocationName + position;
+                if (assortLocationName == null) {
+                    assortLocationName = position;
+                } else {
+                    assortLocationName = assortLocationName + position;
+                }
             }
             workLogDTO.setAssortLocationName(assortLocationName);
 
@@ -969,8 +973,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //获取负责人
         SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(orgId);
         LoginUser userById = iSysBaseAPI.getUserById(sysDepartModel.getManagerId());
-        String foremanName = Optional.ofNullable(userById).orElse(null).getRealname();
-        workLog.setForeman(foremanName);
+        if (ObjectUtil.isNotEmpty(userById)) {
+            workLog.setForeman(userById.getRealname());
+        }
 
         //获取参与人员
         List<String> nameList = sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList());

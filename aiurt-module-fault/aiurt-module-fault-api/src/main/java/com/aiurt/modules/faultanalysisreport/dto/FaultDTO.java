@@ -61,6 +61,11 @@ public class FaultDTO extends DictEntity implements Serializable {
     @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String faultApplicant;
 
+    @Excel(name = "被指派人/领取人/责任人", width = 15)
+    @ApiModelProperty("被指派人/领取人/责任人")
+    @Dict(dicCode = "username", dicText = "realname", dictTable = "sys_user")
+    private String appointUserName;
+
     /**线路编码*/
     @Excel(name = "故障位置-线路编码", width = 15)
     @ApiModelProperty(value = "线路编码", required = true)

@@ -147,4 +147,10 @@
     </if>
     group by material_code
     </select>
+
+<select id="getNum" resultType="int">
+    select count(f.knowledge_id) from fault_knowledge_base fkb
+    left join fault f on fkb.id = f.knowledge_id
+    where fkb.id = #{id}
+    </select>
 </mapper>

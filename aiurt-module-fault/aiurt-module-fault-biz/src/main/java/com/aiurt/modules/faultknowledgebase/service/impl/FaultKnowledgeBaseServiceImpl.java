@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultknowledgebase.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
@@ -20,6 +21,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -118,6 +120,44 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         this.updateById(faultKnowledgeBase);
         return Result.OK("审批成功!");
 
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<String> delete(String id) {
+        FaultKnowledgeBase byId = this.getById(id);
+        if (ObjectUtil.isEmpty(byId)) {
+            return Result.error("没找到对应实体");
+        }
+        //获取知识库被使用的次数
+        int num = faultKnowledgeBaseMapper.getNum(id);
+        if (num > 0) {
+            return Result.error("该知识库已经被使用，不能删除");
+        } else {
+            byId.setDelFlag(1);
+            this.updateById(byId);
+        }
+        return Result.OK("删除成功!");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<String> deleteBatch(List<String> ids) {
+        for (String id : ids) {
+            FaultKnowledgeBase byId = this.getById(id);
+            if (ObjectUtil.isEmpty(byId)) {
+                return Result.error("没找到对应实体");
+            }
+            //获取知识库被使用的次数
+            int num = faultKnowledgeBaseMapper.getNum(id);
+            if (num > 0) {
+                return Result.error("所选知识库中有已经被使用的知识库，不能删除");
+            } else {
+                byId.setDelFlag(1);
+                this.updateById(byId);
+            }
+        }
+        return  Result.OK("批量删除成功!");
     }
 
     public boolean getRole() {
