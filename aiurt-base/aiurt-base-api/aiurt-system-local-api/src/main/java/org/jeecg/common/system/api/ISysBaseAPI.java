@@ -798,6 +798,13 @@ public interface ISysBaseAPI extends CommonAPI {
     public String getSysAnnounByBusTypeAndBusId(String busType, String busId);
 
     /**
+     * 获取SysAttachment的文件地址
+     * @param filePath
+     * @return
+     */
+    SysAttachment getFilePath(String filePath);
+
+    /**
      * 根据部门，角色编码查询人员账号
      * @param orgCode 组织机构编码
      * @param roleCode 角色编码
@@ -805,3 +812,4 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     public String getUserNameByOrgCodeAndRoleCode(List<String> orgCode,List<String> roleCode);
 }
+

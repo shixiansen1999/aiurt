@@ -557,7 +557,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
 
     /**错误报告模板导出*/
     private Result<?> getErrorExcel(int errorLines,List<String> errorMessage,TeamModel team, List<CrewModel> crewList,int successLines ,String url,String type) throws IOException {
-        TemplateExportParams exportParams = XlsUtil.getErrorExcelModel("templates/emergencyTeamError.xlsx");
+        TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTeamError.xlsx");
         Map<String, Object> errorMap = new HashMap<String, Object>();
         List<Map<String, String>> teamMapList = new ArrayList<>();
         Map<String, String> teamMap = new HashMap<>();

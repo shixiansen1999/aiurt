@@ -1,6 +1,10 @@
 package com.aiurt.boot.team.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -18,8 +22,12 @@ import com.aiurt.boot.team.service.IEmergencyCrewService;
 import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.aiurt.boot.team.vo.EmergencyTrainingRecordVO;
+import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.MinioUtil;
 import com.aiurt.common.util.TimeUtil;
 import com.aiurt.common.util.XlsUtil;
+import com.aiurt.modules.basic.entity.SysAttachment;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -27,6 +35,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -34,6 +43,7 @@ import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,10 +51,11 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @Description: emergency_training_record
@@ -54,7 +65,10 @@ import java.util.stream.Collectors;
  */
 @Service
 public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTrainingRecordMapper, EmergencyTrainingRecord> implements IEmergencyTrainingRecordService {
-
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
+    @Value("${jeecg.path.errorExcelUpload}")
+    private String errorExcelUpload;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
     @Autowired
@@ -75,6 +89,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
     private EmergencyTeamServiceImpl emergencyTeamService;
     @Autowired
     private IEmergencyCrewService emergencyCrewService;
+
 
     @Override
     public IPage<EmergencyTrainingRecordVO> queryPageList(EmergencyTrainingRecordDTO emergencyTrainingRecordDTO, Integer pageNo, Integer pageSize) {
@@ -291,6 +306,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
@@ -330,11 +346,68 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
 
             errorLines = checkTeam(recordModel, errorLines);
 
+            if (errorLines > 0) {
+                //存在错误，导出错误清单
+                return getErrorExcel(errorLines, errorMessage, recordModel, successLines, null, type);
+            }
 
-
-
+            //校验通过，添加数据
+            EmergencyTrainingRecord emergencyTrainingRecord = new EmergencyTrainingRecord();
+            BeanUtil.copyProperties(recordModel, emergencyTrainingRecord);
+            List<EmergencyTrainingProcessRecord> processRecordList = new ArrayList<>();
+            for (ProcessRecordModel processRecordModel : recordModel.getProcessRecordModelList()) {
+                EmergencyTrainingProcessRecord processRecord = new EmergencyTrainingProcessRecord();
+                processRecord.setNextDay(1);
+                BeanUtil.copyProperties(processRecordModel, processRecord);
+                processRecordList.add(processRecord);
+            }
+            emergencyTrainingRecord.setProcessRecordList(processRecordList);
+            this.add(emergencyTrainingRecord);
+            return Result.ok("文件导入成功！");
         }
-        return Result.ok();
+        return Result.ok("文件导入失败！");
+    }
+
+
+    private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, RecordModel recordModel, int successLines,String url, String type) {
+        try {
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTeamError.xlsx");
+            Map<String, Object> errorMap = new HashMap<String, Object>();
+            List<Map<String, String>> mapList = new ArrayList<>();
+            Map<String, String> map = new HashMap<>();
+            errorMap.put("trainingTime", recordModel.getTrainingTime());
+            errorMap.put("position", recordModel.getPosition());
+            errorMap.put("emergencyTeam", recordModel.getEmergencyTeam());
+            errorMap.put("trainees", recordModel.getTrainees());
+            errorMap.put("emergencyTrainingProgram", recordModel.getEmergencyTrainingProgram());
+            errorMap.put("trainingProgramCode", recordModel.getTrainingProgramCode());
+            errorMap.put("trainingAppraise", recordModel.getTrainingAppraise());
+
+            List<ProcessRecordModel> processRecordModelList = recordModel.getProcessRecordModelList();
+            if (CollUtil.isNotEmpty(processRecordModelList)) {
+                for (ProcessRecordModel processRecordModel : processRecordModelList) {
+                    map.put("sort", processRecordModel.getSort());
+                    map.put("trainingTime", processRecordModel.getTrainingTime());
+                    map.put("trainingContent", processRecordModel.getTrainingContent());
+                    map.put("mistake", processRecordModel.getMistake());
+                }
+                mapList.add(map);
+            }
+
+            errorMap.put("maplist", mapList);
+
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            sheetsMap.put(0, errorMap);
+            Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+            String fileName = "应急队伍训练记录导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
+            FileOutputStream out = new FileOutputStream(errorExcelUpload+ File.separator+fileName);
+            url = fileName;
+            workbook.write(out);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,url);
     }
 
     private int checkTeam(RecordModel recordModel, int  errorLines ) {
@@ -514,5 +587,149 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             errorLines++;
         }
         return errorLines;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void exportXls(HttpServletResponse response, String id) {
+        EmergencyTrainingRecordVO emergencyTrainingRecordVO = emergencyTrainingRecordMapper.queryById(id);
+        String lineCode = emergencyTrainingRecordVO.getLineCode();
+        String stationCode = emergencyTrainingRecordVO.getStationCode();
+        String positionCode = emergencyTrainingRecordVO.getPositionCode();
+        String position = null;
+        if (StrUtil.isNotEmpty(lineCode)) {
+            String lineName = iSysBaseAPI.getPosition(lineCode);
+            position = lineName;
+        }
+        if (StrUtil.isNotEmpty(stationCode)) {
+            String stationName = iSysBaseAPI.getPosition(stationCode);
+            position = position + "/" + stationName;
+        }
+        if (StrUtil.isNotEmpty(positionCode)) {
+            String positionName = iSysBaseAPI.getPosition(positionCode);
+            position = position + "/" + positionName;
+        }
+
+        List<EmergencyCrewVO> trainingCrews = emergencyTrainingRecordMapper.getTrainingCrews(id);
+        List<String> collects = trainingCrews.stream().map(EmergencyCrewVO::getRealname).collect(Collectors.toList());
+        String trainees = CollUtil.join(collects, ",");
+
+        LambdaQueryWrapper<EmergencyTrainingRecordAtt> attQueryWrapper = new LambdaQueryWrapper<>();
+        attQueryWrapper.eq(EmergencyTrainingRecordAtt::getDelFlag, TeamConstant.DEL_FLAG0);
+        attQueryWrapper.eq(EmergencyTrainingRecordAtt::getEmergencyTrainingRecordId, emergencyTrainingRecordVO.getId());
+        List<EmergencyTrainingRecordAtt> recordAtts = emergencyTrainingRecordAttService.getBaseMapper().selectList(attQueryWrapper);
+
+
+        LambdaQueryWrapper<EmergencyTrainingProcessRecord> processRecordQueryWrapper = new LambdaQueryWrapper<>();
+        processRecordQueryWrapper.eq(EmergencyTrainingProcessRecord::getDelFlag, TeamConstant.DEL_FLAG0);
+        processRecordQueryWrapper.eq(EmergencyTrainingProcessRecord::getEmergencyTrainingRecordId, emergencyTrainingRecordVO.getId());
+        List<EmergencyTrainingProcessRecord> processRecords = emergencyTrainingProcessRecordService.getBaseMapper().selectList(processRecordQueryWrapper);
+
+        try {
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/teamTrainingRecords.xlsx");
+            Map<String, Object> errorMap = new HashMap<String, Object>();
+            List<Map<String, String>> mapList = new ArrayList<>();
+            errorMap.put("trainingTime", DateUtil.format(emergencyTrainingRecordVO.getTrainingTime(),"yyyy-MM-dd"));
+            errorMap.put("position", position);
+            errorMap.put("emergencyTeam", emergencyTrainingRecordVO.getEmergencyTeamname());
+            errorMap.put("trainees", trainees);
+            errorMap.put("emergencyTrainingProgram", emergencyTrainingRecordVO.getTrainingProgramName());
+            errorMap.put("trainingProgramCode", emergencyTrainingRecordVO.getTrainingProgramCode());
+            errorMap.put("trainingAppraise", emergencyTrainingRecordVO.getTrainingAppraise());
+
+
+            if (CollUtil.isNotEmpty(processRecords)) {
+                for (int i = 0; i < processRecords.size(); i++) {
+                    Map<String, String> map = new HashMap<>();
+                    EmergencyTrainingProcessRecord processRecord = processRecords.get(i);
+                    map.put("sort", Convert.toStr(i));
+                    map.put("trainingTime", DateUtil.format(processRecord.getTrainingTime(),"HH:mm"));
+                    map.put("trainingContent", processRecord.getTrainingContent());
+                    mapList.add(map);
+                }
+            }
+
+            errorMap.put("maplist", mapList);
+
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            sheetsMap.put(0, errorMap);
+            Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+            //打包成压缩包导出
+            String fileName = "应急队伍训练记录.zip";
+            response.setContentType("application/zip");
+            response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(fileName, "UTF-8"));
+            OutputStream outputStream = response.getOutputStream();
+            // 压缩输出流,包装流,将临时文件输出流包装成压缩流,将所有文件输出到这里,打成zip包
+            ZipOutputStream zipOut = new ZipOutputStream(outputStream);
+
+            for (EmergencyTrainingRecordAtt recordAtt : recordAtts) {
+                String attName = null;
+                String filePath = null;
+                String path = recordAtt.getPath();
+                filePath = StrUtil.subBefore(path, "?", false);
+
+                filePath = filePath.replace("..", "").replace("../", "");
+                if (filePath.endsWith(SymbolConstant.COMMA)) {
+                    filePath = filePath.substring(0, filePath.length() - 1);
+                }
+
+                SysAttachment sysAttachment = iSysBaseAPI.getFilePath(filePath);
+                InputStream inputStream = null;
+
+                if (Objects.isNull(sysAttachment)) {
+                    File file = new File(filePath);
+                    if (!file.exists()) {
+                        throw new AiurtBootException("文件不存在..");
+                    }
+                    if (StrUtil.isBlank(recordAtt.getName())) {
+                        attName = file.getName();
+                    } else {
+                        attName = recordAtt.getName();
+                    }
+                    inputStream = new BufferedInputStream(new FileInputStream(filePath));
+
+                    XlsUtil.outZip(inputStream,attName,zipOut);
+                    //关闭流
+                    inputStream.close();
+
+                }else {
+                    if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
+                        inputStream = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
+                    }else {
+                        String imgPath = upLoadPath + File.separator + sysAttachment.getFilePath();
+                        File file = new File(imgPath);
+                        if (!file.exists()) {
+                            response.setStatus(404);
+                            throw new RuntimeException("文件[" + imgPath + "]不存在..");
+                        }
+                        inputStream = new BufferedInputStream(new FileInputStream(imgPath));
+                    }
+                    XlsUtil.outZip(inputStream,sysAttachment.getFileName(),zipOut);
+                    //关闭流
+                    inputStream.close();
+                }
+
+            }
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            workbook.write(bos);
+            byte[] barray = bos.toByteArray();
+            InputStream is = new ByteArrayInputStream(barray);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(is);
+            String file = "应急队伍训练记录.xlsx";
+            XlsUtil.outZip(bufferedInputStream,file,zipOut);
+            //关闭流
+            is.close();
+            bufferedInputStream.close();
+
+            zipOut.flush();
+            // 压缩完成后,关闭压缩流
+            zipOut.close();
+
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

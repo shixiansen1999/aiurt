@@ -83,6 +83,6 @@ public class EmergencyTrainingRecordVO {
     @ApiModelProperty(value = "记录附件")
     private List<EmergencyTrainingRecordAtt> recordAtts;
 
-    @ApiModelProperty(value = "记录附件")
+    @ApiModelProperty(value = "过程记录")
     private List<EmergencyTrainingProcessRecord> processRecords;
 }

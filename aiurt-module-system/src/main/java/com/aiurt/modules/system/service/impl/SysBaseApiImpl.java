@@ -2209,4 +2209,15 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
 
+    @Override
+    public SysAttachment getFilePath(String filePath) {
+        SysAttachment sysAttachment = sysAttachmentService.getById(filePath);
+        if (Objects.isNull(sysAttachment)) {
+            return null;
+        }
+        return sysAttachment;
+
+    }
+
+
 }
