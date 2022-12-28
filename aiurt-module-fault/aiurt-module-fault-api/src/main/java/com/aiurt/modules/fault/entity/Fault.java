@@ -1,8 +1,6 @@
 package com.aiurt.modules.fault.entity;
 
-import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.common.aspect.annotation.MajorFilterColumn;
-import com.aiurt.common.aspect.annotation.SystemFilterColumn;
+import com.aiurt.common.aspect.annotation.*;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -79,6 +77,7 @@ public class Fault extends DictEntity implements Serializable {
 	@Excel(name = "故障位置-线路编码", width = 15)
     @ApiModelProperty(value = "线路编码", required = true)
     @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
+    @LineFilterColumn
     private String lineCode;
 
     @ApiModelProperty(value = "线路名称", required = true)
@@ -90,6 +89,7 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "站点",  required = true)
     @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
     @NotBlank(message = "请选择位置")
+    @StaionFilterColumn
     private String stationCode;
 
 	/**位置*/
