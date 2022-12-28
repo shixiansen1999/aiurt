@@ -1,13 +1,10 @@
 package com.aiurt.boot.plan.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
-import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ExportParams;
-import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.afterturn.easypoi.util.PoiMergeCellUtil;
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
@@ -17,32 +14,25 @@ import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.boot.plan.controller.RecordExcelListener;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.*;
-import com.aiurt.boot.plan.mapper.*;
+import com.aiurt.boot.plan.mapper.EmergencyPlanMapper;
 import com.aiurt.boot.plan.service.*;
-import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
-import com.aiurt.boot.rehearsal.constant.EmergencyDictConstant;
-import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearAddDTO;
-import com.aiurt.boot.rehearsal.entity.EmergencyRecordQuestion;
-import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
-import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.aiurt.common.api.dto.FlowTaskCompleteCommentDTO;
 import com.aiurt.common.api.dto.StartBpmnDTO;
-import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
-import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.flow.api.FlowBaseApi;
+import com.aiurt.modules.flow.dto.TaskInfoDTO;
+import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import liquibase.pro.packaged.S;
-import lombok.SneakyThrows;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -58,8 +48,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
@@ -68,7 +56,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -101,6 +88,9 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
 
+    @Autowired
+    private FlowBaseApi flowBaseApi;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public IPage<EmergencyPlan> queryPageList(Page<EmergencyPlan> page, EmergencyPlanQueryDTO emergencyPlanQueryDto) {
@@ -113,7 +103,19 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             return page;
         }
         IPage<EmergencyPlan> pageList = emergencyPlanMapper.queryPageList(page, emergencyPlanQueryDto, orgCodes);
-
+        List<EmergencyPlan> records = pageList.getRecords();
+        if(CollUtil.isNotEmpty(records)){
+            for (EmergencyPlan record : records) {
+                TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfo(record.getProcessInstanceId(), record.getTaskId());
+                List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
+                //operationList为空，没有审核按钮
+                if(CollUtil.isNotEmpty(operationList)){
+                    record.setHaveButton(true);
+                }else{
+                    record.setHaveButton(false);
+                }
+            }
+        }
         return pageList;
 
     }
