@@ -7,6 +7,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.constant.PatrolMessageUrlConstant;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
@@ -311,7 +312,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         todoDTO.setCurrentUserName(loginUser.getUsername());
         todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
         todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
-//        todoDTO.setUrl();
+        todoDTO.setUrl(PatrolMessageUrlConstant.AFFIRM_URL);
+        todoDTO.setAppUrl(PatrolMessageUrlConstant.AFFIRM_APP_URL);
         isTodoBaseAPI.createTodoTask(todoDTO);
     }
 
@@ -728,9 +730,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             todoDTO.setCurrentUserName(userName);
             todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
             todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
-            // TODO: 2022/12/27 后期补上前端url
-//            todoDTO.setUrl();
-//            todoDTO.setAppUrl();
+            todoDTO.setUrl(PatrolMessageUrlConstant.AUDIT_URL);
+            todoDTO.setAppUrl(PatrolMessageUrlConstant.AUDIT_APP_URL);
             isTodoBaseAPI.createTodoTask(todoDTO);
         }
 
