@@ -700,11 +700,6 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
 //            EasyExcel.read(file.getInputStream(),EmergencyPlanImportExcelDTO.class,new RecordExcelListener(emergencyPlanImportExcelDTO)).sheet().doRead();
 
 
-            // 设置excel参数
-            ImportParams params = new ImportParams();
-            params.setTitleRows(2);
-            params.setHeadRows(3);
-            params.setNeedSave(true);
 
             // 需要保存的数据
             List<EmergencyPlanDTO> saveData = CollUtil.newArrayList();
@@ -713,8 +708,6 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             try {
                 // 记录校验得到的错误信息
                 StringBuilder errorMessage = new StringBuilder();
-
-                list = ExcelImportUtil.importExcel(file.getInputStream(), EmergencyPlanImportExcelDTO.class, params);
 
                 // 空表格直接返回
                 if(CollUtil.isEmpty(list)){
