@@ -21,6 +21,14 @@ public enum TodoBusinessTypeEnum {
      * 验收检修任务
      */
     INSPECTION_RECEIPT("inspection_receipt"),
+    /**
+     * 执行巡视任务
+     */
+    PATROL_EXECUTE("patrol_execute"),
+    /**
+     * 审核巡视任务
+     */
+    PATROL_AUDIT("patrol_audit")
     ;
 
 

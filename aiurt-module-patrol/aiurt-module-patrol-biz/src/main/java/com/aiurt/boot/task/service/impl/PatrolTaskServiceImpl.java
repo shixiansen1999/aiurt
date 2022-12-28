@@ -25,6 +25,7 @@ import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
@@ -300,23 +301,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 CommonConstant.MSG_CATEGORY_2, SysAnnmentTypeEnum.PATROL_ASSIGN.getType(), patrolTask.getId()));
     }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Result<String> patrolTaskAudit(String id, Integer status, String remark, String backReason) {
-        LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
-        // TODO: 2022/12/28  审核后更新待办事项
-        //不通过传0
-        if (PatrolConstant.AUDIT_NOPASS.equals(status)) {
-            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_BACK).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
-            this.update(queryWrapper);
-            return Result.OK("不通过");
-        } else {
-            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_COMPLETE).set(PatrolTask::getAuditorRemark, remark).set(PatrolTask::getAuditorTime, new Date()).eq(PatrolTask::getId, id);
-            this.update(queryWrapper);
-            return Result.OK("通过成功");
-        }
-    }
-
     /**
      * 巡视任务确认后发送待办消息
      *
@@ -328,12 +312,33 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         TodoDTO todoDTO = new TodoDTO();
         todoDTO.setTaskName(patrolTask.getName() + "(待执行)");
         todoDTO.setBusinessKey(patrolTask.getId());
+        todoDTO.setBusinessType(TodoBusinessTypeEnum.PATROL_EXECUTE.getType());
         todoDTO.setCurrentUserName(loginUser.getUsername());
         todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
         todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
         todoDTO.setUrl(PatrolMessageUrlConstant.AFFIRM_URL);
         todoDTO.setAppUrl(PatrolMessageUrlConstant.AFFIRM_APP_URL);
         isTodoBaseAPI.createTodoTask(todoDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<String> patrolTaskAudit(String id, Integer status, String remark, String backReason) {
+        LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Assert.notNull(loginUser,"检测到未登录，请登录后操作!");
+        // 任务有一个人审核则更新待办消息
+        isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_AUDIT.getType(), id,loginUser.getUsername(),CommonTodoStatus.DONE_STATUS_1);
+        //不通过传0
+        if (PatrolConstant.AUDIT_NOPASS.equals(status)) {
+            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_BACK).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
+            this.update(queryWrapper);
+            return Result.OK("不通过");
+        } else {
+            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_COMPLETE).set(PatrolTask::getAuditorRemark, remark).set(PatrolTask::getAuditorTime, new Date()).eq(PatrolTask::getId, id);
+            this.update(queryWrapper);
+            return Result.OK("通过成功");
+        }
     }
 
     @Override
@@ -490,7 +495,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     .set(PatrolTask::getBeginTime, new Date())
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
-            // TODO: 2022/12/28 执行之后更新所有人的待办
+            // 执行之后更新所有人的待办
+            isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_EXECUTE.getType(), patrolTask.getId(), sysUser.getId(), CommonTodoStatus.DONE_STATUS_1);
         }
 
     }
@@ -686,7 +692,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTask.setAuditorTime(new Date());
         }
         int updateById = patrolTaskMapper.updateById(patrolTask);
-        // TODO: 2022/12/28 审核后更新待办消息 
+        // 任务有一个人审核则更新待办消息
+        isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_AUDIT.getType(), patrolTask.getId(),loginUser.getUsername(),CommonTodoStatus.DONE_STATUS_1);
         return updateById;
     }
 
@@ -749,6 +756,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 TodoDTO todoDTO = new TodoDTO();
                 todoDTO.setTaskName(patrolTask.getName() + "(待审核)");
                 todoDTO.setBusinessKey(patrolTask.getId());
+                todoDTO.setBusinessType(TodoBusinessTypeEnum.PATROL_AUDIT.getType());
                 todoDTO.setCurrentUserName(userName);
                 todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
                 todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
