@@ -19,14 +19,14 @@ import com.aiurt.boot.plan.service.*;
 import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.aiurt.common.api.CommonAPI;
-import com.aiurt.common.api.dto.FlowTaskCompleteCommentDTO;
-import com.aiurt.common.api.dto.StartBpmnDTO;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
 import com.aiurt.modules.flow.api.FlowBaseApi;
+import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
+import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.alibaba.excel.EasyExcel;
@@ -93,11 +93,12 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     @Autowired
     private EmergencyPlanMapper emergencyPlanMapper;
 
+    @Autowired
+    private FlowBaseApi flowBaseApi;
+
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
 
-    @Autowired
-    private FlowBaseApi flowBaseApi;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -420,7 +421,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         FlowTaskCompleteCommentDTO flowTaskCompleteCommentDTO = new FlowTaskCompleteCommentDTO();
         flowTaskCompleteCommentDTO.setApprovalType("save");
         startBpmnDto.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
-        sysBaseApi.startAndTakeFirst(startBpmnDto);
+        flowBaseApi.startAndTakeFirst(startBpmnDto);
 
         return newEmergencyPlanDto;
     }

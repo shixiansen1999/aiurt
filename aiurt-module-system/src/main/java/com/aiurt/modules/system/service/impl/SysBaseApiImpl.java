@@ -6,7 +6,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.service.impl.PatrolStandardItemsServiceImpl;
-import com.aiurt.common.api.dto.StartBpmnDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.aspect.UrlMatchEnum;
@@ -24,6 +23,7 @@ import com.aiurt.modules.device.mapper.DeviceMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
+import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
@@ -2092,17 +2092,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return "";
     }
 
-    @Override
-    public void startAndTakeFirst(StartBpmnDTO startBpmnDTO) {
-        com.aiurt.modules.flow.dto.StartBpmnDTO bpmnDTO = new com.aiurt.modules.flow.dto.StartBpmnDTO();
-        bpmnDTO.setModelKey(startBpmnDTO.getModelKey());
-        bpmnDTO.setBusData(startBpmnDTO.getBusData());
-        FlowTaskCompleteCommentDTO completeCommentDTO = new FlowTaskCompleteCommentDTO();
-        BeanUtils.copyProperties(startBpmnDTO.getFlowTaskCompleteDTO(), completeCommentDTO);
-        bpmnDTO.setFlowTaskCompleteDTO(completeCommentDTO);
-//        flowApiService.start(bpmnDTO);
-        flowApiService.startAndTakeFirst(bpmnDTO);
-    }
 
 
     @Override
