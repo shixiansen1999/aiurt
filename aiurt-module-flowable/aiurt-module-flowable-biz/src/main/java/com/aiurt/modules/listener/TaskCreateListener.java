@@ -27,7 +27,6 @@ import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -72,9 +71,7 @@ public class TaskCreateListener implements FlowableEventListener {
         // 查询流程实例
         ProcessInstance instance = ProcessEngines.getDefaultProcessEngine().getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 
-
         FlowElementUtil flowElementUtil = SpringContextUtils.getBean(FlowElementUtil.class);
-
 
         // 查询配置项
         IActCustomTaskExtService taskExtService = SpringContextUtils.getBean(IActCustomTaskExtService.class);
@@ -99,10 +96,15 @@ public class TaskCreateListener implements FlowableEventListener {
                     buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(assignee));
                 }
                 return;
+            }else {
+                // 第一个任务设置为发起人
+                String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
+                        .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
+                ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, initiator);
+                buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(initiator));
+                return;
             }
         }
-
-
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         // 如果没有配置选人信息
