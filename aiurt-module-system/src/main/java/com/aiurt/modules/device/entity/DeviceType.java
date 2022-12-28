@@ -73,6 +73,7 @@ public class DeviceType implements Serializable {
     @Dict(dicCode = "device_type_status")
     private Integer status;
     @Excel(name = "分类状态", width = 15)
+    @TableField(exist = false)
 	String statusName;
 	/**是否为特种设备(1:是,0:否)*/
 	@Excel(name = "是否为特种设备(1:是,0:否)", width = 15,dicCode = "is_special_device")
@@ -80,6 +81,7 @@ public class DeviceType implements Serializable {
     @Dict(dicCode = "is_special_device")
     private Integer isSpecialDevice;
     @Excel(name = "是否为特种设备", width = 15)
+    @TableField(exist = false)
 	String isSpecialDeviceName;
 	/**是否尾节点(1:是,0：否)*/
 	@Excel(name = "是否尾节点(1:是,0：否)", width = 15,dicCode = "is_end")
@@ -87,6 +89,7 @@ public class DeviceType implements Serializable {
     @Dict(dicCode = "is_end")
     private Integer isEnd;
     @Excel(name = "是否尾节点", width = 15)
+    @TableField(exist = false)
 	String isEndName;
 	/**层级结构*/
 	@Excel(name = "层级结构", width = 15)
@@ -152,5 +155,7 @@ public class DeviceType implements Serializable {
     @ApiModelProperty(value = "专业下是否有子系统标识")
     @TableField(exist = false)
     private Integer pIsHaveSystem;
+    
+    @TableField(exist = false)
     String text;
 }
