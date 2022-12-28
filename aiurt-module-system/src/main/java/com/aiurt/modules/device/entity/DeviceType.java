@@ -1,24 +1,24 @@
 package com.aiurt.modules.device.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: device_type
@@ -39,8 +39,9 @@ public class DeviceType implements Serializable {
     @ApiModelProperty(value = "主键id")
     private String id;
 	/**所属专业*/
-	@Excel(name = "所属专业", width = 15)
+    @Excel(name = "专业名称", width = 15,dictTable = "cs_major", dicText = "major_name",dicCode = "major_code")
     @ApiModelProperty(value = "所属专业")
+    @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     @MajorFilterColumn
     private String majorCode;
     /**专业名称*/
@@ -49,8 +50,9 @@ public class DeviceType implements Serializable {
     @Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
     private String majorName;
 	/**系统编号*/
-	@Excel(name = "系统编号", width = 15)
+    @Excel(name = "子系统", width = 15,dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     @ApiModelProperty(value = "系统编号")
+    @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     @SystemFilterColumn
     private String systemCode;
     /**系统名称*/
@@ -66,20 +68,29 @@ public class DeviceType implements Serializable {
     @ApiModelProperty(value = "分类名称")
     private String name;
 	/**状态 0-停用 1-正常*/
-	@Excel(name = "状态 0-停用 1-正常", width = 15)
+	@Excel(name = "状态 0-停用 1-正常", width = 15,dicCode = "device_type_status")
     @ApiModelProperty(value = "状态 0-停用 1-正常")
     @Dict(dicCode = "device_type_status")
     private Integer status;
+    @Excel(name = "分类状态", width = 15)
+    @TableField(exist = false)
+	String statusName;
 	/**是否为特种设备(1:是,0:否)*/
-	@Excel(name = "是否为特种设备(1:是,0:否)", width = 15)
+	@Excel(name = "是否为特种设备(1:是,0:否)", width = 15,dicCode = "is_special_device")
     @ApiModelProperty(value = "是否为特种设备(1:是,0:否)")
     @Dict(dicCode = "is_special_device")
     private Integer isSpecialDevice;
+    @Excel(name = "是否为特种设备", width = 15)
+    @TableField(exist = false)
+	String isSpecialDeviceName;
 	/**是否尾节点(1:是,0：否)*/
-	@Excel(name = "是否尾节点(1:是,0：否)", width = 15)
+	@Excel(name = "是否尾节点(1:是,0：否)", width = 15,dicCode = "is_end")
     @ApiModelProperty(value = "是否尾节点(1:是,0：否)")
     @Dict(dicCode = "is_end")
     private Integer isEnd;
+    @Excel(name = "是否尾节点", width = 15)
+    @TableField(exist = false)
+	String isEndName;
 	/**层级结构*/
 	@Excel(name = "层级结构", width = 15)
     @ApiModelProperty(value = "层级结构")
@@ -144,4 +155,7 @@ public class DeviceType implements Serializable {
     @ApiModelProperty(value = "专业下是否有子系统标识")
     @TableField(exist = false)
     private Integer pIsHaveSystem;
+
+    @TableField(exist = false)
+    String text;
 }
