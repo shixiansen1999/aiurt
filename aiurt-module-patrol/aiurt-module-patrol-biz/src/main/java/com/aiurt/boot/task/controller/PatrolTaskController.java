@@ -3,6 +3,7 @@ package com.aiurt.boot.task.controller;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
@@ -11,7 +12,6 @@ import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
-import com.aiurt.common.constant.RoleConstant;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -483,17 +483,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @RequiresRoles({RoleConstant.FOREMAN}) // 工班长角色才能审核
     @PostMapping(value = "/patrolTaskAudit")
     public Result<?> patrolTaskAudit(String id, Integer status, String remark, String backReason) {
-        LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
-        //不通过传0
-        if (PatrolConstant.AUDIT_NOPASS.equals(status)) {
-            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_BACK).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
-            patrolTaskService.update(queryWrapper);
-            return Result.OK("不通过");
-        } else {
-            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_COMPLETE).set(PatrolTask::getAuditorRemark, remark).set(PatrolTask::getAuditorTime,new Date()).eq(PatrolTask::getId, id);
-            patrolTaskService.update(queryWrapper);
-            return Result.OK("通过成功");
-        }
+        return patrolTaskService.patrolTaskAudit(id, status, remark, backReason);
     }
 
     /**

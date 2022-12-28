@@ -8,6 +8,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.PatrolMessageUrlConstant;
+import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
@@ -24,7 +25,6 @@ import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
-import com.aiurt.common.constant.RoleConstant;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
@@ -39,6 +39,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
@@ -298,6 +299,23 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 CommonConstant.MSG_CATEGORY_2, SysAnnmentTypeEnum.PATROL_ASSIGN.getType(), patrolTask.getId()));
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<String> patrolTaskAudit(String id, Integer status, String remark, String backReason) {
+        LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
+        // TODO: 2022/12/28  审核后更新待办事项
+        //不通过传0
+        if (PatrolConstant.AUDIT_NOPASS.equals(status)) {
+            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_BACK).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
+            this.update(queryWrapper);
+            return Result.OK("不通过");
+        } else {
+            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_COMPLETE).set(PatrolTask::getAuditorRemark, remark).set(PatrolTask::getAuditorTime, new Date()).eq(PatrolTask::getId, id);
+            this.update(queryWrapper);
+            return Result.OK("通过成功");
+        }
+    }
+
     /**
      * 巡视任务确认后发送待办消息
      *
@@ -471,6 +489,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     .set(PatrolTask::getBeginTime, new Date())
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
+            // TODO: 2022/12/28 执行之后更新所有人的待办
         }
 
     }
@@ -642,6 +661,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int taskAudit(String code, Integer auditStatus, String auditReason, String remark) {
         QueryWrapper<PatrolTask> wrapper = new QueryWrapper<>();
         wrapper.lambda().eq(PatrolTask::getCode, code);
@@ -665,6 +685,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTask.setAuditorTime(new Date());
         }
         int updateById = patrolTaskMapper.updateById(patrolTask);
+        // TODO: 2022/12/28 审核后更新待办消息 
         return updateById;
     }
 
