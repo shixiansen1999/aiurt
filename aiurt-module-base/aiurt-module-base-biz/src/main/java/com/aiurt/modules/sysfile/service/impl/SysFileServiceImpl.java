@@ -2,6 +2,7 @@ package com.aiurt.modules.sysfile.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
@@ -82,7 +83,7 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 				.eq(SysFileType::getDelFlag, CommonConstant.DEL_FLAG_0)
 				.select(SysFileType::getId, SysFileType::getName)
 				.in(SysFileType::getId, role);
-		if (param.getTypeId() == null) {
+		if (param.getTypeId() == null && StrUtil.isBlank(param.getFileName())) {
 			typeQueryWrapper.eq(SysFileType::getParentId, 0);
 		} else {
 			typeQueryWrapper.eq(SysFileType::getParentId, param.getTypeId());
@@ -108,6 +109,31 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 		}
 
 		if (ObjectUtil.isNotNull(param.getTypeId())){
+			long l = len - total;
+			long l1 = l % param.getPageSize() > 0 ? (l / param.getPageSize()) + 1 : l / param.getPageSize();
+			long size = l > 10 ? 10 : l;
+			long no = l1 - 1;
+			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(no, size), param.getTypeId(),param.getFileName());
+			Optional.ofNullable(filePage.getRecords()).ifPresent(sysFiles -> {
+				sysFiles.forEach(f -> {
+					FileAppVO appVO = new FileAppVO();
+					appVO.setFileName(f.getName()).setId(f.getId()).setUrl(f.getUrl()).setStatus(1).setTypeId(f.getTypeId()).setDownStatus(f.getDownStatus());
+					Result<SysFileTypeDetailVO> detail = this.detail(req, f.getId());
+					appVO.setFileDetail(detail.getResult());
+
+					Result<SysFileTypeDetailVO> detail1 = sysFileTypeService.detail(req, f.getTypeId());
+					appVO.setFileTypeDetail(detail1.getResult());
+					list.add(appVO);
+				});
+			});
+			page.setRecords(list).setTotal(total + filePage.getTotal());
+			return page;
+		}else {
+			//
+			page.setRecords(list);
+		}
+
+		if (ObjectUtil.isNotNull(param.getFileName())){
 			long l = len - total;
 			long l1 = l % param.getPageSize() > 0 ? (l / param.getPageSize()) + 1 : l / param.getPageSize();
 			long size = l > 10 ? 10 : l;
