@@ -52,4 +52,8 @@ public interface RoleConstant {
      * 维修人员
      */
     String REPAIR_MAN = "repair_man";
+    /**
+     * 技术员
+     */
+    String TECHNICIAN = "technician";
 }

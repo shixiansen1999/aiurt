@@ -12,7 +12,18 @@ public enum TodoBusinessTypeEnum {
     /**
      * 执行检修任务
      */
-    INSPECTION_EXECUTE("inspection_execute");
+    INSPECTION_EXECUTE("inspection_execute"),
+    /**
+     * 审核检修任务
+     */
+    INSPECTION_CONFIRM("inspection_confirm"),
+    /**
+     * 验收检修任务
+     */
+    INSPECTION_RECEIPT("inspection_receipt"),
+    ;
+
+
 
     /**
      * 业务类型(email:邮件 bpm:流程)
