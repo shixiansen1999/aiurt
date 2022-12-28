@@ -21,7 +21,6 @@ import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.util.XlsUtil;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.alibaba.fastjson.JSONObject;
@@ -56,6 +55,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -473,6 +473,12 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     JSONObject systemName = sysBaseApi.getSystemName(major.getString("majorCode"), model.getSubsystemCode());
                     if (ObjectUtil.isNotEmpty(systemName)) {
                         patrolStandard.setSubsystemCode(systemName.getString("systemCode"));
+                        DeviceType d = sysBaseApi.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName);
+                        if (ObjectUtil.isNull(d)) {
+                            stringBuilder.append("系统不存在该专业的子系统的设备类型，");
+                        } else {
+                            patrolStandard.setDeviceTypeCode(d.getCode());
+                        }
                     } else {
                         stringBuilder.append("系统不存在该专业下的子系统，");
                     }
@@ -518,14 +524,29 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             stringBuilder.append("巡视标准表名称、适用专业、是否与设备类型相关、生效状态不能为空;");
         }
     }
-
+    public boolean checkObjAllFieldsIsNull(Object object) {
+        if (null == object) {
+            return true;
+        }
+        try {
+            for (Field f : object.getClass().getDeclaredFields()) {
+                f.setAccessible(true);
+                if (f.get(object) != null && (StrUtil.isNotEmpty(f.get(object).toString()) && !"1".equals(f.get(object).toString()))) {
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
     private void itemsModel(PatrolStandard patrolStandard, int errorLines,StringBuilder stringBuilder) {
         List<PatrolStandardItems> standardItems = patrolStandard.getPatrolStandardItemsList();
         if (CollUtil.isNotEmpty(standardItems)) {
             int i = 0;
             Map<Object, Integer> duplicateData = new HashMap<>(16);
             for (PatrolStandardItems items : standardItems) {
-                boolean isNull = XlsUtil.checkObjAllFieldsIsNull(items);
+                boolean isNull = checkObjAllFieldsIsNull(items);
                 if(isNull)
                 {
                     items.setIsNUll(true);

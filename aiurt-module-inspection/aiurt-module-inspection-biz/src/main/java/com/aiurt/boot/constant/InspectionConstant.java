@@ -217,6 +217,10 @@ public class InspectionConstant {
      * 是否需要审核 0否
      */
     public static final Integer IS_CONFIRM_0 = 0;
+    /**
+     * 是否需要审核 1是
+     */
+    public static final Integer IS_CONFIRM_1 = 1;
 
     /**
      * 故障单状态（已完成）
