@@ -669,6 +669,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void getPatrolTaskSubmit(PatrolTaskDTO patrolTaskDTO) {
         //提交任务：将待执行、执行中，变为待审核、添加任务结束人id,传签名地址、任务主键id、审核状态
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -715,26 +716,25 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
             }
             patrolTaskMapper.update(new PatrolTask(), updateWrapper);
+            // 提交任务如果需要审核则发送一条审核待办消息
+            if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
+                QueryWrapper<PatrolTaskOrganization> wrapper = new QueryWrapper<>();
+                wrapper.lambda().eq(PatrolTaskOrganization::getTaskCode,patrolTask.getCode())
+                        .eq(PatrolTaskOrganization::getDelFlag,CommonConstant.DEL_FLAG_0);
+                List<PatrolTaskOrganization> organizations = patrolTaskOrganizationMapper.selectList(wrapper);
+                List<String> orgCodes = organizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
+                String userName = sysBaseApi.getUserNameByOrgCodeAndRoleCode(orgCodes, Arrays.asList(RoleConstant.FOREMAN));
+                TodoDTO todoDTO = new TodoDTO();
+                todoDTO.setTaskName(patrolTask.getName());
+                todoDTO.setBusinessKey(patrolTask.getId());
+                todoDTO.setCurrentUserName(userName);
+                todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
+                todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+                todoDTO.setUrl(PatrolMessageUrlConstant.AUDIT_URL);
+                todoDTO.setAppUrl(PatrolMessageUrlConstant.AUDIT_APP_URL);
+                isTodoBaseAPI.createTodoTask(todoDTO);
+            }
         }
-        // 提交任务如果需要审核则发送一条审核待办消息
-        if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
-            QueryWrapper<PatrolTaskOrganization> wrapper = new QueryWrapper<>();
-            wrapper.lambda().eq(PatrolTaskOrganization::getTaskCode,patrolTask.getCode())
-                    .eq(PatrolTaskOrganization::getDelFlag,CommonConstant.DEL_FLAG_0);
-            List<PatrolTaskOrganization> organizations = patrolTaskOrganizationMapper.selectList(wrapper);
-            List<String> orgCodes = organizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
-            String userName = sysBaseApi.getUserNameByOrgCodeAndRoleCode(orgCodes, Arrays.asList(RoleConstant.FOREMAN));
-            TodoDTO todoDTO = new TodoDTO();
-            todoDTO.setTaskName(patrolTask.getName());
-            todoDTO.setBusinessKey(patrolTask.getId());
-            todoDTO.setCurrentUserName(userName);
-            todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
-            todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
-            todoDTO.setUrl(PatrolMessageUrlConstant.AUDIT_URL);
-            todoDTO.setAppUrl(PatrolMessageUrlConstant.AUDIT_APP_URL);
-            isTodoBaseAPI.createTodoTask(todoDTO);
-        }
-
     }
 
     @Transactional(rollbackFor = Exception.class)
