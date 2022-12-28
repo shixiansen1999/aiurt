@@ -40,7 +40,7 @@ public class EmergencyPlanMaterialsImportExcelDTO implements Serializable {
     /**应急物资数量*/
     @Excel(name = "应急物资数量", width = 15)
     @ApiModelProperty(value = "应急物资数量")
-    private Integer materialsNumber;
+    private String materialsNumber;
     /**单位*/
     @Excel(name = "单位", width = 15)
     @ApiModelProperty(value = "单位")

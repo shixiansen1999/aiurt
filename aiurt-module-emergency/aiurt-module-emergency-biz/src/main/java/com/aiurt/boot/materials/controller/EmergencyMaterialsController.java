@@ -1,48 +1,47 @@
 package com.aiurt.boot.materials.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.dto.EmergencyMaterialsDTO;
 import com.aiurt.boot.materials.dto.MaterialAccountDTO;
 import com.aiurt.boot.materials.dto.MaterialPatrolDTO;
 import com.aiurt.boot.materials.dto.PatrolPeopleDTO;
+import com.aiurt.boot.materials.entity.EmergencyMaterials;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoices;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsCategoryService;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsInvoicesItemService;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsInvoicesService;
-import com.aiurt.common.constant.enums.ModuleType;
+import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.boot.materials.entity.EmergencyMaterials;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import liquibase.pro.packaged.E;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
-import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
  /**
  * @Description: emergency_materials
@@ -367,13 +366,25 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
     * 导出excel
     *
     * @param request
-    * @param emergencyMaterials
+    * @param condition
     */
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, EmergencyMaterials emergencyMaterials) {
-        return super.exportXls(request, emergencyMaterials, EmergencyMaterials.class, "emergency_materials");
-    }
+    public ModelAndView exportXls(HttpServletRequest request, MaterialAccountDTO condition) {
+		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
 
+	   return emergencyMaterialsService.getMaterialPatrolList(condition);
+
+    }
+	 /**
+	  * 应急物资台账导入模板下载
+	  *
+	  */
+	 @AutoLog(value = "应急物资台账导入模板下载", operateType =  6, operateTypeAlias = "应急物资台账导入模板下载", permissionUrl = "")
+	 @ApiOperation(value="应急物资台账导入模板下载", notes="应急物资台账导入模板下载")
+	 @RequestMapping(value = "/downloadTemple",method = RequestMethod.GET)
+	 public void downloadTemple(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		 emergencyMaterialsService.getImportTemplate(response,request);
+	 }
     /**
       * 通过excel导入数据
     *
@@ -382,8 +393,8 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
     * @return
     */
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, EmergencyMaterials.class);
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response)throws IOException {
+        return emergencyMaterialsService.importExcel(request, response);
     }
 
 }

@@ -27,6 +27,9 @@
         AND ari.TASK_ID_ = a.ID_
         AND (a.assignee_ = '' or a.assignee_ is null)
         ))
+        <if test="bdWorkTicket.id!=null and bdWorkTicket.id!=''">
+            and bwt.id = #{bdWorkTicket.id}
+        </if>
         order by a.CREATE_TIME_ desc
     </select>
 

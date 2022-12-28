@@ -13,6 +13,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.materials.service.impl.EmergencyMaterialsServiceImpl;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.boot.plan.controller.RecordExcelListener;
 import com.aiurt.boot.plan.dto.*;
@@ -26,11 +27,15 @@ import com.aiurt.boot.rehearsal.entity.EmergencyRecordQuestion;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.aiurt.boot.team.constant.TeamConstant;
 import com.aiurt.boot.team.entity.EmergencyTeam;
+import com.aiurt.boot.team.entity.RecordData;
+import com.aiurt.boot.team.model.ProcessRecordModel;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
+import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.api.dto.FlowTaskCompleteCommentDTO;
 import com.aiurt.common.api.dto.StartBpmnDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.XlsUtil;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
@@ -45,18 +50,25 @@ import liquibase.pro.packaged.S;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -112,7 +124,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         if (CollectionUtil.isEmpty(orgCodes)) {
             return page;
         }
-        IPage<EmergencyPlan> pageList = emergencyPlanMapper.queryPageList(page, emergencyPlanQueryDto, orgCodes, loginUser.getUsername());
+        IPage<EmergencyPlan> pageList = emergencyPlanMapper.queryPageList(page, emergencyPlanQueryDto, orgCodes);
 
         return pageList;
 
@@ -614,6 +626,88 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
 
 
     @Override
+    public void exportTemplateXls(HttpServletResponse response,HttpServletRequest request) throws IOException {
+        //获取输入流，原始模板位置
+        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/emergencyPlan.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+        //2.获取临时文件
+        File fileTemp = new File("/templates/emergencyPlan.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(16);
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+        CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+        List<DictModel> isTypeModels = bean.queryDictItemsByCode("emergency_plan_type");
+        ExcelSelectListUtil.selectList(workbook, "预案类型", 2, 3, isTypeModels);
+        String fileName = "应急预案导入模板.xlsx";
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename=" + "应急预案导入模板.xlsx");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static final class ExcelSelectListUtil {
+        /**
+         * firstRow 開始行號 根据此项目，默认为3(下标0开始)
+         * lastRow  根据此项目，默认为最大65535
+         * firstCol 区域中第一个单元格的列号 (下标0开始)
+         * lastCol 区域中最后一个单元格的列号
+         * strings 下拉内容
+         */
+
+        public static void selectList(Workbook workbook, String name, int firstCol, int lastCol, List<DictModel> modelList) {
+            if (CollectionUtil.isNotEmpty(modelList)) {
+                Sheet sheet = workbook.getSheetAt(0);
+                //将新建的sheet页隐藏掉, 下拉值太多，需要创建隐藏页面
+                int sheetTotal = workbook.getNumberOfSheets();
+                List<String> collect = modelList.stream().map(DictModel::getText).collect(Collectors.toList());
+                String hiddenSheetName = name + "_hiddenSheet";
+                Sheet hiddenSheet = workbook.getSheet(hiddenSheetName);
+                if (hiddenSheet == null) {
+                    hiddenSheet = workbook.createSheet(hiddenSheetName);
+                    //写入下拉数据到新的sheet页中
+                    for (int i = 0; i < collect.size(); i++) {
+                        Row hiddenRow = hiddenSheet.createRow(i);
+                        Cell hiddenCell = hiddenRow.createCell(0);
+                        hiddenCell.setCellValue(collect.get(i));
+                    }
+                    workbook.setSheetHidden(sheetTotal, true);
+                }
+
+                // 下拉数据
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(2, 65535, firstCol, lastCol);
+                //  生成下拉框内容名称
+                String strFormula = hiddenSheetName + "!$A$1:$A$65535";
+                // 根据隐藏页面创建下拉列表
+                XSSFDataValidationConstraint constraint = new XSSFDataValidationConstraint(DataValidationConstraint.ValidationType.LIST, strFormula);
+                XSSFDataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) hiddenSheet);
+                DataValidation validation = dvHelper.createValidation(constraint, cellRangeAddressList);
+                //  对sheet页生效
+                sheet.addValidationData(validation);
+            }
+        }
+    }
+
+    /**
+     * 应急预案导出数据
+     * @param request
+     * @param response
+     * @param emergencyPlanDto
+     */
+    @Override
     public void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanDTO emergencyPlanDto) {
         // 封装数据
         List<EmergencyPlanExcelDTO> pageList = this.getinspectionStrategyList(emergencyPlanDto);
@@ -693,16 +787,22 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
                 return imporReturnRes(errorLines, false, failReportUrl,"文件导入失败，文件类型不对");
             }
+            //读取数据监听
+            com.aiurt.boot.plan.controller.RecordExcelListener recordExcelListener =new RecordExcelListener();
 
-            EmergencyPlanImportExcelDTO emergencyPlanImportExcelDTO = new EmergencyPlanImportExcelDTO();
-//            EasyExcel.read(file.getInputStream(),EmergencyPlanImportExcelDTO.class,new RecordExcelListener(emergencyPlanImportExcelDTO)).sheet().doRead();
-
-
-            // 设置excel参数
-            ImportParams params = new ImportParams();
-            params.setTitleRows(2);
-            params.setHeadRows(3);
-            params.setNeedSave(true);
+            EmergencyPlanImportExcelDTO emergencyPlanImportExcelDTO1 = recordExcelListener.getEmergencyPlanImportExcelDTO();
+            List<EmergencyPlanDisposalProcedureImportExcelDTO> planDisposalProcedureList = emergencyPlanImportExcelDTO1.getPlanDisposalProcedureList();
+            Iterator<EmergencyPlanDisposalProcedureImportExcelDTO> iterator = planDisposalProcedureList.iterator();
+            while (iterator.hasNext()) {
+                EmergencyPlanDisposalProcedureImportExcelDTO model = iterator.next();
+                boolean a = XlsUtil.checkObjAllFieldsIsNull(model);
+                if (a) {
+                    iterator.remove();
+                }
+            }
+            if (CollUtil.isEmpty(planDisposalProcedureList)) {
+                return Result.error("文件导入失败:应急预案处置程序不能为空！");
+            }
 
             // 需要保存的数据
             List<EmergencyPlanDTO> saveData = CollUtil.newArrayList();
@@ -711,8 +811,8 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             try {
                 // 记录校验得到的错误信息
                 StringBuilder errorMessage = new StringBuilder();
-
-                list = ExcelImportUtil.importExcel(file.getInputStream(), EmergencyPlanImportExcelDTO.class, params);
+                //读取数据
+                 EasyExcel.read(file.getInputStream(), EmergencyPlanImportExcelDTO.class, recordExcelListener).sheet().doRead();
 
                 // 空表格直接返回
                 if(CollUtil.isEmpty(list)){

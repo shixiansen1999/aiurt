@@ -145,10 +145,11 @@ public interface CommonConstant {
     public static final Integer ACT_SYNC_0 = 0;
 
     /**
-     * 消息类型1:通知公告2:系统消息
+     * 消息类型1:通知公告2:系统消息3:特情消息
      */
     public static final String MSG_CATEGORY_1 = "1";
     public static final String MSG_CATEGORY_2 = "2";
+    public static final String MSG_CATEGORY_3 = "3";
 
     /**
      * 是否配置菜单的数据权限 1是0否
@@ -499,4 +500,10 @@ public interface CommonConstant {
   * 超级管理员角色编码
   */
  public static final String ADMIN = "admin";
+
+ /**
+  * 待办任务状态:0待办2待阅
+  */
+ public static final String TODO_TYPE_0 = "0";
+ public static final String TODO_TYPE_2 = "2";
 }

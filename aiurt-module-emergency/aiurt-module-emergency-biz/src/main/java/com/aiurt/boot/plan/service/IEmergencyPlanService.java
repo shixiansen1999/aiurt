@@ -91,10 +91,17 @@ public interface IEmergencyPlanService extends IService<EmergencyPlan> {
     void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanDTO emergencyPlanDto);
 
     /**
-     * 应急预案启动记录导入
+     * 应急预案台账导入
      * @param request
      * @param response
      * @return
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 应急预案台账模板下载
+     * @param response
+     * @throws IOException
+     */
+    void exportTemplateXls(HttpServletResponse response,HttpServletRequest request) throws IOException;
 }

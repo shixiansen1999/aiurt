@@ -58,8 +58,11 @@
 		<if test="announcementSendModel.bizSource !=null and announcementSendModel.bizSource =='isNoBpm'">
 			and (sa.bus_type != 'bpm' or sa.bus_type is null)
 		</if>
-        <if test="announcementSendModel.msgCategory !=null and announcementSendModel.msgCategory != ''">
-            and sa.msg_category = #{announcementSendModel.msgCategory}
+        <if test="announcementSendModel.msgCategoryList !=null and announcementSendModel.msgCategoryList.size()>0">
+            and sa.msg_category in
+            <foreach collection="announcementSendModel.msgCategoryList" open="(" close=")" separator="," item="id">
+				#{id}
+			</foreach>
         </if>
 	   order by sas.read_flag,sa.send_time desc
 	</select>

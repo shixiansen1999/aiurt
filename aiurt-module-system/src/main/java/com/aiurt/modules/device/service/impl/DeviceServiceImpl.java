@@ -16,6 +16,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.common.util.XlsUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.device.Model.DeviceAssemblyErrorModel;
 import com.aiurt.modules.device.Model.DeviceAssemblyModel;
@@ -309,7 +310,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			MultipartFile file = entity.getValue();
 			String type = FilenameUtils.getExtension(file.getOriginalFilename());
 			if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-				return iSysBaseAPI.importReturnRes(errorLines, successLines, errorMessage, false, null);
+				return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, false, null);
 			}
 			ImportParams params = new ImportParams();
 			params.setTitleRows(2);
@@ -323,7 +324,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				Iterator<DeviceModel> iterator = list.iterator();
 				while (iterator.hasNext()) {
 					DeviceModel model = iterator.next();
-					boolean b = iSysBaseAPI.checkObjAllFieldsIsNull(model);
+					boolean b = XlsUtil.checkObjAllFieldsIsNull(model);
 					if (b) {
 						iterator.remove();
 					}
@@ -845,7 +846,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return iSysBaseAPI.importReturnRes(errorLines, successLines, errorMessage,true,url);
+		return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,url);
 	}
 
 	private List<DeviceAssemblyModel> deviceAssemblyCheck(DeviceModel deviceModel,int errorLines) {
@@ -853,7 +854,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		Iterator<DeviceAssemblyModel> iterator = deviceAssemblyList.iterator();
 		while (iterator.hasNext()) {
 			DeviceAssemblyModel model = iterator.next();
-			boolean b = iSysBaseAPI.checkObjAllFieldsIsNull(model);
+			boolean b = XlsUtil.checkObjAllFieldsIsNull(model);
 			if (b) {
 				iterator.remove();
 			}

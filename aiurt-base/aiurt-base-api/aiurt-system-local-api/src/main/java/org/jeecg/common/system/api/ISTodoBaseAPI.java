@@ -28,7 +28,7 @@ public interface ISTodoBaseAPI {
      * @param todoId  待办任务id
      * @param businessKey  业务id
      * @param username  实际办理人账号
-     * @param todoType 待办任务状态 （CommonTodoType）
+     * @param todoType 待办任务状态 （CommonTodoStatus）
      */
     void updateTodoTaskState(String todoId,String businessKey,String username,String todoType);
 

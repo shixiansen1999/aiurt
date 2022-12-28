@@ -1,6 +1,5 @@
 package com.aiurt.modules.system.service.impl;
 
-import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -61,11 +60,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
@@ -74,7 +71,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
@@ -82,7 +78,6 @@ import org.springframework.util.PathMatcher;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.io.*;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -2109,30 +2104,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         flowApiService.startAndTakeFirst(bpmnDTO);
     }
 
-    @Override
-    public TemplateExportParams getErrorExcelModel(String url) throws IOException {
-        //创建导入失败错误报告,进行模板导出
-        org.springframework.core.io.Resource resource = new ClassPathResource(url);
-        InputStream resourceAsStream = resource.getInputStream();
-
-        //2.获取临时文件
-        File fileTemp= new File(url);
-        try {
-            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
-            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        String path = fileTemp.getAbsolutePath();
-        TemplateExportParams exportParams = new TemplateExportParams(path);
-        return exportParams;
-    }
 
     @Override
     public List<LoginUser> getUserByPost(int post) {
         QueryWrapper<SysUser> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper.lambda().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
-                .eq(SysUser::getPost, String.valueOf(post));
+                .eq(SysUser::getJobName, String.valueOf(post));
         List<SysUser> users = userMapper.selectList(userQueryWrapper);
         if (CollectionUtil.isEmpty(users)) {
             return Collections.emptyList();
@@ -2146,65 +2123,35 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return loginUsers;
     }
 
+    /**
+     * 根据业务类型及业务id查询消息
+     *
+     * @param busType 业务类型
+     * @param busId   业务id
+     * @return 消息的id
+     */
     @Override
-    public Result<?> importReturnRes(int errorLines, int successLines, List<String> errorMessage, boolean isType, String failReportUrl) {
-        if (isType) {
-            if (errorLines != 0) {
-                JSONObject result = new JSONObject(5);
-                result.put("isSucceed", false);
-                result.put("errorCount", errorLines);
-                result.put("successCount", successLines);
-                int totalCount = successLines + errorLines;
-                result.put("totalCount", totalCount);
-                result.put("failReportUrl", failReportUrl);
-                Result res = Result.ok(result);
-                res.setMessage("文件失败，数据有错误。");
-                res.setCode(200);
-                return res;
-            } else {
-                //是否成功
-                JSONObject result = new JSONObject(5);
-                result.put("isSucceed", true);
-                result.put("errorCount", errorLines);
-                result.put("successCount", successLines);
-                int totalCount = successLines + errorLines;
-                result.put("totalCount", totalCount);
-                Result res = Result.ok(result);
-                res.setMessage("文件导入成功！");
-                res.setCode(200);
-                return res;
-            }
-        } else {
-            JSONObject result = new JSONObject(5);
-            result.put("isSucceed", false);
-            result.put("errorCount", errorLines);
-            result.put("successCount", successLines);
-            int totalCount = successLines + errorLines;
-            result.put("totalCount", totalCount);
-            Result res = Result.ok(result);
-            res.setMessage("导入失败，文件类型不对。");
-            res.setCode(200);
-            return res;
-        }
+    public String getSysAnnounByBusTypeAndBusId(String busType, String busId) {
+        SysAnnouncement announcement = sysAnnouncementMapper.selectOne(new QueryWrapper<SysAnnouncement>().eq("bus_type", busType).eq("bus_id", busId));
+        return ObjectUtil.isNotEmpty(announcement) ? announcement.getId() : "";
     }
 
+    /**
+     * 根据部门，角色编码查询人员账号
+     *
+     * @param orgCode  组织机构编码
+     * @param roleCode 角色编码
+     * @return 人员账号用逗号隔开
+     */
     @Override
-    public boolean checkObjAllFieldsIsNull(Object object) {
-        if (null == object) {
-            return true;
+    public String getUserNameByOrgCodeAndRoleCode(List<String> orgCode, List<String> roleCode) {
+        if (CollUtil.isEmpty(orgCode) || CollUtil.isEmpty(roleCode)) {
+            return "";
         }
-        try {
-            for (Field f : object.getClass().getDeclaredFields()) {
-                f.setAccessible(true);
-                if (f.get(object) != null && (StrUtil.isNotEmpty(f.get(object).toString()) && !"1".equals(f.get(object).toString()))) {
-                    return false;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return true;
+        List<String> result = userMapper.getUserNameByOrgCodeAndRoleCode(orgCode, roleCode);
+        return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
     }
+
 
     @Override
     public JSONObject getDepartByName(String departName) {
@@ -2240,7 +2187,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public JSONObject getPositionByName(String positionName,String lineCode,String stationCode) {
+    public JSONObject getPositionByName(String positionName, String lineCode, String stationCode) {
         LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
         if (StrUtil.isNotBlank(lineCode)) {
             wrapper.eq(CsStationPosition::getLineCode, lineCode);
@@ -2257,8 +2204,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<LoginUser> getUserByRealName(String realName,String workNo) {
+    public List<LoginUser> getUserByRealName(String realName, String workNo) {
         return userMapper.getUserByRealName(realName, workNo);
+    }
+
+
+    @Override
+    public SysAttachment getFilePath(String filePath) {
+        SysAttachment sysAttachment = sysAttachmentService.getById(filePath);
+        if (Objects.isNull(sysAttachment)) {
+            return null;
+        }
+        return sysAttachment;
+
     }
 
 

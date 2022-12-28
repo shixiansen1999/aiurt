@@ -74,4 +74,11 @@ public interface IEmergencyTrainingRecordService extends IService<EmergencyTrain
      * @return
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
+    /**
+     * 导出
+     * @param response
+     * @param id
+     * @return
+     */
+    void exportXls(HttpServletResponse response, String id);
 }

@@ -20,15 +20,7 @@ import java.util.List;
 @Validated
 public class WorkLogParam {
 
-    /**
-     * 开始时间
-     */
-    private String dayStart;
-
-    /**
-     * 结束时间
-     */
-    private String dayEnd;
+    private String day;
 
     /**
      * 审核状态 其他-未审核 3-已审核
