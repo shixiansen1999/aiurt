@@ -1,6 +1,8 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.FillRuleConstant;
 import com.aiurt.common.constant.SymbolConstant;
@@ -21,8 +23,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.netty.util.internal.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,6 +57,9 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 	private SysDepartRoleUserMapper departRoleUserMapper;
 	@Autowired
 	private SysUserMapper sysUserMapper;
+	@Lazy
+	@Autowired
+	private CommonAPI api;
 
 	@Override
 	public List<SysDepartTreeModel> queryMyDeptTreeList(String departIds) {
@@ -100,10 +107,12 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 	@Override
 	public List<SysDepartTreeModel> querySignTreeList(String sign) {
 		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
 		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
 		query.eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0.toString());
-		if(StrUtil.isNotBlank(sign)){
-			query.eq(SysDepart::getOrgCode,sysUser.getOrgCode());
+		if(StrUtil.isNotBlank(sign) && CollectionUtil.isNotEmpty(departByUserId)){
+			List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+			query.in(SysDepart::getOrgCode,collect);
 		}
 		query.orderByAsc(SysDepart::getDepartOrder);
 		query.orderByDesc(SysDepart::getCreateTime);
