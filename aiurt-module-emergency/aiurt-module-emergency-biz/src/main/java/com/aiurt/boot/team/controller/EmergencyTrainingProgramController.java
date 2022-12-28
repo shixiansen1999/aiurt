@@ -6,6 +6,7 @@ import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
 import com.aiurt.boot.team.service.IEmergencyTrainingProgramService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.XlsUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -15,11 +16,11 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -149,12 +150,23 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
     * 导出excel
     *
     * @param request
-    * @param emergencyTrainingProgram
+    * @param emergencyTrainingProgramDTO
     */
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, EmergencyTrainingProgram emergencyTrainingProgram) {
-        return super.exportXls(request, emergencyTrainingProgram, EmergencyTrainingProgram.class, "emergency_training_program");
+    public void exportXls(HttpServletRequest request, HttpServletResponse response,EmergencyTrainingProgramDTO emergencyTrainingProgramDTO) {
+    	emergencyTrainingProgramService.exportXls(request, response, emergencyTrainingProgramDTO);
     }
+
+	/**
+	 * 应急队伍训练计划模板下载
+	 *
+	 */
+	@AutoLog(value = "应急队伍训练计划模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "")
+	@ApiOperation(value="应急队伍训练计划模板下载", notes="应急队伍训练计划模板下载")
+	@RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
+	public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		XlsUtil.getExcel(response, "", "应急队伍训练计划模板下载.xlsx");
+	}
 
     /**
       * 通过excel导入数据
@@ -165,7 +177,7 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
     */
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, EmergencyTrainingProgram.class);
+		return emergencyTrainingProgramService.importExcel(request, response);
     }
 
 	 /**

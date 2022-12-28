@@ -24,12 +24,7 @@ public class RecordExcelListener extends AnalysisEventListener<RecordData> {
 
         int sheetNo = context.readSheetHolder().getSheetNo();
 
-
-
         Integer rowNumber = context.readSheetHolder().getApproximateTotalRowNumber();
-
-        String title1 = "训练过程记录";
-        String title2 = "训练效果及建议";
 
         if (sheetNo == 0) {
             // 获取行的索引

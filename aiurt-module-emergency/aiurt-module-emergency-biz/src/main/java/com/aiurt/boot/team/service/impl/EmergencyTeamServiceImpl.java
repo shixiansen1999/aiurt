@@ -1,8 +1,6 @@
 package com.aiurt.boot.team.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
-import cn.afterturn.easypoi.excel.ExcelImportUtil;
-import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
@@ -14,6 +12,8 @@ import com.aiurt.boot.team.dto.EmergencyTeamDTO;
 import com.aiurt.boot.team.dto.EmergencyTeamTrainingDTO;
 import com.aiurt.boot.team.entity.EmergencyCrew;
 import com.aiurt.boot.team.entity.EmergencyTeam;
+import com.aiurt.boot.team.entity.RecordData;
+import com.aiurt.boot.team.listener.TeamExcelListener;
 import com.aiurt.boot.team.mapper.EmergencyTeamMapper;
 import com.aiurt.boot.team.model.CrewModel;
 import com.aiurt.boot.team.model.TeamModel;
@@ -23,6 +23,7 @@ import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.common.util.oConvertUtils;
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -323,26 +324,16 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, false, null);
             }
             try {
-                //导入取得应急队伍信息
-                ImportParams teamParams = new ImportParams();
-                teamParams.setTitleRows(2);
-                teamParams.setHeadRows(1);
-                teamParams.setNeedSave(true);
-                //数据为空校验
-                List<TeamModel> list = ExcelImportUtil.importExcel(file.getInputStream(), TeamModel.class, teamParams);
-                TeamModel team = list.get(0);
-                boolean b = XlsUtil.checkObjAllFieldsIsNull(team);
-                if (b) {
-                    return Result.error("文件导入失败:队伍内容不能为空！");
+                TeamExcelListener teamExcelListener = new TeamExcelListener();
+                try {
+                    EasyExcel.read(file.getInputStream(), RecordData.class, teamExcelListener).sheet().doRead();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
 
-                //导入取得应急队伍人员信息
-                ImportParams crewParams = new ImportParams();
-                crewParams.setTitleRows(6);
-                crewParams.setHeadRows(1);
-                crewParams.setNeedSave(true);
+                TeamModel team = teamExcelListener.getTeamModel();
+                List<CrewModel> crewList = teamExcelListener.getCrewList();
 
-                List<CrewModel> crewList = ExcelImportUtil.importExcel(file.getInputStream(), CrewModel.class, crewParams);
                 Iterator<CrewModel> iterator = crewList.iterator();
                 while (iterator.hasNext()) {
                     CrewModel model = iterator.next();
