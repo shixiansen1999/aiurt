@@ -25,7 +25,7 @@ public interface ISTodoBaseAPI {
 
     /**
      * 更新待办任务状态
-     * @param businessType  业务类型
+     * @param businessType  业务类型   (TodoBusinessTypeEnum)
      * @param businessKey  业务id
      * @param username  实际办理人账号
      * @param todoType 待办任务状态 （CommonTodoStatus）
