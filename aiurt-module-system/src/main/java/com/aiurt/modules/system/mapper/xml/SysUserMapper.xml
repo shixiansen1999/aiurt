@@ -271,13 +271,13 @@
 		JOIN sys_user su ON sur.user_id = su.id AND su.del_flag = 0
 		JOIN sys_role sr ON sur.role_id = sr.id
 	    <where>
-	    <if test="orgCode.size()>0 and orgCode !=null">
+	    <if test="orgCode !=null and orgCode.size()>0">
 			su.org_code in
 			<foreach collection="orgCode" open="(" close=")" separator="," item="code">
              #{code}
 			</foreach>
 		</if>
-		<if test="roleCode.size()>0 and roleCode !=null">
+		<if test="roleCode !=null and roleCode.size()>0 ">
 			and sr.role_code in
 			<foreach collection="roleCode" open="(" close=")" separator="," item="code">
 				#{code}

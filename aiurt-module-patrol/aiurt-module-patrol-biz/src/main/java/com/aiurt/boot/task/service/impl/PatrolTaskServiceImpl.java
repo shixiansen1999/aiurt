@@ -307,7 +307,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
         TodoDTO todoDTO = new TodoDTO();
-        todoDTO.setTaskName(patrolTask.getName());
+        todoDTO.setTaskName(patrolTask.getName() + "(待执行)");
         todoDTO.setBusinessKey(patrolTask.getId());
         todoDTO.setCurrentUserName(loginUser.getUsername());
         todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
@@ -725,7 +725,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 List<String> orgCodes = organizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
                 String userName = sysBaseApi.getUserNameByOrgCodeAndRoleCode(orgCodes, Arrays.asList(RoleConstant.FOREMAN));
                 TodoDTO todoDTO = new TodoDTO();
-                todoDTO.setTaskName(patrolTask.getName());
+                todoDTO.setTaskName(patrolTask.getName() + "(待审核)");
                 todoDTO.setBusinessKey(patrolTask.getId());
                 todoDTO.setCurrentUserName(userName);
                 todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
