@@ -278,7 +278,7 @@
 			</foreach>
 		</if>
 		<if test="roleCode.size()>0 and roleCode !=null">
-			and sur.role_code in
+			and sr.role_code in
 			<foreach collection="roleCode" open="(" close=")" separator="," item="code">
 				#{code}
 			</foreach>

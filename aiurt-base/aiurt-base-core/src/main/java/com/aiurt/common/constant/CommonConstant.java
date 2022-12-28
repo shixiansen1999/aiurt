@@ -500,6 +500,14 @@ public interface CommonConstant {
   * 超级管理员角色编码
   */
  public static final String ADMIN = "admin";
+ /**
+  * 工班长角色编码
+  */
+ public static final String FOREMAN = "foreman";
+ /**
+  * 技术员角色编码
+  */
+ public static final String TECHNICIAN = "technician";
 
  /**
   * 待办任务状态:0待办2待阅

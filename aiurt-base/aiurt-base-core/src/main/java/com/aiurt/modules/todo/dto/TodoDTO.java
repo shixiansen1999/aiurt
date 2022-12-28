@@ -17,6 +17,9 @@ public class TodoDTO {
     /**业务id*/
     @ApiModelProperty(value = "业务id")
     private String businessKey;
+    /**业务类型*/
+    @ApiModelProperty(value = "业务类型")
+    private String businessType;
     /**当前办理的用户账号(逗号隔开)*/
     @ApiModelProperty(value = "当前办理的用户账号(逗号隔开)")
     private String currentUserName;
@@ -42,9 +45,10 @@ public class TodoDTO {
     public TodoDTO() {
     }
 
-    public TodoDTO(String taskName, String businessKey, String currentUserName, String taskType, String todoType, String processDefinitionName, String url, String appUrl) {
+    public TodoDTO(String taskName, String businessKey, String businessType, String currentUserName, String taskType, String todoType, String processDefinitionName, String url, String appUrl) {
         this.taskName = taskName;
         this.businessKey = businessKey;
+        this.businessType = businessType;
         this.currentUserName = currentUserName;
         this.taskType = taskType;
         this.todoType = todoType;
