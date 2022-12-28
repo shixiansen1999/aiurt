@@ -28,6 +28,7 @@ import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
@@ -926,7 +927,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (CollectionUtil.isEmpty(loginUserOrgCodes)) {
             return Collections.emptyList();
         }
-
+        boolean orgClose = GlobalThreadLocal.setDataFilter(false);
         List<String> orgCode = patrolTaskOrganizationMapper.getOrgCode(list.get(0));
 
         // 获取批量指派时的用户 需要相同的组织机构
@@ -943,7 +944,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
             }
         }
-
+        GlobalThreadLocal.setDataFilter(orgClose);
         // 获取今日当班的人员
         List<SysUserTeamDTO> todayOndutyDetail = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(orgCode)) {
