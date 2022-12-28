@@ -11,8 +11,10 @@ import com.aiurt.boot.materials.constant.MaterialsConstant;
 import com.aiurt.boot.materials.dto.*;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
+import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoices;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsCategoryMapper;
+import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesMapper;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import com.aiurt.common.api.CommonAPI;
@@ -58,11 +60,13 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @Description: emergency_materials
  * @Author: aiurt
- * @Date:   2022-11-29
+ * @Date: 2022-11-29
  * @Version: V1.0
  */
 @Service
@@ -72,6 +76,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     private EmergencyMaterialsMapper emergencyMaterialsMapper;
     @Autowired
     private EmergencyMaterialsCategoryMapper emergencyMaterialsCategoryMapper;
+    @Autowired
+    private EmergencyMaterialsInvoicesMapper materialsInvoicesMapper;
 
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
@@ -82,40 +88,44 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     public Page<MaterialAccountDTO> getMaterialAccountList(Page<MaterialAccountDTO> pageList, MaterialAccountDTO condition) {
         List<MaterialAccountDTO> materialAccountList = emergencyMaterialsMapper.getMaterialAccountList(pageList, condition);
         List<PatrolStandardItemsModel> patrolStandardItemsModels = iSysBaseAPI.patrolStandardList(condition.getPatrolStandardId());
-        materialAccountList.forEach(e->{
-            if (StrUtil.isNotBlank(e.getUserId())){
+        materialAccountList.forEach(e -> {
+            if (StrUtil.isNotBlank(e.getUserId())) {
                 //根据负责人id查询负责人名称
                 LoginUser userById = iSysBaseAPI.getUserById(e.getUserId());
-                if (StrUtil.isNotBlank(userById.getRealname())){
+                if (StrUtil.isNotBlank(userById.getRealname())) {
                     e.setUserName(userById.getRealname());
                 }
-            }if (StrUtil.isNotBlank(e.getPrimaryOrg())){
+            }
+            if (StrUtil.isNotBlank(e.getPrimaryOrg())) {
                 //根据部门编码查询部门名称
                 SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(e.getPrimaryOrg());
-                if (ObjectUtil.isNotEmpty(departByOrgCode)){
+                if (ObjectUtil.isNotEmpty(departByOrgCode)) {
                     e.setPrimaryName(departByOrgCode.getDepartName());
                 }
-            }if (StrUtil.isNotBlank(e.getLineCode())){
+            }
+            if (StrUtil.isNotBlank(e.getLineCode())) {
                 //根据线路编码查询线路名称
                 String position = iSysBaseAPI.getPosition(e.getLineCode());
-                if (StrUtil.isNotBlank(position)){
+                if (StrUtil.isNotBlank(position)) {
                     e.setLineName(position);
                 }
-            }if(StrUtil.isNotBlank(e.getStationCode())){
+            }
+            if (StrUtil.isNotBlank(e.getStationCode())) {
                 //根据站点编码查询站点名称
                 String position = iSysBaseAPI.getPosition(e.getStationCode());
-                if (StrUtil.isNotBlank(position)){
+                if (StrUtil.isNotBlank(position)) {
                     e.setStationName(position);
                 }
-            }if(StrUtil.isNotBlank(e.getPositionCode())){
+            }
+            if (StrUtil.isNotBlank(e.getPositionCode())) {
                 //根据位置编码查询位置名称
                 String position = iSysBaseAPI.getPosition(e.getPositionCode());
-                if (StrUtil.isNotBlank(position)){
+                if (StrUtil.isNotBlank(position)) {
                     e.setPositionName(position);
                 }
             }
             //巡检项
-            if (CollUtil.isNotEmpty(patrolStandardItemsModels)){
+            if (CollUtil.isNotEmpty(patrolStandardItemsModels)) {
                 e.setPatrolStandardItemsModelList(patrolStandardItemsModels);
             }
         });
@@ -125,23 +135,27 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     @Override
     public Page<EmergencyMaterialsInvoicesItem> getInspectionRecord(Page<EmergencyMaterialsInvoicesItem> pageList, EmergencyMaterialsInvoicesItem condition) {
         List<EmergencyMaterialsInvoicesItem> inspectionRecord = emergencyMaterialsMapper.getInspectionRecord(pageList, condition);
-        inspectionRecord.forEach(e->{
-            if (StrUtil.isNotBlank(e.getLineCode())){
+        inspectionRecord.forEach(e -> {
+            if (StrUtil.isNotBlank(e.getLineCode())) {
                 //根据线路编码查询线路名称
                 String position = iSysBaseAPI.getPosition(e.getLineCode());
                 e.setLineName(position);
-            }if(StrUtil.isNotBlank(e.getStationCode())){
+            }
+            if (StrUtil.isNotBlank(e.getStationCode())) {
                 //根据站点编码查询站点名称
                 String position = iSysBaseAPI.getPosition(e.getStationCode());
                 e.setStationName(position);
-            }if(StrUtil.isNotBlank(e.getPositionCode())){
+            }
+            if (StrUtil.isNotBlank(e.getPositionCode())) {
                 //根据位置编码查询位置名称
                 String position = iSysBaseAPI.getPosition(e.getPositionCode());
                 e.setPositionName(position);
-            }if(StrUtil.isNotBlank(e.getPatrolTeamCode())){
+            }
+            if (StrUtil.isNotBlank(e.getPatrolTeamCode())) {
                 String departNameByOrgCode = iSysBaseAPI.getDepartNameByOrgCode(e.getPatrolTeamCode());
                 e.setPatrolTeamName(departNameByOrgCode);
-            }if(StrUtil.isNotBlank(e.getPatrolId())){
+            }
+            if (StrUtil.isNotBlank(e.getPatrolId())) {
                 LoginUser userById = iSysBaseAPI.getUserById(e.getPatrolId());
                 e.setPatrolName(userById.getRealname());
             }
@@ -151,7 +165,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
 
     @Override
     public MaterialPatrolDTO getMaterialPatrol() {
-        MaterialPatrolDTO materialPatrolDTO  = new MaterialPatrolDTO();
+        MaterialPatrolDTO materialPatrolDTO = new MaterialPatrolDTO();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         materialPatrolDTO.setPatrolName(sysUser.getRealname());
 
@@ -159,18 +173,18 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         List<CsUserMajorModel> majorByUserId = iSysBaseAPI.getMajorByUserId(sysUser.getId());
         List<String> collect = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
 
-        if (CollUtil.isNotEmpty(collect)){
+        if (CollUtil.isNotEmpty(collect)) {
             List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getPatrolStandardList(collect);
             materialPatrolDTO.setPatrolStandardDTOList(CollUtil.isNotEmpty(patrolStandardList) ? patrolStandardList : null);
         }
 
         //生成4位英文随机字符串
-        String random = org.apache.commons.lang3.RandomStringUtils.random(4,true,false);
+        String random = org.apache.commons.lang3.RandomStringUtils.random(4, true, false);
         //转换为大写
         String string = random.toUpperCase();
 
         //生成3位数字随机字符串
-        String random1 = RandomStringUtils.random(3,false,true);
+        String random1 = RandomStringUtils.random(3, false, true);
 
         //当前时间
         String replace = DateUtil.formatDate(DateUtil.date()).replace("-", "");
@@ -183,7 +197,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     }
 
     @Override
-    public Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList,String id) {
+    public Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList, String id) {
         List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsMapper.getMaterialInspection(pageList, id);
         return pageList.setRecords(materialInspection);
     }
@@ -192,34 +206,38 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     public ModelAndView getMaterialPatrolList(MaterialAccountDTO condition) {
         List<MaterialAccountDTO> materialAccountList = emergencyMaterialsMapper.getMaterialPatrolList(condition);
         List<PatrolStandardItemsModel> patrolStandardItemsModels = iSysBaseAPI.patrolStandardList(condition.getPatrolStandardId());
-        materialAccountList.forEach(e->{
-            if (StrUtil.isNotBlank(e.getUserId())){
+        materialAccountList.forEach(e -> {
+            if (StrUtil.isNotBlank(e.getUserId())) {
                 //根据负责人id查询负责人名称
                 LoginUser userById = iSysBaseAPI.getUserById(e.getUserId());
                 e.setUserName(userById.getRealname());
-            }if (StrUtil.isNotBlank(e.getPrimaryOrg())){
+            }
+            if (StrUtil.isNotBlank(e.getPrimaryOrg())) {
                 //根据部门编码查询部门名称
                 SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(e.getPrimaryOrg());
                 e.setPrimaryName(departByOrgCode.getDepartName());
-            }if (StrUtil.isNotBlank(e.getLineCode())){
+            }
+            if (StrUtil.isNotBlank(e.getLineCode())) {
                 //根据线路编码查询线路名称
                 String position = iSysBaseAPI.getPosition(e.getLineCode());
                 e.setLineName(position);
-            }if(StrUtil.isNotBlank(e.getStationCode())){
+            }
+            if (StrUtil.isNotBlank(e.getStationCode())) {
                 //根据站点编码查询站点名称
                 String position = iSysBaseAPI.getPosition(e.getStationCode());
                 e.setStationName(position);
-            }if(StrUtil.isNotBlank(e.getPositionCode())){
+            }
+            if (StrUtil.isNotBlank(e.getPositionCode())) {
                 //根据位置编码查询位置名称
                 String position = iSysBaseAPI.getPosition(e.getPositionCode());
                 e.setPositionName(position);
             }
             //巡检项
-            if (CollUtil.isNotEmpty(patrolStandardItemsModels)){
+            if (CollUtil.isNotEmpty(patrolStandardItemsModels)) {
                 e.setPatrolStandardItemsModelList(patrolStandardItemsModels);
             }
         });
-        ModelAndView mv  = new ModelAndView(new JeecgEntityExcelView());
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
         //导出文件名称
         mv.addObject(NormalExcelConstants.FILE_NAME, "应急物资台账");
         //excel注解对象Class
@@ -228,7 +246,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("应急物资台账", "应急物资台账"));
         //导出数据列表
         mv.addObject(NormalExcelConstants.DATA_LIST, materialAccountList);
-        return  mv;
+        return mv;
     }
 
     @Override
@@ -290,7 +308,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             params.setHeadRows(1);
             params.setNeedSave(true);
             try {
-                List<EmergencyMaterials>materials = new ArrayList<>();
+                List<EmergencyMaterials> materials = new ArrayList<>();
                 List<EmergencyMaterialsModel> list = ExcelImportUtil.importExcel(file.getInputStream(), EmergencyMaterialsModel.class, params);
                 Iterator<EmergencyMaterialsModel> iterator = list.iterator();
                 while (iterator.hasNext()) {
@@ -305,12 +323,11 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                     return imporReturnRes(errorLines, successLines, tipMessage, false, null);
                 }
                 for (EmergencyMaterialsModel model : list) {
-                    if(ObjectUtil.isNotEmpty(model))
-                    {
+                    if (ObjectUtil.isNotEmpty(model)) {
                         EmergencyMaterials em = new EmergencyMaterials();
                         StringBuilder stringBuilder = new StringBuilder();
                         //校验信息
-                        examine(model,em,stringBuilder,list);
+                        examine(model, em, stringBuilder, list);
                         if (stringBuilder.length() > 0) {
                             // 截取字符
                             stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -322,10 +339,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 }
                 if (errorLines > 0) {
                     //错误报告下载
-                    return getErrorExcel(errorLines, list, errorMessage, successLines, type,url);
-                }
-                else
-                {
+                    return getErrorExcel(errorLines, list, errorMessage, successLines, type, url);
+                } else {
                     successLines = list.size();
                     for (EmergencyMaterials material : materials) {
                         emergencyMaterialsMapper.insert(material);
@@ -351,7 +366,203 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         }
         return imporReturnRes(errorLines, successLines, tipMessage, true, null);
     }
+    @Override
+    public void getInspectionRecordExportExcel(EmergencyMaterialsInvoicesDTO condition, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        //创建导入失败错误报告,进行模板导出
+        Resource resource = new ClassPathResource("/templates/emInvoices.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+        //2.获取临时文件
+        File fileTemp = new File("/templates/emInvoices.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
 
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams params = new TemplateExportParams(path);
+        List<String> selections = condition.getSelections();
+        Map<String, Object> map = new HashMap<String, Object>();
+        LambdaQueryWrapper<EmergencyMaterialsInvoices> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.eq(EmergencyMaterialsInvoices::getId, selections.get(0));
+        EmergencyMaterialsInvoices emergencyMaterialsInvoices = materialsInvoicesMapper.selectOne(queryWrapper);
+        EmergencyMaterialsInvoicesDTO e = new EmergencyMaterialsInvoicesDTO();
+        BeanUtils.copyProperties(emergencyMaterialsInvoices, e);
+        String wz = null;
+        if (StrUtil.isNotBlank(e.getLineCode())) {
+            //根据线路编码查询线路名称
+            String position = iSysBaseAPI.getPosition(e.getLineCode());
+            e.setLineName(position);
+            wz = position;
+        }
+        if (StrUtil.isNotBlank(e.getStationCode())) {
+            //根据站点编码查询站点名称
+            String position = iSysBaseAPI.getPosition(e.getStationCode());
+            if (ObjectUtil.isNotEmpty(wz)) {
+                wz = wz + position;
+            } else {
+                wz = position;
+            }
+            e.setStationName(position);
+        }
+        if (StrUtil.isNotBlank(e.getPositionCode())) {
+            //根据位置编码查询位置名称
+            String position = iSysBaseAPI.getPosition(e.getPositionCode());
+            e.setPositionName(position);
+            if (ObjectUtil.isNotEmpty(wz)) {
+                wz = wz + position;
+            } else {
+                wz = position;
+            }
+        }
+        if (StrUtil.isNotBlank(e.getDepartmentCode())) {
+            String departNameByOrgCode = iSysBaseAPI.getDepartNameByOrgCode(e.getDepartmentCode());
+            e.setPatrolTeamName(departNameByOrgCode);
+        }
+        if (StrUtil.isNotBlank(e.getUserId())) {
+            LoginUser userById = iSysBaseAPI.getUserById(e.getUserId());
+            e.setPatrolName(userById.getRealname());
+        }
+        map.put("patrolDate", DateUtil.format(e.getPatrolDate(), "yyyy-MM-dd"));
+        map.put("position", wz);
+        map.put("patrolName", e.getPatrolName());
+        map.put("patrolTeamName", e.getPatrolTeamName());
+        map.put("patrolResult", e.getInspectionResults() == 0 ? "异常" : "正常");
+        List<Map<String, String>> listMap = new ArrayList<Map<String, String>>();
+        List<EmergencyMaterialsInvoicesItemDTO> items = emergencyMaterialsMapper.getMaterialInspectionList(selections.get(0));
+        for (EmergencyMaterialsInvoicesItemDTO item : items) {
+            Map<String, String> lm = new HashMap<String, String>();
+            lm.put("categoryName", item.getCategoryName());
+            lm.put("materialsCode", item.getMaterialsCode());
+            lm.put("materialsName", item.getMaterialsName());
+            lm.put("specification", item.getSpecification());
+            lm.put("storageLocation", "位置 ");
+            lm.put("number", item.getNumber());
+            lm.put("check", item.getCheck() == 1 ? "√" : "×");
+            lm.put("checkResult", item.getCheckResult() == 1 ? "√" : "×");
+            lm.put("abnormalCondition", item.getAbnormalCondition());
+            listMap.add(lm);
+        }
+        map.put("maplist", listMap);
+        Workbook workbook = ExcelExportUtil.exportExcel(params, map);
+        String fileName = "应急物资巡检记录.xlsx";
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename=" + e.getPatrolDate() + wz + "应急物资巡检记录.xlsx");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    @Override
+    public void getInspectionRecordExportZip(EmergencyMaterialsInvoicesDTO condition, HttpServletRequest request, HttpServletResponse response) throws  IOException {
+        //创建导入失败错误报告,进行模板导出
+        Resource resource = new ClassPathResource("/templates/emInvoices.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+        //2.获取临时文件
+        File fileTemp = new File("/templates/emInvoices.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams params = new TemplateExportParams(path);
+        List<String> selections = condition.getSelections();
+        LambdaQueryWrapper<EmergencyMaterialsInvoices> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.in(EmergencyMaterialsInvoices::getId, selections);
+        List<EmergencyMaterialsInvoices> invoices = materialsInvoicesMapper.selectList(queryWrapper);
+        OutputStream outputStream = response.getOutputStream();
+        ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
+        response.setContentType("application/zip");
+        response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(DateUtil.format(new Date(), "yyyy-MM-dd") + "应急物资巡检记录导出模板.zip", "UTF-8"));
+        for (EmergencyMaterialsInvoices invoice : invoices) {
+            EmergencyMaterialsInvoicesDTO e = new EmergencyMaterialsInvoicesDTO();
+            BeanUtils.copyProperties(invoice, e);
+            String wz = null;
+            if (StrUtil.isNotBlank(e.getLineCode())) {
+                //根据线路编码查询线路名称
+                String position = iSysBaseAPI.getPosition(e.getLineCode());
+                e.setLineName(position);
+                wz = position;
+            }
+            if (StrUtil.isNotBlank(e.getStationCode())) {
+                //根据站点编码查询站点名称
+                String position = iSysBaseAPI.getPosition(e.getStationCode());
+                if (ObjectUtil.isNotEmpty(wz)) {
+                    wz = wz + position;
+                } else {
+                    wz = position;
+                }
+                e.setStationName(position);
+            }
+            if (StrUtil.isNotBlank(e.getPositionCode())) {
+                //根据位置编码查询位置名称
+                String position = iSysBaseAPI.getPosition(e.getPositionCode());
+                e.setPositionName(position);
+                if (ObjectUtil.isNotEmpty(wz)) {
+                    wz = wz + position;
+                } else {
+                    wz = position;
+                }
+            }
+            if (StrUtil.isNotBlank(e.getDepartmentCode())) {
+                String departNameByOrgCode = iSysBaseAPI.getDepartNameByOrgCode(e.getDepartmentCode());
+                e.setPatrolTeamName(departNameByOrgCode);
+            }
+            if (StrUtil.isNotBlank(e.getUserId())) {
+                LoginUser userById = iSysBaseAPI.getUserById(e.getUserId());
+                e.setPatrolName(userById.getRealname());
+            }
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("patrolDate", DateUtil.format(e.getPatrolDate(), "yyyy-MM-dd"));
+            map.put("position", wz);
+            map.put("patrolName", e.getPatrolName());
+            map.put("patrolTeamName", e.getPatrolTeamName());
+            map.put("patrolResult", e.getInspectionResults() == 0 ? "异常" : "正常");
+            List<Map<String, String>> listMap = new ArrayList<Map<String, String>>();
+            List<EmergencyMaterialsInvoicesItemDTO> items = emergencyMaterialsMapper.getMaterialInspectionList(invoice.getId());
+            for (EmergencyMaterialsInvoicesItemDTO item : items) {
+                Map<String, String> lm = new HashMap<String, String>();
+                lm.put("categoryName", item.getCategoryName());
+                lm.put("materialsCode", item.getMaterialsCode());
+                lm.put("materialsName", item.getMaterialsName());
+                lm.put("specification", item.getSpecification());
+                lm.put("storageLocation", "位置 ");
+                lm.put("number", item.getNumber());
+                lm.put("check", item.getCheck() == 1 ? "√" : "×");
+                lm.put("checkResult", item.getCheckResult() == 1 ? "√" : "×");
+                lm.put("abnormalCondition", item.getAbnormalCondition());
+                listMap.add(lm);
+            }
+            map.put("maplist", listMap);
+            Workbook workbook = ExcelExportUtil.exportExcel(params, map);
+            try {
+                Random random = new Random();
+                int a = random.nextInt(10);
+                ZipEntry entry = new ZipEntry(a+" "+DateUtil.format(e.getPatrolDate(), "yyyy-MM-dd") + wz + "应急物资巡检记录.xlsx");
+                zipOutputStream.putNextEntry(entry);
+                workbook.write(zipOutputStream);
+                zipOutputStream.flush();
+            } catch (IOException exception) {
+                exception.printStackTrace();
+            }
+        }
+        zipOutputStream.close();
+        outputStream.flush();
+        outputStream.close();
+
+    }
     private Result<?> getErrorExcel(int errorLines, List<EmergencyMaterialsModel> list, List<String> errorMessage, int successLines, String type, String url) throws IOException {
         //创建导入失败错误报告,进行模板导出
         Resource resource = new ClassPathResource("/templates/emergencyMaterialsError.xlsx");
@@ -405,57 +616,45 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     }
 
     private void examine(EmergencyMaterialsModel model, EmergencyMaterials em, StringBuilder stringBuilder, List<EmergencyMaterialsModel> list) {
-        BeanUtils.copyProperties(model,em);
-        if(ObjectUtil.isEmpty(em.getMaterialsCode()))
-        {
+        BeanUtils.copyProperties(model, em);
+        if (ObjectUtil.isEmpty(em.getMaterialsCode())) {
             stringBuilder.append("应急物资编号必填，");
 
-        }
-        else
-        {
-            if(ObjectUtil.isNotEmpty(em.getMaterialsName()))
-            {
-                if(ObjectUtil.isNotEmpty(model.getDepositPositionName()))
-                {
+        } else {
+            if (ObjectUtil.isNotEmpty(em.getMaterialsName())) {
+                if (ObjectUtil.isNotEmpty(model.getDepositPositionName())) {
                     List<EmergencyMaterialsModel> modelList = list.stream().filter(l -> !l.equals(model) && l.getMaterialsCode().equals(model.getMaterialsCode()) && l.getDepositPositionName().equals(model.getDepositPositionName())).collect(Collectors.toList());
-                    if(CollUtil.isNotEmpty(modelList))
-                    {
+                    if (CollUtil.isNotEmpty(modelList)) {
                         stringBuilder.append("导入的数据已有同一个物资、同一个位置的编号，");
                     }
-                    List<String> depositPositionName = StrUtil.splitTrim( model.getDepositPositionName(),"/");
+                    List<String> depositPositionName = StrUtil.splitTrim(model.getDepositPositionName(), "/");
                     String lineCode = emergencyMaterialsMapper.getLineCode(depositPositionName.get(0));
-                    String stationCode = emergencyMaterialsMapper.getStationCode(lineCode,depositPositionName.get(1));
+                    String stationCode = emergencyMaterialsMapper.getStationCode(lineCode, depositPositionName.get(1));
                     String positionCode = null;
                     String[] split = model.getDepositPositionName().split("");
                     Integer count = 0;
                     for (String s : split) {
-                        if(s.equals("/"))
-                        {
+                        if (s.equals("/")) {
                             count++;
                         }
                     }
-                    if(count==3||count==2)
-                    {
-                        if(depositPositionName.size()>2)
-                        {
-                            int i = model.getDepositPositionName().indexOf("/",2);
-                            positionCode = emergencyMaterialsMapper.getPositionCode(lineCode,stationCode,model.getDepositPositionName().substring(i));
+                    if (count == 3 || count == 2) {
+                        if (depositPositionName.size() > 2) {
+                            int i = model.getDepositPositionName().indexOf("/", 2);
+                            positionCode = emergencyMaterialsMapper.getPositionCode(lineCode, stationCode, model.getDepositPositionName().substring(i));
                         }
-                        if(ObjectUtil.isNotEmpty(lineCode)&&ObjectUtil.isNotEmpty(stationCode))
-                        {
+                        if (ObjectUtil.isNotEmpty(lineCode) && ObjectUtil.isNotEmpty(stationCode)) {
                             LambdaQueryWrapper<EmergencyMaterials> queryWrapper = new LambdaQueryWrapper<>();
-                            queryWrapper.eq(EmergencyMaterials::getDelFlag,CommonConstant.DEL_FLAG_0);
-                            queryWrapper.eq(EmergencyMaterials::getMaterialsCode,model.getMaterialsCode());
-                            queryWrapper.eq(EmergencyMaterials::getLineCode,lineCode);
-                            queryWrapper.eq(EmergencyMaterials::getStationCode,stationCode);
+                            queryWrapper.eq(EmergencyMaterials::getDelFlag, CommonConstant.DEL_FLAG_0);
+                            queryWrapper.eq(EmergencyMaterials::getMaterialsCode, model.getMaterialsCode());
+                            queryWrapper.eq(EmergencyMaterials::getLineCode, lineCode);
+                            queryWrapper.eq(EmergencyMaterials::getStationCode, stationCode);
                             queryWrapper.last("limit 1");
-                            if(ObjectUtil.isNotEmpty(positionCode))
-                            {
-                                queryWrapper.eq(EmergencyMaterials::getPositionCode,positionCode);
+                            if (ObjectUtil.isNotEmpty(positionCode)) {
+                                queryWrapper.eq(EmergencyMaterials::getPositionCode, positionCode);
                             }
                             EmergencyMaterials materials = emergencyMaterialsMapper.selectOne(queryWrapper);
-                            if(ObjectUtil.isNotEmpty(materials))
-                            {
+                            if (ObjectUtil.isNotEmpty(materials)) {
                                 stringBuilder.append("已添加同一个物资、同一个位置的编号，");
                             }
                         }
@@ -463,205 +662,141 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 }
             }
         }
-        if(ObjectUtil.isEmpty(em.getMaterialsName()))
-        {
+        if (ObjectUtil.isEmpty(em.getMaterialsName())) {
             stringBuilder.append("应急物资名称必填，");
-        }
-        else
-        {
-            if(ObjectUtil.isNotEmpty(em.getMaterialsCode()))
-            {
-             MaterialBaseDTO materialBaseDTO =  emergencyMaterialsMapper.getMaterials(em.getMaterialsCode(),em.getMaterialsName());
-             if(ObjectUtil.isNotEmpty(materialBaseDTO))
-             {
-                 em.setMaterialsCode(materialBaseDTO.getCode());
-                 em.setMaterialsName(materialBaseDTO.getName());
-                 em.setSpecification(materialBaseDTO.getSpecifications());
-                 em.setUnit(materialBaseDTO.getUnit());
-             }
-             else
-             {
-                 stringBuilder.append("应急物资名称、应急物资编号这两个不是同一类，");
-             }
+        } else {
+            if (ObjectUtil.isNotEmpty(em.getMaterialsCode())) {
+                MaterialBaseDTO materialBaseDTO = emergencyMaterialsMapper.getMaterials(em.getMaterialsCode(), em.getMaterialsName());
+                if (ObjectUtil.isNotEmpty(materialBaseDTO)) {
+                    em.setMaterialsCode(materialBaseDTO.getCode());
+                    em.setMaterialsName(materialBaseDTO.getName());
+                    em.setSpecification(materialBaseDTO.getSpecifications());
+                    em.setUnit(materialBaseDTO.getUnit());
+                } else {
+                    stringBuilder.append("应急物资名称、应急物资编号这两个不是同一类，");
+                }
             }
         }
-        if(ObjectUtil.isEmpty(em.getCategoryName()))
-        {
+        if (ObjectUtil.isEmpty(em.getCategoryName())) {
             stringBuilder.append("应急物资分类必填，");
-        }
-        else {
+        } else {
             EmergencyMaterialsCategory categoryFatherName = emergencyMaterialsCategoryMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getCategoryName, model.getCategoryName()).eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1"));
-            if(ObjectUtil.isEmpty(categoryFatherName))
-            {
+            if (ObjectUtil.isEmpty(categoryFatherName)) {
                 stringBuilder.append("应急物资分类不存在，");
             }
-            if(categoryFatherName.getStatus()==0)
-            {
+            if (categoryFatherName.getStatus() == 0) {
                 stringBuilder.append("该应急物资分类已被禁用，");
-            }
-            else
-            {
+            } else {
                 List<EmergencyMaterialsCategory> deptAll = emergencyMaterialsCategoryMapper.selectList(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0));
                 Set<EmergencyMaterialsCategory> deptUpList = getDeptUpList(deptAll, categoryFatherName);
                 List<EmergencyMaterialsCategory> disabledList = deptUpList.stream().filter(e -> e.getStatus() == 0).collect(Collectors.toList());
-                if(disabledList.size()>0)
-                {
+                if (disabledList.size() > 0) {
                     stringBuilder.append("该应急物资分类已被禁用，");
-                }
-                else
-                {
+                } else {
                     em.setCategoryCode(categoryFatherName.getCategoryCode());
                 }
 
             }
         }
-        if(ObjectUtil.isEmpty(model.getFloodProtection()))
-        {
+        if (ObjectUtil.isEmpty(model.getFloodProtection())) {
             stringBuilder.append("是否为防汛物资必填，");
-        }
-        else
-        {
-            if(!(MaterialsConstant.IS_FLOOD_P+MaterialsConstant.NO_FLOOD_P).contains(model.getFloodProtection()))
-            {
+        } else {
+            if (!(MaterialsConstant.IS_FLOOD_P + MaterialsConstant.NO_FLOOD_P).contains(model.getFloodProtection())) {
                 stringBuilder.append("是否为防汛物资填写不规范，");
-            }
-            else
-            {
-                em.setFloodProtection(MaterialsConstant.NO_FLOOD_P.equals(model.getFloodProtection())?0:1);
+            } else {
+                em.setFloodProtection(MaterialsConstant.NO_FLOOD_P.equals(model.getFloodProtection()) ? 0 : 1);
             }
 
         }
-        if(ObjectUtil.isEmpty(model.getNumber()))
-        {
+        if (ObjectUtil.isEmpty(model.getNumber())) {
             stringBuilder.append("数量必填，");
-        }
-        else
-        {
+        } else {
             String regular = "^[0-9]*$";
             Pattern pattern = Pattern.compile(regular);
             Matcher matcher = pattern.matcher(em.getPhone());
-            if(!matcher.find())
-            {
+            if (!matcher.find()) {
                 stringBuilder.append("数量填写必须是数字，");
             }
             em.setNumber(Integer.valueOf(model.getNumber()));
         }
-        if(ObjectUtil.isEmpty(model.getDepositPositionName()))
-        {
+        if (ObjectUtil.isEmpty(model.getDepositPositionName())) {
             stringBuilder.append("存放位置必填，");
-        }
-        else
-        {
+        } else {
             String[] split = model.getDepositPositionName().split("");
             Integer count = 0;
             for (String s : split) {
-                if(s.equals("/"))
-                {
+                if (s.equals("/")) {
                     count++;
                 }
             }
-            if(count<2||count>3)
-            {
+            if (count < 2 || count > 3) {
                 stringBuilder.append("存放位置填写不规范，");
-            }
-            else
-            {
-                List<String> depositPositionName = StrUtil.splitTrim( model.getDepositPositionName(),"/");
+            } else {
+                List<String> depositPositionName = StrUtil.splitTrim(model.getDepositPositionName(), "/");
                 String lineCode = emergencyMaterialsMapper.getLineCode(depositPositionName.get(0));
-                String stationCode = emergencyMaterialsMapper.getStationCode(lineCode,depositPositionName.get(1));
+                String stationCode = emergencyMaterialsMapper.getStationCode(lineCode, depositPositionName.get(1));
                 String positionCode = null;
                 //线路/站点/位置
-                if(depositPositionName.size()>2)
-                {
-                    positionCode = emergencyMaterialsMapper.getPositionCode(lineCode,stationCode,depositPositionName.get(2));
+                if (depositPositionName.size() > 2) {
+                    positionCode = emergencyMaterialsMapper.getPositionCode(lineCode, stationCode, depositPositionName.get(2));
                 }
-                if(ObjectUtil.isNotEmpty(lineCode))
-                {
+                if (ObjectUtil.isNotEmpty(lineCode)) {
                     em.setLineCode(lineCode);
-                    String lineStation = emergencyMaterialsMapper.getStationCode(lineCode,depositPositionName.get(1));
-                    if(ObjectUtil.isEmpty(lineStation))
-                    {
+                    String lineStation = emergencyMaterialsMapper.getStationCode(lineCode, depositPositionName.get(1));
+                    if (ObjectUtil.isEmpty(lineStation)) {
                         stringBuilder.append("该线路下的站点不存在，");
-                    }
-                    else
-                    {
+                    } else {
                         em.setStationCode(stationCode);
-                        if(ObjectUtil.isEmpty(positionCode))
-                        {
+                        if (ObjectUtil.isEmpty(positionCode)) {
                             stringBuilder.append("该线路下的站点的位置不存在，");
-                        }
-                        else
-                        {
+                        } else {
                             em.setPositionCode(positionCode);
                         }
 
                     }
-                }
-                else
-                {
+                } else {
                     stringBuilder.append("线路不存在，");
                 }
-                if(ObjectUtil.isNotEmpty(stationCode))
-                {
+                if (ObjectUtil.isNotEmpty(stationCode)) {
                     em.setStationCode(stationCode);
-                }
-                else
-                {
+                } else {
                     stringBuilder.append("站点不存在，");
                 }
-                if(ObjectUtil.isNotEmpty(positionCode))
-                {
+                if (ObjectUtil.isNotEmpty(positionCode)) {
                     em.setPositionCode(stationCode);
-                }
-                else
-                {
+                } else {
                     stringBuilder.append("位置不存在，");
                 }
             }
         }
-        if(ObjectUtil.isEmpty(em.getPrimaryName()))
-        {
+        if (ObjectUtil.isEmpty(em.getPrimaryName())) {
             stringBuilder.append("主管部门必填，");
-        }
-        else
-        {
+        } else {
             String orgCode = emergencyMaterialsMapper.getOrgCode(em.getPrimaryName());
-            if(ObjectUtil.isEmpty(orgCode))
-            {
+            if (ObjectUtil.isEmpty(orgCode)) {
                 stringBuilder.append("填写的主管部门不存在，");
-            }
-            else
-            {
+            } else {
                 em.setPrimaryOrg(orgCode);
-                if(ObjectUtil.isNotEmpty(em.getUserName()))
-                {
-                    String userId = emergencyMaterialsMapper.getUserId(em.getUserName(),orgCode);
-                    if(ObjectUtil.isEmpty(userId))
-                    {
+                if (ObjectUtil.isNotEmpty(em.getUserName())) {
+                    String userId = emergencyMaterialsMapper.getUserId(em.getUserName(), orgCode);
+                    if (ObjectUtil.isEmpty(userId)) {
                         stringBuilder.append("该部门下不存在该用户，");
-                    }
-                    else
-                    {
+                    } else {
                         em.setUserId(userId);
                     }
                 }
             }
         }
-        if(ObjectUtil.isEmpty(em.getUserName()))
-        {
+        if (ObjectUtil.isEmpty(em.getUserName())) {
             stringBuilder.append("负责人必填，");
         }
-        if(ObjectUtil.isEmpty(em.getPhone()))
-        {
+        if (ObjectUtil.isEmpty(em.getPhone())) {
             stringBuilder.append("联系电话必填，");
-        }
-        else
-        {
+        } else {
             String regular = "^\\d{11}$";
             Pattern pattern = Pattern.compile(regular);
             Matcher matcher = pattern.matcher(em.getPhone());
-            if(!matcher.find())
-            {
+            if (!matcher.find()) {
                 stringBuilder.append("联系电话填写不规范，");
             }
         }
@@ -671,23 +806,24 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             model.setWrongReason(stringBuilder.toString());
         }
     }
-    public static Set<EmergencyMaterialsCategory> getDeptUpList(List<EmergencyMaterialsCategory> deptAll, EmergencyMaterialsCategory categoryFatherName)
-    {
+
+    public static Set<EmergencyMaterialsCategory> getDeptUpList(List<EmergencyMaterialsCategory> deptAll, EmergencyMaterialsCategory categoryFatherName) {
         Set<EmergencyMaterialsCategory> set = new HashSet<>();
-        if(ObjectUtil.isNotEmpty(categoryFatherName)){
+        if (ObjectUtil.isNotEmpty(categoryFatherName)) {
             String parentId = categoryFatherName.getPid();
             List<EmergencyMaterialsCategory> parentDepts = deptAll.stream().filter(item -> item.getId().equals(parentId)).collect(Collectors.toList());
-            if(CollectionUtil.isNotEmpty(parentDepts)){
+            if (CollectionUtil.isNotEmpty(parentDepts)) {
                 EmergencyMaterialsCategory parentDept = parentDepts.get(0);
                 set.add(parentDept);
                 Set<EmergencyMaterialsCategory> deptUpTree = getDeptUpList(deptAll, parentDept);
-                if(deptUpTree!=null){
+                if (deptUpTree != null) {
                     set.addAll(deptUpTree);
                 }
             }
         }
-        return  set;
+        return set;
     }
+
     public static Result<?> imporReturnRes(int errorLines, int successLines, String tipMessage, boolean isType, String failReportUrl) throws IOException {
         if (isType) {
             if (errorLines != 0) {
