@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import java.util.List;
+
 /**
  * @Description: 故障知识库
  * @Author: aiurt
@@ -39,4 +41,12 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @return
      */
     Result<String> approval(String approvedRemark, Integer approvedResult, String id);
+
+    /**
+     * 删除
+     * @param id
+     */
+    Result<String> delete(String id);
+
+    Result<String> deleteBatch(List<String> ids);
 }

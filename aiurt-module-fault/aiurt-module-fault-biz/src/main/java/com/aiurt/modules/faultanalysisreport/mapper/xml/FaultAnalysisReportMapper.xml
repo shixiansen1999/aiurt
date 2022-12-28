@@ -158,7 +158,8 @@
     f.station_position_code,
     f.fault_phenomenon,
     f.happen_time,
-    frr.fault_analysis
+    frr.fault_analysis,
+    f.appoint_user_name
     FROM
     fault f
     left join fault_repair_record frr on frr.fault_code =  f.`code`

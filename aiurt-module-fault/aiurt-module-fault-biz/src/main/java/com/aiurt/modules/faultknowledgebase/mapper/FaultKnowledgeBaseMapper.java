@@ -48,4 +48,11 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
      * @return
      */
     List<DeviceAssemblyDTO> getAllDeviceAssembly(@Param("collect")List<String> collect);
+
+    /**
+     * 获取知识库被使用的次数
+     * @param id
+     * @return
+     */
+    int getNum(String id);
 }
