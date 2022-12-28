@@ -43,7 +43,7 @@
             #{item}
         </foreach>
     </if>
-    order by wtr.create_time,wtr.update_time
+    order by wtr.create_time desc ,wtr.update_time desc
     </select>
 
 <select id="queryById" resultType="com.aiurt.boot.team.vo.EmergencyTrainingRecordVO">
