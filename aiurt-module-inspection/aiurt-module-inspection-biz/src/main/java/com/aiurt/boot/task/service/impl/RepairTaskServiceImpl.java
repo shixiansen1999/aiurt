@@ -127,6 +127,24 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 e.setSystemName(manager.translateMajor(list4, InspectionConstant.SUBSYSTEM));
             }
 
+            //查询同行人
+            List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
+                    new LambdaQueryWrapper<RepairTaskPeerRel>()
+                            .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, e.getOverhaulCode()));
+            //名称集合
+            List<String> collect3 = repairTaskPeer.stream().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect3)) {
+                StringBuffer stringBuffer = new StringBuffer();
+                for (String t : collect3) {
+                    stringBuffer.append(t);
+                    stringBuffer.append(",");
+                }
+                if (stringBuffer.length() > 0) {
+                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                }
+                e.setPeerName(stringBuffer.toString());
+            }
+
             //检修周期类型
             e.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(e.getType())));
 
