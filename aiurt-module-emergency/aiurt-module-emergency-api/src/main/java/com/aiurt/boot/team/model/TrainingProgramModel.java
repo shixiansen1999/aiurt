@@ -22,7 +22,7 @@ public class TrainingProgramModel implements Serializable {
     @ApiModelProperty(value = "训练队伍")
     private String trainingTeam;
     /**计划训练时间*/
-    @Excel(name = "计划训练时间", width = 15)
+    @Excel(name = "训练时间", width = 15)
     @ApiModelProperty(value = "计划训练时间")
     private String trainingPlanTime;
     /**备注*/

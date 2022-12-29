@@ -372,6 +372,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                     return getErrorExcel(errorLines, errorMessage, team, crewList, successLines, null, type);
                 }
                 //校验通过，添加数据
+                emergencyTeam.setPeopleNum(emergencyCrews.size());
                 save(emergencyTeam);
                 for (EmergencyCrew emergencyCrew : emergencyCrews) {
                     emergencyCrew.setEmergencyTeamId(emergencyTeam.getId());
@@ -572,7 +573,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
 
     /**错误报告模板导出*/
     private Result<?> getErrorExcel(int errorLines,List<String> errorMessage,TeamModel team, List<CrewModel> crewList,int successLines ,String url,String type) throws IOException {
-        TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/EmergencyTeamError.xlsx");
+        TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTeamError.xlsx");
         Map<String, Object> errorMap = new HashMap<String, Object>();
         errorMap.put("majorName", team.getMajorName());
         errorMap.put("orgName", team.getOrgName());

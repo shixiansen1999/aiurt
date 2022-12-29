@@ -16,6 +16,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -153,8 +154,8 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
     * @param emergencyTrainingProgramDTO
     */
     @RequestMapping(value = "/exportXls")
-    public void exportXls(HttpServletRequest request, HttpServletResponse response,EmergencyTrainingProgramDTO emergencyTrainingProgramDTO) {
-    	emergencyTrainingProgramService.exportXls(request, response, emergencyTrainingProgramDTO);
+    public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyTrainingProgramDTO emergencyTrainingProgramDTO) {
+    	return emergencyTrainingProgramService.exportXls(request, response, emergencyTrainingProgramDTO);
     }
 
 	/**
@@ -165,7 +166,7 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
 	@ApiOperation(value="应急队伍训练计划模板下载", notes="应急队伍训练计划模板下载")
 	@RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
 	public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
-		XlsUtil.getExcel(response, "", "应急队伍训练计划模板下载.xlsx");
+		XlsUtil.getExcel(response, "templates/emergencyTrainingProgram.xlsx", "应急队伍训练计划模板下载.xlsx");
 	}
 
     /**
@@ -175,6 +176,7 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
     * @param response
     * @return
     */
+	@ApiOperation(value="应急队伍训练计划导入", notes="应急队伍训练计划导入")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
 		return emergencyTrainingProgramService.importExcel(request, response);

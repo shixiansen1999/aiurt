@@ -1,11 +1,10 @@
 package com.aiurt.boot.team.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
-import cn.afterturn.easypoi.excel.entity.ExportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
-import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -34,17 +33,20 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -319,9 +321,13 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
                         EmergencyTrainingProgram emergencyTrainingProgram = new EmergencyTrainingProgram();
                         emergencyTrainingProgram.setTrainingProgramCode(trainPlanCode);
                         emergencyTrainingProgram.setTrainingProgramName(programModel.getTrainingProgramName());
-                        emergencyTrainingProgram.setTrainingPlanTime(DateUtil.parse(programModel.getTrainingPlanTime(),"yyyy-MM"));
+                        DateTime time = DateUtil.parse(programModel.getTrainingPlanTime(), "yyyy年MM月");
+                        String format = DateUtil.format(time, "yyyy-MM");
+                        emergencyTrainingProgram.setTrainingPlanTime(DateUtil.parse(format,"yyyy-MM"));
                         emergencyTrainingProgram.setTraineesNum(programModel.getPeopleNum());
                         emergencyTrainingProgram.setStatus(TeamConstant.WAIT_PUBLISH);
+                        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                        emergencyTrainingProgram.setOrgCode(user.getOrgCode());
                         this.save(emergencyTrainingProgram);
 
                         List<String> trainingTeamId = programModel.getTrainingTeamId();
@@ -345,7 +351,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
     private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, List<TrainingProgramModel> trainingProgramModels, int successLines, String url, String type) {
 
         try {
-            TemplateExportParams exportParams = XlsUtil.getExcelModel("");
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTrainingProgramError.xlsx");
             Map<String, Object> errorMap = new HashMap<String, Object>();
             List<Map<String, String>> mapList = new ArrayList<>();
             Map<String, String> map = new HashMap<>();
@@ -384,7 +390,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             stringBuilder.append("训练项目不能为空，");
         }
         if (StrUtil.isNotEmpty(trainingTeam)) {
-            List<String> teams = StrUtil.splitTrim(trainingTeam, ",");
+            List<String> teams = StrUtil.splitTrim(trainingTeam, "；");
             //去重
             List<String> list = teams.stream().distinct().collect(Collectors.toList());
             if (teams.size() < list.size()) {
@@ -399,9 +405,11 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
                 EmergencyTeam one = emergencyTeamService.getOne(queryWrapper);
                 if (ObjectUtil.isEmpty(one)) {
                     stringBuilder.append("系统不存在" + team + "该队伍，");
+                }else {
+                    teamIds.add(one.getId());
+                    num = num + one.getPeopleNum();
                 }
-                teamIds.add(one.getId());
-                num = num + one.getPeopleNum();
+
             }
 
             trainingProgramModel.setTrainingTeamId(teamIds);
@@ -422,7 +430,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
     }
 
     @Override
-    public void exportXls(HttpServletRequest request,HttpServletResponse response, EmergencyTrainingProgramDTO emergencyTrainingProgramDTO) {
+    public ModelAndView exportXls(HttpServletRequest request,HttpServletResponse response, EmergencyTrainingProgramDTO emergencyTrainingProgramDTO) {
         IPage<EmergencyTrainingProgram> pageList = this.queryPageList(emergencyTrainingProgramDTO, 1, Integer.MAX_VALUE);
         List<EmergencyTrainingProgram> records = pageList.getRecords();
         for (EmergencyTrainingProgram record : records) {
@@ -439,22 +447,15 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             exportList = records;
         }
 
-        String title = "训练计划";
-        ExportParams exportParams=new ExportParams(title + "报表", "导出人:" , ExcelType.XSSF);
-        //调用ExcelExportUtil.exportExcel方法生成workbook
-        Workbook wb = ExcelExportUtil.exportExcel(exportParams, EmergencyTrainingProgram.class,exportList);
-        String fileName = "训练计划";
-        try {
-            response.setHeader("Content-Disposition",
-                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
-            //xlsx格式设置
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
-            wb.write(bufferedOutPut);
-            bufferedOutPut.flush();
-            bufferedOutPut.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String title ="应急队伍训练计划表";
+        // Step.3 AutoPoi 导出Excel
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        //此处设置的filename无效 ,前端会重更新设置一下
+        mv.addObject(NormalExcelConstants.FILE_NAME, title);
+        mv.addObject(NormalExcelConstants.CLASS, EmergencyTrainingProgram.class);
+        org.jeecgframework.poi.excel.entity.ExportParams exportParams=new ExportParams(title, title);
+        mv.addObject(NormalExcelConstants.PARAMS,exportParams);
+        mv.addObject(NormalExcelConstants.DATA_LIST, exportList);
+        return mv;
     }
 }
