@@ -187,6 +187,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
                               continue;
                           }
                       }
+                    }
                   }else if ("三级".equals(csStationPosition.getLevelName())) {
                           if (StrUtil.isNotEmpty(csStationPosition.getPUrl())) {
                               List<String> list1 = Arrays.asList(csStationPosition.getPUrl().split("-"));
@@ -239,6 +240,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
                                       continue;
                                   }
                               }
+                           }
                           } else if ("一级".equals(csStationPosition.getLevelName())) {
                               if (StrUtil.isNotEmpty(csStationPosition.getPositionTypeName())) {
                                   List<DictModel> dictItems = sysBaseAPI.getDictItems("station_level_one");
@@ -285,8 +287,6 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
                           }else {
                               csStationPositionMapper.insert(csStationPosition);
                           }
-                         }
-                    }
                      } catch (Exception e) {
                              e.printStackTrace();
                 }
