@@ -104,7 +104,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 		//允许上传的权限
 		if (CollUtil.isNotEmpty(uploads)){
 		for (String uploadId : uploads) {
-			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setPrimaryLookStatus(0).setEditStatus(0).setPrimaryEditStatus(0).setDeleteStatus(1).setPrimaryDeleteStatus(0)
+			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setPrimaryLookStatus(0).setEditStatus(1).setPrimaryEditStatus(0).setDeleteStatus(1).setPrimaryDeleteStatus(0)
 					.setDownloadStatus(1).setPrimaryDownloadStatus(0).setRenameStatus(1).setPrimaryRenameStatus(0).setOnlineEditing(1).setPrimaryOnlineEditing(0).setUploadStatus(1).setPrimaryUploadStatus(1).setTypeId(type.getId()).setUserId(uploadId));
 			stringSet.add(uploadId);
 		  }
