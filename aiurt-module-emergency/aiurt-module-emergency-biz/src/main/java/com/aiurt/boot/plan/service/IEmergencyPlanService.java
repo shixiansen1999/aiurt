@@ -33,6 +33,15 @@ public interface IEmergencyPlanService extends IService<EmergencyPlan> {
     IPage<EmergencyPlan> queryPageList(Page<EmergencyPlan> page, EmergencyPlanQueryDTO emergencyPlanQueryDto);
 
     /**
+     * 应急预案列表审核
+     * @param page
+     * @param emergencyPlanQueryDto
+     * @return
+     */
+    IPage<EmergencyPlan> queryWorkToDo(Page<EmergencyPlan> page, EmergencyPlanQueryDTO emergencyPlanQueryDto);
+
+
+    /**
      * 保存并添加
      * @param emergencyPlanDto
      * @return

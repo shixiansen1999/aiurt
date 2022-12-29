@@ -120,19 +120,22 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             return page;
         }
         IPage<EmergencyPlan> pageList = emergencyPlanMapper.queryPageList(page, emergencyPlanQueryDto, orgCodes);
-        List<EmergencyPlan> records = pageList.getRecords();
-        if(CollUtil.isNotEmpty(records)){
-            for (EmergencyPlan record : records) {
-                TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfo(record.getProcessInstanceId(), record.getTaskId());
-                List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
-                //operationList为空，没有审核按钮
-                if(CollUtil.isNotEmpty(operationList)){
-                    record.setHaveButton(true);
-                }else{
-                    record.setHaveButton(false);
-                }
-            }
+        return pageList;
+
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public IPage<EmergencyPlan> queryWorkToDo(Page<EmergencyPlan> page, EmergencyPlanQueryDTO emergencyPlanQueryDto) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
+        List<CsUserDepartModel> deptModel = sysBaseApi.getDepartByUserId(loginUser.getId());
+        List<String> orgCodes = deptModel.stream().filter(l -> StrUtil.isNotEmpty(l.getOrgCode()))
+                .map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(orgCodes)) {
+            return page;
         }
+        IPage<EmergencyPlan> pageList = emergencyPlanMapper.queryWorkToDo(page, emergencyPlanQueryDto, orgCodes,loginUser.getUsername());
         return pageList;
 
     }
