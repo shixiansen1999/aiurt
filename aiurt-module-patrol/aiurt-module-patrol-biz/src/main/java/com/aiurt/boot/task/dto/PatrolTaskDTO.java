@@ -140,6 +140,10 @@ public class PatrolTaskDTO
     @Excel(name = "登录人所拥有的部门权限", width = 15)
     @ApiModelProperty(value = "登录人所拥有的部门权限")
     private List<String> userHaveOrgCodeList;
+    @Excel(name = "同行人", width = 15)
+    @ApiModelProperty(value = "同行人")
+    @TableField(exist = false)
+    private java.lang.String peerPeople;
     /*** 任务计划执行日期范围*/
     @Excel(name = "任务计划执行日期范围", width = 15)
     @ApiModelProperty(value = "任务计划执行日期范围")

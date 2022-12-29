@@ -98,6 +98,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private IBaseApi baseApi;
     @Autowired
     private ISTodoBaseAPI isTodoBaseAPI;
+    @Autowired
+    private PatrolAccompanyMapper accompanyMapper;
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -428,6 +430,21 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
             e.setOrganizationName(manager.translateOrg(orgCodes));
             List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
+            List<PatrolTaskDevice> taskDeviceList  = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId,e.getId()));
+            List<PatrolAccompany> accompanyList = new ArrayList<>();
+            for (PatrolTaskDevice patrolTaskDevice : taskDeviceList) {
+                List<PatrolAccompany> patrolAccompanies = accompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().eq(PatrolAccompany::getTaskDeviceCode, patrolTaskDevice.getPatrolNumber()));
+                if(CollUtil.isNotEmpty(patrolAccompanies))
+                {
+                    accompanyList.addAll(patrolAccompanies);
+                }
+            }
+            if(CollUtil.isNotEmpty(accompanyList))
+            {
+                accompanyList = accompanyList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolAccompany::getUserId))), ArrayList::new));
+                String peerPeople = accompanyList.stream().map(PatrolAccompany::getUsername).collect(Collectors.joining(";"));
+                e.setPeerPeople(peerPeople);
+            }
             e.setStationName(manager.translateStation(stationName));
             e.setSysName(sysName);
             e.setMajorName(majorName);
@@ -1304,6 +1321,21 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         e.setOrgCodeList(orgCodes);
         e.setPatrolUserName(manager.spliceUsername(e.getCode()));
         e.setPatrolReturnUserName(userName == null ? "-" : userName);
+        List<PatrolTaskDevice> taskDeviceList  = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId,id));
+        List<PatrolAccompany> accompanyList = new ArrayList<>();
+        for (PatrolTaskDevice patrolTaskDevice : taskDeviceList) {
+            List<PatrolAccompany> patrolAccompanies = accompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().eq(PatrolAccompany::getTaskDeviceCode, patrolTaskDevice.getPatrolNumber()));
+            if(CollUtil.isNotEmpty(patrolAccompanies))
+            {
+                accompanyList.addAll(patrolAccompanies);
+            }
+        }
+        if(CollUtil.isNotEmpty(accompanyList))
+        {
+            accompanyList = accompanyList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolAccompany::getUserId))), ArrayList::new));
+            String peerPeople = accompanyList.stream().map(PatrolAccompany::getUsername).collect(Collectors.joining(";"));
+            e.setPeerPeople(peerPeople);
+        }
         return e;
     }
 }
