@@ -45,14 +45,6 @@
             </when>
             <otherwise>
                 and ery.`status` not in (#{planStatus.auditStatus})
-                and (ara.ASSIGNEE_ = #{userName} OR ara.ID_ in (
-                    SELECT TASK_ID_
-                    FROM act_ru_identitylink ari
-                    WHERE ari.TYPE_ = 'candidate'
-                      AND ari.USER_ID_ = #{userName}
-                      AND ari.TASK_ID_ = ara.ID_
-                      AND (ara.assignee_ = '' or ara.assignee_ is null)
-                ))
             </otherwise>
         </choose>
         order by ery.create_time desc
