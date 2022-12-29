@@ -35,8 +35,8 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
     @Override
     public void createBbmnTodoTask(BpmnTodoDTO bpmnTodoDTO) {
         SysTodoList sysTodoList = new SysTodoList();
-        sysTodoList.setTaskType(TodoTaskTypeEnum.BPMN.getType());
         BeanUtil.copyProperties(bpmnTodoDTO, sysTodoList, "");
+        sysTodoList.setTaskType(TodoTaskTypeEnum.BPMN.getType());
         doCreateTodoTask(sysTodoList);
     }
 
