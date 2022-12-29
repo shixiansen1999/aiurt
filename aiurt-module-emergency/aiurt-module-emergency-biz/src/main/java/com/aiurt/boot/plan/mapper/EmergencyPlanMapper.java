@@ -43,4 +43,18 @@ public interface EmergencyPlanMapper extends BaseMapper<EmergencyPlan> {
      */
     List<EmergencyPlanMaterialsExcelDTO> selectPlanMaterialsById(String id);
 
+    /**
+     * 根据部门名称查找orgcode
+     * @param orgName
+     * @return
+     */
+    String selectDepartCode(String orgName);
+
+    /**
+     * 根据角色名称查找roleId
+     * @param roleName
+     * @return
+     */
+    String selectRoleId(String roleName);
+
 }

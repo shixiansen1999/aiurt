@@ -95,4 +95,26 @@
         </if>
         order by t.create_time asc
     </select>
+
+    <select id="selectDepartCode" resultType="java.lang.String">
+        SELECT
+        sd.org_code
+        FROM
+        sys_depart sd
+        <if test="orgName!=null">
+            where sd.del_flag = 0
+            and  sd.depart_name = #{orgName} limit 1
+        </if>
+    </select>
+
+    <select id="selectRoleId" resultType="java.lang.String">
+        SELECT
+        sr.id
+        FROM
+        sys_role sr
+        where
+        <if test="roleName!=null">
+            sr.role_name = #{roleName} limit 1
+        </if>
+    </select>
 </mapper>
