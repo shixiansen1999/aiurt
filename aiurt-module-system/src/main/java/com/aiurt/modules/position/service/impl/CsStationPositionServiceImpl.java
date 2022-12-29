@@ -5,7 +5,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.ImportExcelUtil;
-import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.position.controller.CsLineController;
 import com.aiurt.modules.position.controller.CsStationController;
 import com.aiurt.modules.position.entity.CsLine;
@@ -130,7 +129,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
 
     @Override
     public Result<?> importExcelMaterial(MultipartFile file, ImportParams params) throws Exception {
-        List<CsStationPosition> listMaterial = ExcelImportUtil.importExcel(file.getInputStream(), DeviceType.class, params);
+        List<CsStationPosition> listMaterial = ExcelImportUtil.importExcel(file.getInputStream(), CsStationPosition.class, params);
         List<String> errorStrs = new ArrayList<>();
         // 去掉 sql 中的重复数据
         Integer errorLines = 0;
