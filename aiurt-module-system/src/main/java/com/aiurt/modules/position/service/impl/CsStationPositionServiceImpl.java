@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description: cs_station_position
@@ -130,6 +131,8 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
     @Override
     public Result<?> importExcelMaterial(MultipartFile file, ImportParams params) throws Exception {
         List<CsStationPosition> listMaterial = ExcelImportUtil.importExcel(file.getInputStream(), CsStationPosition.class, params);
+        listMaterial =  listMaterial.stream().filter(l-> l.getLevelName()!=null && l.getPositionTypeName()!=null && l.getPositionCode()!=null && l.getPositionName() !=null)
+                                             .collect(Collectors.toList());
         List<String> errorStrs = new ArrayList<>();
         // 去掉 sql 中的重复数据
         Integer errorLines = 0;
