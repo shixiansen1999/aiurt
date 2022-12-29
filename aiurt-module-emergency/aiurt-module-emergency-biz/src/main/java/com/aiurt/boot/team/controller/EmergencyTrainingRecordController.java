@@ -221,6 +221,6 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	@ApiOperation(value="应急队伍训练记录模板下载", notes="应急队伍训练记录模板下载")
 	@RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
 	public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
-		XlsUtil.getExcel(response, "", "应急队伍训练计划导入模板.xlsx");
+		XlsUtil.getExcel(response, "templates/emergencyTrainingRecord.xlsx", "应急队伍训练计划导入模板.xlsx");
 	}
 }

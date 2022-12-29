@@ -35,7 +35,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.RegionUtil;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -371,7 +375,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
 
     private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, RecordModel recordModel, int successLines,String url, String type) {
         try {
-            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTeamError.xlsx");
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTrainingRecordError.xlsx");
             Map<String, Object> errorMap = new HashMap<String, Object>();
             List<Map<String, String>> mapList = new ArrayList<>();
             Map<String, String> map = new HashMap<>();
@@ -382,6 +386,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             errorMap.put("emergencyTrainingProgram", recordModel.getEmergencyTrainingProgram());
             errorMap.put("trainingProgramCode", recordModel.getTrainingProgramCode());
             errorMap.put("trainingAppraise", recordModel.getTrainingAppraise());
+            errorMap.put("mistake", recordModel.getMistake());
 
             List<ProcessRecordModel> processRecordModelList = recordModel.getProcessRecordModelList();
             if (CollUtil.isNotEmpty(processRecordModelList)) {
@@ -488,7 +493,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 if (i == 2) {
                     JSONObject positionByName = iSysBaseAPI.getPositionByName(list.get(2),lineCode,stationCode);
                     if (ObjectUtil.isEmpty(positionByName)) {
-                        stringBuilder.append("训练地点中线路不存在，");
+                        stringBuilder.append("训练地点中位置不存在，");
                     }
                 }
             }
@@ -537,8 +542,8 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
 
         List<ProcessRecordModel> processRecordModelList = recordModel.getProcessRecordModelList();
         if (CollUtil.isNotEmpty(processRecordModelList)) {
-            StringBuilder stringBuilder1 = new StringBuilder();
             for (ProcessRecordModel processRecordModel : processRecordModelList) {
+                StringBuilder stringBuilder1 = new StringBuilder();
                 String trainingTime1 = processRecordModel.getTrainingTime();
                 String trainingContent = processRecordModel.getTrainingContent();
                 if (StrUtil.isNotEmpty(trainingTime1)) {
@@ -626,7 +631,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
         List<EmergencyTrainingProcessRecord> processRecords = emergencyTrainingProcessRecordService.getBaseMapper().selectList(processRecordQueryWrapper);
 
         try {
-            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/teamTrainingRecords.xlsx");
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTrainingRecordXls.xlsx");
             Map<String, Object> errorMap = new HashMap<String, Object>();
             List<Map<String, String>> mapList = new ArrayList<>();
             errorMap.put("trainingTime", DateUtil.format(emergencyTrainingRecordVO.getTrainingTime(),"yyyy-MM-dd"));
@@ -636,7 +641,6 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             errorMap.put("emergencyTrainingProgram", emergencyTrainingRecordVO.getTrainingProgramName());
             errorMap.put("trainingProgramCode", emergencyTrainingRecordVO.getTrainingProgramCode());
             errorMap.put("trainingAppraise", emergencyTrainingRecordVO.getTrainingAppraise());
-
 
             if (CollUtil.isNotEmpty(processRecords)) {
                 for (int i = 0; i < processRecords.size(); i++) {
@@ -654,6 +658,28 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
             sheetsMap.put(0, errorMap);
             Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+            //处理合并单元格
+            int size = processRecords.size();
+            Sheet sheet = workbook.getSheetAt(0);
+            CellRangeAddress region = new CellRangeAddress(6,6+size,1,1);
+            //合并
+            sheet.addMergedRegion(region);
+            //合并后设置下边框
+            RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
+            RegionUtil.setBorderLeft(BorderStyle.THIN, region, sheet);
+            RegionUtil.setBorderTop(BorderStyle.THIN, region, sheet);
+            RegionUtil.setBorderRight(BorderStyle.THIN, region, sheet);
+            for (int j = 0 ;j < size; j++) {
+                CellRangeAddress cellAddresses = new CellRangeAddress(7+j,7+j,4,9);
+                //合并
+                sheet.addMergedRegion(cellAddresses);
+                //合并后设置下边框
+                RegionUtil.setBorderBottom(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderLeft(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderTop(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderRight(BorderStyle.THIN, cellAddresses, sheet);
+            }
+
             //打包成压缩包导出
             String fileName = "应急队伍训练记录.zip";
             response.setContentType("application/zip");
