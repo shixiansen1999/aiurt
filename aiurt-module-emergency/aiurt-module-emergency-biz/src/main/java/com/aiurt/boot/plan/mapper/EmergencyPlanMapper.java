@@ -17,10 +17,28 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface EmergencyPlanMapper extends BaseMapper<EmergencyPlan> {
-
+    /**
+     * 应急预案分页查询
+     * @param page
+     * @param emergencyPlanQueryDTO
+     * @param orgCodes
+     * @return
+     */
     IPage<EmergencyPlan> queryPageList(@Param("page") Page<EmergencyPlan> page,
                                        @Param("condition") EmergencyPlanQueryDTO emergencyPlanQueryDTO,
                                        @Param("orgCodes") List<String> orgCodes);
+
+    /**
+     * 应急预案分页审核
+     * @param page
+     * @param emergencyPlanQueryDTO
+     * @param orgCodes
+     * @return
+     */
+    IPage<EmergencyPlan> queryWorkToDo(@Param("page") Page<EmergencyPlan> page,
+                                       @Param("condition") EmergencyPlanQueryDTO emergencyPlanQueryDTO,
+                                       @Param("orgCodes") List<String> orgCodes,
+                                       @Param("userName") String userName);
 
     /**
      * 按条件查询应急预案

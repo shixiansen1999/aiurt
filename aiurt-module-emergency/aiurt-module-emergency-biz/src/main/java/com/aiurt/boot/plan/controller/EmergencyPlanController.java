@@ -80,6 +80,26 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
     }
 
     /**
+     * 分页列表审核
+     *
+     * @param emergencyPlanQueryDto
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    @ApiOperation(value = "应急预案台账-分页列表审核", notes = "应急预案台账-分页列表审核")
+    @GetMapping(value = "/queryWorkToDo")
+    public Result<IPage<EmergencyPlan>> queryWorkToDo(EmergencyPlanQueryDTO emergencyPlanQueryDto,
+                                                      @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                      HttpServletRequest req) {
+        Page<EmergencyPlan> page = new Page<EmergencyPlan>(pageNo, pageSize);
+        IPage<EmergencyPlan> pageList = emergencyPlanService.queryWorkToDo(page, emergencyPlanQueryDto);
+        return Result.OK(pageList);
+    }
+
+    /**
      * 查询所有应急预案列表
      *
      * @return
