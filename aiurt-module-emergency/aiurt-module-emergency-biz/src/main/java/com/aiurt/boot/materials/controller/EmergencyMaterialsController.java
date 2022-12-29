@@ -39,8 +39,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
- /**
+/**
  * @Description: emergency_materials
  * @Author: aiurt
  * @Date:   2022-11-29
@@ -144,12 +145,13 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	 @ApiOperation(value="物资信息-巡检记录信息查询", notes="物资信息-巡检记录信息查询")
 	 @GetMapping(value = "/getPatrolRecord")
 	 public Result<?> getPatrolRecord(@RequestParam(name = "materialsCode",required=true) String materialsCode,
+									  @RequestParam(name = "standardCode",required=false) String  standardCode,
 									  @RequestParam(name = "startTime",required=false) String  startTime,
 	                                  @RequestParam(name = "endTime",required=false) String  endTime,
 									  @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
 									  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize){
 		 Page<EmergencyMaterialsInvoicesItem> pageList = new Page<>(pageNo, pageSize);
-		 Page<EmergencyMaterialsInvoicesItem> patrolRecord = iEmergencyMaterialsInvoicesItemService.getPatrolRecord(pageList, materialsCode, startTime, endTime);
+		 Page<EmergencyMaterialsInvoicesItem> patrolRecord = iEmergencyMaterialsInvoicesItemService.getPatrolRecord(pageList, materialsCode, startTime, endTime,standardCode);
 		 return  Result.OK(patrolRecord);
 	 }
 
@@ -244,12 +246,29 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 
 		 //应急物资巡检单ID
 		 List<EmergencyMaterialsInvoicesItem> emergencyMaterialsInvoicesItemList = emergencyMaterialsDTO.getEmergencyMaterialsInvoicesItemList();
+
+		 if (CollUtil.isNotEmpty(emergencyMaterialsInvoicesItemList)){
 		 emergencyMaterialsInvoicesItemList.forEach(e->{
 		 	e.setInvoicesId(emergencyMaterialsInvoices.getId());
 		 });
 
-		 //插入物资巡检检修项
-		 iEmergencyMaterialsInvoicesItemService.saveBatch(emergencyMaterialsInvoicesItemList);
+			 List<EmergencyMaterialsInvoicesItem> collect = emergencyMaterialsInvoicesItemList.stream().filter(e -> "0".equals(e.getPid())).collect(Collectors.toList());
+			 if (CollUtil.isNotEmpty(collect)){
+			 	    collect.forEach(e->{
+						List<EmergencyMaterialsInvoicesItem> collect1 = emergencyMaterialsInvoicesItemList.stream().filter(q -> q.getPid().equals(e.getId())).collect(Collectors.toList());
+						iEmergencyMaterialsInvoicesItemService.save(e);
+						String id = e.getId();
+						if (CollUtil.isNotEmpty(collect1)){
+							collect1.forEach(q->{
+								q.setPid(id);
+								iEmergencyMaterialsInvoicesItemService.save(q);
+							});
+						}
+					});
+			   }
+
+		 }
+
 		 return Result.OK("提交成功！");
 	 }
 

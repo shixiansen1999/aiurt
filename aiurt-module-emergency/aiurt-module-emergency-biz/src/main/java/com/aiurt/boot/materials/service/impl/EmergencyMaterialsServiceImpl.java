@@ -198,7 +198,13 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
 
     @Override
     public Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList, String id) {
-        List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsMapper.getMaterialInspection(pageList, id);
+        List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsMapper.getMaterialInspection(pageList, id,"0");
+        materialInspection.forEach(e->{
+            if ("0".equals(e.getPid()) && StrUtil.isNotBlank(e.getId())){
+                List<EmergencyMaterialsInvoicesItem> materialInspection1 = emergencyMaterialsMapper.getMaterialInspection(pageList, id, e.getId());
+                e.setSubLevel(materialInspection1);
+            }
+        });
         return pageList.setRecords(materialInspection);
     }
 
