@@ -110,6 +110,9 @@
                         #{majorCodes}
                     </foreach>
                 </if>
+                <if test="userName !=null ">
+                      OR ( icu.major_code is NULL  AND isy.create_by = #{userName})
+                </if>
              GROUP BY isy.id
             ) AS abc
         WHERE
