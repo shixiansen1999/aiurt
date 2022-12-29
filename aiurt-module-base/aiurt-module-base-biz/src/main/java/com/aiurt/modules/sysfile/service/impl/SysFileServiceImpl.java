@@ -741,7 +741,7 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 		//允许上传的权限，自动享有查看权限
 		if(CollUtil.isNotEmpty(uploads)){
 		for (String uploadId : uploads) {
-			roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setEditStatus(0).setDeleteStatus(1)
+			roleService.addRole1(new SysFileRoleParam().setLookStatus(1).setEditStatus(1).setDeleteStatus(1)
 					.setPrimaryLookStatus(0).setPrimaryEditStatus(0).setPrimaryDeleteStatus(0).setPrimaryDownloadStatus(0).setPrimaryRenameStatus(0).setPrimaryOnlineEditing(0).setPrimaryUploadStatus(1).setDownloadStatus(1).setRenameStatus(1).setOnlineEditing(1).setUploadStatus(1).setFileId(param.getId()).setUserId(uploadId));
 			stringSet.add(uploadId);
 		  }
