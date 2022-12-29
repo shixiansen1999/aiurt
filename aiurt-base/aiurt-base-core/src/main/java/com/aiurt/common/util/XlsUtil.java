@@ -9,9 +9,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
@@ -67,7 +71,7 @@ public class XlsUtil {
     //模板
     public static TemplateExportParams getExcelModel(String url) throws IOException {
         //进行模板导出
-        org.springframework.core.io.Resource resource = new ClassPathResource(url);
+        Resource resource = new ClassPathResource(url);
         InputStream resourceAsStream = resource.getInputStream();
 
         //2.获取临时文件
@@ -103,7 +107,7 @@ public class XlsUtil {
 
     public static void getExcel(HttpServletResponse response,String url, String fileName){
         //进行模板导出
-        org.springframework.core.io.Resource resource = new ClassPathResource(url);
+        Resource resource = new ClassPathResource(url);
         try {
             InputStream resourceAsStream  = resource.getInputStream();
             //2.获取临时文件

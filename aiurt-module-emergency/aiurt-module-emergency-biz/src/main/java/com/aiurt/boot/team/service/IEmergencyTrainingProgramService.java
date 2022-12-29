@@ -5,6 +5,7 @@ import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -80,5 +81,5 @@ public interface IEmergencyTrainingProgramService extends IService<EmergencyTrai
      * @param response
      * @param emergencyTrainingProgramDTO
      */
-    void exportXls(HttpServletRequest request,HttpServletResponse response, EmergencyTrainingProgramDTO emergencyTrainingProgramDTO);
+    ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyTrainingProgramDTO emergencyTrainingProgramDTO);
 }
