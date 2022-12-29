@@ -2,4 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.plan.mapper.RepairPoolCodeMapper">
 
+    <select id="getRepairPoolCode" resultType="java.lang.String">
+    select DISTINCT repair_pool_code
+    from repair_pool_rel
+    where repair_pool_sta_id in
+    (select id from repair_pool_code)
+    </select>
 </mapper>

@@ -1,6 +1,7 @@
 package com.aiurt.boot.plan.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.aspect.annotation.UserFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -159,6 +160,7 @@ public class RepairPool implements Serializable {
      * 创建人
      */
     @ApiModelProperty(value = "创建人",required = false)
+    @UserFilterColumn
     private java.lang.String createBy;
     /**
      * 更新人

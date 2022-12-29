@@ -192,7 +192,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             }
         }
 
-        // 组织机构数据权限过滤
+//        List<String> codes = handleDataPermission(selectPlanReq);
+
+//        // 组织机构数据权限过滤
         List<String> codes = null;
         List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(repairPoolOrgRels)) {
@@ -213,8 +215,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             List<String> stations = repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList());
 
             // 考虑根据组织结构条件挑选出来的计划code和站所挑选出来的计划code交集的情况
-            if(CollUtil.isNotEmpty(stations)){
-                codes = CollUtil.isNotEmpty(codes)? codes.stream().filter(l -> stations.contains(l)).collect(Collectors.toList()):stations;
+            if (CollUtil.isNotEmpty(stations)) {
+                codes = CollUtil.isNotEmpty(codes) ? codes.stream().filter(l -> stations.contains(l)).collect(Collectors.toList()) : stations;
             }
 
         }
@@ -224,6 +226,39 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         }
 
         return queryWrapper;
+    }
+
+    /**
+     * 数据权限处理
+     *
+     * @param selectPlanReq
+     * @return
+     */
+    private List<String> handleDataPermission(SelectPlanReq selectPlanReq) {
+        // 组织机构数据权限过滤
+        List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isEmpty(repairPoolOrgRels)) {
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
+        }
+
+        // 站点数据权限过滤
+        List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(
+                new LambdaQueryWrapper<RepairPoolStationRel>()
+                        .eq(RepairPoolStationRel::getStationCode, selectPlanReq.getStationCode())
+                        .eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isEmpty(repairPoolStationRels)) {
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
+        }
+
+        // 专业、子系统数据权限过滤
+        List<String> repairPoolCode = repairPoolCodeMapper.getRepairPoolCode();
+
+        List<String> result = CollUtil.newArrayList(CollUtil.intersection(repairPoolOrgRels.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList()), repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList()), repairPoolCode));
+
+        if (CollUtil.isEmpty(result)) {
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
+        }
+        return result;
     }
 
 
@@ -618,7 +653,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             this.generate(repairPool, repairTask.getId(), repairPool.getCode());
 
             // 发送消息给对用的检修人
-            this.sendMessage(userIds,repairPool.getCode());
+            this.sendMessage(userIds, repairPool.getCode());
         }
         return Result.ok();
     }
@@ -628,7 +663,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      *
      * @param userIds
      */
-    private void sendMessage(List<String> userIds,String code) {
+    private void sendMessage(List<String> userIds, String code) {
         if (CollUtil.isNotEmpty(userIds)) {
             // 查找用户id对应的用户username
             String[] strings = userIds.toArray(new String[userIds.size()]);
@@ -637,9 +672,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 String userNameStr = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
                 sysBaseApi.sendBusAnnouncement(
                         new BusMessageDTO(
-                                manager.checkLogin().getRealname(),
+                                manager.checkLogin().getUsername(),
                                 userNameStr,
-                                "检修任务", "您有一条新的检修任务需要确认接收！",
+                                "检修任务", "您有一条新的检修任务单号为:" + code + "检修任务需要确认接收！",
                                 CommonConstant.MSG_CATEGORY_2,
                                 SysAnnmentTypeEnum.INSPECTION_ASSIGN.getType(),
                                 code));
@@ -1076,6 +1111,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             queryWrapper.eq("status", manualTaskReq.getStatus());
         }
 
+        // todo 数据权限查询
+//        List<String> codes = handleManualDataPermission(manualTaskReq);
+
         // 组织结构
         Set<String> codes = new HashSet<>();
         List<String> orgList = StrUtil.split(manualTaskReq.getOrgList(), ',');
@@ -1115,6 +1153,45 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         }
 
         return queryWrapper;
+    }
+
+    /**
+     * 手工下发数据权限处理
+     * @param manualTaskReq
+     * @return
+     */
+    private List<String> handleManualDataPermission(ManualTaskReq manualTaskReq) {
+        // 组织结构
+        List<String> orgList = StrUtil.split(manualTaskReq.getOrgList(), ',');
+        LambdaQueryWrapper<RepairPoolOrgRel> relQueryWrapper = new LambdaQueryWrapper<RepairPoolOrgRel>();
+        if (CollUtil.isNotEmpty(orgList)) {
+            relQueryWrapper.in(RepairPoolOrgRel::getOrgCode, orgList);
+        }
+        List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(relQueryWrapper);
+        if (CollUtil.isNotEmpty(orgList) && CollUtil.isEmpty(repairPoolOrgRels)) {
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
+        }
+
+        // 站点数据权限过滤
+        LambdaQueryWrapper<RepairPoolStationRel> repairPoolStationRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<String> stationList = StrUtil.split(manualTaskReq.getStationList(), ',');
+        if (CollUtil.isNotEmpty(stationList)) {
+            repairPoolStationRelLambdaQueryWrapper.in(RepairPoolStationRel::getStationCode, stationList);
+        }
+        List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(repairPoolStationRelLambdaQueryWrapper);
+        if (CollUtil.isNotEmpty(stationList) && CollUtil.isEmpty(repairPoolStationRels)) {
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
+        }
+
+        // 专业、子系统数据权限过滤
+        List<String> repairPoolCode = repairPoolCodeMapper.getRepairPoolCode();
+
+        List<String> result = CollUtil.newArrayList(CollUtil.intersection(repairPoolOrgRels.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList()), repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList()), repairPoolCode));
+        if (CollUtil.isEmpty(result)) {
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
+        }
+
+        return result;
     }
 
     /**

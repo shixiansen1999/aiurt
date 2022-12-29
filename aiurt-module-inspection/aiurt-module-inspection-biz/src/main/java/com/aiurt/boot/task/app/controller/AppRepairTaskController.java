@@ -293,7 +293,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
                                                             @RequestParam @ApiParam(name = "deviceCode", required = true, value = "设备编码") String deviceCode) {
         List<RepairTaskDeviceRel> repairTaskDeviceRels = repairTaskService.scanCodeDevice(taskId, deviceCode);
         if (repairTaskDeviceRels == null) {
-            return Result.error("小主，未匹配到检修单");
+            return Result.error("未匹配到检修单");
         }
         return Result.OK(repairTaskDeviceRels);
     }

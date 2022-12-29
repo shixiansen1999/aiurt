@@ -5,18 +5,15 @@ import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.todo.dto.TaskModuleDTO;
 import com.aiurt.modules.todo.entity.SysTodoList;
 import com.aiurt.modules.todo.service.ISysTodoListService;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
 
@@ -125,12 +122,12 @@ public class SysTodoListController extends BaseController<SysTodoList, ISysTodoL
     }
 
     /**
-     * 查询各个类型待办数量
+     * 查询各个类型数量
      *
      * @param sysTodoList
      * @return
      */
-    @ApiOperation(value = "查询各个类型待办数量", notes = "查询各个类型待办数量")
+    @ApiOperation(value = "查询各个类型数量", notes = "查询各个类型数量")
     @GetMapping(value = "/queryTaskModuleList")
     public Result<List<TaskModuleDTO>> queryTaskModuleList(SysTodoList sysTodoList) {
         List<TaskModuleDTO> sysTodoLists = sysTodoListService.queryTaskModuleList(sysTodoList);
