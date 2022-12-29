@@ -111,7 +111,7 @@
                     </foreach>
                 </if>
                 <if test="userName !=null ">
-                      OR ( icu.major_code is NULL  AND isy.create_by = #{userName})
+                      OR ( icu.major_code is NULL  AND isy.create_by = #{userName} and isy.del_flag =0)
                 </if>
              GROUP BY isy.id
             ) AS abc
