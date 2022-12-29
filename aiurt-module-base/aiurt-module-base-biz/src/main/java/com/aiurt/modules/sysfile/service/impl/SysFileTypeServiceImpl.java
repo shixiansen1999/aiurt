@@ -229,7 +229,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 
 
 				Map<Integer, List<SysFileRole>> listMap8 = list.stream()
-						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryEditStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryEditStatus));
+						.filter(item-> ObjectUtil.isNotEmpty(item.getEditStatus())).collect(Collectors.groupingBy(SysFileRole::getEditStatus));
 				if (listMap8 != null && listMap8.size() > 0) {
 					//获取原可编辑列表中数据
 					if (CollectionUtils.isNotEmpty(listMap8.get(1))) {
@@ -245,14 +245,14 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 								for (LoginUser sysUser : loginUsers) {
 									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
 								}
-								vo.setPrimaryEditStatus(userList);
+								vo.setEditUsers(userList);
 							}
 						});
 					}
 				}
 
 				Map<Integer, List<SysFileRole>> listMap9 = list.stream()
-						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryUploadStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryUploadStatus));
+						.filter(item-> ObjectUtil.isNotEmpty(item.getUploadStatus())).collect(Collectors.groupingBy(SysFileRole::getUploadStatus));
 				if (listMap9 != null && listMap9.size() > 0) {
 					//获取原可上传列表中数据
 					if (CollectionUtils.isNotEmpty(listMap9.get(1))) {
@@ -268,14 +268,14 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 								for (LoginUser sysUser : loginUsers) {
 									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
 								}
-								vo.setPrimaryUploadStatus(userList);
+								vo.setUploadStatus(userList);
 							}
 						});
 					}
 				}
 
 				Map<Integer, List<SysFileRole>> listMap11 = list.stream()
-						.filter(item-> ObjectUtil.isNotEmpty(item.getPrimaryDeleteStatus())).collect(Collectors.groupingBy(SysFileRole::getPrimaryDeleteStatus));
+						.filter(item-> ObjectUtil.isNotEmpty(item.getDeleteStatus())).collect(Collectors.groupingBy(SysFileRole::getDeleteStatus));
 				if (listMap11 != null && listMap11.size() > 0) {
 					//获取原可删除列表中数据
 					if (CollectionUtils.isNotEmpty(listMap11.get(1))) {
@@ -291,7 +291,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 								for (LoginUser sysUser : loginUsers) {
 									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
 								}
-								vo.setPrimaryDeleteStatus(userList);
+								vo.setDeleteStatus(userList);
 							}
 						});
 					}
@@ -800,9 +800,9 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 					SysFileTypeTreeVO vo = new SysFileTypeTreeVO();
 					BeanUtils.copyProperties(t, vo);
 					Result<SysFileTypeDetailVO> detail = this.detail(t.getId());
-					vo.setEditUsers(ObjectUtil.isNotEmpty(detail.getResult().getPrimaryEditStatus()) ? detail.getResult().getPrimaryEditStatus() : null);
-					vo.setUploadStatus(ObjectUtil.isNotEmpty(detail.getResult().getPrimaryUploadStatus()) ? detail.getResult().getPrimaryUploadStatus() : null);
-					vo.setDeleteStatus(ObjectUtil.isNotEmpty(detail.getResult().getPrimaryDeleteStatus()) ? detail.getResult().getPrimaryDeleteStatus() : null);
+					vo.setEditUsers(ObjectUtil.isNotEmpty(detail.getResult().getEditUsers()) ? detail.getResult().getEditUsers() : null);
+					vo.setUploadStatus(ObjectUtil.isNotEmpty(detail.getResult().getUploadStatus()) ? detail.getResult().getUploadStatus() : null);
+					vo.setDeleteStatus(ObjectUtil.isNotEmpty(detail.getResult().getDeleteStatus()) ? detail.getResult().getDeleteStatus() : null);
 					// 权限处理， 判断是否有权限编辑，删除，
 					vo.setChildren(getTree(role, vo.getId()));
 					list.add(vo);
