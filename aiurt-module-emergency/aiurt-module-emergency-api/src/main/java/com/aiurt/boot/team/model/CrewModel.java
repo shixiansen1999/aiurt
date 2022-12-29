@@ -23,8 +23,10 @@ public class CrewModel {
     @Excel(name = "姓名", width = 15)
     @ApiModelProperty(value = "人员姓名")
     private String realName;
+    @Excel(name = "岗位", width = 15)
+    @ApiModelProperty(value = "角色名")
+    private String roleNames;
     /**负责人工号*/
-    @Excel(name = "负责人工号", width = 15)
     @ApiModelProperty(value = "负责人工号")
     private String managerWorkNo;
     /**联系电话*/

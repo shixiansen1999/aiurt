@@ -41,7 +41,7 @@ public class TeamExcelListener extends AnalysisEventListener<RecordData> {
                 teamModel.setPositionName(data.getRow6());
                 teamModel.setWorkAreaName(data.getRow7());
                 teamModel.setManagerName(data.getRow8());
-                teamModel.setManagerPhone(data.getRow9());
+                teamModel.setManagerPhone(data.getRow10());
             } else if (index > 6 && index <= rowNumber) {
                 CrewModel crewModel = new CrewModel();
                 crewModel.setScheduleItem(data.getRow0());

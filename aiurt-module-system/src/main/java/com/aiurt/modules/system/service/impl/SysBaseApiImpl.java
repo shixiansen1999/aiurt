@@ -22,8 +22,6 @@ import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
-import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
-import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
@@ -2139,6 +2137,20 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         List<String> result = userMapper.getUserNameByOrgCodeAndRoleCode(orgCode, roleCode);
         return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
+    }
+
+    @Override
+    public List<CsWorkAreaModel> getWorkAreaByCode(String stationCode) {
+        List<WorkArea> workAreas = workAreaMapper.selectWorkAreaList(stationCode);
+        List<CsWorkAreaModel> csWorkAreaModels = new ArrayList<>();
+        if (CollUtil.isNotEmpty(workAreas)) {
+            for (WorkArea workArea : workAreas) {
+                CsWorkAreaModel csWorkAreaModel = new CsWorkAreaModel();
+                BeanUtils.copyProperties(workArea, csWorkAreaModel);
+                csWorkAreaModels.add(csWorkAreaModel);
+            }
+        }
+        return csWorkAreaModels;
     }
 
 

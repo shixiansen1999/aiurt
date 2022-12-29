@@ -35,7 +35,6 @@ public class TeamModel {
     @ApiModelProperty(value = "负责人姓名")
     private String managerName;
     /**负责人工号*/
-    @Excel(name = "负责人工号", width = 15)
     @ApiModelProperty(value = "负责人工号")
     private String managerWorkNo;
     /**联系电话*/

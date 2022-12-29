@@ -803,5 +803,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return 人员账号用逗号隔开
      */
     public String getUserNameByOrgCodeAndRoleCode(List<String> orgCode,List<String> roleCode);
+
+    /**
+     * 根据站点获取工区信息
+     * @param stationCode
+     * @return
+     */
+    List<CsWorkAreaModel> getWorkAreaByCode(String stationCode);
 }
 

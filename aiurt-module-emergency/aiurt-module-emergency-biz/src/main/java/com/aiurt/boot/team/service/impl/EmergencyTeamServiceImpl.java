@@ -35,10 +35,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserMajorModel;
-import org.jeecg.common.system.vo.DictModel;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.*;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -70,7 +67,8 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
 
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
-
+    @Value("${jeecg.path.errorExcelUpload}")
+    private String errorExcelUpload;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
 
@@ -307,6 +305,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
@@ -394,11 +393,15 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
 
     /**队伍人员信息数据校验*/
     private int checkCrews(CrewModel crewModel,EmergencyCrew emergencyCrew,int  errorLines, StringBuilder stringBuilder1) {
-
+        String scheduleItem = crewModel.getScheduleItem();
         String postName = crewModel.getPostName();
         String realName = crewModel.getRealName();
         String userPhone = crewModel.getUserPhone();
-
+        if (StrUtil.isNotBlank(scheduleItem)) {
+            emergencyCrew.setScheduleItem(scheduleItem);
+        }else {
+            stringBuilder1.append("班次不能为空");
+        }
         if (StrUtil.isNotBlank(postName)) {
             List<DictModel> post = iSysBaseAPI.queryDictItemsByCode("emergency_post");
             DictModel model = Optional.ofNullable(post).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(postName)).findFirst().orElse(null);
@@ -458,22 +461,53 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         String managerWorkNo = team.getManagerWorkNo();
         String managerPhone = team.getManagerPhone();
 
-        if (StrUtil.isNotBlank(majorName) && StrUtil.isNotBlank(departName) && StrUtil.isNotBlank(emergencyTeamName)) {
+        if (StrUtil.isNotBlank(majorName)) {
             JSONObject major = iSysBaseAPI.getCsMajorByName(majorName);
-            JSONObject depart = iSysBaseAPI.getDepartByName(departName);
-            LambdaQueryWrapper<EmergencyTeam> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(EmergencyTeam::getEmergencyTeamname, emergencyTeamName).eq(EmergencyTeam::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
-            EmergencyTeam team1 = this.getBaseMapper().selectOne(wrapper);
             if (ObjectUtil.isNotNull(major)) {
                 emergencyTeam.setMajorCode(major.getString("majorCode"));
             } else {
                 stringBuilder.append("系统不存在该专业，");
             }
+        } else {
+            stringBuilder.append("所属专业不能为空，");
+        }
+
+        if (StrUtil.isNotBlank(departName)) {
+            JSONObject depart = iSysBaseAPI.getDepartByName(departName);
             if (ObjectUtil.isNotNull(depart)) {
                 emergencyTeam.setOrgCode(depart.getString("orgCode"));
+                //校验部门负责人
+                if (StrUtil.isNotBlank(manager)&& StrUtil.isNotBlank(managerPhone)) {
+                    List<LoginUser> userByRealName = iSysBaseAPI.getUserByRealName(manager, managerWorkNo);
+                    if (userByRealName.size() != 1) {
+                        stringBuilder.append("负责人姓名存在同名，请填写工号，");
+                    } else {
+                        LoginUser loginUser = userByRealName.get(0);
+                        if (loginUser.getOrgCode().equals(depart.getString("orgCode"))) {
+                            emergencyTeam.setManagerId(loginUser.getId());
+                        } else {
+                            stringBuilder.append("负责人不是该部门的人");
+                        }
+                    }
+                    boolean matches = Pattern.matches("^1[3-9]\\d{9}$", managerPhone);
+                    if (!matches) {
+                        stringBuilder.append("手机号码格式不正确，");
+                    } else {
+                        emergencyTeam.setManagerPhone(managerPhone);
+                    }
+                } else {
+                    stringBuilder.append("负责人和联系电话不能为空，");
+                }
             } else {
                 stringBuilder.append("系统不存在该部门，");
             }
+        }else {
+            stringBuilder.append("所属部门不能为空，");
+        }
+        if (StrUtil.isNotBlank(emergencyTeamName)) {
+            LambdaQueryWrapper<EmergencyTeam> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(EmergencyTeam::getEmergencyTeamname, emergencyTeamName).eq(EmergencyTeam::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+            EmergencyTeam team1 = this.getBaseMapper().selectOne(wrapper);
             if (ObjectUtil.isNull(team1)) {
                 emergencyTeam.setEmergencyTeamname(emergencyTeamName);
             } else {
@@ -490,9 +524,8 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                     stringBuilder.append("系统已存在该应急队伍编码，");
                 }
             }
-
-        } else {
-            stringBuilder.append("所属专业，所属部门，应急队伍名称不能为空，");
+        }else {
+            stringBuilder.append("应急队伍名称不能为空，");
         }
 
         if (StrUtil.isNotBlank(lineName) && StrUtil.isNotBlank(stationName) && StrUtil.isNotBlank(positionName)) {
@@ -505,34 +538,27 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 stringBuilder.append("系统不存在该线路，");
             }
             if (ObjectUtil.isNotNull(stationByName)) {
-                emergencyTeam.setStationCode(lineByName.getString("stationCode"));
+                emergencyTeam.setStationCode(stationByName.getString("stationCode"));
+                //校验工区
+                if (StrUtil.isNotBlank(workArea)) {
+                    List<CsWorkAreaModel> workAreaByCode = iSysBaseAPI.getWorkAreaByCode(emergencyTeam.getStationCode());
+                    List<String> collect = Optional.ofNullable(workAreaByCode).orElse(Collections.emptyList()).stream().map(CsWorkAreaModel::getName).collect(Collectors.toList());
+                    if (!collect.contains(workArea)) {
+                        stringBuilder.append("该站点不存在该工区，");
+                    }
+                }
             } else {
                 stringBuilder.append("系统不存在该站点，");
             }
             if (ObjectUtil.isNotNull(positionByName)) {
-                emergencyTeam.setPositionCode(lineByName.getString("positionCode"));
+                emergencyTeam.setPositionCode(positionByName.getString("positionCode"));
             } else {
                 stringBuilder.append("系统不存在该线路站点下的位置，");
             }
         } else {
             stringBuilder.append("线路，站点，驻扎地不能为空，");
         }
-        if (StrUtil.isNotBlank(manager)&& StrUtil.isNotBlank(managerPhone)) {
-            List<LoginUser> userByRealName = iSysBaseAPI.getUserByRealName(manager, managerWorkNo);
-            if (userByRealName.size() != 1) {
-                stringBuilder.append("负责人姓名存在同名，请填写工号，");
-            } else {
-                emergencyTeam.setManagerId(userByRealName.get(0).getId());
-            }
-            boolean matches = Pattern.matches("^1[3-9]\\d{9}$", managerPhone);
-            if (!matches) {
-                stringBuilder.append("手机号码格式不正确，");
-            } else {
-                emergencyTeam.setManagerPhone(managerPhone);
-            }
-        } else {
-            stringBuilder.append("负责人和联系电话不能为空，");
-        }
+
 
         if (stringBuilder.length() > 0) {
             // 截取字符
@@ -540,31 +566,26 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             team.setMistake(stringBuilder.toString());
             errorLines++;
         }
-       /* if (StrUtil.isNotBlank(workArea)) {
 
-        }*/
         return errorLines;
     }
 
     /**错误报告模板导出*/
     private Result<?> getErrorExcel(int errorLines,List<String> errorMessage,TeamModel team, List<CrewModel> crewList,int successLines ,String url,String type) throws IOException {
-        TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTeamError.xlsx");
+        TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/EmergencyTeamError.xlsx");
         Map<String, Object> errorMap = new HashMap<String, Object>();
-        List<Map<String, String>> teamMapList = new ArrayList<>();
-        Map<String, String> teamMap = new HashMap<>();
-        teamMap.put("majorName", team.getMajorName());
-        teamMap.put("orgName", team.getOrgName());
-        teamMap.put("emergencyTeamname", team.getEmergencyTeamname());
-        teamMap.put("emergencyTeamcode", team.getEmergencyTeamcode());
-        teamMap.put("lineName", team.getLineName());
-        teamMap.put("stationName", team.getStationName());
-        teamMap.put("positionName", team.getPositionName());
-        teamMap.put("workAreaName", team.getWorkAreaName());
-        teamMap.put("managerName", team.getManagerName());
-        teamMap.put("managerPhone", team.getManagerPhone());
-        teamMap.put("mistake", team.getMistake());
-        teamMapList.add(teamMap);
-        errorMap.put("teamMapList", teamMapList);
+        errorMap.put("majorName", team.getMajorName());
+        errorMap.put("orgName", team.getOrgName());
+        errorMap.put("emergencyTeamname", team.getEmergencyTeamname());
+        errorMap.put("emergencyTeamcode", team.getEmergencyTeamcode());
+        errorMap.put("lineName", team.getLineName());
+        errorMap.put("stationName", team.getStationName());
+        errorMap.put("positionName", team.getPositionName());
+        errorMap.put("workAreaName", team.getWorkAreaName());
+        errorMap.put("managerName", team.getManagerName());
+        errorMap.put("managerPhone", team.getManagerPhone());
+        errorMap.put("mistake", team.getMistake());
+
 
         List<Map<String, String>> crewMapList = new ArrayList<>();
         Map<String, String> crewMap = new HashMap<>();
@@ -576,7 +597,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             crewMap.put("remark", crewModel.getRemark());
             crewMap.put("mistake", crewModel.getMistake());
         }
-        crewMapList.add(teamMap);
+        crewMapList.add(crewMap);
         errorMap.put("crewMapList", crewMapList);
 
         Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
@@ -585,7 +606,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
 
         try {
             String fileName = "应急队伍导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
-            FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
+            FileOutputStream out = new FileOutputStream(errorExcelUpload+ File.separator+fileName);
             url = fileName;
             workbook.write(out);
         } catch (FileNotFoundException e) {
@@ -604,7 +625,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         InputStream resourceAsStream = resource.getInputStream();
 
         //2.获取临时文件
-        File fileTemp= new File("");
+        File fileTemp= new File("templates/emergencyTeam.xlsx");
         try {
             //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
             FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
@@ -633,7 +654,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
 
     @Override
     public ModelAndView exportTeamXls(HttpServletRequest request, EmergencyTeamDTO emergencyTeamDTO) {
-        IPage<EmergencyTeam> emergencyTeamIPage = this.queryPageList(emergencyTeamDTO, null, null);
+        IPage<EmergencyTeam> emergencyTeamIPage = this.queryPageList(emergencyTeamDTO, 1, Integer.MAX_VALUE);
         List<EmergencyTeam> records = emergencyTeamIPage.getRecords();
         List<EmergencyTeam> exportList = null;
         // 过滤选中数据
@@ -679,8 +700,14 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             int sort = 1;
             for (EmergencyCrewVO record : emergencyCrewVOList) {
                 CrewModel crewModel = new CrewModel();
-                BeanUtil.copyProperties(record,crewModel);
                 crewModel.setSort(Convert.toStr(sort));
+                crewModel.setScheduleItem(record.getScheduleItem());
+                crewModel.setRealName(record.getRealname());
+                crewModel.setUserPhone(record.getPhone());
+                crewModel.setRoleNames(record.getRoleNames());
+                Integer post = record.getPost();
+                String s = iSysBaseAPI.translateDict(TeamConstant.EMERGENCY_POST, Convert.toStr(post));
+                crewModel.setPostName(s);
                 crewModel.setMajorName(emergencyTeam.getMajorName());
                 crewModel.setLineStation(emergencyTeam.getLineName()+emergencyTeam.getStationName());
                 crewModels.add(crewModel);
