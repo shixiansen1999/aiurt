@@ -36,9 +36,9 @@ public class EmergencyRehearsalYearDTO {
     @ApiModelProperty(value = "所属年份")
     private String year;
     /**
-     * 接口标识，0年演练计划列表查询，1月演练计划列表查询
+     * 接口标识，0年演练计划列表查询，1月演练计划列表查询，2演练计划审核列表查询
      */
-    @ApiModelProperty(value = "接口标识，0年演练计划列表查询，1月演练计划列表查询")
+    @ApiModelProperty(value = "接口标识，0年演练计划列表查询，1月演练计划列表查询，2演练计划审核列表查询")
     private Integer flag;
 
 }

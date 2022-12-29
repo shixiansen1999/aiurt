@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
+import com.aiurt.boot.rehearsal.dto.EmergencyPlanStatusDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearAddDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
@@ -70,7 +71,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("检测到未登录，请登录后操作！");
         }
-        Page<EmergencyRehearsalYear> pageList = emergencyRehearsalYearMapper.queryPageList(page, emergencyRehearsalYearDTO, EmergencyConstant.YEAR_STATUS_3, loginUser.getUsername());
+        Page<EmergencyRehearsalYear> pageList = emergencyRehearsalYearMapper.queryPageList(page, emergencyRehearsalYearDTO, new EmergencyPlanStatusDTO(), loginUser.getUsername());
         return pageList;
     }
 

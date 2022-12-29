@@ -1,5 +1,6 @@
 package com.aiurt.boot.rehearsal.mapper;
 
+import com.aiurt.boot.rehearsal.dto.EmergencyPlanStatusDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
@@ -26,6 +27,6 @@ public interface EmergencyRehearsalYearMapper extends BaseMapper<EmergencyRehear
      */
     Page<EmergencyRehearsalYear> queryPageList(@Param("page") Page<EmergencyRehearsalYear> page,
                                                @Param("condition") EmergencyRehearsalYearDTO emergencyRehearsalYearDTO,
-                                               @Param("passStatus") Integer status,
+                                               @Param("planStatus") EmergencyPlanStatusDTO emergencyPlanStatusDTO,
                                                @Param("userName") String userName);
 }

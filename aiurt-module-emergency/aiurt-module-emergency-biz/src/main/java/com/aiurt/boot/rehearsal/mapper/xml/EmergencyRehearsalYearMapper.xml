@@ -30,10 +30,21 @@
         </if>
         <choose>
             <when test="condition.flag != null and 1 == condition.flag">
-                and ery.`status` in (#{passStatus})
+                and ery.`status` in (#{planStatus.passStatus})
+            </when>
+            <when test="condition.flag != null and 2 == condition.flag">
+                and ery.`status` in (#{planStatus.auditStatus})
+                and (ara.ASSIGNEE_ = #{userName} OR ara.ID_ in (
+                    SELECT TASK_ID_
+                    FROM act_ru_identitylink ari
+                    WHERE ari.TYPE_ = 'candidate'
+                      AND ari.USER_ID_ = #{userName}
+                      AND ari.TASK_ID_ = ara.ID_
+                      AND (ara.assignee_ = '' or ara.assignee_ is null)
+                ))
             </when>
             <otherwise>
-                and ery.`status` not in (#{passStatus})
+                and ery.`status` not in (#{planStatus.auditStatus})
                 and (ara.ASSIGNEE_ = #{userName} OR ara.ID_ in (
                     SELECT TASK_ID_
                     FROM act_ru_identitylink ari
