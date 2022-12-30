@@ -71,7 +71,7 @@
                 #{item}
             </foreach>
         </if>
-        order by ep.emergency_plan_status asc
+        order by ep.create_time desc
     </select>
 
     <select id="selectListNoPage" resultType="com.aiurt.boot.plan.dto.EmergencyPlanExcelDTO">
