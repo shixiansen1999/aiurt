@@ -263,16 +263,14 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 
 
     /**
-     * 应急预案台账导出数据
-     *
-     * @param request
+     * 应急预案导出数据
      * @param response
-     * @param emergencyPlanDto
+     * @param id
      */
     @AutoLog(value = "应急预案-应急预案台账导出数据")
-    @GetMapping(value = "/exportXls")
-    public void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanDTO emergencyPlanDto) {
-        emergencyPlanService.exportXls(request, response, emergencyPlanDto);
+    @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
+    public void exportXls(HttpServletResponse response, @RequestParam(name="id",required=true) String id) {
+        emergencyPlanService.exportXls(response, id);
     }
 
     /**

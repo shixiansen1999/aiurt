@@ -157,4 +157,18 @@
             sr.role_name = #{roleName} limit 1
         </if>
     </select>
+
+    <select id="queryById" resultType="com.aiurt.boot.plan.vo.EmergencyPlanExportExcelVO">
+        select ep.id as id,
+               ep.emergency_plan_type as emergencyPlanType,
+               ep.emergency_plan_name as emergencyPlanName ,
+               ep.key_word as keyWord,
+               ep.emergency_plan_content as emergencyPlanContent,
+               sd.depart_name as orgName,
+               su.realname as userName
+        from emergency_plan ep
+                 left join sys_depart sd on ep.org_code = sd.org_code
+                 left join sys_user su on ep.create_by = su.username
+        where ep.del_flag = 0 and ep.id = #{id}
+    </select>
 </mapper>

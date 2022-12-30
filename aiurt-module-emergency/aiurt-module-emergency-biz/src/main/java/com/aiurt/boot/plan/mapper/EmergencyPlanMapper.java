@@ -2,7 +2,7 @@ package com.aiurt.boot.plan.mapper;
 
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
-import com.aiurt.boot.plan.vo.EmergencyPlanRecordVO;
+import com.aiurt.boot.plan.vo.EmergencyPlanExportExcelVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -74,5 +74,7 @@ public interface EmergencyPlanMapper extends BaseMapper<EmergencyPlan> {
      * @return
      */
     String selectRoleId(String roleName);
+
+   EmergencyPlanExportExcelVO queryById(String id);
 
 }
