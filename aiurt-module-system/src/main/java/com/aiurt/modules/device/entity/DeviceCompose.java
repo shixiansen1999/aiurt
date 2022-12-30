@@ -1,21 +1,20 @@
 package com.aiurt.modules.device.entity;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * @Description: device_compose
@@ -40,7 +39,7 @@ public class DeviceCompose implements Serializable {
     @ApiModelProperty(value = "设备类型编码")
     private String deviceTypeCode;
     /**物资编码(物资主数据)*/
-    @Excel(name = "物资编码(物资主数据)", width = 15)
+    @Excel(name = "设备组成对应的物资编码", width = 15)
     @ApiModelProperty(value = "物资编码(物资主数据)")
     private String materialCode;
 	/**物资id物资主数据)*/
@@ -98,4 +97,5 @@ public class DeviceCompose implements Serializable {
 	@Excel(name = "删除标志", width = 15)
     @ApiModelProperty(value = "删除标志")
     private Integer delFlag;
+
 }

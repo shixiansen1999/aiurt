@@ -12,6 +12,8 @@ import com.aiurt.modules.device.mapper.DeviceComposeMapper;
 import com.aiurt.modules.device.mapper.DeviceTypeMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
+import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.mapper.MaterialBaseMapper;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -45,6 +47,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -67,6 +70,10 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
     private CsSubsystemMapper subsystemMapper;
     @Autowired
     private CsMajorMapper majorMapper;
+    @Autowired
+    private MaterialBaseMapper materialBaseMapper;
+    @Autowired
+    private DeviceComposeServiceImpl deviceComposeService;
     @Autowired
     @Lazy
     private DeviceTypeController deviceTypeController;
@@ -256,7 +263,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
                     continue;
                 }
                 CsUserMajorModel csMajor = deviceTypeMapper.selectCsMajor(majorCodeName);
-                if (csMajor == null) {
+                if (ObjectUtil.isEmpty(csMajor)) {
                     errorStrs.add("第 " + i + " 行：无法根据专业名称找到对应数据，忽略导入。");
                     list.add(deviceType.setText("无法根据专业名称找到对应数据，忽略导入"));
                     continue;
@@ -339,34 +346,50 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
                         List<DictModel> dictItems = iSysBaseAPI.getDictItems("is_special_device");
                         dictItems.forEach(s -> {
                             if (s.getText().equals(deviceType.getIsSpecialDeviceName())) {
-                                deviceType.setStatus(Integer.valueOf(s.getValue()));
+                                deviceType.setIsSpecialDevice(Integer.valueOf(s.getValue()));
                             }
                         });
                         if (ObjectUtil.isEmpty(deviceType.getIsSpecialDevice())){
                             errorStrs.add("第 " + i + " 行：是否为特种设备识别不出，忽略导入。");
                             list.add(deviceType.setText("是否为特种设备识别不出，忽略导入"));
                             continue;
+                    }
                     }else {
-                            errorStrs.add("第 " + i + " 行：是否为特种设备为空，忽略导入。");
-                            list.add(deviceType.setText("是否为特种设备为空，忽略导入"));
-                            continue;
-                        }
+                        errorStrs.add("第 " + i + " 行：是否为特种设备为空，忽略导入。");
+                        list.add(deviceType.setText("是否为特种设备为空，忽略导入"));
+                        continue;
                     }
                     if(StrUtil.isNotEmpty(deviceType.getIsEndName())){
                         List<DictModel> dictItems = iSysBaseAPI.getDictItems("is_end");
                         dictItems.forEach(s -> {
                             if (s.getText().equals(deviceType.getIsEndName())) {
-                                deviceType.setStatus(Integer.valueOf(s.getValue()));
+                                deviceType.setIsEnd(Integer.valueOf(s.getValue()));
                             }
                         });
                         if (ObjectUtil.isEmpty(deviceType.getIsEnd())){
                             errorStrs.add("第 " + i + " 行：是否为尾节点识别不出，忽略导入。");
                             list.add(deviceType.setText("是否为尾节点识别不出，忽略导入"));
                             continue;
-                        }else {
-                            errorStrs.add("第 " + i + " 行：是否为尾节点为空，忽略导入。");
-                            list.add(deviceType.setText("是否为尾节点为空，忽略导入"));
-                            continue;
+                        }
+                    }else {
+                        errorStrs.add("第 " + i + " 行：是否为尾节点为空，忽略导入。");
+                        list.add(deviceType.setText("是否为尾节点为空，忽略导入"));
+                        continue;
+                    }
+                    if (CollectionUtil.isNotEmpty(deviceType.getDeviceComposeList())&& "是".equals(deviceType.getIsEndName())){
+                        for (DeviceCompose d : deviceType.getDeviceComposeList()) {
+                            deviceType.setDeviceComposeCode(d.getMaterialCode());
+                            MaterialBase m = materialBaseMapper.selectOne(new LambdaQueryWrapper<MaterialBase>()
+                                    .eq(MaterialBase::getCode, d.getMaterialCode()).eq(MaterialBase::getDelFlag, 0));
+                            if (ObjectUtil.isNotEmpty(m)) {
+                                d.setBaseTypeCode(m.getBaseTypeCode()).setMaterialId(m.getId()).setMaterialName(m.getName())
+                                        .setUnit(m.getUnit()).setPrice(new BigDecimal(m.getPrice()));
+                            } else {
+                                errorStrs.add("第 " + i + " 行："+d.getMaterialCode()+"找不到此数据，忽略导入。");
+                                list.add(deviceType.setText(d.getMaterialCode()+"找不到此数据，忽略导入"));
+                                continue;
+                            }
+                            deviceComposeService.saveBatch(deviceType.getDeviceComposeList());
                         }
                     }
                     String codecc =  getCcStr(deviceType);
@@ -405,6 +428,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
                 lm.put("statusName",l.getStatusName());
                 lm.put("isSpecialDeviceName",l.getIsSpecialDeviceName());
                 lm.put("isEndName",l.getIsEndName());
+                lm.put("deviceComposeCode",l.getDeviceComposeCode());
                 lm.put("text",l.getText());
                 mapList.add(lm);
             });
@@ -421,7 +445,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         }
         errorLines += errorStrs.size();
         successLines += (listMaterial.size() - errorLines);
-        return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs);
+        return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs,null);
     }
 
     @Override
@@ -435,8 +459,8 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
             //excel注解对象Class
             mv.addObject(NormalExcelConstants.CLASS, DeviceType.class);
             //自定义导出字段
-            String exportField = "majorCode,systemCode";
-            mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
+            // String exportField = "majorCode,systemCode";
+            // mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
             //自定义表格参数
             mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("设备分类", "设备分类"));
             //导出数据列表
