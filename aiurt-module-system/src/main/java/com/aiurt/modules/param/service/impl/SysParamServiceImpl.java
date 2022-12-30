@@ -1,5 +1,6 @@
 package com.aiurt.modules.param.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.param.entity.SysParam;
@@ -8,6 +9,7 @@ import com.aiurt.modules.param.service.ISysParamService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.SelectTreeModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +27,17 @@ import java.util.List;
 public class SysParamServiceImpl extends ServiceImpl<SysParamMapper, SysParam> implements ISysParamService {
 
 	@Override
-	public void addSysParam(SysParam sysParam) {
-	   //新增时设置hasChild为0
+	public Result<String> addSysParam(SysParam sysParam) {
+	    //校验编码是否唯一
+        LambdaQueryWrapper<SysParam> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysParam::getDelFlag, 0);
+        queryWrapper.eq(SysParam::getCode, sysParam.getCode());
+        List<SysParam> sysParams = this.getBaseMapper().selectList(queryWrapper);
+        if (CollUtil.isNotEmpty(sysParams)) {
+            return Result.error("编码已经存在！");
+        }
+
+        //新增时设置hasChild为0
 	    sysParam.setHasChild(ISysParamService.NOCHILD);
 		if(oConvertUtils.isEmpty(sysParam.getPid())){
 			sysParam.setPid(ISysParamService.ROOT_PID_VALUE);
@@ -34,9 +45,8 @@ public class SysParamServiceImpl extends ServiceImpl<SysParamMapper, SysParam> i
 			//如果当前节点父ID不为空 则设置父节点的hasChildren 为1
 			SysParam parent = baseMapper.selectById(sysParam.getPid());
             String configItem = "configItem";
-            String module = "module";
-            if (parent.getCategory().equals(configItem) && sysParam.getCategory().equals(module)) {
-                throw new AiurtBootException("父级为配置项不能添加模块子级");
+            if (parent.getCategory().equals(configItem) ) {
+                return Result.error("父级为配置项不能添加子级！");
             }
 			if(parent!=null && !"1".equals(parent.getHasChild())){
 				parent.setHasChild("1");
@@ -44,19 +54,30 @@ public class SysParamServiceImpl extends ServiceImpl<SysParamMapper, SysParam> i
 			}
 		}
 		baseMapper.insert(sysParam);
-	}
+        return Result.OK("添加成功！");
+    }
 
 	@Override
-	public void updateSysParam(SysParam sysParam) {
+	public Result<String> updateSysParam(SysParam sysParam) {
 		SysParam entity = this.getById(sysParam.getId());
-		if(entity==null) {
-			throw new AiurtBootException("未找到对应实体");
+        //校验编码是否唯一
+        LambdaQueryWrapper<SysParam> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysParam::getDelFlag, 0);
+        queryWrapper.eq(SysParam::getCode, sysParam.getCode());
+        queryWrapper.ne(SysParam::getId, sysParam.getId());
+        List<SysParam> sysParams = this.getBaseMapper().selectList(queryWrapper);
+        if (CollUtil.isNotEmpty(sysParams)) {
+            return Result.error("编码已经存在！");
+        }
+
+        if(entity==null) {
+            return Result.error("未找到对应实体!");
 		}
-		String old_pid = entity.getPid();
-		String new_pid = sysParam.getPid();
-		if(!old_pid.equals(new_pid)) {
-			updateOldParentNode(old_pid);
-			if(oConvertUtils.isEmpty(new_pid)){
+		String oldPid = entity.getPid();
+		String newPid = sysParam.getPid();
+		if(!oldPid.equals(newPid)) {
+			updateOldParentNode(oldPid);
+			if(oConvertUtils.isEmpty(newPid)){
 				sysParam.setPid(ISysParamService.ROOT_PID_VALUE);
 			}
 			if(!ISysParamService.ROOT_PID_VALUE.equals(sysParam.getPid())) {
@@ -64,12 +85,12 @@ public class SysParamServiceImpl extends ServiceImpl<SysParamMapper, SysParam> i
 			}
 		}
 		baseMapper.updateById(sysParam);
+        return Result.OK("编辑成功!");
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void deleteSysParam(String id) throws AiurtBootException {
-
+	public Result<String>  deleteSysParam(String id) throws AiurtBootException {
         id = this.queryTreeChildIds(id);
         if(id.indexOf(",")>0) {
             //查询选中节点下所有子节点一并删除
@@ -95,15 +116,16 @@ public class SysParamServiceImpl extends ServiceImpl<SysParamMapper, SysParam> i
             for(String pid : pidArr){
                 this.updateOldParentNode(pid);
             }*/
-            throw new AiurtBootException("当前节点存在子节点，不能删除");
+            return Result.error("当前节点存在子节点，不能删除!");
         }else{
             SysParam sysParam = this.getById(id);
             if(sysParam==null) {
-                throw new AiurtBootException("未找到对应实体");
+                return Result.error("未找到对应实体");
             }
             updateOldParentNode(sysParam.getPid());
             baseMapper.deleteById(id);
         }
+        return Result.OK("删除成功!");
 	}
 
 	@Override

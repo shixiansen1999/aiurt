@@ -4,6 +4,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.param.entity.SysParam;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.SelectTreeModel;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public interface ISysParamService extends IService<SysParam> {
 	 *
 	 * @param sysParam
 	 */
-	void addSysParam(SysParam sysParam);
+	Result<String> addSysParam(SysParam sysParam);
 
 	/**
    * 修改节点
@@ -38,7 +39,7 @@ public interface ISysParamService extends IService<SysParam> {
    * @param sysParam
    * @throws AiurtBootException
    */
-	void updateSysParam(SysParam sysParam) throws AiurtBootException;
+	Result<String> updateSysParam(SysParam sysParam) throws AiurtBootException;
 
 	/**
 	 * 删除节点
@@ -46,7 +47,7 @@ public interface ISysParamService extends IService<SysParam> {
 	 * @param id
    * @throws AiurtBootException
 	 */
-	void deleteSysParam(String id) throws AiurtBootException;
+	Result<String>  deleteSysParam(String id) throws AiurtBootException;
 
 	  /**
 	   * 查询所有数据，无分页

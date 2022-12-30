@@ -6,6 +6,7 @@ import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.param.entity.SysParam;
 import com.aiurt.modules.param.service.ISysParamService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -134,8 +135,7 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 	@ApiOperation(value="sys_param-添加", notes="sys_param-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody SysParam sysParam) {
-		sysParamService.addSysParam(sysParam);
-		return Result.OK("添加成功！");
+		return  sysParamService.addSysParam(sysParam);
 	}
 
 	/**
@@ -148,8 +148,8 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 	@ApiOperation(value="sys_param-编辑", notes="sys_param-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody SysParam sysParam) {
-		sysParamService.updateSysParam(sysParam);
-		return Result.OK("编辑成功!");
+		return sysParamService.updateSysParam(sysParam);
+
 	}
 
 	/**
@@ -162,8 +162,7 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 	@ApiOperation(value="sys_param-通过id删除", notes="sys_param-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		sysParamService.deleteSysParam(id);
-		return Result.OK("删除成功!");
+		return  sysParamService.deleteSysParam(id);
 	}
 
 	/**
@@ -200,6 +199,23 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 		sysParamService.getCategoryName(sysParam);
 		return Result.OK(sysParam);
 	}
+
+	 @ApiOperation(value="查询所有配置项", notes="查询所有配置项")
+	 @GetMapping(value = "/configItemList")
+	 public Result<List<SysParam>> configItemList() {
+		 String configItem = "configItem";
+		 LambdaQueryWrapper<SysParam> queryWrapper = new LambdaQueryWrapper<>();
+		 queryWrapper.eq(SysParam::getDelFlag, 0);
+		 queryWrapper.eq(SysParam::getCategory, configItem);
+		 List<SysParam> sysParams = sysParamService.getBaseMapper().selectList(queryWrapper);
+		 if (CollUtil.isNotEmpty(sysParams)) {
+			 for (SysParam record : sysParams) {
+				 sysParamService.getCategoryName(record);
+			 }
+		 }
+		 return Result.OK(sysParams);
+	 }
+
 
     /**
     * 导出excel
