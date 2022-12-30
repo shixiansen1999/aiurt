@@ -256,6 +256,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 			 if (CollUtil.isNotEmpty(collect)){
 			 	    collect.forEach(e->{
 						List<EmergencyMaterialsInvoicesItem> collect1 = emergencyMaterialsInvoicesItemList.stream().filter(q -> q.getPid().equals(e.getId())).collect(Collectors.toList());
+                        e.setId(null);
 						iEmergencyMaterialsInvoicesItemService.save(e);
 						String id = e.getId();
 						if (CollUtil.isNotEmpty(collect1)){
