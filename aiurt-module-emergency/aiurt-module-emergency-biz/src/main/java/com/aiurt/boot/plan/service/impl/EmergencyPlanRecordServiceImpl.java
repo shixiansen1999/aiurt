@@ -2,16 +2,21 @@ package com.aiurt.boot.plan.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.ExportParams;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.materials.entity.EmergencyMaterials;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsUsage;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsUsageService;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
+import com.aiurt.boot.plan.controller.PlanRecordExcelListener;
+import com.aiurt.boot.plan.controller.RecordExcelListener;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.EmergencyPlanRecordMapper;
@@ -25,30 +30,44 @@ import com.aiurt.boot.rehearsal.vo.EmergencyRecordMonthVO;
 import com.aiurt.boot.rehearsal.vo.EmergencyRecordReadOneVO;
 import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
+import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.XlsUtil;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDeptUserModel;
+import org.jeecg.common.util.SpringContextUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -83,6 +102,10 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     private IEmergencyTeamService emergencyTeamService;
     @Autowired
     private IEmergencyMaterialsUsageService iEmergencyMaterialsUsageService;
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
+    @Value("${jeecg.path.errorExcelUpload}")
+    private String errorExcelUpload;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -550,6 +573,42 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     }
 
     @Override
+    public void exportTemplateXls(HttpServletResponse response,HttpServletRequest request) throws IOException {
+        //获取输入流，原始模板位置
+        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/emergencyPlanRecord.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+        //2.获取临时文件
+        File fileTemp = new File("/templates/emergencyPlanRecord.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(16);
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+        CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+        List<DictModel> isTypeModels = bean.queryDictItemsByCode("emergency_event_class");
+        EmergencyPlanServiceImpl.ExcelSelectListUtil.selectList(workbook, "事件类型", 0, 3, isTypeModels);
+        List<DictModel> isProperty = bean.queryDictItemsByCode("emergency_event_property");
+        EmergencyPlanServiceImpl.ExcelSelectListUtil.selectList(workbook, "事件性质", 3, 6, isProperty);
+        String fileName = "应急预案导入模板.xlsx";
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename=" + "应急预案启动记录导入模板.xlsx");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanRecordDTO emergencyPlanRecordDto) {
         // 封装数据
         List<EmergencyPlanRecordExcelDTO> pageList = this.getinspectionStrategyList(emergencyPlanRecordDto);
@@ -583,25 +642,226 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     private List<EmergencyPlanRecordExcelDTO> getinspectionStrategyList(EmergencyPlanRecordDTO emergencyPlanRecordDto) {
 
         List<EmergencyPlanRecordExcelDTO> result =emergencyPlanRecordMapper.selectListNoPage(emergencyPlanRecordDto);
-//        if (CollUtil.isEmpty(result)) {
-//            return result;
-//        }
-//        // 处置程序
-//        for (EmergencyPlanExcelDTO emergencyPlanExcelDTO : result) {
-//            if (ObjectUtil.isEmpty(emergencyPlanExcelDTO)) {
-//                continue;
-//            }
-//            List<EmergencyPlanDisposalProcedureExcelDTO> planDisposalProcedureList = emergencyPlanRecordMapper.selectPlanDisposalProcedureById(emergencyPlanExcelDTO.getId());
-//            if (CollUtil.isEmpty(planDisposalProcedureList)) {
-//                continue;
-//            }
-//            List<EmergencyPlanMaterialsExcelDTO> planMaterialsList = emergencyPlanRecordMapper.selectPlanMaterialsById(emergencyPlanExcelDTO.getId());
-//            if (CollUtil.isEmpty(planMaterialsList)) {
-//                continue;
-//            }
-//            emergencyPlanExcelDTO.setPlanDisposalProcedureList(planDisposalProcedureList);
-//            emergencyPlanExcelDTO.setPlanMaterialsDTOList(planMaterialsList);
-//        }
         return result;
     }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+
+        //成功条数
+        Integer successlines = 0;
+        // 失败条数
+        Integer  errorLines = 0;
+        // 标记是否有错误信息
+        Boolean errorSign = false;
+        // 标记是否有错误信息
+        Boolean errorSign2 = false;
+        // 失败导出的excel下载地址
+        String failReportUrl = "";
+
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+
+            // 判断是否xls、xlsx两种类型的文件，不是则直接返回
+            String type = FilenameUtils.getExtension(file.getOriginalFilename());
+            if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+                return imporReturnRes(errorLines, false, failReportUrl,"文件导入失败，文件类型不对");
+            }
+            //读取数据监听
+            PlanRecordExcelListener recordExcelListener =new PlanRecordExcelListener();
+            //读取数据
+            try {
+                EasyExcel.read(file.getInputStream(), RecordData.class, recordExcelListener).sheet().doRead();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            //判断读取的数据是否有空行
+            EmergencyPlanRecordImportExcelDTO emergencyPlanRecordImportExcelDTO = recordExcelListener.getEmergencyPlanRecordImportExcelDTO();
+            List<EmergencyPlanRecordDisposalProcedureImportExcelDTO> planRecordDisposalProcedureList = emergencyPlanRecordImportExcelDTO.getPlanRecordDisposalProcedureList();
+            List<EmergencyPlanRecordMaterialsImportExcelDTO> planRecordMaterialsList = emergencyPlanRecordImportExcelDTO.getPlanRecordMaterialsList();
+            List<EmergencyPlanRecordProblemMeasuresImportExcelDTO> problemMeasuresList = emergencyPlanRecordImportExcelDTO.getProblemMeasuresList();
+            if(CollUtil.isNotEmpty(planRecordDisposalProcedureList)){
+                Iterator<EmergencyPlanRecordDisposalProcedureImportExcelDTO> iterator = planRecordDisposalProcedureList.iterator();
+                if(CollUtil.isNotEmpty(iterator)){
+                    while (iterator.hasNext()) {
+                        EmergencyPlanRecordDisposalProcedureImportExcelDTO model = iterator.next();
+                        boolean a = XlsUtil.checkObjAllFieldsIsNull(model);
+                        if (a) {
+                            iterator.remove();
+                        }
+                    }
+                }
+                if (CollUtil.isEmpty(planRecordDisposalProcedureList)) {
+                    return Result.error("文件导入失败:应急预案处置程序不能为空！");
+                }
+            }
+            if(CollUtil.isNotEmpty(planRecordMaterialsList)){
+                Iterator<EmergencyPlanRecordMaterialsImportExcelDTO> iterator = planRecordMaterialsList.iterator();
+                if(CollUtil.isNotEmpty(iterator)){
+                    while (iterator.hasNext()) {
+                        EmergencyPlanRecordMaterialsImportExcelDTO model = iterator.next();
+                        boolean a = XlsUtil.checkObjAllFieldsIsNull(model);
+                        if (a) {
+                            iterator.remove();
+                        }
+                    }
+                }
+            }
+            if(CollUtil.isNotEmpty(problemMeasuresList)){
+                Iterator<EmergencyPlanRecordProblemMeasuresImportExcelDTO> iterator = problemMeasuresList.iterator();
+                if(CollUtil.isNotEmpty(iterator)){
+                    while (iterator.hasNext()) {
+                        EmergencyPlanRecordProblemMeasuresImportExcelDTO model = iterator.next();
+                        boolean a = XlsUtil.checkObjAllFieldsIsNull(model);
+                        if (a) {
+                            iterator.remove();
+                        }
+                    }
+                }
+            }
+
+            // 记录校验得到的错误信息
+            StringBuilder errorMessage = new StringBuilder();
+
+            // 校验数据
+            EmergencyPlanRecordDTO emergencyPlanRecordDTO = new EmergencyPlanRecordDTO();
+            // 校验应急启动记录
+            this.checkData(errorMessage, emergencyPlanRecordImportExcelDTO, emergencyPlanRecordDTO);
+            // 校验应急预案处置程序
+            errorSign=this.checkDisposalProcedureCode(errorSign, emergencyPlanRecordImportExcelDTO, emergencyPlanRecordDTO);
+            // 校验应急预案物资清单
+            errorSign2=this.checkMaterialsCode(errorSign2, emergencyPlanRecordImportExcelDTO, emergencyPlanRecordDTO);
+
+            if (errorMessage.length() > 0 || errorSign || errorSign2) {
+                if(errorMessage.length() > 0  ){
+                    errorMessage = errorMessage.deleteCharAt(errorMessage.length() - 1);
+                    emergencyPlanRecordImportExcelDTO.setEmergencyPlanRecordErrorReason(errorMessage.toString());
+                }
+                errorLines++;
+            }
+
+            // 存在错误，错误报告下载
+            if (errorLines > 0) {
+                try {
+                    return getErrorExcel(errorLines, emergencyPlanRecordImportExcelDTO, failReportUrl, type);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }else{
+                // 校验通过，保存到系统
+                if (ObjectUtil.isNotEmpty(emergencyPlanRecordDTO)) {
+                    this.saveAndAdd(emergencyPlanRecordDTO);
+                    return imporReturnRes(errorLines, true, failReportUrl,"文件导入成功");
+                }
+            }
+        }
+        return imporReturnRes(errorLines, false, failReportUrl,"暂无导入数据");
+    }
+
+    /**
+     * 检修策略导入统一返回格式
+     * @param errorLines 错误条数
+     * @param isSucceed 是否成功
+     * @param failReportUrl 错误报告下载地址
+     * @param message 提示信息
+     * @return
+     */
+    public static Result<?> imporReturnRes(int errorLines, boolean isSucceed, String failReportUrl,String message) {
+        JSONObject result = new JSONObject(5);
+        result.put("isSucceed", isSucceed);
+        result.put("errorCount", errorLines);
+        result.put("failReportUrl", failReportUrl);
+        Result res = Result.ok(result);
+        res.setMessage(message);
+        res.setCode(200);
+        return res;
+    }
+
+    /**
+     * 校验excel数据
+     *
+     * @param errorMessage                错误信息
+     * @param emergencyPlanRecordImportExcelDTO excel数据
+     * @param emergencyPlanRecordDTO       转换成要保存的实体数据
+     */
+    private void checkData(StringBuilder errorMessage, EmergencyPlanRecordImportExcelDTO emergencyPlanRecordImportExcelDTO, EmergencyPlanRecordDTO emergencyPlanRecordDTO) {
+        // 空数据不处理
+        if (ObjectUtil.isEmpty(emergencyPlanRecordImportExcelDTO)) {
+            return;
+        }
+        // 应急预案必填校验
+        requiredCheck(errorMessage, emergencyPlanRecordImportExcelDTO, emergencyPlanRecordDTO);
+    }
+    private void requiredCheck(StringBuilder errorMessage, EmergencyPlanRecordImportExcelDTO emergencyPlanRecordImportExcelDTO, EmergencyPlanRecordDTO emergencyPlanRecordDTO) {
+
+
+    }
+
+    private Boolean checkDisposalProcedureCode(Boolean errorSign, EmergencyPlanRecordImportExcelDTO emergencyPlanRecordImportExcelDTO, EmergencyPlanRecordDTO emergencyPlanRecordDTO) {
+        return errorSign;
+    }
+    private Boolean checkMaterialsCode(Boolean errorSign, EmergencyPlanRecordImportExcelDTO emergencyPlanRecordImportExcelDTO, EmergencyPlanRecordDTO emergencyPlanRecordDTO) {
+        return errorSign;
+    }
+
+    /**
+     * 下载错误清单
+     * @param errorLines
+     * @param url
+     * @param type
+     * @return
+     * @throws IOException
+     */
+    private Result<?> getErrorExcel(int errorLines, EmergencyPlanRecordImportExcelDTO emergencyPlanRecordImportExcelDTO, String url, String type) throws IOException {
+        //创建导入失败错误报告,进行模板导出
+        Resource resource = new ClassPathResource("/templates/emergencyPlanError.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+
+        //2.获取临时文件
+        File fileTemp = new File("/templates/emergencyPlanError.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+
+            String path = fileTemp.getAbsolutePath();
+            TemplateExportParams exportParams = new TemplateExportParams(path);
+
+            // 封装数据
+            Map<String, Object> errorMap = handleData(emergencyPlanRecordImportExcelDTO);
+
+            // 将数据填入表格
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            sheetsMap.put(0, errorMap);
+            Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+
+            String fileName = "应急预案数据导入错误清单" + "_" + System.currentTimeMillis() + "." + type;
+            FileOutputStream out = new FileOutputStream(upLoadPath + File.separator + fileName);
+            url = fileName;
+            workbook.write(out);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return imporReturnRes(errorLines, false, url,"文件导入失败，数据有错误");
+    }
+
+    @NotNull
+    private Map<String, Object> handleData(EmergencyPlanRecordImportExcelDTO emergencyPlanRecordImportExcelDTO) {
+        Map<String, Object> errorMap = CollUtil.newHashMap();
+        List<Map<String, String>> mapList = CollUtil.newArrayList();
+        List<Map<String, String>> mapList2 = CollUtil.newArrayList();
+
+        return errorMap;
+    }
+
+
+
+
 }
