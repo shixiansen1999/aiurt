@@ -72,4 +72,10 @@ public interface ISysParamService extends IService<SysParam> {
 	 */
 	List<SelectTreeModel> queryListByPid(String pid);
 
+	/**
+	 * 获取类别名称
+	 * @param sysParam
+	 */
+	void getCategoryName(SysParam sysParam);
+
 }

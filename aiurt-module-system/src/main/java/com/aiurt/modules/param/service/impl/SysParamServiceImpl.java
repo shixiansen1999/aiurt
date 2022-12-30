@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -34,6 +33,11 @@ public class SysParamServiceImpl extends ServiceImpl<SysParamMapper, SysParam> i
 		}else{
 			//如果当前节点父ID不为空 则设置父节点的hasChildren 为1
 			SysParam parent = baseMapper.selectById(sysParam.getPid());
+            String configItem = "configItem";
+            String module = "module";
+            if (parent.getCategory().equals(configItem) && sysParam.getCategory().equals(module)) {
+                throw new AiurtBootException("父级为配置项不能添加模块子级");
+            }
 			if(parent!=null && !"1".equals(parent.getHasChild())){
 				parent.setHasChild("1");
 				baseMapper.updateById(parent);
@@ -65,10 +69,11 @@ public class SysParamServiceImpl extends ServiceImpl<SysParamMapper, SysParam> i
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteSysParam(String id) throws AiurtBootException {
-		//查询选中节点下所有子节点一并删除
+
         id = this.queryTreeChildIds(id);
         if(id.indexOf(",")>0) {
-            StringBuffer sb = new StringBuffer();
+            //查询选中节点下所有子节点一并删除
+           /* StringBuffer sb = new StringBuffer();
             String[] idArr = id.split(",");
             for (String idVal : idArr) {
                 if(idVal != null){
@@ -89,7 +94,8 @@ public class SysParamServiceImpl extends ServiceImpl<SysParamMapper, SysParam> i
             String[] pidArr = sb.toString().split(",");
             for(String pid : pidArr){
                 this.updateOldParentNode(pid);
-            }
+            }*/
+            throw new AiurtBootException("当前节点存在子节点，不能删除");
         }else{
             SysParam sysParam = this.getById(id);
             if(sysParam==null) {
@@ -147,7 +153,18 @@ public class SysParamServiceImpl extends ServiceImpl<SysParamMapper, SysParam> i
         return baseMapper.queryListByPid(pid, null);
     }
 
-	/**
+    @Override
+    public void getCategoryName(SysParam sysParam) {
+        String category = sysParam.getCategory();
+        String module = "module";
+        if (module.equals(category)) {
+            sysParam.setCategoryName("模块");
+        } else {
+            sysParam.setCategoryName("配置项");
+        }
+    }
+
+    /**
 	 * 根据所传pid查询旧的父级节点的子节点并修改相应状态值
 	 * @param pid
 	 */

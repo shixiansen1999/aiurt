@@ -41,7 +41,11 @@ public class SysParam implements Serializable {
 	/**参数类别*/
 	@Excel(name = "参数类别", width = 15)
     @ApiModelProperty(value = "参数类别")
-    private Integer category;
+    private String category;
+    /**参数类别*/
+    @Excel(name = "参数类别名称", width = 15)
+    @ApiModelProperty(value = "参数类别名称")
+    private String categoryName;
 	/**参数值*/
 	@Excel(name = "参数值", width = 15)
     @ApiModelProperty(value = "参数值")

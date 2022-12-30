@@ -1,5 +1,6 @@
 package com.aiurt.modules.param.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.oConvertUtils;
@@ -13,7 +14,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecg.common.system.vo.SelectTreeModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -71,70 +71,16 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
             queryWrapper.eq("pid", parentId);
             Page<SysParam> page = new Page<SysParam>(pageNo, pageSize);
             IPage<SysParam> pageList = sysParamService.page(page, queryWrapper);
-            return Result.OK(pageList);
+			List<SysParam> records = pageList.getRecords();
+			if (CollUtil.isNotEmpty(records)) {
+				for (SysParam record : records) {
+					sysParamService.getCategoryName(record);
+				}
+			}
+			return Result.OK(pageList);
         }
 	}
 
-	 /**
-	  * 【vue3专用】加载节点的子数据
-	  *
-	  * @param pid
-	  * @return
-	  */
-	 @RequestMapping(value = "/loadTreeChildren", method = RequestMethod.GET)
-	 public Result<List<SelectTreeModel>> loadTreeChildren(@RequestParam(name = "pid") String pid) {
-		 Result<List<SelectTreeModel>> result = new Result<>();
-		 try {
-			 List<SelectTreeModel> ls = sysParamService.queryListByPid(pid);
-			 result.setResult(ls);
-			 result.setSuccess(true);
-		 } catch (Exception e) {
-			 e.printStackTrace();
-			 result.setMessage(e.getMessage());
-			 result.setSuccess(false);
-		 }
-		 return result;
-	 }
-
-	 /**
-	  * 【vue3专用】加载一级节点/如果是同步 则所有数据
-	  *
-	  * @param async
-	  * @param pcode
-	  * @return
-	  */
-	 @RequestMapping(value = "/loadTreeRoot", method = RequestMethod.GET)
-	 public Result<List<SelectTreeModel>> loadTreeRoot(@RequestParam(name = "async") Boolean async, @RequestParam(name = "pcode") String pcode) {
-		 Result<List<SelectTreeModel>> result = new Result<>();
-		 try {
-			 List<SelectTreeModel> ls = sysParamService.queryListByCode(pcode);
-			 if (!async) {
-				 loadAllChildren(ls);
-			 }
-			 result.setResult(ls);
-			 result.setSuccess(true);
-		 } catch (Exception e) {
-			 e.printStackTrace();
-			 result.setMessage(e.getMessage());
-			 result.setSuccess(false);
-		 }
-		 return result;
-	 }
-
-	 /**
-	  * 【vue3专用】递归求子节点 同步加载用到
-	  *
-	  * @param ls
-	  */
-	 private void loadAllChildren(List<SelectTreeModel> ls) {
-		 for (SelectTreeModel tsm : ls) {
-			 List<SelectTreeModel> temp = sysParamService.queryListByPid(tsm.getKey());
-			 if (temp != null && temp.size() > 0) {
-				 tsm.setChildren(temp);
-				 loadAllChildren(temp);
-			 }
-		 }
-	 }
 
 	 /**
       * 获取子数据
@@ -230,7 +176,10 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 	@ApiOperation(value="sys_param-批量删除", notes="sys_param-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.sysParamService.removeByIds(Arrays.asList(ids.split(",")));
+		List<String> list = Arrays.asList(ids.split(","));
+		for (String id : list) {
+			sysParamService.deleteSysParam(id);
+		}
 		return Result.OK("批量删除成功！");
 	}
 
@@ -248,6 +197,7 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 		if(sysParam==null) {
 			return Result.error("未找到对应数据");
 		}
+		sysParamService.getCategoryName(sysParam);
 		return Result.OK(sysParam);
 	}
 
