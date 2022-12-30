@@ -1,5 +1,6 @@
 package com.aiurt.modules.sysfile.param;
 
+import com.aiurt.modules.sysfile.vo.UploadVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -44,7 +45,7 @@ public class SysFileTypeParam implements Serializable {
 	private List<String> editIds;
 
 	@ApiModelProperty("可上传人员")
-	private List<String> uploads;
+	private List<UploadVO> uploads;
 
 	@ApiModelProperty("可下载人员")
 	private List<String> downloads;

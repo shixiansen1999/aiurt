@@ -45,6 +45,7 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 		SysFileRole fileRole = new SysFileRole();
 		fileRole.setDelFlag(0).setTypeId(param.getTypeId()).setUserId(param.getUserId());
 		fileRole.setLookStatus(1);
+		fileRole.setUploadTag(param.getUploadTag());
 		fileRole.setEditStatus(Optional.ofNullable(param.getEditStatus()).orElse(0));
 		fileRole.setUploadStatus(Optional.ofNullable(param.getUploadStatus()).orElse(0));
 		fileRole.setDownloadStatus(Optional.ofNullable(param.getDownloadStatus()).orElse(0));
