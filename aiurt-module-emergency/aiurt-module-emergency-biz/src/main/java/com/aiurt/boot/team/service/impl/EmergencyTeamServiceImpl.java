@@ -261,6 +261,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         if (StrUtil.isNotBlank(orgCode)) {
             queryWrapper.eq(EmergencyTeam::getOrgCode, orgCode);
         }
+        queryWrapper.eq(EmergencyTeam::getDelFlag, TeamConstant.DEL_FLAG0);
         queryWrapper.select(EmergencyTeam::getId,EmergencyTeam::getEmergencyTeamname, EmergencyTeam::getEmergencyTeamcode,EmergencyTeam::getManagerId);
         List<EmergencyTeam> emergencyTeams = this.getBaseMapper().selectList(queryWrapper);
         if (CollUtil.isNotEmpty(emergencyTeams)) {

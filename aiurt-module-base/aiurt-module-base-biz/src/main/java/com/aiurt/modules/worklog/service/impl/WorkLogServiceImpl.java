@@ -227,6 +227,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     public IPage<WorkLogResult> pageList(IPage<WorkLogResult> page, WorkLogParam param, HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         param.setSubmitId(user.getId());
+        param.setSuccessorId(user.getId());
         param.setDepartId(user.getOrgId());
         return getWorkLogResultIPage(page, param);
     }
