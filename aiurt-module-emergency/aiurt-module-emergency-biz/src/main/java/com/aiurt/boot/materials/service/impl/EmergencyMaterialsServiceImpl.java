@@ -11,8 +11,10 @@ import com.aiurt.boot.materials.constant.MaterialsConstant;
 import com.aiurt.boot.materials.dto.*;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
+import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoices;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsCategoryMapper;
+import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesMapper;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import com.aiurt.common.api.CommonAPI;
@@ -58,11 +60,13 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @Description: emergency_materials
  * @Author: aiurt
- * @Date:   2022-11-29
+ * @Date: 2022-11-29
  * @Version: V1.0
  */
 @Service
@@ -72,6 +76,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     private EmergencyMaterialsMapper emergencyMaterialsMapper;
     @Autowired
     private EmergencyMaterialsCategoryMapper emergencyMaterialsCategoryMapper;
+    @Autowired
+    private EmergencyMaterialsInvoicesMapper materialsInvoicesMapper;
 
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
@@ -82,40 +88,44 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     public Page<MaterialAccountDTO> getMaterialAccountList(Page<MaterialAccountDTO> pageList, MaterialAccountDTO condition) {
         List<MaterialAccountDTO> materialAccountList = emergencyMaterialsMapper.getMaterialAccountList(pageList, condition);
         List<PatrolStandardItemsModel> patrolStandardItemsModels = iSysBaseAPI.patrolStandardList(condition.getPatrolStandardId());
-        materialAccountList.forEach(e->{
-            if (StrUtil.isNotBlank(e.getUserId())){
+        materialAccountList.forEach(e -> {
+            if (StrUtil.isNotBlank(e.getUserId())) {
                 //根据负责人id查询负责人名称
                 LoginUser userById = iSysBaseAPI.getUserById(e.getUserId());
-                if (StrUtil.isNotBlank(userById.getRealname())){
+                if (StrUtil.isNotBlank(userById.getRealname())) {
                     e.setUserName(userById.getRealname());
                 }
-            }if (StrUtil.isNotBlank(e.getPrimaryOrg())){
+            }
+            if (StrUtil.isNotBlank(e.getPrimaryOrg())) {
                 //根据部门编码查询部门名称
                 SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(e.getPrimaryOrg());
-                if (ObjectUtil.isNotEmpty(departByOrgCode)){
+                if (ObjectUtil.isNotEmpty(departByOrgCode)) {
                     e.setPrimaryName(departByOrgCode.getDepartName());
                 }
-            }if (StrUtil.isNotBlank(e.getLineCode())){
+            }
+            if (StrUtil.isNotBlank(e.getLineCode())) {
                 //根据线路编码查询线路名称
                 String position = iSysBaseAPI.getPosition(e.getLineCode());
-                if (StrUtil.isNotBlank(position)){
+                if (StrUtil.isNotBlank(position)) {
                     e.setLineName(position);
                 }
-            }if(StrUtil.isNotBlank(e.getStationCode())){
+            }
+            if (StrUtil.isNotBlank(e.getStationCode())) {
                 //根据站点编码查询站点名称
                 String position = iSysBaseAPI.getPosition(e.getStationCode());
-                if (StrUtil.isNotBlank(position)){
+                if (StrUtil.isNotBlank(position)) {
                     e.setStationName(position);
                 }
-            }if(StrUtil.isNotBlank(e.getPositionCode())){
+            }
+            if (StrUtil.isNotBlank(e.getPositionCode())) {
                 //根据位置编码查询位置名称
                 String position = iSysBaseAPI.getPosition(e.getPositionCode());
-                if (StrUtil.isNotBlank(position)){
+                if (StrUtil.isNotBlank(position)) {
                     e.setPositionName(position);
                 }
             }
             //巡检项
-            if (CollUtil.isNotEmpty(patrolStandardItemsModels)){
+            if (CollUtil.isNotEmpty(patrolStandardItemsModels)) {
                 e.setPatrolStandardItemsModelList(patrolStandardItemsModels);
             }
         });
@@ -125,23 +135,27 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     @Override
     public Page<EmergencyMaterialsInvoicesItem> getInspectionRecord(Page<EmergencyMaterialsInvoicesItem> pageList, EmergencyMaterialsInvoicesItem condition) {
         List<EmergencyMaterialsInvoicesItem> inspectionRecord = emergencyMaterialsMapper.getInspectionRecord(pageList, condition);
-        inspectionRecord.forEach(e->{
-            if (StrUtil.isNotBlank(e.getLineCode())){
+        inspectionRecord.forEach(e -> {
+            if (StrUtil.isNotBlank(e.getLineCode())) {
                 //根据线路编码查询线路名称
                 String position = iSysBaseAPI.getPosition(e.getLineCode());
                 e.setLineName(position);
-            }if(StrUtil.isNotBlank(e.getStationCode())){
+            }
+            if (StrUtil.isNotBlank(e.getStationCode())) {
                 //根据站点编码查询站点名称
                 String position = iSysBaseAPI.getPosition(e.getStationCode());
                 e.setStationName(position);
-            }if(StrUtil.isNotBlank(e.getPositionCode())){
+            }
+            if (StrUtil.isNotBlank(e.getPositionCode())) {
                 //根据位置编码查询位置名称
                 String position = iSysBaseAPI.getPosition(e.getPositionCode());
                 e.setPositionName(position);
-            }if(StrUtil.isNotBlank(e.getPatrolTeamCode())){
+            }
+            if (StrUtil.isNotBlank(e.getPatrolTeamCode())) {
                 String departNameByOrgCode = iSysBaseAPI.getDepartNameByOrgCode(e.getPatrolTeamCode());
                 e.setPatrolTeamName(departNameByOrgCode);
-            }if(StrUtil.isNotBlank(e.getPatrolId())){
+            }
+            if (StrUtil.isNotBlank(e.getPatrolId())) {
                 LoginUser userById = iSysBaseAPI.getUserById(e.getPatrolId());
                 e.setPatrolName(userById.getRealname());
             }
@@ -151,7 +165,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
 
     @Override
     public MaterialPatrolDTO getMaterialPatrol() {
-        MaterialPatrolDTO materialPatrolDTO  = new MaterialPatrolDTO();
+        MaterialPatrolDTO materialPatrolDTO = new MaterialPatrolDTO();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         materialPatrolDTO.setPatrolName(sysUser.getRealname());
 
@@ -159,18 +173,18 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         List<CsUserMajorModel> majorByUserId = iSysBaseAPI.getMajorByUserId(sysUser.getId());
         List<String> collect = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
 
-        if (CollUtil.isNotEmpty(collect)){
+        if (CollUtil.isNotEmpty(collect)) {
             List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getPatrolStandardList(collect);
             materialPatrolDTO.setPatrolStandardDTOList(CollUtil.isNotEmpty(patrolStandardList) ? patrolStandardList : null);
         }
 
         //生成4位英文随机字符串
-        String random = org.apache.commons.lang3.RandomStringUtils.random(4,true,false);
+        String random = org.apache.commons.lang3.RandomStringUtils.random(4, true, false);
         //转换为大写
         String string = random.toUpperCase();
 
         //生成3位数字随机字符串
-        String random1 = RandomStringUtils.random(3,false,true);
+        String random1 = RandomStringUtils.random(3, false, true);
 
         //当前时间
         String replace = DateUtil.formatDate(DateUtil.date()).replace("-", "");
@@ -183,8 +197,46 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     }
 
     @Override
-    public Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList,String id) {
-        List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsMapper.getMaterialInspection(pageList, id);
+    public Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList, String id) {
+        List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsMapper.getMaterialInspection(pageList, id,"0");
+        materialInspection.forEach(e->{
+            if (StrUtil.isNotBlank(e.getLineCode())) {
+                //根据线路编码查询线路名称
+                String position = iSysBaseAPI.getPosition(e.getLineCode());
+                e.setLineName(position);
+            }
+            if (StrUtil.isNotBlank(e.getStationCode())) {
+                //根据站点编码查询站点名称
+                String position = iSysBaseAPI.getPosition(e.getStationCode());
+                e.setStationName(position);
+            }
+            if (StrUtil.isNotBlank(e.getPositionCode())) {
+                //根据位置编码查询位置名称
+                String position = iSysBaseAPI.getPosition(e.getPositionCode());
+                e.setPositionName(position);
+            }
+            if ("0".equals(e.getPid()) && StrUtil.isNotBlank(e.getId())){
+                List<EmergencyMaterialsInvoicesItem> materialInspection1 = emergencyMaterialsMapper.getMaterialInspection(pageList, id, e.getId());
+                materialInspection1.forEach(q->{
+                    if (StrUtil.isNotBlank(q.getLineCode())) {
+                        //根据线路编码查询线路名称
+                        String position = iSysBaseAPI.getPosition(q.getLineCode());
+                        q.setLineName(position);
+                    }
+                    if (StrUtil.isNotBlank(q.getStationCode())) {
+                        //根据站点编码查询站点名称
+                        String position = iSysBaseAPI.getPosition(q.getStationCode());
+                        q.setStationName(position);
+                    }
+                    if (StrUtil.isNotBlank(q.getPositionCode())) {
+                        //根据位置编码查询位置名称
+                        String position = iSysBaseAPI.getPosition(q.getPositionCode());
+                        q.setPositionName(position);
+                    }
+                });
+                e.setSubLevel(materialInspection1);
+            }
+        });
         return pageList.setRecords(materialInspection);
     }
 
