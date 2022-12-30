@@ -113,12 +113,10 @@ public class VersionInfoController extends BaseController<VersionInfo, IVersionI
         VersionInfo versionInfo1 = bdVersionInfoService.selectLatest();
         if(ObjectUtil.isNotEmpty(versionInfo1))
         {
-            int count = versionInfo.getVersionId() - versionInfo1.getVersionId();
-            if (count !=1) {
-                return Result.OK("版本号需要比之前版本大一版，请更改版本号");
+            if ( versionInfo.getVersionId()<versionInfo1.getVersionId()) {
+                return Result.error("版本号需要比之前版本号大，请更改版本号");
             }
         }
-
             if(!androidFile.get(androidFile.size()-1).equals("apk"))
             {
                return Result.error("文件上传错误，不是.apk文件");
