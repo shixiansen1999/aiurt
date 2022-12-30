@@ -1,5 +1,6 @@
 package com.aiurt.boot.materials.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesItemMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsInvoicesItemService;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: emergency_materials_invoices_item
@@ -34,10 +36,14 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
         //父级
         List<EmergencyMaterialsInvoicesItem> patrolRecord = emergencyMaterialsInvoicesItemMapper.getPatrolRecord(pageList,materialsCode, startTime, endTime,standardCode,"0");
         patrolRecord.forEach(e->{
-            if (StrUtil.isNotBlank(e.getPatrolId())){
-                //根据巡检人id查询巡检名称
-                LoginUser userById = iSysBaseAPI.getUserById(e.getPatrolId());
-                e.setPatrolName(userById.getRealname());
+            if (StrUtil.isNotBlank(e.getPatrolId())) {
+                //根据巡视人id查询巡视人名称
+                String[] split = e.getPatrolId().split(",");
+                List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(split);
+                if (CollUtil.isNotEmpty(loginUsers)){
+                    String collect = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+                    e.setPatrolName(collect);
+                }
             }if(StrUtil.isNotBlank(e.getPatrolTeamCode())){
                 //根据巡检班组code查询巡检班组名称
                 String departNameByOrgCode = iSysBaseAPI.getDepartNameByOrgCode(e.getPatrolTeamCode());
