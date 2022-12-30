@@ -200,8 +200,40 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     public Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList, String id) {
         List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsMapper.getMaterialInspection(pageList, id,"0");
         materialInspection.forEach(e->{
+            if (StrUtil.isNotBlank(e.getLineCode())) {
+                //根据线路编码查询线路名称
+                String position = iSysBaseAPI.getPosition(e.getLineCode());
+                e.setLineName(position);
+            }
+            if (StrUtil.isNotBlank(e.getStationCode())) {
+                //根据站点编码查询站点名称
+                String position = iSysBaseAPI.getPosition(e.getStationCode());
+                e.setStationName(position);
+            }
+            if (StrUtil.isNotBlank(e.getPositionCode())) {
+                //根据位置编码查询位置名称
+                String position = iSysBaseAPI.getPosition(e.getPositionCode());
+                e.setPositionName(position);
+            }
             if ("0".equals(e.getPid()) && StrUtil.isNotBlank(e.getId())){
                 List<EmergencyMaterialsInvoicesItem> materialInspection1 = emergencyMaterialsMapper.getMaterialInspection(pageList, id, e.getId());
+                materialInspection1.forEach(q->{
+                    if (StrUtil.isNotBlank(q.getLineCode())) {
+                        //根据线路编码查询线路名称
+                        String position = iSysBaseAPI.getPosition(q.getLineCode());
+                        q.setLineName(position);
+                    }
+                    if (StrUtil.isNotBlank(q.getStationCode())) {
+                        //根据站点编码查询站点名称
+                        String position = iSysBaseAPI.getPosition(q.getStationCode());
+                        q.setStationName(position);
+                    }
+                    if (StrUtil.isNotBlank(q.getPositionCode())) {
+                        //根据位置编码查询位置名称
+                        String position = iSysBaseAPI.getPosition(q.getPositionCode());
+                        q.setPositionName(position);
+                    }
+                });
                 e.setSubLevel(materialInspection1);
             }
         });

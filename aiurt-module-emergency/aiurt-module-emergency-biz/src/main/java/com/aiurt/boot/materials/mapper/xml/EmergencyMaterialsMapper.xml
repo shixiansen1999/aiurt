@@ -113,7 +113,11 @@
          t3.abnormal_condition as abnormalCondition,
          t3.check_result as checkResult,
          t3.content as content,
-         t3.pid as pid
+         t3.id as id,
+         t3.pid as pid,
+         t4.line_code as lineCode,
+         t4.station_code as stationCode,
+         t4.position_code as positionCode
         from emergency_materials t1
         LEFT JOIN emergency_materials_category t2 ON t1.category_code = t2.category_code
         LEFT JOIN emergency_materials_invoices_item t3 ON t1.materials_code = t3.materials_code
