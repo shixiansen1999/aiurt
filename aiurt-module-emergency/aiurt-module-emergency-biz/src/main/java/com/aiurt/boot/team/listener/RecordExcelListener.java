@@ -42,7 +42,9 @@ public class RecordExcelListener extends AnalysisEventListener<RecordData> {
                 recordModel.setTrainees(trainees);
             } else if (index == 5) {
                 String emergencyTrainingProgram = data.getRow2();
+                String trainingProgramCode = data.getRow6();
                 recordModel.setEmergencyTrainingProgram(emergencyTrainingProgram);
+                recordModel.setTrainingProgramCode(trainingProgramCode);
             } else if (index > 6 && index < rowNumber - 4) {
                 ProcessRecordModel processRecordModel = new ProcessRecordModel();
                 String sort = data.getRow2();

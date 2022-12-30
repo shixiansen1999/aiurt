@@ -168,18 +168,21 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             emergencyTrainingProcessRecordService.save(emergencyTrainingProcessRecord);
         }
         List<EmergencyTrainingRecordAtt> attList = emergencyTrainingRecord.getAttList();
-        for (EmergencyTrainingRecordAtt emergencyTrainingRecordAtt : attList) {
-            emergencyTrainingRecordAtt.setEmergencyTrainingRecordId(id);
-            String size = emergencyTrainingRecordAtt.getSize();
-            String type = emergencyTrainingRecordAtt.getType();
-            BigDecimal bigDecimal = new BigDecimal(size);
-            BigDecimal divide = bigDecimal.divide(new BigDecimal(1048576));
-            int i = divide.compareTo(new BigDecimal(20));
-            if (i > 0 || !"doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar".contains(type)) {
-                return Result.error("文件大小超过限制或者文件格式不对");
+        if (CollUtil.isNotEmpty(attList)) {
+            for (EmergencyTrainingRecordAtt emergencyTrainingRecordAtt : attList) {
+                emergencyTrainingRecordAtt.setEmergencyTrainingRecordId(id);
+                String size = emergencyTrainingRecordAtt.getSize();
+                String type = emergencyTrainingRecordAtt.getType();
+                BigDecimal bigDecimal = new BigDecimal(size);
+                BigDecimal divide = bigDecimal.divide(new BigDecimal(1048576));
+                int i = divide.compareTo(new BigDecimal(20));
+                if (i > 0 || !"doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar".contains(type)) {
+                    return Result.error("文件大小超过限制或者文件格式不对");
+                }
+                emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
             }
-            emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
         }
+
         if (TeamConstant.SUBMITTED.equals(emergencyTrainingRecord.getStatus())) {
             //如果是提交，判断是否所有内容填写完整
             if (CollUtil.isEmpty(emergencyTrainingRecord.getCrewList()) || CollUtil.isEmpty(emergencyTrainingRecord.getProcessRecordList()) ||CollUtil.isEmpty(emergencyTrainingRecord.getAttList())) {
@@ -357,6 +360,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
 
             //校验通过，添加数据
             EmergencyTrainingRecord emergencyTrainingRecord = new EmergencyTrainingRecord();
+            emergencyTrainingRecord.setStatus(TeamConstant.To_BE_SUBMITTED);
             BeanUtil.copyProperties(recordModel, emergencyTrainingRecord);
             List<EmergencyTrainingProcessRecord> processRecordList = new ArrayList<>();
             for (ProcessRecordModel processRecordModel : recordModel.getProcessRecordModelList()) {
@@ -378,7 +382,9 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTrainingRecordError.xlsx");
             Map<String, Object> errorMap = new HashMap<String, Object>();
             List<Map<String, String>> mapList = new ArrayList<>();
+            List<Map<String, String>> mistakeMapList = new ArrayList<>();
             Map<String, String> map = new HashMap<>();
+            Map<String, String> mistakeMap = new HashMap<>();
             errorMap.put("trainingTime", recordModel.getTrainingTime());
             errorMap.put("position", recordModel.getPosition());
             errorMap.put("emergencyTeam", recordModel.getEmergencyTeam());
@@ -394,16 +400,40 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                     map.put("sort", processRecordModel.getSort());
                     map.put("trainingTime", processRecordModel.getTrainingTime());
                     map.put("trainingContent", processRecordModel.getTrainingContent());
-                    map.put("mistake", processRecordModel.getMistake());
+                    mistakeMap.put("mistake", processRecordModel.getMistake());
                 }
                 mapList.add(map);
+                mistakeMapList.add(mistakeMap);
             }
 
             errorMap.put("maplist", mapList);
+            errorMap.put("mistakeMapList", mistakeMapList);
 
             Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
             sheetsMap.put(0, errorMap);
             Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+            //处理合并单元格
+            int size = processRecordModelList.size();
+            Sheet sheet = workbook.getSheetAt(0);
+            CellRangeAddress region = new CellRangeAddress(6,6+size,1,1);
+            //合并
+            sheet.addMergedRegion(region);
+            //合并后设置下边框
+            RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
+            RegionUtil.setBorderLeft(BorderStyle.THIN, region, sheet);
+            RegionUtil.setBorderTop(BorderStyle.THIN, region, sheet);
+            RegionUtil.setBorderRight(BorderStyle.THIN, region, sheet);
+            for (int j = 0 ;j < size; j++) {
+                CellRangeAddress cellAddresses = new CellRangeAddress(7+j,7+j,4,9);
+                //合并
+                sheet.addMergedRegion(cellAddresses);
+                //合并后设置下边框
+                RegionUtil.setBorderBottom(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderLeft(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderTop(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderRight(BorderStyle.THIN, cellAddresses, sheet);
+            }
+
             String fileName = "应急队伍训练记录导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
             FileOutputStream out = new FileOutputStream(errorExcelUpload+ File.separator+fileName);
             url = fileName;
@@ -471,30 +501,34 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             if (list.size() > 3) {
                 stringBuilder.append("训练地点格式不对，");
             }
-            String lineCode = null;
-            String stationCode = null;
-            for (int i = 0; i < list.size(); i++) {
-                if (i == 0) {
-                    JSONObject lineByName = iSysBaseAPI.getLineByName(list.get(0));
-                    if (ObjectUtil.isEmpty(lineByName)) {
-                        stringBuilder.append("训练地点中线路不存在，");
-                    } else {
-                        lineCode = lineByName.getString("lineCode");
-                    }
+            if (list.size() == 3) {
+                JSONObject lineByName = iSysBaseAPI.getLineByName(list.get(0));
+                JSONObject stationByName = iSysBaseAPI.getStationByName(list.get(1));
+                String lineCode = lineByName.getString("lineCode");
+                String  stationCode = stationByName.getString("stationCode");
+                JSONObject positionByName = iSysBaseAPI.getPositionByName(list.get(2),lineCode,stationCode);
+                if (ObjectUtil.isEmpty(positionByName)) {
+                    stringBuilder.append("训练地点中位置不存在，");
+                }else {
+                    recordModel.setPositionCode(positionByName.getString("positionCode"));
                 }
-                if (i == 1) {
-                    JSONObject stationByName = iSysBaseAPI.getStationByName(list.get(1));
-                    if (ObjectUtil.isEmpty(stationByName)) {
-                        stringBuilder.append("训练地点中站点不存在，");
-                    } else {
-                        stationCode = stationByName.getString("stationCode");
-                    }
+            }
+            if (list.size() == 2) {
+                JSONObject stationByName = iSysBaseAPI.getStationByName(list.get(1));
+                if (ObjectUtil.isEmpty(stationByName)) {
+                    stringBuilder.append("训练地点中站点不存在，");
+                } else {
+                    String stationCode = stationByName.getString("stationCode");
+                    recordModel.setStationCode(stationCode);
                 }
-                if (i == 2) {
-                    JSONObject positionByName = iSysBaseAPI.getPositionByName(list.get(2),lineCode,stationCode);
-                    if (ObjectUtil.isEmpty(positionByName)) {
-                        stringBuilder.append("训练地点中位置不存在，");
-                    }
+            }
+            if (list.size() == 1) {
+                JSONObject lineByName = iSysBaseAPI.getLineByName(list.get(0));
+                if (ObjectUtil.isEmpty(lineByName)) {
+                    stringBuilder.append("训练地点中线路不存在，");
+                } else {
+                    String lineCode = lineByName.getString("lineCode");
+                    recordModel.setLineCode(lineCode);
                 }
             }
         } else {
@@ -513,17 +547,25 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                     wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
                     wrapper.eq(EmergencyCrew::getEmergencyTeamId, one.getId());
                     List<EmergencyCrew> emergencyCrews = emergencyCrewService.getBaseMapper().selectList(wrapper);
-                    List<String> realNames = new ArrayList<>();
+                    HashMap<String, String> map = new HashMap<>(emergencyCrews.size());
                     for (EmergencyCrew emergencyCrew : emergencyCrews) {
                         LoginUser userById = iSysBaseAPI.getUserById(emergencyCrew.getUserId());
-                        realNames.add(userById.getRealname());
+                        map.put(userById.getRealname(), userById.getId());
                     }
                     List<String> list = StrUtil.splitTrim(trainees, ",");
+                    List<EmergencyTrainingRecordCrew> emergencyTrainingRecordCrews = new ArrayList<>();
                     for (String s : list) {
-                        if (!realNames.contains(s)) {
-                            stringBuilder.append("应急队伍不存在" + s+"该人员,");
+                        String id = map.get(s);
+                        if (StrUtil.isEmpty(id)) {
+                            stringBuilder.append("应急队伍不存在" + s + "该人员,");
+                        } else {
+                            EmergencyTrainingRecordCrew emergencyTrainingRecordCrew = new EmergencyTrainingRecordCrew();
+                            emergencyTrainingRecordCrew.setEmergencyCrewId(id);
+                            emergencyTrainingRecordCrews.add(emergencyTrainingRecordCrew);
                         }
                     }
+                    recordModel.setTraineesNum(list.size());
+                    recordModel.setCrewList(emergencyTrainingRecordCrews);
                 }
             } else {
                 stringBuilder.append("应急队伍不存在，");
@@ -547,7 +589,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 String trainingTime1 = processRecordModel.getTrainingTime();
                 String trainingContent = processRecordModel.getTrainingContent();
                 if (StrUtil.isNotEmpty(trainingTime1)) {
-                    boolean legalDate = TimeUtil.isLegalDate(trainingTime1.length(), trainingTime1, "HH::mm");
+                    boolean legalDate = TimeUtil.isLegalDate(trainingTime1.length(), trainingTime1, "HH:mm");
                     if (!legalDate) {
                         stringBuilder1.append("时间格式不对，");
                     }
@@ -557,7 +599,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 }
                 if (stringBuilder1.length() > 0) {
                     // 截取字符
-                    stringBuilder1 = stringBuilder1.deleteCharAt(stringBuilder.length() - 1);
+                    stringBuilder1 = stringBuilder1.deleteCharAt(stringBuilder1.length() - 1);
                     processRecordModel.setMistake(stringBuilder1.toString());
                     errorLines++;
                 }

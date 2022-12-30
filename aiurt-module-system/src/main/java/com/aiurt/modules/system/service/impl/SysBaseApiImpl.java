@@ -1538,17 +1538,17 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getPosition(String code) {
         String name = null;
-        String lineName = csStationMapper.getLineName(code);
-        String stationName = csStationMapper.getStationName(code);
-        String positionName = csStationMapper.getPositionName(code);
-        if (ObjectUtil.isNotEmpty(lineName)) {
-            name = lineName;
+        CsLine line = csStationMapper.getLineName(code);
+        CsStation station = csStationMapper.getStationName(code);
+        CsStationPosition position = csStationMapper.getPositionName(code);
+        if (ObjectUtil.isNotEmpty(line)) {
+            name = line.getLineName();
         }
-        if (ObjectUtil.isNotEmpty(stationName)) {
-            name = stationName;
+        if (ObjectUtil.isNotEmpty(station)) {
+            name = station.getStationName();
         }
-        if (ObjectUtil.isNotEmpty(positionName)) {
-            name = positionName;
+        if (ObjectUtil.isNotEmpty(position)) {
+            name = position.getPositionName();
         }
         return name;
     }
@@ -2151,6 +2151,24 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             }
         }
         return csWorkAreaModels;
+    }
+
+    @Override
+    public JSONObject getPositionMessage(String code) {
+        String json = null;
+        CsLine line = csStationMapper.getLineName(code);
+        CsStation station = csStationMapper.getStationName(code);
+        CsStationPosition position = csStationMapper.getPositionName(code);
+        if (ObjectUtil.isNotEmpty(line)) {
+            json = JSONObject.toJSONString(line);
+        }
+        if (ObjectUtil.isNotEmpty(station)) {
+            json = JSONObject.toJSONString(station);
+        }
+        if (ObjectUtil.isNotEmpty(position)) {
+            json = JSONObject.toJSONString(position);
+        }
+        return JSONObject.parseObject(json);
     }
 
 

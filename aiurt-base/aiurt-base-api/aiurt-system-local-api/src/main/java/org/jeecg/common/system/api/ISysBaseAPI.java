@@ -770,10 +770,6 @@ public interface ISysBaseAPI extends CommonAPI {
     List<LoginUser> getUserByRealName(String realName,String workNo);
 
 
-
-
-
-
     /**
      * 获取用户岗位为post的人员
      * @param post
@@ -810,5 +806,13 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<CsWorkAreaModel> getWorkAreaByCode(String stationCode);
+
+    /**
+     * 通过code查询地点信息（这三个中的一个：线路、站点、位置）
+     *
+     * @param code
+     * @return
+     */
+    JSONObject getPositionMessage(String code);
 }
 
