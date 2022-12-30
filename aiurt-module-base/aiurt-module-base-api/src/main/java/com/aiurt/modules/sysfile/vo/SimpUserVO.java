@@ -3,6 +3,7 @@ package com.aiurt.modules.sysfile.vo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -22,6 +23,9 @@ public class SimpUserVO implements Serializable {
 
 	@ApiModelProperty("用户名称")
 	private String userName;
+
+	@ApiModelProperty(value = "上传标记")
+	private Integer uploadTag;
 
 	@Override
 	public boolean equals(Object o) {

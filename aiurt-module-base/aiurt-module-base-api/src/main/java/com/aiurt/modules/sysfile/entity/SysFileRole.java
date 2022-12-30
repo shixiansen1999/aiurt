@@ -88,6 +88,13 @@ public class SysFileRole {
 	@Excel(name = "上传状态", width = 15)
 	@ApiModelProperty(value = "上传状态")
 	private Integer uploadStatus;
+
+	/**
+	 * 上传标记
+	 */
+	@Excel(name = "上传标记", width = 15)
+	@ApiModelProperty(value = "上传标记")
+	private Integer uploadTag;
 	/**
 	 * 原下载状态
 	 */

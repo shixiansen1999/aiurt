@@ -69,5 +69,8 @@ public class SysFileRoleParam implements Serializable {
 
 	@ApiModelProperty("在线编辑状态 0:不允许 1:允许")
 	private Integer onlineEditing;
+
+	@ApiModelProperty(value = "上传标记")
+	private Integer uploadTag;
 }
 
