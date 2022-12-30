@@ -43,9 +43,6 @@
                       AND (ara.assignee_ = '' or ara.assignee_ is null)
                 ))
             </when>
-            <otherwise>
-                and ery.`status` not in (#{planStatus.auditStatus})
-            </otherwise>
         </choose>
         order by ery.create_time desc
     </select>
