@@ -1,6 +1,7 @@
 package com.aiurt.boot.materials.entity;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
@@ -223,6 +224,11 @@ public class EmergencyMaterialsInvoicesItem extends DictEntity implements Serial
     @TableField(exist = false)
     @ApiModelProperty(value = "结束时间")
     private String endTime;
+
+    /**子级*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "子级")
+    private List<EmergencyMaterialsInvoicesItem> subLevel;
 
 
 }
