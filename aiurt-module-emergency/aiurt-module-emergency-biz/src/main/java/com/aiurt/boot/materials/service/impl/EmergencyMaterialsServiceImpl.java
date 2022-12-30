@@ -20,6 +20,7 @@ import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsUtil;
+import com.alibaba.druid.sql.visitor.functions.If;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -152,12 +153,18 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 e.setPositionName(position);
             }
             if (StrUtil.isNotBlank(e.getPatrolTeamCode())) {
+                //根据巡视班组编码查询巡视班组名称
                 String departNameByOrgCode = iSysBaseAPI.getDepartNameByOrgCode(e.getPatrolTeamCode());
                 e.setPatrolTeamName(departNameByOrgCode);
             }
             if (StrUtil.isNotBlank(e.getPatrolId())) {
-                LoginUser userById = iSysBaseAPI.getUserById(e.getPatrolId());
-                e.setPatrolName(userById.getRealname());
+                //根据巡视人id查询巡视人名称
+                String[] split = e.getPatrolId().split(",");
+                List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(split);
+                if (CollUtil.isNotEmpty(loginUsers)){
+                    String collect = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+                    e.setPatrolName(collect);
+                }
             }
         });
         return pageList.setRecords(inspectionRecord);
