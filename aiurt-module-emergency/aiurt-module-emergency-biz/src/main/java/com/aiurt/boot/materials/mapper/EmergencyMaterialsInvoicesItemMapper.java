@@ -23,5 +23,7 @@ public interface EmergencyMaterialsInvoicesItemMapper extends BaseMapper<Emergen
      * @param endTime
      * @return
      */
-    List<EmergencyMaterialsInvoicesItem> getPatrolRecord (@Param("pageList") Page<EmergencyMaterialsInvoicesItem> pageList,@Param("materialsCode") String materialsCode, @Param("startTime") String startTime, @Param("endTime") String endTime);
+    List<EmergencyMaterialsInvoicesItem> getPatrolRecord (@Param("pageList") Page<EmergencyMaterialsInvoicesItem> pageList,@Param("materialsCode") String materialsCode, @Param("startTime") String startTime, @Param("endTime") String endTime,
+                                                          @Param("standardCode") String standardCode,
+                                                          @Param("pid") String pid);
 }

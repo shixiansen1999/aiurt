@@ -30,6 +30,12 @@
             <if test="endTime != null and endTime != ''">
                 and DATE_FORMAT(t3.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime}, '%Y-%m-%d')
             </if>
+            <if test="standardCode != null and standardCode != ''">
+                and t3.materials_code = #{materialsCode}
+            </if>
+            <if test="pid != null and pid != ''">
+                and t2.pid = #{pid}
+            </if>
         </where>
     </select>
 </mapper>
