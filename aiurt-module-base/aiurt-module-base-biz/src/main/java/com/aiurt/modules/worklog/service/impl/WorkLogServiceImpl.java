@@ -1029,7 +1029,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         if (Objects.isNull(content)) {
             workLog.setContent("无");
         }
-
+        Object content1 = workLog.getContent();
+        if (ObjectUtil.isEmpty(content1)) {
+            workLog.setContent("无");
+        }
         workLog.setAntiepidemicWork(stringBuffer.toString());
         workLog.setSchedule(schedule);
         return workLog;
