@@ -755,7 +755,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             }else{
                 // 校验通过，保存到系统
                 if (ObjectUtil.isNotEmpty(emergencyPlanRecordDTO)) {
-                    this.saveAndAdd(emergencyPlanRecordDTO);
+//                    this.saveAndAdd(emergencyPlanRecordDTO);
                     return imporReturnRes(errorLines, true, failReportUrl,"文件导入成功");
                 }
             }
@@ -798,7 +798,74 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         requiredCheck(errorMessage, emergencyPlanRecordImportExcelDTO, emergencyPlanRecordDTO);
     }
     private void requiredCheck(StringBuilder errorMessage, EmergencyPlanRecordImportExcelDTO emergencyPlanRecordImportExcelDTO, EmergencyPlanRecordDTO emergencyPlanRecordDTO) {
+        //获取部门
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String orgCode = loginUser.getOrgCode();
+        //编制部门
+        emergencyPlanRecordDTO.setOrgCode(orgCode);
+        //预案版本默认值
+        emergencyPlanRecordDTO.setEmergencyPlanVersion("1.0");
+        // 应急预案类型转换
+        HashMap<String, Integer> checkMap = CollUtil.newHashMap();
+        checkMap.put("事件分类1", 1);
+        checkMap.put("事件分类2", 2);
+        HashMap<String, Integer> checkMap2 = CollUtil.newHashMap();
+        checkMap2.put("运营事件", 1);
+        checkMap2.put("非运营事件", 2);
+        if(ObjectUtil.isEmpty(emergencyPlanRecordImportExcelDTO.getEventClass())){
+            errorMessage.append("事件类型必须填写，");
+        }else {
+            Integer isConfirm = checkMap.get(emergencyPlanRecordImportExcelDTO.getEventClass());
+            if (ObjectUtil.isNotEmpty(isConfirm)) {
+                emergencyPlanRecordDTO.setEventClass(isConfirm);
+            } else {
+                errorMessage.append("事件类型类型格式错误，");
+            }
+        }
+        if(ObjectUtil.isEmpty(emergencyPlanRecordImportExcelDTO.getEventProperty())){
+            errorMessage.append("事件性质必须填写，");
+        }else{
+            Integer isConfirm = checkMap2.get(emergencyPlanRecordImportExcelDTO.getEventProperty());
+            if (ObjectUtil.isNotEmpty(isConfirm)) {
+                emergencyPlanRecordDTO.setEventProperty(isConfirm);
+            } else {
+                errorMessage.append("事件性质格式错误，");
+            }
+        }
+        if(ObjectUtil.isEmpty(emergencyPlanRecordImportExcelDTO.getEmergencyPlanId())){
+            errorMessage.append("应急预案名称必须填写，");
+        }
+        if(ObjectUtil.isEmpty(emergencyPlanRecordImportExcelDTO.getEmergencyPlanVersion())){
+            errorMessage.append("应急预案版本必须填写，");
+        }
+        if(ObjectUtil.isEmpty(emergencyPlanRecordImportExcelDTO.getStarttime())){
+            errorMessage.append("启动日期必须填写，");
+        }
+        if(ObjectUtil.isEmpty(emergencyPlanRecordImportExcelDTO.getEmergencyPlanRecordDepartId())){
+            errorMessage.append("参与部门必须填写，");
+        }
+        if(ObjectUtil.isEmpty(emergencyPlanRecordImportExcelDTO.getEmergencyTeamId())){
+            errorMessage.append("应急队伍名称必须填写，");
+        }else{
+            String emergencyTeamId = emergencyPlanRecordImportExcelDTO.getEmergencyTeamId();
+            String[] split = emergencyTeamId.split(";");
+            List<String> teamList = new ArrayList<>();
+            for (String s : split) {
+                List<EmergencyTeam> list = emergencyTeamService.lambdaQuery().eq(EmergencyTeam::getEmergencyTeamname, s).list();
+                for (EmergencyTeam emergencyTeam : list) {
+                    String id = emergencyTeam.getId();
+                    teamList.add(id);
+                }
 
+            }
+            if (ObjectUtil.isNotEmpty(teamList)) {
+                emergencyPlanRecordDTO.setEmergencyPlanRecordTeamId(teamList);
+            } else {
+                errorMessage.append("不存在这个队伍!");
+            }
+
+        }
+        emergencyPlanRecordDTO.setAdvice(emergencyPlanRecordImportExcelDTO.getAdvice());
 
     }
 
