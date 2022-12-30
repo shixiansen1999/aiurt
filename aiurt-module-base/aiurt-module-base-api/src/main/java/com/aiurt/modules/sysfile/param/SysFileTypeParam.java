@@ -44,8 +44,11 @@ public class SysFileTypeParam implements Serializable {
 	@ApiModelProperty("可编辑人员")
 	private List<String> editIds;
 
+//	@ApiModelProperty("可上传人员")
+//	private List<UploadVO> uploads;
+
 	@ApiModelProperty("可上传人员")
-	private List<UploadVO> uploads;
+	private List<String> uploads;
 
 	@ApiModelProperty("可下载人员")
 	private List<String> downloads;

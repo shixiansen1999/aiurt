@@ -92,7 +92,9 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 		//查看
 		List<String> lookIds = param.getLookIds();
 		//上传
-		List<UploadVO> uploads = param.getUploads();
+//		List<UploadVO> uploads = param.getUploads();
+
+		List<String> uploads = param.getUploads();
 		//下载
 		List<String> downloads = param.getDownloads();
 		//删除状态
@@ -104,13 +106,27 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 
 		// 文档分类的创建者拥有所有的权限
 		//允许上传的权限
+//		if (CollUtil.isNotEmpty(uploads)){
+//		for (UploadVO uploadId : uploads) {
+//			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setPrimaryLookStatus(0).setEditStatus(1).setPrimaryEditStatus(0).setDeleteStatus(1).setPrimaryDeleteStatus(0).setUploadTag(uploadId.getUploadTag())
+//					.setDownloadStatus(1).setPrimaryDownloadStatus(0).setRenameStatus(1).setPrimaryRenameStatus(0).setOnlineEditing(1).setPrimaryOnlineEditing(0).setUploadStatus(1).setPrimaryUploadStatus(1).setTypeId(type.getId()).setUserId(uploadId.getUserId()));
+//			stringSet.add(uploadId.getUserId());
+//		  }
+//		}
+
+		// 文档分类的创建者拥有所有的权限
+		//允许上传的权限
 		if (CollUtil.isNotEmpty(uploads)){
-		for (UploadVO uploadId : uploads) {
-			roleService.addRole(new SysFileRoleParam().setLookStatus(1).setPrimaryLookStatus(0).setEditStatus(1).setPrimaryEditStatus(0).setDeleteStatus(1).setPrimaryDeleteStatus(0).setUploadTag(uploadId.getUploadTag())
-					.setDownloadStatus(1).setPrimaryDownloadStatus(0).setRenameStatus(1).setPrimaryRenameStatus(0).setOnlineEditing(1).setPrimaryOnlineEditing(0).setUploadStatus(1).setPrimaryUploadStatus(1).setTypeId(type.getId()).setUserId(uploadId.getUserId()));
-			stringSet.add(uploadId.getUserId());
-		  }
+			for (String uploadId : uploads) {
+				roleService.addRole(new SysFileRoleParam().setLookStatus(1).setPrimaryLookStatus(0).setEditStatus(1).setPrimaryEditStatus(0).setDeleteStatus(1).setPrimaryDeleteStatus(0)
+//						.setUploadTag(uploadId.getUploadTag())
+						.setDownloadStatus(1).setPrimaryDownloadStatus(0).setRenameStatus(1).setPrimaryRenameStatus(0).setOnlineEditing(1).setPrimaryOnlineEditing(0).setUploadStatus(1).setPrimaryUploadStatus(1).setTypeId(type.getId())
+//						.setUserId(uploadId.getUserId()));
+				        .setUserId(uploadId));
+				stringSet.add(uploadId);
+			}
 		}
+
 		//允许编辑权限
 		if (CollUtil.isNotEmpty(editIds)){
 		for (String editId : editIds) {
@@ -417,13 +433,17 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
 							if (loginUsers != null && loginUsers.size() > 0) {
 								Set<SimpUserVO> userList = new HashSet<>();
+//								for (LoginUser sysUser : loginUsers) {
+//									LambdaQueryWrapper<SysFileRole> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+//									lambdaQueryWrapper.eq(SysFileRole::getDelFlag,0)
+//											          .eq(SysFileRole::getTypeId,id)
+//											          .eq(SysFileRole::getUserId,sysUser.getId());
+//									SysFileRole one = roleService.getOne(lambdaQueryWrapper);
+//									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()).setUploadTag(ObjectUtil.isNotEmpty(one.getUploadTag()) ? one.getUploadTag() : null));
+//								}
+
 								for (LoginUser sysUser : loginUsers) {
-									LambdaQueryWrapper<SysFileRole> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-									lambdaQueryWrapper.eq(SysFileRole::getDelFlag,0)
-											          .eq(SysFileRole::getTypeId,id)
-											          .eq(SysFileRole::getUserId,sysUser.getId());
-									SysFileRole one = roleService.getOne(lambdaQueryWrapper);
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()).setUploadTag(ObjectUtil.isNotEmpty(one.getUploadTag()) ? one.getUploadTag() : null));
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
 								}
 								vo.setUploadStatus(userList);
 							}
@@ -645,13 +665,16 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
 							if (loginUsers != null && loginUsers.size() > 0) {
 								Set<SimpUserVO> userList = new HashSet<>();
+//								for (LoginUser sysUser : loginUsers) {
+//									LambdaQueryWrapper<SysFileRole> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+//									lambdaQueryWrapper.eq(SysFileRole::getDelFlag,0)
+//											.eq(SysFileRole::getTypeId,id)
+//											.eq(SysFileRole::getUserId,sysUser.getId());
+//									SysFileRole one = roleService.getOne(lambdaQueryWrapper);
+//									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()).setUploadTag(ObjectUtil.isNotEmpty(one.getUploadTag()) ? one.getUploadTag() : null));
+//								}
 								for (LoginUser sysUser : loginUsers) {
-									LambdaQueryWrapper<SysFileRole> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-									lambdaQueryWrapper.eq(SysFileRole::getDelFlag,0)
-											.eq(SysFileRole::getTypeId,id)
-											.eq(SysFileRole::getUserId,sysUser.getId());
-									SysFileRole one = roleService.getOne(lambdaQueryWrapper);
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()).setUploadTag(ObjectUtil.isNotEmpty(one.getUploadTag()) ? one.getUploadTag() : null));
+									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
 								}
 								vo.setPrimaryUploadStatus(userList);
 							}
