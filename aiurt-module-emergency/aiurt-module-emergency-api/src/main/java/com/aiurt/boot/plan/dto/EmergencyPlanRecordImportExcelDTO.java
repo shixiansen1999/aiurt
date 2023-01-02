@@ -42,7 +42,7 @@ public class EmergencyPlanRecordImportExcelDTO {
     /**应急预案名称*/
     @Excel(name = "应急预案名称", width = 15,needMerge = true)
     @ApiModelProperty(value = "应急预案名称")
-    private String emergencyPlanName;
+    private String emergencyPlanId;
 
     @Excel(name = "应急预案版本", width = 15)
     @ApiModelProperty(value = "应急预案版本")
