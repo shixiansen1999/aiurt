@@ -225,6 +225,11 @@ public class EmergencyMaterialsInvoicesItem extends DictEntity implements Serial
     @ApiModelProperty(value = "结束时间")
     private String endTime;
 
+    /**子级*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "子级")
+    private List<EmergencyMaterialsInvoicesItem> subLevel;
+
 
     /**子级*/
     @TableField(exist = false)

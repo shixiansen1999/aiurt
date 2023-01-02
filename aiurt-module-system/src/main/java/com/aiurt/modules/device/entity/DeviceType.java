@@ -40,6 +40,7 @@ public class DeviceType implements Serializable {
     @ApiModelProperty(value = "主键id")
     private String id;
 	/**所属专业*/
+    @Excel(name = "专业名称", width = 15,dictTable = "cs_major", dicText = "major_name",dicCode = "major_code")
     @ApiModelProperty(value = "所属专业")
     @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     @MajorFilterColumn
@@ -51,6 +52,7 @@ public class DeviceType implements Serializable {
     @Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
     private String majorName;
 	/**系统编号*/
+    @Excel(name = "子系统", width = 15,dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     @ApiModelProperty(value = "系统编号")
     @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     @SystemFilterColumn
@@ -69,6 +71,7 @@ public class DeviceType implements Serializable {
     @ApiModelProperty(value = "分类名称")
     private String name;
 	/**状态 0-停用 1-正常*/
+	@Excel(name = "状态 0-停用 1-正常", width = 15,dicCode = "device_type_status")
     @ApiModelProperty(value = "状态 0-停用 1-正常")
     @Dict(dicCode = "device_type_status")
     private Integer status;

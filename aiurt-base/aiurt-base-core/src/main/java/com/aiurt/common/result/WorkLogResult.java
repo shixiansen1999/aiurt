@@ -44,7 +44,6 @@ public class WorkLogResult {
     @ApiModelProperty(value = "班组")
     private  String  submitOrgName;
     /**提交人班组*/
-    @Excel(name = "班组", width = 15)
     @ApiModelProperty(value = "班组")
     @TableField(exist = false)
     private  String  submitOrgId;

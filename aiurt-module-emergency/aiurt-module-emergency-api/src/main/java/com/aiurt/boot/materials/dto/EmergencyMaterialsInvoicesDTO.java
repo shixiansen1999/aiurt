@@ -54,6 +54,7 @@ public class EmergencyMaterialsInvoicesDTO {
     @ApiModelProperty(value = "巡视线路编码")
     private java.lang.String lineCode;
 
+
     /**巡视线路名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "巡视线路名称")
@@ -62,6 +63,7 @@ public class EmergencyMaterialsInvoicesDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "巡视站点编码")
     private java.lang.String stationCode;
+
 
     /**巡视站点名称*/
     @TableField(exist = false)
@@ -75,6 +77,7 @@ public class EmergencyMaterialsInvoicesDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "巡视位置名称")
     private java.lang.String positionName;
+
 
     /**检查结果：0异常、1正常*/
     @Excel(name = "检查结果：0异常、1正常", width = 15)
@@ -94,6 +97,7 @@ public class EmergencyMaterialsInvoicesDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "巡视人名称")
     private java.lang.String patrolName;
+
     /**巡视班组Code*/
     @Excel(name = "巡视班组Code", width = 15)
     @ApiModelProperty(value = "巡视班组Code")
@@ -108,4 +112,5 @@ public class EmergencyMaterialsInvoicesDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "巡视班组名称")
     private java.lang.String patrolTeamName;
+
 }
