@@ -8,12 +8,16 @@ import com.aiurt.modules.param.mapper.SysParamMapper;
 import com.aiurt.modules.param.service.ISysParamService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.SelectTreeModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +57,7 @@ public class SysParamServiceImpl extends ServiceImpl<SysParamMapper, SysParam> i
 				baseMapper.updateById(parent);
 			}
 		}
+        sysParam.setDelFlag(0);
 		baseMapper.insert(sysParam);
         return Result.OK("添加成功！");
     }
@@ -186,6 +191,30 @@ public class SysParamServiceImpl extends ServiceImpl<SysParamMapper, SysParam> i
         }
     }
 
+    @Override
+    public Result<IPage<SysParam>> queryPageList(SysParam sysParam, Integer pageNo, Integer pageSize, HttpServletRequest req) {
+        String parentId = sysParam.getPid();
+        if (oConvertUtils.isEmpty(parentId)) {
+            parentId = "0";
+        }
+        sysParam.setPid(null);
+        QueryWrapper<SysParam> queryWrapper = QueryGenerator.initQueryWrapper(sysParam, req.getParameterMap());
+        // 使用 eq 防止模糊查询
+        queryWrapper.eq("pid", parentId);
+        queryWrapper.eq("del_Flag", 0);
+        queryWrapper.orderByDesc("create_time");
+        Page<SysParam> page = new Page<SysParam>(pageNo, pageSize);
+        IPage<SysParam> pageList = this.page(page, queryWrapper);
+        List<SysParam> records = pageList.getRecords();
+        if (CollUtil.isNotEmpty(records)) {
+            for (SysParam record : records) {
+                getChildTree(record);
+                this.getCategoryName(record);
+            }
+        }
+        return Result.OK(pageList);
+    }
+
     /**
 	 * 根据所传pid查询旧的父级节点的子节点并修改相应状态值
 	 * @param pid
@@ -253,6 +282,21 @@ public class SysParamServiceImpl extends ServiceImpl<SysParamMapper, SysParam> i
             }
         }
         return sb;
+    }
+
+    private void getChildTree(SysParam sysParam) {
+        LambdaQueryWrapper<SysParam> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysParam::getDelFlag, 0);
+        queryWrapper.eq(SysParam::getPid, sysParam.getId());
+        queryWrapper.orderByDesc(SysParam::getCreateTime);
+        List<SysParam> sysParams = this.list(queryWrapper);
+        if (CollUtil.isNotEmpty(sysParams)) {
+            sysParam.setChildrenList(sysParams);
+            for (SysParam param : sysParams) {
+                getChildTree(param);
+                this.getCategoryName(param);
+            }
+        }
     }
 
 }

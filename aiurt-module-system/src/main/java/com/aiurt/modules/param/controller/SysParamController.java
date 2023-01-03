@@ -3,7 +3,6 @@ package com.aiurt.modules.param.controller;
 import cn.hutool.core.collection.CollUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.param.entity.SysParam;
 import com.aiurt.modules.param.service.ISysParamService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -54,32 +53,7 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		String hasQuery = req.getParameter("hasQuery");
-        if(hasQuery != null && "true".equals(hasQuery)){
-            QueryWrapper<SysParam> queryWrapper =  QueryGenerator.initQueryWrapper(sysParam, req.getParameterMap());
-            List<SysParam> list = sysParamService.queryTreeListNoPage(queryWrapper);
-            IPage<SysParam> pageList = new Page<>(1, 10, list.size());
-            pageList.setRecords(list);
-            return Result.OK(pageList);
-        }else{
-            String parentId = sysParam.getPid();
-            if (oConvertUtils.isEmpty(parentId)) {
-                parentId = "0";
-            }
-            sysParam.setPid(null);
-            QueryWrapper<SysParam> queryWrapper = QueryGenerator.initQueryWrapper(sysParam, req.getParameterMap());
-            // 使用 eq 防止模糊查询
-            queryWrapper.eq("pid", parentId);
-            Page<SysParam> page = new Page<SysParam>(pageNo, pageSize);
-            IPage<SysParam> pageList = sysParamService.page(page, queryWrapper);
-			List<SysParam> records = pageList.getRecords();
-			if (CollUtil.isNotEmpty(records)) {
-				for (SysParam record : records) {
-					sysParamService.getCategoryName(record);
-				}
-			}
-			return Result.OK(pageList);
-        }
+		return sysParamService.queryPageList(sysParam,pageNo,pageSize,req);
 	}
 
 
