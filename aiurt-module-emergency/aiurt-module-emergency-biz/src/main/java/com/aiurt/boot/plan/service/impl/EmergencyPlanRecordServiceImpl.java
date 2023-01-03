@@ -645,6 +645,10 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         emergencyPlanRecordExportExcelVO.setEventClass(eventClass);
         String eventProperty = checkMap2.get(emergencyPlanRecordExportExcelVO.getEventProperty());
         emergencyPlanRecordExportExcelVO.setEventProperty(eventProperty);
+        //启动日期转换
+        String starttime = emergencyPlanRecordExportExcelVO.getStarttime();
+        starttime = DateUtil.format(DateUtil.parse(starttime), "yyyy-MM-dd");
+        emergencyPlanRecordExportExcelVO.setStarttime(starttime);
 
         //应急队伍
         StringBuffer teamName = new StringBuffer();
@@ -725,25 +729,45 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         emergencyPlanRecordExportExcelVO.setPlanRecordMaterialsList(planMaterialsList);
 
         //组装问题及措施
-        EmergencyPlanRecordProblemMeasuresExportExcelVO emergencyPlanRecordProblemMeasuresExportExcelVO =new EmergencyPlanRecordProblemMeasuresExportExcelVO();
-        HashMap<String, String> changeMap = CollUtil.newHashMap();
-        checkMap.put("1", "待处理");
-        checkMap.put("2", "已处理");
-        HashMap<String, String> changeMap2 = CollUtil.newHashMap();
-        checkMap2.put("1", "问题");
-        checkMap2.put("2", "措施");
+        HashMap<Integer, String> changeMap = CollUtil.newHashMap();
+        changeMap.put(1, "待处理");
+        changeMap.put(2, "已处理");
+        HashMap<Integer, String> changeMap2 = CollUtil.newHashMap();
+        changeMap2.put(1, "问题");
+        changeMap2.put(2, "措施");
+        //根据启动记录id查询
         List<EmergencyPlanRecordProblemMeasures> problemMeasuresList = emergencyPlanRecordProblemMeasuresService.lambdaQuery()
                 .eq(EmergencyPlanRecordProblemMeasures::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
                 .eq(EmergencyPlanRecordProblemMeasures::getEmergencyPlanRecordId, id).list();
-        for (EmergencyPlanRecordProblemMeasures emergencyPlanRecordProblemMeasures : problemMeasuresList) {
-            String problemType = changeMap.get(emergencyPlanRecordProblemMeasures.getProblemType());
-            emergencyPlanRecordProblemMeasuresExportExcelVO.setProblemType(problemType);
-            String status = changeMap2.get(emergencyPlanRecordProblemMeasures.getStatus());
-            emergencyPlanRecordProblemMeasuresExportExcelVO.setStatus(status);
-        }
         this.questionTranslate(problemMeasuresList);
         List<EmergencyPlanRecordProblemMeasuresExportExcelVO> PMeasuresList = new ArrayList<>();
-        BeanUtils.copyProperties(problemMeasuresList,PMeasuresList);
+        //字段翻译
+        for (EmergencyPlanRecordProblemMeasures emergencyPlanRecordProblemMeasures : problemMeasuresList) {
+            //创建实体
+            EmergencyPlanRecordProblemMeasuresExportExcelVO emergencyPlanRecordProblemMeasuresExportExcelVO =new EmergencyPlanRecordProblemMeasuresExportExcelVO();
+            //获取问题和措施数据
+            Integer problemType = emergencyPlanRecordProblemMeasures.getProblemType();
+            Integer status = emergencyPlanRecordProblemMeasures.getStatus();
+            String problemContent = emergencyPlanRecordProblemMeasures.getProblemContent();
+            String orgName = emergencyPlanRecordProblemMeasures.getOrgName();
+            String orgUserName = emergencyPlanRecordProblemMeasures.getOrgUserId();
+            String userName = emergencyPlanRecordProblemMeasures.getUserName();
+            Date resolveTime = emergencyPlanRecordProblemMeasures.getResolveTime();
+            String format = DateUtil.format(resolveTime, "yyyy-MM-dd");
+            //字典翻译
+            String pType = changeMap.get(problemType);
+            String rStatus = changeMap2.get(status);
+            //赋值给新的实体
+            emergencyPlanRecordProblemMeasuresExportExcelVO.setProblemType(pType);
+            emergencyPlanRecordProblemMeasuresExportExcelVO.setStatus(rStatus);
+            emergencyPlanRecordProblemMeasuresExportExcelVO.setProblemContent(problemContent);
+            emergencyPlanRecordProblemMeasuresExportExcelVO.setOrgCode(orgName);
+            emergencyPlanRecordProblemMeasuresExportExcelVO.setOrgUserId(orgUserName);
+            emergencyPlanRecordProblemMeasuresExportExcelVO.setManagerId(userName);
+            emergencyPlanRecordProblemMeasuresExportExcelVO.setResolveTime(format);
+
+            PMeasuresList.add(emergencyPlanRecordProblemMeasuresExportExcelVO);
+        }
         emergencyPlanRecordExportExcelVO.setProblemMeasuresList(PMeasuresList);
 
 
@@ -795,6 +819,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                     mapList2.add(map2);
                 }
             }
+
             //问题及措施
             List<EmergencyPlanRecordProblemMeasuresExportExcelVO> proMeasuresList = emergencyPlanRecordExportExcelVO.getProblemMeasuresList();
             if(CollUtil.isNotEmpty(proMeasuresList)){
@@ -1173,6 +1198,9 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             if(ObjectUtil.isEmpty(emergencyPlanRecordDisposalProcedureImportExcelDTO.getDisposalProcedureContent())){
                 errorMessage.append("处置内容不能为空!");
             }
+            if(ObjectUtil.isEmpty(emergencyPlanRecordDisposalProcedureImportExcelDTO.getDisposalProcedureSituation())){
+                errorMessage.append("处置情况不能为空!");
+            }
 
             if (errorMessage.length() > 0) {
                 // 截取字符
@@ -1181,6 +1209,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                 errorSign = true;
             } else {
                 emergencyPlanRecordDisposalProcedure.setDisposalProcedureContent(emergencyPlanRecordDisposalProcedureImportExcelDTO.getDisposalProcedureContent());
+                emergencyPlanRecordDisposalProcedure.setDisposalProcedureSituation(emergencyPlanRecordDisposalProcedureImportExcelDTO.getDisposalProcedureSituation());
                 disposalProcedureList.add(emergencyPlanRecordDisposalProcedure);
             }
         }
