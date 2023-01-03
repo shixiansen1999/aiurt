@@ -22,6 +22,8 @@ import com.aiurt.modules.position.service.ICsStationPositionService;
 import com.aiurt.modules.position.service.ICsStationService;
 import com.aiurt.modules.positionwifi.entity.CsPositionWifi;
 import com.aiurt.modules.positionwifi.service.ICsPositionWifiService;
+import com.aiurt.modules.system.entity.SysUserPosition;
+import com.aiurt.modules.system.service.ISysUserPositionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -72,6 +74,9 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
     @Autowired
     private ICsPositionWifiService csPositionWifiService;
 
+    @Autowired
+    private ISysUserPositionService sysUserPositionService;
+
     /**
      * 查询人员的位置信息
      *
@@ -109,8 +114,31 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                         teamPosition.setCurrentStaffStatusName(userNameSet.contains(teamPosition.getUsername()) ? "在线" : "离线");
                         teamPosition.setCurrentStaffStatusId(userNameSet.contains(teamPosition.getUsername()) ? "1" : "0");
                     }
-                }
 
+                    // 获取坐标系
+                    // 模糊查询
+                    LambdaQueryWrapper<SysUserPosition> wrapper = new LambdaQueryWrapper<>();
+                    wrapper.eq(SysUserPosition::getCreateBy, teamPosition.getUsername()).isNotNull(SysUserPosition::getLatitude)
+                            .isNotNull(SysUserPosition::getLongitude)
+                            .orderByDesc(SysUserPosition::getUploadTime).last("limit 1");
+                    SysUserPosition sysUserPosition = sysUserPositionService.getOne(wrapper);
+                    if (Objects.nonNull(sysUserPosition)) {
+                        String bssid = sysUserPosition.getBssid();
+                        // 连接wifi
+                        if (StrUtil.isNotBlank(bssid)) {
+                            String subBssid = StrUtil.sub(bssid, 0, bssid.length() - 3);
+                            UserStationDTO station = baseMapper.getStationByMac(subBssid);
+                            if (Objects.nonNull(station)) {
+                                teamPosition.setPositionX(station.getPositionX());
+                                teamPosition.setPositionY(station.getPositionY());
+                            }else {
+                                //
+                                teamPosition.setPositionX(sysUserPosition.getLongitude().doubleValue());
+                                teamPosition.setPositionY(sysUserPosition.getLatitude().doubleValue());
+                            }
+                        }
+                    }
+                }
                 // 过滤状态
                 if (StrUtil.isNotEmpty(stateId)) {
                     List<CurrentTeamPosition> currentTeamPositionTempList = currentTeamPositionList.stream().filter(new Predicate<CurrentTeamPosition>() {
@@ -283,8 +311,12 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                     UserStationDTO userStation = baseMapper.getStationId(entity.getId());
                     LambdaQueryWrapper<CsPositionWifi> lambdaQueryWrapper = new LambdaQueryWrapper();
                     lambdaQueryWrapper.eq(CsPositionWifi::getDelFlag, 0);
+
                     if (ObjectUtil.isNotEmpty(userStation) && StrUtil.isNotEmpty(userStation.getBssid())) {
-                        lambdaQueryWrapper.eq(CsPositionWifi::getMac, userStation.getBssid());
+                        String bssid = userStation.getBssid();
+                        // 模糊查询
+                        String subBssid = StrUtil.sub(bssid, 0, bssid.length() - 3);
+                        lambdaQueryWrapper.likeRight(CsPositionWifi::getMac, subBssid).last("limit 1");
                         CsPositionWifi csPositionWifis = csPositionWifiService.getOne(lambdaQueryWrapper);
                         if (ObjectUtil.isNotEmpty(csPositionWifis)){
                             LambdaQueryWrapper<CsStation> stationLambdaQueryWrapper = new LambdaQueryWrapper<CsStation>();

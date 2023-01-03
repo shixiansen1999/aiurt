@@ -115,7 +115,7 @@ public class SysTodoListServiceImpl extends ServiceImpl<SysTodoListMapper, SysTo
         if (StrUtil.isNotEmpty(sysTodoList.getCurrentUserName())) {
             sysTodoListLambdaQueryWrapper.apply("FIND_IN_SET({0},current_user_name)", sysTodoList.getCurrentUserName());
         }
-
+        sysTodoListLambdaQueryWrapper.orderByAsc(SysTodoList::getTodoType);
         sysTodoListLambdaQueryWrapper.orderByDesc(SysTodoList::getCreateTime);
         return sysTodoListLambdaQueryWrapper;
     }

@@ -44,4 +44,6 @@ public class CurrentTeamPosition {
     private String securityLevel;
     @ApiModelProperty(value = "手机号码")
     private String phone;
+
+    private String mac;
 }

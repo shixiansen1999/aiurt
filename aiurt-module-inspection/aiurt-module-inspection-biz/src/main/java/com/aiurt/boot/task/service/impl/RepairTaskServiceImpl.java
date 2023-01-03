@@ -1101,9 +1101,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
             }
             //备注
-            if (r.getUnNote() == null) {
-                r.setUnNote("无");
-            }
             if (r.getStatusItem() != null) {
                 //检修值
                 if (r.getStatusItem().equals(InspectionConstant.NO_STATUS_ITEM)) {
