@@ -73,6 +73,6 @@
     from emergency_training_record_crew etrc
     left join emergency_crew ec on etrc.emergency_crew_id = ec.id
     left join sys_user su on su.id = ec.user_id
-    where etrc.del_flag = 0 and etrc.emergency_training_record_id = #{id}
+    where etrc.del_flag = 0  and ec.del_flag = 0 and etrc.emergency_training_record_id = #{id}
     </select>
 </mapper>

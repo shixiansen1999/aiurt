@@ -13,7 +13,9 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
+import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsUsage;
+import com.aiurt.boot.materials.service.IEmergencyMaterialsCategoryService;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsUsageService;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
@@ -24,7 +26,7 @@ import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.EmergencyPlanMapper;
 import com.aiurt.boot.plan.mapper.EmergencyPlanRecordMapper;
 import com.aiurt.boot.plan.service.*;
-import com.aiurt.boot.plan.vo.EmergencyPlanRecordVO;
+import com.aiurt.boot.plan.vo.*;
 import com.aiurt.boot.rehearsal.constant.EmergencyDictConstant;
 import com.aiurt.boot.rehearsal.dto.EmergencyDeptDTO;
 import com.aiurt.boot.rehearsal.entity.*;
@@ -46,7 +48,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.RegionUtil;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -107,6 +113,8 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     @Autowired
     private IEmergencyPlanService emergencyPlanService;
     @Autowired
+    private IEmergencyPlanTeamService emergencyPlanTeamService;
+    @Autowired
     private EmergencyPlanMapper emergencyPlanMapper;
     @Autowired
     private IEmergencyTeamService emergencyTeamService;
@@ -114,6 +122,8 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     private IEmergencyMaterialsService emergencyMaterialsService;
     @Autowired
     private IEmergencyMaterialsUsageService iEmergencyMaterialsUsageService;
+    @Autowired
+    private IEmergencyMaterialsCategoryService emergencyMaterialsCategoryService;
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
     @Value("${jeecg.path.errorExcelUpload}")
@@ -621,28 +631,221 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     }
 
     @Override
-    public void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanRecordDTO emergencyPlanRecordDto) {
-        // 封装数据
-        List<EmergencyPlanRecordExcelDTO> pageList = this.getinspectionStrategyList(emergencyPlanRecordDto);
+    public void exportXls(HttpServletResponse response, String id) {
+        EmergencyPlanRecordExportExcelVO emergencyPlanRecordExportExcelVO = emergencyPlanRecordMapper.queryById(id);
+        HashMap<String, String> checkMap = CollUtil.newHashMap();
+        checkMap.put("1","事件分类1");
+        checkMap.put("2","事件分类2");
 
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String title = "应急预案数据";
-        ExportParams exportParams = new ExportParams(title + "报表", "导出人:" + sysUser.getRealname(), ExcelType.XSSF);
-        //调用ExcelExportUtil.exportExcel方法生成workbook
-        Workbook wb = ExcelExportUtil.exportExcel(exportParams, EmergencyPlanExcelDTO.class, pageList);
-        String fileName = "应急预案数据";
+        HashMap<String, String> checkMap2 = CollUtil.newHashMap();
+        checkMap2.put("1", "运营事件");
+        checkMap2.put("2", "非运营事件");
+
+        String eventClass = checkMap.get(emergencyPlanRecordExportExcelVO.getEventClass());
+        emergencyPlanRecordExportExcelVO.setEventClass(eventClass);
+        String eventProperty = checkMap2.get(emergencyPlanRecordExportExcelVO.getEventProperty());
+        emergencyPlanRecordExportExcelVO.setEventProperty(eventProperty);
+
+        //应急队伍
+        StringBuffer teamName = new StringBuffer();
+        List<EmergencyPlanRecordTeam> planTeamList = emergencyPlanRecordTeamService.lambdaQuery()
+                .eq(EmergencyPlanRecordTeam::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                .eq(EmergencyPlanRecordTeam::getEmergencyPlanRecordId, id).list();
+        for (EmergencyPlanRecordTeam emergencyPlanRecordTeam : planTeamList) {
+            String emergencyTeamId = emergencyPlanRecordTeam.getEmergencyTeamId();
+            List<EmergencyTeam> teamList = emergencyTeamService.lambdaQuery()
+                    .eq(EmergencyTeam::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                    .eq(EmergencyTeam::getId, emergencyTeamId).list();
+            for (EmergencyTeam emergencyTeam : teamList) {
+                String emergencyTeamname = emergencyTeam.getEmergencyTeamname();
+                teamName.append(emergencyTeamname);
+                teamName.append(";");
+            }
+        }
+        emergencyPlanRecordExportExcelVO.setEmergencyTeamId(String.valueOf(teamName));
+
+        //参与部门
+        List<EmergencyPlanRecordDepartDTO> depts = new ArrayList<>();
+        List<EmergencyPlanRecordDepart> deptList = emergencyPlanRecordDepartService.lambdaQuery()
+                .eq(EmergencyPlanRecordDepart::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                .eq(EmergencyPlanRecordDepart::getEmergencyPlanLaunchRecordId, id).list();
+        if (CollectionUtil.isNotEmpty(deptList)) {
+            Map<String, String> orgMap = sysBaseApi.getAllSysDepart().stream()
+                    .collect(Collectors.toMap(k -> k.getOrgCode(), v -> v.getDepartName(), (a, b) -> a));
+            deptList.forEach(l -> depts.add(new EmergencyPlanRecordDepartDTO(l.getOrgCode(), orgMap.get(l.getOrgCode()))));
+            String deptNames = depts.stream().map(EmergencyPlanRecordDepartDTO::getOrgName).collect(Collectors.joining(";"));
+            emergencyPlanRecordExportExcelVO.setEmergencyPlanRecordDepartId(deptNames);
+        }
+
+
+        // 查询对应的应急预案处置程序
+        List<EmergencyPlanRecordDisposalProcedure> procedureList = emergencyPlanRecordDisposalProcedureService.lambdaQuery()
+                .eq(EmergencyPlanRecordDisposalProcedure::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                .eq(EmergencyPlanRecordDisposalProcedure::getEmergencyPlanRecordId, id).list();
+        this.disposalProcedureTranslate(procedureList);
+        emergencyPlanRecordExportExcelVO.setPlanRecordDisposalProcedureList(procedureList);
+
+        //组装物资数据
+        List<EmergencyPlanMaterialsExportExcelVO> planMaterialsList = new ArrayList<>();
+        List<EmergencyPlanRecordMaterials> planMaterials = emergencyPlanRecordMaterialsService.lambdaQuery()
+                .eq(EmergencyPlanRecordMaterials::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                .eq(EmergencyPlanRecordMaterials::getEmergencyPlanRecordId, id).list();
+        if(CollUtil.isNotEmpty(planMaterials)){
+            for (EmergencyPlanRecordMaterials planMaterial : planMaterials) {
+                EmergencyPlanMaterialsExportExcelVO emergencyPlanMaterialsExportExcelVO = new EmergencyPlanMaterialsExportExcelVO();
+                String materialsCode = planMaterial.getMaterialsCode();
+                Integer materialsNumber = planMaterial.getMaterialsNumber();
+                emergencyPlanMaterialsExportExcelVO.setMaterialsCode(materialsCode);
+                emergencyPlanMaterialsExportExcelVO.setMaterialsNumber(String.valueOf(materialsNumber));
+                //根据物资code查询物资信息
+                List<EmergencyMaterials> materialsList = emergencyMaterialsService.lambdaQuery().eq(EmergencyMaterials::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                        .eq(EmergencyMaterials::getMaterialsCode, materialsCode).list();
+                if(CollUtil.isNotEmpty(materialsList)){
+                    for (EmergencyMaterials emergencyMaterials : materialsList) {
+                        String categoryCode = emergencyMaterials.getCategoryCode();
+                        //查询物资分类信息
+                        List<EmergencyMaterialsCategory> list = emergencyMaterialsCategoryService.lambdaQuery()
+                                .eq(EmergencyMaterialsCategory::getCategoryCode, categoryCode)
+                                .eq(EmergencyMaterialsCategory::getDelFlag,EmergencyPlanConstant.DEL_FLAG0)
+                                .list();
+                        for (EmergencyMaterialsCategory emergencyMaterialsCategory : list) {
+                            String categoryName = emergencyMaterialsCategory.getCategoryName();
+                            emergencyPlanMaterialsExportExcelVO.setCategoryName(categoryName);
+                        }
+                        String materialsName = emergencyMaterials.getMaterialsName();
+                        String unit = emergencyMaterials.getUnit();
+                        emergencyPlanMaterialsExportExcelVO.setMaterialsName(materialsName);
+                        emergencyPlanMaterialsExportExcelVO.setUnit(unit);
+                    }
+                    planMaterialsList.add(emergencyPlanMaterialsExportExcelVO);
+                }
+            }
+
+        }
+        emergencyPlanRecordExportExcelVO.setPlanRecordMaterialsList(planMaterialsList);
+
+        //组装问题及措施
+        EmergencyPlanRecordProblemMeasuresExportExcelVO emergencyPlanRecordProblemMeasuresExportExcelVO =new EmergencyPlanRecordProblemMeasuresExportExcelVO();
+        HashMap<String, String> changeMap = CollUtil.newHashMap();
+        checkMap.put("1", "待处理");
+        checkMap.put("2", "已处理");
+        HashMap<String, String> changeMap2 = CollUtil.newHashMap();
+        checkMap2.put("1", "问题");
+        checkMap2.put("2", "措施");
+        List<EmergencyPlanRecordProblemMeasures> problemMeasuresList = emergencyPlanRecordProblemMeasuresService.lambdaQuery()
+                .eq(EmergencyPlanRecordProblemMeasures::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                .eq(EmergencyPlanRecordProblemMeasures::getEmergencyPlanRecordId, id).list();
+        for (EmergencyPlanRecordProblemMeasures emergencyPlanRecordProblemMeasures : problemMeasuresList) {
+            String problemType = changeMap.get(emergencyPlanRecordProblemMeasures.getProblemType());
+            emergencyPlanRecordProblemMeasuresExportExcelVO.setProblemType(problemType);
+            String status = changeMap2.get(emergencyPlanRecordProblemMeasures.getStatus());
+            emergencyPlanRecordProblemMeasuresExportExcelVO.setStatus(status);
+        }
+        this.questionTranslate(problemMeasuresList);
+        List<EmergencyPlanRecordProblemMeasuresExportExcelVO> PMeasuresList = new ArrayList<>();
+        BeanUtils.copyProperties(problemMeasuresList,PMeasuresList);
+        emergencyPlanRecordExportExcelVO.setProblemMeasuresList(PMeasuresList);
+
+
+
         try {
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyPlanRecordExport.xlsx");
+            Map<String, Object> errorMap = CollUtil.newHashMap();
+            List<Map<String, String>> mapList = CollUtil.newArrayList();
+            List<Map<String, String>> mapList2 = CollUtil.newArrayList();
+            List<Map<String, String>> mapList3 = CollUtil.newArrayList();
+
+            //应急预案启动记录
+            errorMap.put("eventClass", emergencyPlanRecordExportExcelVO.getEventClass());
+            errorMap.put("eventProperty", emergencyPlanRecordExportExcelVO.getEventProperty());
+            errorMap.put("emergencyPlanId", emergencyPlanRecordExportExcelVO.getEmergencyPlanId());
+            errorMap.put("emergencyPlanVersion", emergencyPlanRecordExportExcelVO.getEmergencyPlanVersion());
+            errorMap.put("startTime", emergencyPlanRecordExportExcelVO.getStarttime());
+            errorMap.put("departId", emergencyPlanRecordExportExcelVO.getEmergencyPlanRecordDepartId());
+            errorMap.put("recorderId", emergencyPlanRecordExportExcelVO.getRecorderId());
+            errorMap.put("orgCode", emergencyPlanRecordExportExcelVO.getOrgCode());
+            errorMap.put("teamId", emergencyPlanRecordExportExcelVO.getEmergencyTeamId());
+            errorMap.put("advice", emergencyPlanRecordExportExcelVO.getAdvice());
+            //处置程序
+            List<EmergencyPlanRecordDisposalProcedure> planRecordDisposalProcedureList = emergencyPlanRecordExportExcelVO.getPlanRecordDisposalProcedureList();
+            if (CollUtil.isNotEmpty(planRecordDisposalProcedureList)) {
+                for (int i = 0; i < planRecordDisposalProcedureList.size(); i++) {
+                    EmergencyPlanRecordDisposalProcedure emergencyPlanRecordDisposalProcedure = planRecordDisposalProcedureList.get(i);
+                    Map<String, String> map = new HashMap<>();
+                    map.put("sort", Convert.toStr(i+1));
+                    map.put("orgName", emergencyPlanRecordDisposalProcedure.getOrgName());
+                    map.put("roleName", emergencyPlanRecordDisposalProcedure.getRoleName());
+                    map.put("disposalProcedureContent", emergencyPlanRecordDisposalProcedure.getDisposalProcedureContent());
+                    map.put("disposalProcedureSituation", emergencyPlanRecordDisposalProcedure.getDisposalProcedureSituation());
+                    mapList.add(map);
+                }
+            }
+            //预案物资
+            List<EmergencyPlanMaterialsExportExcelVO> planRecordMaterialsList = emergencyPlanRecordExportExcelVO.getPlanRecordMaterialsList();
+            if(CollUtil.isNotEmpty(planRecordMaterialsList)){
+                for (int i = 0; i < planRecordMaterialsList.size(); i++) {
+                    EmergencyPlanMaterialsExportExcelVO emergencyPlanMaterialsExportExcelVO = planRecordMaterialsList.get(i);
+                    Map<String, String> map2 = new HashMap<>();
+                    map2.put("sort", Convert.toStr(i+1));
+                    map2.put("categoryName", emergencyPlanMaterialsExportExcelVO.getCategoryName());
+                    map2.put("materialsCode", emergencyPlanMaterialsExportExcelVO.getMaterialsCode());
+                    map2.put("materialsName", emergencyPlanMaterialsExportExcelVO.getMaterialsName());
+                    map2.put("materialsNumber", emergencyPlanMaterialsExportExcelVO.getMaterialsNumber());
+                    map2.put("unit", emergencyPlanMaterialsExportExcelVO.getUnit());
+                    mapList2.add(map2);
+                }
+            }
+            //问题及措施
+            List<EmergencyPlanRecordProblemMeasuresExportExcelVO> proMeasuresList = emergencyPlanRecordExportExcelVO.getProblemMeasuresList();
+            if(CollUtil.isNotEmpty(proMeasuresList)){
+                for (int i = 0; i < proMeasuresList.size(); i++) {
+                    EmergencyPlanRecordProblemMeasuresExportExcelVO recordProblemMeasuresExportExcelVO = proMeasuresList.get(i);
+                    Map<String, String> map3 = new HashMap<>();
+                    map3.put("sort", Convert.toStr(i+1));
+                    map3.put("problemType", recordProblemMeasuresExportExcelVO.getProblemType());
+                    map3.put("problemContent", recordProblemMeasuresExportExcelVO.getProblemContent());
+                    map3.put("orgCode", recordProblemMeasuresExportExcelVO.getOrgCode());
+                    map3.put("orgUserId", recordProblemMeasuresExportExcelVO.getOrgUserId());
+                    map3.put("managerId", recordProblemMeasuresExportExcelVO.getManagerId());
+                    map3.put("resolveTime", recordProblemMeasuresExportExcelVO.getResolveTime());
+                    map3.put("status", recordProblemMeasuresExportExcelVO.getStatus());
+                    mapList3.add(map3);
+                }
+            }
+            errorMap.put("maplist", mapList);
+            errorMap.put("maplist2", mapList2);
+            errorMap.put("maplist3", mapList3);
+
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            sheetsMap.put(0, errorMap);
+            Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+            int size = procedureList.size();
+            Sheet sheet = workbook.getSheetAt(0);
+//            for (int j = 0 ;j < size; j++) {
+//                CellRangeAddress cellAddresses = new CellRangeAddress(10+j,10+j,4,6);
+//                //合并
+//                sheet.addMergedRegion(cellAddresses);
+//                //合并后设置下边框
+//                RegionUtil.setBorderBottom(BorderStyle.THIN, cellAddresses, sheet);
+//                RegionUtil.setBorderLeft(BorderStyle.THIN, cellAddresses, sheet);
+//                RegionUtil.setBorderTop(BorderStyle.THIN, cellAddresses, sheet);
+//                RegionUtil.setBorderRight(BorderStyle.THIN, cellAddresses, sheet);
+//            }
+
+            String fileName = "应急预案启动记录导出";
             response.setHeader("Content-Disposition",
                     "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
-            //xlsx格式设置
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment;filename="+fileName);
             BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
-            wb.write(bufferedOutPut);
+            workbook.write(bufferedOutPut);
             bufferedOutPut.flush();
             bufferedOutPut.close();
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     /**

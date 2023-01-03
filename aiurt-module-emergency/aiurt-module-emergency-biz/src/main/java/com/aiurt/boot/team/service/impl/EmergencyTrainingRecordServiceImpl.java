@@ -658,6 +658,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
         }
 
         List<EmergencyCrewVO> trainingCrews = emergencyTrainingRecordMapper.getTrainingCrews(id);
+
         List<String> collects = trainingCrews.stream().map(EmergencyCrewVO::getRealname).collect(Collectors.toList());
         String trainees = CollUtil.join(collects, ",");
 
