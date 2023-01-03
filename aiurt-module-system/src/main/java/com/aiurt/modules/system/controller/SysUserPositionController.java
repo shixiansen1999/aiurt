@@ -3,6 +3,7 @@ package com.aiurt.modules.system.controller;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.system.entity.SysUserPosition;
 import com.aiurt.modules.system.service.ISysUserPositionService;
+import com.aiurt.modules.system.util.CoordinateTransformUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * GPS、wifi定位数据上报
@@ -38,7 +41,6 @@ public class SysUserPositionController {
      * @param sysUserPosition
      * @return
      */
-    @AutoLog(value = "GPS、wifi定位数据上报")
     @ApiOperation(value = "GPS、wifi定位数据上报", notes = "GPS、wifi定位数据上报")
     @PostMapping(value = "/add")
     public Result<SysUserPosition> add(@RequestBody SysUserPosition sysUserPosition) {
@@ -47,6 +49,18 @@ public class SysUserPositionController {
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             sysUserPosition.setUploadTime(new Date());
             sysUserPosition.setSysOrgCode(sysUser.getOrgCode());
+            // 坐标转换
+            // 纬度
+            BigDecimal latitude = sysUserPosition.getLatitude();
+            // 经度
+            BigDecimal longitude = sysUserPosition.getLongitude();
+            if (Objects.nonNull(latitude) && Objects.nonNull(longitude)) {
+                double[] bd09 = CoordinateTransformUtil.wgs84tobd09(longitude.doubleValue(), latitude.doubleValue());
+                if (Objects.nonNull(bd09)) {
+                    sysUserPosition.setLongitude(BigDecimal.valueOf(bd09[0]));
+                    sysUserPosition.setLatitude(BigDecimal.valueOf(bd09[1]));
+                }
+            }
             sysUserPositionService.save(sysUserPosition);
             result.success("添加成功！");
         } catch (Exception e) {
