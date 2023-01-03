@@ -69,12 +69,24 @@ public interface EmergencyPlanMapper extends BaseMapper<EmergencyPlan> {
     String selectDepartCode(String orgName);
 
     /**
+     * 根据用户名称查找id
+     * @param orgUserName
+     * @return
+     */
+    String selectUserCode(String orgUserName);
+
+    /**
      * 根据角色名称查找roleId
      * @param roleName
      * @return
      */
     String selectRoleId(String roleName);
 
+    /**
+     * 根据应急预案id查找应急预案
+     * @param id
+     * @return
+     */
    EmergencyPlanExportExcelVO queryById(String id);
 
 }
