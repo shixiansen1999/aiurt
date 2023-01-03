@@ -119,4 +119,9 @@ public class PatrolPlanDto  extends PatrolPlan {
 
    @TableField(exist = false)
    List<String> orgCodes;
+   /**
+    * 编号集合
+    */
+   @TableField(exist = false)
+   List<String> planCodes;
 }

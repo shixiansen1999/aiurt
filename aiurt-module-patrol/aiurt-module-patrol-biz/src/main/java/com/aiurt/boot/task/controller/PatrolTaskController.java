@@ -49,7 +49,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
 
 
     /**
-     * PC巡检任务列表-分页列表查询
+     * PC巡检任务列表-巡视任务池
      *
      * @param patrolTaskParam
      * @param pageNo
@@ -57,13 +57,78 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "PC巡检任务列表-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/pollingCheck/PatrolPoolList")
-    @ApiOperation(value = "PC巡检任务列表-分页列表查询", notes = "PC巡检任务列表-分页列表查询")
+    @AutoLog(value = "PC巡检任务列表-巡视任务池", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/pollingCheck/PatrolPoolList")
+    @ApiOperation(value = "PC巡检任务列表-巡视任务池", notes = "PC巡检任务列表-巡视任务池")
+    @PermissionData(pageComponent = "pollingCheck/PatrolPoolList")
     @RequestMapping(value = "/list", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<IPage<PatrolTaskParam>> queryPageList(PatrolTaskParam patrolTaskParam,
                                                         @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                         HttpServletRequest req) {
+        Page<PatrolTaskParam> page = new Page<PatrolTaskParam>(pageNo, pageSize);
+        IPage<PatrolTaskParam> pageList = patrolTaskService.getTaskList(page, patrolTaskParam);
+        return Result.OK(pageList);
+    }
+
+    /**
+     * PC巡检任务列表-巡视任务列表
+     *
+     * @param patrolTaskParam
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "PC巡检任务列表-巡视任务列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/pollingCheck/PatrolTaskList")
+    @ApiOperation(value = "PC巡检任务列表-巡视任务列表", notes = "PC巡检任务列表-巡视任务列表")
+    @PermissionData(pageComponent = "pollingCheck/PatrolTaskList")
+    @RequestMapping(value = "/patrolTask", method = RequestMethod.GET)
+    public Result<IPage<PatrolTaskParam>> patrolTask(PatrolTaskParam patrolTaskParam,
+                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                       HttpServletRequest req) {
+        Page<PatrolTaskParam> page = new Page<PatrolTaskParam>(pageNo, pageSize);
+        IPage<PatrolTaskParam> pageList = patrolTaskService.getTaskList(page, patrolTaskParam);
+        return Result.OK(pageList);
+    }
+    /**
+     * PC巡检任务列表-漏检任务处理
+     *
+     * @param patrolTaskParam
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "PC巡检任务列表-漏检任务处理", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/pollingCheck/dispose")
+    @ApiOperation(value = "PC巡检任务列表-漏检任务处理", notes = "PC巡检任务列表-漏检任务处理")
+    @PermissionData(pageComponent = "pollingCheck/dispose")
+    @RequestMapping(value = "/omissionTask", method = RequestMethod.GET)
+    public Result<IPage<PatrolTaskParam>> omissionTask(PatrolTaskParam patrolTaskParam,
+                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                       HttpServletRequest req) {
+        Page<PatrolTaskParam> page = new Page<PatrolTaskParam>(pageNo, pageSize);
+        IPage<PatrolTaskParam> pageList = patrolTaskService.getTaskList(page, patrolTaskParam);
+        return Result.OK(pageList);
+    }
+    /**
+     * PC巡检任务列表-巡视任务综合查询
+     *
+     * @param patrolTaskParam
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "PC巡检任务列表-巡视任务综合查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/pollingCheck/PatrolSynthesizeList")
+    @ApiOperation(value = "PC巡检任务列表-巡视任务综合查询", notes = "PC巡检任务列表-巡视任务综合查询")
+    @PermissionData(pageComponent = "pollingCheck/PatrolSynthesizeList")
+    @RequestMapping(value = "/synthesize", method = RequestMethod.GET)
+    public Result<IPage<PatrolTaskParam>> synthesize(PatrolTaskParam patrolTaskParam,
+                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                       HttpServletRequest req) {
         Page<PatrolTaskParam> page = new Page<PatrolTaskParam>(pageNo, pageSize);
         IPage<PatrolTaskParam> pageList = patrolTaskService.getTaskList(page, patrolTaskParam);
         return Result.OK(pageList);
@@ -351,6 +416,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      */
     @AutoLog(value = "巡检任务表-app巡检任务池", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
     @ApiOperation(value = "巡检任务表-app巡检任务池", notes = "巡检任务表-app巡检任务池")
+    @PermissionData(pageComponent = "Inspection/pool")
     @GetMapping(value = "/patrolTaskPoolList")
     public Result<IPage<PatrolTaskDTO>> patrolTaskPoolList(PatrolTaskDTO patrolTaskDTO,
                                                            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -368,8 +434,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return author hlq
      */
-    @AutoLog(value = "巡检任务表-app巡检任务池", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
-    @ApiOperation(value = "巡检任务表-app巡检任务池", notes = "巡检任务表-app巡检任务池")
+    @AutoLog(value = "巡检任务表-巡检任务池详情", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
+    @ApiOperation(value = "巡检任务表-巡检任务池详情", notes = "巡检任务表-巡检任务池详情")
     @GetMapping(value = "/patrolTaskPoolDetail")
     public Result<PatrolTaskDTO> patrolTaskPoolDetail(@RequestParam(name="id",required=true) String id,
                                                            HttpServletRequest req) {
@@ -388,6 +454,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      */
     @AutoLog(value = "巡检任务表-app巡检任务列表", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/Inspection/list")
     @ApiOperation(value = "巡检任务表-app巡检任务列表", notes = "巡检任务表-app巡检任务列表")
+    @PermissionData(pageComponent = "Inspection/list")
     @GetMapping(value = "/patrolTaskList")
     public Result<IPage<PatrolTaskDTO>> patrolTaskList(PatrolTaskDTO patrolTaskDTO,
                                                        @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,

@@ -291,7 +291,7 @@ public class SysParamServiceImpl extends ServiceImpl<SysParamMapper, SysParam> i
         queryWrapper.orderByDesc(SysParam::getCreateTime);
         List<SysParam> sysParams = this.list(queryWrapper);
         if (CollUtil.isNotEmpty(sysParams)) {
-            sysParam.setChildrenList(sysParams);
+            sysParam.setChildren(sysParams);
             for (SysParam param : sysParams) {
                 getChildTree(param);
                 this.getCategoryName(param);

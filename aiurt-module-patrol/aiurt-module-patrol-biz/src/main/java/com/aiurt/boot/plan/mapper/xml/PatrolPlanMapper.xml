@@ -149,6 +149,12 @@
                 #{item}
             </foreach>
         </if>
+        <if test="patrolPlan.planCodes != null and patrolPlan.planCodes.size() != 0">
+            and `code` in
+            <foreach collection="patrolPlan.planCodes" open="(" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
         ORDER BY create_time DESC
     </select>
     <select id="getMajorInfoByPlanId" resultType="java.lang.String">

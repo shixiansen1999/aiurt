@@ -81,7 +81,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param patrolTaskParam
      * @return
      */
-    IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, @Param("patrolTask") PatrolTaskParam patrolTaskParam);
+    IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, @Param("patrolTask") PatrolTaskParam patrolTaskParam, @Param("taskCodes") List<String> taskCodes);
 
     /**
      * app-获取退回人的名称

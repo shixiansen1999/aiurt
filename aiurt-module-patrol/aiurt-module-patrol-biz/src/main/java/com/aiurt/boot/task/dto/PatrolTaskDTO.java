@@ -160,5 +160,9 @@ public class PatrolTaskDTO
     @Excel(name = "任务计划执行日期范围结束日期", width = 15)
     @ApiModelProperty(value = "任务计划执行日期范围结束日期")
     private Date dateEnd;
+    /**
+     * 任务编号集合
+     */
+    private List<String> taskCodes;
 }
 

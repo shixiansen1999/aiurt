@@ -28,4 +28,10 @@ public interface PatrolTaskStandardMapper extends BaseMapper<PatrolTaskStandard>
      * @return
      */
     List<PatrolTaskStandardDTO> getStandard(String taskId);
+
+    /**
+     * 根据用户的专业、子系统权限获取任务编号
+     * @return
+     */
+    List<String> getTaskCodeByUserMajorSystem();
 }

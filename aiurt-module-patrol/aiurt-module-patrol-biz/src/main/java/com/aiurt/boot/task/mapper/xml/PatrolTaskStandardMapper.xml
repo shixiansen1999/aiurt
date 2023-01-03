@@ -28,4 +28,12 @@
         WHERE
             t1.task_id = #{taskId}
 </select>
+
+    <select id="getTaskCodeByUserMajorSystem" resultType="java.lang.String">
+        select distinct patrol_task.`code`
+        from patrol_task_standard patrol_task_standard
+                 join patrol_task patrol_task on patrol_task_standard.task_id = patrol_task.id
+            and patrol_task.del_flag = 0
+        where patrol_task_standard.del_flag = 0
+    </select>
 </mapper>

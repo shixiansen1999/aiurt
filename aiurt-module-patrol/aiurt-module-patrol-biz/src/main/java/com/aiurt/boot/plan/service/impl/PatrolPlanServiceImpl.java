@@ -19,8 +19,10 @@ import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.task.dto.MajorDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
+import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -74,32 +76,62 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 patrolPlan.setSiteCode(String.join("|",strings));
             }
         }
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (ObjectUtil.isEmpty(loginUser)) {
-            throw new AiurtBootException("检测到未登录，请登录后操作！");
+//        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+//        if (ObjectUtil.isEmpty(loginUser)) {
+//            throw new AiurtBootException("检测到未登录，请登录后操作！");
+//        }
+//        // 按照专业过滤
+//        List<CsUserMajorModel> majorInfo = sysBaseApi.getMajorByUserId(loginUser.getId());
+//        List<String> majorCodes = majorInfo.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+//        List<CsUserDepartModel> orgCodes = sysBaseApi.getDepartByUserId(loginUser.getId());
+//        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+//        Set<String> userRoleSet = sysBaseApi.getUserRoleSet(sysUser.getUsername());
+//        if (CollectionUtil.isNotEmpty(userRoleSet)){
+//            //没有管理员权限查看自己的权限
+//            String a = "admin";
+//            if (!userRoleSet.contains(a)){
+//                patrolPlan.setMajorCodes(majorCodes);
+//                patrolPlan.setOrgCodes(orgCodes.stream().map(s->s.getOrgCode()).collect(Collectors.toList()));
+//            }
+//        }
+
+        // 数据权限过滤-begin
+        try {
+            List<String> planCodes = this.planDataPermissionFilter();
+            patrolPlan.setPlanCodes(planCodes);
+        } catch (Exception e) {
+            return page;
         }
-        // 按照专业过滤
-        List<CsUserMajorModel> majorInfo = sysBaseApi.getMajorByUserId(loginUser.getId());
-        List<String> majorCodes = majorInfo.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-        List<CsUserDepartModel> orgCodes = sysBaseApi.getDepartByUserId(loginUser.getId());
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Set<String> userRoleSet = sysBaseApi.getUserRoleSet(sysUser.getUsername());
-        if (CollectionUtil.isNotEmpty(userRoleSet)){
-            //没有管理员权限查看自己的权限
-            String a = "admin";
-            if (!userRoleSet.contains(a)){
-                patrolPlan.setMajorCodes(majorCodes);
-                patrolPlan.setOrgCodes(orgCodes.stream().map(s->s.getOrgCode()).collect(Collectors.toList()));
-            }
-        }
+        // 数据权限过滤-end
+
         IPage<PatrolPlanDto> list = baseMapper.list(page, patrolPlan);
+        // 局部禁用数据权限-begin
+        boolean filter = GlobalThreadLocal.setDataFilter(true);
         List <PatrolPlanDto> list1 =list.getRecords();
         list1.forEach(l->{
             List<String> strings = Arrays.asList(l.getSiteCode().split(";"));
             List<StationDTO> stationDtos = baseMapper.selectStations(strings);
             l.setSiteName(patrolManager.translateStation(stationDtos));
         });
+        // 局部禁用数据权限-end
+        GlobalThreadLocal.setDataFilter(filter);
         return list;
+    }
+
+    /**
+     * 巡视计划数据权限过滤
+     * @return
+     * @throws AiurtBootException
+     */
+    private List<String> planDataPermissionFilter() throws AiurtBootException {
+        List<String> planCodeByOrg = patrolPlanOrganizationMapper.getPlanCodeByUserOrg();
+        List<String> planCodeByMajorSystem = patrolPlanStandardMapper.getPlanCodeByMajorSystem();
+        List<String> planCodeByUserStation = patrolPlanStationMapper.getPlanCodeByUserStation();
+        List<String> planCodes = CollectionUtil.intersection(planCodeByOrg, planCodeByMajorSystem, planCodeByUserStation).stream().collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(planCodes)) {
+            throw new AiurtBootException("暂无任务！");
+        }
+        return planCodes;
     }
 
     @Override

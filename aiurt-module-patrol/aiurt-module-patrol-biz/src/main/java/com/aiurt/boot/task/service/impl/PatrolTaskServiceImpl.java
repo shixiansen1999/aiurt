@@ -45,6 +45,8 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -103,7 +105,17 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
-        IPage<PatrolTaskParam> taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam);
+        // 数据权限过滤
+        List<String> taskCode = new ArrayList<>();
+        try {
+            taskCode = this.taskDataPermissionFilter();
+        } catch (Exception e) {
+            return page;
+        }
+
+        IPage<PatrolTaskParam> taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam, taskCode);
+        // 禁用数据权限过滤-start
+        boolean filter = GlobalThreadLocal.setDataFilter(true);
         taskPage.getRecords().stream().forEach(l -> {
             // 组织机构信息
             l.setDepartInfo(patrolTaskOrganizationMapper.selectOrgByTaskCode(l.getCode()));
@@ -134,7 +146,25 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 l.setUserInfo(userInfo);
             }
         });
+        // 禁用数据权限过滤-end
+        GlobalThreadLocal.setDataFilter(filter);
         return taskPage;
+    }
+
+    /**
+     * 巡视任务数据权限过滤
+     *
+     * @return
+     */
+    private List<String> taskDataPermissionFilter() throws AiurtBootException {
+        List<String> taskCodesByOrg = patrolTaskOrganizationMapper.getTaskCodeByUserOrg();
+        List<String> taskCodesByMajorSystem = patrolTaskStandardMapper.getTaskCodeByUserMajorSystem();
+        List<String> taskCodesByStation = patrolTaskStationMapper.getTaskCodeByUserStation();
+        List<String> taskCodes = CollectionUtil.intersection(taskCodesByOrg, taskCodesByMajorSystem, taskCodesByStation).stream().collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(taskCodes)) {
+            throw new AiurtBootException("暂无任务！");
+        }
+        return taskCodes;
     }
 
     @Override
@@ -303,6 +333,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 CommonConstant.MSG_CATEGORY_2, SysAnnmentTypeEnum.PATROL_ASSIGN.getType(), patrolTask.getId()));
     }
 
+
     /**
      * 巡视任务确认后发送待办消息
      *
@@ -328,9 +359,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public Result<String> patrolTaskAudit(String id, Integer status, String remark, String backReason) {
         LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Assert.notNull(loginUser,"检测到未登录，请登录后操作!");
+        Assert.notNull(loginUser, "检测到未登录，请登录后操作!");
         // 任务有一个人审核则更新待办消息
-        isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_AUDIT.getType(), id,loginUser.getUsername(),CommonTodoStatus.DONE_STATUS_1);
+        isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_AUDIT.getType(), id, loginUser.getUsername(), CommonTodoStatus.DONE_STATUS_1);
         //不通过传0
         if (PatrolConstant.AUDIT_NOPASS.equals(status)) {
             queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_BACK).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
@@ -375,13 +406,21 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskDTO.setDateEnd(dateEnd);
 
         }
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserDepartModel> userDepartModelList = sysBaseApi.getDepartByUserId(sysUser.getId());
-        List<String> orgCodeList = userDepartModelList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-        boolean admin = SecurityUtils.getSubject().hasRole("admin");
-        if (!admin) {
-            patrolTaskDTO.setUserHaveOrgCodeList(orgCodeList);
+//        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+//        List<CsUserDepartModel> userDepartModelList = sysBaseApi.getDepartByUserId(sysUser.getId());
+//        List<String> orgCodeList = userDepartModelList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+//        boolean admin = SecurityUtils.getSubject().hasRole("admin");
+//        if (!admin) {
+//            patrolTaskDTO.setUserHaveOrgCodeList(orgCodeList);
+//        }
+        // 数据权限过滤
+        try {
+            List<String> taskCodes = this.taskDataPermissionFilter();
+            patrolTaskDTO.setTaskCodes(taskCodes);
+        } catch (AiurtBootException e) {
+            return pageList;
         }
+
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskPoolList(pageList, patrolTaskDTO);
         taskList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
@@ -406,9 +445,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserDepartModel> userDepartModelList = sysBaseApi.getDepartByUserId(sysUser.getId());
-        List<String> orgCodeList = userDepartModelList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         if (ObjectUtil.isNotEmpty(patrolTaskDTO.getDateScope())) {
             String[] split = patrolTaskDTO.getDateScope().split(",");
             Date dateHead = DateUtil.parse(split[0], "yyyy-MM-dd");
@@ -417,9 +453,19 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskDTO.setDateEnd(dateEnd);
 
         }
-        boolean admin = SecurityUtils.getSubject().hasRole("admin");
-        if (!admin) {
-            patrolTaskDTO.setUserHaveOrgCodeList(orgCodeList);
+//        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+//        List<CsUserDepartModel> userDepartModelList = sysBaseApi.getDepartByUserId(sysUser.getId());
+//        List<String> orgCodeList = userDepartModelList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+//        boolean admin = SecurityUtils.getSubject().hasRole("admin");
+//        if (!admin) {
+//            patrolTaskDTO.setUserHaveOrgCodeList(orgCodeList);
+//        }
+        // 数据权限过滤
+        try {
+            List<String> taskCodes = this.taskDataPermissionFilter();
+            patrolTaskDTO.setTaskCodes(taskCodes);
+        } catch (AiurtBootException e) {
+            return pageList;
         }
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskList(pageList, patrolTaskDTO);
         taskList.stream().forEach(e -> {
@@ -430,17 +476,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
             e.setOrganizationName(manager.translateOrg(orgCodes));
             List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
-            List<PatrolTaskDevice> taskDeviceList  = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId,e.getId()));
+            List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, e.getId()));
             List<PatrolAccompany> accompanyList = new ArrayList<>();
             for (PatrolTaskDevice patrolTaskDevice : taskDeviceList) {
                 List<PatrolAccompany> patrolAccompanies = accompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().eq(PatrolAccompany::getTaskDeviceCode, patrolTaskDevice.getPatrolNumber()));
-                if(CollUtil.isNotEmpty(patrolAccompanies))
-                {
+                if (CollUtil.isNotEmpty(patrolAccompanies)) {
                     accompanyList.addAll(patrolAccompanies);
                 }
             }
-            if(CollUtil.isNotEmpty(accompanyList))
-            {
+            if (CollUtil.isNotEmpty(accompanyList)) {
                 accompanyList = accompanyList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolAccompany::getUserId))), ArrayList::new));
                 String peerPeople = accompanyList.stream().map(PatrolAccompany::getUsername).collect(Collectors.joining(";"));
                 e.setPeerPeople(peerPeople);
@@ -624,6 +668,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskDTO.setDateEnd(dateEnd);
 
         }
+        // 数据权限过滤
+        List<String> taskCode = new ArrayList<>();
+        try {
+            taskCode = this.taskDataPermissionFilter();
+            patrolTaskDTO.setTaskCodes(taskCode);
+        } catch (Exception e) {
+            return pageList;
+        }
         List<PatrolTaskDTO> taskDTOList = patrolTaskMapper.getPatrolTaskManualList(pageList, patrolTaskDTO);
         taskDTOList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
@@ -710,7 +762,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         int updateById = patrolTaskMapper.updateById(patrolTask);
         // 任务有一个人审核则更新待办消息
-        isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_AUDIT.getType(), patrolTask.getId(),loginUser.getUsername(),CommonTodoStatus.DONE_STATUS_1);
+        isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_AUDIT.getType(), patrolTask.getId(), loginUser.getUsername(), CommonTodoStatus.DONE_STATUS_1);
         return updateById;
     }
 
@@ -765,8 +817,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             // 提交任务如果需要审核则发送一条审核待办消息
             if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
                 QueryWrapper<PatrolTaskOrganization> wrapper = new QueryWrapper<>();
-                wrapper.lambda().eq(PatrolTaskOrganization::getTaskCode,patrolTask.getCode())
-                        .eq(PatrolTaskOrganization::getDelFlag,CommonConstant.DEL_FLAG_0);
+                wrapper.lambda().eq(PatrolTaskOrganization::getTaskCode, patrolTask.getCode())
+                        .eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0);
                 List<PatrolTaskOrganization> organizations = patrolTaskOrganizationMapper.selectList(wrapper);
                 List<String> orgCodes = organizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
                 String userName = sysBaseApi.getUserNameByOrgCodeAndRoleCode(orgCodes, Arrays.asList(RoleConstant.FOREMAN));
@@ -1321,17 +1373,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         e.setOrgCodeList(orgCodes);
         e.setPatrolUserName(manager.spliceUsername(e.getCode()));
         e.setPatrolReturnUserName(userName == null ? "-" : userName);
-        List<PatrolTaskDevice> taskDeviceList  = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId,id));
+        List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, id));
         List<PatrolAccompany> accompanyList = new ArrayList<>();
         for (PatrolTaskDevice patrolTaskDevice : taskDeviceList) {
             List<PatrolAccompany> patrolAccompanies = accompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().eq(PatrolAccompany::getTaskDeviceCode, patrolTaskDevice.getPatrolNumber()));
-            if(CollUtil.isNotEmpty(patrolAccompanies))
-            {
+            if (CollUtil.isNotEmpty(patrolAccompanies)) {
                 accompanyList.addAll(patrolAccompanies);
             }
         }
-        if(CollUtil.isNotEmpty(accompanyList))
-        {
+        if (CollUtil.isNotEmpty(accompanyList)) {
             accompanyList = accompanyList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolAccompany::getUserId))), ArrayList::new));
             String peerPeople = accompanyList.stream().map(PatrolAccompany::getUsername).collect(Collectors.joining(";"));
             e.setPeerPeople(peerPeople);

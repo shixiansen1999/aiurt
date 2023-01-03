@@ -6,6 +6,7 @@ import com.aiurt.boot.standard.dto.StationPositionDTO;
 import com.aiurt.boot.statistics.dto.IndexStationDTO;
 import com.aiurt.boot.task.dto.PatrolTaskStationDTO;
 import com.aiurt.boot.task.entity.PatrolTaskStation;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -17,6 +18,7 @@ import java.util.List;
  * @Date: 2022-06-27
  * @Version: V1.0
  */
+@EnableDataPerm(excluseMethodName = {"selectStationByTaskCode", "getLineList", "getStationList", "getStationPositionList", "getLineStaionCode", "getStationInfo"})
 public interface PatrolTaskStationMapper extends BaseMapper<PatrolTaskStation> {
 
     /**
@@ -58,4 +60,10 @@ public interface PatrolTaskStationMapper extends BaseMapper<PatrolTaskStation> {
      * @return
      */
     List<IndexStationDTO> getStationInfo(@Param("taskCode") String taskCode);
+
+    /**
+     * 根据用户站点权限获取任务编号
+     * @return
+     */
+    List<String> getTaskCodeByUserStation();
 }
