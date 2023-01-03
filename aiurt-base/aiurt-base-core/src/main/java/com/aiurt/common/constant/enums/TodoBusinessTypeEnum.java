@@ -28,7 +28,26 @@ public enum TodoBusinessTypeEnum {
     /**
      * 审核巡视任务
      */
-    PATROL_AUDIT("patrol_audit")
+    PATROL_AUDIT("patrol_audit"),
+
+    /**
+     * 故障审核
+     */
+    FAULT_APPROVAL("fault_approval"),
+    /**
+     * 故障指派
+     */
+    FAULT_ASSIGN("fault_assign"),
+    /**
+     * 故障处理
+     */
+    FAULT_DEAL("fault_deal"),
+
+    /**
+     * 故障挂起
+     */
+    FAULT_HANG_UP("fault_hang_up"),
+    FAULT_RESULT("fault_result")
     ;
 
 

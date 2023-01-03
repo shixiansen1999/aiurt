@@ -425,12 +425,12 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     }
 
     /**
-     *  已驳回-提交审核
+     *  故障上报驳回-再次提交审核
      * @param faultCode
      * @return
      */
-    @AutoLog(value = "已驳回-提交审核")
-    @ApiOperation(value = "已驳回-提交审核", notes = "已驳回-提交审核")
+    @AutoLog(value = "故障提交审核", operateType =  3, operateTypeAlias = "提审",  permissionUrl = PERMISSION_URL)
+    @ApiOperation(value = "故障上报驳回-再次提交审核", notes = "故障上报驳回-再次提交审核")
     @PutMapping("/submitResult")
     public Result<?> submitResult(@RequestParam  String faultCode) {
         faultService.submitResult(faultCode);
