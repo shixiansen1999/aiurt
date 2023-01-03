@@ -153,7 +153,8 @@ public class EmergencyTrainingProgramController extends BaseController<Emergency
     * @param request
     * @param emergencyTrainingProgramDTO
     */
-    @RequestMapping(value = "/exportXls")
+	@ApiOperation(value="应急队伍训练计划导出", notes="应急队伍训练计划导出")
+    @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
     public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyTrainingProgramDTO emergencyTrainingProgramDTO) {
     	return emergencyTrainingProgramService.exportXls(request, response, emergencyTrainingProgramDTO);
     }

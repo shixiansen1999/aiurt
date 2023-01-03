@@ -146,6 +146,17 @@
         </if>
     </select>
 
+    <select id="selectUserCode" resultType="java.lang.String">
+        SELECT
+        su.id
+        FROM
+        sys_user su
+        <if test="orgUserName!=null">
+            where su.del_flag = 0
+            and  su.realname = #{orgUserName} limit 1
+        </if>
+    </select>
+
     <select id="selectRoleId" resultType="java.lang.String">
         SELECT
         sr.id

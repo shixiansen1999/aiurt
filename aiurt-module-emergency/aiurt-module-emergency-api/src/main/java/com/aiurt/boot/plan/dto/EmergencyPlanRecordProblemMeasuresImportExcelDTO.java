@@ -71,4 +71,11 @@ public class EmergencyPlanRecordProblemMeasuresImportExcelDTO implements Seriali
     @Dict(dicCode = "emergency_problem_status")
     private String  status;
 
+    /**
+     * 问题及措施错误原因
+     */
+    @ApiModelProperty(value = "问题及措施错误原因")
+    @TableField(exist = false)
+    private String errorReason;
+
 }
