@@ -249,6 +249,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 						if (CollUtil.isNotEmpty(collect1)){
 							collect1.forEach(q->{
 								q.setPid(id);
+								q.setId(null);
 								iEmergencyMaterialsInvoicesItemService.save(q);
 							});
 						}
