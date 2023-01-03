@@ -231,9 +231,4 @@ public class EmergencyMaterialsInvoicesItem extends DictEntity implements Serial
     private List<EmergencyMaterialsInvoicesItem> subLevel;
 
 
-    /**子级*/
-    @TableField(exist = false)
-    @ApiModelProperty(value = "子级")
-    private List<EmergencyMaterialsInvoicesItem> subLevel;
-
 }
