@@ -2,6 +2,7 @@ package com.aiurt.modules.param.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -44,6 +45,7 @@ public class SysParam implements Serializable {
     private String category;
     /**参数类别*/
     @Excel(name = "参数类别名称", width = 15)
+    @TableField(exist = false)
     @ApiModelProperty(value = "参数类别名称")
     private String categoryName;
 	/**参数值*/
