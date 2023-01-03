@@ -30,7 +30,7 @@ import java.util.List;
  * @Date:   2022-12-30
  * @Version: V1.0
  */
-@Api(tags="sys_param")
+@Api(tags="实施配置")
 @RestController
 @RequestMapping("/sysParam/sysParam")
 @Slf4j
@@ -48,7 +48,7 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 	 * @return
 	 */
 	//@AutoLog(value = "sys_param-分页列表查询")
-	@ApiOperation(value="sys_param-分页列表查询", notes="sys_param-分页列表查询")
+	@ApiOperation(value="实施配置-分页列表查询", notes="实施配置-分页列表查询")
 	@GetMapping(value = "/rootList")
 	public Result<IPage<SysParam>> queryPageList(SysParam sysParam,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -90,7 +90,7 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
       * @return
       */
 	//@AutoLog(value = "sys_param-获取子数据")
-	@ApiOperation(value="sys_param-获取子数据", notes="sys_param-获取子数据")
+	@ApiOperation(value="实施配置-获取子数据", notes="实施配置-获取子数据")
 	@GetMapping(value = "/childList")
 	public Result<IPage<SysParam>> queryPageList(SysParam sysParam,HttpServletRequest req) {
 		QueryWrapper<SysParam> queryWrapper = QueryGenerator.initQueryWrapper(sysParam, req.getParameterMap());
@@ -108,7 +108,7 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
       * @return
       */
 	//@AutoLog(value = "sys_param-批量获取子数据")
-    @ApiOperation(value="sys_param-批量获取子数据", notes="sys_param-批量获取子数据")
+    @ApiOperation(value="实施配置-批量获取子数据", notes="实施配置-批量获取子数据")
     @GetMapping("/getChildListBatch")
     public Result getChildListBatch(@RequestParam("parentIds") String parentIds) {
         try {
@@ -131,8 +131,8 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 	 * @param sysParam
 	 * @return
 	 */
-	@AutoLog(value = "sys_param-添加")
-	@ApiOperation(value="sys_param-添加", notes="sys_param-添加")
+	@AutoLog(value = "实施配置-添加")
+	@ApiOperation(value="实施配置-添加", notes="实施配置-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody SysParam sysParam) {
 		return  sysParamService.addSysParam(sysParam);
@@ -144,8 +144,8 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 	 * @param sysParam
 	 * @return
 	 */
-	@AutoLog(value = "sys_param-编辑")
-	@ApiOperation(value="sys_param-编辑", notes="sys_param-编辑")
+	@AutoLog(value = "实施配置-编辑")
+	@ApiOperation(value="实施配置-编辑", notes="实施配置-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody SysParam sysParam) {
 		return sysParamService.updateSysParam(sysParam);
@@ -158,8 +158,8 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "sys_param-通过id删除")
-	@ApiOperation(value="sys_param-通过id删除", notes="sys_param-通过id删除")
+	@AutoLog(value = "实施配置-通过id删除")
+	@ApiOperation(value="实施配置-通过id删除", notes="实施配置-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		return  sysParamService.deleteSysParam(id);
@@ -171,8 +171,8 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "sys_param-批量删除")
-	@ApiOperation(value="sys_param-批量删除", notes="sys_param-批量删除")
+	@AutoLog(value = "实施配置-批量删除")
+	@ApiOperation(value="实施配置-批量删除", notes="实施配置-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		List<String> list = Arrays.asList(ids.split(","));
@@ -189,7 +189,7 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 	 * @return
 	 */
 	//@AutoLog(value = "sys_param-通过id查询")
-	@ApiOperation(value="sys_param-通过id查询", notes="sys_param-通过id查询")
+	@ApiOperation(value="实施配置-通过id查询", notes="实施配置-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<SysParam> queryById(@RequestParam(name="id",required=true) String id) {
 		SysParam sysParam = sysParamService.getById(id);
@@ -200,7 +200,7 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 		return Result.OK(sysParam);
 	}
 
-	 @ApiOperation(value="查询所有配置项", notes="查询所有配置项")
+	 @ApiOperation(value="实施配置—查询所有配置项", notes="实施配置—查询所有配置项")
 	 @GetMapping(value = "/configItemList")
 	 public Result<List<SysParam>> configItemList() {
 		 String configItem = "configItem";
