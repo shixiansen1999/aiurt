@@ -500,7 +500,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 List<ActOperationEntity> objectList = JSON.parseArray(operationListJson, ActOperationEntity.class);
                 // 过滤，只有驳回后才能取消
                 boolean back = flowElementUtil.isBackToFirstTask(processDefinitionId, task.getTaskDefinitionKey(), processInstanceId);
-                if (back) {
+                if (!back) {
                     objectList = objectList.stream().filter(entity-> !StrUtil.equalsIgnoreCase(entity.getType(), FlowApprovalType.CANCEL)).collect(Collectors.toList());
                 }
                 // 排序
