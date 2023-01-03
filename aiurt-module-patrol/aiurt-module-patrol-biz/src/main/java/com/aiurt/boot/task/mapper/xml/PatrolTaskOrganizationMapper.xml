@@ -5,15 +5,15 @@
     <select id="selectOrgByTaskCode" resultType="com.aiurt.boot.task.dto.PatrolTaskOrganizationDTO">
         SELECT
         sd.depart_name,
-        pto.*
+        patrol_task_organization.*
         FROM
-        patrol_task_organization pto
-        JOIN sys_depart sd ON pto.org_code = sd.org_code
+        patrol_task_organization patrol_task_organization
+        JOIN sys_depart sd ON patrol_task_organization.org_code = sd.org_code
         WHERE
-        pto.del_flag = 0
+        patrol_task_organization.del_flag = 0
         AND sd.del_flag = 0
         <if test="taskCode != null and taskCode != ''">
-            AND pto.task_code =#{taskCode}
+            AND patrol_task_organization.task_code =#{taskCode}
         </if>
     </select>
     <select id="getUserListByTaskCode" resultType="com.aiurt.boot.task.dto.PatrolUserInfoDTO">
@@ -57,5 +57,11 @@
         <if test="taskCode != null and taskCode != ''">
             AND pto.task_code = #{taskCode}
         </if>
+    </select>
+
+    <select id="getTaskCodeByUserOrg" resultType="java.lang.String">
+        select distinct task_code
+        from patrol_task_organization
+        where del_flag = 0
     </select>
 </mapper>

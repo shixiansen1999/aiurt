@@ -4,6 +4,7 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.afterturn.easypoi.excel.annotation.ExcelCollection;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -48,6 +49,7 @@ public class PatrolStandard extends DictEntity implements Serializable {
     private java.lang.String professionCode;
 	/**适用系统code*/
     @ApiModelProperty(value = "适用系统code")
+    @SystemFilterColumn
     private java.lang.String subsystemCode;
     /**与设备类型相关：0否 1 是*/
     @ApiModelProperty(value = "与设备类型相关：0否 1 是")

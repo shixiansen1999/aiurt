@@ -12,4 +12,10 @@
             and ppo.plan_code=#{planCode}
         </if>
     </select>
+
+    <select id="getPlanCodeByUserOrg" resultType="java.lang.String">
+        select distinct plan_code
+        from patrol_plan_organization
+        where del_flag = 0
+    </select>
 </mapper>

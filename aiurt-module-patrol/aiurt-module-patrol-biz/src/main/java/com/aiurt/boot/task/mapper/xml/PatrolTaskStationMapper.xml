@@ -47,4 +47,9 @@
             AND pts.task_code = #{taskCode}
         </if>
     </select>
+    <select id="getTaskCodeByUserStation" resultType="java.lang.String">
+        select task_code
+        from patrol_task_station
+        where del_flag = 0
+    </select>
 </mapper>

@@ -49,4 +49,10 @@ public interface PatrolTaskOrganizationMapper extends BaseMapper<PatrolTaskOrgan
      * @return
      */
     List<IndexOrgDTO> getOrgInfo(@Param("taskCode") String taskCode);
+
+    /**
+     * 通过用户部门权限获取任务编号
+     * @return
+     */
+    List<String> getTaskCodeByUserOrg();
 }

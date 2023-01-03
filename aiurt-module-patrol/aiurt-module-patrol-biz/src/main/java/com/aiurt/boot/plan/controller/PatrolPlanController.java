@@ -11,6 +11,7 @@ import com.aiurt.boot.plan.dto.StandardDTO;
 import com.aiurt.boot.task.dto.MajorDTO;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.aspect.annotation.LimitSubmit;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -55,6 +56,7 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
      */
     @AutoLog(value = "巡检计划表-分页列表查询", operateType =  1, operateTypeAlias = "列表查询", module = ModuleType.PATROL)
     @ApiOperation(value = "巡检计划表-分页列表查询", notes = "巡检计划表-分页列表查询")
+    @PermissionData(pageComponent = "standard/patrolPlan")
     @GetMapping(value = "/list")
     public Result<IPage<PatrolPlanDto>> queryPageList(PatrolPlanDto patrolPlan,
                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,

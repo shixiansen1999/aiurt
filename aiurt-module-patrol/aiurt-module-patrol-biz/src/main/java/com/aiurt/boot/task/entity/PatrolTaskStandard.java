@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.entity;
 
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -53,6 +54,7 @@ public class PatrolTaskStandard implements Serializable {
 	/**系统code*/
 	@Excel(name = "系统code", width = 15)
     @ApiModelProperty(value = "系统code")
+    @SystemFilterColumn
     private java.lang.String subsystemCode;
 	/**设备类型code*/
 	@Excel(name = "设备类型code", width = 15)

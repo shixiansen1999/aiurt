@@ -2,6 +2,7 @@ package com.aiurt.boot.plan.entity;
 
 import java.io.Serializable;
 
+import com.aiurt.common.aspect.annotation.StaionFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -40,6 +41,7 @@ public class PatrolPlanStation implements Serializable {
     /**站所编号*/
     @Excel(name = "站所编号", width = 15)
     @ApiModelProperty(value = "站所编号")
+    @StaionFilterColumn
     private java.lang.String stationCode;
 	/**线路编号*/
 	@Excel(name = "线路编号", width = 15)

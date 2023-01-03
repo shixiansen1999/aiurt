@@ -3,6 +3,8 @@ package com.aiurt.boot.plan.entity;
 import java.io.Serializable;
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -47,10 +49,12 @@ public class PatrolPlanStandard implements Serializable {
 	/**专业code*/
 	@Excel(name = "专业code", width = 15)
     @ApiModelProperty(value = "专业code")
+    @MajorFilterColumn
     private java.lang.String professionCode;
 	/**系统code*/
 	@Excel(name = "系统code", width = 15)
     @ApiModelProperty(value = "系统code")
+    @SystemFilterColumn
     private java.lang.String subsystemCode;
 	/**设备类型code*/
 	@Excel(name = "设备类型code", width = 15)
