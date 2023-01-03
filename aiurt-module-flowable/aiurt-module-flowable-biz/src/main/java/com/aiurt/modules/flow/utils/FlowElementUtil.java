@@ -18,9 +18,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.*;
+import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.repository.ProcessDefinition;
+import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +41,6 @@ public class FlowElementUtil {
     @Autowired
     private RepositoryService repositoryService;
 
-    @Autowired
-    private ModelService modelService;
 
     @Autowired
     private IActCustomVersionService actCustomVersionService;
@@ -56,6 +56,9 @@ public class FlowElementUtil {
 
     @Autowired
     private RuntimeService runtimeService;
+
+    @Autowired
+    private HistoryService historyService;
 
     /**
      * 获取第一个用户节点, 最近的一个版本
@@ -328,5 +331,31 @@ public class FlowElementUtil {
      */
     public void setBusinessKeyForProcessInstance(String processInstanceId, Object dataId) {
         runtimeService.updateBusinessKey(processInstanceId, dataId.toString());
+    }
+
+    /**
+     * 判断是否为驳回到第一个节点
+     * @param processDefinitionId
+     * @param taskDefinitionKey
+     * @param processInstanceId
+     * @return
+     */
+    public boolean isBackToFirstTask(String processDefinitionId, String taskDefinitionKey, String processInstanceId) {
+        UserTask userTask = getFirstUserTaskByDefinitionId(processDefinitionId);
+        if (Objects.isNull(userTask)) {
+            return false;
+        }
+
+        if (!StrUtil.equalsAnyIgnoreCase(userTask.getId(), taskDefinitionKey)) {
+            return false;
+        }
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId)
+                .taskDefinitionKey(taskDefinitionKey).finished().orderByTaskCreateTime().desc().list();
+
+        if (CollUtil.isNotEmpty(list)) {
+            return true;
+        }
+
+        return false;
     }
 }

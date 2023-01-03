@@ -80,7 +80,7 @@ public class TaskCreateListener implements FlowableEventListener {
         if (Objects.nonNull(userTask) && StrUtil.equalsAnyIgnoreCase(userTask.getId(), taskDefinitionKey)) {
             HistoryService historyService = ProcessEngines.getDefaultProcessEngine().getHistoryService();
             List<HistoricTaskInstance> instanceList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId)
-                    .taskDefinitionKey(taskDefinitionKey).orderByTaskCreateTime().desc().list();
+                    .taskDefinitionKey(taskDefinitionKey).finished().orderByTaskCreateTime().desc().list();
             if (CollectionUtil.isNotEmpty(instanceList) && instanceList.size()>1) {
                 HistoricTaskInstance historicTaskInstance = instanceList.get(0);
                 String assignee = historicTaskInstance.getAssignee();
