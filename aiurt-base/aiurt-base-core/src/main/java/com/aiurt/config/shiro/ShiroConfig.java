@@ -1,7 +1,9 @@
 package com.aiurt.config.shiro;
 
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.config.JeeccgBaseConfig;
 import com.aiurt.config.shiro.filters.CustomShiroFilterFactoryBean;
 import com.aiurt.config.shiro.filters.JwtFilter;
 import lombok.extern.slf4j.Slf4j;
@@ -17,17 +19,13 @@ import org.crazycake.shiro.IRedisManager;
 import org.crazycake.shiro.RedisCacheManager;
 import org.crazycake.shiro.RedisClusterManager;
 import org.crazycake.shiro.RedisManager;
-import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.config.JeeccgBaseConfig;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.util.StringUtils;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
@@ -127,6 +125,9 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/sys/common/callback/**", "anon");
 
         filterChainDefinitionMap.put("/sys/annountCement/show/**", "anon");
+
+        //实施配置—查询所有配置项（放开）
+        filterChainDefinitionMap.put("/sysParam/sysParam/configItemList","anon");
 
         //积木报表排除
         filterChainDefinitionMap.put("/jmreport/**", "anon");
