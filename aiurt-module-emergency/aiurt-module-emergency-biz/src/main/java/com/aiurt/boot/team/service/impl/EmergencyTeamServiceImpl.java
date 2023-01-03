@@ -189,6 +189,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         if (CollUtil.isNotEmpty(emergencyCrewList)) {
             for (EmergencyCrew emergencyCrew : emergencyCrewList) {
                 emergencyCrew.setEmergencyTeamId(emergencyTeam.getId());
+                emergencyCrew.setDelFlag(TeamConstant.DEL_FLAG0);
                 emergencyCrewService.save(emergencyCrew);
             }
         }
