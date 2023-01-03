@@ -6,21 +6,15 @@
         SELECT
         sy.id as userId,
         sy.realname as name,
-        sp.longitude as positionX,
-        sp.latitude as positionY,
-        sp.upload_time as positionUpdateTime,
         sy.username
         FROM
         sys_user sy
-        left join  sys_user_position sp on sp.create_by = sy.username
         <where>
             sy.del_flag = 0
            and sy.id in
             <foreach collection="userIdList" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
-            GROUP BY sy.id
-            ORDER BY sp.upload_time desc
         </where>
     </select>
     <select id="getUserList" parameterType="string" resultType="com.aiurt.modules.maplocation.dto.UserInfo">
@@ -100,8 +94,16 @@
             <if test="id!=null and id !=''">
                 and su.id = #{id}
             </if>
+            and upload_time &gt;= CURRENT_TIMESTAMP - INTERVAL 10 MINUTE
             ORDER BY sp.upload_time DESC
             LIMIT 1
         </where>
+    </select>
+
+    <select id="getStationByMac" resultType="com.aiurt.modules.maplocation.dto.UserStationDTO">
+        select
+            cs.latitude as positionY, cs.longitude as positionX
+        from cs_station cs  Join cs_position_wifi cpw on cs.station_code = cpw.station_code
+        where cs.longitude is not null AND  cs.del_flag = 0 and cpw.mac like concat(#{mac}, '%') limit 1
     </select>
 </mapper>

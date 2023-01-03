@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.system.entity.SysUserPosition;
 import com.aiurt.modules.system.service.ISysUserPositionService;
 import com.aiurt.modules.system.util.CoordinateTransformUtil;
+import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +50,7 @@ public class SysUserPositionController {
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             sysUserPosition.setUploadTime(new Date());
             sysUserPosition.setSysOrgCode(sysUser.getOrgCode());
+            log.info("转换前的参数：{}", JSON.toJSONString(sysUserPosition));
             // 坐标转换
             // 纬度
             BigDecimal latitude = sysUserPosition.getLatitude();
@@ -61,6 +63,7 @@ public class SysUserPositionController {
                     sysUserPosition.setLatitude(BigDecimal.valueOf(bd09[1]));
                 }
             }
+            log.info("转换前的参数：{}", JSON.toJSONString(sysUserPosition));
             sysUserPositionService.save(sysUserPosition);
             result.success("添加成功！");
         } catch (Exception e) {
