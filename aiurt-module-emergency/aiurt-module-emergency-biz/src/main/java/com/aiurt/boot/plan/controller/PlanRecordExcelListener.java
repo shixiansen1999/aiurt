@@ -88,7 +88,7 @@ public class PlanRecordExcelListener extends AnalysisEventListener<RecordData> {
            else if(index ==3){
                String emergencyPlanName = data.getRow1();
                String emergencyPlanVersion = data.getRow4();
-               emergencyPlanRecordImportExcelDTO.setEmergencyPlanName(emergencyPlanName);
+               emergencyPlanRecordImportExcelDTO.setEmergencyPlanId(emergencyPlanName);
                emergencyPlanRecordImportExcelDTO.setEmergencyPlanVersion(emergencyPlanVersion);
            }
            else if(index ==4){
