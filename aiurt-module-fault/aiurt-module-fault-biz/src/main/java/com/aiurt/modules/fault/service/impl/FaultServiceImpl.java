@@ -8,6 +8,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.InspectionApi;
 import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.dto.FaultCallbackDTO;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.constant.CommonConstant;
@@ -44,8 +45,10 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISparePartBaseApi;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -101,6 +104,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     @Autowired
     private ISTodoBaseAPI todoBaseApi;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
     /**
      * 故障上报
      *
@@ -1195,16 +1200,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (CollectionUtil.isEmpty(intersectOrg)) {
             return Collections.emptyList();
         }
-        // 获取今日当班人员信息
-        List<SysUserTeamDTO> todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
-        if (CollectionUtil.isEmpty(todayOndutyDetail)) {
-            return Collections.emptyList();
-        }
-        List<String> userIds = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
-
         List<LoginUser> loginUserList = sysBaseAPI.getUserByDepIds(orgCodeList);
-        // 过滤仅在今日当班的待指派人员
-        loginUserList = loginUserList.stream().filter(l -> userIds.contains(l.getId())).collect(Collectors.toList());
+        // 根据配置决定是否关联排班
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SCHEDULING);
+        boolean value = "1".equals(paramModel.getValue()) ? true : false;
+        if (value) {
+            // 获取今日当班人员信息
+            List<SysUserTeamDTO> todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
+            if (CollectionUtil.isEmpty(todayOndutyDetail)) {
+                return Collections.emptyList();
+            }
+            List<String> userIds = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
+            // 过滤仅在今日当班的待指派人员
+            loginUserList = loginUserList.stream().filter(l -> userIds.contains(l.getId())).collect(Collectors.toList());
+        }
         return loginUserList;
     }
 

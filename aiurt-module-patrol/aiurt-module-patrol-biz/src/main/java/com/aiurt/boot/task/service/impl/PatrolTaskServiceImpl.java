@@ -9,6 +9,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.PatrolMessageUrlConstant;
 import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
@@ -44,10 +45,8 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.CsUserMajorModel;
-import org.jeecg.common.system.vo.CsUserSubsystemModel;
-import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -102,6 +101,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private ISTodoBaseAPI isTodoBaseAPI;
     @Autowired
     private PatrolAccompanyMapper accompanyMapper;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -605,27 +606,29 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<String> orgCodes = departList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         // 当前登录人的部门权限和任务的组织机构交集
         List<String> intersectOrg = CollectionUtil.intersection(orgCodes, orgCode.getOrg()).stream().collect(Collectors.toList());
-        // 获取今日当班的人员
-        List<SysUserTeamDTO> todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
-        List<String> todayUserId = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
         // 根据当班人员过滤待指派人员信息
         if (ObjectUtil.isNotEmpty(orgCode.getIdentity())) {
-            if (CollectionUtil.isEmpty(orgCodes)) {
+            if (CollectionUtil.isEmpty(orgCodes) || CollectionUtil.isEmpty(intersectOrg)) {
                 return new ArrayList<>();
             }
-            if (CollectionUtil.isEmpty(intersectOrg)) {
-                return new ArrayList<>();
+            // 根据配置决定是否关联排班
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_SCHEDULING);
+            boolean value = "1".equals(paramModel.getValue()) ? true : false;
+            if (value) {
+                // 获取今日当班的人员
+                List<SysUserTeamDTO> todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
+                List<String> todayUserId = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
+                if (CollectionUtil.isEmpty(todayUserId)) {
+                    return new ArrayList<>();
+                }
+                arrayList.stream().forEach(l -> {
+                    List<PatrolTaskUserContentDTO> userList = Optional.ofNullable(l.getUserList()).orElseGet(Collections::emptyList);
+                    List<PatrolTaskUserContentDTO> newUserList = userList.stream()
+                            .filter(u -> todayUserId.contains(u.getId()))
+                            .collect(Collectors.toList());
+                    l.setUserList(newUserList);
+                });
             }
-            if (CollectionUtil.isEmpty(todayUserId)) {
-                return new ArrayList<>();
-            }
-            arrayList.stream().forEach(l -> {
-                List<PatrolTaskUserContentDTO> userList = Optional.ofNullable(l.getUserList()).orElseGet(Collections::emptyList);
-                List<PatrolTaskUserContentDTO> newUserList = userList.stream()
-                        .filter(u -> todayUserId.contains(u.getId()))
-                        .collect(Collectors.toList());
-                l.setUserList(newUserList);
-            });
         }
         PatrolTask patrolTask = patrolTaskMapper.selectById(orgCode.getTaskId());
         if (PatrolConstant.TASK_RETURNED.equals(patrolTask.getStatus())) {
@@ -1022,42 +1025,46 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             }
         }
         GlobalThreadLocal.setDataFilter(orgClose);
-        // 获取今日当班的人员
-        List<SysUserTeamDTO> todayOndutyDetail = new ArrayList<>();
-        if (CollectionUtil.isNotEmpty(orgCode)) {
-            // 当前登录人的部门权限和任务的组织机构交集
-            List<String> intersectOrg = CollectionUtil.intersection(loginUserOrgCodes, orgCode).stream().collect(Collectors.toList());
-            if (CollectionUtil.isEmpty(intersectOrg)) {
-                return Collections.emptyList();
-            }
-            todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
-        }
-        if (CollectionUtil.isEmpty(todayOndutyDetail)) {
-            return Collections.emptyList();
-        }
-
         List<PatrolUserInfoDTO> userInfo = patrolTaskOrganizationMapper.getUserListByTaskCode(list.get(0));
         // 根据当前登录人部门权限过滤指派人员
         userInfo = userInfo.stream().filter(l -> loginUserOrgCodes.contains(l.getOrgCode())).collect(Collectors.toList());
+        // 当前登录人的部门权限和任务的组织机构交集
+        List<String> intersectOrg = CollectionUtil.intersection(loginUserOrgCodes, orgCode).stream().collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(intersectOrg)) {
+            return Collections.emptyList();
+        }
 
-        // 今日当班的人员的用户id
-        List<String> todayUserId = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
-        // 根据今日当班人员过滤指派人员
-        for (PatrolUserInfoDTO user : userInfo) {
-            if (ObjectUtil.isNotEmpty(user.getUserId())) {
-                String separator = ",";
-                String[] ids = StrUtil.split(user.getUserId(), separator);
-                String[] names = StrUtil.split(user.getUserName(), separator);
-                List<String> userId = new LinkedList<>();
-                List<String> userName = new LinkedList<>();
-                for (int i = 0; i < ids.length; i++) {
-                    if (todayUserId.contains(ids[i])) {
-                        userId.add(ids[i]);
-                        userName.add(names[i]);
+        // 根据配置决定是否关联排班
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_SCHEDULING);
+        boolean value = "1".equals(paramModel.getValue()) ? true : false;
+        if (value) {
+            // 获取今日当班的人员
+            List<SysUserTeamDTO> todayOndutyDetail = new ArrayList<>();
+            if (CollectionUtil.isNotEmpty(orgCode)) {
+                todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
+            }
+            if (CollectionUtil.isEmpty(todayOndutyDetail)) {
+                return Collections.emptyList();
+            }
+            // 今日当班的人员的用户id
+            List<String> todayUserId = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
+            // 根据今日当班人员过滤指派人员
+            for (PatrolUserInfoDTO user : userInfo) {
+                if (ObjectUtil.isNotEmpty(user.getUserId())) {
+                    String separator = ",";
+                    String[] ids = StrUtil.split(user.getUserId(), separator);
+                    String[] names = StrUtil.split(user.getUserName(), separator);
+                    List<String> userId = new LinkedList<>();
+                    List<String> userName = new LinkedList<>();
+                    for (int i = 0; i < ids.length; i++) {
+                        if (todayUserId.contains(ids[i])) {
+                            userId.add(ids[i]);
+                            userName.add(names[i]);
+                        }
                     }
+                    user.setUserId(userId.stream().collect(Collectors.joining(separator)));
+                    user.setUserName(userName.stream().collect(Collectors.joining(separator)));
                 }
-                user.setUserId(userId.stream().collect(Collectors.joining(separator)));
-                user.setUserName(userName.stream().collect(Collectors.joining(separator)));
             }
         }
         // 再过滤掉人员为空的记录

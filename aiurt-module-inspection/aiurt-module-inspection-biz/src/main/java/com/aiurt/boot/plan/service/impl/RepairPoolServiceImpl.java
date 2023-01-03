@@ -7,6 +7,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.manager.dto.OrgDTO;
@@ -44,8 +45,10 @@ import lombok.SneakyThrows;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -105,6 +108,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     private InspectionCodeContentMapper inspectionCodeContentMapper;
     @Resource
     private InspectionCodeMapper inspectionCodeMapper;
+    @Resource
+    private ISysParamAPI iSysParamAPI;
 
     /**
      * 检修计划池列表查询
@@ -760,8 +765,13 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     String orgStrs = StrUtil.join(",", list);
                     result = manager.queryUserByOrdCode(orgStrs);
 
-                    // 过滤不是今日当班的人员
-                    result = filterNoShiftUser(result, list);
+                    // 根据配置决定是否关联排班
+                    SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_SCHEDULING);
+                    boolean value = "1".equals(paramModel.getValue()) ? true : false;
+                    if (value) {
+                        // 过滤不是今日当班的人员
+                        result = filterNoShiftUser(result, list);
+                    }
                 }
             }
         }
@@ -957,15 +967,15 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("检测到未登录系统，请登录后操作！");
         }
-        List<LoginUser> resutlt = new ArrayList<>();
+        List<LoginUser> result = new ArrayList<>();
         if (StrUtil.isEmpty(code)) {
-            return resutlt;
+            return result;
         }
         // 获取当前登录人的部门权限
         List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
         List<String> userOrgCodes = departList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(userOrgCodes)) {
-            return resutlt;
+            return result;
         }
         // 当前计划关联的组织机构里的人员
         List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
@@ -980,17 +990,22 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             if (CollectionUtil.isEmpty(intersectOrg)) {
                 return Collections.emptyList();
             }
-            // 获取今日当班人员信息
-            List<SysUserTeamDTO> todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
-            if (CollectionUtil.isEmpty(todayOndutyDetail)) {
-                return Collections.emptyList();
+            result = sysBaseApi.getUserByDepIds(manager.handleMixedOrgCode(orgCodes));
+            // 根据配置决定是否关联排班
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_SCHEDULING);
+            boolean value = "1".equals(paramModel.getValue()) ? true : false;
+            if (value) {
+                // 获取今日当班人员信息
+                List<SysUserTeamDTO> todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
+                if (CollectionUtil.isEmpty(todayOndutyDetail)) {
+                    return Collections.emptyList();
+                }
+                List<String> userIds = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
+                // 过滤仅在今日当班的待指派人员
+                result = result.stream().filter(l -> userIds.contains(l.getId())).collect(Collectors.toList());
             }
-            List<String> userIds = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
-            resutlt = sysBaseApi.getUserByDepIds(manager.handleMixedOrgCode(orgCodes));
-            // 过滤仅在今日当班的待指派人员
-            resutlt = resutlt.stream().filter(l -> userIds.contains(l.getId())).collect(Collectors.toList());
         }
-        return resutlt;
+        return result;
     }
 
     /**
