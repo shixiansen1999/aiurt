@@ -3,10 +3,12 @@ package com.aiurt.modules.param.service;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.param.entity.SysParam;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.SelectTreeModel;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -79,4 +81,14 @@ public interface ISysParamService extends IService<SysParam> {
 	 */
 	void getCategoryName(SysParam sysParam);
 
+	/**
+	 * 分页列表查询
+	 *
+	 * @param sysParam
+	 * @param pageNo
+	 * @param pageSize
+	 * @param req
+	 * @return
+	 */
+    Result<IPage<SysParam>> queryPageList(SysParam sysParam, Integer pageNo,Integer pageSize, HttpServletRequest req);
 }

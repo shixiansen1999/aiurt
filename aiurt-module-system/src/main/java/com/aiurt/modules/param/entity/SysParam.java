@@ -14,6 +14,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: sys_param
@@ -85,4 +86,9 @@ public class SysParam implements Serializable {
 	@Dict(dicCode = "yn")
     @ApiModelProperty(value = "是否有子节点")
     private String hasChild;
+    @ApiModelProperty(value = "参数录入方式")
+	private String valueMode;
+    @ApiModelProperty(value = "子级集合")
+    @TableField(exist = false)
+    private List<SysParam> childrenList;
 }
