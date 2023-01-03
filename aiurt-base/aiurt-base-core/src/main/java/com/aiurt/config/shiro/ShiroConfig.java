@@ -127,7 +127,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/sys/annountCement/show/**", "anon");
 
         //实施配置—查询所有配置项（放开）
-        filterChainDefinitionMap.put("sysParam/sysParam/configItemList","anon");
+        filterChainDefinitionMap.put("/sysParam/sysParam/configItemList","anon");
 
         //积木报表排除
         filterChainDefinitionMap.put("/jmreport/**", "anon");
