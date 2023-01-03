@@ -53,4 +53,21 @@
         </if>
         order by ep.emergency_plan_status asc
     </select>
+
+    <select id="queryById" resultType="com.aiurt.boot.plan.vo.EmergencyPlanRecordExportExcelVO">
+        select epr.id as id,
+               epr.event_class as eventClass,
+               epr.event_property as eventProperty,
+               ep.emergency_plan_name as emergencyPlanId,
+               epr.emergency_plan_version as emergencyPlanVersion,
+               epr.starttime as starttime,
+               epr.advice as advice,
+               sd.depart_name as orgCode,
+               su.realname as recorderId
+        from emergency_plan_record epr
+                 left join emergency_plan ep on ep.id = epr.emergency_plan_id
+                 left join sys_depart sd on epr.org_code = sd.org_code
+                 left join sys_user su on epr.create_by = su.username
+        where epr.del_flag = 0 and epr.id = #{id}
+    </select>
 </mapper>

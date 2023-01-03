@@ -89,4 +89,11 @@ public interface FaultMapper extends BaseMapper<Fault> {
       */
      String getStatusName(Integer status);
 
+     /**
+      * 查询人员账号信息
+      * @param roleCodeList
+      * @return
+      */
+     List<String> selectUserNameByComplex(@Param("roleCodeList") List<String> roleCodeList);
+
 }

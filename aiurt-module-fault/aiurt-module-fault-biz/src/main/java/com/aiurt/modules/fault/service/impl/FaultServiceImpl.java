@@ -1,6 +1,7 @@
 package com.aiurt.modules.fault.service.impl;
 import java.util.Date;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
@@ -190,7 +191,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     private void sendTodo(String businessKey, String roleCode, String currentUserName, String taskName,String businessType) {
         TodoDTO todoDTO = new TodoDTO();
         if (StrUtil.isNotBlank(roleCode)) {
-            String userName = sysBaseAPI.getUserNameByOrgCodeAndRoleCode(null, StrUtil.split(roleCode, ','));
+            String userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(roleCode, ','));
             todoDTO.setCurrentUserName(userName);
         }else {
             todoDTO.setCurrentUserName(currentUserName);
@@ -258,19 +259,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType());
         } else {
             // 被驳回则发送消息
-            BusMessageDTO message = new BusMessageDTO();
-            message.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            message.setBusId(faultCode);
-            message.setFromUser(user.getUsername());
-            message.setToUser(fault.getReceiveUserName());
-            message.setToAll(false);
-            message.setTitle("故障管理");
-            message.setContent("您有一条故障上报被驳回，请查收。");
-            message.setCategory("1");
-            message.setLevel(null);
-            message.setPriority("L");
-            message.setStartTime(new Date());
-            sysBaseAPI.sendBusAnnouncement(message);
+            sendMessage(user, faultCode, fault.getReceiveUserName(), "您有一条故障上报被驳回，请查收。");
         }
     }
 
@@ -484,25 +473,29 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 更新工班长指派的任务
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_ASSIGN.getType(), faultCode, user.getUsername(), "1");
-        // 发送消息，告诉工班长已指派
+        // 发送消息，告诉工班长已指派, // 工班长
+        sendMessage(user, faultCode, fault.getReceiveUserName(), "故障(%s)已经被%s领取!");
+
+        // 维修待办
+        sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
+
+    }
+
+    private void sendMessage(LoginUser user, String faultCode, String receiveUserName, String s) {
         BusMessageDTO message = new BusMessageDTO();
         message.setBusType(SysAnnmentTypeEnum.FAULT.getType());
         message.setBusId(faultCode);
         message.setFromUser(user.getUsername());
-        // 工班长
-        message.setToUser(fault.getReceiveUserName());
+
+        message.setToUser(receiveUserName);
         message.setToAll(false);
         message.setTitle("故障管理");
-        message.setContent("故障(%s)已经被%s领取!");
+        message.setContent(s);
         message.setCategory("1");
         message.setLevel(null);
         message.setPriority("L");
         message.setStartTime(new Date());
         sysBaseAPI.sendBusAnnouncement(message);
-
-        // 维修待办
-        sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
-
     }
 
     /**
@@ -735,20 +728,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (flag) {
             // 消息通知
             // 发送给指派人
-            BusMessageDTO message = new BusMessageDTO();
-            message.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            message.setBusId(faultCode);
-            message.setFromUser(user.getUsername());
-            // 工班长
-            message.setToUser(faultRepairRecord.getAppointUserName());
-            message.setToAll(false);
-            message.setTitle("故障管理");
-            message.setContent(String.format("故障(%s)挂起审核已通过!", faultCode));
-            message.setCategory("1");
-            message.setLevel(null);
-            message.setPriority("L");
-            message.setStartTime(new Date());
-            sysBaseAPI.sendBusAnnouncement(message);
+            sendMessage(user, faultCode, faultRepairRecord.getAppointUserName(), String.format("故障(%s)挂起审核已通过!", faultCode));
         }else {
             // 维修待办
             sendTodo(faultCode, null, faultRepairRecord.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
@@ -1442,5 +1422,19 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
         return repairRecordService.getBaseMapper().selectOne(wrapper);
+    }
+
+    /**
+     * 根据部门，角色编码查询人员账号
+     *
+     * @param roleCode 角色编码
+     * @return 人员账号用逗号隔开
+     */
+    private String getUserNameByOrgCodeAndRoleCode(List<String> roleCode) {
+        if (CollUtil.isEmpty(roleCode)) {
+            return "";
+        }
+        List<String> result = baseMapper.selectUserNameByComplex(roleCode);
+        return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
     }
 }

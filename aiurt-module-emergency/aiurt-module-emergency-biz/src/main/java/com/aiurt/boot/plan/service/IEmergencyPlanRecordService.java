@@ -79,12 +79,10 @@ public interface IEmergencyPlanRecordService extends IService<EmergencyPlanRecor
 
     /**
      * 应急预案启动记录导出数据
-     * @param request
      * @param response
-     * @param emergencyPlanRecordDto
+     * @param id
      */
-    void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanRecordDTO emergencyPlanRecordDto);
-
+    void exportXls( HttpServletResponse response, String id);
     /**
      * 应急预案启动记录导入模板下载
      * @param response
