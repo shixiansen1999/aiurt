@@ -35,6 +35,7 @@ import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.exception.AiurtNoDataException;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -103,6 +104,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (condition.getCode() != null) {
             condition.setCode(condition.getCode().replaceAll(" ", ""));
         }
+
+        // 数据权限过滤
+        condition.setCodeList(handleDataPermission());
         List<RepairTask> lists = repairTaskMapper.selectables(pageList, condition);
         lists.forEach(e -> {
             //组织机构
@@ -216,6 +220,37 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
         });
         return pageList.setRecords(lists);
+    }
+
+    /**
+     * 数据权限处理
+     * @param
+     * @return
+     */
+    private List<String> handleDataPermission() {
+        // 组织机构权限
+        List<RepairTaskOrgRel> repairTaskOrgRels = repairTaskOrgRelMapper.selectList(null);
+        if (CollUtil.isEmpty(repairTaskOrgRels)) {
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
+        }
+
+        // 专业、专业子系统权限
+        List<String> taskCodes = repairTaskStandardRelMapper.getRepairTaskCode();
+        if (CollUtil.isEmpty(taskCodes)) {
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
+        }
+
+        // 站点权限
+        List<RepairTaskStationRel> repairTaskStationRels = repairTaskStationRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStationRel>().eq(RepairTaskStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isEmpty(repairTaskStationRels)) {
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
+        }
+        List<String> result = CollUtil.newArrayList(CollUtil.intersection(repairTaskOrgRels.stream().map(RepairTaskOrgRel::getRepairTaskCode).collect(Collectors.toList()), repairTaskStationRels.stream().map(RepairTaskStationRel::getRepairTaskCode).collect(Collectors.toList()), taskCodes));
+
+        if(CollUtil.isEmpty(result)){
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
+        }
+        return result;
     }
 
     @Override
@@ -1215,9 +1250,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPool.setStatus(InspectionConstant.IN_EXECUTION);
                 repairPoolMapper.updateById(repairPool);
             }
-
-        } else {
-            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
 
         repairTaskMapper.updateById(repairTask);
@@ -1336,6 +1368,24 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             if (ObjectUtil.isNotEmpty(repairPool)) {
                 repairPool.setStatus(InspectionConstant.REJECTED);
                 repairPoolMapper.updateById(repairPool);
+            }
+
+            // 给检修人驳回发消息
+            sendMessage(repairTask1);
+        }
+    }
+
+    /**
+     * 发送消息
+     * @param repairTask1
+     */
+    private void sendMessage(RepairTask repairTask1) {
+        List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().eq(RepairTaskUser::getRepairTaskCode, repairTask1.getCode()).eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if(CollUtil.isNotEmpty(repairTaskUsers)){
+            String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
+            List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+            if (CollUtil.isNotEmpty(loginUsers)) {
+                sysBaseApi.sendSysAnnouncement(new MessageDTO(manager.checkLogin().getUsername(), loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(",")), "检修任务驳回", "你执行的检修单号为:"+repairTask1.getCode()+"的检修任务被驳回,请查收"));
             }
         }
     }

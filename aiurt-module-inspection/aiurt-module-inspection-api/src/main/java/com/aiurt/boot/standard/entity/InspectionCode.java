@@ -1,9 +1,9 @@
 package com.aiurt.boot.standard.entity;
 
 import cn.afterturn.easypoi.excel.annotation.ExcelCollection;
-import com.aiurt.boot.standard.dto.InspectionCodeContentDTO;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.common.system.base.annotation.ExcelExtend;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.*;
@@ -72,6 +72,7 @@ public class InspectionCode extends DictEntity implements Serializable {
     @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "专业子系统code,关联cs_subsystem_user的code")
     @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
+    @SystemFilterColumn
     private java.lang.String subsystemCode;
 
 	/**是否与设备相关(0否1是)*/

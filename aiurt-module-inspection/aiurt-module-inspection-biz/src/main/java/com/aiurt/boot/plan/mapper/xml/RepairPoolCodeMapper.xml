@@ -3,9 +3,8 @@
 <mapper namespace="com.aiurt.boot.plan.mapper.RepairPoolCodeMapper">
 
     <select id="getRepairPoolCode" resultType="java.lang.String">
-    select DISTINCT repair_pool_code
-    from repair_pool_rel
-    where repair_pool_sta_id in
-    (select id from repair_pool_code)
+    SELECT DISTINCT rpr.repair_pool_code
+    FROM repair_pool_code
+	RIGHT JOIN repair_pool_rel rpr ON rpr.repair_pool_sta_id = repair_pool_code.id
     </select>
 </mapper>

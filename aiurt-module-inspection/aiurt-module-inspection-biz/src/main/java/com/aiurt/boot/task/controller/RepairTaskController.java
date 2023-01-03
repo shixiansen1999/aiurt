@@ -10,6 +10,7 @@ import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -78,6 +79,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = RepairTask.class)
     })
+    @PermissionData(pageComponent="overhaul/RepairTaskList")
     public Result<Page<RepairTask>> repairTaskPageList(RepairTask condition,
                                                        @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
@@ -396,6 +398,50 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
         return super.importExcel(request, response, RepairTask.class);
     }
 
+    /**
+     * 检修任务审核列表查询
+     *
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    @AutoLog(value = "检修任务审核列表查询", operateType =  1, operateTypeAlias = "检修任务审核列表查询", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "检修任务审核列表查询", notes = "检修任务审核列表查询")
+    @GetMapping(value = "/repairTaskConfirmList")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = RepairTask.class)
+    })
+    @PermissionData(pageComponent="overhaul/RepairTaskFinishAudit")
+    public Result<Page<RepairTask>> repairTaskConfirmList(RepairTask condition,
+                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
+    ) {
+        Page<RepairTask> pageList = new Page<>(pageNo, pageSize);
+        Page<RepairTask> repairTaskPage = repairTaskService.selectables(pageList, condition);
+        return Result.OK(repairTaskPage);
+    }
 
+    /**
+     * 检修任务验收列表查询
+     *
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    @AutoLog(value = "检修任务验收列表查询", operateType =  1, operateTypeAlias = "检修任务验收列表查询", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "检修任务验收列表查询", notes = "检修任务验收列表查询")
+    @GetMapping(value = "/repairTaskReceiptList")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = RepairTask.class)
+    })
+    @PermissionData(pageComponent="overhaul/RepairTaskCheck")
+    public Result<Page<RepairTask>> repairTaskReceiptList(RepairTask condition,
+                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
+    ) {
+        Page<RepairTask> pageList = new Page<>(pageNo, pageSize);
+        Page<RepairTask> repairTaskPage = repairTaskService.selectables(pageList, condition);
+        return Result.OK(repairTaskPage);
+    }
 
 }

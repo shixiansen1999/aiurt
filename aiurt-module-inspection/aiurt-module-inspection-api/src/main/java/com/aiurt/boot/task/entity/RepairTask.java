@@ -348,7 +348,8 @@ public class RepairTask implements Serializable {
     @TableField(exist = false)
     private String peerName;
 
-
-
+    @ApiModelProperty(value = "检修编码")
+    @TableField(exist = false)
+    private List<String> codeList;
 
 }

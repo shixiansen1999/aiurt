@@ -296,7 +296,7 @@ public class MybatisDataFilterInterceptor implements Interceptor {
         }
         StringBuilder filterBuilder = new StringBuilder(128);
         filterBuilder.append("(");
-        filterBuilder.append(StringUtils.join(criteriaList, " OR "));
+        filterBuilder.append(StringUtils.join(criteriaList, " AND "));
         filterBuilder.append(")");
         String dataFilter = filterBuilder.toString();
         if (statement == null) {
