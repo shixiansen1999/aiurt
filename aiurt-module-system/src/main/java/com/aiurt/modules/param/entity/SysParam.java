@@ -90,5 +90,5 @@ public class SysParam implements Serializable {
 	private String valueMode;
     @ApiModelProperty(value = "子级集合")
     @TableField(exist = false)
-    private List<SysParam> childrenList;
+    private List<SysParam> children;
 }
