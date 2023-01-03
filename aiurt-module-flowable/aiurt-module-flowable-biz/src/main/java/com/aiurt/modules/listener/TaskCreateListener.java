@@ -8,9 +8,7 @@ import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.todo.dto.BpmnTodoDTO;
 import com.aiurt.modules.user.service.IFlowUserService;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
@@ -27,7 +25,6 @@ import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -72,9 +69,7 @@ public class TaskCreateListener implements FlowableEventListener {
         // 查询流程实例
         ProcessInstance instance = ProcessEngines.getDefaultProcessEngine().getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 
-
         FlowElementUtil flowElementUtil = SpringContextUtils.getBean(FlowElementUtil.class);
-
 
         // 查询配置项
         IActCustomTaskExtService taskExtService = SpringContextUtils.getBean(IActCustomTaskExtService.class);
@@ -85,7 +80,7 @@ public class TaskCreateListener implements FlowableEventListener {
         if (Objects.nonNull(userTask) && StrUtil.equalsAnyIgnoreCase(userTask.getId(), taskDefinitionKey)) {
             HistoryService historyService = ProcessEngines.getDefaultProcessEngine().getHistoryService();
             List<HistoricTaskInstance> instanceList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId)
-                    .taskDefinitionKey(taskDefinitionKey).orderByTaskCreateTime().desc().list();
+                    .taskDefinitionKey(taskDefinitionKey).finished().orderByTaskCreateTime().desc().list();
             if (CollectionUtil.isNotEmpty(instanceList) && instanceList.size()>1) {
                 HistoricTaskInstance historicTaskInstance = instanceList.get(0);
                 String assignee = historicTaskInstance.getAssignee();
@@ -99,10 +94,15 @@ public class TaskCreateListener implements FlowableEventListener {
                     buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(assignee));
                 }
                 return;
+            }else {
+                // 第一个任务设置为发起人
+                String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
+                        .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
+                ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, initiator);
+                buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(initiator));
+                return;
             }
         }
-
-
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         // 如果没有配置选人信息

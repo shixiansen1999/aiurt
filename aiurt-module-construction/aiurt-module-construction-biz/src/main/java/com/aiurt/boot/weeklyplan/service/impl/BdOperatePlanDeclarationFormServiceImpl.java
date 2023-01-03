@@ -6,7 +6,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.constant.ConstructtionRoleConstant;
+import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.monthlyplan.dto.BdStationCopyDTO;
 import com.aiurt.boot.monthlyplan.mapper.BdOperatePlanDeclarationFormMonthMapper;
 import com.aiurt.boot.weeklyplan.dto.*;
@@ -19,7 +19,6 @@ import com.aiurt.boot.weeklyplan.service.*;
 import com.aiurt.boot.weeklyplan.util.ExportExcelUtil;
 import com.aiurt.boot.weeklyplan.util.ImportExcelUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.position.entity.CsLine;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -38,7 +37,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -568,7 +566,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
     @Override
     public List<SysUserRoleModel> queryUserByTeamRole() {
-        List<String> list = Arrays.asList(ConstructtionRoleConstant.FOREMAN, ConstructtionRoleConstant.ON_DUTY_ENGINEER, ConstructtionRoleConstant.CONSCIENTIOUS);
+        List<String> list = Arrays.asList(RoleConstant.FOREMAN, RoleConstant.ON_DUTY_ENGINEER, RoleConstant.CONSCIENTIOUS);
         List<SysUserRoleModel> userRoleModels = new ArrayList<>();
         list.forEach(roleCode -> {
             String roleId = sysBaseApi.getRoleIdByCode(roleCode);
@@ -841,9 +839,9 @@ public class BdOperatePlanDeclarationFormServiceImpl
             String roleId = bdOperatePlanStateChange.getRoleId();
             List<String> roleIds = StrUtil.split(roleId, ',');
             // 检查用户是否有权限审批
-            List<String> roleCodes = Arrays.asList(ConstructtionRoleConstant.LINE_PEOPLE,
-                    ConstructtionRoleConstant.LINE_ALL_PEOPLE, ConstructtionRoleConstant.PRODUCTION,
-                    ConstructtionRoleConstant.DIRECTOR, ConstructtionRoleConstant.MANAGER);
+            List<String> roleCodes = Arrays.asList(RoleConstant.LINE_PEOPLE,
+                    RoleConstant.LINE_ALL_PEOPLE, RoleConstant.PRODUCTION,
+                    RoleConstant.DIRECTOR, RoleConstant.MANAGER);
             Map<String, String> roleIdsMap = new HashMap<>();
             roleCodes.forEach(code -> {
                 String roleIdByCode = sysBaseApi.getRoleIdByCode(code);
@@ -857,23 +855,23 @@ public class BdOperatePlanDeclarationFormServiceImpl
                 Result.error(600, "请检查账户角色和部门，没有权限审批！");
             }
             if (Integer.valueOf(1).compareTo(declarationForm.getLineFormStatus()) != 0
-                    && (roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.LINE_PEOPLE))
-                    || roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.LINE_ALL_PEOPLE)))) {
+                    && (roleIds.contains(roleIdsMap.get(RoleConstant.LINE_PEOPLE))
+                    || roleIds.contains(roleIdsMap.get(RoleConstant.LINE_ALL_PEOPLE)))) {
                 // 线路负责人或总线路负责人
                 declarationForm.setLineFormStatus(afterStatus);
                 declarationForm.setActualLineStaffId(sysUser.getId());
             } else if (Integer.valueOf(1).compareTo(declarationForm.getDispatchFormStatus()) != 0
-                    && roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.PRODUCTION))) {
+                    && roleIds.contains(roleIdsMap.get(RoleConstant.PRODUCTION))) {
                 //生产调度
                 declarationForm.setDispatchFormStatus(afterStatus);
             } else if ((ObjectUtil.isEmpty(declarationForm.getDirectorFormStatus())
                     || Integer.valueOf(1).compareTo(declarationForm.getDirectorFormStatus()) != 0)
-                    && roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.DIRECTOR))) {
+                    && roleIds.contains(roleIdsMap.get(RoleConstant.DIRECTOR))) {
                 // 分部主任
                 declarationForm.setDirectorFormStatus(afterStatus);
             } else if ((ObjectUtil.isEmpty(declarationForm.getManagerFormStatus())
                     || Integer.valueOf(1).compareTo(declarationForm.getManagerFormStatus()) != 0)
-                    && roleIds.contains(roleIdsMap.get(ConstructtionRoleConstant.MANAGER))) {
+                    && roleIds.contains(roleIdsMap.get(RoleConstant.MANAGER))) {
                 // 公司经理
                 declarationForm.setManagerFormStatus(afterStatus);
             } else {

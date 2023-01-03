@@ -26,6 +26,11 @@ public class ExcelTemplateExportEntity implements Serializable {
     private int index;
 
     /**
+     * 结束编号
+     */
+    private int endIndex;
+
+    /**
      * 列明
      */
     private String name;
@@ -44,4 +49,9 @@ public class ExcelTemplateExportEntity implements Serializable {
      * 是否必填
      */
     private Boolean isRequired;
+
+    /**
+     * 是否
+     */
+    private ExcelTemplateExportEntity collectionParamList;
 }

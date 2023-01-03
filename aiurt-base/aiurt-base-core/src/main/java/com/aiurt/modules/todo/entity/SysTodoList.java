@@ -71,6 +71,10 @@ public class SysTodoList implements Serializable {
 	@Excel(name = "业务id", width = 15)
     @ApiModelProperty(value = "业务id")
     private String businessKey;
+	/**业务类型*/
+    @Excel(name = "业务类型", width = 15)
+    @ApiModelProperty(value = "业务类型")
+    private String businessType;
 	/**当前办理的用户账号(逗号隔开)*/
 	@Excel(name = "当前办理的用户账号", width = 15)
     @ApiModelProperty(value = "当前办理的用户账号")

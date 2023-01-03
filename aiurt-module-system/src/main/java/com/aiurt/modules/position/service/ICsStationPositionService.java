@@ -4,6 +4,8 @@ import com.aiurt.modules.position.entity.CsStationPosition;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -35,4 +37,12 @@ public interface ICsStationPositionService extends IService<CsStationPosition> {
      * @return
      */
     Result<?> update(CsStationPosition csStationPosition);
+
+    /**
+     * 导入
+     * @param file
+     * @param params
+     * @return
+     */
+    Result<?> importExcelMaterial(MultipartFile file, ImportParams params) throws Exception;
 }

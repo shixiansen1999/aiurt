@@ -24,12 +24,7 @@ public class RecordExcelListener extends AnalysisEventListener<RecordData> {
 
         int sheetNo = context.readSheetHolder().getSheetNo();
 
-
-
         Integer rowNumber = context.readSheetHolder().getApproximateTotalRowNumber();
-
-        String title1 = "训练过程记录";
-        String title2 = "训练效果及建议";
 
         if (sheetNo == 0) {
             // 获取行的索引
@@ -47,7 +42,9 @@ public class RecordExcelListener extends AnalysisEventListener<RecordData> {
                 recordModel.setTrainees(trainees);
             } else if (index == 5) {
                 String emergencyTrainingProgram = data.getRow2();
+                String trainingProgramCode = data.getRow6();
                 recordModel.setEmergencyTrainingProgram(emergencyTrainingProgram);
+                recordModel.setTrainingProgramCode(trainingProgramCode);
             } else if (index > 6 && index < rowNumber - 4) {
                 ProcessRecordModel processRecordModel = new ProcessRecordModel();
                 String sort = data.getRow2();

@@ -1,5 +1,7 @@
 package com.aiurt.boot.task.entity;
 
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -51,10 +53,12 @@ public class RepairTaskStandardRel implements Serializable {
 	/**专业code,关联cs_major的code*/
 	@Excel(name = "专业code,关联cs_major的code", width = 15)
     @ApiModelProperty(value = "专业code,关联cs_major的code")
+    @MajorFilterColumn
     private java.lang.String majorCode;
 	/**专业子系统code,关联cs_subsystem_user的code*/
 	@Excel(name = "专业子系统code,关联cs_subsystem_user的code", width = 15)
     @ApiModelProperty(value = "专业子系统code,关联cs_subsystem_user的code")
+    @SystemFilterColumn
     private java.lang.String subsystemCode;
 	/**设备类型code，关联device_type的code*/
 	@Excel(name = "设备类型code，关联device_type的code", width = 15)

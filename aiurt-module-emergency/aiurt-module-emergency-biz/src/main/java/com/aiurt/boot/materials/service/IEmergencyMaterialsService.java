@@ -1,5 +1,6 @@
 package com.aiurt.boot.materials.service;
 
+import com.aiurt.boot.materials.dto.EmergencyMaterialsInvoicesDTO;
 import com.aiurt.boot.materials.dto.MaterialAccountDTO;
 import com.aiurt.boot.materials.dto.MaterialPatrolDTO;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
@@ -75,4 +76,21 @@ public interface IEmergencyMaterialsService extends IService<EmergencyMaterials>
      * @return
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
+
+
+    /**
+     * excel-应急物资检查记录导出
+     * @param condition
+     * @param request
+     * @param response
+     */
+    void getInspectionRecordExportExcel(EmergencyMaterialsInvoicesDTO condition, HttpServletRequest request, HttpServletResponse response) throws IOException;
+
+    /**
+     * 压缩包-应急物资检查记录导出
+     * @param condition
+     * @param request
+     * @param response
+     */
+    void getInspectionRecordExportZip(EmergencyMaterialsInvoicesDTO condition, HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

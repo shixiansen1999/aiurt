@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
+
+import com.aiurt.common.aspect.annotation.StaionFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -42,6 +44,7 @@ public class PatrolTaskStation implements Serializable {
 	/**站所编号*/
 	@Excel(name = "站所编号", width = 15)
     @ApiModelProperty(value = "站所编号")
+    @StaionFilterColumn
     private java.lang.String stationCode;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)

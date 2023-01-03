@@ -3,6 +3,7 @@ package com.aiurt.boot.plan.entity;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -92,6 +93,7 @@ public class RepairPoolCode implements Serializable {
      */
     @Excel(name = "专业子系统code,关联cs_subsystem_user的code", width = 15)
     @ApiModelProperty(value = "专业子系统code,关联cs_subsystem_user的code")
+    @SystemFilterColumn
     private java.lang.String subsystemCode;
     /**
      * 删除状态 0.未删除 1已删除

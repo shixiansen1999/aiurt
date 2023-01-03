@@ -97,6 +97,9 @@ public class CsStationPosition implements Serializable {
     @ApiModelProperty(value = "位置类型(9:室/10:支柱)")
     @Dict(dicCode = "station_level_three")
     private Integer positionType;
+    @Excel(name = "位置类型", width = 15)
+	@TableField(exist = false)
+	String positionTypeName;
     /**用于手动翻译*/
     @Dict(dicCode = "station_level")
 	@TableField(exist = false)
@@ -118,6 +121,9 @@ public class CsStationPosition implements Serializable {
     @ApiModelProperty(value = "级别")
     @TableField(exist = false)
     private Integer level;
+    @Excel(name = "层级类型")
+    @TableField(exist = false)
+    private String levelName;
     /**子节点*/
     @ApiModelProperty(value = "子节点")
     @TableField(exist = false)
@@ -127,6 +133,7 @@ public class CsStationPosition implements Serializable {
     @TableField(exist = false)
     private String pCode;
     /**上（父）级位置*/
+    @Excel(name = "上级位置名称")
     @ApiModelProperty(value = "上（父）级位置")
     @TableField(exist = false)
     private String pUrl;
@@ -141,4 +148,6 @@ public class CsStationPosition implements Serializable {
     /**公里标*/
     @ApiModelProperty(value = "公里标")
     private String length;
+    @TableField(exist = false)
+    String text;
 }

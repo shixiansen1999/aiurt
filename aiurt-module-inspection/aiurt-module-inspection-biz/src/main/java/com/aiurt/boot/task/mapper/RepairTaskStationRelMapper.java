@@ -2,6 +2,7 @@ package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.task.entity.RepairTaskStationRel;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
  * @Date:   2022-06-22
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface RepairTaskStationRelMapper extends BaseMapper<RepairTaskStationRel> {
 
     /**

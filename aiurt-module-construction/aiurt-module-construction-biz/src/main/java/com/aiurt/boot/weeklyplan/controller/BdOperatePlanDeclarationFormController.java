@@ -1,6 +1,6 @@
 package com.aiurt.boot.weeklyplan.controller;
 
-import com.aiurt.boot.constant.ConstructtionRoleConstant;
+import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.weeklyplan.dto.*;
 import com.aiurt.boot.weeklyplan.entity.BdOperatePlanDeclarationForm;
 import com.aiurt.boot.weeklyplan.entity.BdOperatePlanStateChange;
@@ -251,9 +251,9 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 			//只有 工班长、工作负责人、驻班工程师 有权限添加生产计划
 			LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 			Set<String> roleSet = sysBaseApi.getUserRoleSet(sysUser.getUsername());
-			long count = roleSet.stream().filter(s -> ConstructtionRoleConstant.FOREMAN.equals(s)
-					|| ConstructtionRoleConstant.ON_DUTY_ENGINEER.equals(s)
-					|| ConstructtionRoleConstant.CONSCIENTIOUS.equals(s)).count();
+			long count = roleSet.stream().filter(s -> RoleConstant.FOREMAN.equals(s)
+					|| RoleConstant.ON_DUTY_ENGINEER.equals(s)
+					|| RoleConstant.CONSCIENTIOUS.equals(s)).count();
 			if(count == 0){
 				return Result.error("您没有权限添加生产计划");
 			}else{

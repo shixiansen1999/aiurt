@@ -195,6 +195,7 @@ public class SysAnnouncementSendController {
      * @功能：更新用户系统消息阅读状态
      */
     @PutMapping(value = "/editByAnntIdAndUserId")
+    @ApiOperation(value = "更新用户系统消息阅读状态", notes = "更新用户系统消息阅读状态")
     public Result<SysAnnouncementSend> editById(@RequestBody JSONObject json) {
         Result<SysAnnouncementSend> result = new Result<SysAnnouncementSend>();
         String anntId = json.getString("anntId");

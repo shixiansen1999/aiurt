@@ -41,7 +41,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
- /**
+/**
  * @Description: emergency_materials
  * @Author: aiurt
  * @Date:   2022-11-29
@@ -165,7 +165,20 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 Page<EmergencyMaterialsInvoicesItem> inspectionRecord = emergencyMaterialsService.getInspectionRecord(pageList, condition);
 		 return  Result.OK(inspectionRecord);
 	 }
+	 @AutoLog(value = "物资信息-应急物资检查记录列表-excel导出")
+	 @ApiOperation(value="物资信息-应急物资检查记录列表-excel导出", notes="物资信息-应急物资检查记录列表-excel导出")
+	 @GetMapping(value = "/getInspectionRecordExportExcel")
+	 public void getInspectionRecordExportExcel(EmergencyMaterialsInvoicesDTO condition, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		  emergencyMaterialsService.getInspectionRecordExportExcel(condition,request,response);
 
+	 }
+	 @AutoLog(value = "物资信息-应急物资检查记录列表-压缩导出")
+	 @ApiOperation(value="物资信息-应急物资检查记录列表-压缩导出", notes="物资信息-应急物资检查记录列表-压缩导出")
+	 @GetMapping(value = "/getInspectionRecordExportZip")
+	 public void getInspectionRecordExportZip(EmergencyMaterialsInvoicesDTO condition, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		 emergencyMaterialsService.getInspectionRecordExportZip(condition,request,response);
+
+	 }
 	 @AutoLog(value = "物资信息-应急物资检查记录查看")
 	 @ApiOperation(value="物资信息-应急物资检查记录查看", notes="物资信息-应急物资检查记录查看")
 	 @GetMapping(value = "/getMaterialInspection")

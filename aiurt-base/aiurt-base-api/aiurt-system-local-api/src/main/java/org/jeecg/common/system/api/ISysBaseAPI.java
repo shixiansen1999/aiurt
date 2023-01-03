@@ -1,7 +1,6 @@
 package org.jeecg.common.system.api;
 
 import com.aiurt.common.api.CommonAPI;
-import com.aiurt.common.api.dto.StartBpmnDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.modules.basic.entity.SysAttachment;
@@ -771,17 +770,6 @@ public interface ISysBaseAPI extends CommonAPI {
     List<LoginUser> getUserByRealName(String realName,String workNo);
 
 
-
-    /**
-     * 启动流程实例，如果当前登录用户为第一个用户任务的指派者，或者Assginee为流程启动人变量时，
-     * 则自动完成第一个用户任务。
-     *
-     * @param startBpmnDTO 流程定义Id。
-     * @return 新启动的流程实例。
-     */
-    void startAndTakeFirst(StartBpmnDTO startBpmnDTO);
-
-
     /**
      * 获取用户岗位为post的人员
      * @param post
@@ -798,10 +786,33 @@ public interface ISysBaseAPI extends CommonAPI {
     public String getSysAnnounByBusTypeAndBusId(String busType, String busId);
 
     /**
+     * 获取SysAttachment的文件地址
+     * @param filePath
+     * @return
+     */
+    SysAttachment getFilePath(String filePath);
+
+    /**
      * 根据部门，角色编码查询人员账号
      * @param orgCode 组织机构编码
      * @param roleCode 角色编码
      * @return 人员账号用逗号隔开
      */
     public String getUserNameByOrgCodeAndRoleCode(List<String> orgCode,List<String> roleCode);
+
+    /**
+     * 根据站点获取工区信息
+     * @param stationCode
+     * @return
+     */
+    List<CsWorkAreaModel> getWorkAreaByCode(String stationCode);
+
+    /**
+     * 通过code查询地点信息（这三个中的一个：线路、站点、位置）
+     *
+     * @param code
+     * @return
+     */
+    JSONObject getPositionMessage(String code);
 }
+

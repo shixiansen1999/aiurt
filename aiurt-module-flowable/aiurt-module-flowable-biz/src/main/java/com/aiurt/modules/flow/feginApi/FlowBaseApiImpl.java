@@ -1,6 +1,7 @@
 package com.aiurt.modules.flow.feginApi;
 
 import com.aiurt.modules.flow.api.FlowBaseApi;
+import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.flow.service.FlowApiService;
 import lombok.extern.slf4j.Slf4j;
@@ -34,5 +35,17 @@ public class FlowBaseApiImpl implements FlowBaseApi {
            log.error(e.getMessage(), e);
         }
         return taskInfoDTO;
+    }
+
+    /**
+     * 启动流程实例，如果当前登录用户为第一个用户任务的指派者，或者Assginee为流程启动人变量时，
+     * 则自动完成第一个用户任务。
+     *
+     * @param startBpmnDTO 流程定义Id。
+     * @return 新启动的流程实例。
+     */
+    @Override
+    public void startAndTakeFirst(StartBpmnDTO startBpmnDTO) {
+        flowApiService.startAndTakeFirst(startBpmnDTO);
     }
 }

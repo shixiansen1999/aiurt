@@ -47,7 +47,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @AutoLog(value = "检修管理-检修计划-列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/overhaul/RepairPoolList")
     @ApiOperation(value = "检修计划池列表查询", notes = "检修计划池列表查询")
     @GetMapping(value = "/list")
-    @PermissionData(pageComponent = "overhaul/RepairPoolList")
+    @PermissionData(pageComponent = "overhaul/RepairPoolList",appComponent = "Repair/PlanList/index")
     public Result<IPage<RepairPool>> queryList(SelectPlanReq selectPlanReq) {
         IPage<RepairPool> pageList = repairPoolService.queryList(selectPlanReq);
         return Result.OK(pageList);

@@ -1,18 +1,28 @@
 package com.aiurt.common.util;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 @Slf4j
 public class XlsUtil {
 
@@ -58,10 +68,10 @@ public class XlsUtil {
         }
     }
 
-    //错误模板
-    public static TemplateExportParams getErrorExcelModel(String url) throws IOException {
-        //创建导入失败错误报告,进行模板导出
-        org.springframework.core.io.Resource resource = new ClassPathResource(url);
+    //模板
+    public static TemplateExportParams getExcelModel(String url) throws IOException {
+        //进行模板导出
+        Resource resource = new ClassPathResource(url);
         InputStream resourceAsStream = resource.getInputStream();
 
         //2.获取临时文件
@@ -93,5 +103,59 @@ public class XlsUtil {
             e.printStackTrace();
         }
         return true;
+    }
+
+    public static void getExcel(HttpServletResponse response,String url, String fileName){
+        //进行模板导出
+        Resource resource = new ClassPathResource(url);
+        try {
+            InputStream resourceAsStream  = resource.getInputStream();
+            //2.获取临时文件
+            File fileTemp= new File(url);
+            try {
+                //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+                FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+            String path = fileTemp.getAbsolutePath();
+            TemplateExportParams exportParams = new TemplateExportParams(path);
+
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename="+fileName);
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+    public static void outZip(InputStream inputStream,String fileName, ZipOutputStream zipOut) {
+        // 缓冲
+        byte[] bufferArea = new byte[1024];
+        // 将当前文件作为一个zip实体写入压缩流,fileName代表压缩文件中的文件名称
+        try {
+            zipOut.putNextEntry(new ZipEntry(fileName));
+            int length = 0;
+            // 最常规IO操作,不必紧张
+            while ((length = inputStream.read(bufferArea)) != -1) {
+                zipOut.write(bufferArea, 0, length);
+            }
+            // 解决剩余的
+            int remain = inputStream.available();
+            byte[] last = new byte[remain];
+            inputStream.read(last);
+            zipOut.write(last);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

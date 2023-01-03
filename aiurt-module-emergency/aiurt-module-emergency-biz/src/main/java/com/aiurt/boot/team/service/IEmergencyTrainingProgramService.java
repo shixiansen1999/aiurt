@@ -5,6 +5,10 @@ import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @Description: emergency_training_program
@@ -62,4 +66,20 @@ public interface IEmergencyTrainingProgramService extends IService<EmergencyTrai
      * @return
      */
     Result<EmergencyTrainingProgram> queryById(EmergencyTrainingProgram emergencyTrainingProgram);
+
+    /**
+     * 导入
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 导出
+     * @param request
+     * @param response
+     * @param emergencyTrainingProgramDTO
+     */
+    ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyTrainingProgramDTO emergencyTrainingProgramDTO);
 }

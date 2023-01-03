@@ -49,6 +49,12 @@
                 and DATE_FORMAT(t1.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.weekStartTime}, '%Y-%m-%d')
                 and DATE_FORMAT(t1.start_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.weekEndTime}, '%Y-%m-%d')
             </if>
+            <if test="condition.codeList!=null and condition.codeList.size()>0">
+                and t1.code in
+                <foreach collection="condition.codeList" open="(" close=")" separator="," item="code">
+                    #{code}
+                </foreach>
+            </if>
         </where>
         group by t1.id
         order by t1.create_time desc,t1.start_time desc

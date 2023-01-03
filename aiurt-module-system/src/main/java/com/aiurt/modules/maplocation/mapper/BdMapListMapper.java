@@ -46,4 +46,12 @@ public interface BdMapListMapper extends BaseMapper<CurrentTeamPosition> {
     List<UserInfo> queryUserById(List<String> idList);
 
     UserStationDTO getStationId(String id);
+
+   /**
+    * 根据mac 查询站点位置信息
+    * @param mac
+    * @return
+    */
+   UserStationDTO getStationByMac(@Param("mac") String mac);
+
 }

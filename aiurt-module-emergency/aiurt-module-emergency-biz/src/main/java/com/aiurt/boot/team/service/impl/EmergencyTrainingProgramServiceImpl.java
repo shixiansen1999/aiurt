@@ -1,7 +1,10 @@
 package com.aiurt.boot.team.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -11,26 +14,43 @@ import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
 import com.aiurt.boot.team.entity.EmergencyTrainingTeam;
 import com.aiurt.boot.team.mapper.EmergencyTrainingProgramMapper;
+import com.aiurt.boot.team.model.TrainingProgramModel;
 import com.aiurt.boot.team.service.IEmergencyTrainingProgramService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.TimeUtil;
+import com.aiurt.common.util.XlsUtil;
+import com.aiurt.common.util.oConvertUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +61,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTrainingProgramMapper, EmergencyTrainingProgram> implements IEmergencyTrainingProgramService {
-
+    @Value("${jeecg.path.errorExcelUpload}")
+    private String errorExcelUpload;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
 
@@ -232,5 +253,209 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         String trainees = emergencyTrainingProgramMapper.getTrainees(emergencyTrainingProgram.getId());
         emergencyTrainingProgram.setTrainees(trainees);
         return Result.OK(emergencyTrainingProgram);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            ImportParams params = new ImportParams();
+            params.setTitleRows(2);
+            params.setHeadRows(1);
+            params.setNeedSave(true);
+
+            List<String> errorMessage = new ArrayList<>();
+            int successLines = 0;
+            // 错误信息
+            int  errorLines = 0;
+
+            try {
+                String type = FilenameUtils.getExtension(file.getOriginalFilename());
+                if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+                    return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, false, null);
+                }
+
+                List<TrainingProgramModel> trainingProgramModels = ExcelImportUtil.importExcel(file.getInputStream(), TrainingProgramModel.class, params);
+                Iterator<TrainingProgramModel> iterator = trainingProgramModels.iterator();
+                while (iterator.hasNext()) {
+                    TrainingProgramModel model = iterator.next();
+                    boolean b = XlsUtil.checkObjAllFieldsIsNull(model);
+                    if (b) {
+                        iterator.remove();
+                    }
+                }
+                if (CollUtil.isEmpty(trainingProgramModels)) {
+                    return Result.error("文件导入失败:文件内容不能为空！");
+                }
+                Map<String, String> data = new HashMap<>();
+                for (TrainingProgramModel trainingProgramModel : trainingProgramModels) {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    //数据重复性校验
+                    String s = data.get(trainingProgramModel.getTrainingProgramName());
+                    if (StrUtil.isNotEmpty(s)) {
+                        stringBuilder.append("该数据存在相同数据，");
+                    } else {
+                        data.put(trainingProgramModel.getTrainingProgramName(), trainingProgramModel.getTrainingTeam());
+                    }
+                    //数据校验
+                    checkTrainingProgram(stringBuilder, trainingProgramModel);
+                    if (stringBuilder.length() > 0) {
+                        // 截取字符
+                        stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                        trainingProgramModel.setMistake(stringBuilder.toString());
+                        errorLines++;
+                    }
+
+                    if (errorLines > 0) {
+                        //存在错误，导出错误清单
+                        return getErrorExcel(errorLines, errorMessage, trainingProgramModels, successLines, null, type);
+                    }
+
+                    //校验通过，添加数据
+                    for (TrainingProgramModel programModel : trainingProgramModels) {
+                        String trainPlanCode = this.getTrainPlanCode();
+                        EmergencyTrainingProgram emergencyTrainingProgram = new EmergencyTrainingProgram();
+                        emergencyTrainingProgram.setTrainingProgramCode(trainPlanCode);
+                        emergencyTrainingProgram.setTrainingProgramName(programModel.getTrainingProgramName());
+                        DateTime time = DateUtil.parse(programModel.getTrainingPlanTime(), "yyyy年MM月");
+                        String format = DateUtil.format(time, "yyyy-MM");
+                        emergencyTrainingProgram.setTrainingPlanTime(DateUtil.parse(format,"yyyy-MM"));
+                        emergencyTrainingProgram.setTraineesNum(programModel.getPeopleNum());
+                        emergencyTrainingProgram.setStatus(TeamConstant.WAIT_PUBLISH);
+                        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                        emergencyTrainingProgram.setOrgCode(user.getOrgCode());
+                        this.save(emergencyTrainingProgram);
+
+                        List<String> trainingTeamId = programModel.getTrainingTeamId();
+                        for (String teamId : trainingTeamId) {
+                            EmergencyTrainingTeam emergencyTrainingTeam = new EmergencyTrainingTeam();
+                            emergencyTrainingTeam.setEmergencyTrainingProgramId(emergencyTrainingProgram.getId());
+                            emergencyTrainingTeam.setEmergencyTeamId(teamId);
+                            emergencyTrainingTeamService.save(emergencyTrainingTeam);
+                        }
+                    }
+                    return Result.ok("文件导入成功！");
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return Result.ok("文件导入失败！");
+    }
+
+    private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, List<TrainingProgramModel> trainingProgramModels, int successLines, String url, String type) {
+
+        try {
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTrainingProgramError.xlsx");
+            Map<String, Object> errorMap = new HashMap<String, Object>();
+            List<Map<String, String>> mapList = new ArrayList<>();
+            Map<String, String> map = new HashMap<>();
+            for (TrainingProgramModel trainingProgramModel : trainingProgramModels) {
+                map.put("trainingProgramName", trainingProgramModel.getTrainingProgramName());
+                map.put("trainingTeam", trainingProgramModel.getTrainingTeam());
+                map.put("trainingPlanTime", trainingProgramModel.getTrainingPlanTime());
+                map.put("remark", trainingProgramModel.getRemark());
+                map.put("mistake", trainingProgramModel.getMistake());
+                mapList.add(map);
+            }
+            errorMap.put("maplist", mapList);
+
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            sheetsMap.put(0, errorMap);
+            Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+            String fileName = "应急队伍训练计划导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
+            FileOutputStream out = new FileOutputStream(errorExcelUpload+ File.separator+fileName);
+            url = fileName;
+            workbook.write(out);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, true, url);
+    }
+
+    private void checkTrainingProgram(StringBuilder stringBuilder,TrainingProgramModel trainingProgramModel) {
+        String trainingProgramName = trainingProgramModel.getTrainingProgramName();
+        String trainingTeam = trainingProgramModel.getTrainingTeam();
+        String trainingPlanTime = trainingProgramModel.getTrainingPlanTime();
+
+        if (StrUtil.isEmpty(trainingProgramName)) {
+            stringBuilder.append("训练项目不能为空，");
+        }
+        if (StrUtil.isNotEmpty(trainingTeam)) {
+            List<String> teams = StrUtil.splitTrim(trainingTeam, "；");
+            //去重
+            List<String> list = teams.stream().distinct().collect(Collectors.toList());
+            if (teams.size() < list.size()) {
+                stringBuilder.append("训练队伍有重复，");
+            }
+            List<String> teamIds = new ArrayList<>();
+            int num = 0;
+            for (String team : list) {
+                LambdaQueryWrapper<EmergencyTeam> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(EmergencyTeam::getDelFlag, TeamConstant.DEL_FLAG0);
+                queryWrapper.eq(EmergencyTeam::getEmergencyTeamname, team);
+                EmergencyTeam one = emergencyTeamService.getOne(queryWrapper);
+                if (ObjectUtil.isEmpty(one)) {
+                    stringBuilder.append("系统不存在" + team + "该队伍，");
+                }else {
+                    teamIds.add(one.getId());
+                    num = num + one.getPeopleNum();
+                }
+
+            }
+
+            trainingProgramModel.setTrainingTeamId(teamIds);
+            trainingProgramModel.setPeopleNum(num);
+        } else {
+            stringBuilder.append("训练队伍不能为空，");
+        }
+
+        if (StrUtil.isNotEmpty(trainingPlanTime)) {
+            boolean legalDate = TimeUtil.isLegalDate(trainingPlanTime.length(), trainingPlanTime, "yyyy年MM月");
+            if (!legalDate) {
+                stringBuilder.append("训练时间格式不对，");
+            }
+        }else {
+            stringBuilder.append("训练时间不能为空，");
+        }
+
+    }
+
+    @Override
+    public ModelAndView exportXls(HttpServletRequest request,HttpServletResponse response, EmergencyTrainingProgramDTO emergencyTrainingProgramDTO) {
+        IPage<EmergencyTrainingProgram> pageList = this.queryPageList(emergencyTrainingProgramDTO, 1, Integer.MAX_VALUE);
+        List<EmergencyTrainingProgram> records = pageList.getRecords();
+        for (EmergencyTrainingProgram record : records) {
+            String trainees = emergencyTrainingProgramMapper.getTrainees(record.getId());
+            record.setTrainees(trainees);
+        }
+        List<EmergencyTrainingProgram> exportList = null;
+        // 过滤选中数据
+        String selections = request.getParameter("selections");
+        if (oConvertUtils.isNotEmpty(selections)) {
+            List<String> selectionList = Arrays.asList(selections.split(","));
+            exportList = records.stream().filter(item -> selectionList.contains(item.getId())).collect(Collectors.toList());
+        } else {
+            exportList = records;
+        }
+
+        String title ="应急队伍训练计划表";
+        // Step.3 AutoPoi 导出Excel
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        //此处设置的filename无效 ,前端会重更新设置一下
+        mv.addObject(NormalExcelConstants.FILE_NAME, title);
+        mv.addObject(NormalExcelConstants.CLASS, EmergencyTrainingProgram.class);
+        org.jeecgframework.poi.excel.entity.ExportParams exportParams=new ExportParams(title, title);
+        mv.addObject(NormalExcelConstants.PARAMS,exportParams);
+        mv.addObject(NormalExcelConstants.DATA_LIST, exportList);
+        return mv;
     }
 }

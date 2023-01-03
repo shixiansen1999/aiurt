@@ -36,7 +36,8 @@ public interface InspectionStrategyMapper extends BaseMapper<InspectionStrategy>
     IPage<InspectionStrategyDTO> selectPageList(Page<InspectionStrategyDTO> page,
                                                 @Param("inspectionStrategyDTO") InspectionStrategyDTO inspectionStrategyDTO,
                                                 @Param("orgCodes") List<String> orgCodes,
-                                                @Param("majorCodes") List<String> majorCodes);
+                                                @Param("majorCodes") List<String> majorCodes,
+                                                @Param("userName") String userName);
 
     /**
      * 根据id或code进行删除

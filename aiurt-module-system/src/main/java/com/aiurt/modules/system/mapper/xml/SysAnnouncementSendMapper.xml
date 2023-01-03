@@ -64,7 +64,7 @@
 				#{id}
 			</foreach>
         </if>
-	   order by sas.read_flag,sa.send_time desc
+	   order by sas.read_flag asc,sa.send_time desc
 	</select>
 
 </mapper>

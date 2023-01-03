@@ -443,7 +443,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
         List<DeviceType> list = deviceTypeService.list(wrapper);
         return list;
     }
-	@ApiOperation(value = "下载施工周计划导入模板", notes = "下载施工周计划导入模板")
+	@ApiOperation(value = "下载设备类型导入模板", notes = "下载设备类型导入模板")
 	@RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
 	public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
 		ClassPathResource classPathResource = new ClassPathResource("templates/deviceType.xlsx");
@@ -493,11 +493,11 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	}
 
 	/**
-	 * 施工周计划-导出周计划
+	 * 设备类型导出
 	 *
 	 * @return
 	 */
-	@ApiOperation(value = "施工周计划-导出周计划", notes = "施工周计划-导出周计划")
+	@ApiOperation(value = "设备类型导出", notes = "设备类型导出")
 	@RequestMapping(value = "/exportXls", method = {RequestMethod.GET, RequestMethod.POST})
 	public void exportXls(HttpServletRequest request, HttpServletResponse response ,
 						  DeviceType deviceType) {

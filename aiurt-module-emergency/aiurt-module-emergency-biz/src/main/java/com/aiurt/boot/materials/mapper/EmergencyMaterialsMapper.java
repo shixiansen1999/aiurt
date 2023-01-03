@@ -1,6 +1,7 @@
 package com.aiurt.boot.materials.mapper;
 
 
+import com.aiurt.boot.materials.dto.EmergencyMaterialsInvoicesItemDTO;
 import com.aiurt.boot.materials.dto.MaterialAccountDTO;
 import com.aiurt.boot.materials.dto.MaterialBaseDTO;
 import com.aiurt.boot.materials.dto.PatrolStandardDTO;
@@ -81,4 +82,11 @@ public interface EmergencyMaterialsMapper extends BaseMapper<EmergencyMaterials>
      * @return
      */
     MaterialBaseDTO getMaterials(@Param("materialsCode")String materialsCode, @Param("materialsName")String materialsName);
+
+    /**
+     * 获取巡检的检查记录
+     * @param id
+     * @return
+     */
+    List<EmergencyMaterialsInvoicesItemDTO> getMaterialInspectionList(@Param("id")String id);
 }

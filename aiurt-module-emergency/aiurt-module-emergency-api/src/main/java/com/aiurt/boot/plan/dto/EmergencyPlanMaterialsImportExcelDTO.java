@@ -2,6 +2,7 @@ package com.aiurt.boot.plan.dto;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -40,11 +41,18 @@ public class EmergencyPlanMaterialsImportExcelDTO implements Serializable {
     /**应急物资数量*/
     @Excel(name = "应急物资数量", width = 15)
     @ApiModelProperty(value = "应急物资数量")
-    private Integer materialsNumber;
+    private String materialsNumber;
     /**单位*/
     @Excel(name = "单位", width = 15)
     @ApiModelProperty(value = "单位")
     private String unit;
+
+    /**
+     * 应急物资错误原因
+     */
+    @ApiModelProperty(value = "应急物资错误原因")
+    @TableField(exist = false)
+    private String errorReason;
 
 
 }

@@ -49,4 +49,9 @@ public interface TeamConstant {
      * 提交状态:2已提交
      */
     Integer SUBMITTED = 2;
+
+    /**
+     *职务字典值编码
+     */
+    public static final String EMERGENCY_POST = "emergency_post";
 }

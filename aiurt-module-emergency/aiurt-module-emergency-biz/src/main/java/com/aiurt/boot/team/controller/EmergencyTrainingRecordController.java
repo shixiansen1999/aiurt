@@ -10,6 +10,7 @@ import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
 import com.aiurt.boot.team.vo.EmergencyTrainingRecordVO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.XlsUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,10 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -190,12 +191,13 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
     /**
     * 导出excel
     *
-    * @param request
-    * @param emergencyTrainingRecord
+    * @param response
+    * @param id
     */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, EmergencyTrainingRecord emergencyTrainingRecord) {
-        return super.exportXls(request, emergencyTrainingRecord, EmergencyTrainingRecord.class, "emergency_training_record");
+	@ApiOperation(value = "应急队伍训练记录导出", notes = "设备主数据导出")
+    @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
+    public void exportXls(HttpServletResponse response, @RequestParam(name="id",required=true) String id) {
+    	emergencyTrainingRecordService.exportXls(response, id);
     }
 
     /**
@@ -211,4 +213,14 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
         return 	emergencyTrainingRecordService.importExcel(request,response);
     }
 
+	/**
+	 * 应急队伍训练记录模板下载
+	 *
+	 */
+	@AutoLog(value = "应急队伍训练记录模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "")
+	@ApiOperation(value="应急队伍训练记录模板下载", notes="应急队伍训练记录模板下载")
+	@RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
+	public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		XlsUtil.getExcel(response, "templates/emergencyTrainingRecord.xlsx", "应急队伍训练计划导入模板.xlsx");
+	}
 }

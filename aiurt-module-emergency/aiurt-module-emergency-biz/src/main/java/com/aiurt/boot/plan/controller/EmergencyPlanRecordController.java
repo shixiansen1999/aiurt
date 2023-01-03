@@ -133,29 +133,6 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 		return Result.OK(planRecordDTO);
 	}
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param emergencyPlanRecord
-    */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, EmergencyPlanRecord emergencyPlanRecord) {
-        return super.exportXls(request, emergencyPlanRecord, EmergencyPlanRecord.class, "emergency_plan_record");
-    }
-
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, EmergencyPlanRecord.class);
-    }
-
 	 /**
 	  * 应急模块-责任部门和用户联动信息
 	  */
@@ -188,38 +165,37 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 
 
 	 /**
-	  * 应急预案启动记录导入模板下载
-	  *
+	  * 应急预案导入模板下载
 	  */
-	 @AutoLog(value = "应急预案启动记录导入模板下载", operateType =  6, operateTypeAlias = "应急预案启动记录导入模板下载", permissionUrl = "")
-	 @ApiOperation(value="应急预案启动记录导入模板下载", notes="应急预案启动记录导入模板下载")
-	 @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
+	 @AutoLog(value = "下载导入模板", operateType = 6, operateTypeAlias = "下载导入模板", permissionUrl = "")
+	 @ApiOperation(value = "下载导入模板", notes = "下载导入模板")
+	 @RequestMapping(value = "/exportTemplateXls", method = RequestMethod.GET)
 	 public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
-		 //获取输入流，原始模板位置
-		 ClassPathResource classPathResource =  new ClassPathResource("templates/InspectionSty.xls");
-		 InputStream bis = classPathResource.getInputStream();
-		 //设置发送到客户端的响应的内容类型
-		 response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-		 response.setHeader("Content-Disposition", "attachment;filename="+"应急预案启动记录导入模板.xlsx");
-		 BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
-		 int len = 0;
-		 while ((len = bis.read()) != -1) {
-			 out.write(len);
-			 out.flush();
-		 }
-		 out.close();
+		 emergencyPlanRecordService.exportTemplateXls(response,request);
 	 }
 
 	 /**
-	  * 应急预案台账导出数据
+	  * 通过excel导入数据
+	  *
 	  * @param request
 	  * @param response
-	  * @param emergencyPlanRecordDto
+	  * @return
+	  */
+	 @ApiOperation(value = "应急预案启动记录-导入excel", notes = "应急预案启动记录-导入excel")
+	 @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+	 public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+		 return emergencyPlanRecordService.importExcel(request, response);
+	 }
+
+	 /**
+	  * 应急预案启动记录导出数据
+	  * @param response
+	  * @param id
 	  */
 	 @AutoLog(value = "应急预案-应急预案台账导出数据")
-	 @GetMapping(value = "/exportXls")
-	 public void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanRecordDTO emergencyPlanRecordDto) {
-		 emergencyPlanRecordService.exportXls(request,response,emergencyPlanRecordDto);
+	 @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
+	 public void exportXls(HttpServletResponse response, @RequestParam(name="id",required=true) String id) {
+		 emergencyPlanRecordService.exportXls(response, id);
 	 }
 
 }

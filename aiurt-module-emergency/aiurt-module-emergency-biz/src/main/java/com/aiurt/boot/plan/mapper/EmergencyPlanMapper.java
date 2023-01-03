@@ -2,7 +2,7 @@ package com.aiurt.boot.plan.mapper;
 
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
-import com.aiurt.boot.plan.vo.EmergencyPlanRecordVO;
+import com.aiurt.boot.plan.vo.EmergencyPlanExportExcelVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -60,5 +60,33 @@ public interface EmergencyPlanMapper extends BaseMapper<EmergencyPlan> {
      * @return
      */
     List<EmergencyPlanMaterialsExcelDTO> selectPlanMaterialsById(String id);
+
+    /**
+     * 根据部门名称查找orgcode
+     * @param orgName
+     * @return
+     */
+    String selectDepartCode(String orgName);
+
+    /**
+     * 根据用户名称查找id
+     * @param orgUserName
+     * @return
+     */
+    String selectUserCode(String orgUserName);
+
+    /**
+     * 根据角色名称查找roleId
+     * @param roleName
+     * @return
+     */
+    String selectRoleId(String roleName);
+
+    /**
+     * 根据应急预案id查找应急预案
+     * @param id
+     * @return
+     */
+   EmergencyPlanExportExcelVO queryById(String id);
 
 }

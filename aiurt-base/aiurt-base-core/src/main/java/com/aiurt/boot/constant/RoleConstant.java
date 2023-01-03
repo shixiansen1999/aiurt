@@ -1,11 +1,11 @@
 package com.aiurt.boot.constant;
 
 /**
- * 施工模块角色标识常量
+ * 角色标识常量
  *
  * @author
  */
-public interface ConstructtionRoleConstant {
+public interface RoleConstant {
     /**
      * 调度员角色
      */
@@ -27,7 +27,7 @@ public interface ConstructtionRoleConstant {
      */
     String ON_DUTY_ENGINEER = "on_duty_engineer";
     /**
-     * 工班长
+     * 工班长，
      */
     String FOREMAN = "foreman";
     /**
@@ -42,4 +42,18 @@ public interface ConstructtionRoleConstant {
      * 工作负责人
      */
     String CONSCIENTIOUS = "conscientious";
+
+    /**
+     * 系统管理员
+     */
+    String ADMIN = "admin";
+
+    /**
+     * 维修人员
+     */
+    String REPAIR_MAN = "repair_man";
+    /**
+     * 技术员
+     */
+    String TECHNICIAN = "technician";
 }

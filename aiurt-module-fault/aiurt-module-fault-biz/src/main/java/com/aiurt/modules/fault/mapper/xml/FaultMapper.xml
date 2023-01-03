@@ -180,4 +180,21 @@
         where sd.dict_code = 'fault_status'
           and sdt.item_value = #{status}
     </select>
+
+    <select id="selectUserNameByComplex" resultType="java.lang.String">
+        SELECT DISTINCT su.username
+        FROM sys_user_role sur
+        JOIN sys_user su ON sur.user_id = su.id
+        JOIN sys_role sr ON sur.role_id = sr.id
+        where  su.del_flag = 0
+        <if test="roleCodeList != null and roleCodeList.size() != 0 ">
+            and sr.role_code in
+            <foreach collection="roleCodeList" open="(" close=")" separator="," item="code">
+                #{code}
+            </foreach>
+        </if>
+
+    </select>
+
+
 </mapper>

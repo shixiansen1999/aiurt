@@ -161,7 +161,7 @@ public interface IFaultService extends IService<Fault> {
     void useKnowledgeBase(String faultCode, String knowledgeId);
 
     /**
-     * 已驳回-提交审核
+     * 审核已驳回-再次提交审核
      * @param faultCode
      */
     void submitResult(String faultCode);

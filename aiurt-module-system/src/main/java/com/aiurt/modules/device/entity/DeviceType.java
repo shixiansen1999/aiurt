@@ -1,5 +1,6 @@
 package com.aiurt.modules.device.entity;
 
+import cn.afterturn.easypoi.excel.annotation.ExcelCollection;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
@@ -45,6 +46,7 @@ public class DeviceType implements Serializable {
     @MajorFilterColumn
     private String majorCode;
     /**专业名称*/
+    @Excel(name = "专业", width = 15)
     @ApiModelProperty(value = "专业名称")
     @TableField(exist = false)
     @Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
@@ -56,6 +58,7 @@ public class DeviceType implements Serializable {
     @SystemFilterColumn
     private String systemCode;
     /**系统名称*/
+    @Excel(name = "子系统", width = 15,dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     @ApiModelProperty(value = "系统名称")
     @TableField(exist = false)
     private String systemName;
@@ -76,15 +79,13 @@ public class DeviceType implements Serializable {
     @TableField(exist = false)
 	String statusName;
 	/**是否为特种设备(1:是,0:否)*/
-	@Excel(name = "是否为特种设备(1:是,0:否)", width = 15,dicCode = "is_special_device")
     @ApiModelProperty(value = "是否为特种设备(1:是,0:否)")
     @Dict(dicCode = "is_special_device")
     private Integer isSpecialDevice;
-    @Excel(name = "是否为特种设备", width = 15)
+    @Excel(name = "是否特种设备", width = 15)
     @TableField(exist = false)
 	String isSpecialDeviceName;
 	/**是否尾节点(1:是,0：否)*/
-	@Excel(name = "是否尾节点(1:是,0：否)", width = 15,dicCode = "is_end")
     @ApiModelProperty(value = "是否尾节点(1:是,0：否)")
     @Dict(dicCode = "is_end")
     private Integer isEnd;
@@ -92,11 +93,9 @@ public class DeviceType implements Serializable {
     @TableField(exist = false)
 	String isEndName;
 	/**层级结构*/
-	@Excel(name = "层级结构", width = 15)
     @ApiModelProperty(value = "层级结构")
     private String codeCc;
 	/**上级节点*/
-	@Excel(name = "上级节点", width = 15)
     @ApiModelProperty(value = "上级节点")
     private String pid;
     /**上级节点-名称*/
@@ -125,12 +124,11 @@ public class DeviceType implements Serializable {
     @ApiModelProperty(value = "修改时间")
     private Date updateTime;
     /**设备类型子集*/
-    @Excel(name = "设备类型子集", width = 15)
     @ApiModelProperty(value = "设备类型子集")
     @TableField(exist = false)
     private List<DeviceType> children;
     /**设备组成*/
-    @Excel(name = "设备组成", width = 15)
+    @ExcelCollection(name = "设备组成对应的物资编码")
     @ApiModelProperty(value = "设备组成")
     @TableField(exist = false)
     private List<DeviceCompose> deviceComposeList;
@@ -155,7 +153,8 @@ public class DeviceType implements Serializable {
     @ApiModelProperty(value = "专业下是否有子系统标识")
     @TableField(exist = false)
     private Integer pIsHaveSystem;
-
+    @TableField(exist = false)
+    String deviceComposeCode;
     @TableField(exist = false)
     String text;
 }

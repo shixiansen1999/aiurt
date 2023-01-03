@@ -263,16 +263,14 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
 
 
     /**
-     * 应急预案台账导出数据
-     *
-     * @param request
+     * 应急预案导出数据
      * @param response
-     * @param emergencyPlanDto
+     * @param id
      */
     @AutoLog(value = "应急预案-应急预案台账导出数据")
-    @GetMapping(value = "/exportXls")
-    public void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanDTO emergencyPlanDto) {
-        emergencyPlanService.exportXls(request, response, emergencyPlanDto);
+    @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
+    public void exportXls(HttpServletResponse response, @RequestParam(name="id",required=true) String id) {
+        emergencyPlanService.exportXls(response, id);
     }
 
     /**
@@ -282,19 +280,7 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
     @ApiOperation(value = "下载导入模板", notes = "下载导入模板")
     @RequestMapping(value = "/exportTemplateXls", method = RequestMethod.GET)
     public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
-        //获取输入流，原始模板位置
-        ClassPathResource classPathResource = new ClassPathResource("templates/InspectionSty.xls");
-        InputStream bis = classPathResource.getInputStream();
-        //设置发送到客户端的响应的内容类型
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment;filename=" + "应急预案导入模板.xlsx");
-        BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
-        int len = 0;
-        while ((len = bis.read()) != -1) {
-            out.write(len);
-            out.flush();
-        }
-        out.close();
+        emergencyPlanService.exportTemplateXls(response,request);
     }
 
     /**

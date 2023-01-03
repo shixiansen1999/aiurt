@@ -12,5 +12,5 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
  */
 public interface IEmergencyMaterialsInvoicesItemService extends IService<EmergencyMaterialsInvoicesItem> {
 
-    Page<EmergencyMaterialsInvoicesItem> getPatrolRecord(Page<EmergencyMaterialsInvoicesItem> pageList,String materialsCode,String startTime, String endTime,String  standardCode);
+    Page<EmergencyMaterialsInvoicesItem> getPatrolRecord(Page<EmergencyMaterialsInvoicesItem> pageList,String materialsCode,String startTime, String endTime,String standardCode);
 }

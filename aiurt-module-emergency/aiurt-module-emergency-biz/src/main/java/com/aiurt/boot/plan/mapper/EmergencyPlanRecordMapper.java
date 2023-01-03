@@ -2,6 +2,8 @@ package com.aiurt.boot.plan.mapper;
 
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.EmergencyPlanRecord;
+import com.aiurt.boot.plan.vo.EmergencyPlanExportExcelVO;
+import com.aiurt.boot.plan.vo.EmergencyPlanRecordExportExcelVO;
 import com.aiurt.boot.plan.vo.EmergencyPlanRecordVO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRecordDTO;
 import com.aiurt.boot.rehearsal.vo.EmergencyImplementationRecordVO;
@@ -35,4 +37,11 @@ public interface EmergencyPlanRecordMapper extends BaseMapper<EmergencyPlanRecor
      * @return
      */
     List<EmergencyPlanRecordExcelDTO> selectListNoPage(@Param("condition") EmergencyPlanRecordDTO emergencyPlanRecordDto);
+
+    /**
+     * 根据id查询预案启动记录
+     * @param id
+     * @return
+     */
+    EmergencyPlanRecordExportExcelVO queryById(String id);
 }

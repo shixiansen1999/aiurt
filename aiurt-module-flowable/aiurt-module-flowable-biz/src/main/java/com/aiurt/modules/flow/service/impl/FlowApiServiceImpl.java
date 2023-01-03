@@ -38,7 +38,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
@@ -68,6 +67,7 @@ import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -498,6 +498,11 @@ public class FlowApiServiceImpl implements FlowApiService {
             if (StrUtil.isNotBlank(flowTaskExt.getOperationListJson()) && this.isAssigneeOrCandidate(task)){
                 String operationListJson = flowTaskExt.getOperationListJson();
                 List<ActOperationEntity> objectList = JSON.parseArray(operationListJson, ActOperationEntity.class);
+                // 过滤，只有驳回后才能取消
+                boolean back = flowElementUtil.isBackToFirstTask(processDefinitionId, task.getTaskDefinitionKey(), processInstanceId);
+                if (!back) {
+                    objectList = objectList.stream().filter(entity-> !StrUtil.equalsIgnoreCase(entity.getType(), FlowApprovalType.CANCEL)).collect(Collectors.toList());
+                }
                 // 排序
                 objectList.stream().forEach(entity-> {
                     Integer o = entity.getShowOrder();
@@ -1682,7 +1687,8 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
 
             if (Objects.nonNull(userByName)) {
-                historicTaskInfo.setAssigne(userByName.getRealname());
+                SysDepartModel depart = sysBaseAPI.getDepartByOrgCode(userByName.getOrgCode());
+                historicTaskInfo.setAssigne(userByName.getRealname()+"(所属部门-"+depart.getDepartName()+")");
                 historicTaskInfo.setAssignName(userByName.getUsername());
             } else {
                 if (StrUtil.isBlank(entity.getAssignee()) && Objects.isNull(entity.getEndTime())) {

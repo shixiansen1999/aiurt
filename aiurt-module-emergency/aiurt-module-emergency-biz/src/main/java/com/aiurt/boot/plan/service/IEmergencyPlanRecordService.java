@@ -9,11 +9,13 @@ import com.aiurt.boot.plan.vo.EmergencyPlanRecordVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDeptUserModel;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -77,9 +79,24 @@ public interface IEmergencyPlanRecordService extends IService<EmergencyPlanRecor
 
     /**
      * 应急预案启动记录导出数据
+     * @param response
+     * @param id
+     */
+    void exportXls( HttpServletResponse response, String id);
+    /**
+     * 应急预案启动记录导入模板下载
+     * @param response
+     * @param request
+     * @throws IOException
+     */
+    void exportTemplateXls(HttpServletResponse response,HttpServletRequest request) throws IOException;
+
+    /**
+     * 应急预案启动记录导入数据
      * @param request
      * @param response
-     * @param emergencyPlanRecordDto
+     * @return
      */
-    void exportXls(HttpServletRequest request, HttpServletResponse response, EmergencyPlanRecordDTO emergencyPlanRecordDto);
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
+
 }

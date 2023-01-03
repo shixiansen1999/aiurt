@@ -1,6 +1,10 @@
 package com.aiurt.boot.team.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -18,8 +22,12 @@ import com.aiurt.boot.team.service.IEmergencyCrewService;
 import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.aiurt.boot.team.vo.EmergencyTrainingRecordVO;
+import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.MinioUtil;
 import com.aiurt.common.util.TimeUtil;
 import com.aiurt.common.util.XlsUtil;
+import com.aiurt.modules.basic.entity.SysAttachment;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -27,6 +35,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.RegionUtil;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -34,6 +47,7 @@ import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,10 +55,11 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @Description: emergency_training_record
@@ -54,7 +69,10 @@ import java.util.stream.Collectors;
  */
 @Service
 public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTrainingRecordMapper, EmergencyTrainingRecord> implements IEmergencyTrainingRecordService {
-
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
+    @Value("${jeecg.path.errorExcelUpload}")
+    private String errorExcelUpload;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
     @Autowired
@@ -75,6 +93,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
     private EmergencyTeamServiceImpl emergencyTeamService;
     @Autowired
     private IEmergencyCrewService emergencyCrewService;
+
 
     @Override
     public IPage<EmergencyTrainingRecordVO> queryPageList(EmergencyTrainingRecordDTO emergencyTrainingRecordDTO, Integer pageNo, Integer pageSize) {
@@ -149,18 +168,21 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             emergencyTrainingProcessRecordService.save(emergencyTrainingProcessRecord);
         }
         List<EmergencyTrainingRecordAtt> attList = emergencyTrainingRecord.getAttList();
-        for (EmergencyTrainingRecordAtt emergencyTrainingRecordAtt : attList) {
-            emergencyTrainingRecordAtt.setEmergencyTrainingRecordId(id);
-            String size = emergencyTrainingRecordAtt.getSize();
-            String type = emergencyTrainingRecordAtt.getType();
-            BigDecimal bigDecimal = new BigDecimal(size);
-            BigDecimal divide = bigDecimal.divide(new BigDecimal(1048576));
-            int i = divide.compareTo(new BigDecimal(20));
-            if (i > 0 || !"doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar".contains(type)) {
-                return Result.error("文件大小超过限制或者文件格式不对");
+        if (CollUtil.isNotEmpty(attList)) {
+            for (EmergencyTrainingRecordAtt emergencyTrainingRecordAtt : attList) {
+                emergencyTrainingRecordAtt.setEmergencyTrainingRecordId(id);
+                String size = emergencyTrainingRecordAtt.getSize();
+                String type = emergencyTrainingRecordAtt.getType();
+                BigDecimal bigDecimal = new BigDecimal(size);
+                BigDecimal divide = bigDecimal.divide(new BigDecimal(1048576));
+                int i = divide.compareTo(new BigDecimal(20));
+                if (i > 0 || !"doc/docx/xls/xlsx/ppt/pptx/jpeg/pdf/zip/rar".contains(type)) {
+                    return Result.error("文件大小超过限制或者文件格式不对");
+                }
+                emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
             }
-            emergencyTrainingRecordAttService.save(emergencyTrainingRecordAtt);
         }
+
         if (TeamConstant.SUBMITTED.equals(emergencyTrainingRecord.getStatus())) {
             //如果是提交，判断是否所有内容填写完整
             if (CollUtil.isEmpty(emergencyTrainingRecord.getCrewList()) || CollUtil.isEmpty(emergencyTrainingRecord.getProcessRecordList()) ||CollUtil.isEmpty(emergencyTrainingRecord.getAttList())) {
@@ -291,6 +313,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
@@ -330,11 +353,96 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
 
             errorLines = checkTeam(recordModel, errorLines);
 
+            if (errorLines > 0) {
+                //存在错误，导出错误清单
+                return getErrorExcel(errorLines, errorMessage, recordModel, successLines, null, type);
+            }
 
-
-
+            //校验通过，添加数据
+            EmergencyTrainingRecord emergencyTrainingRecord = new EmergencyTrainingRecord();
+            emergencyTrainingRecord.setStatus(TeamConstant.To_BE_SUBMITTED);
+            BeanUtil.copyProperties(recordModel, emergencyTrainingRecord);
+            List<EmergencyTrainingProcessRecord> processRecordList = new ArrayList<>();
+            for (ProcessRecordModel processRecordModel : recordModel.getProcessRecordModelList()) {
+                EmergencyTrainingProcessRecord processRecord = new EmergencyTrainingProcessRecord();
+                processRecord.setNextDay(1);
+                BeanUtil.copyProperties(processRecordModel, processRecord);
+                processRecordList.add(processRecord);
+            }
+            emergencyTrainingRecord.setProcessRecordList(processRecordList);
+            this.add(emergencyTrainingRecord);
+            return Result.ok("文件导入成功！");
         }
-        return Result.ok();
+        return Result.ok("文件导入失败！");
+    }
+
+
+    private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, RecordModel recordModel, int successLines,String url, String type) {
+        try {
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTrainingRecordError.xlsx");
+            Map<String, Object> errorMap = new HashMap<String, Object>();
+            List<Map<String, String>> mapList = new ArrayList<>();
+            List<Map<String, String>> mistakeMapList = new ArrayList<>();
+            Map<String, String> map = new HashMap<>();
+            Map<String, String> mistakeMap = new HashMap<>();
+            errorMap.put("trainingTime", recordModel.getTrainingTime());
+            errorMap.put("position", recordModel.getPosition());
+            errorMap.put("emergencyTeam", recordModel.getEmergencyTeam());
+            errorMap.put("trainees", recordModel.getTrainees());
+            errorMap.put("emergencyTrainingProgram", recordModel.getEmergencyTrainingProgram());
+            errorMap.put("trainingProgramCode", recordModel.getTrainingProgramCode());
+            errorMap.put("trainingAppraise", recordModel.getTrainingAppraise());
+            errorMap.put("mistake", recordModel.getMistake());
+
+            List<ProcessRecordModel> processRecordModelList = recordModel.getProcessRecordModelList();
+            if (CollUtil.isNotEmpty(processRecordModelList)) {
+                for (ProcessRecordModel processRecordModel : processRecordModelList) {
+                    map.put("sort", processRecordModel.getSort());
+                    map.put("trainingTime", processRecordModel.getTrainingTime());
+                    map.put("trainingContent", processRecordModel.getTrainingContent());
+                    mistakeMap.put("mistake", processRecordModel.getMistake());
+                }
+                mapList.add(map);
+                mistakeMapList.add(mistakeMap);
+            }
+
+            errorMap.put("maplist", mapList);
+            errorMap.put("mistakeMapList", mistakeMapList);
+
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            sheetsMap.put(0, errorMap);
+            Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+            //处理合并单元格
+            int size = processRecordModelList.size();
+            Sheet sheet = workbook.getSheetAt(0);
+            CellRangeAddress region = new CellRangeAddress(6,6+size,1,1);
+            //合并
+            sheet.addMergedRegion(region);
+            //合并后设置下边框
+            RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
+            RegionUtil.setBorderLeft(BorderStyle.THIN, region, sheet);
+            RegionUtil.setBorderTop(BorderStyle.THIN, region, sheet);
+            RegionUtil.setBorderRight(BorderStyle.THIN, region, sheet);
+            for (int j = 0 ;j < size; j++) {
+                CellRangeAddress cellAddresses = new CellRangeAddress(7+j,7+j,4,9);
+                //合并
+                sheet.addMergedRegion(cellAddresses);
+                //合并后设置下边框
+                RegionUtil.setBorderBottom(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderLeft(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderTop(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderRight(BorderStyle.THIN, cellAddresses, sheet);
+            }
+
+            String fileName = "应急队伍训练记录导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
+            FileOutputStream out = new FileOutputStream(errorExcelUpload+ File.separator+fileName);
+            url = fileName;
+            workbook.write(out);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,url);
     }
 
     private int checkTeam(RecordModel recordModel, int  errorLines ) {
@@ -393,30 +501,34 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             if (list.size() > 3) {
                 stringBuilder.append("训练地点格式不对，");
             }
-            String lineCode = null;
-            String stationCode = null;
-            for (int i = 0; i < list.size(); i++) {
-                if (i == 0) {
-                    JSONObject lineByName = iSysBaseAPI.getLineByName(list.get(0));
-                    if (ObjectUtil.isEmpty(lineByName)) {
-                        stringBuilder.append("训练地点中线路不存在，");
-                    } else {
-                        lineCode = lineByName.getString("lineCode");
-                    }
+            if (list.size() == 3) {
+                JSONObject lineByName = iSysBaseAPI.getLineByName(list.get(0));
+                JSONObject stationByName = iSysBaseAPI.getStationByName(list.get(1));
+                String lineCode = lineByName.getString("lineCode");
+                String  stationCode = stationByName.getString("stationCode");
+                JSONObject positionByName = iSysBaseAPI.getPositionByName(list.get(2),lineCode,stationCode);
+                if (ObjectUtil.isEmpty(positionByName)) {
+                    stringBuilder.append("训练地点中位置不存在，");
+                }else {
+                    recordModel.setPositionCode(positionByName.getString("positionCode"));
                 }
-                if (i == 1) {
-                    JSONObject stationByName = iSysBaseAPI.getStationByName(list.get(1));
-                    if (ObjectUtil.isEmpty(stationByName)) {
-                        stringBuilder.append("训练地点中站点不存在，");
-                    } else {
-                        stationCode = stationByName.getString("stationCode");
-                    }
+            }
+            if (list.size() == 2) {
+                JSONObject stationByName = iSysBaseAPI.getStationByName(list.get(1));
+                if (ObjectUtil.isEmpty(stationByName)) {
+                    stringBuilder.append("训练地点中站点不存在，");
+                } else {
+                    String stationCode = stationByName.getString("stationCode");
+                    recordModel.setStationCode(stationCode);
                 }
-                if (i == 2) {
-                    JSONObject positionByName = iSysBaseAPI.getPositionByName(list.get(2),lineCode,stationCode);
-                    if (ObjectUtil.isEmpty(positionByName)) {
-                        stringBuilder.append("训练地点中线路不存在，");
-                    }
+            }
+            if (list.size() == 1) {
+                JSONObject lineByName = iSysBaseAPI.getLineByName(list.get(0));
+                if (ObjectUtil.isEmpty(lineByName)) {
+                    stringBuilder.append("训练地点中线路不存在，");
+                } else {
+                    String lineCode = lineByName.getString("lineCode");
+                    recordModel.setLineCode(lineCode);
                 }
             }
         } else {
@@ -435,17 +547,25 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                     wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
                     wrapper.eq(EmergencyCrew::getEmergencyTeamId, one.getId());
                     List<EmergencyCrew> emergencyCrews = emergencyCrewService.getBaseMapper().selectList(wrapper);
-                    List<String> realNames = new ArrayList<>();
+                    HashMap<String, String> map = new HashMap<>(emergencyCrews.size());
                     for (EmergencyCrew emergencyCrew : emergencyCrews) {
                         LoginUser userById = iSysBaseAPI.getUserById(emergencyCrew.getUserId());
-                        realNames.add(userById.getRealname());
+                        map.put(userById.getRealname(), userById.getId());
                     }
                     List<String> list = StrUtil.splitTrim(trainees, ",");
+                    List<EmergencyTrainingRecordCrew> emergencyTrainingRecordCrews = new ArrayList<>();
                     for (String s : list) {
-                        if (!realNames.contains(s)) {
-                            stringBuilder.append("应急队伍不存在" + s+"该人员,");
+                        String id = map.get(s);
+                        if (StrUtil.isEmpty(id)) {
+                            stringBuilder.append("应急队伍不存在" + s + "该人员,");
+                        } else {
+                            EmergencyTrainingRecordCrew emergencyTrainingRecordCrew = new EmergencyTrainingRecordCrew();
+                            emergencyTrainingRecordCrew.setEmergencyCrewId(id);
+                            emergencyTrainingRecordCrews.add(emergencyTrainingRecordCrew);
                         }
                     }
+                    recordModel.setTraineesNum(list.size());
+                    recordModel.setCrewList(emergencyTrainingRecordCrews);
                 }
             } else {
                 stringBuilder.append("应急队伍不存在，");
@@ -464,12 +584,12 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
 
         List<ProcessRecordModel> processRecordModelList = recordModel.getProcessRecordModelList();
         if (CollUtil.isNotEmpty(processRecordModelList)) {
-            StringBuilder stringBuilder1 = new StringBuilder();
             for (ProcessRecordModel processRecordModel : processRecordModelList) {
+                StringBuilder stringBuilder1 = new StringBuilder();
                 String trainingTime1 = processRecordModel.getTrainingTime();
                 String trainingContent = processRecordModel.getTrainingContent();
                 if (StrUtil.isNotEmpty(trainingTime1)) {
-                    boolean legalDate = TimeUtil.isLegalDate(trainingTime1.length(), trainingTime1, "HH::mm");
+                    boolean legalDate = TimeUtil.isLegalDate(trainingTime1.length(), trainingTime1, "HH:mm");
                     if (!legalDate) {
                         stringBuilder1.append("时间格式不对，");
                     }
@@ -479,7 +599,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 }
                 if (stringBuilder1.length() > 0) {
                     // 截取字符
-                    stringBuilder1 = stringBuilder1.deleteCharAt(stringBuilder.length() - 1);
+                    stringBuilder1 = stringBuilder1.deleteCharAt(stringBuilder1.length() - 1);
                     processRecordModel.setMistake(stringBuilder1.toString());
                     errorLines++;
                 }
@@ -514,5 +634,171 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             errorLines++;
         }
         return errorLines;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void exportXls(HttpServletResponse response, String id) {
+        EmergencyTrainingRecordVO emergencyTrainingRecordVO = emergencyTrainingRecordMapper.queryById(id);
+        String lineCode = emergencyTrainingRecordVO.getLineCode();
+        String stationCode = emergencyTrainingRecordVO.getStationCode();
+        String positionCode = emergencyTrainingRecordVO.getPositionCode();
+        String position = null;
+        if (StrUtil.isNotEmpty(lineCode)) {
+            String lineName = iSysBaseAPI.getPosition(lineCode);
+            position = lineName;
+        }
+        if (StrUtil.isNotEmpty(stationCode)) {
+            String stationName = iSysBaseAPI.getPosition(stationCode);
+            position = position + "/" + stationName;
+        }
+        if (StrUtil.isNotEmpty(positionCode)) {
+            String positionName = iSysBaseAPI.getPosition(positionCode);
+            position = position + "/" + positionName;
+        }
+
+        List<EmergencyCrewVO> trainingCrews = emergencyTrainingRecordMapper.getTrainingCrews(id);
+
+        List<String> collects = trainingCrews.stream().map(EmergencyCrewVO::getRealname).collect(Collectors.toList());
+        String trainees = CollUtil.join(collects, ",");
+
+        LambdaQueryWrapper<EmergencyTrainingRecordAtt> attQueryWrapper = new LambdaQueryWrapper<>();
+        attQueryWrapper.eq(EmergencyTrainingRecordAtt::getDelFlag, TeamConstant.DEL_FLAG0);
+        attQueryWrapper.eq(EmergencyTrainingRecordAtt::getEmergencyTrainingRecordId, emergencyTrainingRecordVO.getId());
+        List<EmergencyTrainingRecordAtt> recordAtts = emergencyTrainingRecordAttService.getBaseMapper().selectList(attQueryWrapper);
+
+
+        LambdaQueryWrapper<EmergencyTrainingProcessRecord> processRecordQueryWrapper = new LambdaQueryWrapper<>();
+        processRecordQueryWrapper.eq(EmergencyTrainingProcessRecord::getDelFlag, TeamConstant.DEL_FLAG0);
+        processRecordQueryWrapper.eq(EmergencyTrainingProcessRecord::getEmergencyTrainingRecordId, emergencyTrainingRecordVO.getId());
+        List<EmergencyTrainingProcessRecord> processRecords = emergencyTrainingProcessRecordService.getBaseMapper().selectList(processRecordQueryWrapper);
+
+        try {
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTrainingRecordXls.xlsx");
+            Map<String, Object> errorMap = new HashMap<String, Object>();
+            List<Map<String, String>> mapList = new ArrayList<>();
+            errorMap.put("trainingTime", DateUtil.format(emergencyTrainingRecordVO.getTrainingTime(),"yyyy-MM-dd"));
+            errorMap.put("position", position);
+            errorMap.put("emergencyTeam", emergencyTrainingRecordVO.getEmergencyTeamname());
+            errorMap.put("trainees", trainees);
+            errorMap.put("emergencyTrainingProgram", emergencyTrainingRecordVO.getTrainingProgramName());
+            errorMap.put("trainingProgramCode", emergencyTrainingRecordVO.getTrainingProgramCode());
+            errorMap.put("trainingAppraise", emergencyTrainingRecordVO.getTrainingAppraise());
+
+            if (CollUtil.isNotEmpty(processRecords)) {
+                for (int i = 0; i < processRecords.size(); i++) {
+                    Map<String, String> map = new HashMap<>();
+                    EmergencyTrainingProcessRecord processRecord = processRecords.get(i);
+                    map.put("sort", Convert.toStr(i));
+                    map.put("trainingTime", DateUtil.format(processRecord.getTrainingTime(),"HH:mm"));
+                    map.put("trainingContent", processRecord.getTrainingContent());
+                    mapList.add(map);
+                }
+            }
+
+            errorMap.put("maplist", mapList);
+
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            sheetsMap.put(0, errorMap);
+            Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+            //处理合并单元格
+            int size = processRecords.size();
+            Sheet sheet = workbook.getSheetAt(0);
+            CellRangeAddress region = new CellRangeAddress(6,6+size,1,1);
+            //合并
+            sheet.addMergedRegion(region);
+            //合并后设置下边框
+            RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
+            RegionUtil.setBorderLeft(BorderStyle.THIN, region, sheet);
+            RegionUtil.setBorderTop(BorderStyle.THIN, region, sheet);
+            RegionUtil.setBorderRight(BorderStyle.THIN, region, sheet);
+            for (int j = 0 ;j < size; j++) {
+                CellRangeAddress cellAddresses = new CellRangeAddress(7+j,7+j,4,9);
+                //合并
+                sheet.addMergedRegion(cellAddresses);
+                //合并后设置下边框
+                RegionUtil.setBorderBottom(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderLeft(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderTop(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderRight(BorderStyle.THIN, cellAddresses, sheet);
+            }
+
+            //打包成压缩包导出
+            String fileName = "应急队伍训练记录.zip";
+            response.setContentType("application/zip");
+            response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(fileName, "UTF-8"));
+            OutputStream outputStream = response.getOutputStream();
+            // 压缩输出流,包装流,将临时文件输出流包装成压缩流,将所有文件输出到这里,打成zip包
+            ZipOutputStream zipOut = new ZipOutputStream(outputStream);
+
+            for (EmergencyTrainingRecordAtt recordAtt : recordAtts) {
+                String attName = null;
+                String filePath = null;
+                String path = recordAtt.getPath();
+                filePath = StrUtil.subBefore(path, "?", false);
+
+                filePath = filePath.replace("..", "").replace("../", "");
+                if (filePath.endsWith(SymbolConstant.COMMA)) {
+                    filePath = filePath.substring(0, filePath.length() - 1);
+                }
+
+                SysAttachment sysAttachment = iSysBaseAPI.getFilePath(filePath);
+                InputStream inputStream = null;
+
+                if (Objects.isNull(sysAttachment)) {
+                    File file = new File(filePath);
+                    if (!file.exists()) {
+                        throw new AiurtBootException("文件不存在..");
+                    }
+                    if (StrUtil.isBlank(recordAtt.getName())) {
+                        attName = file.getName();
+                    } else {
+                        attName = recordAtt.getName();
+                    }
+                    inputStream = new BufferedInputStream(new FileInputStream(filePath));
+
+                    XlsUtil.outZip(inputStream,attName,zipOut);
+                    //关闭流
+                    inputStream.close();
+
+                }else {
+                    if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
+                        inputStream = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
+                    }else {
+                        String imgPath = upLoadPath + File.separator + sysAttachment.getFilePath();
+                        File file = new File(imgPath);
+                        if (!file.exists()) {
+                            response.setStatus(404);
+                            throw new RuntimeException("文件[" + imgPath + "]不存在..");
+                        }
+                        inputStream = new BufferedInputStream(new FileInputStream(imgPath));
+                    }
+                    XlsUtil.outZip(inputStream,sysAttachment.getFileName(),zipOut);
+                    //关闭流
+                    inputStream.close();
+                }
+
+            }
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            workbook.write(bos);
+            byte[] barray = bos.toByteArray();
+            InputStream is = new ByteArrayInputStream(barray);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(is);
+            String file = "应急队伍训练记录.xlsx";
+            XlsUtil.outZip(bufferedInputStream,file,zipOut);
+            //关闭流
+            is.close();
+            bufferedInputStream.close();
+
+            zipOut.flush();
+            // 压缩完成后,关闭压缩流
+            zipOut.close();
+
+            outputStream.flush();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

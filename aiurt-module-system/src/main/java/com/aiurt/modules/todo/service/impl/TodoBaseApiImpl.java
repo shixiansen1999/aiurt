@@ -35,8 +35,8 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
     @Override
     public void createBbmnTodoTask(BpmnTodoDTO bpmnTodoDTO) {
         SysTodoList sysTodoList = new SysTodoList();
-        sysTodoList.setTaskType(TodoTaskTypeEnum.BPMN.getType());
         BeanUtil.copyProperties(bpmnTodoDTO, sysTodoList, "");
+        sysTodoList.setTaskType(TodoTaskTypeEnum.BPMN.getType());
         doCreateTodoTask(sysTodoList);
     }
 
@@ -48,24 +48,14 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
     }
 
     @Override
-    public void updateTodoTaskState(String todoId, String businessKey, String username, String todoType) {
+    public void updateTodoTaskState(String businessType, String businessKey, String username, String todoType) {
         boolean update = false;
-        if (StrUtil.isNotEmpty(todoId)) {
-            SysTodoList sysTodoList = sysTodoListService.getById(todoId);
-            if (ObjectUtil.isEmpty(sysTodoList)) {
-                log.error("未查询到相关待办任务信息");
-                return;
-            }
-            sysTodoList.setTodoType(todoType);
-            sysTodoList.setActualUserName(username);
-            update = sysTodoListService.updateById(sysTodoList);
-        }
-
         if (StrUtil.isNotEmpty(businessKey)) {
             LambdaUpdateWrapper<SysTodoList> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.set(SysTodoList::getTodoType, todoType)
                     .set(SysTodoList::getActualUserName, username)
-                    .eq(SysTodoList::getBusinessKey, businessKey);
+                    .eq(SysTodoList::getBusinessKey, businessKey)
+                    .eq(SysTodoList::getBusinessType, businessType);
             update = sysTodoListService.update(updateWrapper);
         }
 

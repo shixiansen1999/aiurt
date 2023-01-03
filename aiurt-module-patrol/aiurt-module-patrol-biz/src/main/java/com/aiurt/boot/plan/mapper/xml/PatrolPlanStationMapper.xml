@@ -12,4 +12,10 @@
             and pps.plan_code=#{planCode}
         </if>
     </select>
+
+    <select id="getPlanCodeByUserStation" resultType="java.lang.String">
+        select distinct plan_code
+        from patrol_plan_station
+        where del_flag = 0
+    </select>
 </mapper>

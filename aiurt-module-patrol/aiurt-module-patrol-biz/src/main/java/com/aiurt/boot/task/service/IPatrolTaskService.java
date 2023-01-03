@@ -6,6 +6,7 @@ import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 import java.util.List;
 
@@ -181,4 +182,14 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
     PatrolTaskDTO getDetail(String id);
 
     void sendMessageApp(PatrolTaskAppointSaveDTO patrolAccompanyList);
+
+    /**
+     * app巡检任务-审核
+     * @param id
+     * @param status
+     * @param remark
+     * @param backReason
+     * @return
+     */
+    Result<String> patrolTaskAudit(String id, Integer status, String remark, String backReason);
 }

@@ -6,7 +6,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.service.impl.PatrolStandardItemsServiceImpl;
-import com.aiurt.common.api.dto.StartBpmnDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.aspect.UrlMatchEnum;
@@ -23,7 +22,6 @@ import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
-import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
@@ -1540,17 +1538,17 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getPosition(String code) {
         String name = null;
-        String lineName = csStationMapper.getLineName(code);
-        String stationName = csStationMapper.getStationName(code);
-        String positionName = csStationMapper.getPositionName(code);
-        if (ObjectUtil.isNotEmpty(lineName)) {
-            name = lineName;
+        CsLine line = csStationMapper.getLineName(code);
+        CsStation station = csStationMapper.getStationName(code);
+        CsStationPosition position = csStationMapper.getPositionName(code);
+        if (ObjectUtil.isNotEmpty(line)) {
+            name = line.getLineName();
         }
-        if (ObjectUtil.isNotEmpty(stationName)) {
-            name = stationName;
+        if (ObjectUtil.isNotEmpty(station)) {
+            name = station.getStationName();
         }
-        if (ObjectUtil.isNotEmpty(positionName)) {
-            name = positionName;
+        if (ObjectUtil.isNotEmpty(position)) {
+            name = position.getPositionName();
         }
         return name;
     }
@@ -2092,17 +2090,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return "";
     }
 
-    @Override
-    public void startAndTakeFirst(StartBpmnDTO startBpmnDTO) {
-        com.aiurt.modules.flow.dto.StartBpmnDTO bpmnDTO = new com.aiurt.modules.flow.dto.StartBpmnDTO();
-        bpmnDTO.setModelKey(startBpmnDTO.getModelKey());
-        bpmnDTO.setBusData(startBpmnDTO.getBusData());
-        FlowTaskCompleteCommentDTO completeCommentDTO = new FlowTaskCompleteCommentDTO();
-        BeanUtils.copyProperties(startBpmnDTO.getFlowTaskCompleteDTO(), completeCommentDTO);
-        bpmnDTO.setFlowTaskCompleteDTO(completeCommentDTO);
-//        flowApiService.start(bpmnDTO);
-        flowApiService.startAndTakeFirst(bpmnDTO);
-    }
 
 
     @Override
@@ -2150,6 +2137,38 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         List<String> result = userMapper.getUserNameByOrgCodeAndRoleCode(orgCode, roleCode);
         return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
+    }
+
+    @Override
+    public List<CsWorkAreaModel> getWorkAreaByCode(String stationCode) {
+        List<WorkArea> workAreas = workAreaMapper.selectWorkAreaList(stationCode);
+        List<CsWorkAreaModel> csWorkAreaModels = new ArrayList<>();
+        if (CollUtil.isNotEmpty(workAreas)) {
+            for (WorkArea workArea : workAreas) {
+                CsWorkAreaModel csWorkAreaModel = new CsWorkAreaModel();
+                BeanUtils.copyProperties(workArea, csWorkAreaModel);
+                csWorkAreaModels.add(csWorkAreaModel);
+            }
+        }
+        return csWorkAreaModels;
+    }
+
+    @Override
+    public JSONObject getPositionMessage(String code) {
+        String json = null;
+        CsLine line = csStationMapper.getLineName(code);
+        CsStation station = csStationMapper.getStationName(code);
+        CsStationPosition position = csStationMapper.getPositionName(code);
+        if (ObjectUtil.isNotEmpty(line)) {
+            json = JSONObject.toJSONString(line);
+        }
+        if (ObjectUtil.isNotEmpty(station)) {
+            json = JSONObject.toJSONString(station);
+        }
+        if (ObjectUtil.isNotEmpty(position)) {
+            json = JSONObject.toJSONString(position);
+        }
+        return JSONObject.parseObject(json);
     }
 
 
@@ -2206,6 +2225,17 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<LoginUser> getUserByRealName(String realName, String workNo) {
         return userMapper.getUserByRealName(realName, workNo);
+    }
+
+
+    @Override
+    public SysAttachment getFilePath(String filePath) {
+        SysAttachment sysAttachment = sysAttachmentService.getById(filePath);
+        if (Objects.isNull(sysAttachment)) {
+            return null;
+        }
+        return sysAttachment;
+
     }
 
 

@@ -123,7 +123,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         }
         List<String> orgCodes = list1.stream().map(s -> s.getOrgCode()).collect(Collectors.toList());
         List<String> majorCodes = list2.stream().map(s -> s.getMajorCode()).collect(Collectors.toList());
-        IPage<InspectionStrategyDTO> list = baseMapper.selectPageList(page, inspectionStrategyDTO, orgCodes, majorCodes);
+        IPage<InspectionStrategyDTO> list = baseMapper.selectPageList(page, inspectionStrategyDTO, orgCodes, majorCodes,sysUser.getUsername());
 
         if (ObjectUtil.isNotEmpty(list)) {
             List<InspectionStrategyDTO> records = list.getRecords();
