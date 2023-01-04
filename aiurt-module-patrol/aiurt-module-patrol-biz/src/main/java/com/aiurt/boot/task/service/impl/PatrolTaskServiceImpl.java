@@ -206,6 +206,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int taskAppoint(PatrolAppointInfoDTO patrolAppointInfoDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
         // 用户信息数据
         Map<String, List<PatrolAppointUserDTO>> map = Optional.ofNullable(patrolAppointInfoDTO.getMap()).orElseGet(ConcurrentHashMap::new);
         AtomicInteger count = new AtomicInteger();
@@ -268,6 +270,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     task.setEndTime(patrolAppointInfoDTO.getEndTime());
                     // 任务状态
                     task.setStatus(PatrolConstant.TASK_CONFIRM);
+                    // 记录指派人
+                    task.setAssignId(loginUser.getId());
                     // 更改任务状态为待确认
                     patrolTaskMapper.update(task, taskWrapper);
                     count.getAndIncrement();
@@ -354,6 +358,26 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         isTodoBaseAPI.createTodoTask(todoDTO);
     }
 
+    /**
+     * 任务审核不通过发送消息给巡视人
+     *
+     * @param id
+     */
+    private void sendAuditNoPassMessage(String id, LoginUser loginUser) {
+        PatrolTask patrolTask = this.getById(id);
+        QueryWrapper<PatrolTaskUser> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(wrapper);
+        if (CollectionUtil.isEmpty(taskUsers)) {
+            return;
+        }
+        String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
+        List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+        String userName = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+        sysBaseApi.sendBusAnnouncement(new BusMessageDTO(loginUser.getUsername(), userName, "巡视任务", "您有一条巡视任务审核未通过，请重新提交审核！",
+                CommonConstant.MSG_CATEGORY_2, SysAnnmentTypeEnum.PATROL_AUDIT.getType(), id));
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<String> patrolTaskAudit(String id, Integer status, String remark, String backReason) {
@@ -366,6 +390,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (PatrolConstant.AUDIT_NOPASS.equals(status)) {
             queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_BACK).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
             this.update(queryWrapper);
+            // 审核不通过则给任务的巡视人发送消息
+            this.sendAuditNoPassMessage(id, loginUser);
             return Result.OK("不通过");
         } else {
             queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_COMPLETE).set(PatrolTask::getAuditorRemark, remark).set(PatrolTask::getAuditorTime, new Date()).eq(PatrolTask::getId, id);
@@ -580,6 +606,18 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     .set(PatrolTask::getBackReason, patrolTaskDTO.getBackReason())
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
+            // 发送消息给指派人，使得指派人重新指派任务
+            if (PatrolConstant.TASK_COMMON.equals(patrolTask.getSource()) || PatrolConstant.TASK_MANUAL.equals(patrolTask.getSource())) {
+                String assignId = patrolTask.getAssignId();
+                if (StrUtil.isNotEmpty(assignId)) {
+                    LoginUser user = sysBaseApi.getUserById(assignId);
+                    sysBaseApi.sendBusAnnouncement(new BusMessageDTO(sysUser.getUsername(), user.getUsername(), "巡视任务", "您指派的任务有用户退回，需要您重新指派！",
+                            CommonConstant.MSG_CATEGORY_2, SysAnnmentTypeEnum.PATROL_ASSIGN.getType(), patrolTask.getId()));
+                    // 同时需要更新待执行任务为已办
+                    isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_EXECUTE.getType(), patrolTask.getId(), sysUser.getId(), CommonTodoStatus.DONE_STATUS_1);
+
+                }
+            }
         }
     }
 
@@ -755,13 +793,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             }
             patrolTask.setRejectReason(auditReason);
             patrolTask.setStatus(PatrolConstant.TASK_BACK);
+            // 任务审核不通过发送消息给巡视人
+            this.sendAuditNoPassMessage(patrolTask.getId(), loginUser);
         } else {
             patrolTask.setStatus(PatrolConstant.TASK_COMPLETE);
             patrolTask.setAuditorRemark(remark);
             patrolTask.setAuditorTime(new Date());
         }
         int updateById = patrolTaskMapper.updateById(patrolTask);
-        // 任务有一个人审核则更新待办消息
+        // 任务有一个人审核后则更新待办消息为已办
         isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_AUDIT.getType(), patrolTask.getId(), loginUser.getUsername(), CommonTodoStatus.DONE_STATUS_1);
         return updateById;
     }
