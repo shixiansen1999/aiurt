@@ -2066,14 +2066,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public boolean isNullSafetyPrecautions(String majorCode, String systemCode,String code, Integer status) {
-        LambdaQueryWrapper<CsSafetyAttention> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CsSafetyAttention::getDelFlag, CommonConstant.DEL_FLAG_0);
-        queryWrapper.eq(CsSafetyAttention::getState, 1);
-        queryWrapper.eq(CsSafetyAttention::getMajorCode, majorCode);
-        if (ObjectUtil.isNotEmpty(systemCode)) {
-            queryWrapper.eq(CsSafetyAttention::getSystemCode, systemCode);
-        }
-        List<CsSafetyAttention> list = csSafetyAttentionMapper.selectList(queryWrapper);
+        List<CsSafetyAttention> csSafetyAttentions = new ArrayList<>();
         LambdaQueryWrapper<SafetyRelatedForm> wrapper = new LambdaQueryWrapper<>();
         if(0==status){
             wrapper.eq(SafetyRelatedForm::getPatrolStandardCode,code);
@@ -2082,7 +2075,25 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             wrapper.eq(SafetyRelatedForm::getInspectionCode,code);
         }
         List<SafetyRelatedForm> safetyRelatedForms = safetyRelatedFormMapper.selectList(wrapper);
-        if (CollUtil.isNotEmpty(list) && CollUtil.isNotEmpty(safetyRelatedForms)) {
+        //判断是否修改过关联表
+        if (CollectionUtil.isNotEmpty(safetyRelatedForms)){
+            //如果修改 查询已经保存的数据
+            wrapper.eq(SafetyRelatedForm::getDelFlag,0);
+            List<SafetyRelatedForm> list = safetyRelatedFormMapper.selectList(wrapper);
+            List<String> str = list.stream().map(l-> l.getSafetyAttentionId()).collect(Collectors.toList());
+            csSafetyAttentions = csSafetyAttentionMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>().in(CsSafetyAttention::getId,str));
+        }else {
+            //没有修改按照专业子系统查询
+            LambdaQueryWrapper<CsSafetyAttention> wrapper1 = new LambdaQueryWrapper<CsSafetyAttention>();
+            wrapper1.eq(CsSafetyAttention::getMajorCode,majorCode);
+            if (StrUtil.isNotEmpty(systemCode)){
+                wrapper1.eq(CsSafetyAttention::getSystemCode,systemCode);
+            }
+            //需要查询启动和未删除
+            wrapper1.eq(CsSafetyAttention::getState,1).eq(CsSafetyAttention::getDelFlag,0);
+            csSafetyAttentions = csSafetyAttentionMapper.selectList(wrapper1);
+        }
+        if (CollUtil.isNotEmpty(csSafetyAttentions)) {
             return true;
         } else {
             return false;
