@@ -150,12 +150,6 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		 if(ObjectUtil.isNotEmpty(csSafetyAttention.getState())){
 		 	queryWrapper.eq("state",csSafetyAttention.getState());
 		 }
-		 if (StrUtil.isNotEmpty(csSafetyAttention.getSafetyAttentionIds())&& csSafetyAttention.getIsFirst() == 1){
-		 	queryWrapper.lambda().in(CsSafetyAttention::getId,Arrays.asList(csSafetyAttention.getSafetyAttentionIds().split(",")));
-		 }
-		 if (StrUtil.isEmpty(csSafetyAttention.getSafetyAttentionIds())&& csSafetyAttention.getIsFirst() == 1){
-			 return Result.OK(new Page<CsSafetyAttention>().setRecords(new ArrayList<>()));
-		 }
 		 queryWrapper.orderByDesc("create_time");
 		 Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);
 		 IPage<CsSafetyAttention> pageList = csSafetyAttentionService.page(page, queryWrapper);
