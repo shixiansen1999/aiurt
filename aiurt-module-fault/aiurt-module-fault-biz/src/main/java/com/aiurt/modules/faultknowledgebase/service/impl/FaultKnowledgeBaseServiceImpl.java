@@ -1,7 +1,13 @@
 package com.aiurt.modules.faultknowledgebase.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.api.CommonAPI;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
@@ -14,20 +20,32 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -158,6 +176,94 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             }
         }
         return  Result.OK("批量删除成功!");
+    }
+
+    @Override
+    public void exportTemplateXls(HttpServletResponse response) throws IOException {
+        //获取输入流，原始模板位置
+        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/knowledgeBase.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+
+        //2.获取临时文件
+        File fileTemp= new File("/templates/knowledgeBase.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+        Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+
+        CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+        //知识库类别下拉框
+        List<DictModel> dictModels = bean.queryTableDictItemsByCode("fault_knowledge_base_type", "name", "code");
+        Map<String, DictModel> collect = dictModels.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
+        List<DictModel> collect1 = collect.values().stream().collect(Collectors.toList());
+        selectList(workbook, "知识库类别", 0, 0, collect1);
+
+        //设备类型下拉框
+        List<DictModel> dictModels1 = bean.queryTableDictItemsByCode("device_Type", "name", "code");
+        Map<String, DictModel> collect2 = dictModels1.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
+        List<DictModel> collect3 = collect2.values().stream().collect(Collectors.toList());
+        selectList(workbook, "设备类型", 1, 1, collect3);
+
+        //设备组件下拉框
+        List<DictModel> dictModels2 = bean.queryTableDictItemsByCode("device_assembly", "material_name", "material_code");
+        Map<String, DictModel> collect4 = dictModels2.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
+        List<DictModel> collect5 = collect4.values().stream().collect(Collectors.toList());
+        selectList(workbook, "设备组件", 2, 2, collect5);
+
+        String fileName = "故障知识库导入模板.xlsx";
+
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename="+"故障知识库导入模板.xlsx");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //下拉框
+    private void selectList(Workbook workbook,String name,int firstCol, int lastCol,List<DictModel> modelList){
+        Sheet sheet = workbook.getSheetAt(0);
+        if (CollectionUtil.isNotEmpty(modelList)) {
+            //将新建的sheet页隐藏掉, 下拉值太多，需要创建隐藏页面
+            int sheetTotal = workbook.getNumberOfSheets();
+            String hiddenSheetName = name + "_hiddenSheet";
+            List<String> collect = modelList.stream().map(DictModel::getText).collect(Collectors.toList());
+            Sheet hiddenSheet = workbook.getSheet(hiddenSheetName);
+            if (hiddenSheet == null) {
+                hiddenSheet = workbook.createSheet(hiddenSheetName);
+                //写入下拉数据到新的sheet页中
+                for (int i = 0; i < collect.size(); i++) {
+                    Row hiddenRow = hiddenSheet.createRow(i);
+                    Cell hiddenCell = hiddenRow.createCell(0);
+                    hiddenCell.setCellValue(collect.get(i));
+                }
+                workbook.setSheetHidden(sheetTotal, true);
+            }
+
+            // 下拉数据
+            CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3, 65535, firstCol, lastCol);
+            //  生成下拉框内容名称
+            String strFormula = hiddenSheetName + "!$A$1:$A$65535";
+            // 根据隐藏页面创建下拉列表
+            XSSFDataValidationConstraint constraint = new XSSFDataValidationConstraint(DataValidationConstraint.ValidationType.LIST, strFormula);
+            XSSFDataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) hiddenSheet);
+            DataValidation validation = dvHelper.createValidation(constraint, cellRangeAddressList);
+            //  对sheet页生效
+            sheet.addValidationData(validation);
+        }
+
     }
 
     public boolean getRole() {

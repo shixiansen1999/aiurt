@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -49,4 +51,12 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
     Result<String> delete(String id);
 
     Result<String> deleteBatch(List<String> ids);
+
+
+    /**
+     * 故障知识库模板下载
+     * @param response
+     * @throws IOException
+     */
+    void exportTemplateXls(HttpServletResponse response) throws IOException;
 }

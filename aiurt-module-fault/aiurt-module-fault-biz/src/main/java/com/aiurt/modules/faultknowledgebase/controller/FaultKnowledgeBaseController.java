@@ -454,6 +454,6 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库导入模板下载", notes="故障知识库导入模板下载")
 	@RequestMapping(value = "/exportTemplateXls")
 	public void  exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
-		XlsUtil.getExcel(response, "templates/knowledgeBase.xlsx", "故障知识库导入模板.xlsx");
+		faultKnowledgeBaseService.exportTemplateXls(response);
 	}
  }
