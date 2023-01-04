@@ -1,9 +1,11 @@
 package com.aiurt.modules.faultknowledgebase.controller;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.ExportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
@@ -12,6 +14,7 @@ import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
+import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
@@ -41,7 +44,6 @@ import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -242,7 +244,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@AutoLog(value = "故障知识库-导出excel", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识库-导出excel", notes="故障知识库-导出excel")
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request,FaultKnowledgeBase faultKnowledgeBase) {
+    public void exportXls(HttpServletRequest request, HttpServletResponse response, FaultKnowledgeBase faultKnowledgeBase) {
 		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(1, Integer.MAX_VALUE);
 		IPage<FaultKnowledgeBase> faultKnowledgeBasePage = faultKnowledgeBaseService.readAll(page, faultKnowledgeBase);
         //查询导出的数据
@@ -262,32 +264,52 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
         if (CollUtil.isNotEmpty(faultKnowledgeBaseDTOList)){
 			faultKnowledgeBaseDTOList.forEach(q->{
 				if (StrUtil.isNotBlank(q.getKnowledgeBaseTypeCode())) {
-					String s = iSysBaseAPI.translateDictFromTable("fault_knowledge_base_type", "name", "code", q.getKnowledgeBaseTypeCode());
-					q.setKnowledgeBaseTypeName(s);
+					List<DictModel> dictModels = iSysBaseAPI.queryTableDictItemsByCode("fault_knowledge_base_type", "name", "code");
+					DictModel dictModel = dictModels.stream().filter(t -> t.getValue().equals(q.getKnowledgeBaseTypeCode())).findFirst().orElse(null);
+					if (ObjectUtil.isNotEmpty(dictModel)){
+						assert dictModel != null;
+						q.setKnowledgeBaseTypeName(dictModel.getText());
+					}
+
 				}
 				if (StrUtil.isNotBlank(q.getDeviceTypeCode())){
-					String s = iSysBaseAPI.translateDictFromTable("device_Type", "name", "code", q.getDeviceTypeCode());
-					q.setDeviceTypeName(s);
+					List<DictModel> dictModels = iSysBaseAPI.queryTableDictItemsByCode("device_Type", "name", "code");
+					DictModel dictModel = dictModels.stream().filter(t -> t.getValue().equals(q.getDeviceTypeCode())).findFirst().orElse(null);
+					if (ObjectUtil.isNotEmpty(dictModel)) {
+						assert dictModel != null;
+						q.setDeviceTypeName(dictModel.getText());
+					}
 				}
 				if (StrUtil.isNotBlank(q.getMaterialCode())){
-					String s = iSysBaseAPI.translateDictFromTable("device_assembly", "material_name", "material_code", q.getMaterialCode());
-					q.setMaterialName(s);
+					List<DictModel> dictModels = iSysBaseAPI.queryTableDictItemsByCode("device_assembly", "material_name", "material_code");
+					DictModel dictModel = dictModels.stream().filter(t -> t.getValue().equals(q.getMaterialCode())).findFirst().orElse(null);
+					if (ObjectUtil.isNotEmpty(dictModel)) {
+						assert dictModel != null;
+						q.setMaterialName(dictModel.getText());
+					}
 				}
 
 			});
 		}
 
 
-		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-		//导出文件名称
-		mv.addObject(NormalExcelConstants.FILE_NAME, "故障知识库导出");
-		//excel注解对象Class
-		mv.addObject(NormalExcelConstants.CLASS, FaultKnowledgeBaseDTO.class);
-		//自定义表格参数
-		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("故障知识库导出", "故障知识库导出"));
-		//导出数据列表
-		mv.addObject(NormalExcelConstants.DATA_LIST, faultKnowledgeBaseDTOList);
-		return mv;
+		String title = "故障知识库";
+		cn.afterturn.easypoi.excel.entity.ExportParams exportParams=new ExportParams(title + "报表", null, ExcelType.XSSF);
+		//调用ExcelExportUtil.exportExcel方法生成workbook
+		Workbook wb = ExcelExportUtil.exportExcel(exportParams, FaultKnowledgeBaseDTO.class,faultKnowledgeBaseDTOList);
+		String fileName = "故障知识库";
+		try {
+			response.setHeader("Content-Disposition",
+					"attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+			//xlsx格式设置
+			response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+			BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+			wb.write(bufferedOutPut);
+			bufferedOutPut.flush();
+			bufferedOutPut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
 
     /**
