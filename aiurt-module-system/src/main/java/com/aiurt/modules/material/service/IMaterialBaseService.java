@@ -41,4 +41,11 @@ public interface IMaterialBaseService extends IService<MaterialBase> {
      * @return
      */
     String getCodeByCc(String baseTypeCodeCc);
+
+    /**
+     * 根据code获取物资基础数据，包括已删除的
+     * @param code
+     * @return
+     */
+    MaterialBase selectByCode(String code);
 }
