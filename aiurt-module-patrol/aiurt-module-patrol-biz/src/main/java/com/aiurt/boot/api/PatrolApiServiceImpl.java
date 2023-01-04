@@ -107,7 +107,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
             List<String> userIds = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getId).collect(Collectors.toList());
             List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().in(PatrolAccompany::getUserId, userIds).select(PatrolAccompany::getTaskDeviceCode));
             //获取当前部门人员的单号，已提交
-            List<String> taskDeviceCodes = Optional.ofNullable(accompanyList).orElse(Collections.emptyList()).stream().map(PatrolAccompany::getTaskDeviceCode).collect(Collectors.toList());
+            List<String> taskDeviceCodes = Optional.ofNullable(accompanyList).orElse(Collections.emptyList()).stream().map(PatrolAccompany::getTaskDeviceCode).distinct().collect(Collectors.toList());
             for (String accompanyCode : taskDeviceCodes) {
                 List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getTodaySubmit(startTime,endTime, null, accompanyCode);
                 if (ObjectUtil.isNotEmpty(devices)) {
@@ -119,7 +119,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
             StringBuilder code = new StringBuilder();
             //获取这个任务下的工单所对应的站点
             if (CollUtil.isNotEmpty(taskDeviceList)) {
-                for (PatrolTaskDevice patrolTaskDevice : taskDeviceList) {
+                List<PatrolTaskDevice> collect = taskDeviceList.stream().distinct().collect(Collectors.toList());
+                for (PatrolTaskDevice patrolTaskDevice : collect) {
                     String lineName = iSysBaseAPI.getPosition(patrolTaskDevice.getLineCode());
                     String positionName = iSysBaseAPI.getPosition(patrolTaskDevice.getPositionCode());
                     LoginUser userById = iSysBaseAPI.getUserById(patrolTaskDevice.getUserId());
@@ -135,7 +136,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
             }
             if (code.length() > 1) {
                 // 截取字符
-                code = content.deleteCharAt(code.length() - 1);
+                code = code.deleteCharAt(code.length() - 1);
                 map.put("code", code.toString());
             }
         }

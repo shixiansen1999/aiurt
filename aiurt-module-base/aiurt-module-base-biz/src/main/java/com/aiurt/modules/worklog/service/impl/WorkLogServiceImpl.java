@@ -438,14 +438,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             String format2 = DateUtil.format(logTime, "yyyy-MM-dd");
             Week week = DateUtil.dayOfWeekEnum(DateUtil.date());
             record.setTime(format + week.toChinese());
-            //获取是早班会17.30 还是晚班会9.30
+            //获取是早班会16.30 还是晚班会8.30
             String am = format2+" " + morningTime;
             String pm = format2+" " + nightTime;
             if (record.getSubmitTime().after(DateUtil.parse(am)) && record.getSubmitTime().before(DateUtil.parse(pm))) {
-                record.setClassTime("17时30分");
+                record.setClassTime("16时30分");
                 record.setClassName("晚班会");
             } else {
-                record.setClassTime("9时30分");
+                record.setClassTime("8时30分");
                 record.setClassName("早班会");
             }
             LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -903,28 +903,35 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     public Map getTodayJobContent(String nowday) {
 
         Date date = DateUtil.date();
+        //如果选择的时间是过去，则截取今天的时分秒和过去时间的年月日合并作为时间点
+        String ymd = DateUtil.format(date, "yyyy-MM-dd");
+        String hms = DateUtil.format(date, "HH:mm:ss");
+
         DateTime startTime;
         DateTime endTime;
         if (StrUtil.isEmpty(nowday)) {
             nowday = DateUtil.today();
         }
+        if (!ymd.equals(nowday)) {
+            String oldDay = nowday + " " + hms;
+            date = DateUtil.parse(oldDay, "yyyy-MM-dd HH:mm:ss");
+        }
 
-        //获取是晚班会17.30 还是早班会9.30
-        String am = nowday+" 09:29:59";
-        String pm = nowday+" 17:30:00";
-
+        //获取是晚班会16.30 还是早班会8.30
+        String am = nowday+" " + morningTime;
+        String pm = nowday+" " + nightTime;
         //昨天时间
         DateTime lastDay = DateUtil.offsetDay(date, -1);
         String lastPM = DateUtil.format(lastDay, "yyyy-MM-dd")+ " 17:30:00";
 
         if (date.after(DateUtil.parse(am)) && date.before(DateUtil.parse(pm))) {
+            //白班
+            startTime = DateUtil.parse(nowday+" 08:30:00");
+            endTime = DateUtil.parse(nowday+" 16:29:59");
+        } else {
             //晚班
             startTime = DateUtil.parse(lastPM);
             endTime = DateUtil.parse(am);
-        } else {
-            //早班
-            startTime = DateUtil.parse(nowday+" 09:30:00");
-            endTime = DateUtil.parse(nowday+" 17:29:59");
         }
 
         HashMap<String, String> map = new HashMap<>(16);
@@ -958,14 +965,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         String format2 = DateUtil.format(logTime, "yyyy-MM-dd");
         Week week = DateUtil.dayOfWeekEnum(DateUtil.parse(format2));
         workLog.setTime(format + week.toChinese());
-        //获取是早班会17.30 还是晚班会9.30
+        //获取是早班会16.30 还是晚班会8.30
         String am = format2+" "+ morningTime;
         String pm = format2+" "+ nightTime;
         if (workLog.getSubmitTime().after(DateUtil.parse(am)) && workLog.getSubmitTime().before(DateUtil.parse(pm))) {
-            workLog.setClassTime("17时30分");
+            workLog.setClassTime("16时30分");
             workLog.setClassName("晚班会");
         } else {
-            workLog.setClassTime("9时30分");
+            workLog.setClassTime("8时30分");
             workLog.setClassName("早班会");
         }
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();

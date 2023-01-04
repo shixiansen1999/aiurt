@@ -2101,7 +2101,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             if (code.length() > 1) {
                 // 截取字符
-                code = content.deleteCharAt(code.length() - 1);
+                code = code.deleteCharAt(code.length() - 1);
                 map.put("code", code.toString());
             }
 
