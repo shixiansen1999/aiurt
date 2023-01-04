@@ -94,6 +94,10 @@ public class CsPositionWifiController extends BaseController<CsPositionWifi, ICs
 			if (count > 0){
 				return Result.error("wifi名称不能重复");
 			}
+			final int MacCount = (int) csPositionWifiService.count(new LambdaQueryWrapper<CsPositionWifi>().eq(CsPositionWifi::getMac, csPositionWifi.getMac()).eq(CsPositionWifi::getDelFlag, 0).last("limit 1"));
+			if (MacCount > 0){
+				return Result.error("Mac地址不能重复");
+			}
 			csPositionWifiService.save(csPositionWifi);
 			result.success("添加成功！");
 		} catch (Exception e) {
