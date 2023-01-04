@@ -108,7 +108,7 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 			return page;
 		}
 
-		if (ObjectUtil.isNotNull(param.getTypeId())){
+		if (param.getTypeId() != null){
 			long l = len - total;
 			long l1 = l % param.getPageSize() > 0 ? (l / param.getPageSize()) + 1 : l / param.getPageSize();
 			long size = l > 10 ? 10 : l;
@@ -133,7 +133,7 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 			page.setRecords(list);
 		}
 
-		if (ObjectUtil.isNotNull(param.getFileName())){
+		if (StrUtil.isNotBlank(param.getFileName())){
 			long l = len - total;
 			long l1 = l % param.getPageSize() > 0 ? (l / param.getPageSize()) + 1 : l / param.getPageSize();
 			long size = l > 10 ? 10 : l;
