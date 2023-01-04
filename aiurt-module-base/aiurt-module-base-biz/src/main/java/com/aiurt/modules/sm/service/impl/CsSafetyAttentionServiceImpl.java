@@ -1,23 +1,22 @@
 package com.aiurt.modules.sm.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.ImportExcelUtil;
-
 import com.aiurt.modules.sm.entity.CsSafetyAttention;
-import com.aiurt.modules.sm.entity.CsSafetyAttentionType;
+import com.aiurt.modules.sm.entity.SafetyRelatedForm;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
-import com.aiurt.modules.sm.mapper.CsSafetyAttentionTypeMapper;
+import com.aiurt.modules.sm.mapper.SafetyRelatedFormMapper;
 import com.aiurt.modules.sm.service.ICsSafetyAttentionService;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
-
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
-import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
@@ -30,13 +29,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -57,7 +53,9 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
     @Autowired
-    private CsSafetyAttentionTypeMapper csSafetyAttentionTypeMapper;
+    private SafetyRelatedFormMapper safetyRelatedFormMapper;
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
     @Override
     public ModelAndView exportXls(HttpServletRequest request, String ids) {
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
@@ -232,4 +230,41 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
             successLines += (listMaterial.size() - errorLines);
             return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs);
         }
+    @Override
+    public List<CsSafetyAttention> isFirstByCode(String code, Integer status, String majorCode, String systemCode) {
+        List<CsSafetyAttention> csSafetyAttentions = new ArrayList<>();
+        LambdaQueryWrapper<SafetyRelatedForm> wrapper = new LambdaQueryWrapper<>();
+        if(0==status){
+            wrapper.eq(SafetyRelatedForm::getPatrolStandardCode,code);
+        }
+        if (1==status){
+            wrapper.eq(SafetyRelatedForm::getInspectionCode,code);
+        }
+        List<SafetyRelatedForm> safetyRelatedForms = safetyRelatedFormMapper.selectList(wrapper);
+        //判断是否修改过关联表
+        if (CollectionUtil.isNotEmpty(safetyRelatedForms)){
+            //如果修改 查询已经保存的数据
+            wrapper.eq(SafetyRelatedForm::getDelFlag,0);
+            List<SafetyRelatedForm> list = safetyRelatedFormMapper.selectList(wrapper);
+            List<String> str = list.stream().map(l-> l.getSafetyAttentionId()).collect(Collectors.toList());
+            csSafetyAttentions = baseMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>().in(CsSafetyAttention::getId,str));
+        }else {
+            //没有修改按照专业子系统查询
+            LambdaQueryWrapper<CsSafetyAttention> wrapper1 = new LambdaQueryWrapper<CsSafetyAttention>();
+            wrapper1.eq(CsSafetyAttention::getMajorCode,majorCode);
+            if (StrUtil.isNotEmpty(systemCode)){
+                wrapper1.eq(CsSafetyAttention::getSystemCode,systemCode);
+            }
+            //需要查询启动和未删除
+            wrapper1.eq(CsSafetyAttention::getState,1).eq(CsSafetyAttention::getDelFlag,0);
+            csSafetyAttentions = baseMapper.selectList(wrapper1);
+        }
+        csSafetyAttentions.forEach(c->{
+            JSONObject major = sysBaseAPI.getCsMajorByCode(c.getMajorCode());
+            c.setMajorName(major != null ? major.getString("majorName") : null);
+            String systemName = baseMapper.getSystemName(c.getMajorCode(),c.getSystemCode());
+            c.setSystemName(systemName);
+        });
+        return csSafetyAttentions;
+    }
 }

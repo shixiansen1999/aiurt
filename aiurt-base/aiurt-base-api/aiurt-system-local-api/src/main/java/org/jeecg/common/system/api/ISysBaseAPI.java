@@ -722,7 +722,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @param systemCode
      * @return
      */
-   boolean isNullSafetyPrecautions(String majorCode,String systemCode);
+   boolean isNullSafetyPrecautions(String majorCode,String systemCode,String code,Integer status);
 
     /**
      * 根据线路编码获取线路id

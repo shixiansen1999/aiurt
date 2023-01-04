@@ -116,6 +116,9 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "巡检标准表Id", width = 15)
     @ApiModelProperty(value = "巡检标准表Id")
     private java.lang.String standardId;
+    @Excel(name = "巡检标准表Id", width = 15)
+    @ApiModelProperty(value = "巡检标准表Id")
+    private java.lang.String standardCode;
     /**与设备类型相关：0否 1 是*/
     @Excel(name = "与设备类型相关：0否 1 是", width = 15)
     @ApiModelProperty(value = "与设备类型相关：0否 1 是")

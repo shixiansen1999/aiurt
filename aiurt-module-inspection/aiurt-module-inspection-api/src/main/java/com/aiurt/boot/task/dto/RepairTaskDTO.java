@@ -87,6 +87,11 @@ public class RepairTaskDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "检修任务标准id")
     private String standardId;
+    /**检修任务标准id*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修任务标准code")
+    private String standardCode;
+
 
     /**检修结果id*/
     @TableField(exist = false)

@@ -38,7 +38,9 @@ import com.aiurt.modules.position.mapper.CsStationPositionMapper;
 import com.aiurt.modules.quartz.entity.QuartzJob;
 import com.aiurt.modules.quartz.service.IQuartzJobService;
 import com.aiurt.modules.sm.entity.CsSafetyAttention;
+import com.aiurt.modules.sm.entity.SafetyRelatedForm;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
+import com.aiurt.modules.sm.mapper.SafetyRelatedFormMapper;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.aiurt.modules.system.entity.*;
@@ -195,6 +197,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Autowired
     private FaultRepairRecordMapper faultRepairRecordMapper;
+    @Autowired
+    private SafetyRelatedFormMapper safetyRelatedFormMapper;
 
     @Autowired
     @Lazy
@@ -2061,7 +2065,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public boolean isNullSafetyPrecautions(String majorCode, String systemCode) {
+    public boolean isNullSafetyPrecautions(String majorCode, String systemCode,String code, Integer status) {
         LambdaQueryWrapper<CsSafetyAttention> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CsSafetyAttention::getDelFlag, CommonConstant.DEL_FLAG_0);
         queryWrapper.eq(CsSafetyAttention::getState, 1);
@@ -2070,7 +2074,15 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             queryWrapper.eq(CsSafetyAttention::getSystemCode, systemCode);
         }
         List<CsSafetyAttention> list = csSafetyAttentionMapper.selectList(queryWrapper);
-        if (CollUtil.isNotEmpty(list)) {
+        LambdaQueryWrapper<SafetyRelatedForm> wrapper = new LambdaQueryWrapper<>();
+        if(0==status){
+            wrapper.eq(SafetyRelatedForm::getPatrolStandardCode,code);
+        }
+        if (1==status){
+            wrapper.eq(SafetyRelatedForm::getInspectionCode,code);
+        }
+        List<SafetyRelatedForm> safetyRelatedForms = safetyRelatedFormMapper.selectList(wrapper);
+        if (CollUtil.isNotEmpty(list) && CollUtil.isNotEmpty(safetyRelatedForms)) {
             return true;
         } else {
             return false;

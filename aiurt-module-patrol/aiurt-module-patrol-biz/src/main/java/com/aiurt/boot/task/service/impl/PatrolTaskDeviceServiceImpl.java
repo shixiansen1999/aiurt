@@ -166,7 +166,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             e.setProfessionCode(taskStandardName.getProfessionCode());
             e.setTaskStandardName(taskStandardName.getName());
             e.setDeviceType(taskStandardName.getDeviceType());
-            boolean nullSafetyPrecautions = sysBaseApi.isNullSafetyPrecautions(e.getProfessionCode(), e.getSubsystemCode());
+            e.setStandardCode(taskStandardName.getCode());
+            boolean nullSafetyPrecautions = sysBaseApi.isNullSafetyPrecautions(e.getProfessionCode(), e.getSubsystemCode(),taskStandardName.getCode(),0);
             e.setIsNullSafetyPrecautions(nullSafetyPrecautions);
             List<PatrolAccessoryDTO> patrolAccessoryDTOList = new ArrayList<>();
             patrolAccessoryDTOList.addAll(patrolAccessoryMapper.getCheckAllAccessory(e.getId()));
@@ -541,7 +542,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             e.setProfessionCode(taskStandardName.getProfessionCode());
             e.setTaskStandardName(taskStandardName.getName());
             e.setDeviceType(taskStandardName.getDeviceType());
-            boolean nullSafetyPrecautions = sysBaseApi.isNullSafetyPrecautions(e.getProfessionCode(), e.getSubsystemCode());
+            e.setStandardCode(taskStandardName.getCode());
+            boolean nullSafetyPrecautions = sysBaseApi.isNullSafetyPrecautions(e.getProfessionCode(), e.getSubsystemCode(),taskStandardName.getCode(),0);
             e.setIsNullSafetyPrecautions(nullSafetyPrecautions);
             List<PatrolAccessoryDTO> patrolAccessoryDTOList = new ArrayList<>();
             patrolAccessoryDTOList.addAll(patrolAccessoryMapper.getCheckAllAccessory(e.getId()));

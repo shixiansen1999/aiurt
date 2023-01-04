@@ -1,12 +1,11 @@
 package com.aiurt.modules.sm.mapper;
 
-import java.util.List;
-
-
-import org.apache.ibatis.annotations.Param;
 import com.aiurt.modules.sm.entity.CsSafetyAttention;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.CsUserMajorModel;
+
+import java.util.List;
 
 /**
  * @Description: 安全事项
@@ -37,4 +36,12 @@ public interface CsSafetyAttentionMapper extends BaseMapper<CsSafetyAttention> {
      * @return
      */
     List<String> selectSystemCodes(@Param("majorCode")List<String>majorCode);
+
+    /**
+     * 查询子系统名称
+     * @param majorCode
+     * @param systemCode
+     * @return
+     */
+    String getSystemName(@Param("majorCode")String majorCode, @Param("systemCode")String systemCode);
 }

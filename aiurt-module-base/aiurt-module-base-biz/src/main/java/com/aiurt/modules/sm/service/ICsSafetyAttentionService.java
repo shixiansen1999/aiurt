@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @Description: 安全事项
@@ -31,4 +32,14 @@ public interface ICsSafetyAttentionService extends IService<CsSafetyAttention> {
      * @return
      */
     Result importExcelMaterial(MultipartFile file, ImportParams params) throws Exception;
+
+    /**
+     * 根据code查询不同数据
+     * @param code
+     * @param status
+     * @param majorCode
+     * @param systemCode
+     * @return
+     */
+    List<CsSafetyAttention> isFirstByCode(String code, Integer status, String majorCode, String systemCode);
 }

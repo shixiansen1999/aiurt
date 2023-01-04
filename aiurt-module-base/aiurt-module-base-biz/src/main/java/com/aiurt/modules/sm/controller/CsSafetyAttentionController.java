@@ -140,7 +140,6 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 														   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 														   HttpServletRequest req) {
 		 QueryWrapper<CsSafetyAttention> queryWrapper = new QueryWrapper<>();
-		 queryWrapper.orderByDesc("create_time");
 		 queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
 		 if(ObjectUtil.isNotEmpty(csSafetyAttention.getMajorCode())){
 		 	queryWrapper.eq("major_code",csSafetyAttention.getMajorCode());
@@ -151,9 +150,49 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		 if(ObjectUtil.isNotEmpty(csSafetyAttention.getState())){
 		 	queryWrapper.eq("state",csSafetyAttention.getState());
 		 }
+		 if (StrUtil.isNotEmpty(csSafetyAttention.getSafetyAttentionIds())&& csSafetyAttention.getIsFirst() == 1){
+		 	queryWrapper.lambda().in(CsSafetyAttention::getId,Arrays.asList(csSafetyAttention.getSafetyAttentionIds().split(",")));
+		 }
+		 if (StrUtil.isEmpty(csSafetyAttention.getSafetyAttentionIds())&& csSafetyAttention.getIsFirst() == 1){
+			 return Result.OK(new Page<CsSafetyAttention>().setRecords(new ArrayList<>()));
+		 }
+		 queryWrapper.orderByDesc("create_time");
 		 Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);
 		 IPage<CsSafetyAttention> pageList = csSafetyAttentionService.page(page, queryWrapper);
 		 return Result.OK(pageList);
+	 }
+	 /**
+	  *
+	  * @param
+	  * @return
+	  */
+	 @AutoLog(value = "根据巡检或者检修code查询数据")
+	 @ApiOperation(value="根据巡检或者检修code查询数据", notes="根据巡检或者检修code查询数据")
+	 @GetMapping (value = "/isFirstByCode")
+	 public Result<List<CsSafetyAttention>> isFirstByCode (@RequestParam(name="code",required=true) String code,
+													       @RequestParam(name = "status",required = true) Integer status,
+														   @RequestParam(name = "majorCode") String majorCode,
+														   @RequestParam(name = "systemCode",required = false)String systemCode) {
+		 List<CsSafetyAttention> pageList = csSafetyAttentionService.isFirstByCode(code,status,majorCode,systemCode);
+		 return Result.OK(pageList);
+	 }
+	 /**
+	  *
+	  * @param
+	  * @return
+	  */
+	 @AutoLog(value = "App分页根据巡检或者检修code查询数据")
+	 @ApiOperation(value="根据巡检或者检修code查询数据", notes="根据巡检或者检修code查询数据")
+	 @GetMapping (value = "/AppIsFirstByCode")
+	 public Result<Page<CsSafetyAttention>> AppIsFirstByCode (@RequestParam(name="code",required=true) String code,
+														   @RequestParam(name = "status",required = true) Integer status,
+														   @RequestParam(name = "majorCode") String majorCode,
+														   @RequestParam(name = "systemCode",required = false)String systemCode,
+														  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+														  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
+		 List<CsSafetyAttention> pageList = csSafetyAttentionService.isFirstByCode(code,status,majorCode,systemCode);
+		 Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);
+		 return Result.OK(page.setRecords(pageList));
 	 }
 	/**
 	 *   添加

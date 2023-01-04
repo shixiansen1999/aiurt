@@ -19,4 +19,9 @@
             </foreach>
         </if>
     </select>
+    <select id="getSystemName" resultType="java.lang.String">
+        select system_Name from cs_subsystem where del_flag =0
+            AND major_code =#{majorCode}
+            and system_code = #{systemCode}
+    </select>
 </mapper>
