@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.controller;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
@@ -153,6 +155,26 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件入库单列表数据", "导出人:"+user.getRealname(), "导出信息"));
 		mv.addObject(NormalExcelConstants.DATA_LIST, list);
 		return mv;
+	}
+
+	/**
+	 * 备件入库导入模板下载
+	 * @param response
+	 * @param request
+	 * @throws IOException
+	 */
+	@AutoLog(value = "备件入库导入模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "")
+	@ApiOperation(value="备件入库导入模板下载", notes="备件入库导入模板下载")
+	@RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
+	public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		sparePartInOrderService.getImportTemplate(response,request);
+	}
+
+	@AutoLog(value = "备件入库-通过excel导入数据", operateType =  6, operateTypeAlias = "通过excel导入数据", module = ModuleType.INSPECTION)
+	@ApiOperation(value="备件入库-通过excel导入数据", notes="备件入库-通过excel导入数据")
+	@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws Exception{
+		return sparePartInOrderService.importExcel(request,response);
 	}
 
 

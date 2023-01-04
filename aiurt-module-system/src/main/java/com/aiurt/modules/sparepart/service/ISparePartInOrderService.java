@@ -6,6 +6,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -36,4 +39,23 @@ public interface ISparePartInOrderService extends IService<SparePartInOrder> {
      * @return
      */
     Result<?> batchStorage(List<SparePartInOrder>  sparePartInOrder);
+
+    /**
+     * 备件入库导入模板下载
+     * @param response
+     * @param request
+     * @throws IOException
+     */
+    void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException;
+
+    /**
+     * 备件入库导入数据
+     * @param request
+     * @param response
+     * @return
+     * @throws IOException
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
+
+
 }

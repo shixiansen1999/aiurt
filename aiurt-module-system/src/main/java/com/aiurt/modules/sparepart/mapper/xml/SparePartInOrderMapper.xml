@@ -64,4 +64,27 @@
             order by spare_part_in_order.create_time desc
     </select>
 
+
+    <select id="selectWareHouseCode" resultType="java.lang.String">
+        SELECT
+        spsi.warehouse_code
+        FROM
+        spare_part_stock_info spsi
+        where
+        <if test="wareHouseName!=null">
+            spsi.warehouse_name = #{wareHouseName} limit 1
+        </if>
+    </select>
+
+    <select id="selectMaterialName" resultType="java.lang.String">
+        SELECT
+        mb.name
+        FROM
+        material_base mb
+        where
+        <if test="materialCode!=null">
+            mb.code = #{materialCode} limit 1
+        </if>
+    </select>
+
 </mapper>

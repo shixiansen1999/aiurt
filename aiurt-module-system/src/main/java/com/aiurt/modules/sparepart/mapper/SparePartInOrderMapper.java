@@ -26,4 +26,19 @@ public interface SparePartInOrderMapper extends BaseMapper<SparePartInOrder> {
      * @return
      */
     List<SparePartInOrder> readAll(Page page,@Param("order") SparePartInOrder sparePartInOrder);
+
+
+    /**
+     * 根据仓库名称查找仓库code
+     * @param wareHouseName
+     * @return
+     */
+    String selectWareHouseCode(String wareHouseName);
+
+    /**
+     * 根据物资code查找物资名称
+     * @param materialCode
+     * @return
+     */
+    String selectMaterialName(String materialCode);
 }
