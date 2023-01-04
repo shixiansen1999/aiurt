@@ -104,6 +104,11 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             list = sysBaseApi.getMajorByUserId(sysUser.getId());
         }
         List<PatrolStandardDto> page1 = patrolStandardMapper.pageLists(page, patrolStandard, patrolStandard.getStations(), list.stream().map(s -> s.getMajorCode()).collect(Collectors.toList()));
+        page1.forEach(a -> {
+            String username = baseMapper.selectUserName(a.getCreateBy());
+            a.setCreateByName(null == username ? a.getCreateBy() : username);
+            a.setNumber(baseMapper.number(a.getCode()));
+        });
         return page.setRecords(page1);
     }
 
