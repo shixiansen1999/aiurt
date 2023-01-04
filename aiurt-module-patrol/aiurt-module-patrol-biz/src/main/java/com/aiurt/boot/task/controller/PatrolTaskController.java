@@ -15,7 +15,6 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -28,7 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -333,79 +335,6 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK("任务已重新生成，生成的任务编号为[" + taskCode + "]", null);
     }
     /**
-     * 添加
-     *
-     * @param patrolTask
-     * @return
-     */
-   /* @AutoLog(value = "patrol_task-添加")
-    @ApiOperation(value = "patrol_task-添加", notes = "patrol_task-添加")
-    @PostMapping(value = "/add")
-    public Result<String> add(@RequestBody PatrolTask patrolTask) {
-        patrolTaskService.save(patrolTask);
-        return Result.OK("添加成功！");
-    }
-*/
-    /**
-     * 编辑
-     *
-     * @param patrolTask
-     * @return
-     */
-   /* @AutoLog(value = "patrol_task-编辑")
-    @ApiOperation(value = "patrol_task-编辑", notes = "patrol_task-编辑")
-    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<String> edit(@RequestBody PatrolTask patrolTask) {
-        patrolTaskService.updateById(patrolTask);
-        return Result.OK("编辑成功!");
-    }*/
-
-    /**
-     * 通过id删除
-     *
-     * @param id
-     * @return
-     */
-    /*@AutoLog(value = "patrol_task-通过id删除")
-    @ApiOperation(value = "patrol_task-通过id删除", notes = "patrol_task-通过id删除")
-    @DeleteMapping(value = "/delete")
-    public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
-        patrolTaskService.removeById(id);
-        return Result.OK("删除成功!");
-    }
-*/
-    /**
-     * 批量删除
-     *
-     * @param ids
-     * @return
-     */
-    /*@AutoLog(value = "patrol_task-批量删除")
-    @ApiOperation(value = "patrol_task-批量删除", notes = "patrol_task-批量删除")
-    @DeleteMapping(value = "/deleteBatch")
-    public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
-        this.patrolTaskService.removeByIds(Arrays.asList(ids.split(",")));
-        return Result.OK("批量删除成功!");
-    }*/
-
-    /**
-     * 通过id查询
-     *
-     * @param id
-     * @return
-     */
-    /*//@AutoLog(value = "patrol_task-通过id查询")
-    @ApiOperation(value = "patrol_task-通过id查询", notes = "patrol_task-通过id查询")
-    @GetMapping(value = "/queryById")
-    public Result<PatrolTask> queryById(@RequestParam(name = "id", required = true) String id) {
-        PatrolTask patrolTask = patrolTaskService.getById(id);
-        if (patrolTask == null) {
-            return Result.error("未找到对应数据");
-        }
-        return Result.OK(patrolTask);
-    }*/
-
-    /**
      * app-巡检任务池
      *
      * @param patrolTaskDTO
@@ -416,7 +345,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      */
     @AutoLog(value = "巡检任务表-app巡检任务池", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
     @ApiOperation(value = "巡检任务表-app巡检任务池", notes = "巡检任务表-app巡检任务池")
-    @PermissionData(pageComponent = "Inspection/pool")
+    @PermissionData(appComponent = "Inspection/pool")
     @GetMapping(value = "/patrolTaskPoolList")
     public Result<IPage<PatrolTaskDTO>> patrolTaskPoolList(PatrolTaskDTO patrolTaskDTO,
                                                            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -454,7 +383,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      */
     @AutoLog(value = "巡检任务表-app巡检任务列表", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/Inspection/list")
     @ApiOperation(value = "巡检任务表-app巡检任务列表", notes = "巡检任务表-app巡检任务列表")
-    @PermissionData(pageComponent = "Inspection/list")
+    @PermissionData(appComponent = "Inspection/list")
     @GetMapping(value = "/patrolTaskList")
     public Result<IPage<PatrolTaskDTO>> patrolTaskList(PatrolTaskDTO patrolTaskDTO,
                                                        @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -560,6 +489,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      */
     @AutoLog(value = "PC手工下放任务列表-分页列表查询", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/pollingCheck/issue")
     @ApiOperation(value = "PC手工下放任务列表", notes = "PC手工下放任务列表")
+    @PermissionData(pageComponent = "pollingCheck/issue")
     @GetMapping(value = "/patrolTaskManual")
     public Result<?> patrolTaskManual(PatrolTaskDTO patrolTaskDTO,
                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -612,27 +542,5 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         patrolTaskService.getPatrolTaskManualEdit(patrolTaskManualDTO);
         return Result.OK("编辑成功");
     }
-    /**
-     * 导出excel
-     *
-     * @param request
-     * @param patrolTask
-     */
-   /* @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, PatrolTask patrolTask) {
-        return super.exportXls(request, patrolTask, PatrolTask.class, "patrol_task");
-    }
-*/
-    /**
-     * 通过excel导入数据
-     *
-     * @param request
-     * @param response
-     * @return
-     */
-    /*@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, PatrolTask.class);
-    }*/
 
 }

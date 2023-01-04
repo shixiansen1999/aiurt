@@ -26,7 +26,7 @@
             )
         </if>
         <if test="patrolTaskDTO.taskCodes != null and patrolTaskDTO.taskCodes.size() > 0">
-            AND t1.`code` IN
+            AND t1.code IN
             <foreach collection="patrolTaskDTO.taskCodes" item="item" separator="," open="(" close=")">
                 #{item}
             </foreach>
@@ -105,6 +105,12 @@
                     )
                 </when>
             </choose>
+        </if>
+        <if test="patrolTaskDTO.taskCodes != null and patrolTaskDTO.taskCodes.size() > 0">
+            and t1.code in
+            <foreach collection="patrolTaskDTO.taskCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
         ORDER BY t1.`status` asc, t1.create_time desc
     </select>
@@ -284,7 +290,7 @@
             and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
         </if>
         <if test="patrolTaskDTO.taskCodes != null and patrolTaskDTO.taskCodes.size() > 0">
-            and t1.status in
+            and t1.code in
             <foreach collection="patrolTaskDTO.taskCodes" item="item" separator="," open="(" close=")">
                 #{item}
             </foreach>
