@@ -124,14 +124,10 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     @Transactional(rollbackFor = Exception.class)
     public IPage<EmergencyPlan> queryPageList(Page<EmergencyPlan> page, EmergencyPlanQueryDTO emergencyPlanQueryDto) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
-        List<CsUserDepartModel> deptModel = sysBaseApi.getDepartByUserId(loginUser.getId());
-        List<String> orgCodes = deptModel.stream().filter(l -> StrUtil.isNotEmpty(l.getOrgCode()))
-                .map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-        if (CollectionUtil.isEmpty(orgCodes)) {
-            return page;
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到未登录，请登录后操作！");
         }
-        IPage<EmergencyPlan> pageList = emergencyPlanMapper.queryPageList(page, emergencyPlanQueryDto, orgCodes);
+        IPage<EmergencyPlan> pageList = emergencyPlanMapper.queryPageList(page, emergencyPlanQueryDto);
         return pageList;
 
     }
@@ -140,14 +136,10 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
     @Transactional(rollbackFor = Exception.class)
     public IPage<EmergencyPlan> queryWorkToDo(Page<EmergencyPlan> page, EmergencyPlanQueryDTO emergencyPlanQueryDto) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
-        List<CsUserDepartModel> deptModel = sysBaseApi.getDepartByUserId(loginUser.getId());
-        List<String> orgCodes = deptModel.stream().filter(l -> StrUtil.isNotEmpty(l.getOrgCode()))
-                .map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-        if (CollectionUtil.isEmpty(orgCodes)) {
-            return page;
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到未登录，请登录后操作！");
         }
-        IPage<EmergencyPlan> pageList = emergencyPlanMapper.queryWorkToDo(page, emergencyPlanQueryDto, orgCodes,loginUser.getUsername());
+        IPage<EmergencyPlan> pageList = emergencyPlanMapper.queryWorkToDo(page, emergencyPlanQueryDto,loginUser.getUsername());
         return pageList;
 
     }
