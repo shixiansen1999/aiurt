@@ -57,7 +57,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = RepairTask.class)
     })
-    @PermissionData(appComponent = "Repair/TicketsList/index")
+    @PermissionData(appComponent = "Repair/TaskList/index")
     public Result<Page<RepairTask>> appRepairTaskPageList(RepairTask condition,
                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
