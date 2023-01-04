@@ -326,7 +326,9 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                             stationLambdaQueryWrapper.eq(CsStation::getStationCode, csPositionWifis.getStationCode())
                                     .eq(CsStation::getLineCode, csPositionWifis.getLineCode());
                             CsStation bdStation = csStationService.getBaseMapper().selectOne(stationLambdaQueryWrapper);
-                            assign.setStationName(bdStation.getStationName()==null ?null :bdStation.getStationName());
+                            if (Objects.nonNull(bdStation)) {
+                                assign.setStationName(bdStation.getStationName()==null ?null :bdStation.getStationName());
+                            }
                         }
                     }else if (StrUtil.isEmpty(assign.getStationName())){
                     QueryWrapper<CsStation> bdStationQueryWrapper = new QueryWrapper<>();
