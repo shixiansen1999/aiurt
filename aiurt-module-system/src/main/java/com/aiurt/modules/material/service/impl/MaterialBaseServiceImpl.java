@@ -85,6 +85,9 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 
 	@Override
 	public MaterialBase translate(MaterialBase materialBase) {
+		if (Objects.isNull(materialBase)) {
+			return materialBase;
+		}
 		//物资类型层级
 		String baseTypeCodeCc = materialBase.getBaseTypeCodeCc()==null?"":materialBase.getBaseTypeCodeCc();
 		String baseTypeCodeCcName = "";
@@ -324,4 +327,17 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 		return baseTypeCode;
 	}
 
+	/**
+	 * 根据code获取物资基础数据，包括已删除的
+	 *
+	 * @param code
+	 * @return
+	 */
+	@Override
+	public MaterialBase selectByCode(String code) {
+		if (StrUtil.isBlank(code)) {
+			return null;
+		}
+		return baseMapper.selectByCode(code);
+	}
 }

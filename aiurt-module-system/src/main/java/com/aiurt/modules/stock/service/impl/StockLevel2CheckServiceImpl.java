@@ -235,7 +235,11 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 				if(materials != null && materials.size()>0){
 					for(StockLevel2CheckDetail stockLevel2CheckDetail : materials){
 						String wzcode = stockLevel2CheckDetail.getMaterialCode()==null?"":stockLevel2CheckDetail.getMaterialCode();
-						MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",wzcode));
+						//
+						MaterialBase materialBase = materialBaseService.selectByCode(wzcode);
+						if (Objects.isNull(materialBase))  {
+							continue;
+						}
 						materialBase = materialBaseService.translate(materialBase);
 						String wztype = materialBase.getType()==null?"":materialBase.getType().toString();
 						String wztypename = sysBaseApi.translateDict("material_type",wztype);
