@@ -21,15 +21,11 @@
         <if test="condition.emergencyPlanType != null and condition.emergencyPlanType != ''">
             and ep.emergency_plan_type like concat('%', #{condition.emergencyPlanType}, '%')
         </if>
+        <if test="condition.orgCode != null and condition.orgCode != ''">
+            and ep.org_code = #{condition.orgCode}
+        </if>
         <if test="condition.status != null">
             and ep.status = #{condition.status}
-        </if>
-        <if test="orgCodes != null and orgCodes.size() > 0">
-            and
-            ep.org_code in
-            <foreach collection="orgCodes" item="item" separator="," open="(" close=")">
-                #{item}
-            </foreach>
         </if>
         order by ep.emergency_plan_status asc
     </select>
@@ -63,12 +59,8 @@
         <if test="condition.emergencyPlanType != null and condition.emergencyPlanType != ''">
             and ep.emergency_plan_type like concat('%', #{condition.emergencyPlanType}, '%')
         </if>
-        <if test="orgCodes != null and orgCodes.size() > 0">
-            and
-            ep.org_code in
-            <foreach collection="orgCodes" item="item" separator="," open="(" close=")">
-                #{item}
-            </foreach>
+        <if test="condition.orgCode != null and condition.orgCode != ''">
+            and ep.org_code = #{condition.orgCode}
         </if>
         order by ep.create_time desc
     </select>
