@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.util.JwtUtil;
@@ -761,7 +762,8 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
         Text text = new Text();
         text.setMsgtype("text");
         // 系统的用户与企业微信的用户处理-sys_third_account
-        text.setTouser(this.getTouser(message.getToUser(), message.getToAll()));
+        Boolean toAll = ObjectUtil.isNotEmpty(message.getToAll()) || Boolean.TRUE.equals(message.getToAll()) ? true : false;
+        text.setTouser(this.getTouser(message.getToUser(), toAll));
         TextEntity entity = new TextEntity();
         entity.setContent(message.getContent());
         text.setText(entity);
