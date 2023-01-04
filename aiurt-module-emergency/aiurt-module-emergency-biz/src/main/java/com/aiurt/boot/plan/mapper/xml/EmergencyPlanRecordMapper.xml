@@ -18,12 +18,8 @@
             and date_format(epr.record_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.startDate},'%Y-%m-%d')
             and date_format(epr.record_time ,'%Y-%m-%d') &lt;= date_format(#{condition.endDate},'%Y-%m-%d')
         </if>
-        <if test="orgCodes != null and orgCodes.size() > 0">
-            and
-            epr.org_code in
-            <foreach collection="orgCodes" item="item" separator="," open="(" close=")">
-                #{item}
-            </foreach>
+        <if test="condition.orgCode != null and condition.orgCode != ''">
+            and epr.org_code = #{condition.orgCode}
         </if>
        order by epr.create_time desc
     </select>

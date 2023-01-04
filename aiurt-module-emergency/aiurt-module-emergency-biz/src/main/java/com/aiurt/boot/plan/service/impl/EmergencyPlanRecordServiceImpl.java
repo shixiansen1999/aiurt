@@ -134,14 +134,10 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     public IPage<EmergencyPlanRecordVO> queryPageList(Page<EmergencyPlanRecordVO> page, EmergencyPlanRecordQueryDTO emergencyPlanRecordQueryDto) {
        // 根据当前登录人的部门权限和记录的组织部门过滤数据
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
-        List<CsUserDepartModel> deptModel = sysBaseApi.getDepartByUserId(loginUser.getId());
-        List<String> orgCodes = deptModel.stream().filter(l -> StrUtil.isNotEmpty(l.getOrgCode()))
-                .map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-        if (CollectionUtil.isEmpty(orgCodes)) {
-            return page;
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到未登录，请登录后操作！");
         }
-        IPage<EmergencyPlanRecordVO> pageList = emergencyPlanRecordMapper.queryPageList(page, emergencyPlanRecordQueryDto,orgCodes);
+        IPage<EmergencyPlanRecordVO> pageList = emergencyPlanRecordMapper.queryPageList(page, emergencyPlanRecordQueryDto);
         //启动应急预案名称
         if(CollUtil.isNotEmpty(pageList.getRecords())){
             for (EmergencyPlanRecordVO record : pageList.getRecords()) {

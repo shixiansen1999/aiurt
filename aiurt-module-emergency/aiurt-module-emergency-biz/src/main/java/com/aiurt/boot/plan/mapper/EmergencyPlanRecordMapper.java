@@ -25,11 +25,10 @@ public interface EmergencyPlanRecordMapper extends BaseMapper<EmergencyPlanRecor
      * 应急预案启动记录分页列表
      * @param page
      * @param emergencyPlanRecordQueryDTO
-     * @param orgCodes
      * @return
      */
     IPage<EmergencyPlanRecordVO> queryPageList(@Param("page") Page<EmergencyPlanRecordVO> page
-            , @Param("condition") EmergencyPlanRecordQueryDTO emergencyPlanRecordQueryDTO, @Param("orgCodes") List<String> orgCodes);
+            , @Param("condition") EmergencyPlanRecordQueryDTO emergencyPlanRecordQueryDTO);
 
     /**
      * 按条件查询应急预案
