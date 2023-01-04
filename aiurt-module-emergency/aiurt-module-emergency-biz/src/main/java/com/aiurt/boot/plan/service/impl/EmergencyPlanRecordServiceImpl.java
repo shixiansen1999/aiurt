@@ -746,7 +746,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             Integer status = emergencyPlanRecordProblemMeasures.getStatus();
             String problemContent = emergencyPlanRecordProblemMeasures.getProblemContent();
             String orgName = emergencyPlanRecordProblemMeasures.getOrgName();
-            String orgUserName = emergencyPlanRecordProblemMeasures.getOrgUserId();
+            String orgUserName = emergencyPlanRecordProblemMeasures.getOrgUserName();
             String userName = emergencyPlanRecordProblemMeasures.getUserName();
             Date resolveTime = emergencyPlanRecordProblemMeasures.getResolveTime();
             String format = DateUtil.format(resolveTime, "yyyy-MM-dd");
@@ -1304,7 +1304,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                 String orgUserId = emergencyPlanRecordProblemMeasuresImportExcelDTO.getOrgUserId();
                 String userId = emergencyPlanMapper.selectUserCode(orgUserId);
                 if(ObjectUtil.isNotEmpty(userId)){
-                    emergencyPlanRecordProblemMeasures.setOrgUserId(orgUserId);
+                    emergencyPlanRecordProblemMeasures.setOrgUserId(userId);
                 }else{
                     errorMessage.append("责任部门负责人不存在!");
                 }
