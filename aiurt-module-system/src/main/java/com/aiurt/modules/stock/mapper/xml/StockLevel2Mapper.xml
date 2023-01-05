@@ -57,6 +57,12 @@
             <if test="condition.materialName != null and condition.materialName != ''">
                 and mb.name like concat('%', #{condition.materialName}, '%')
             </if>
+            <if test="condition.minimumStock != null and condition.minimumStock == 0">
+                and stock_level2.num &lt; stock_level2.minimum_stock
+            </if>
+            <if test="condition.minimumStock != null and condition.minimumStock == 1">
+            and stock_level2.num > stock_level2.minimum_stock
+            </if>
         </where>
         order by stock_level2.create_time desc
     </select>

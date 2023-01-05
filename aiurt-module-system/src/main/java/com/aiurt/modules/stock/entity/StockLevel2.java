@@ -209,4 +209,7 @@ public class StockLevel2 extends DictEntity {
 	@ApiModelProperty(value = "物资分类查询")
 	@TableField(exist = false)
 	private String allCode;
+	@Excel(name = "最低库存值")
+	@ApiModelProperty(value = "最低库存值")
+	private Integer minimumStock;
 }

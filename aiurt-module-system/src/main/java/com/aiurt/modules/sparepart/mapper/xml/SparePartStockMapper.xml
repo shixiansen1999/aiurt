@@ -18,7 +18,8 @@
         t2.specifications,
         t7.`name` manufactorCodeName,
         d3.item_text unit,
-        t2.price
+        t2.price,
+        spare_part_stock.minimum_stock
         FROM
         spare_part_stock spare_part_stock
         LEFT JOIN spare_part_stock_info t1 ON spare_part_stock.warehouse_code = t1.warehouse_code
@@ -66,6 +67,12 @@
         </if>
         <if test="stock.num!=null and stock.num!=''">
             and spare_part_stock.num <![CDATA[ <> ]]>  0
+        </if>
+        <if test="stock.minimumStock != null and stock.minimumStock == 0">
+            and spare_part_stock.num &lt; spare_part_stock.minimum_stock
+        </if>
+        <if test="stock.minimumStock != null and stock.minimumStock == 1">
+            and spare_part_stock.num > spare_part_stock.minimum_stock
         </if>
         order by spare_part_stock.create_time desc
     </select>
