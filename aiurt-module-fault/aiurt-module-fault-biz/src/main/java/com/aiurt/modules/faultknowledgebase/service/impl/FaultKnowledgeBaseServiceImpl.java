@@ -1,26 +1,33 @@
 package com.aiurt.modules.faultknowledgebase.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.CommonAPI;
+import com.aiurt.common.util.XlsUtil;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
+import com.aiurt.modules.faultknowledgebase.dto.FaultKnowledgeBaseModel;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
+import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -33,12 +40,16 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -230,6 +241,153 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        List<String> errorMessage = new ArrayList<>();
+        int successLines = 0;
+        String tipMessage = null;
+        String url = null;
+        int errorLines = 0;
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            String type = FilenameUtils.getExtension(file.getOriginalFilename());
+            if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+                tipMessage = "导入失败，文件类型错误！";
+                return imporReturnRes(errorLines, successLines, tipMessage, false, null);
+            }
+            ImportParams params = new ImportParams();
+            params.setTitleRows(2);
+            params.setHeadRows(1);
+            params.setNeedSave(true);
+            try {
+
+                List<FaultKnowledgeBase> faultKnowledgeBaseList = new ArrayList<>();
+
+                List<FaultKnowledgeBaseModel> list = ExcelImportUtil.importExcel(file.getInputStream(), FaultKnowledgeBaseModel.class, params);
+                Iterator<FaultKnowledgeBaseModel> iterator = list.iterator();
+                while (iterator.hasNext()) {
+                    FaultKnowledgeBaseModel model = iterator.next();
+                    boolean b = XlsUtil.checkObjAllFieldsIsNull(model);
+                    if (b) {
+                        iterator.remove();
+                    }
+                }
+                if (CollUtil.isEmpty(list)) {
+                    tipMessage = "导入失败，该文件为空。";
+                    return imporReturnRes(errorLines, successLines, tipMessage, false, null);
+                }
+
+                for (FaultKnowledgeBaseModel model : list) {
+                    if (ObjectUtil.isNotEmpty(model)) {
+                        FaultKnowledgeBase em = new FaultKnowledgeBase();
+                        StringBuilder stringBuilder = new StringBuilder();
+                        //校验信息
+                        examine(model, em, stringBuilder, list);
+                        if (stringBuilder.length() > 0) {
+                            // 截取字符
+                            stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                            model.setDeviceMistake(stringBuilder.toString());
+                            errorLines++;
+                        }
+                        faultKnowledgeBaseList.add(em);
+                    }
+                }
+
+            }catch (Exception e) {
+                String msg = e.getMessage();
+                log.error(msg, e);
+                if (msg != null && msg.contains("Duplicate entry")) {
+                    return Result.error("文件导入失败:有重复数据！");
+                } else {
+                    return Result.error("文件导入失败:" + e.getMessage());
+                }
+            }finally {
+                try {
+                    file.getInputStream().close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+        return imporReturnRes(errorLines, successLines, tipMessage, true, null);
+    }
+
+
+    private void examine(FaultKnowledgeBaseModel faultKnowledgeBaseModel, FaultKnowledgeBase faultKnowledgeBase, StringBuilder stringBuilder, List<FaultKnowledgeBaseModel> list) {
+        BeanUtils.copyProperties(faultKnowledgeBaseModel, faultKnowledgeBase);
+
+        if (StrUtil.isBlank(faultKnowledgeBaseModel.getKnowledgeBaseTypeName())) {
+            stringBuilder.append("知识库类别必填，");
+        }else {
+            LambdaQueryWrapper<FaultKnowledgeBaseType> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(FaultKnowledgeBaseType::getName,faultKnowledgeBaseModel.getKnowledgeBaseTypeName())
+                              .eq(FaultKnowledgeBaseType::getDelFlag,0);
+            List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(lambdaQueryWrapper);
+            if (CollUtil.isNotEmpty(faultKnowledgeBaseTypes)){
+                List<String> collect = faultKnowledgeBaseTypes.stream().map(FaultKnowledgeBaseType::getCode).collect(Collectors.toList());
+                if (CollUtil.isNotEmpty(collect)){
+                    String s = collect.get(0);
+                    faultKnowledgeBase.setKnowledgeBaseTypeCode(s);
+                }
+            }else {
+                stringBuilder.append("系统中不存在该知识库类别，");
+            }
+        }
+
+        if (StrUtil.isBlank(faultKnowledgeBaseModel.getDeviceTypeName())){
+            stringBuilder.append("设备类型名称必填，");
+        }else {
+
+        }
+
+    }
+
+    public static Result<?> imporReturnRes(int errorLines, int successLines, String tipMessage, boolean isType, String failReportUrl) throws IOException {
+        if (isType) {
+            if (errorLines != 0) {
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", false);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                result.put("failReportUrl", failReportUrl);
+                Result res = Result.ok(result);
+                res.setMessage("文件失败，数据有错误。");
+                res.setCode(200);
+                return res;
+            } else {
+                //是否成功
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", true);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                Result res = Result.ok(result);
+                res.setMessage("文件导入成功！");
+                res.setCode(200);
+                return res;
+            }
+        } else {
+            JSONObject result = new JSONObject(5);
+            result.put("isSucceed", false);
+            result.put("errorCount", errorLines);
+            result.put("successCount", successLines);
+            int totalCount = successLines + errorLines;
+            result.put("totalCount", totalCount);
+            Result res = Result.ok(result);
+            res.setMessage(tipMessage);
+            res.setCode(200);
+            return res;
+        }
+
     }
 
     //下拉框

@@ -319,56 +319,11 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
     * @param response
     * @return
     */
-	@AutoLog(value = "故障知识库-故障知识库分页列表-通过excel导入数据", operateType =  5, operateTypeAlias = "通过excel导入数据", permissionUrl = "/fault/faultKnowledgeBaseList")
+	@AutoLog(value = "故障知识库-通过excel导入数据", operateType =  5, operateTypeAlias = "通过excel导入数据", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识库-通过excel导入数据", notes="故障知识库-通过excel导入数据")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
-		for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
-			// 获取上传文件对象
-			MultipartFile file = entity.getValue();
-			ImportParams params = new ImportParams();
-			params.setTitleRows(2);
-			params.setHeadRows(1);
-			params.setNeedSave(true);
-			try {
-				List<FaultKnowledgeBase> list = ExcelImportUtil.importExcel(file.getInputStream(), FaultKnowledgeBase.class, params);
-				for (FaultKnowledgeBase faultKnowledgeBase : list) {
-					String picture = faultKnowledgeBase.getPicture();
-					log.info("图片1："+picture);
-					if (StringUtils.isNotEmpty(picture)) {
-						File file1 = new File(picture);
-						FileInputStream inputStream = new FileInputStream(file1);
-						byte[] buffer = new byte[inputStream.available()];
-						if (inputStream.read(buffer) == -1) {
-							inputStream.close();
-						}
-						StringBuilder imageBase64 = new StringBuilder(Base64.getEncoder().encodeToString(buffer));
-						faultKnowledgeBase.setPicture(new String(imageBase64));
-						log.info("图片2："+faultKnowledgeBase.getPicture());
-					}
-				}
-				long start = System.currentTimeMillis();
-				log.info("消耗时间" + (System.currentTimeMillis() - start) + "毫秒");
-				return Result.ok("文件导入成功！数据" + list);
-			} catch (Exception e) {
-				String msg = e.getMessage();
-				log.error(msg, e);
-				if(msg!=null && msg.contains("Duplicate entry")){
-					return Result.error("文件导入失败:有重复数据！");
-				}else{
-					return Result.error("文件导入失败:" + e.getMessage());
-				}
-			} finally {
-				try {
-					file.getInputStream().close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		return Result.error("文件导入失败！");
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		return faultKnowledgeBaseService.importExcel(request,response);
 	}
 
 	 /**

@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
@@ -59,4 +60,13 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @throws IOException
      */
     void exportTemplateXls(HttpServletResponse response) throws IOException;
+
+
+    /**
+     * 通过excel导入数据
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }
