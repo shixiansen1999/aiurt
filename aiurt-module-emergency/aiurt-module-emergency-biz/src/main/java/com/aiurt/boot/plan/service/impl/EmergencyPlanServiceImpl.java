@@ -5,6 +5,7 @@ import cn.afterturn.easypoi.excel.entity.ExportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.afterturn.easypoi.util.PoiMergeCellUtil;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
@@ -40,6 +41,7 @@ import com.aiurt.modules.common.entity.UpdateStateEntity;
 import com.aiurt.modules.flow.api.FlowBaseApi;
 import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
 import com.aiurt.modules.flow.dto.StartBpmnDTO;
+import com.aiurt.modules.flow.dto.StartBpmnImportDTO;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.alibaba.excel.EasyExcel;
@@ -955,7 +957,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
 
         //成功条数
-        Integer successlines = 0;
+        Integer successLines = 0;
         // 失败条数
         Integer  errorLines = 0;
         // 标记是否有错误信息
@@ -972,7 +974,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             // 判断是否xls、xlsx两种类型的文件，不是则直接返回
             String type = FilenameUtils.getExtension(file.getOriginalFilename());
             if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-                return imporReturnRes(errorLines, false, failReportUrl,"文件导入失败，文件类型不对");
+                return imporReturnRes(errorLines,successLines, false, failReportUrl,"文件导入失败，文件类型不对");
             }
             //读取数据监听
             RecordExcelListener recordExcelListener =new RecordExcelListener();
@@ -1032,24 +1034,40 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                             emergencyPlanImportExcelDTO.setEmergencyPlanErrorReason(errorMessage.toString());
                         }
                         errorLines++;
+                    }else{
+                        successLines++;
                     }
 
             // 存在错误，错误报告下载
             if (errorLines > 0) {
                 try {
-                    return getErrorExcel(errorLines, emergencyPlanImportExcelDTO, failReportUrl, type);
+                    return getErrorExcel(errorLines,successLines, emergencyPlanImportExcelDTO, failReportUrl, type);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }else{
                 // 校验通过，保存到系统
                 if (ObjectUtil.isNotEmpty(emergencyPlanDTO)) {
-                    this.saveAndAdd(emergencyPlanDTO);
-                    return imporReturnRes(errorLines, true, failReportUrl,"文件导入成功");
+                    //插入数据库，并获取预案id
+                    String businessKey = this.startProcess(emergencyPlanDTO);
+                    //获取登录人信息
+                    LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                    String userName = loginUser.getUsername();
+                    //导入实体转换成Map
+                    Map<String, Object> busData = BeanUtil.beanToMap(emergencyPlanDTO);
+                    //创建流程实体
+                    StartBpmnImportDTO startBpmnImportDTO = new StartBpmnImportDTO();
+                    startBpmnImportDTO.setModelKey("emergency_plan");
+                    startBpmnImportDTO.setUserName(userName);
+                    startBpmnImportDTO.setBusData(busData);
+                    startBpmnImportDTO.setBusinessKey(businessKey);
+                    //导入数据走流程
+                    flowBaseApi.startBpmnWithImport(startBpmnImportDTO);
+                    return imporReturnRes(errorLines,successLines, true, failReportUrl,"文件导入成功");
                 }
             }
         }
-        return imporReturnRes(errorLines, false, failReportUrl,"暂无导入数据");
+        return imporReturnRes(errorLines,successLines,false, failReportUrl,"暂无导入数据");
     }
 
     /**
@@ -1060,10 +1078,11 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
      * @param message 提示信息
      * @return
      */
-    public static Result<?> imporReturnRes(int errorLines, boolean isSucceed, String failReportUrl,String message) {
+    public static Result<?> imporReturnRes(int errorLines,int successLines, boolean isSucceed, String failReportUrl,String message) {
         JSONObject result = new JSONObject(5);
         result.put("isSucceed", isSucceed);
         result.put("errorCount", errorLines);
+        result.put("successCount", successLines);
         result.put("failReportUrl", failReportUrl);
         Result res = Result.ok(result);
         res.setMessage(message);
@@ -1228,7 +1247,6 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                 emergencyPlanMaterialsImportExcelDTO.setErrorReason(errorMessage.toString());
                 errorSign = true;
             } else {
-
                 emergencyPlanMaterials.setMaterialsCode(emergencyPlanMaterialsImportExcelDTO.getMaterialsCode());
                 emergencyPlanMaterials.setMaterialsNumber(Integer.valueOf(emergencyPlanMaterialsImportExcelDTO.getMaterialsNumber()));
                 materialList.add(emergencyPlanMaterials);
@@ -1246,7 +1264,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
      * @return
      * @throws IOException
      */
-    private Result<?> getErrorExcel(int errorLines, EmergencyPlanImportExcelDTO emergencyPlanImportExcelDTO, String url, String type) throws IOException {
+    private Result<?> getErrorExcel(int errorLines,int successLines, EmergencyPlanImportExcelDTO emergencyPlanImportExcelDTO, String url, String type) throws IOException {
         //创建导入失败错误报告,进行模板导出
         Resource resource = new ClassPathResource("/templates/emergencyPlanError.xlsx");
         InputStream resourceAsStream = resource.getInputStream();
@@ -1278,7 +1296,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             e.printStackTrace();
         }
 
-        return imporReturnRes(errorLines, false, url,"文件导入失败，数据有错误");
+        return imporReturnRes(errorLines,successLines, false, url,"文件导入失败，数据有错误");
     }
 
     @NotNull
@@ -1329,16 +1347,4 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         return errorMap;
     }
 
-
-    /**
-     * 校验必填信息
-     *
-     * @param emergencyPlanDTO
-     */
-    private void check(EmergencyPlanDTO emergencyPlanDTO) {
-
-        if (ObjectUtil.isEmpty(emergencyPlanDTO)) {
-            throw new AiurtBootException("必填参数为空");
-        }
-    }
 }

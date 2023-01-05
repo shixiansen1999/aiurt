@@ -1006,7 +1006,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
 
         //成功条数
-        Integer successlines = 0;
+        Integer successLines = 0;
         // 失败条数
         Integer  errorLines = 0;
         // 标记是否有错误信息
@@ -1025,7 +1025,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             // 判断是否xls、xlsx两种类型的文件，不是则直接返回
             String type = FilenameUtils.getExtension(file.getOriginalFilename());
             if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-                return imporReturnRes(errorLines, false, failReportUrl,"文件导入失败，文件类型不对");
+                return imporReturnRes(errorLines,successLines, false, failReportUrl,"文件导入失败，文件类型不对");
             }
             //读取数据监听
             PlanRecordExcelListener recordExcelListener =new PlanRecordExcelListener();
@@ -1100,12 +1100,14 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                     emergencyPlanRecordImportExcelDTO.setEmergencyPlanRecordErrorReason(errorMessage.toString());
                 }
                 errorLines++;
+            }else{
+                successLines++;
             }
 
             // 存在错误，错误报告下载
             if (errorLines > 0) {
                 try {
-                    return getErrorExcel(errorLines, emergencyPlanRecordImportExcelDTO, failReportUrl, type);
+                    return getErrorExcel(errorLines,successLines, emergencyPlanRecordImportExcelDTO, failReportUrl, type);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -1113,11 +1115,11 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                 // 校验通过，保存到系统
                 if (ObjectUtil.isNotEmpty(emergencyPlanRecordDTO)) {
                     this.saveAndAdd(emergencyPlanRecordDTO);
-                    return imporReturnRes(errorLines, true, failReportUrl,"文件导入成功");
+                    return imporReturnRes(errorLines,successLines, true, failReportUrl,"文件导入成功");
                 }
             }
         }
-        return imporReturnRes(errorLines, false, failReportUrl,"暂无导入数据");
+        return imporReturnRes(errorLines,successLines, false, failReportUrl,"暂无导入数据");
     }
 
     /**
@@ -1128,10 +1130,11 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
      * @param message 提示信息
      * @return
      */
-    public static Result<?> imporReturnRes(int errorLines, boolean isSucceed, String failReportUrl,String message) {
+    public static Result<?> imporReturnRes(int errorLines,int successLines, boolean isSucceed, String failReportUrl,String message) {
         JSONObject result = new JSONObject(5);
         result.put("isSucceed", isSucceed);
         result.put("errorCount", errorLines);
+        result.put("successCount", successLines);
         result.put("failReportUrl", failReportUrl);
         Result res = Result.ok(result);
         res.setMessage(message);
@@ -1222,7 +1225,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             errorMessage.append("启动日期必须填写，");
         }else{
             String starttime = emergencyPlanRecordImportExcelDTO.getStarttime();
-            boolean legalDate = TimeUtil.isLegalDate(starttime.length(), starttime, "yyyy/MM/dd");
+            boolean legalDate = TimeUtil.isLegalDate(starttime.length(), starttime, "yyyy-MM-dd");
             if (!legalDate) {
                 errorMessage.append("启动日期格式不对，");
             }else{
@@ -1450,7 +1453,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             }
             if(ObjectUtil.isNotEmpty(emergencyPlanRecordProblemMeasuresImportExcelDTO.getResolveTime())){
                 String resolveTime = emergencyPlanRecordProblemMeasuresImportExcelDTO.getResolveTime();
-                boolean legalDate = TimeUtil.isLegalDate(resolveTime.length(), resolveTime, "yyyy/MM/dd");
+                boolean legalDate = TimeUtil.isLegalDate(resolveTime.length(), resolveTime, "yyyy-MM-dd");
                 if (!legalDate) {
                     errorMessage.append("解决问题期限格式不对，");
                 }else{
@@ -1491,7 +1494,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
      * @return
      * @throws IOException
      */
-    private Result<?> getErrorExcel(int errorLines, EmergencyPlanRecordImportExcelDTO emergencyPlanRecordImportExcelDTO, String url, String type) throws IOException {
+    private Result<?> getErrorExcel(int errorLines,int successLines, EmergencyPlanRecordImportExcelDTO emergencyPlanRecordImportExcelDTO, String url, String type) throws IOException {
         //创建导入失败错误报告,进行模板导出
         Resource resource = new ClassPathResource("/templates/emergencyPlanRecordError.xlsx");
         InputStream resourceAsStream = resource.getInputStream();
@@ -1523,7 +1526,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             e.printStackTrace();
         }
 
-        return imporReturnRes(errorLines, false, url,"文件导入失败，数据有错误");
+        return imporReturnRes(errorLines,successLines, false, url,"文件导入失败，数据有错误");
     }
 
     @NotNull

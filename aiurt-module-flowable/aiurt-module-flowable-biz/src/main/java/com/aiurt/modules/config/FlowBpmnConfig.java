@@ -1,9 +1,6 @@
 package com.aiurt.modules.config;
 
-import com.aiurt.modules.listener.ProcessStartListener;
-import com.aiurt.modules.listener.SequenceFlowTakenListener;
-import com.aiurt.modules.listener.TaskCompletedListener;
-import com.aiurt.modules.listener.TaskCreateListener;
+import com.aiurt.modules.listener.*;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
@@ -44,6 +41,7 @@ public class FlowBpmnConfig implements EngineConfigurationConfigurer<SpringProce
         typedEventListeners.put(FlowableEngineEventType.TASK_CREATED.name(), Arrays.asList(new TaskCreateListener()));
         typedEventListeners.put(FlowableEngineEventType.TASK_COMPLETED.name(), Arrays.asList(new TaskCompletedListener()));
         typedEventListeners.put(FlowableEngineEventType.PROCESS_STARTED.name(), Arrays.asList(new ProcessStartListener()));
+        typedEventListeners.put(FlowableEngineEventType.PROCESS_COMPLETED.name(), Arrays.asList(new ProcessCompletedListener()));
         configuration.setTypedEventListeners(typedEventListeners);
 
         //设置字体

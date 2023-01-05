@@ -200,6 +200,9 @@ public class EmergencyImplementationRecordServiceImpl extends ServiceImpl<Emerge
                 .eq(EmergencyRecordStep::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .eq(EmergencyRecordStep::getRecordId, id).list();
 
+        Optional.ofNullable(record.getStationCode()).ifPresent(code -> recordVO.setStationName(iSysBaseApi.getFullNameByPositionCode(code)));
+        Optional.ofNullable(record.getPositionCode()).ifPresent(code -> recordVO.setPositionName(iSysBaseApi.getFullNameByPositionCode(code)));
+
         recordVO.setRehearsalMonth(monthVO);
         recordVO.setDepts(depts);
         recordVO.setSteps(stepList);
