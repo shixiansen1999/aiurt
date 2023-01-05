@@ -172,6 +172,10 @@ public class FlowBaseApiImpl implements FlowBaseApi {
 
         // 保存数据
         if (Objects.nonNull(busData)) {
+            Object id = busData.get("id");
+            if (Objects.isNull(id)) {
+                busData.put("id", businessKey);
+            }
             saveData(task, busData, processInstance.getProcessInstanceId(), task.getId(), processInstance);
         }
     }
