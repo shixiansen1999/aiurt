@@ -23,8 +23,6 @@ public class StartBpmnDTO implements Serializable {
     private Map<String, Object> busData;
 
 
-    // private ActCustomTaskComment customTaskComment;
-
     @ApiModelProperty("流程审批批注对象")
     private FlowTaskCompleteCommentDTO flowTaskCompleteDTO;
 
