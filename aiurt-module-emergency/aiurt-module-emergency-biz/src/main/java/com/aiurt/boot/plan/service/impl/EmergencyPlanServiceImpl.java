@@ -392,10 +392,10 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         if (!EmergencyPlanConstant.PASSED.equals(emPlan.getEmergencyPlanStatus())) {
             throw new AiurtBootException("未审核通过的预案不能变更！");
         }
-//        List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, id).list();
-//        if(oldPlanList.size()>1){
-//            throw new AiurtBootException("该预案已经变更过！");
-//        }
+        //查询预案变更次数
+        List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, id).list();
+        int size = oldPlanList.size();
+
         //获取部门
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String orgCode = loginUser.getOrgCode();
@@ -408,7 +408,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         newEmergencyPlanDto.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
         newEmergencyPlanDto.setOrgCode(orgCode);
         String emergencyPlanVersion = emergencyPlanDto.getEmergencyPlanVersion();
-        newEmergencyPlanDto.setEmergencyPlanVersion(String.valueOf(Double.valueOf(emergencyPlanVersion)+1));
+        newEmergencyPlanDto.setEmergencyPlanVersion(String.valueOf(Double.valueOf(emergencyPlanVersion)+size+1));
         newEmergencyPlanDto.setOldPlanId(emergencyPlanDto.getId());
         newEmergencyPlanDto.setStatus(null);
         newEmergencyPlanDto.setEmergencyPlanAtt(emergencyPlanDto.getEmergencyPlanAtt());
