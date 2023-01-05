@@ -104,5 +104,8 @@ public interface FlowModelAttConstant {
      */
     String USER_TYPE = "userType";
 
-
+    /**
+     * 流程终止接口变量名
+     */
+    String CANCEL = "cancel";
 }
