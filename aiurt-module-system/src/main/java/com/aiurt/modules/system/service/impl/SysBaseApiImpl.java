@@ -2194,6 +2194,14 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return JSONObject.parseObject(json);
     }
 
+    @Override
+    public String getFullNameByPositionCode(String positionCode) {
+        if (StrUtil.isEmpty(positionCode)) {
+            return null;
+        }
+        return csStationPositionMapper.getFullNameByPositionCode(positionCode);
+    }
+
 
     @Override
     public JSONObject getDepartByName(String departName) {
