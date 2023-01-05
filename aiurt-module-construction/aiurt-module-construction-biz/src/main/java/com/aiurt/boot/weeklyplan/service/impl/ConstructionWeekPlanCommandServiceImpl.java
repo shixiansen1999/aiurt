@@ -1,5 +1,6 @@
 package com.aiurt.boot.weeklyplan.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -24,6 +25,8 @@ import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
+import com.aiurt.modules.flow.api.FlowBaseApi;
+import com.aiurt.modules.flow.dto.StartBpmnImportDTO;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -86,6 +89,8 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
     private ConstructionWeekPlanCommandMapper constructionWeekPlanCommandMapper;
     @Autowired
     private IConstructionCommandAssistService constructionCommandAssistService;
+    @Autowired
+    private FlowBaseApi flowBaseApi;
 
     @Override
     public IPage<ConstructionWeekPlanCommandVO> queryPageList(Page<ConstructionWeekPlanCommandVO> page, ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO) {
@@ -766,6 +771,13 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                 planCommand.setPlanChange(1);
                 BeanUtils.copyProperties(planCommand, weekPlanCommand);
                 int save = baseMapper.insert(weekPlanCommand);
+                Map<String,Object> map = BeanUtil.beanToMap(weekPlanCommand);
+                StartBpmnImportDTO startBpmnImportDTO = new StartBpmnImportDTO();
+                startBpmnImportDTO.setBusData(map);
+                startBpmnImportDTO.setBusinessKey(weekPlanCommand.getId());
+                startBpmnImportDTO.setUserName(user.getUsername());
+                startBpmnImportDTO.setModelKey("week_plan_construction");
+                flowBaseApi.startBpmnWithImport(startBpmnImportDTO);
                 if (CollectionUtil.isNotEmpty(planCommand.getConstructionAssist())) {
                     planCommand.getConstructionAssist().forEach(s -> {
                         s.setPlanId(weekPlanCommand.getId());
