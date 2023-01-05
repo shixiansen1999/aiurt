@@ -156,8 +156,8 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		 if (StrUtil.isNotEmpty(csSafetyAttention.getAttentionContent())){
 			 queryWrapper.lambda().like(CsSafetyAttention::getAttentionContent,csSafetyAttention.getAttentionContent());
 		 }
-		 if (StrUtil.isNotEmpty(csSafetyAttention.getIds())){
-			 queryWrapper.lambda().in(CsSafetyAttention::getId,Arrays.asList(csSafetyAttention.getIds().split(",")));
+		 if (StrUtil.isNotEmpty(csSafetyAttention.getId())){
+			 queryWrapper.lambda().in(CsSafetyAttention::getId,Arrays.asList(csSafetyAttention.getId().split(",")));
 		 }
 		 queryWrapper.orderByDesc("create_time");
 		 Page<CsSafetyAttention> page = new Page<CsSafetyAttention>(pageNo, pageSize);
