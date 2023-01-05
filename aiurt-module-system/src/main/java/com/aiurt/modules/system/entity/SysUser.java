@@ -154,7 +154,8 @@ public class SysUser implements Serializable {
      */
     @ApiModelProperty(value = "职务，关联职务表")
     @Excel(name = "职务", width = 15)
-    @Dict(dictTable ="sys_position",dicText = "name",dicCode = "code")
+    @Dict(dicCode = "position_rank")
+    //@Dict(dictTable ="sys_position",dicText = "name",dicCode = "code")
     private String post;
 
     /**
