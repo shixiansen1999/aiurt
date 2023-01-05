@@ -206,7 +206,24 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     @Override
     public Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList, String id) {
         List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsMapper.getMaterialInspection(pageList, id,"0");
-        materialInspection.forEach(e->{
+        HashMap<String, EmergencyMaterialsInvoicesItem> map = new HashMap<>();
+        for (int i = 0; i < materialInspection.size(); i++) {
+            EmergencyMaterialsInvoicesItem e = materialInspection.get(i);
+            EmergencyMaterialsInvoicesItem emergencyMaterialsInvoicesItem = map.get(e.getContent());
+            if (ObjectUtil.isNotEmpty(emergencyMaterialsInvoicesItem)){
+                e.setContent(null);
+            }else {
+                map.put(e.getContent(),e);
+            }
+            if (StrUtil.isNotBlank(e.getCategoryCode())){
+                LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper= new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,0)
+                                  .eq(EmergencyMaterialsCategory::getCategoryCode,e.getCategoryCode());
+                EmergencyMaterialsCategory emergencyMaterialsCategory = emergencyMaterialsCategoryMapper.selectOne(lambdaQueryWrapper);
+                if (StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryName())){
+                    e.setCategoryName(emergencyMaterialsCategory.getCategoryName());
+                }
+            }
             if (StrUtil.isNotBlank(e.getLineCode())) {
                 //根据线路编码查询线路名称
                 String position = iSysBaseAPI.getPosition(e.getLineCode());
@@ -223,8 +240,25 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 e.setPositionName(position);
             }
             if ("0".equals(e.getPid()) && StrUtil.isNotBlank(e.getId())){
+                HashMap<String, EmergencyMaterialsInvoicesItem> map1 = new HashMap<>();
                 List<EmergencyMaterialsInvoicesItem> materialInspection1 = emergencyMaterialsMapper.getMaterialInspection(pageList, id, e.getId());
-                materialInspection1.forEach(q->{
+                for (int j = 0; j < materialInspection1.size(); j++) {
+                    EmergencyMaterialsInvoicesItem q = materialInspection1.get(j);
+                    EmergencyMaterialsInvoicesItem emergencyMaterialsInvoicesItem1 = map1.get(q.getContent());
+                    if (ObjectUtil.isNotEmpty(emergencyMaterialsInvoicesItem1)){
+                        q.setContent(null);
+                    }else {
+                        map1.put(q.getContent(),q);
+                    }
+                    if (StrUtil.isNotBlank(q.getCategoryCode())){
+                        LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper= new LambdaQueryWrapper<>();
+                        lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,0)
+                                          .eq(EmergencyMaterialsCategory::getCategoryCode,q.getCategoryCode());
+                        EmergencyMaterialsCategory emergencyMaterialsCategory = emergencyMaterialsCategoryMapper.selectOne(lambdaQueryWrapper);
+                        if (StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryName())){
+                            q.setCategoryName(emergencyMaterialsCategory.getCategoryName());
+                        }
+                    }
                     if (StrUtil.isNotBlank(q.getLineCode())) {
                         //根据线路编码查询线路名称
                         String position = iSysBaseAPI.getPosition(q.getLineCode());
@@ -240,10 +274,10 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                         String position = iSysBaseAPI.getPosition(q.getPositionCode());
                         q.setPositionName(position);
                     }
-                });
+                }
                 e.setSubLevel(materialInspection1);
             }
-        });
+        }
         return pageList.setRecords(materialInspection);
     }
 
