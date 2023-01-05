@@ -321,6 +321,9 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
                 if (CollUtil.isNotEmpty(saveData)) {
                     for (SparePartInOrder saveDatum : saveData) {
                         saveDatum.setConfirmStatus("0");
+                        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                        String orgId = loginUser.getOrgId();
+                        saveDatum.setOrgId(orgId);
                         sparePartInOrderMapper.insert(saveDatum);
                     }
                     return imporReturnRes(errorLines,successLines, true, failReportUrl, "文件导入成功");

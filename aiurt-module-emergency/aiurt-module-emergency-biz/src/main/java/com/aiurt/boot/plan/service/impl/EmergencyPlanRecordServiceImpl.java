@@ -1136,6 +1136,8 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         result.put("errorCount", errorLines);
         result.put("successCount", successLines);
         result.put("failReportUrl", failReportUrl);
+        int totalCount = successLines + errorLines;
+        result.put("totalCount", totalCount);
         Result res = Result.ok(result);
         res.setMessage(message);
         res.setCode(200);
