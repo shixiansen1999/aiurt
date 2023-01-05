@@ -352,4 +352,7 @@ public class Fault extends DictEntity implements Serializable {
     @TableField(exist = false)
     private Boolean isFaultAnalysisReport;
 
+    @ApiModelProperty(value = "抄送人")
+    private String remindUserName;
+
 }

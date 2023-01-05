@@ -133,7 +133,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
         FaultKnowledgeBaseType one = faultKnowledgeBaseTypeService.getOne(queryWrapper.eq(FaultKnowledgeBaseType::getCode, fault.getFaultPhenomenon()).eq(FaultKnowledgeBaseType::getDelFlag, 0));
         // 自报自修跳过
-        if (StrUtil.equalsIgnoreCase(faultModeCode, SELF_FAULT_MODE_CODE)) {
+        boolean b = StrUtil.equalsIgnoreCase(faultModeCode, SELF_FAULT_MODE_CODE);
+        if (b) {
             fault.setAppointUserName(user.getUsername());
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
             // 方便统计
@@ -151,8 +152,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     .build();
 
             repairRecordService.save(record);
-
-            //todo 需要给班组长发送消息
         } else {
             fault.setStatus(FaultStatusEnum.NEW_FAULT.getStatus());
         }
@@ -169,7 +168,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         saveLog(user, "故障上报", fault.getCode(), 1, null);
 
         // 待办任务
-        sendTodo(fault.getCode(), RoleConstant.PRODUCTION, null, "故障上报审核", TodoBusinessTypeEnum.FAULT_APPROVAL.getType());
+        if (b) {
+            // 自检
+            sendTodo(fault.getCode(), null, user.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
+        } else {
+            sendTodo(fault.getCode(), RoleConstant.PRODUCTION, null, "故障上报审核", TodoBusinessTypeEnum.FAULT_APPROVAL.getType());
+        }
 
         // 回调
         if (StrUtil.isNotBlank(fault.getRepairCode())) {
@@ -259,7 +263,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType());
         } else {
             // 被驳回则发送消息
-            sendMessage(user, faultCode, fault.getReceiveUserName(), "您有一条故障上报被驳回，请查收。");
+            String message = String.format("您有一条故障【%s】上报被驳回。驳回原因：%s", faultCode, approvalDTO.getApprovalRejection());
+            sendMessage(user, faultCode, fault.getReceiveUserName(), message);
         }
     }
 
@@ -422,7 +427,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_ASSIGN.getType(), faultCode, user.getUsername(), "1");
 
         // 重新写任务，指派人
-        sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
+        // sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
     }
 
 
@@ -474,7 +479,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 更新工班长指派的任务
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_ASSIGN.getType(), faultCode, user.getUsername(), "1");
         // 发送消息，告诉工班长已指派, // 工班长
-        sendMessage(user, faultCode, fault.getReceiveUserName(), "故障(%s)已经被%s领取!");
+        sendMessage(user, faultCode, fault.getAssignUserName(), String.format("故障【%s】已被【%s】领取!", faultCode, user.getRealname()));
 
         // 维修待办
         sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
@@ -543,6 +548,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setPriority("L");
         message.setStartTime(new Date());
         sysBaseAPI.sendBusAnnouncement(message);
+
+        // 待办任务
+        sendTodo(code, null, loginUser.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
     }
 
 
@@ -579,7 +587,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
 
         // 更新待处理的人任务
-        todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_DEAL.getType(), faultCode, loginUser.getUsername(), "1");
+        // todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_DEAL.getType(), faultCode, loginUser.getUsername(), "1");
 
         // 仅需要发送消息，不需要更新待办
         sendTodo(refuseAssignmentDTO.getFaultCode(), RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType());
@@ -592,15 +600,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToUser(fault.getAssignUserName());
         message.setToAll(false);
         message.setTitle("故障管理");
-        message.setContent(String.format("%s拒绝接收指派，请重新指派故障(%s)!",  loginUser.getUsername(), faultCode));
+        message.setContent(String.format("【%s】拒绝接收指派，请重新指派故障【%s】!",  loginUser.getUsername(), faultCode));
         message.setCategory("1");
         message.setLevel(null);
         message.setPriority("L");
         message.setStartTime(new Date());
         sysBaseAPI.sendBusAnnouncement(message);
-
-
-
     }
 
     /**
@@ -639,7 +644,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToUser(fault.getAssignUserName());
         message.setToAll(false);
         message.setTitle("故障管理");
-        message.setContent(String.format("%s开始处理故障(%s)!",  user.getUsername(), code));
+        message.setContent(String.format("【%s】开始处理故障【%s】!",  user.getUsername(), code));
         message.setCategory("1");
         message.setLevel(null);
         message.setPriority("L");
@@ -721,17 +726,19 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         updateById(fault);
 
         repairRecordService.updateById(faultRepairRecord);
-        // todo 发送消息, 维修记录
+
         // 更新工班长指派的任务
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_HANG_UP.getType(), faultCode, user.getUsername(), "1");
 
         if (flag) {
-            // 消息通知
-            // 发送给指派人
+            // 消息通知，发送给指派人
             sendMessage(user, faultCode, faultRepairRecord.getAppointUserName(), String.format("故障(%s)挂起审核已通过!", faultCode));
         }else {
             // 维修待办
             sendTodo(faultCode, null, faultRepairRecord.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
+
+            // 消息通知，发送给指派人
+            sendMessage(user, faultCode, faultRepairRecord.getAppointUserName(), String.format("故障(%s)挂起审核被驳回，驳回原因：%s!", faultCode, approvalHangUpDTO.getApprovalRejection()));
         }
     }
 
@@ -766,7 +773,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_HANG_UP.getType(), code, null, "1");
 
         // 维修待办
-        sendTodo(code, null, faultRepairRecord.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
+        sendTodo(code, null, loginUser.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
 
     }
 
