@@ -37,9 +37,12 @@ import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.MinioUtil;
 import com.aiurt.common.util.TimeUtil;
 import com.aiurt.common.util.XlsUtil;
+import com.aiurt.modules.basic.entity.SysAttachment;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -84,6 +87,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @Description: emergency_plan_record
@@ -685,6 +689,18 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         this.disposalProcedureTranslate(procedureList);
         emergencyPlanRecordExportExcelVO.setPlanRecordDisposalProcedureList(procedureList);
 
+        //应急预案启动记录事件相关材料
+        List<EmergencyPlanRecordAtt> recordAttList = emergencyPlanRecordAttService.lambdaQuery()
+                .eq(EmergencyPlanRecordAtt::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                .eq(EmergencyPlanRecordAtt::getEmergencyPlanRecordId, id)
+                .eq(EmergencyPlanRecordAtt::getMaterialType,EmergencyPlanConstant.MATERIAL_TYPE0).list();
+
+        //应急预案启动记录事件总结材料
+        List<EmergencyPlanRecordAtt> recordAttList2 = emergencyPlanRecordAttService.lambdaQuery()
+                .eq(EmergencyPlanRecordAtt::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                .eq(EmergencyPlanRecordAtt::getEmergencyPlanRecordId, id)
+                .eq(EmergencyPlanRecordAtt::getMaterialType,EmergencyPlanConstant.MATERIAL_TYPE1).list();
+
         //组装物资数据
         List<EmergencyPlanMaterialsExportExcelVO> planMaterialsList = new ArrayList<>();
         List<EmergencyPlanRecordMaterials> planMaterials = emergencyPlanRecordMaterialsService.lambdaQuery()
@@ -853,32 +869,133 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
 //                RegionUtil.setBorderRight(BorderStyle.THIN, cellAddresses, sheet);
 //            }
 
-            String fileName = "应急预案启动记录导出";
-            response.setHeader("Content-Disposition",
-                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
-            response.setHeader("Content-Disposition", "attachment;filename="+fileName);
-            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
-            workbook.write(bufferedOutPut);
-            bufferedOutPut.flush();
-            bufferedOutPut.close();
+            //打包成压缩包导出
+            String fileName = "应急预案启动记录.zip";
+            response.setContentType("application/zip");
+            response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(fileName, "UTF-8"));
+            OutputStream outputStream = response.getOutputStream();
+            // 压缩输出流,包装流,将临时文件输出流包装成压缩流,将所有文件输出到这里,打成zip包
+            ZipOutputStream zipOut = new ZipOutputStream(outputStream);
 
+            for (EmergencyPlanRecordAtt emergencyPlanRecordAtt : recordAttList) {
+                String attName = null;
+                String filePath = null;
+                String path = emergencyPlanRecordAtt.getPath();
+                filePath = StrUtil.subBefore(path, "?", false);
+
+                filePath = filePath.replace("..", "").replace("../", "");
+                if (filePath.endsWith(SymbolConstant.COMMA)) {
+                    filePath = filePath.substring(0, filePath.length() - 1);
+                }
+
+                SysAttachment sysAttachment = sysBaseApi.getFilePath(filePath);
+                InputStream inputStream = null;
+
+                if (Objects.isNull(sysAttachment)) {
+                    File file = new File(filePath);
+                    if (!file.exists()) {
+                        throw new AiurtBootException("文件不存在..");
+                    }
+                    if (StrUtil.isBlank(emergencyPlanRecordAtt.getName())) {
+                        attName = file.getName();
+                    } else {
+                        attName = emergencyPlanRecordAtt.getName();
+                    }
+                    inputStream = new BufferedInputStream(new FileInputStream(filePath));
+
+                    XlsUtil.outZip(inputStream,attName,zipOut);
+                    //关闭流
+                    inputStream.close();
+
+                }else {
+                    if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
+                        inputStream = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
+                    }else {
+                        String imgPath = upLoadPath + File.separator + sysAttachment.getFilePath();
+                        File file = new File(imgPath);
+                        if (!file.exists()) {
+                            response.setStatus(404);
+                            throw new RuntimeException("文件[" + imgPath + "]不存在..");
+                        }
+                        inputStream = new BufferedInputStream(new FileInputStream(imgPath));
+                    }
+                    XlsUtil.outZip(inputStream,sysAttachment.getFileName(),zipOut);
+                    //关闭流
+                    inputStream.close();
+                }
+
+            }
+            for (EmergencyPlanRecordAtt emergencyPlanRecordAtt : recordAttList2) {
+                String attName = null;
+                String filePath = null;
+                String path = emergencyPlanRecordAtt.getPath();
+                filePath = StrUtil.subBefore(path, "?", false);
+
+                filePath = filePath.replace("..", "").replace("../", "");
+                if (filePath.endsWith(SymbolConstant.COMMA)) {
+                    filePath = filePath.substring(0, filePath.length() - 1);
+                }
+
+                SysAttachment sysAttachment = sysBaseApi.getFilePath(filePath);
+                InputStream inputStream = null;
+
+                if (Objects.isNull(sysAttachment)) {
+                    File file = new File(filePath);
+                    if (!file.exists()) {
+                        throw new AiurtBootException("文件不存在..");
+                    }
+                    if (StrUtil.isBlank(emergencyPlanRecordAtt.getName())) {
+                        attName = file.getName();
+                    } else {
+                        attName = emergencyPlanRecordAtt.getName();
+                    }
+                    inputStream = new BufferedInputStream(new FileInputStream(filePath));
+
+                    XlsUtil.outZip(inputStream,attName,zipOut);
+                    //关闭流
+                    inputStream.close();
+
+                }else {
+                    if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
+                        inputStream = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
+                    }else {
+                        String imgPath = upLoadPath + File.separator + sysAttachment.getFilePath();
+                        File file = new File(imgPath);
+                        if (!file.exists()) {
+                            response.setStatus(404);
+                            throw new RuntimeException("文件[" + imgPath + "]不存在..");
+                        }
+                        inputStream = new BufferedInputStream(new FileInputStream(imgPath));
+                    }
+                    XlsUtil.outZip(inputStream,sysAttachment.getFileName(),zipOut);
+                    //关闭流
+                    inputStream.close();
+                }
+
+            }
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            workbook.write(bos);
+            byte[] barray = bos.toByteArray();
+            InputStream is = new ByteArrayInputStream(barray);
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(is);
+            String file = "应急预案启动记录.xlsx";
+            XlsUtil.outZip(bufferedInputStream,file,zipOut);
+            //关闭流
+            is.close();
+            bufferedInputStream.close();
+
+            zipOut.flush();
+            // 压缩完成后,关闭压缩流
+            zipOut.close();
+
+            outputStream.flush();
+            outputStream.close();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-    }
-
-    /**
-     * 获取excel表格数据
-     *
-     * @param emergencyPlanRecordDto
-     * @return
-     */
-    private List<EmergencyPlanRecordExcelDTO> getinspectionStrategyList(EmergencyPlanRecordDTO emergencyPlanRecordDto) {
-
-        List<EmergencyPlanRecordExcelDTO> result =emergencyPlanRecordMapper.selectListNoPage(emergencyPlanRecordDto);
-        return result;
     }
 
 
