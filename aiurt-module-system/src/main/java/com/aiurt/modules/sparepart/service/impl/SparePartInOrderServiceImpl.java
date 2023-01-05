@@ -261,6 +261,8 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
 
         // 失败条数
         Integer errorLines = 0;
+        //成功条数
+        Integer successLines = 0;
         // 失败导出的excel下载地址
         String failReportUrl = "";
 
@@ -271,7 +273,7 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             // 判断是否xls、xlsx两种类型的文件，不是则直接返回
             String type = FilenameUtils.getExtension(file.getOriginalFilename());
             if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-                return imporReturnRes(errorLines, false, failReportUrl, "文件导入失败，文件类型不对");
+                return imporReturnRes(errorLines,successLines, false, failReportUrl, "文件导入失败，文件类型不对");
             }
 
             // 设置excel参数
@@ -291,7 +293,7 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
                 list = ExcelImportUtil.importExcel(file.getInputStream(), SparePartInOrderImportExcelDTO.class, params);
                 // 空表格直接返回
                 if (CollUtil.isEmpty(list)) {
-                    return imporReturnRes(errorLines, false, failReportUrl, "暂无导入数据");
+                    return imporReturnRes(errorLines,successLines, false, failReportUrl, "暂无导入数据");
                 }
                 // 校验数据
                 for (SparePartInOrderImportExcelDTO sparePartInOrderImportExcelDTO : list) {
@@ -307,26 +309,28 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
                         errorLines++;
                     } else {
                         saveData.add(sparePartInOrder);
+                        successLines++;
                     }
                 }
 
                 // 存在错误，错误报告下载
                 if (errorLines > 0) {
-                    return getErrorExcel(errorLines, list, failReportUrl, type);
+                    return getErrorExcel(errorLines,successLines, list, failReportUrl, type);
                 }
                 // 保存到系统
                 if (CollUtil.isNotEmpty(saveData)) {
                     for (SparePartInOrder saveDatum : saveData) {
+                        saveDatum.setConfirmStatus("0");
                         sparePartInOrderMapper.insert(saveDatum);
                     }
-                    return imporReturnRes(errorLines, true, failReportUrl, "文件导入成功");
+                    return imporReturnRes(errorLines,successLines, true, failReportUrl, "文件导入成功");
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return imporReturnRes(errorLines, false, failReportUrl, "暂无导入数据");
+        return imporReturnRes(errorLines,successLines, false, failReportUrl, "暂无导入数据");
     }
 
     /**
@@ -442,10 +446,11 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
      * @param message       提示信息
      * @return
      */
-    public static Result<?> imporReturnRes(int errorLines, boolean isSucceed, String failReportUrl, String message) {
+    public static Result<?> imporReturnRes(int errorLines,int successLines, boolean isSucceed, String failReportUrl, String message) {
         JSONObject result = new JSONObject(5);
         result.put("isSucceed", isSucceed);
         result.put("errorCount", errorLines);
+        result.put("successLines", successLines);
         result.put("failReportUrl", failReportUrl);
         Result res = Result.ok(result);
         res.setMessage(message);
@@ -453,7 +458,7 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         return res;
     }
 
-    private Result<?> getErrorExcel(int errorLines, List<SparePartInOrderImportExcelDTO> list, String url, String type) throws IOException {
+    private Result<?> getErrorExcel(int errorLines,int successLines, List<SparePartInOrderImportExcelDTO> list, String url, String type) throws IOException {
         //创建导入失败错误报告,进行模板导出
         org.springframework.core.io.Resource resource = new ClassPathResource("/templates/sparePartInOrderError.xlsx");
         InputStream resourceAsStream = resource.getInputStream();
@@ -486,7 +491,7 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             e.printStackTrace();
         }
 
-        return imporReturnRes(errorLines, false, url, "文件导入失败，数据有错误");
+        return imporReturnRes(errorLines,successLines, false, url, "文件导入失败，数据有错误");
     }
 
     @NotNull
