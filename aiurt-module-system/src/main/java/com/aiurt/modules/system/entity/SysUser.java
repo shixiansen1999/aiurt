@@ -1,10 +1,8 @@
 package com.aiurt.modules.system.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
@@ -29,6 +27,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
+@TableName("sys_user")
 public class SysUser implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -115,6 +114,7 @@ public class SysUser implements Serializable {
      * 部门code(当前选择登录部门)
      */
     @ApiModelProperty(value = " 部门code(所属部门)")
+    @DeptFilterColumn
     private String orgCode;
     /**
      * 部门name(当前选择登录部门)

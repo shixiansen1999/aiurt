@@ -1,10 +1,11 @@
 package com.aiurt.modules.schedule.controller;
 
 
-import com.aiurt.modules.schedule.service.IScheduleLogService;
-import com.aiurt.modules.schedule.entity.ScheduleLog;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.schedule.entity.ScheduleLog;
+import com.aiurt.modules.schedule.service.IScheduleLogService;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -59,6 +60,7 @@ public class ScheduleLogController {
 	@AutoLog(value = "调班日志-分页列表查询")
 	@ApiOperation(value="调班日志-分页列表查询", notes="调班日志-分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "schedule/ScheduleLogList")
 	public Result<IPage<ScheduleLog>> queryPageList(ScheduleLog scheduleLog,
 													@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 													@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

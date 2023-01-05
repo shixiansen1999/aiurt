@@ -81,8 +81,8 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     }
 
     @Override
-    public List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date, String orgId,String text,List<String> orgList) {
-        return this.baseMapper.getAllScheduleRecordsByMonth(date, orgId,text,orgList);
+    public List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date, String orgId,String text,List<String> userIds) {
+        return this.baseMapper.getAllScheduleRecordsByMonth(date, orgId,text,userIds);
     }
 
     @Override
@@ -116,8 +116,8 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     }
 
     @Override
-    public List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, List<String> orgList , String orgId,String text) {
-        return this.baseMapper.getScheduleUserByDateAndOrgCodeAndOrgId(date, orgList, orgId,text);
+    public List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, List<String> userIds , String orgId,String text) {
+        return this.baseMapper.getScheduleUserByDateAndOrgCodeAndOrgId(date, userIds, orgId,text);
     }
 
     @Override

@@ -10,10 +10,8 @@ import com.aiurt.modules.schedule.service.IScheduleLogService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,15 +38,15 @@ public class ScheduleLogServiceImpl extends ServiceImpl<ScheduleLogMapper, Sched
 
     @Override
     public IPage<ScheduleLog> queryPageList(Page<ScheduleLog> page, ScheduleLog scheduleLog) {
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<String> orgList = new ArrayList<>();
-        List<SysDepartModel> userSysDepart = iSysBaseAPI.getUserSysDepart(loginUser.getId());
-        if (CollUtil.isNotEmpty(userSysDepart)) {
-            List<String> collect = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
-            orgList.addAll(collect);
-            scheduleLog.setOrgList(orgList);
+        //根据数据规则查出所属权限的人员，这个只有根据部门权限查部门的人
+        List<LoginUser> allUsers = iSysBaseAPI.getAllUsers();
+        List<String> userIds = new ArrayList<>();
+        if (CollUtil.isNotEmpty(userIds)) {
+            List<String> collect = allUsers.stream().map(LoginUser::getId).collect(Collectors.toList());
+            userIds.addAll(collect);
+            scheduleLog.setOrgList(userIds);
         }else {
-            scheduleLog.setUserId(loginUser.getId());
+            return page.setRecords(new ArrayList<>());
         }
 
         List<ScheduleLog> scheduleLogs = scheduleLogMapper.queryPageList(page, scheduleLog);

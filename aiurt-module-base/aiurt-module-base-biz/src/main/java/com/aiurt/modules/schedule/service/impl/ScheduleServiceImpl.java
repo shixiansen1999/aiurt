@@ -32,7 +32,6 @@ import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -70,9 +69,6 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
     private IScheduleItemService scheduleItemService;
 
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
-
-    @Autowired
     private ScheduleMapper scheduleMapper;
 
     @Autowired
@@ -88,18 +84,18 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
 
     @Override
     public IPage<Schedule> getList(Schedule schedule, Page<Schedule> temp) {
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
         List<Schedule> scheduleList = new ArrayList<>();
         IPage page = new Page();
         page = temp;
-
-        List<SysDepartModel> userSysDepart = iSysBaseApi.getUserSysDepart(sysUser.getId());
-        List<String> orgList = new ArrayList<>();
-        if (CollUtil.isNotEmpty(userSysDepart)) {
-            List<String> collect = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
-            orgList.addAll(collect);
+        //根据数据规则查出所属权限的人员，这个只有根据部门权限查部门的人
+        List<LoginUser> allUsers = iSysBaseApi.getAllUsers();
+        List<String> userIds = new ArrayList<>();
+        if (CollUtil.isNotEmpty(allUsers)) {
+            List<String> collect = allUsers.stream().map(LoginUser::getId).collect(Collectors.toList());
+            userIds.addAll(collect);
         }else {
-            return page.setRecords(scheduleList);
+            return page.setRecords(new ArrayList<>());
         }
 
         /**
@@ -118,11 +114,9 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         int maximum = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         /**
-         * 2、从record表中获取有多少人在时间范围类安排了工作,从sys_user查询本班组的成员,根据班组查询
+         * 2、从record表中获取有多少人在时间范围类安排了工作,根据当前登录人班组权限查班组的人员，或者只查询当前登录人的数据
          */
-        //List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDate(DateUtils.format(date, "yyyy-MM"),schedule.getUserName());
-        //List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCode(DateUtils.format(date, "yyyy-MM"),schedule.getUserName(),orgCode);
-        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtil.format(date, "yyyy-MM"), orgList, schedule.getOrgId(),schedule.getText());
+        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtil.format(date, "yyyy-MM"), userIds, schedule.getOrgId(),schedule.getText());
         /**
          * 3、获取记录数据
          */
