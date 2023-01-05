@@ -32,7 +32,6 @@ import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -76,9 +75,6 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
     private ScheduleMapper scheduleMapper;
 
     @Autowired
-    private ISysBaseAPI iSysBaseApi;
-
-    @Autowired
     private IScheduleRuleItemService ruleItemService;
     @Autowired
     private IScheduleItemService ItemService;
@@ -88,19 +84,19 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
 
     @Override
     public IPage<Schedule> getList(Schedule schedule, Page<Schedule> temp) {
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<Schedule> scheduleList = new ArrayList<>();
         IPage page = new Page();
         page = temp;
 
-        List<SysDepartModel> userSysDepart = iSysBaseApi.getUserSysDepart(sysUser.getId());
+      /*  List<SysDepartModel> userSysDepart = iSysBaseApi.getUserSysDepart(sysUser.getId());
         List<String> orgList = new ArrayList<>();
         if (CollUtil.isNotEmpty(userSysDepart)) {
             List<String> collect = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
             orgList.addAll(collect);
         }else {
             return page.setRecords(scheduleList);
-        }
+        }*/
 
         /**
          * 1、获取查询范围及当月有多少天
@@ -122,7 +118,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
          */
         //List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDate(DateUtils.format(date, "yyyy-MM"),schedule.getUserName());
         //List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCode(DateUtils.format(date, "yyyy-MM"),schedule.getUserName(),orgCode);
-        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtil.format(date, "yyyy-MM"), orgList, schedule.getOrgId(),schedule.getText());
+        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtil.format(date, "yyyy-MM"), null, schedule.getOrgId(),schedule.getText());
         /**
          * 3、获取记录数据
          */
