@@ -33,36 +33,27 @@ public class SysParam implements Serializable {
     @ApiModelProperty(value = "主键")
     private String id;
 	/**参数编号*/
-	@Excel(name = "参数编号", width = 15)
-    @ApiModelProperty(value = "参数编号")
+    @ApiModelProperty(value = "参数编号", required = true)
     private String code;
 	/**参数名称*/
-	@Excel(name = "参数名称", width = 15)
-    @ApiModelProperty(value = "参数名称")
+    @ApiModelProperty(value = "参数名称", required = true)
     private String name;
 	/**参数类别*/
-	@Excel(name = "参数类别", width = 15)
     @ApiModelProperty(value = "参数类别")
     private String category;
     /**参数类别*/
-    @Excel(name = "参数类别名称", width = 15)
     @TableField(exist = false)
     @ApiModelProperty(value = "参数类别名称")
     private String categoryName;
 	/**参数值*/
-	@Excel(name = "参数值", width = 15)
     @ApiModelProperty(value = "参数值")
     private String value;
 	/**参数说明*/
-	@Excel(name = "参数说明", width = 15)
     @ApiModelProperty(value = "参数说明")
     private String description;
-	/**父级节点*/
-	@Excel(name = "父级节点", width = 15)
-    @ApiModelProperty(value = "父级节点")
-    private String pid;
+
+
 	/**删除状态： 0未删除 1已删除*/
-	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
     private Integer delFlag;
 	/**创建人*/
@@ -82,7 +73,6 @@ public class SysParam implements Serializable {
     @ApiModelProperty(value = "更新时间")
     private Date updateTime;
 	/**是否有子节点*/
-	@Excel(name = "是否有子节点", width = 15, dicCode = "yn")
 	@Dict(dicCode = "yn")
     @ApiModelProperty(value = "是否有子节点")
     private String hasChild;
@@ -91,4 +81,8 @@ public class SysParam implements Serializable {
     @ApiModelProperty(value = "子级集合")
     @TableField(exist = false)
     private List<SysParam> children;
+
+    @ApiModelProperty(value = "分类id", required = true)
+    @Dict(dicCode = "id", dicText = "type_name", dictTable = "sys_param_type")
+    private String paramTypeId;
 }

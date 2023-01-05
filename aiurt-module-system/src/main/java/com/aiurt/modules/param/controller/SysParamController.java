@@ -37,41 +37,20 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 	@Autowired
 	private ISysParamService sysParamService;
 
-	/**
-	 * 分页列表查询
-	 *
-	 * @param sysParam
-	 * @param pageNo
-	 * @param pageSize
-	 * @param req
-	 * @return
-	 */
-	//@AutoLog(value = "sys_param-分页列表查询")
-	@ApiOperation(value="实施配置-分页列表查询", notes="实施配置-分页列表查询")
-	@GetMapping(value = "/rootList")
-	public Result<IPage<SysParam>> queryPageList(SysParam sysParam,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		return sysParamService.queryPageList(sysParam,pageNo,pageSize,req);
-	}
 
 
 	 /**
-      * 获取子数据
+      * 查询列表
       * @param sysParam
-      * @param req
       * @return
       */
-	//@AutoLog(value = "sys_param-获取子数据")
-	@ApiOperation(value="实施配置-获取子数据", notes="实施配置-获取子数据")
-	@GetMapping(value = "/childList")
-	public Result<IPage<SysParam>> queryPageList(SysParam sysParam,HttpServletRequest req) {
-		QueryWrapper<SysParam> queryWrapper = QueryGenerator.initQueryWrapper(sysParam, req.getParameterMap());
-		List<SysParam> list = sysParamService.list(queryWrapper);
-		IPage<SysParam> pageList = new Page<>(1, 10, list.size());
-        pageList.setRecords(list);
-		return Result.OK(pageList);
+	@ApiOperation(value="实施配置-查询列表", notes="实施配置-查询列表")
+	@GetMapping(value = "/rootList")
+	public Result<IPage<SysParam>> queryPageList(@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+												 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+												 SysParam sysParam) {
+		Result<IPage<SysParam>> result = sysParamService.queryPageList(sysParam, pageNo, pageSize);
+		return result;
 	}
 
     /**
@@ -81,7 +60,6 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
       * @param parentIds
       * @return
       */
-	//@AutoLog(value = "sys_param-批量获取子数据")
     @ApiOperation(value="实施配置-批量获取子数据", notes="实施配置-批量获取子数据")
     @GetMapping("/getChildListBatch")
     public Result getChildListBatch(@RequestParam("parentIds") String parentIds) {

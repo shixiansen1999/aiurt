@@ -51,21 +51,6 @@ public interface ISysParamService extends IService<SysParam> {
 	 */
 	Result<String>  deleteSysParam(String id) throws AiurtBootException;
 
-	  /**
-	   * 查询所有数据，无分页
-	   *
-	   * @param queryWrapper
-	   * @return List<SysParam>
-	   */
-    List<SysParam> queryTreeListNoPage(QueryWrapper<SysParam> queryWrapper);
-
-	/**
-	 * 【vue3专用】根据父级编码加载分类字典的数据
-	 *
-	 * @param parentCode
-	 * @return
-	 */
-	List<SelectTreeModel> queryListByCode(String parentCode);
 
 	/**
 	 * 【vue3专用】根据pid查询子节点集合
@@ -87,8 +72,7 @@ public interface ISysParamService extends IService<SysParam> {
 	 * @param sysParam
 	 * @param pageNo
 	 * @param pageSize
-	 * @param req
 	 * @return
 	 */
-    Result<IPage<SysParam>> queryPageList(SysParam sysParam, Integer pageNo,Integer pageSize, HttpServletRequest req);
+    Result<IPage<SysParam>> queryPageList(SysParam sysParam, Integer pageNo,Integer pageSize);
 }
