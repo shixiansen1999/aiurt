@@ -419,8 +419,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 message.getCategory());
         try {
             // 同步发送第三方APP消息
-            wechatEnterpriseService.sendMessage(message, true);
-            dingtalkService.sendMessage(message, true);
+//            wechatEnterpriseService.sendMessage(message, true);
+//            dingtalkService.sendMessage(message, true);
         } catch (Exception e) {
             log.error("同步发送第三方APP消息失败！", e);
         }
@@ -441,8 +441,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 message.getPriority());
         try {
             // 同步发送第三方APP消息
-            wechatEnterpriseService.sendMessage(message, true);
-            dingtalkService.sendMessage(message, true);
+//            wechatEnterpriseService.sendMessage(message, true);
+//            dingtalkService.sendMessage(message, true);
         } catch (Exception e) {
             log.error("同步发送第三方APP消息失败！", e);
         }
