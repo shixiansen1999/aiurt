@@ -162,7 +162,7 @@ public class FlowBaseApiImpl implements FlowBaseApi {
 
         Authentication.setAuthenticatedUserId(userName);
         // 启动流程
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(modelKey, Objects.isNull(businessKey)?null:(String) businessKey, variableData);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(modelKey, businessKey, variableData);
 
         // 获取流程启动后的第一个任务。
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
