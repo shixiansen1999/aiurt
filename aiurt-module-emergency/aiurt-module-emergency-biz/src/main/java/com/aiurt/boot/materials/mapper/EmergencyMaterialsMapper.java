@@ -85,8 +85,9 @@ public interface EmergencyMaterialsMapper extends BaseMapper<EmergencyMaterials>
 
     /**
      * 获取巡检的检查记录
-     * @param id
+     * @param materialsCode
+     * @param invoicesId
      * @return
      */
-    List<EmergencyMaterialsInvoicesItemDTO> getMaterialInspectionList(@Param("id")String id);
+    List<EmergencyMaterialsInvoicesItemDTO> getMaterialInspectionList(@Param("materialsCode")String materialsCode,@Param("invoicesId")String invoicesId,@Param("isGroup")boolean isGroup);
 }

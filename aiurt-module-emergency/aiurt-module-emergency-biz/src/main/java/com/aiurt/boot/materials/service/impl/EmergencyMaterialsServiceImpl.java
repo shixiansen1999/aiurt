@@ -1,6 +1,10 @@
 package com.aiurt.boot.materials.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesItemMapper;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.RegionUtil;
+import org.apache.poi.xssf.usermodel.*;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
@@ -20,7 +24,6 @@ import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsUtil;
-import com.alibaba.druid.sql.visitor.functions.If;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -79,7 +82,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     private EmergencyMaterialsCategoryMapper emergencyMaterialsCategoryMapper;
     @Autowired
     private EmergencyMaterialsInvoicesMapper materialsInvoicesMapper;
-
+    @Autowired
+    private EmergencyMaterialsInvoicesItemMapper materialsInvoicesItemMapper;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
     @Value("${jeecg.path.upload}")
@@ -447,42 +451,49 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     }
     @Override
     public void getInspectionRecordExportExcel(EmergencyMaterialsInvoicesDTO condition, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        //创建导入失败错误报告,进行模板导出
-        Resource resource = new ClassPathResource("/templates/emInvoices.xlsx");
-        InputStream resourceAsStream = resource.getInputStream();
-        //2.获取临时文件
-        File fileTemp = new File("/templates/emInvoices.xlsx");
+        XSSFWorkbook wb = getInspectionRecordExportExcelTemplate(condition, request, response);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        wb.write(bos);
+        byte[] brray = bos.toByteArray();
+        InputStream inputStream = new ByteArrayInputStream(brray);
+        //拿到临时文件
+        File fileTemp = new File("/templates/inspectionRecordExportExcel.xlsx");
         try {
             //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
-            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+            FileUtils.copyInputStreamToFile(inputStream, fileTemp);
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-
         String path = fileTemp.getAbsolutePath();
         TemplateExportParams params = new TemplateExportParams(path);
-        List<String> selections = condition.getSelections();
         Map<String, Object> map = new HashMap<String, Object>();
+        //将数据写进自定义模板中
+        List<String> selections = condition.getSelections();
+        String s = selections.stream().findFirst().get();
         LambdaQueryWrapper<EmergencyMaterialsInvoices> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
-        queryWrapper.eq(EmergencyMaterialsInvoices::getId, selections.get(0));
-        EmergencyMaterialsInvoices emergencyMaterialsInvoices = materialsInvoicesMapper.selectOne(queryWrapper);
+        queryWrapper.eq(EmergencyMaterialsInvoices::getId, s);
+        EmergencyMaterialsInvoices invoice = materialsInvoicesMapper.selectOne(queryWrapper);
         EmergencyMaterialsInvoicesDTO e = new EmergencyMaterialsInvoicesDTO();
-        BeanUtils.copyProperties(emergencyMaterialsInvoices, e);
-        String wz = null;
+        BeanUtils.copyProperties(invoice, e);
+        //为了拿到巡检位置|存放地点
+        String inspectionPosition = null;
+        String storageLocation = null;
         if (StrUtil.isNotBlank(e.getLineCode())) {
             //根据线路编码查询线路名称
             String position = iSysBaseAPI.getPosition(e.getLineCode());
             e.setLineName(position);
-            wz = position;
+            inspectionPosition = position;
         }
         if (StrUtil.isNotBlank(e.getStationCode())) {
             //根据站点编码查询站点名称
             String position = iSysBaseAPI.getPosition(e.getStationCode());
-            if (ObjectUtil.isNotEmpty(wz)) {
-                wz = wz + position;
+            if (ObjectUtil.isNotEmpty(inspectionPosition)) {
+                inspectionPosition = inspectionPosition + position;
+                storageLocation = position;
             } else {
-                wz = position;
+                inspectionPosition = position;
+                storageLocation = position;
             }
             e.setStationName(position);
         }
@@ -490,10 +501,12 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             //根据位置编码查询位置名称
             String position = iSysBaseAPI.getPosition(e.getPositionCode());
             e.setPositionName(position);
-            if (ObjectUtil.isNotEmpty(wz)) {
-                wz = wz + position;
+            if (ObjectUtil.isNotEmpty(inspectionPosition)) {
+                inspectionPosition = inspectionPosition + position;
+                storageLocation = position;
             } else {
-                wz = position;
+                inspectionPosition = position;
+                storageLocation = position;
             }
         }
         if (StrUtil.isNotBlank(e.getDepartmentCode())) {
@@ -504,25 +517,50 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             LoginUser userById = iSysBaseAPI.getUserById(e.getUserId());
             e.setPatrolName(userById.getRealname());
         }
+        List<Map<String, String>> listMap = new ArrayList<Map<String, String>>();
+        boolean isGroup = true;
+        //根据物资编码分类，拿到数据
+        List<EmergencyMaterialsInvoicesItemDTO> items = emergencyMaterialsMapper.getMaterialInspectionList(null, invoice.getId(), isGroup);
+        Integer serialNumber = 1;
+        //一级表头存放数据
         map.put("patrolDate", DateUtil.format(e.getPatrolDate(), "yyyy-MM-dd"));
-        map.put("position", wz);
+        map.put("position", inspectionPosition);
         map.put("patrolName", e.getPatrolName());
         map.put("patrolTeamName", e.getPatrolTeamName());
         map.put("patrolResult", e.getInspectionResults() == 0 ? "异常" : "正常");
-        List<Map<String, String>> listMap = new ArrayList<Map<String, String>>();
-        List<EmergencyMaterialsInvoicesItemDTO> items = emergencyMaterialsMapper.getMaterialInspectionList(selections.get(0));
+        //内容存放数据
         for (EmergencyMaterialsInvoicesItemDTO item : items) {
+            List<EmergencyMaterialsInvoicesItemDTO> materialInspectionList = emergencyMaterialsMapper.getMaterialInspectionList(item.getMaterialsCode(), invoice.getId(), false);
             Map<String, String> lm = new HashMap<String, String>();
-            lm.put("categoryName", item.getCategoryName());
+            lm.put("serialNumber", String.valueOf(serialNumber));
+            EmergencyMaterialsCategory category = emergencyMaterialsCategoryMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsCategory>()
+                    .eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .eq(EmergencyMaterialsCategory::getCategoryCode, item.getCategoryCode())
+            );
+            lm.put("categoryName", category.getCategoryName());
             lm.put("materialsCode", item.getMaterialsCode());
             lm.put("materialsName", item.getMaterialsName());
             lm.put("specification", item.getSpecification());
-            lm.put("storageLocation", "位置 ");
+            lm.put("storageLocation", storageLocation);
             lm.put("number", item.getNumber());
-            lm.put("check", item.getCheck() == 1 ? "√" : "×");
-            lm.put("checkResult", item.getCheckResult() == 1 ? "√" : "×");
             lm.put("abnormalCondition", item.getAbnormalCondition());
             listMap.add(lm);
+            serialNumber++;
+            //动态表头的表达式，与创建表头导入公式对应
+            Integer t = 7;
+            for (EmergencyMaterialsInvoicesItemDTO dto : materialInspectionList) {
+                List<EmergencyMaterialsInvoicesItemDTO> sons = materialInspectionList.stream().filter(m -> m.getPid().equals(dto.getId())).collect(Collectors.toList());
+                if (CollUtil.isNotEmpty(sons)) {
+                    for (EmergencyMaterialsInvoicesItemDTO son : sons) {
+                        lm.put(String.valueOf(t), son.getCheckResult() == 1 ? "√" : "×");
+                        t++;
+                    }
+                } else {
+                    lm.put(String.valueOf(t), dto.getCheckResult() == 1 ? "√" : "×");
+                    t++;
+                }
+            }
+
         }
         map.put("maplist", listMap);
         Workbook workbook = ExcelExportUtil.exportExcel(params, map);
@@ -530,7 +568,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         try {
             response.setHeader("Content-Disposition",
                     "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
-            response.setHeader("Content-Disposition", "attachment;filename=" + e.getPatrolDate() + wz + "应急物资巡检记录.xlsx");
+            response.setHeader("Content-Disposition", "attachment;filename=" + e.getPatrolDate() + inspectionPosition + "应急物资巡检记录.xlsx");
             BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
             workbook.write(bufferedOutPut);
             bufferedOutPut.flush();
@@ -538,50 +576,61 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         } catch (IOException exception) {
             exception.printStackTrace();
         }
+        //删除文件
+        fileTemp.delete();
     }
 
     @Override
-    public void getInspectionRecordExportZip(EmergencyMaterialsInvoicesDTO condition, HttpServletRequest request, HttpServletResponse response) throws  IOException {
-        //创建导入失败错误报告,进行模板导出
-        Resource resource = new ClassPathResource("/templates/emInvoices.xlsx");
-        InputStream resourceAsStream = resource.getInputStream();
-        //2.获取临时文件
-        File fileTemp = new File("/templates/emInvoices.xlsx");
-        try {
-            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
-            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
+    public void getInspectionRecordExportZip(EmergencyMaterialsInvoicesDTO condition, HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        String path = fileTemp.getAbsolutePath();
-        TemplateExportParams params = new TemplateExportParams(path);
+        OutputStream outputStream = response.getOutputStream();
+        ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
         List<String> selections = condition.getSelections();
         LambdaQueryWrapper<EmergencyMaterialsInvoices> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
         queryWrapper.in(EmergencyMaterialsInvoices::getId, selections);
         List<EmergencyMaterialsInvoices> invoices = materialsInvoicesMapper.selectList(queryWrapper);
-        OutputStream outputStream = response.getOutputStream();
-        ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
         response.setContentType("application/zip");
         response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(DateUtil.format(new Date(), "yyyy-MM-dd") + "应急物资巡检记录导出模板.zip", "UTF-8"));
         for (EmergencyMaterialsInvoices invoice : invoices) {
+            List<String> invoiceId = new ArrayList<>();
+            invoiceId.add(invoice.getId()) ;
+            condition.setSelections(invoiceId);
+            XSSFWorkbook wb = getInspectionRecordExportExcelTemplate(condition, request, response);
+            //wb转输入流
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            wb.write(bos);
+            byte[] brray = bos.toByteArray();
+            InputStream inputStream = new ByteArrayInputStream(brray);
+            File fileTemp = new File("/templates/inspectionRecordExportExcel.xlsx");
+            try {
+                //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+                FileUtils.copyInputStreamToFile(inputStream, fileTemp);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+            String path = fileTemp.getAbsolutePath();
+            TemplateExportParams params = new TemplateExportParams(path);
+            Map<String, Object> map = new HashMap<String, Object>();
             EmergencyMaterialsInvoicesDTO e = new EmergencyMaterialsInvoicesDTO();
             BeanUtils.copyProperties(invoice, e);
-            String wz = null;
+            String inspectionPosition = null;
+            String storageLocation = null;
             if (StrUtil.isNotBlank(e.getLineCode())) {
                 //根据线路编码查询线路名称
                 String position = iSysBaseAPI.getPosition(e.getLineCode());
                 e.setLineName(position);
-                wz = position;
+                inspectionPosition = position;
             }
             if (StrUtil.isNotBlank(e.getStationCode())) {
                 //根据站点编码查询站点名称
                 String position = iSysBaseAPI.getPosition(e.getStationCode());
-                if (ObjectUtil.isNotEmpty(wz)) {
-                    wz = wz + position;
+                if (ObjectUtil.isNotEmpty(inspectionPosition)) {
+                    inspectionPosition = inspectionPosition + position;
+                    storageLocation = position;
                 } else {
-                    wz = position;
+                    inspectionPosition = position;
+                    storageLocation = position;
                 }
                 e.setStationName(position);
             }
@@ -589,10 +638,12 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 //根据位置编码查询位置名称
                 String position = iSysBaseAPI.getPosition(e.getPositionCode());
                 e.setPositionName(position);
-                if (ObjectUtil.isNotEmpty(wz)) {
-                    wz = wz + position;
+                if (ObjectUtil.isNotEmpty(inspectionPosition)) {
+                    inspectionPosition = inspectionPosition + position;
+                    storageLocation = position;
                 } else {
-                    wz = position;
+                    inspectionPosition = position;
+                    storageLocation = position;
                 }
             }
             if (StrUtil.isNotBlank(e.getDepartmentCode())) {
@@ -603,45 +654,397 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 LoginUser userById = iSysBaseAPI.getUserById(e.getUserId());
                 e.setPatrolName(userById.getRealname());
             }
-            Map<String, Object> map = new HashMap<String, Object>();
+            List<Map<String, String>> listMap = new ArrayList<Map<String, String>>();
+            boolean isGroup = true;
+            List<EmergencyMaterialsInvoicesItemDTO> items = emergencyMaterialsMapper.getMaterialInspectionList(null, invoice.getId(), isGroup);
+            Integer a = 1;
             map.put("patrolDate", DateUtil.format(e.getPatrolDate(), "yyyy-MM-dd"));
-            map.put("position", wz);
+            map.put("position", inspectionPosition);
             map.put("patrolName", e.getPatrolName());
             map.put("patrolTeamName", e.getPatrolTeamName());
             map.put("patrolResult", e.getInspectionResults() == 0 ? "异常" : "正常");
-            List<Map<String, String>> listMap = new ArrayList<Map<String, String>>();
-            List<EmergencyMaterialsInvoicesItemDTO> items = emergencyMaterialsMapper.getMaterialInspectionList(invoice.getId());
             for (EmergencyMaterialsInvoicesItemDTO item : items) {
+                List<EmergencyMaterialsInvoicesItemDTO> materialInspectionList = emergencyMaterialsMapper.getMaterialInspectionList(item.getMaterialsCode(), invoice.getId(), false);
                 Map<String, String> lm = new HashMap<String, String>();
-                lm.put("categoryName", item.getCategoryName());
+                lm.put("serialNumber", String.valueOf(a));
+                EmergencyMaterialsCategory category = emergencyMaterialsCategoryMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsCategory>()
+                        .eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0)
+                        .eq(EmergencyMaterialsCategory::getCategoryCode, item.getCategoryCode())
+                );
+                lm.put("categoryName", category.getCategoryName());
                 lm.put("materialsCode", item.getMaterialsCode());
                 lm.put("materialsName", item.getMaterialsName());
                 lm.put("specification", item.getSpecification());
-                lm.put("storageLocation", "位置 ");
+                lm.put("storageLocation", storageLocation);
                 lm.put("number", item.getNumber());
-                lm.put("check", item.getCheck() == 1 ? "√" : "×");
-                lm.put("checkResult", item.getCheckResult() == 1 ? "√" : "×");
                 lm.put("abnormalCondition", item.getAbnormalCondition());
                 listMap.add(lm);
+                a++;
+                Integer t = 7;
+                for (EmergencyMaterialsInvoicesItemDTO dto : materialInspectionList) {
+                    List<EmergencyMaterialsInvoicesItemDTO> sons = materialInspectionList.stream().filter(m -> m.getPid().equals(dto.getId())).collect(Collectors.toList());
+                    if (CollUtil.isNotEmpty(sons)) {
+                        for (EmergencyMaterialsInvoicesItemDTO son : sons) {
+                            lm.put(String.valueOf(t), son.getCheckResult() == 1 ? "√" : "×");
+                            t++;
+                        }
+                    } else {
+                        lm.put(String.valueOf(t), dto.getCheckResult() == 1 ? "√" : "×");
+                        t++;
+                    }
+                }
+
             }
             map.put("maplist", listMap);
             Workbook workbook = ExcelExportUtil.exportExcel(params, map);
+            String fileName = "应急物资巡检记录.xlsx";
             try {
                 Random random = new Random();
-                int a = random.nextInt(10);
-                ZipEntry entry = new ZipEntry(a+" "+DateUtil.format(e.getPatrolDate(), "yyyy-MM-dd") + wz + "应急物资巡检记录.xlsx");
+                int c = random.nextInt(10);
+                ZipEntry entry = new ZipEntry(c + " " + DateUtil.format(e.getPatrolDate(), "yyyy-MM-dd") + inspectionPosition + fileName);
                 zipOutputStream.putNextEntry(entry);
                 workbook.write(zipOutputStream);
                 zipOutputStream.flush();
             } catch (IOException exception) {
                 exception.printStackTrace();
             }
+            fileTemp.delete();
         }
         zipOutputStream.close();
         outputStream.flush();
         outputStream.close();
 
     }
+
+    /**
+     * 创建自定义模板
+     *
+     * @param condition
+     * @param request
+     * @param response
+     * @return
+     * @throws IOException
+     */
+    public XSSFWorkbook getInspectionRecordExportExcelTemplate(EmergencyMaterialsInvoicesDTO condition, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        //创建workbook,即创建一个excel
+        XSSFWorkbook wb = new XSSFWorkbook();
+        //创建excel里对应的sheet
+        XSSFSheet sheet = wb.createSheet("应急物资巡检记录导出");
+        /** 第三步，设置样式以及字体样式*/
+        XSSFCellStyle titleStyle = createTitleCellStyle(wb);
+        XSSFCellStyle firstHeadCellStyle = createFirstHeadCellStyle(wb);
+        XSSFCellStyle secondHeaderStyle = createSecondHeadCellStyle(wb);
+        XSSFCellStyle contentStyle = createContentCellStyle(wb);
+        // 行号
+        int rowNum = 0;
+        // 创建第一页的第一行，索引从0开始
+        XSSFRow row0 = sheet.createRow(rowNum++);
+        // 设置行高
+        row0.setHeight((short) 800);
+        String title = "应急物资巡检记录导出";
+        List<String> selections = condition.getSelections();
+        LambdaQueryWrapper<EmergencyMaterialsInvoices> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.in(EmergencyMaterialsInvoices::getId, selections);
+        List<EmergencyMaterialsInvoices> invoices = materialsInvoicesMapper.selectList(queryWrapper);
+        //创建表头
+        createHeadCell(wb, row0, title, invoices, titleStyle, contentStyle, sheet, rowNum, firstHeadCellStyle, secondHeaderStyle);
+        return wb;
+    }
+
+    /**
+     * 创建一级标题样式
+     *
+     * @param wb
+     * @return
+     */
+    private static XSSFCellStyle createTitleCellStyle(XSSFWorkbook wb) {
+        XSSFCellStyle cellStyle = wb.createCellStyle();
+        //水平居中
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        //垂直对齐
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        //背景颜色
+        cellStyle.setFillForegroundColor(IndexedColors.WHITE.getIndex());
+        // 创建字体样式
+        XSSFFont headerFont1 = (XSSFFont) wb.createFont();
+        //字体加粗
+        headerFont1.setBold(true);
+        // 设置字体类型
+        headerFont1.setFontName("宋体");
+        // 设置字体大小
+        headerFont1.setFontHeightInPoints((short) 16);
+        // 为标题样式设置字体样式
+        cellStyle.setFont(headerFont1);
+        return cellStyle;
+    }
+
+    /**
+     * 创建表头
+     */
+    public void createHeadCell(XSSFWorkbook wb, XSSFRow row0, String title, List<EmergencyMaterialsInvoices> invoices, XSSFCellStyle titleStyle, XSSFCellStyle contentStyle, XSSFSheet sheet, int rowNum, XSSFCellStyle firstHeaderStyle, XSSFCellStyle secondHeaderStyle) {
+        XSSFCell c00 = row0.createCell(0);
+        c00.setCellValue(title);
+        c00.setCellStyle(titleStyle);
+        // 第二行，设置一级表头名，cellRangeAddressList 合并表格集合
+        List<CellRangeAddress> cellRangeAddressList = new ArrayList<>();
+        String[] rowSeconds = {"巡检位置：{{position}}", "", "巡检人：{{patrolName}}", "", "巡检部门：{{patrolTeamName}}", "", "巡检结果：{{patrolResult}}"};
+        XSSFRow rowSecond = sheet.createRow(rowNum++);
+        rowSecond.setHeight((short) 700);
+        //将 rowSeconds 的名称，即一级表头名 ，写入单元格，每个空一格，然后合并
+        for (int i = 0; i < rowSeconds.length; i++) {
+            XSSFCell tempCell = rowSecond.createCell(i);
+            tempCell.setCellValue(rowSeconds[i]);
+            tempCell.setCellStyle(firstHeaderStyle);
+            Integer column = i + 1;
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, i, column));
+            i++;
+        }
+        // 第三行，设置二级表头名，固定了七个，其他的是动态表头
+        String[] row_first = {"序号", "应急物资分类", "应急物资编号", "应急物资名称", "规格型号", "存放地点", "数量"};
+        List<String> titles = new LinkedList<>(Arrays.asList(row_first));
+        List<EmergencyMaterialsInvoicesItemDTO> allList = new ArrayList<>();
+        XSSFRow row1 = sheet.createRow(rowNum++);
+        row1.setHeight((short) 350);
+        for (EmergencyMaterialsInvoices invoice : invoices) {
+            EmergencyMaterialsInvoicesItem emergencyMaterialsInvoicesItem = materialsInvoicesItemMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsInvoicesItem>().eq(EmergencyMaterialsInvoicesItem::getInvoicesId, invoice.getId()).last("limit 1"));
+            List<EmergencyMaterialsInvoicesItemDTO> items = emergencyMaterialsMapper.getMaterialInspectionList(emergencyMaterialsInvoicesItem.getMaterialsCode(), invoice.getId(), false);
+            if (CollUtil.isNotEmpty(items)) {
+                allList.addAll(items);
+            }
+        }
+        if (CollUtil.isNotEmpty(allList)) {
+            List<EmergencyMaterialsInvoicesItemDTO> parent = allList.stream().filter(i -> i.getPid().equals("0")).collect(Collectors.toList());
+            for (EmergencyMaterialsInvoicesItemDTO s : parent) {
+                titles.add(s.getContent());
+                List<EmergencyMaterialsInvoicesItemDTO> son = allList.stream().filter(e -> e.getPid().equals(s.getId())).collect(Collectors.toList());
+                //有子级的则用空格代替，要减一，空格代替是为了下面做合并，即第三、第四行合并
+                if (CollUtil.isNotEmpty(son)) {
+                    for (int i = 0; i < son.size() - 1; i++) {
+                        titles.add("");
+                    }
+                }
+            }
+            //第三行，最后一列的表头名
+            titles.add("异常情况记录");
+            //标题合并单元格操作，参数依次为起始行，结束行，起始列，结束列 （索引0开始）
+            CellRangeAddress cellAddresses1 = new CellRangeAddress(0, 0, 0, titles.size() - 1);
+            cellRangeAddressList.add(cellAddresses1);
+            //第三行，将二级表头写入单元格中
+            for (int i = 0; i < titles.size(); i++) {
+                XSSFCell tempCell = row1.createCell(i);
+                tempCell.setCellValue(titles.get(i));
+                tempCell.setCellStyle(secondHeaderStyle);
+            }
+            for (int i = 0; i < 7; i++) {
+                CellRangeAddress cellAddresses = new CellRangeAddress(2, 3, i, i);
+                cellRangeAddressList.add(cellAddresses);
+            }
+            //第四行，设置三级表头名，即二级中动态表头的子级
+            XSSFRow row2 = sheet.createRow(rowNum++);
+            row2.setHeight((short) 350);
+            //row_second 第四行表头，只存子级，其他的用空格代替第三行对应的列，为了第三行中的父级合并列
+            List<String> row_second = new ArrayList<>();
+            for (int i = 0; i < 7; i++) {
+                row_second.add("");
+            }
+            Integer size = row_second.size();
+            Integer eigthLines = 7;
+            for (EmergencyMaterialsInvoicesItemDTO s : parent) {
+                List<EmergencyMaterialsInvoicesItemDTO> son = allList.stream().filter(e -> e.getPid().equals(s.getId())).collect(Collectors.toList());
+                if (CollUtil.isNotEmpty(son) && son.size() > 1) {
+                    CellRangeAddress cellAddresses = new CellRangeAddress(2, 2, size, size + son.size() - 1);
+                    size = size + son.size();
+                    cellRangeAddressList.add(cellAddresses);
+                    for (EmergencyMaterialsInvoicesItemDTO itemDTO : son) {
+                        row_second.add(eigthLines, itemDTO.getContent());
+                        eigthLines++;
+                    }
+                } else {
+                    if (son.size() == 1) {
+                        for (EmergencyMaterialsInvoicesItemDTO itemDTO : son) {
+                            row_second.add(eigthLines, itemDTO.getContent());
+                        }
+                    } else {
+                        CellRangeAddress cellAddresses = new CellRangeAddress(2, 3, size, size);
+                        cellRangeAddressList.add(cellAddresses);
+                        row_second.add(eigthLines, "");
+                    }
+                    size++;
+                    eigthLines++;
+                }
+            }
+            row_second.add("");
+            createCell(sheet, rowNum, contentStyle, row_second.size());
+            //最后第三、第四行的最后一列合并
+            CellRangeAddress addresses = new CellRangeAddress(2, 3, row_second.size() - 1, row_second.size() - 1);
+            cellRangeAddressList.add(addresses);
+            style(cellRangeAddressList, sheet);
+            //将数据写入第四行
+            for (int i = 0; i < row_second.size(); i++) {
+                XSSFCell tempCell = row2.createCell(i);
+                tempCell.setCellValue(row_second.get(i));
+                tempCell.setCellStyle(secondHeaderStyle);
+                sheet.setColumnWidth(i, 4500);
+                if (i == row_second.size() - 1) {
+                    //第一个表头的最后一格设置右边框
+                    XSSFCellStyle cellStyle = wb.createCellStyle();
+                    //右边框
+                    cellStyle.setBorderRight(BorderStyle.THIN);
+                    XSSFCell a = rowSecond.createCell(i);
+                    a.setCellStyle(cellStyle);
+                }
+            }
+        }
+    }
+
+    /**
+     * 创建一级表头样式
+     *
+     * @param wb
+     * @return
+     */
+    private static XSSFCellStyle createFirstHeadCellStyle(XSSFWorkbook wb) {
+        XSSFCellStyle cellStyle = wb.createCellStyle();
+        //水平居中
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        //垂直对齐
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        //背景颜色
+        cellStyle.setFillForegroundColor(IndexedColors.WHITE.getIndex());
+        // 创建字体样式
+        XSSFFont headerFont1 = (XSSFFont) wb.createFont();
+        //字体加粗
+        headerFont1.setBold(true);
+        // 设置字体类型
+        headerFont1.setFontName("宋体");
+        // 设置字体大小
+        headerFont1.setFontHeightInPoints((short) 11);
+        // 为标题样式设置字体样式
+        cellStyle.setFont(headerFont1);
+        return cellStyle;
+    }
+
+    /**
+     * 创建二级表头样式
+     *
+     * @param wb
+     * @return
+     */
+    private static XSSFCellStyle createSecondHeadCellStyle(XSSFWorkbook wb) {
+        XSSFCellStyle cellStyle = wb.createCellStyle();
+        // 设置自动换行
+        cellStyle.setWrapText(true);
+        //背景颜色
+        cellStyle.setFillForegroundColor(IndexedColors.WHITE.getIndex());
+        //水平居中
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        //垂直对齐
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        cellStyle.setBottomBorderColor(IndexedColors.BLACK.index);
+        //下边框
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        //左边框
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        //右边框
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        //上边框
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        // 创建字体样式
+        XSSFFont headerFont = (XSSFFont) wb.createFont();
+        //字体加粗
+        headerFont.setBold(true);
+        // 设置字体类型
+        headerFont.setFontName("宋体");
+        // 设置字体大小
+        headerFont.setFontHeightInPoints((short) 11);
+        // 为标题样式设置字体样式
+        cellStyle.setFont(headerFont);
+
+        return cellStyle;
+    }
+
+    /**
+     * 合并，并设置样式
+     *
+     * @param cellRangeAddressList
+     * @param sheet
+     */
+    private void style(List<CellRangeAddress> cellRangeAddressList, Sheet sheet) {
+        for (CellRangeAddress cellAddresses : cellRangeAddressList) {
+            sheet.addMergedRegion(cellAddresses);
+            //合并后设置下边框
+            RegionUtil.setBorderBottom(BorderStyle.THIN, cellAddresses, sheet);
+            RegionUtil.setBorderLeft(BorderStyle.THIN, cellAddresses, sheet);
+            RegionUtil.setBorderTop(BorderStyle.THIN, cellAddresses, sheet);
+            RegionUtil.setBorderRight(BorderStyle.THIN, cellAddresses, sheet);
+        }
+    }
+
+
+    /**
+     * 创建内容样式
+     *
+     * @param wb
+     * @return
+     */
+    private static XSSFCellStyle createContentCellStyle(XSSFWorkbook wb) {
+        XSSFCellStyle cellStyle = wb.createCellStyle();
+        // 垂直居中
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        // 水平居中
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        // 设置自动换行
+        cellStyle.setWrapText(true);
+        //下边框
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        //左边框
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        //右边框
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        //上边框
+        cellStyle.setBorderTop(BorderStyle.THIN);
+
+        // 生成12号字体
+        XSSFFont font = wb.createFont();
+        font.setColor((short) 8);
+        font.setFontHeightInPoints((short) 12);
+        cellStyle.setFont(font);
+
+        return cellStyle;
+    }
+
+    /**
+     * 导入公式
+     *
+     * @param sheet
+     * @param rowNum
+     * @param contentStyle
+     * @param rowSumNum
+     */
+    public void createCell(XSSFSheet sheet, int rowNum, XSSFCellStyle contentStyle, int rowSumNum) {
+
+        //第三行，索引2，录入数据
+        XSSFRow tempRow = sheet.createRow(rowNum++);
+        tempRow.setHeight((short) 700);
+        String[] row_third = new String[rowSumNum];
+        String[] row_first = {"{{$fe:maplist t.serialNumber", "t.categoryName", "t.materialsCode", "t.materialsName", "t.specification", "t.storageLocation", "t.number"};
+        for (int j = 0; j < row_first.length; j++) {
+            XSSFCell tempCell = tempRow.createCell(j);
+            tempCell.setCellValue(row_first[j]);
+        }
+        for (int j = 7; j < row_third.length - 1; j++) {
+            XSSFCell tempCell = tempRow.createCell(j);
+            tempCell.setCellValue("t." + j);
+        }
+        XSSFCell tempCell = tempRow.createCell(rowSumNum - 1);
+        tempCell.setCellValue("t.abnormalCondition }}");
+    }
+
+
     private Result<?> getErrorExcel(int errorLines, List<EmergencyMaterialsModel> list, List<String> errorMessage, int successLines, String type, String url) throws IOException {
         //创建导入失败错误报告,进行模板导出
         Resource resource = new ClassPathResource("/templates/emergencyMaterialsError.xlsx");
