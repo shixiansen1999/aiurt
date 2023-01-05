@@ -209,8 +209,6 @@ public class FlowApiServiceImpl implements FlowApiService {
         this.initAndGetProcessInstanceVariables(variableData);
         if (Objects.nonNull(busData)) {
             // 流程key
-
-
             // 流程模板信息
             LambdaQueryWrapper<ActCustomModelInfo> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(ActCustomModelInfo::getModelKey, startBpmnDTO.getModelKey()).last("limit 1");
