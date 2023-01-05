@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.positionwifi.entity.CsPositionWifi;
 import com.aiurt.modules.positionwifi.service.ICsPositionWifiService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -89,6 +90,7 @@ public class CsPositionWifiController extends BaseController<CsPositionWifi, ICs
 	@PostMapping(value = "/add")
 	public Result<CsPositionWifi> add(@RequestBody CsPositionWifi csPositionWifi) {
 		Result<CsPositionWifi> result = new Result<CsPositionWifi>();
+		csPositionWifi.setMac(StrUtil.swapCase(csPositionWifi.getMac()));
 		try {
 			final int count = (int) csPositionWifiService.count(new LambdaQueryWrapper<CsPositionWifi>().eq(CsPositionWifi::getName, csPositionWifi.getName()).eq(CsPositionWifi::getDelFlag, 0).last("limit 1"));
 			if (count > 0){
