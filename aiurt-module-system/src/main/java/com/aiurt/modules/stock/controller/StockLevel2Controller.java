@@ -2,10 +2,8 @@ package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -23,9 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @Description: 二级库库存管理
@@ -65,7 +61,19 @@ public class StockLevel2Controller {
         IPage<StockLevel2> pageList = iStockLevel2Service.pageList(page,stockLevel2);
         return Result.OK(pageList);
     }
-
+    /**
+     *  编辑
+     *
+     * @param
+     * @return
+     */
+    @AutoLog(value = "二级库管理-二级库库存管理-编辑")
+    @ApiOperation(value="二级库管理-二级库库存管理-编辑", notes="二级库管理-二级库库存管理-编辑")
+    @RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+    public Result<String> edit(@RequestBody StockLevel2 stockLevel2) {
+        iStockLevel2Service.updateById(stockLevel2);
+        return Result.OK("编辑成功!");
+    }
     /**
      * 二级库库存管理详情查询
      * @param id
