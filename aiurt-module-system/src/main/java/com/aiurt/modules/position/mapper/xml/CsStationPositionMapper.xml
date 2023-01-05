@@ -70,4 +70,13 @@
         FROM
         cs_station where del_flag = 0 and id=#{id}
     </select>
+
+    <select id="getFullNameByPositionCode" resultType="java.lang.String">
+        select concat_ws('/', cl.line_name, cs.station_name, csp.position_name)
+        from cs_station_position csp
+                 left join cs_station cs on csp.staion_code = cs.station_code and cs.del_flag = 0
+                 left join cs_line cl on cs.line_code = cl.line_code and cl.del_flag = 0
+        where csp.del_flag = 0
+          and csp.position_code = #{positionCode}
+    </select>
 </mapper>

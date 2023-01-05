@@ -814,5 +814,13 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     JSONObject getPositionMessage(String code);
+
+    /**
+     * 根据位置编码获取线路站点和位置全名，格式如线路/站点/位置
+     *
+     * @param positionCode
+     * @return
+     */
+    String getFullNameByPositionCode(String positionCode);
 }
 
