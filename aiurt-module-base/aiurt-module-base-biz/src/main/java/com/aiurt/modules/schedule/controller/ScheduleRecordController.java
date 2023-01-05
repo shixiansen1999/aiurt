@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.schedule.dto.*;
@@ -298,26 +299,23 @@ public class ScheduleRecordController {
     @AutoLog(value = "排班记录-查询工班日历1")
     @ApiOperation(value = "排班记录-查询工班日历1", notes = "排班记录-查询工班日历1")
     @GetMapping(value = "getUserSchedule")
+    @PermissionData(pageComponent = "schedule/ScheduleCalendar")
     public Result<List<DayScheduleModel>> getUserSchedule(@RequestParam(name = "date", required = false) String date,
                                                           @RequestParam(name = "orgId", required = false) String orgId,
                                                           @RequestParam(name = "text", required = false) String text) {
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<String> roleCodeList = scheduleRecordMapper.getRoleCodeById(loginUser.getId());
         Result<List<DayScheduleModel>> result = new Result<List<DayScheduleModel>>();
 
-        List<String> orgList = new ArrayList<>();
-
-        //当前登录用户所管辖的班组
-        List<SysDepartModel> userSysDepart = iSysBaseApi.getUserSysDepart(loginUser.getId());
-        if (CollUtil.isNotEmpty(userSysDepart)) {
-            List<String> collect = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
-            orgList.addAll(collect);
+        //根据数据规则查出所属权限的人员，这个只有根据部门权限查部门的人
+        List<LoginUser> allUsers = iSysBaseApi.getAllUsers();
+        List<String> userIds = new ArrayList<>();
+        if (CollUtil.isNotEmpty(allUsers)) {
+            List<String> collect = allUsers.stream().map(LoginUser::getId).collect(Collectors.toList());
+            userIds.addAll(collect);
         }else {
             result.setResult(new ArrayList<>());
             result.setSuccess(true);
             return result;
         }
-
 
         if (StringUtils.isEmpty(date)) {
             date = DateUtil.format(new Date(), "yyyy-MM");
@@ -337,7 +335,7 @@ public class ScheduleRecordController {
             model.setVoList(new ArrayList<ScheduleCalendarVo>());
             list.add(model);
         }
-        List<ScheduleRecordModel> allRecordList = scheduleRecordService.getAllScheduleRecordsByMonth(date,orgId,text,orgList);
+        List<ScheduleRecordModel> allRecordList = scheduleRecordService.getAllScheduleRecordsByMonth(date,orgId,text,userIds);
         if (allRecordList != null && allRecordList.size() > 0) {
             for (ScheduleRecordModel recordModel : allRecordList) {
                 calendar.setTime(recordModel.getDate());
@@ -561,9 +559,10 @@ public class ScheduleRecordController {
     @AutoLog(value = "班组下拉框", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "班组下拉框", notes = "班组下拉框")
     @GetMapping(value = "/selectDepart")
+    @PermissionData(pageComponent = "schedule/ScheduleCalendar")
     public Result<List<SysDepartModel>> selectDepart() {
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = iSysBaseApi.getUserSysDepart(sysUser.getId());
+        //通过权限查部门
+        List<SysDepartModel> userSysDepart = iSysBaseApi.getAllSysDepart();
         Result<List<SysDepartModel>> result = new Result<>();
         result.setSuccess(true);
         if (CollUtil.isEmpty(userSysDepart)) {

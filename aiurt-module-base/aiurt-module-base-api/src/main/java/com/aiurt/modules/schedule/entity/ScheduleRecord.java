@@ -1,5 +1,6 @@
 package com.aiurt.modules.schedule.entity;
 
+import com.aiurt.common.aspect.annotation.UserFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -42,6 +43,7 @@ public class ScheduleRecord {
      */
     @Excel(name = "排班用户id", width = 15)
     @ApiModelProperty(value = "排班用户id")
+    @UserFilterColumn
     private String userId;
 
     /**

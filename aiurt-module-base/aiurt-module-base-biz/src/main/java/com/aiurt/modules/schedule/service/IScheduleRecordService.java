@@ -28,7 +28,7 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
 
     List<ScheduleRecordModel> getRecordListByUserAndDate(String userId, String date);
 
-    List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date, String orgId,String text,List<String> orgList);
+    List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date, String orgId,String text,List<String> userIds);
 
     List<ScheduleRecordModel> getMySchedule(String date, String userId);
 
@@ -42,7 +42,7 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
 
     List<ScheduleUser> getScheduleUserByDateAndOrgCode(String date, String username, String orgCode);
 
-    List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, List<String> orgList , String orgId,String text);
+    List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, List<String> userIds , String orgId,String text);
 
     /**
      * 统计分析

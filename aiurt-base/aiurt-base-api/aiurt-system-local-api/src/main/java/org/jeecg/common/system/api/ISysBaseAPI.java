@@ -816,6 +816,12 @@ public interface ISysBaseAPI extends CommonAPI {
     JSONObject getPositionMessage(String code);
 
     /**
+     * 通过权限查询用户
+     * @return
+     */
+    List<LoginUser> getAllUsers();
+
+    /**
      * 根据位置编码获取线路站点和位置全名，格式如线路/站点/位置
      *
      * @param positionCode

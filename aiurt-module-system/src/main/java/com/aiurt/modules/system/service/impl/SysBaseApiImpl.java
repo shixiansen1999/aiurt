@@ -2270,4 +2270,21 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
 
+    @Override
+    public List<LoginUser> getAllUsers() {
+        QueryWrapper<SysUser> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+
+        List<SysUser> users = userMapper.selectList(wrapper);
+        if (CollectionUtil.isEmpty(users)) {
+            return Collections.emptyList();
+        }
+        List<LoginUser> loginUsers = new ArrayList<>();
+        for (SysUser user : users) {
+            LoginUser loginUser = new LoginUser();
+            BeanUtils.copyProperties(user, loginUser);
+            loginUsers.add(loginUser);
+        }
+        return loginUsers;
+    }
 }

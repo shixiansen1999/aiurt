@@ -1,14 +1,15 @@
 package com.aiurt.modules.system.mapper;
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.model.SysUserSysDepartModel;
 import com.aiurt.modules.system.vo.SysUserDepVo;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.jeecg.common.system.vo.LoginUser;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.List;
  * @Author scott
  * @since 2018-12-20
  */
+@EnableDataPerm
 public interface SysUserMapper extends BaseMapper<SysUser> {
 	/**
 	  * 通过用户账号查询用户信息

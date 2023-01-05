@@ -7,6 +7,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.modules.schedule.entity.Schedule;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
@@ -29,7 +30,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -88,6 +88,7 @@ public class ScheduleController {
     @AutoLog(value = "人员排班-分页列表查询")
     @ApiOperation(value = "人员排班-分页列表查询", notes = "人员排班-分页列表查询")
     @GetMapping(value = "/list")
+    @PermissionData(pageComponent = "schedule/ScheduleList")
     public Result<IPage<Schedule>> queryPageList(Schedule schedule,
                                                  @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
@@ -378,20 +379,22 @@ public class ScheduleController {
     @AutoLog(value = "人员排班-查询人员下拉")
     @ApiOperation(value = "人员排班-查询人员下拉", notes = "人员排班-查询人员下拉")
     @RequestMapping(value = "selectScheduleUser", method = RequestMethod.GET)
+    @PermissionData(pageComponent = "schedule/ScheduleList")
     public Result<List<LoginUser>> selectScheduleUser(@RequestParam(name = "startDate", required = true) String startDate,
                                                     @RequestParam(name = "endDate", required = true) String endDate) {
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String orgCode = loginUser.getOrgId();
+        //根据数据规则查出所属权限的人员
+        List<LoginUser> userList = sysBaseAPI.getAllUsers();
         Result<List<LoginUser>> result = new Result<List<LoginUser>>();
 
        //如果已经被安排过排班则把状态设置为冻结
-        List<LoginUser> userList = scheduleRecordMapper.userList(orgCode);
-        userList.forEach(user -> {
-            List list = recordService.getRecordListInDays(user.getId(), startDate, endDate);
-            if (list != null && list.size() > 0) {
-                user.setStatus(2);
-            }
-        });
+        if (CollUtil.isNotEmpty(userList)) {
+            userList.forEach(user -> {
+                List list = recordService.getRecordListInDays(user.getId(), startDate, endDate);
+                if (list != null && list.size() > 0) {
+                    user.setStatus(2);
+                }
+            });
+        }
         result.setSuccess(true);
         result.setResult(userList);
         return result;

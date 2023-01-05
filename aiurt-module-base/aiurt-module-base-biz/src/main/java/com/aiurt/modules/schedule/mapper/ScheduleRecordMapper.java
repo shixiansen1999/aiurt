@@ -1,6 +1,7 @@
 package com.aiurt.modules.schedule.mapper;
 
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
 import com.aiurt.modules.schedule.dto.SysTotalTeamDTO;
 import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
@@ -26,6 +27,7 @@ import java.util.Map;
  * @Version: V1.0
  */
 @Repository
+@EnableDataPerm
 public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
 
     List<ScheduleRecord> getScheduleRecordBySchedule(@Param("scheduleId") Integer scheduleId);
@@ -36,7 +38,7 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
 
     List<ScheduleRecordModel> getMySchedule(@Param("date") String date,@Param("userId") String userId);
 
-    List<ScheduleRecordModel> getAllScheduleRecordsByMonth(@Param("date") String date, @Param("orgId") String orgId,@Param("text") String text,@Param("orgList") List<String> orgList);
+    List<ScheduleRecordModel> getAllScheduleRecordsByMonth(@Param("date") String date, @Param("orgId") String orgId,@Param("text") String text,@Param("userIds") List<String> userIds);
 
     List<LoginUser> getScheduleUserDataByDay(@Param("day") String day, @Param("orgId") String orgId);
 
@@ -55,7 +57,7 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
     //大屏统计分析
     Integer getZhiBanNum(Map map);
 
-    List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(@Param("date") String date, @Param("orgList") List<String> orgList , @Param("orgId") String orgId,@Param("text")String text);
+    List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(@Param("date") String date, @Param("userIds") List<String> userIds , @Param("orgId") String orgId,@Param("text")String text);
 
     /**
      * 查询
