@@ -104,6 +104,6 @@
         select
             cs.latitude as positionY, cs.longitude as positionX
         from cs_station cs  Join cs_position_wifi cpw on cs.station_code = cpw.station_code
-        where cs.longitude is not null AND  cs.del_flag = 0 and cpw.mac like concat(#{mac}, '%') limit 1
+        where cs.longitude is not null AND  cs.del_flag = 0 and LOWER(cpw.mac) like concat(#{mac}, '%') limit 1
     </select>
 </mapper>
