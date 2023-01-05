@@ -165,7 +165,7 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 
 
 	 /**
-	  * 应急预案导入模板下载
+	  * 应急预案启动记录导入模板下载
 	  */
 	 @AutoLog(value = "下载导入模板", operateType = 6, operateTypeAlias = "下载导入模板", permissionUrl = "")
 	 @ApiOperation(value = "下载导入模板", notes = "下载导入模板")
@@ -192,7 +192,8 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	  * @param response
 	  * @param id
 	  */
-	 @AutoLog(value = "应急预案-应急预案台账导出数据")
+	 @AutoLog(value = "应急预案-应急预案启动记录导出数据")
+	 @ApiOperation(value = "应急预案启动记录导出数据", notes = "应急预案启动记录导出数据")
 	 @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
 	 public void exportXls(HttpServletResponse response, @RequestParam(name="id",required=true) String id) {
 		 emergencyPlanRecordService.exportXls(response, id);

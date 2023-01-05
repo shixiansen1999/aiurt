@@ -20,5 +20,6 @@
                 AND t.emergency_plan_record_id = #{condition.emergencyPlanRecordId}
             </if>
         </where>
+        GROUP BY t.emergency_plan_record_id,t.materials_code
     </select>
 </mapper>
