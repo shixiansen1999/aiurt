@@ -1,6 +1,7 @@
 package com.aiurt.modules.flow.api;
 
 import com.aiurt.modules.flow.dto.StartBpmnDTO;
+import com.aiurt.modules.flow.dto.StartBpmnImportDTO;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 
 /**
@@ -26,4 +27,11 @@ public interface FlowBaseApi {
      * @return 新启动的流程实例。
      */
     void startAndTakeFirst(StartBpmnDTO startBpmnDTO);
+
+
+    /**
+     * 启动流程，导入
+     * @param startBpmnImportDTO
+     */
+    void startBpmnWithImport(StartBpmnImportDTO startBpmnImportDTO);
 }
