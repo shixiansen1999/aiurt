@@ -26,7 +26,6 @@
                     LEFT JOIN fault_type ft on ft.`code` = f.fault_type_code
     WHERE
             far.del_flag = 0
-            AND ft.del_flag = 0
             and far.approved_result = 0
             <if test="condition.approvedResult != null and condition.approvedResult != ''">
                 and far.approved_result = #{condition.approvedResult}
@@ -56,7 +55,6 @@
             LEFT JOIN fault_type ft ON ft.`code` = f.fault_type_code
     WHERE
             far.del_flag = 0
-            AND ft.del_flag = 0
             and far.approved_result = 1
             <if test="condition.approvedResult != null and condition.approvedResult != ''">
                 and far.approved_result = #{condition.approvedResult}
