@@ -110,4 +110,6 @@ public class CsSafetyAttention implements Serializable {
     @ApiModelProperty(value = "错误原因")
     @TableField(exist = false)
     private java.lang.String text;
+    @TableField(exist = false)
+    private  String ids;
 }
