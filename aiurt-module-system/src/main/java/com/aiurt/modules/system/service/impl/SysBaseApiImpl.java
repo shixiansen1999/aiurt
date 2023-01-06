@@ -2202,6 +2202,15 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return csStationPositionMapper.getFullNameByPositionCode(positionCode);
     }
 
+    @Override
+    public String getUserNameByDeptAuthCodeAndRoleCode(List<String> orgCodes, List<String> roleCodes) {
+        if (CollUtil.isEmpty(orgCodes) || CollUtil.isEmpty(roleCodes)) {
+            return "";
+        }
+        List<String> result = userMapper.getUserNameByDeptAuthCodeAndRoleCode(orgCodes, roleCodes);
+        return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
+    }
+
 
     @Override
     public JSONObject getDepartByName(String departName) {

@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Optional;
 
 /**
  * @Description 待办任务具体实现类
@@ -92,10 +93,14 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             log.error("待办任务创建失败");
             return;
         }
-        // 补充所属部门信息
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (ObjectUtil.isNotEmpty(sysUser)) {
-            sysTodoList.setSysOrgCode(sysUser.getOrgCode());
+        // 定时任务下发送消息则跳过补充信息
+        Boolean timedTask = ObjectUtil.isNotEmpty(sysTodoList.getTimedTask()) && sysTodoList.getTimedTask() ? true : false;
+        if (!timedTask) {
+            // 补充所属部门信息
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            if (ObjectUtil.isNotEmpty(sysUser)) {
+                sysTodoList.setSysOrgCode(sysUser.getOrgCode());
+            }
         }
         sysTodoList.setCreateTime(new Date());
         // 保存

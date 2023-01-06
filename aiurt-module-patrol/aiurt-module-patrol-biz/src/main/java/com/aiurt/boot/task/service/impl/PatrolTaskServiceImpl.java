@@ -990,6 +990,13 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         task.setDisposeTime(new Date());
         // 更新为已处置状态
         task.setDisposeStatus(PatrolConstant.TASK_DISPOSE);
+        // 更新漏巡任务待办消息
+        isTodoBaseAPI.updateTodoTaskState(
+                TodoBusinessTypeEnum.PATROL_OMIT.getType(),
+                task.getId(),
+                loginUser.getUsername(),
+                CommonTodoStatus.DONE_STATUS_1
+        );
         return patrolTaskMapper.updateById(task);
     }
 
@@ -1115,6 +1122,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String rebuildTask(PatrolRebuildDTO patrolRebuildDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
         String taskId = patrolRebuildDTO.getTaskId();
         QueryWrapper<PatrolTask> wrapper = new QueryWrapper<>();
         // 获取未作废、未处置、已漏检、未重新生成的任务
@@ -1157,6 +1166,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         // 将原漏检任务更新为已重新生成状态
         patrolTask.setRebuild(PatrolConstant.TASK_REBUILD);
         patrolTaskMapper.updateById(patrolTask);
+
+        // 更新漏巡任务待办消息
+        isTodoBaseAPI.updateTodoTaskState(
+                TodoBusinessTypeEnum.PATROL_OMIT.getType(),
+                patrolTask.getId(),
+                loginUser.getUsername(),
+                CommonTodoStatus.DONE_STATUS_1
+        );
 
         // 组织机构信息
         if (ObjectUtil.isEmpty(patrolRebuildDTO.getDeptCode())) {

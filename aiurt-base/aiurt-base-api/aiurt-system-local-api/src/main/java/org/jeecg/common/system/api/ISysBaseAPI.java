@@ -828,5 +828,13 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getFullNameByPositionCode(String positionCode);
+
+    /**
+     * 根据用户的部门权限编码和角色编码获取用户账号
+     * @param orgCodes
+     * @param roleCodes
+     * @return
+     */
+    String getUserNameByDeptAuthCodeAndRoleCode(List<String> orgCodes, List<String> roleCodes);
 }
 

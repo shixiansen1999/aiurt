@@ -29,6 +29,10 @@ public enum TodoBusinessTypeEnum {
      * 审核巡视任务
      */
     PATROL_AUDIT("patrol_audit"),
+    /**
+     * 巡视任务漏巡
+     */
+    PATROL_OMIT("patrol_omit"),
 
     /**
      * 故障审核

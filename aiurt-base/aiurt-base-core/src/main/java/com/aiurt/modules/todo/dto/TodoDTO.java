@@ -41,6 +41,9 @@ public class TodoDTO {
     /**app跳转的url*/
     @ApiModelProperty(value = "app跳转的url")
     private String appUrl;
+    /**是否为定时任务标识*/
+    private Boolean timedTask;
+
 
     public TodoDTO() {
     }
