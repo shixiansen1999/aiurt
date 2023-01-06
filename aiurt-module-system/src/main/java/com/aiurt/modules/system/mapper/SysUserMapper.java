@@ -217,6 +217,13 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	String getUserName(@Param("realName") String realName);
 
 	/**
+	 * 根据用户姓名查询用户账号
+	 * @param realName
+	 * @return
+	 */
+	List<String> getUserLikeName(@Param("realName") String realName);
+
+	/**
 	 * 查询 角色Id
 	 * @param list
 	 * @return
