@@ -7,7 +7,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.team.constant.TeamConstant;
+import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.team.constants.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTeamDTO;
 import com.aiurt.boot.team.dto.EmergencyTeamTrainingDTO;
 import com.aiurt.boot.team.entity.EmergencyCrew;
@@ -88,7 +89,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         String roleCodes = user.getRoleCodes();
         List<SysDepartModel> models = new ArrayList<>();
         if (StrUtil.isNotBlank(roleCodes)) {
-            if (!roleCodes.contains(TeamConstant.ADMIN)) {
+            if (!roleCodes.contains(RoleConstant.ADMIN)) {
                 //获取用户的所属部门及所属部门子部门
                 models = iSysBaseAPI.getUserDepartCodes();
                 if (CollUtil.isEmpty(models)) {

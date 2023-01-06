@@ -9,7 +9,8 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.team.constant.TeamConstant;
+import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.team.constants.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.dto.EmergencyTrainingRecordDTO;
 import com.aiurt.boot.team.entity.*;
@@ -101,7 +102,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String roleCodes = user.getRoleCodes();
         if (StrUtil.isNotBlank(roleCodes)) {
-            if (!roleCodes.contains(TeamConstant.ADMIN)) {
+            if (!roleCodes.contains(RoleConstant.ADMIN)) {
                 //获取用户的专业权限
                 List<CsUserMajorModel> majorByUserId = iSysBaseAPI.getMajorByUserId(user.getId());
                 if (CollUtil.isEmpty(majorByUserId)) {

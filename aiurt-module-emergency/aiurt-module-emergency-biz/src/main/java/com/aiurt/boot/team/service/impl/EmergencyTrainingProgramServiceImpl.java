@@ -8,7 +8,8 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.team.constant.TeamConstant;
+import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.team.constants.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.entity.EmergencyTeam;
 import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
@@ -84,7 +85,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         String roleCodes = user.getRoleCodes();
         List<SysDepartModel> models = new ArrayList<>();
         if (StrUtil.isNotBlank(roleCodes)) {
-            if (!roleCodes.contains(TeamConstant.ADMIN)) {
+            if (!roleCodes.contains(RoleConstant.ADMIN)) {
                 //获取用户的所属部门及所属部门子部门
                 models = iSysBaseAPI.getUserDepartCodes();
                 if (CollUtil.isEmpty(models)) {

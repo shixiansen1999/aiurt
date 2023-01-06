@@ -1,6 +1,6 @@
 package com.aiurt.boot.team.controller;
 
-import com.aiurt.boot.team.constant.TeamConstant;
+import com.aiurt.boot.team.constants.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
 import com.aiurt.boot.team.service.IEmergencyTrainingProgramService;

@@ -1,14 +1,10 @@
-package com.aiurt.boot.team.constant;
+package com.aiurt.boot.team.constants;
 /**
  * @author
  * @date 2022/11/29 14:58
  * @description: 应急队伍模块通用常量类
  */
 public interface TeamConstant {
-    /**
-     * 管理员身份
-     */
-    String ADMIN = "admin";
     /**
      * 未删除状态
      */
