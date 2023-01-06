@@ -135,7 +135,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             }
 
             //是否有存在子级，有就查询出子级一起返回
-            if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0") && StrUtil.isNotBlank(e.getCategoryCode())){
+            if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0") && StrUtil.isNotBlank(condition.getCategoryCode())){
                 MaterialAccountDTO materialAccountDTO = new MaterialAccountDTO();
                 materialAccountDTO.setPid(e.getCategoryId());
                 List<MaterialAccountDTO> materialAccountList1 = emergencyMaterialsMapper.getMaterialAccountList(pageList, materialAccountDTO);
