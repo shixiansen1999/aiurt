@@ -87,16 +87,15 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         // 系统管理员不做权限过滤
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String roleCodes = user.getRoleCodes();
-        List<SysDepartModel> models = new ArrayList<>();
         if (StrUtil.isNotBlank(roleCodes)) {
             if (!roleCodes.contains(RoleConstant.ADMIN)) {
-                //获取用户的所属部门及所属部门子部门
-                models = iSysBaseAPI.getUserDepartCodes();
-                if (CollUtil.isEmpty(models)) {
+                //获取用户的专业权限
+                List<CsUserMajorModel> majorByUserId = iSysBaseAPI.getMajorByUserId(user.getId());
+                if (CollUtil.isEmpty(majorByUserId)) {
                     return new Page<>();
                 }
-                List<String> orgCodes = models.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-                queryWrapper.in(EmergencyTeam::getOrgCode, orgCodes);
+                List<String> majorCodes  = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+                queryWrapper.in(EmergencyTeam::getMajorCode, majorCodes);
             }
         }else {
             return new Page<>();
