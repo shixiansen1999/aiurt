@@ -171,7 +171,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         variableMap.put(FlowConstant.PROC_INSTANCE_START_USER_NAME_VAR, loginUser.getUsername());
 
         // 启动流程
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), (String) businessKey, busData);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(),Objects.isNull(businessKey)?null:(String)businessKey , busData);
 
         log.info("启动流程成功！");
 
@@ -226,12 +226,8 @@ public class FlowApiServiceImpl implements FlowApiService {
         UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(startBpmnDTO.getModelKey());
 
         // 保存中间业务数据，将业务数据id返回
-        Object businessKey = null;
-        try {
-            businessKey = flowElementUtil.saveBusData(result.getId(), userTask.getId(), busData);
-        } catch (Exception e) {
-            throw new AiurtBootException("启动失败， 保存业务数据失败。");
-        }
+        Object businessKey = flowElementUtil.saveBusData(result.getId(), userTask.getId(), busData);
+
 
         String loginName = loginUser.getUsername();
         Authentication.setAuthenticatedUserId(loginName);
