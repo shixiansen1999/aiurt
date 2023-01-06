@@ -2,6 +2,7 @@ package com.aiurt.modules.todo.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -114,4 +115,7 @@ public class SysTodoList implements Serializable {
     private String appUrl;
 	@ApiModelProperty(value = "url类型：0动态表单，1路由表单")
 	private String urlType;
+    /**是否为定时任务标识*/
+    @TableField(exist = false)
+    private Boolean timedTask;
 }

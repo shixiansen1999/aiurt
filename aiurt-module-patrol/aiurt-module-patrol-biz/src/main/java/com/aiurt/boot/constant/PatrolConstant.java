@@ -64,6 +64,10 @@ public interface PatrolConstant {
      */
     Integer TASK_COMPLETE = 7;
     /**
+     * 巡检任务状态(未漏检)
+     */
+    Integer UNOMIT_STATUS = 0;
+    /**
      * 巡检任务状态(已漏检)
      */
     Integer OMIT_STATUS = 1;

@@ -286,4 +286,26 @@
 		</where>
 	</select>
 
+	<select id="getUserNameByDeptAuthCodeAndRoleCode" resultType="java.lang.String">
+		SELECT DISTINCT su.username
+		FROM sys_user_role sur
+				 JOIN sys_user su ON sur.user_id = su.id AND su.del_flag = 0
+				 JOIN sys_role sr ON sur.role_id = sr.id
+				 JOIN cs_user_depart cud ON sur.user_id = cud.user_id
+				 JOIN sys_depart sd ON cud.depart_id = sd.id AND sd.del_flag = 0
+		<where>
+			<if test="orgCodes != null and orgCodes.size() > 0">
+				sd.org_code in
+				<foreach collection="orgCodes" open="(" close=")" separator="," item="code">
+					#{code}
+				</foreach>
+			</if>
+			<if test="roleCodes != null and roleCodes.size() > 0">
+				and sr.role_code in
+				<foreach collection="roleCodes" open="(" close=")" separator="," item="code">
+					#{code}
+				</foreach>
+			</if>
+		</where>
+	</select>
 </mapper>
