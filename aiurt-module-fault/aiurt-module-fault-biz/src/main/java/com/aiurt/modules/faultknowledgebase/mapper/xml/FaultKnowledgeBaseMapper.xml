@@ -153,4 +153,26 @@
     left join fault f on fkb.id = f.knowledge_id
     where fkb.id = #{id}
     </select>
+
+    <select id="getDeviceCodeByName" resultType="com.aiurt.modules.device.entity.DeviceType">
+        SELECT
+        dt.*
+        FROM
+        device_type dt
+        where
+        <if test="deviceTypeName!=null">
+            dt.name = #{deviceTypeName} limit 1
+        </if>
+    </select>
+
+    <select id="getDeviceAssemblyCode" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO">
+        SELECT
+        da.code as materialCode
+        FROM
+        device_assembly da
+        where
+        <if test="deviceAssemblyName!=null">
+            da.material_name = #{deviceAssemblyName} limit 1
+        </if>
+    </select>
 </mapper>

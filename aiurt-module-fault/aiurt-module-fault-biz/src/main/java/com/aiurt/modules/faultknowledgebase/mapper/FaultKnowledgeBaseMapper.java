@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultknowledgebase.mapper;
 
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -55,4 +56,18 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
      * @return
      */
     int getNum(String id);
+
+    /**
+     * 根据设备类型名称获取code
+     * @param deviceTypeName
+     * @return
+     */
+    List<DeviceType> getDeviceCodeByName(String deviceTypeName);
+
+    /**
+     * 根据设备组件名称获取code
+     * @param deviceAssemblyName
+     * @return
+     */
+    List<DeviceAssemblyDTO> getDeviceAssemblyCode(String deviceAssemblyName);
 }
