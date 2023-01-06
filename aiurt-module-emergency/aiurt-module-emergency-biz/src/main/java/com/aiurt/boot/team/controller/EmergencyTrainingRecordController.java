@@ -9,6 +9,7 @@ import com.aiurt.boot.team.entity.EmergencyTrainingRecord;
 import com.aiurt.boot.team.service.IEmergencyTrainingRecordService;
 import com.aiurt.boot.team.vo.EmergencyTrainingRecordVO;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.XlsUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -52,6 +53,7 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 	 */
 	@ApiOperation(value="应急队伍训练记录-分页列表查询", notes="应急队伍训练记录-分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "emergency/emergencyTeam/EmergencyTeamList")
 	public Result<IPage<EmergencyTrainingRecordVO>> queryPageList(EmergencyTrainingRecordDTO emergencyTrainingRecordDTO,
 																@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 																@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

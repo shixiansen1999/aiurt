@@ -11,6 +11,7 @@ import com.aiurt.boot.team.service.IEmergencyCrewService;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -65,6 +66,7 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 	 */
 	@ApiOperation(value="应急队伍台账-分页列表查询", notes="emergency_team-分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "emergency/emergencyTeam/EmergencyTeamList")
 	public Result<IPage<EmergencyTeam>> queryPageList(EmergencyTeamDTO emergencyTeamDTO,
 													  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 													  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
@@ -177,6 +179,7 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
     */
 	@ApiOperation(value="应急队伍台账导出excel", notes="应急队伍台账导出excel")
     @RequestMapping(value = "/exportTeamXls",method = RequestMethod.GET)
+	@PermissionData(pageComponent = "emergency/emergencyTeam/EmergencyTeamList")
     public ModelAndView exportTeamXls(HttpServletRequest request, EmergencyTeamDTO emergencyTeamDTO) {
         return emergencyTeamService.exportTeamXls(request, emergencyTeamDTO);
     }
@@ -220,25 +223,26 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
     }
 
 	/**
-	 * 根据部门查找应急队伍
+	 * 根据权限查找应急队伍
 	 *
-	 * @param orgCode
 	 * @return
 	 */
-	@ApiOperation(value="应急队伍台账-根据部门查找应急队伍", notes="应急队伍台账-根据部门查找应急队伍")
+	@ApiOperation(value="应急训练计划-根据权限查找应急队伍", notes="应急训练计划-根据部门查找应急队伍")
 	@GetMapping(value = "/getTeamByCode")
-	public Result<List<EmergencyTeam>> getTeamByCode(@RequestParam(name="orgCode",required=false) String orgCode) {
-		return emergencyTeamService.getTeamByCode(orgCode);
+	@PermissionData(pageComponent = "emergency/emergencyTeam/EmergencyTeamList")
+	public Result<List<EmergencyTeam>> getTeamByCode() {
+		return emergencyTeamService.getTeamByCode();
 	}
 
 	/**
-	 * 根据专业权限查找应急队伍
+	 * 根据权限查找应急队伍
 	 *
 	 * @param
 	 * @return
 	 */
-	@ApiOperation(value="应急队伍台账-根据专业权限查找应急队伍", notes="应急队伍台账-根据专业权限查找应急队伍")
+	@ApiOperation(value="应急训练记录-根据权限查找应急队伍", notes="应急训练记录-根据权限查找应急队伍")
 	@GetMapping(value = "/getTeamByMajor")
+	@PermissionData(pageComponent = "emergency/emergencyTeam/EmergencyTrainingRecordList")
 	public Result<List<EmergencyTeam>> getTeamByMajor() {
 		return emergencyTeamService.getTeamByMajor();
 	}

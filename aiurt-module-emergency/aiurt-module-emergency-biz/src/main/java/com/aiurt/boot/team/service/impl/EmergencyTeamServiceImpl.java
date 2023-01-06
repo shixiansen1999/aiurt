@@ -7,7 +7,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.team.constants.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTeamDTO;
 import com.aiurt.boot.team.dto.EmergencyTeamTrainingDTO;
@@ -33,10 +32,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.*;
+import org.jeecg.common.system.vo.CsWorkAreaModel;
+import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -84,23 +85,6 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         EmergencyTeam team = new EmergencyTeam();
         LambdaQueryWrapper<EmergencyTeam> queryWrapper = new LambdaQueryWrapper<>();
         BeanUtil.copyProperties(emergencyTeamDTO, team);
-        // 系统管理员不做权限过滤
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String roleCodes = user.getRoleCodes();
-        List<SysDepartModel> models = new ArrayList<>();
-        if (StrUtil.isNotBlank(roleCodes)) {
-            if (!roleCodes.contains(RoleConstant.ADMIN)) {
-                //获取用户的所属部门及所属部门子部门
-                models = iSysBaseAPI.getUserDepartCodes();
-                if (CollUtil.isEmpty(models)) {
-                    return new Page<>();
-                }
-                List<String> orgCodes = models.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-                queryWrapper.in(EmergencyTeam::getOrgCode, orgCodes);
-            }
-        }else {
-            return new Page<>();
-        }
 
         if (StrUtil.isNotBlank(team.getMajorCode())) {
             queryWrapper.eq(EmergencyTeam::getMajorCode, team.getMajorCode());
@@ -256,11 +240,8 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
 
 
     @Override
-    public Result<List<EmergencyTeam>> getTeamByCode(String orgCode) {
+    public Result<List<EmergencyTeam>> getTeamByCode() {
         LambdaQueryWrapper<EmergencyTeam> queryWrapper = new LambdaQueryWrapper<>();
-        if (StrUtil.isNotBlank(orgCode)) {
-            queryWrapper.eq(EmergencyTeam::getOrgCode, orgCode);
-        }
         queryWrapper.eq(EmergencyTeam::getDelFlag, TeamConstant.DEL_FLAG0);
         queryWrapper.select(EmergencyTeam::getId,EmergencyTeam::getEmergencyTeamname, EmergencyTeam::getEmergencyTeamcode,EmergencyTeam::getManagerId);
         List<EmergencyTeam> emergencyTeams = this.getBaseMapper().selectList(queryWrapper);
@@ -282,16 +263,9 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
 
     @Override
     public Result<List<EmergencyTeam>> getTeamByMajor() {
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserMajorModel> majorByUserId = iSysBaseAPI.getMajorByUserId(user.getId());
-        if (CollUtil.isEmpty(majorByUserId)) {
-            return Result.OK(new ArrayList<>());
-        }
-        List<String> collect = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
         LambdaQueryWrapper<EmergencyTeam> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.select(EmergencyTeam::getId,EmergencyTeam::getEmergencyTeamname, EmergencyTeam::getEmergencyTeamcode,EmergencyTeam::getPositionCode);
         queryWrapper.eq(EmergencyTeam::getDelFlag, TeamConstant.DEL_FLAG0);
-        queryWrapper.in(EmergencyTeam::getMajorCode, collect);
         List<EmergencyTeam> emergencyTeams = this.getBaseMapper().selectList(queryWrapper);
         if (CollUtil.isNotEmpty(emergencyTeams)) {
             for (EmergencyTeam emergencyTeam : emergencyTeams) {

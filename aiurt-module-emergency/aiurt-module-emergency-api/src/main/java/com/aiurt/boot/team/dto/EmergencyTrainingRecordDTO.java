@@ -49,8 +49,8 @@ public class EmergencyTrainingRecordDTO {
     @ApiModelProperty(value = "训练计划编号")
     private String trainingProgramCode;
 
-    /**部门*/
-    @Excel(name = "专业权限code", width = 15)
-    @ApiModelProperty(value = "专业权限code")
-    private List<String> majorCodeList;
+
+    @Excel(name = "应急队伍ids", width = 15)
+    @ApiModelProperty(value = "应急队伍ids")
+    private List<String> ids;
 }

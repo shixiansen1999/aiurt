@@ -2,6 +2,10 @@ package com.aiurt.boot.team.entity;
 
 import com.aiurt.boot.team.dto.EmergencyTeamTrainingDTO;
 import com.aiurt.boot.team.vo.EmergencyCrewVO;
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
+import com.aiurt.common.aspect.annotation.LineFilterColumn;
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.StaionFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -50,6 +54,7 @@ public class EmergencyTeam implements Serializable {
 	@Excel(name = "所属专业", width = 15)
     @ApiModelProperty(value = "所属专业")
     @NotBlank(message = "所属专业不能为空",groups = {Save.class, Update.class})
+    @MajorFilterColumn
     private String majorCode;
     @ApiModelProperty(value = "所属专业名称")
     @TableField(exist = false)
@@ -58,6 +63,7 @@ public class EmergencyTeam implements Serializable {
 	@Excel(name = "所属部门", width = 15)
     @ApiModelProperty(value = "所属部门")
     @NotBlank(message = "所属部门不能为空",groups = {Save.class, Update.class})
+    @DeptFilterColumn
     private String orgCode;
     @ApiModelProperty(value = "所属部门名称")
     @TableField(exist = false)
@@ -87,6 +93,7 @@ public class EmergencyTeam implements Serializable {
 	@Excel(name = "线路编码", width = 15)
     @ApiModelProperty(value = "线路编码")
     @NotBlank(message = "线路不能为空",groups = {Save.class, Update.class})
+    @LineFilterColumn
     private String lineCode;
     @ApiModelProperty(value = "线路名称")
     @TableField(exist = false)
@@ -95,6 +102,7 @@ public class EmergencyTeam implements Serializable {
 	@Excel(name = "站点编码", width = 15)
     @ApiModelProperty(value = "站点编码")
     @NotBlank(message = "站点不能为空",groups = {Save.class, Update.class})
+    @StaionFilterColumn
     private String stationCode;
     @ApiModelProperty(value = "站点名称")
     @TableField(exist = false)
