@@ -33,6 +33,10 @@ public class MaterialAccountDTO {
     @ApiModelProperty(value = "物资名称")
     private java.lang.String materialsName;
 
+    @ApiModelProperty(value = "父级ID，第一级默认为0")
+    @TableField(exist = false)
+    private java.lang.String pid;
+
     /**规格型号*/
     @Excel(name="规格型号",width = 15)
     @TableField(exist = false)
@@ -134,6 +138,11 @@ public class MaterialAccountDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "巡检项")
     private List<PatrolStandardItemsModel> patrolStandardItemsModelList;
+
+    /**巡检项*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "子节点")
+    private List<MaterialAccountDTO> children;
 
 
 }

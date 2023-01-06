@@ -133,6 +133,15 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             if (CollUtil.isNotEmpty(patrolStandardItemsModels)) {
                 e.setPatrolStandardItemsModelList(patrolStandardItemsModels);
             }
+
+            //是否有存在子级，有就查询出子级一起返回
+            if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0") && StrUtil.isNotBlank(e.getCategoryCode())){
+                condition.setPid(e.getId());
+                List<MaterialAccountDTO> materialAccountList1 = emergencyMaterialsMapper.getMaterialAccountList(pageList, condition);
+                if (CollUtil.isNotEmpty(materialAccountList1)){
+                    e.setChildren(materialAccountList1);
+                }
+            }
         });
         return pageList.setRecords(materialAccountList);
     }
@@ -210,15 +219,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     @Override
     public Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList, String id) {
         List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsMapper.getMaterialInspection(pageList, id,"0");
-        HashMap<String, EmergencyMaterialsInvoicesItem> map = new HashMap<>();
         for (int i = 0; i < materialInspection.size(); i++) {
             EmergencyMaterialsInvoicesItem e = materialInspection.get(i);
-            EmergencyMaterialsInvoicesItem emergencyMaterialsInvoicesItem = map.get(e.getContent());
-            if (ObjectUtil.isNotEmpty(emergencyMaterialsInvoicesItem)){
-                e.setContent(null);
-            }else {
-                map.put(e.getContent(),e);
-            }
             if (StrUtil.isNotBlank(e.getCategoryCode())){
                 LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper= new LambdaQueryWrapper<>();
                 lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,0)
@@ -244,16 +246,9 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 e.setPositionName(position);
             }
             if ("0".equals(e.getPid()) && StrUtil.isNotBlank(e.getId())){
-                HashMap<String, EmergencyMaterialsInvoicesItem> map1 = new HashMap<>();
                 List<EmergencyMaterialsInvoicesItem> materialInspection1 = emergencyMaterialsMapper.getMaterialInspection(pageList, id, e.getId());
                 for (int j = 0; j < materialInspection1.size(); j++) {
                     EmergencyMaterialsInvoicesItem q = materialInspection1.get(j);
-                    EmergencyMaterialsInvoicesItem emergencyMaterialsInvoicesItem1 = map1.get(q.getContent());
-                    if (ObjectUtil.isNotEmpty(emergencyMaterialsInvoicesItem1)){
-                        q.setContent(null);
-                    }else {
-                        map1.put(q.getContent(),q);
-                    }
                     if (StrUtil.isNotBlank(q.getCategoryCode())){
                         LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper= new LambdaQueryWrapper<>();
                         lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,0)

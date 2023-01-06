@@ -5,7 +5,7 @@
        t1.id as id ,t2.id as categoryId,t1.materials_code as materialsCode,t1.materials_name as materialsName,t2.category_code as categoryCode,
        t2.category_name as categoryName,t1.specification as specification,t1.number as number,t1.primary_org as primaryOrg,t1.user_id as userId,
        t1.phone as phone,t1.line_code as lineCode,t1.station_code as stationCode,t1.position_code as positionCode,t1.unit as unit,t1.flood_protection as floodProtection,
-       t1.remark as remark
+       t1.remark as remark,t2.pid as pid
     </sql>
     <select id="getMaterialAccountList" resultType="com.aiurt.boot.materials.dto.MaterialAccountDTO">
        SELECT
@@ -33,6 +33,9 @@
             </if>
             <if test="condition.positionCode!=null">
                 AND t1.position_code = #{condition.positionCode}
+            </if>
+            <if test="condition.pid!=null">
+                AND t2.pid = #{condition.pid}
             </if>
             <if test="condition.selections != null and condition.selections.size() != 0">
              and  t1.id in
@@ -114,23 +117,17 @@
          t3.check_result as checkResult,
          t3.content as content,
          t3.id as id,
-         t3.pid as pid,
-         t4.line_code as lineCode,
-         t4.station_code as stationCode,
-         t4.position_code as positionCode
+         t3.pid as pid
         from emergency_materials_invoices_item t3
-        LEFT JOIN emergency_materials_invoices t4 ON t3.invoices_id = t4.id
         <where>
               t3.del_flag = 0
-              and t4.del_flag = 0
             <if test="id != null">
-                and t4.id = #{id}
+                and t3.invoices_id = #{id}
             </if>
             <if test="pid != null">
                 and t3.pid = #{pid}
             </if>
         </where>
-        GROUP BY t3.id
     </select>
     <select id="getMaterialPatrolList" resultType="com.aiurt.boot.materials.dto.MaterialAccountDTO">
       SELECT
