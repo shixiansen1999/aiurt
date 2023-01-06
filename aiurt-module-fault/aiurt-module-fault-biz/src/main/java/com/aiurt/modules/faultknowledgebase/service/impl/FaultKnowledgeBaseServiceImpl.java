@@ -4,6 +4,7 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -278,7 +279,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                         iterator.remove();
                     }
                 }
-                if (CollUtil.isEmpty(list)) {
+                if (CollectionUtil.isEmpty(list)) {
                     tipMessage = "导入失败，该文件为空。";
                     return imporReturnRes(errorLines, successLines, tipMessage, false, null);
                 }

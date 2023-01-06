@@ -580,6 +580,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskUser.setUserName(sysUser.getRealname());
             patrolTaskUser.setDelFlag(0);
             patrolTaskUserMapper.insert(patrolTaskUser);
+            // 领取后发送待办消息
+            this.sendWaitingMessage(patrolTask);
         }
         //确认：将待确认改为待执行
         if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
