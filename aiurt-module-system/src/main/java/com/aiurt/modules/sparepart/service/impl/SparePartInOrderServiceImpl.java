@@ -13,22 +13,24 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
+import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.boot.plan.dto.StationDTO;
+import com.aiurt.boot.plan.entity.EmergencyPlanRecordAtt;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.service.impl.InspectionCodeServiceImpl;
 import com.aiurt.boot.strategy.dto.*;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
-import com.aiurt.modules.sparepart.entity.SparePartApply;
-import com.aiurt.modules.sparepart.entity.SparePartApplyMaterial;
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
-import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.service.IMaterialBaseService;
+import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.entity.dto.SparePartInOrderImportExcelDTO;
 import com.aiurt.modules.sparepart.mapper.SparePartApplyMaterialMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartInOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
+import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -85,6 +87,10 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
     private String upLoadPath;
     @Autowired
     private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private IMaterialBaseService materialBaseService;
+    @Autowired
+    private ISparePartStockInfoService sparePartStockInfoService;
     /**
      * 查询列表
      * @param page
@@ -287,8 +293,6 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             // excel表格数据
             List<SparePartInOrderImportExcelDTO> list = null;
             try {
-                // 记录校验得到的错误信息
-                StringBuilder errorMessage = new StringBuilder();
 
                 list = ExcelImportUtil.importExcel(file.getInputStream(), SparePartInOrderImportExcelDTO.class, params);
                 // 空表格直接返回
@@ -297,6 +301,9 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
                 }
                 // 校验数据
                 for (SparePartInOrderImportExcelDTO sparePartInOrderImportExcelDTO : list) {
+                    // 记录校验得到的错误信息
+                    StringBuilder errorMessage = new StringBuilder();
+
                     SparePartInOrder sparePartInOrder = new SparePartInOrder();
                     // 校验备件入库
                     this.checkData(errorMessage, sparePartInOrderImportExcelDTO, sparePartInOrder);
@@ -388,40 +395,53 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         }
 
         //保管仓库是否存在
-        if (ObjectUtil.isNotEmpty(wareHouseName)) {
-            String wareHouseCode = sparePartInOrderMapper.selectWareHouseCode(wareHouseName);
-            if (ObjectUtil.isNotEmpty(wareHouseCode)) {
-                sparePartInOrder.setWarehouseCode(wareHouseCode);
+        if (ObjectUtil.isEmpty(wareHouseName)) {
+            errorMessage.append("保管仓库必须填写，");
+        }else{
+            List<SparePartStockInfo> stockInfoList = sparePartStockInfoService.lambdaQuery()
+                    .eq(SparePartStockInfo::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                    .eq(SparePartStockInfo::getWarehouseName, wareHouseName).list();
+//            String wareHouseCode = sparePartInOrderMapper.selectWareHouseCode(wareHouseName);
+            if (CollUtil.isNotEmpty(stockInfoList)) {
+                for (SparePartStockInfo sparePartStockInfo : stockInfoList) {
+                    String warehouseCode = sparePartStockInfo.getWarehouseCode();
+                    sparePartInOrder.setWarehouseCode(warehouseCode);
+                }
             } else {
                 errorMessage.append("保管仓库不存在，");
             }
-        }else{
-            errorMessage.append("保管仓库必须填写，");
         }
         //物资编码是否存在
-        if (ObjectUtil.isNotEmpty(materialCode)) {
-            String materialName =sparePartInOrderMapper.selectMaterialName(materialCode);
-            if (ObjectUtil.isNotEmpty(materialName)) {
-                sparePartInOrder.setMaterialCode(materialCode);
+        if (ObjectUtil.isEmpty(materialCode)) {
+            errorMessage.append("物资编码必须填写，");
+        }else{
+            List<MaterialBase> materialBaseList = materialBaseService.lambdaQuery()
+                    .eq(MaterialBase::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                    .eq(MaterialBase::getCode, materialCode).list();
+            if (CollUtil.isNotEmpty(materialBaseList)) {
+                for (MaterialBase materialBase : materialBaseList) {
+                    String code = materialBase.getCode();
+                    sparePartInOrder.setMaterialCode(code);
+                }
             } else {
                 errorMessage.append("物资编码不存在，");
             }
-        }else{
-            errorMessage.append("物资编码必须填写，");
         }
         //物资名称是否存在
-        if (ObjectUtil.isNotEmpty(name)) {
-            String materialName = null;
-            if(ObjectUtil.isNotEmpty(materialCode)){
-                materialName=sparePartInOrderMapper.selectMaterialName(materialCode);
-            }
-            if (ObjectUtil.isNotEmpty(materialName)) {
-                sparePartInOrder.setName(materialName);
+        if (ObjectUtil.isEmpty(name)) {
+            errorMessage.append("物资名称必须填写，");
+        }else{
+            List<MaterialBase> materialBases = materialBaseService.lambdaQuery()
+                    .eq(MaterialBase::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
+                    .eq(MaterialBase::getName, name).list();
+            if (CollUtil.isNotEmpty(materialBases)) {
+                for (MaterialBase materialBase : materialBases) {
+                    String mName = materialBase.getName();
+                    sparePartInOrder.setName(mName);
+                }
             } else {
                 errorMessage.append("物资名称不存在，");
             }
-        }else{
-            errorMessage.append("物资名称必须填写，");
         }
         //入库数量是否为数字
         if (ObjectUtil.isNotEmpty(num)) {
@@ -453,8 +473,10 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         JSONObject result = new JSONObject(5);
         result.put("isSucceed", isSucceed);
         result.put("errorCount", errorLines);
-        result.put("successLines", successLines);
+        result.put("successCount", successLines);
         result.put("failReportUrl", failReportUrl);
+        int totalCount = successLines + errorLines;
+        result.put("totalCount", totalCount);
         Result res = Result.ok(result);
         res.setMessage(message);
         res.setCode(200);
