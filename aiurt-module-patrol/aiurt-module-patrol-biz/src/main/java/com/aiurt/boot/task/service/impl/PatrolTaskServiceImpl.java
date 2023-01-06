@@ -306,8 +306,16 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
                 LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                 Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
-                sysBaseApi.sendBusAnnouncement(new BusMessageDTO(loginUser.getUsername(), userName, "巡视任务", "您有一条新的巡视任务待确认接收！",
-                        CommonConstant.MSG_CATEGORY_2, SysAnnmentTypeEnum.PATROL_ASSIGN.getType(), patrolTask.getId()));
+                sysBaseApi.sendBusAnnouncement(
+                        new BusMessageDTO(loginUser.getUsername(),
+                                userName,
+                                "巡视任务",
+                                "您有一条新的巡视任务(编号为:" + patrolTask.getCode() + ")待确认接收！",
+                                CommonConstant.MSG_CATEGORY_2,
+                                SysAnnmentTypeEnum.PATROL_ASSIGN.getType(),
+                                patrolTask.getId()
+                        )
+                );
             }
         }
     }
@@ -334,8 +342,16 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         String userName = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
-        sysBaseApi.sendBusAnnouncement(new BusMessageDTO(loginUser.getUsername(), userName, "巡视任务", "您有一条新的巡视任务待确认接收！",
-                CommonConstant.MSG_CATEGORY_2, SysAnnmentTypeEnum.PATROL_ASSIGN.getType(), patrolTask.getId()));
+        sysBaseApi.sendBusAnnouncement(
+                new BusMessageDTO(loginUser.getUsername(),
+                        userName,
+                        "巡视任务",
+                        "您有一条新的巡视任务(编号为:" + patrolTask.getCode() + ")待确认接收！",
+                        CommonConstant.MSG_CATEGORY_2,
+                        SysAnnmentTypeEnum.PATROL_ASSIGN.getType(),
+                        patrolTask.getId()
+                )
+        );
     }
 
 
