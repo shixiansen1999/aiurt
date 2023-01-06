@@ -1,17 +1,10 @@
-package com.aiurt.modules.faultanalysisreport.constant;
+package com.aiurt.modules.faultanalysisreport.constants;
 /**
  * 2022/6/29
  * @author: lkj
  * 常用常量
  */
-public class FaultConstant {
-    /**管理员角色*/
-    public final static String ADMIN = "admin";
-    /**维修工班长角色*/
-    public final static String MAINTENANCE_WORKER = "banzhang";
-    /**专业技术负责人角色*/
-    public final static String PROFESSIONAL_TECHNICAL_DIRECTOR = "jishuyuan";
-
+public interface FaultConstant {
     /**待审批*/
     public final static Integer PENDING = 0;
 

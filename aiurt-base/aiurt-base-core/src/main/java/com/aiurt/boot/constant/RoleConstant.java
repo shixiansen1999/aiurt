@@ -56,4 +56,8 @@ public interface RoleConstant {
      * 技术员
      */
     String TECHNICIAN = "technician";
+    /**
+     * 专业技术负责人
+     */
+    String MAJOR_PEOPLE = "jishuyuan";
 }
