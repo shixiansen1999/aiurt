@@ -299,7 +299,7 @@ public class FlowElementUtil {
                         return reflectionService.invokeService(className.get(0), className.get(1), data);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error(e.getMessage(), e);
                 }
             }
         }
