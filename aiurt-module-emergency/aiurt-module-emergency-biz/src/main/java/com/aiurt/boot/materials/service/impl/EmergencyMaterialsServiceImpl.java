@@ -445,8 +445,6 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                         //校验信息
                         examine(model, em, stringBuilder, list);
                         if (stringBuilder.length() > 0) {
-                            // 截取字符
-                            stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
                             model.setWrongReason(stringBuilder.toString());
                             errorLines++;
                         }
@@ -1104,11 +1102,12 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             lm.put("categoryName", categoryModel.getCategoryName());
             lm.put("floodProtection", categoryModel.getFloodProtection());
             lm.put("number", categoryModel.getNumber());
-            lm.put("stationCodeName", categoryModel.getStationName());
+            lm.put("stationCodeName", categoryModel.getDepositPositionName());
             lm.put("primaryName", categoryModel.getPrimaryName());
             lm.put("userName", categoryModel.getUserName());
-            lm.put("unit", categoryModel.getUserName());
-            lm.put("phone", categoryModel.getUnit());
+            lm.put("unit", categoryModel.getUnit());
+            lm.put("phone", categoryModel.getPhone());
+            lm.put("remark", categoryModel.getRemark());
             lm.put("wrongReason", categoryModel.getWrongReason());
             listMap.add(lm);
         }
@@ -1237,13 +1236,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         if (ObjectUtil.isEmpty(model.getDepositPositionName())) {
             stringBuilder.append("存放位置必填，");
         } else {
-            String[] split = model.getDepositPositionName().split("");
-            Integer count = 0;
-            for (String s : split) {
-                if (s.equals("/")) {
-                    count++;
-                }
-            }
+            List<String> depositPositionNameSize = StrUtil.splitTrim(model.getDepositPositionName(), "/");
+            Integer count = depositPositionNameSize.size();
             if (count < 2 || count > 3) {
                 stringBuilder.append("存放位置填写不规范，");
             } else {
@@ -1277,9 +1271,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 } else {
                     stringBuilder.append("站点不存在，");
                 }
-                if (ObjectUtil.isNotEmpty(positionCode)) {
-                    em.setPositionCode(stationCode);
-                } else {
+                if(ObjectUtil.isEmpty(positionCode)&&depositPositionName.size() > 2)
+                {
                     stringBuilder.append("位置不存在，");
                 }
             }
