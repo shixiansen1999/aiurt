@@ -117,7 +117,8 @@
          t3.check_result as checkResult,
          t3.content as content,
          t3.id as id,
-         t3.pid as pid
+         t3.pid as pid,
+         t3.code as code
         from emergency_materials_invoices_item t3
         <where>
               t3.del_flag = 0
