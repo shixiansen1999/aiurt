@@ -2,9 +2,10 @@ package com.aiurt.modules.faultanalysisreport.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.mapper.FaultMapper;
-import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
+import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
@@ -66,7 +67,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         if ( getRole()) {faultAnalysisReport.setApprovedResult(FaultConstant.PASSED);}
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
         //工班长只能看到审核通过的和自己创建的未审核通过的
-        if (rolesByUsername.size()==1 && rolesByUsername.contains(FaultConstant.MAINTENANCE_WORKER)) {
+        if (rolesByUsername.size()==1 && rolesByUsername.contains(RoleConstant.FOREMAN)) {
             faultAnalysisReport.setCreateBy(sysUser.getUsername());
         }
         List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,ids);
@@ -216,7 +217,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
         if (analysisReport.getStatus().equals(FaultConstant.APPROVED)) {
-            if (!rolesByUsername.contains(FaultConstant.ADMIN) && !rolesByUsername.contains(FaultConstant.PROFESSIONAL_TECHNICAL_DIRECTOR)) {
+            if (!rolesByUsername.contains(RoleConstant.ADMIN) && !rolesByUsername.contains(RoleConstant.MAJOR_PEOPLE)) {
                 return Result.error("没有权限");
             }
         }
@@ -233,7 +234,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         for (String s : list) {
             FaultAnalysisReport analysisReport = this.getById(s);
             if (analysisReport.getStatus().equals(FaultConstant.APPROVED)) {
-                if (!rolesByUsername.contains(FaultConstant.ADMIN) && !rolesByUsername.contains(FaultConstant.PROFESSIONAL_TECHNICAL_DIRECTOR)) {
+                if (!rolesByUsername.contains(RoleConstant.ADMIN) && !rolesByUsername.contains(RoleConstant.MAJOR_PEOPLE)) {
                     return Result.error("没有权限");
                 }
             }
@@ -246,7 +247,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     public boolean getRole() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
-        if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.MAINTENANCE_WORKER)&&!rolesByUsername.contains(FaultConstant.PROFESSIONAL_TECHNICAL_DIRECTOR)) {
+        if (!rolesByUsername.contains(RoleConstant.ADMIN)&&!rolesByUsername.contains(RoleConstant.FOREMAN)&&!rolesByUsername.contains(RoleConstant.MAJOR_PEOPLE)) {
             return true;
         }
         return false;
