@@ -140,6 +140,43 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 materialAccountDTO.setPid(e.getCategoryId());
                 List<MaterialAccountDTO> materialAccountList1 = emergencyMaterialsMapper.getMaterialAccountList(pageList, materialAccountDTO);
                 if (CollUtil.isNotEmpty(materialAccountList1)){
+                    materialAccountList1.forEach(q->{
+                        if (StrUtil.isNotBlank(q.getUserId())) {
+                            //根据负责人id查询负责人名称
+                            LoginUser userById = iSysBaseAPI.getUserById(q.getUserId());
+                            if (StrUtil.isNotBlank(userById.getRealname())) {
+                                q.setUserName(userById.getRealname());
+                            }
+                        }
+                        if (StrUtil.isNotBlank(q.getPrimaryOrg())) {
+                            //根据部门编码查询部门名称
+                            SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(q.getPrimaryOrg());
+                            if (ObjectUtil.isNotEmpty(departByOrgCode)) {
+                                q.setPrimaryName(departByOrgCode.getDepartName());
+                            }
+                        }
+                        if (StrUtil.isNotBlank(q.getLineCode())) {
+                            //根据线路编码查询线路名称
+                            String position = iSysBaseAPI.getPosition(q.getLineCode());
+                            if (StrUtil.isNotBlank(position)) {
+                                q.setLineName(position);
+                            }
+                        }
+                        if (StrUtil.isNotBlank(q.getStationCode())) {
+                            //根据站点编码查询站点名称
+                            String position = iSysBaseAPI.getPosition(q.getStationCode());
+                            if (StrUtil.isNotBlank(position)) {
+                                q.setStationName(position);
+                            }
+                        }
+                        if (StrUtil.isNotBlank(q.getPositionCode())) {
+                            //根据位置编码查询位置名称
+                            String position = iSysBaseAPI.getPosition(q.getPositionCode());
+                            if (StrUtil.isNotBlank(position)) {
+                                q.setPositionName(position);
+                            }
+                        }
+                    });
                     e.setChildren(materialAccountList1);
                 }
             }
