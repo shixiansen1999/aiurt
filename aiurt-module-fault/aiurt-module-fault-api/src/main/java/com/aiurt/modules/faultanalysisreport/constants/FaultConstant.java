@@ -4,7 +4,7 @@ package com.aiurt.modules.faultanalysisreport.constants;
  * @author: lkj
  * 常用常量
  */
-public interface FaultConstant {
+public class FaultConstant {
     /**待审批*/
     public final static Integer PENDING = 0;
 
