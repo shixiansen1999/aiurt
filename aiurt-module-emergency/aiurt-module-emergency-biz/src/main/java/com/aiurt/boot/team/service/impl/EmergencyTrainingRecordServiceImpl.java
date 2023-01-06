@@ -9,7 +9,6 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.team.constants.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.dto.EmergencyTrainingRecordDTO;
@@ -41,10 +40,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,22 +95,15 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
 
     @Override
     public IPage<EmergencyTrainingRecordVO> queryPageList(EmergencyTrainingRecordDTO emergencyTrainingRecordDTO, Integer pageNo, Integer pageSize) {
-        // 系统管理员不做权限过滤
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String roleCodes = user.getRoleCodes();
-        if (StrUtil.isNotBlank(roleCodes)) {
-            if (!roleCodes.contains(RoleConstant.ADMIN)) {
-                //获取用户的专业权限
-                List<CsUserMajorModel> majorByUserId = iSysBaseAPI.getMajorByUserId(user.getId());
-                if (CollUtil.isEmpty(majorByUserId)) {
-                    return new Page<>();
-                }
-                List<String> majorCodes  = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-                emergencyTrainingRecordDTO.setMajorCodeList(majorCodes);
-            }
-        }else {
-            return new Page<>();
+
+        LambdaQueryWrapper<EmergencyTeam> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(EmergencyTeam::getDelFlag, TeamConstant.DEL_FLAG0);
+        List<EmergencyTeam> emergencyTeams = emergencyTeamService.getBaseMapper().selectList(wrapper);
+        if (CollUtil.isNotEmpty(emergencyTeams)) {
+            List<String> list = emergencyTeams.stream().map(EmergencyTeam::getId).collect(Collectors.toList());
+            emergencyTrainingRecordDTO.setIds(list);
         }
+
         Page<EmergencyTrainingRecordVO> page = new Page<>(pageNo, pageSize);
         List<EmergencyTrainingRecordVO> result = emergencyTrainingRecordMapper.queryPageList(page, emergencyTrainingRecordDTO);
         page.setRecords(result);

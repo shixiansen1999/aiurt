@@ -8,7 +8,6 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.team.constants.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.entity.EmergencyTeam;
@@ -22,6 +21,7 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.TimeUtil;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -78,25 +78,9 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
 
     @Override
     public IPage<EmergencyTrainingProgram> queryPageList(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO, Integer pageNo, Integer pageSize) {
-        // 系统管理员不做权限过滤
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaQueryWrapper<EmergencyTrainingProgram> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EmergencyTrainingProgram::getDelFlag, TeamConstant.DEL_FLAG0);
-        String roleCodes = user.getRoleCodes();
-        List<SysDepartModel> models = new ArrayList<>();
-        if (StrUtil.isNotBlank(roleCodes)) {
-            if (!roleCodes.contains(RoleConstant.ADMIN)) {
-                //获取用户的所属部门及所属部门子部门
-                models = iSysBaseAPI.getUserDepartCodes();
-                if (CollUtil.isEmpty(models)) {
-                    return new Page<>();
-                }
-                List<String> orgCodes = models.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-                queryWrapper.in(EmergencyTrainingProgram::getOrgCode, orgCodes);
-            }
-        }else {
-            return new Page<>();
-        }
+
         Page<EmergencyTrainingProgram> page = new Page<>(pageNo, pageSize);
         EmergencyTrainingProgram trainingProgram = new EmergencyTrainingProgram();
         BeanUtil.copyProperties(emergencyTrainingProgramDTO,trainingProgram);
@@ -114,6 +98,8 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         queryWrapper.orderByDesc(EmergencyTrainingProgram::getCreateTime).orderByDesc(EmergencyTrainingProgram::getUpdateTime);
         IPage<EmergencyTrainingProgram> pageList = this.page(page, queryWrapper);
 
+        //下面禁用数据过滤
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         List<EmergencyTrainingProgram> records = pageList.getRecords();
         if (CollUtil.isNotEmpty(records)) {
             for (EmergencyTrainingProgram record : records) {
@@ -125,6 +111,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
                 record.setEmergencyTeamName(CollUtil.join(names, ","));
             }
         }
+        GlobalThreadLocal.setDataFilter(b);
         return pageList;
     }
 

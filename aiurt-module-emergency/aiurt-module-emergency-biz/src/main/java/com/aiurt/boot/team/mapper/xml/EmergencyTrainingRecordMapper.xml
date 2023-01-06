@@ -37,9 +37,9 @@
     <if test="emergencyTrainingRecordDTO.trainingStartTime != null">
         and DATE_FORMAT( wtr.training_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{emergencyTrainingRecordDTO.trainingEndTime} ,'%Y-%m-%d')
     </if>
-    <if test="emergencyTrainingRecordDTO.majorCodeList != null and emergencyTrainingRecordDTO.majorCodeList.size() != 0">
-        and et.major_code in
-        <foreach collection="emergencyTrainingRecordDTO.majorCodeList" item="item" index="index" open="(" separator="," close=")">
+    <if test="emergencyTrainingRecordDTO.ids != null and emergencyTrainingRecordDTO.ids.size() != 0">
+        and et.id in
+        <foreach collection="emergencyTrainingRecordDTO.ids" item="item" index="index" open="(" separator="," close=")">
             #{item}
         </foreach>
     </if>
