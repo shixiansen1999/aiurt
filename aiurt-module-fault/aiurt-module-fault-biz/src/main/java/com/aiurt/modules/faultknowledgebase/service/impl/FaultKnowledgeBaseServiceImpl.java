@@ -12,9 +12,11 @@ import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
+import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.dto.FaultKnowledgeBaseModel;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
@@ -43,6 +45,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,10 +55,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -77,6 +77,8 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
     @Autowired
     private FaultAnalysisReportMapper faultAnalysisReportMapper;
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
 
     @Override
     public IPage<FaultKnowledgeBase> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase) {
@@ -283,7 +285,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     tipMessage = "导入失败，该文件为空。";
                     return imporReturnRes(errorLines, successLines, tipMessage, false, null);
                 }
-
+               //数据校验
                 for (FaultKnowledgeBaseModel model : list) {
                     if (ObjectUtil.isNotEmpty(model)) {
                         FaultKnowledgeBase em = new FaultKnowledgeBase();
@@ -295,9 +297,23 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                             stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
                             model.setDeviceMistake(stringBuilder.toString());
                             errorLines++;
+                        }else{
+                            faultKnowledgeBaseList.add(em);
                         }
-                        faultKnowledgeBaseList.add(em);
                     }
+                }
+                if (errorLines > 0) {
+                    //错误报告下载
+                    return getErrorExcel(errorLines, list, errorMessage, successLines, type, url);
+                } else {
+                    successLines = list.size();
+                    for (FaultKnowledgeBase material : faultKnowledgeBaseList) {
+                        material.setDelFlag(0);
+                        material.setApprovedResult(0);
+                        material.setStatus(0);
+                        faultKnowledgeBaseMapper.insert(material);
+                    }
+                    return imporReturnRes(errorLines, successLines, tipMessage, true, null);
                 }
 
             }catch (Exception e) {
@@ -344,9 +360,104 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         if (StrUtil.isBlank(faultKnowledgeBaseModel.getDeviceTypeName())){
             stringBuilder.append("设备类型名称必填，");
         }else {
-
+            String deviceTypeName = faultKnowledgeBaseModel.getDeviceTypeName();
+            List<DeviceType> deviceCodeByName = faultKnowledgeBaseMapper.getDeviceCodeByName(deviceTypeName);
+            if(CollUtil.isNotEmpty(deviceCodeByName)){
+                List<String> collect = deviceCodeByName.stream().map(DeviceType::getCode).collect(Collectors.toList());
+                if(CollUtil.isNotEmpty(collect)){
+                    String deviceTypeCode = collect.get(0);
+                    faultKnowledgeBase.setDeviceTypeCode(deviceTypeCode);
+                }
+            }else{
+                stringBuilder.append("系统中不存在该设备类型，");
+            }
         }
 
+        if(StrUtil.isNotBlank(faultKnowledgeBaseModel.getMaterialName())){
+            String materialName = faultKnowledgeBaseModel.getMaterialName();
+            List<DeviceAssemblyDTO> deviceAssemblyCode = faultKnowledgeBaseMapper.getDeviceAssemblyCode(materialName);
+            if(CollUtil.isNotEmpty(deviceAssemblyCode)){
+                List<String> collect = deviceAssemblyCode.stream().map(DeviceAssemblyDTO::getMaterialCode).collect(Collectors.toList());
+                if(CollUtil.isNotEmpty(collect)){
+                    String deviceAssCode = collect.get(0);
+                    faultKnowledgeBase.setMaterialCode(deviceAssCode);
+                }
+            }else{
+                stringBuilder.append("系统中不存在该设备组件，");
+            }
+        }
+
+        if(StrUtil.isBlank(faultKnowledgeBaseModel.getFaultPhenomenon())){
+            stringBuilder.append("故障现象必填，");
+        }else{
+            faultKnowledgeBase.setFaultPhenomenon(faultKnowledgeBaseModel.getFaultPhenomenon());
+        }
+
+        if(StrUtil.isBlank(faultKnowledgeBaseModel.getSolution())){
+            stringBuilder.append("解决方案必填，");
+        }else{
+            faultKnowledgeBase.setSolution(faultKnowledgeBaseModel.getSolution());
+        }
+        faultKnowledgeBase.setFaultReason(faultKnowledgeBaseModel.getFaultReason());
+        faultKnowledgeBase.setMethod(faultKnowledgeBaseModel.getMethod());
+        faultKnowledgeBase.setTools(faultKnowledgeBaseModel.getTools());
+
+        if (stringBuilder.length() > 0) {
+            // 截取字符
+            stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            faultKnowledgeBaseModel.setDeviceMistake(stringBuilder.toString());
+        }
+
+    }
+
+    private Result<?> getErrorExcel(int errorLines, List<FaultKnowledgeBaseModel> list, List<String> errorMessage, int successLines, String type, String url) throws IOException {
+        //创建导入失败错误报告,进行模板导出
+        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/knowledgeBaseError.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+        //2.获取临时文件
+        File fileTemp = new File("/templates/knowledgeBaseError.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<String, Object> errorMap = new HashMap<String, Object>(16);
+        List<Map<String, String>> listMap = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            FaultKnowledgeBaseModel faultKnowledgeBaseModel = list.get(i);
+            Map<String, String> lm = new HashMap<>(16);
+            //错误报告获取信息
+            lm.put("knowledgeBaseTypeName", faultKnowledgeBaseModel.getKnowledgeBaseTypeName());
+            lm.put("deviceTypeName", faultKnowledgeBaseModel.getDeviceTypeName());
+            lm.put("materialName", faultKnowledgeBaseModel.getMaterialName());
+            lm.put("faultPhenomenon", faultKnowledgeBaseModel.getFaultPhenomenon());
+            lm.put("faultReason", faultKnowledgeBaseModel.getFaultReason());
+            lm.put("solution", faultKnowledgeBaseModel.getSolution());
+            lm.put("method", faultKnowledgeBaseModel.getMethod());
+            lm.put("tools", faultKnowledgeBaseModel.getTools());
+            lm.put("deviceMistake", faultKnowledgeBaseModel.getDeviceMistake());
+            listMap.add(lm);
+        }
+        errorMap.put("maplist", listMap);
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(16);
+        sheetsMap.put(0, errorMap);
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+        try {
+            String fileName = "故障知识库导入错误清单" + "_" + System.currentTimeMillis() + "." + type;
+            FileOutputStream out = new FileOutputStream(upLoadPath + File.separator + fileName);
+            url = fileName;
+            workbook.write(out);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return imporReturnRes(errorLines, successLines, null, true, url);
     }
 
     public static Result<?> imporReturnRes(int errorLines, int successLines, String tipMessage, boolean isType, String failReportUrl) throws IOException {
