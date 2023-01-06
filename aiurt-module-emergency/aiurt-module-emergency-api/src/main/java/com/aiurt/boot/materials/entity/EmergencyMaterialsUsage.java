@@ -35,6 +35,10 @@ public class EmergencyMaterialsUsage extends DictEntity implements Serializable 
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private java.lang.String id;
+    /**物资编号*/
+    @Excel(name = "物资id", width = 15)
+    @ApiModelProperty(value = "物资id")
+    private java.lang.String materialsId;
 	/**物资编号*/
 	@Excel(name = "物资编号", width = 15)
     @ApiModelProperty(value = "物资编号")

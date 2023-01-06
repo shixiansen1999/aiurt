@@ -1,9 +1,12 @@
 package com.aiurt.boot.materials.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
+import com.aiurt.boot.materials.mapper.EmergencyMaterialsCategoryMapper;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsUsageMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsUsageService;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsUsage;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -27,6 +30,9 @@ public class EmergencyMaterialsUsageServiceImpl extends ServiceImpl<EmergencyMat
     private EmergencyMaterialsUsageMapper emergencyMaterialsUsageMapper;
 
     @Autowired
+    private EmergencyMaterialsCategoryMapper emergencyMaterialsCategoryMapper;
+
+    @Autowired
     private ISysBaseAPI iSysBaseAPI;
 
     @Override
@@ -42,6 +48,15 @@ public class EmergencyMaterialsUsageServiceImpl extends ServiceImpl<EmergencyMat
             if (StrUtil.isNotBlank(e.getBackId())){
                 LoginUser userById = iSysBaseAPI.getUserById(e.getBackId());
                 e.setBackName(userById.getRealname());
+            }
+            if (StrUtil.isNotBlank(e.getCategoryCode())){
+                LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,0)
+                                  .eq(EmergencyMaterialsCategory::getCategoryCode,e.getCategoryCode());
+                EmergencyMaterialsCategory emergencyMaterialsCategory = emergencyMaterialsCategoryMapper.selectOne(lambdaQueryWrapper);
+                if (StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryName())){
+                    e.setCategoryName(emergencyMaterialsCategory.getCategoryName());
+                }
             }
         });
         return pageList.setRecords(usageRecordList);

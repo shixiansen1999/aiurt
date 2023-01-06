@@ -3,7 +3,7 @@
 <mapper namespace="com.aiurt.boot.materials.mapper.EmergencyMaterialsUsageMapper">
 
     <sql id="list">
-       t1.materials_name as materialsName,t1.materials_code as materialsCode,t2.category_name as categoryName,t2.category_code as categoryCode,
+       t3.materials_name as materialsName,t3.materials_code as materialsCode,t1.category_code as categoryCode,
        t3.status as status,t3.number as number,t3.use_date as useDate,t3.user_id as userId,t3.use_time as useTime,t3.back_date as backDate,t3.back_time as backTime,
        t3.back_id as backId,t1.remark as remark,t3.id as id,t1.specification as specification,t1.unit as unit
     </sql>
@@ -13,14 +13,12 @@
         <include refid="list"></include>
         from
         emergency_materials t1
-        LEFT JOIN emergency_materials_category t2 ON t1.category_code = t2.category_code
-        LEFT JOIN emergency_materials_usage t3 ON t1.materials_code = t3.materials_code
+        LEFT JOIN emergency_materials_usage t3 ON t1.id = t3.materials_id
         <where>
             t1.del_flag = 0
-            and t2.del_flag = 0
             and t3.del_flag = 0
             <if test="condition.categoryCode!=null">
-                and t2.category_code = #{condition.categoryCode}
+                and t1.category_code = #{condition.categoryCode}
             </if>
             <if test="condition.materialsName!=null">
                 and t1.materials_name LIKE CONCAT ('%', #{condition.materialsName}, '%')
