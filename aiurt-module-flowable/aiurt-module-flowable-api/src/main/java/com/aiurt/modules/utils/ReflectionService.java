@@ -1,6 +1,9 @@
 package com.aiurt.modules.utils;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.convert.ConverterRegistry;
+import com.aiurt.common.converter.CustomDateConverter;
+import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.springframework.aop.support.AopUtils;
@@ -116,7 +119,7 @@ public class ReflectionService {
                 // todo 需要转换，暂时不清楚原因
                 JSONObject jsonObject = new JSONObject(paramMap);
                 String s = JSONObject.toJSONString(jsonObject);
-
+                ConverterRegistry.getInstance().putCustom(java.util.Date.class, new CustomDateConverter(java.util.Date.class, null));
                 BeanUtil.copyProperties(JSONObject.parseObject(s), object);
             }
 
