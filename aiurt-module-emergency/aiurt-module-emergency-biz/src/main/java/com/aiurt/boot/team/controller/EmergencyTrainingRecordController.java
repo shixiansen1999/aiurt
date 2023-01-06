@@ -1,7 +1,7 @@
 package com.aiurt.boot.team.controller;
 
 import cn.hutool.core.collection.CollUtil;
-import com.aiurt.boot.team.constant.TeamConstant;
+import com.aiurt.boot.team.constants.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.dto.EmergencyTrainingRecordDTO;
 import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
