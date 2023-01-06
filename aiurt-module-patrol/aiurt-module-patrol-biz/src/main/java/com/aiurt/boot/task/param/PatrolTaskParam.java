@@ -141,4 +141,10 @@ public class PatrolTaskParam extends PatrolTask {
     @Excel(name = "子系统信息", width = 15)
     @ApiModelProperty(value = "子系统信息")
     private List<String> subsystemInfo;
+    /**
+     * 任务同行人
+     */
+    @Excel(name = "任务同行人", width = 15)
+    @ApiModelProperty(value = "任务同行人")
+    private String accompanyName;
 }

@@ -175,7 +175,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         QueryWrapper<PatrolTaskParam> wrapper = new QueryWrapper<>();
         wrapper.lambda().eq(PatrolTaskParam::getId, patrolTaskParam.getId());
-        PatrolTaskParam taskParam = Optional.ofNullable(patrolTaskMapper.selectBasicInfo(patrolTaskParam)).orElseGet(PatrolTaskParam::new);
+        PatrolTaskParam taskParam = patrolTaskMapper.selectBasicInfo(patrolTaskParam);
+        Assert.notNull(taskParam, "未找到对应记录！");
         // 组织机构信息
         List<PatrolTaskOrganizationDTO> organizationInfo = patrolTaskOrganizationMapper.selectOrgByTaskCode(taskParam.getCode());
         // 站点信息
@@ -191,11 +192,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<String> majorInfo = patrolPlanMapper.getMajorInfoByPlanId(taskParam.getId());
         // 获取任务的子系统信息
         List<String> subsystemInfo = patrolPlanMapper.getSubsystemInfoByPlanId(taskParam.getId());
+        // 同行人
+        String accompanyUserName = patrolTaskDeviceMapper.getAccompanyUserByTaskId(taskParam.getId());
+
         taskParam.setDepartInfo(organizationInfo);
         taskParam.setStationInfo(stationInfo);
         taskParam.setUserInfo(userList);
         taskParam.setMajorInfo(majorInfo);
         taskParam.setSubsystemInfo(subsystemInfo);
+        taskParam.setAccompanyName(accompanyUserName);
         if (StrUtil.isNotEmpty(taskParam.getEndUserId())) {
             taskParam.setEndUsername(patrolTaskMapper.getUsername(taskParam.getEndUserId()));
         }
@@ -790,22 +795,26 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<MajorDTO> major = new ArrayList<>();
         List<SubsystemDTO> subsystem = new ArrayList<>();
 
-        Optional.ofNullable(majorInfo).orElseGet(Collections::emptyList).stream().forEach(l -> {
-            MajorDTO majorDTO = new MajorDTO();
-            majorDTO.setMajorCode(l);
-            // 专业名称
-            String majorName = patrolTaskMapper.getMajorNameByMajorCode(l);
-            majorDTO.setMajorName(majorName);
-            major.add(majorDTO);
-        });
-        Optional.ofNullable(subSystemInfo).orElseGet(Collections::emptyList).stream().forEach(l -> {
-            SubsystemDTO subsystemDTO = new SubsystemDTO();
-            subsystemDTO.setSubsystemCode(l);
-            // 子系统名称
-            String majorName = patrolTaskMapper.getSubsystemNameBySystemCode(l);
-            subsystemDTO.setSubsystemName(majorName);
-            subsystem.add(subsystemDTO);
-        });
+        Optional.ofNullable(majorInfo).orElseGet(Collections::emptyList).stream()
+                .filter(l -> StrUtil.isNotEmpty(l))
+                .forEach(l -> {
+                    MajorDTO majorDTO = new MajorDTO();
+                    majorDTO.setMajorCode(l);
+                    // 专业名称
+                    String majorName = patrolTaskMapper.getMajorNameByMajorCode(l);
+                    majorDTO.setMajorName(majorName);
+                    major.add(majorDTO);
+                });
+        Optional.ofNullable(subSystemInfo).orElseGet(Collections::emptyList).stream()
+                .filter(l -> StrUtil.isNotEmpty(l))
+                .forEach(l -> {
+                    SubsystemDTO subsystemDTO = new SubsystemDTO();
+                    subsystemDTO.setSubsystemCode(l);
+                    // 子系统名称
+                    String majorName = patrolTaskMapper.getSubsystemNameBySystemCode(l);
+                    subsystemDTO.setSubsystemName(majorName);
+                    subsystem.add(subsystemDTO);
+                });
         // 获取专业下的子系统信息
         Optional.ofNullable(major).orElseGet(Collections::emptyList).stream().forEach(l -> {
             if (ObjectUtil.isNotEmpty(l.getMajorCode()) && CollectionUtil.isNotEmpty(subsystem)) {
