@@ -89,5 +89,9 @@ public class EmergencyMaterialsCategory extends DictEntity implements Serializab
     private List<EmergencyMaterialsCategory> children;
 
     @TableField(exist = false)
+    @ApiModelProperty(value = "子级分类状态")
+    private String statusName;
+
+    @TableField(exist = false)
     private List<String> selections;
 }

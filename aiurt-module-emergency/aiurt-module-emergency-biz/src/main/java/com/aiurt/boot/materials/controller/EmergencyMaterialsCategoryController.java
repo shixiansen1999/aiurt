@@ -81,6 +81,11 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 					if (StrUtil.isNotBlank(q.getPid()) && q.getPid().equals("0")==false){
 						EmergencyMaterialsCategory byId = emergencyMaterialsCategoryService.getById(q.getPid());
 						q.setFatherName(byId.getCategoryName());
+						if (q.getStatus()!=null && q.getStatus()==1){
+                          q.setStatusName("启用");
+						}if (q.getStatus()!=null && q.getStatus()==0){
+							q.setStatusName("停用");
+						}
 					}
 				});
 				e.setChildren(list);
