@@ -48,7 +48,6 @@
                 and t2.pid = #{pid}
             </if>
         </where>
-        group by t2.invoices_id
         order by  t3.create_time desc
     </select>
 </mapper>
