@@ -746,7 +746,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
         List<String> subDepIdList = sysDepartMapper.getSubDepIdsByDepId(orgId);
 
-        List<SelectTable> selectTables = commonService.queryDepartUserTree(subDepIdList, loginUser.getId());
+        List<SelectTable> selectTables = commonService.queryDepartUserTree(subDepIdList, loginUser.getId(),null);
         return selectTables;
     }
 
