@@ -214,6 +214,7 @@ public class Fault extends DictEntity implements Serializable {
 
 	/**所属部门*/
     @ApiModelProperty(value = "所属部门")
+    @DeptFilterColumn
     private String sysOrgCode;
 
 	/**更新人*/
