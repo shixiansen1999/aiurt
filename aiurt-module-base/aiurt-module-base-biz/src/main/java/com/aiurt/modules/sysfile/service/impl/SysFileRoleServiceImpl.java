@@ -250,7 +250,7 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 			List<Long> longs = fileRoles.stream().map(SysFileRole::getTypeId).collect(Collectors.toList());
 			return longs;
 		}
-		return Collections.emptyList();
+		return new ArrayList<>();
 	}
 
 
