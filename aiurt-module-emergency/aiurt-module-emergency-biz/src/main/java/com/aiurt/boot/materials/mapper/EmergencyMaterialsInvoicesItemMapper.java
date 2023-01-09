@@ -28,5 +28,8 @@ public interface EmergencyMaterialsInvoicesItemMapper extends BaseMapper<Emergen
                                                           @Param("startTime") String startTime,
                                                           @Param("endTime") String endTime,
                                                           @Param("standardCode") String standardCode,
-                                                          @Param("pid") String pid);
+                                                          @Param("pid") String pid,
+                                                          @Param("lineCode") String lineCode,
+                                                          @Param("stationCode") String stationCode,
+                                                          @Param("positionCode") String positionCode);
 }

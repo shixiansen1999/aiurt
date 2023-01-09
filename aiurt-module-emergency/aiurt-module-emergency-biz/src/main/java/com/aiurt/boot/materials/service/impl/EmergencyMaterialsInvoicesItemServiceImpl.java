@@ -32,9 +32,9 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
 
 
     @Override
-    public Page<EmergencyMaterialsInvoicesItem> getPatrolRecord(Page<EmergencyMaterialsInvoicesItem> pageList, String materialsCode, String startTime, String endTime,String  standardCode) {
+    public Page<EmergencyMaterialsInvoicesItem> getPatrolRecord(Page<EmergencyMaterialsInvoicesItem> pageList, String materialsCode, String startTime, String endTime,String  standardCode,String lineCode,String stationCode,String positionCode) {
         //父级
-        List<EmergencyMaterialsInvoicesItem> patrolRecord = emergencyMaterialsInvoicesItemMapper.getPatrolRecord(pageList,materialsCode, startTime, endTime,standardCode,"0");
+        List<EmergencyMaterialsInvoicesItem> patrolRecord = emergencyMaterialsInvoicesItemMapper.getPatrolRecord(pageList,materialsCode, startTime, endTime,standardCode,"0",lineCode,stationCode,positionCode);
         patrolRecord.forEach(e->{
             if (StrUtil.isNotBlank(e.getPatrolId())) {
                 //根据巡视人id查询巡视人名称
@@ -49,7 +49,7 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
                 String departNameByOrgCode = iSysBaseAPI.getDepartNameByOrgCode(e.getPatrolTeamCode());
                 e.setPatrolTeamName(departNameByOrgCode);
             }if("0".equals(e.getPid()) && StrUtil.isNotBlank(e.getId())){
-                List<EmergencyMaterialsInvoicesItem> patrolRecord1 = emergencyMaterialsInvoicesItemMapper.getPatrolRecord(pageList, materialsCode, startTime, endTime, standardCode, e.getId());
+                List<EmergencyMaterialsInvoicesItem> patrolRecord1 = emergencyMaterialsInvoicesItemMapper.getPatrolRecord(pageList, materialsCode, startTime, endTime, standardCode, e.getId(),lineCode,stationCode,positionCode);
                 e.setSubLevel(patrolRecord1);
             }
         });
