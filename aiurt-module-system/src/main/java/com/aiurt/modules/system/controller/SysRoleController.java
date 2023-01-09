@@ -30,6 +30,7 @@ import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -37,7 +38,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -289,7 +292,19 @@ public class SysRoleController {
 		}
 		return Result.error("文件导入失败！");
 	}
-
+	@ApiOperation(value = "下载角色导入模板", notes = "下载角色导入模板")
+	@RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
+	public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		ClassPathResource classPathResource = new ClassPathResource("templates/sysRole.xlsx");
+		InputStream bis = classPathResource.getInputStream();
+		BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+		int len = 0;
+		while ((len = bis.read()) != -1) {
+			out.write(len);
+			out.flush();
+		}
+		out.close();
+	}
 	/**
 	 * 查询数据规则数据
 	 */

@@ -340,20 +340,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(code);
         fault.setFaultDeviceList(faultDeviceList);
 
-        //抄送人
-        String remindUserName = fault.getRemindUserName();
-        String[] split = StrUtil.split(remindUserName, ",");
-        StringBuffer stringBuffer = new StringBuffer();
-        for (String username : split) {
-            LoginUser loginUser = sysBaseAPI.queryUser(username);
-            String realName = loginUser.getRealname();
-            stringBuffer.append(realName);
-            stringBuffer.append(",");
-        }
-        if (stringBuffer.length() > 0) {
-            stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
-        }
-        fault.setRemindUserName(String.valueOf(stringBuffer));
 
         // 故障等级,权重登记
         if (StrUtil.isNotBlank(fault.getFaultLevel())) {

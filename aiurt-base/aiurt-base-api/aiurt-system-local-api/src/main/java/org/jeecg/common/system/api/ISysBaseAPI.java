@@ -622,6 +622,14 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     String getUserName(String realName);
 
+
+    /**
+     * 根据用户姓名模糊查询用户账号
+     * @param realName
+     * @return
+     */
+    List<String> getUserLikeName(String realName);
+
     /**
      * 根据站点id获取站点信息
      * @param station

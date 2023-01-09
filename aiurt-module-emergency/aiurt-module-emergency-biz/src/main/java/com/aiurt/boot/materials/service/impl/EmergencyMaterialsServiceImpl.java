@@ -135,10 +135,48 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             }
 
             //是否有存在子级，有就查询出子级一起返回
-            if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0") && StrUtil.isNotBlank(e.getCategoryCode())){
-                condition.setPid(e.getId());
-                List<MaterialAccountDTO> materialAccountList1 = emergencyMaterialsMapper.getMaterialAccountList(pageList, condition);
+            if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0") && StrUtil.isNotBlank(condition.getCategoryCode())){
+                MaterialAccountDTO materialAccountDTO = new MaterialAccountDTO();
+                materialAccountDTO.setPid(e.getCategoryId());
+                List<MaterialAccountDTO> materialAccountList1 = emergencyMaterialsMapper.getMaterialAccountList(pageList, materialAccountDTO);
                 if (CollUtil.isNotEmpty(materialAccountList1)){
+                    materialAccountList1.forEach(q->{
+                        if (StrUtil.isNotBlank(q.getUserId())) {
+                            //根据负责人id查询负责人名称
+                            LoginUser userById = iSysBaseAPI.getUserById(q.getUserId());
+                            if (StrUtil.isNotBlank(userById.getRealname())) {
+                                q.setUserName(userById.getRealname());
+                            }
+                        }
+                        if (StrUtil.isNotBlank(q.getPrimaryOrg())) {
+                            //根据部门编码查询部门名称
+                            SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(q.getPrimaryOrg());
+                            if (ObjectUtil.isNotEmpty(departByOrgCode)) {
+                                q.setPrimaryName(departByOrgCode.getDepartName());
+                            }
+                        }
+                        if (StrUtil.isNotBlank(q.getLineCode())) {
+                            //根据线路编码查询线路名称
+                            String position = iSysBaseAPI.getPosition(q.getLineCode());
+                            if (StrUtil.isNotBlank(position)) {
+                                q.setLineName(position);
+                            }
+                        }
+                        if (StrUtil.isNotBlank(q.getStationCode())) {
+                            //根据站点编码查询站点名称
+                            String position = iSysBaseAPI.getPosition(q.getStationCode());
+                            if (StrUtil.isNotBlank(position)) {
+                                q.setStationName(position);
+                            }
+                        }
+                        if (StrUtil.isNotBlank(q.getPositionCode())) {
+                            //根据位置编码查询位置名称
+                            String position = iSysBaseAPI.getPosition(q.getPositionCode());
+                            if (StrUtil.isNotBlank(position)) {
+                                q.setPositionName(position);
+                            }
+                        }
+                    });
                     e.setChildren(materialAccountList1);
                 }
             }
@@ -407,8 +445,6 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                         //校验信息
                         examine(model, em, stringBuilder, list);
                         if (stringBuilder.length() > 0) {
-                            // 截取字符
-                            stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
                             model.setWrongReason(stringBuilder.toString());
                             errorLines++;
                         }
@@ -1066,11 +1102,12 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             lm.put("categoryName", categoryModel.getCategoryName());
             lm.put("floodProtection", categoryModel.getFloodProtection());
             lm.put("number", categoryModel.getNumber());
-            lm.put("stationCodeName", categoryModel.getStationName());
+            lm.put("stationCodeName", categoryModel.getDepositPositionName());
             lm.put("primaryName", categoryModel.getPrimaryName());
             lm.put("userName", categoryModel.getUserName());
-            lm.put("unit", categoryModel.getUserName());
-            lm.put("phone", categoryModel.getUnit());
+            lm.put("unit", categoryModel.getUnit());
+            lm.put("phone", categoryModel.getPhone());
+            lm.put("remark", categoryModel.getRemark());
             lm.put("wrongReason", categoryModel.getWrongReason());
             listMap.add(lm);
         }
@@ -1199,13 +1236,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         if (ObjectUtil.isEmpty(model.getDepositPositionName())) {
             stringBuilder.append("存放位置必填，");
         } else {
-            String[] split = model.getDepositPositionName().split("");
-            Integer count = 0;
-            for (String s : split) {
-                if (s.equals("/")) {
-                    count++;
-                }
-            }
+            List<String> depositPositionNameSize = StrUtil.splitTrim(model.getDepositPositionName(), "/");
+            Integer count = depositPositionNameSize.size();
             if (count < 2 || count > 3) {
                 stringBuilder.append("存放位置填写不规范，");
             } else {
@@ -1239,9 +1271,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 } else {
                     stringBuilder.append("站点不存在，");
                 }
-                if (ObjectUtil.isNotEmpty(positionCode)) {
-                    em.setPositionCode(stationCode);
-                } else {
+                if(ObjectUtil.isEmpty(positionCode)&&depositPositionName.size() > 2)
+                {
                     stringBuilder.append("位置不存在，");
                 }
             }

@@ -1,4 +1,5 @@
 package com.aiurt.modules.sysfile.controller;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.sysfile.constant.PatrolConstant;
 import com.aiurt.modules.sysfile.entity.SysFile;
@@ -120,9 +121,9 @@ public class SysFileController {
 
 		if (StringUtils.isNotBlank(sysFile.getCreateByName())) {
 			// todo 后期修改
-			String userName1 = iSysBaseAPI.getUserName(sysFile.getCreateByName());
-			if (StrUtil.isNotEmpty(userName1)) {
-				queryWrapper.eq(SysFile::getCreateBy, userName1);
+			List<String> userLikeName = iSysBaseAPI.getUserLikeName(sysFile.getCreateByName());
+			if (CollectionUtil.isNotEmpty(userLikeName)) {
+				queryWrapper.in(SysFile::getCreateBy, userLikeName);
 			} else {
 				queryWrapper.eq(SysFile::getId, -1);
 			}

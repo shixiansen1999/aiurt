@@ -1798,6 +1798,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return userMapper.getUserName(realName);
     }
 
+    @Override
+    public List<String> getUserLikeName(String realName) {
+        return userMapper.getUserLikeName(realName);
+    }
     /**
      * 根据站点id获取站点信息
      *

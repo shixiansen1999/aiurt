@@ -1,5 +1,6 @@
 package com.aiurt.boot.team.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -73,6 +74,7 @@ public class EmergencyTrainingProgram implements Serializable {
     private Integer status;
 	/**编制部门*/
     @ApiModelProperty(value = "编制部门")
+    @DeptFilterColumn
     private String orgCode;
     @Excel(name = "编制部门", width = 15, orderNum = "0")
     @ApiModelProperty(value = "编制部门名称")

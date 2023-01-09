@@ -175,7 +175,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         QueryWrapper<PatrolTaskParam> wrapper = new QueryWrapper<>();
         wrapper.lambda().eq(PatrolTaskParam::getId, patrolTaskParam.getId());
-        PatrolTaskParam taskParam = Optional.ofNullable(patrolTaskMapper.selectBasicInfo(patrolTaskParam)).orElseGet(PatrolTaskParam::new);
+        PatrolTaskParam taskParam = patrolTaskMapper.selectBasicInfo(patrolTaskParam);
+        Assert.notNull(taskParam, "未找到对应记录！");
         // 组织机构信息
         List<PatrolTaskOrganizationDTO> organizationInfo = patrolTaskOrganizationMapper.selectOrgByTaskCode(taskParam.getCode());
         // 站点信息
@@ -191,11 +192,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<String> majorInfo = patrolPlanMapper.getMajorInfoByPlanId(taskParam.getId());
         // 获取任务的子系统信息
         List<String> subsystemInfo = patrolPlanMapper.getSubsystemInfoByPlanId(taskParam.getId());
+        // 同行人
+        String accompanyUserName = patrolTaskDeviceMapper.getAccompanyUserByTaskId(taskParam.getId());
+
         taskParam.setDepartInfo(organizationInfo);
         taskParam.setStationInfo(stationInfo);
         taskParam.setUserInfo(userList);
         taskParam.setMajorInfo(majorInfo);
         taskParam.setSubsystemInfo(subsystemInfo);
+        taskParam.setAccompanyName(accompanyUserName);
         if (StrUtil.isNotEmpty(taskParam.getEndUserId())) {
             taskParam.setEndUsername(patrolTaskMapper.getUsername(taskParam.getEndUserId()));
         }
@@ -618,27 +623,47 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         PatrolTask patrolTask = patrolTaskMapper.selectOne(queryWrapper);
         if (manager.checkTaskUser(patrolTask.getCode()) == false && !admin) {
             throw new AiurtBootException("只有该任务的巡检人才可以退回");
-        } else {
-            //更新巡检状态及添加退回理由、退回人Id（传任务主键id、退回理由）
-            LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.set(PatrolTask::getStatus, 3)
-                    .set(PatrolTask::getBackId, sysUser.getId())
-                    .set(PatrolTask::getBackReason, patrolTaskDTO.getBackReason())
-                    .eq(PatrolTask::getId, patrolTaskDTO.getId());
-            update(updateWrapper);
-            // 发送消息给指派人，使得指派人重新指派任务
-            if (PatrolConstant.TASK_COMMON.equals(patrolTask.getSource()) || PatrolConstant.TASK_MANUAL.equals(patrolTask.getSource())) {
-                String assignId = patrolTask.getAssignId();
-                if (StrUtil.isNotEmpty(assignId)) {
-                    LoginUser user = sysBaseApi.getUserById(assignId);
-                    sysBaseApi.sendBusAnnouncement(new BusMessageDTO(sysUser.getUsername(), user.getUsername(), "巡视任务", "您指派的任务有用户退回，需要您重新指派！",
-                            CommonConstant.MSG_CATEGORY_2, SysAnnmentTypeEnum.PATROL_ASSIGN.getType(), patrolTask.getId()));
-                    // 同时需要更新待执行任务为已办
-                    isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_EXECUTE.getType(), patrolTask.getId(), sysUser.getId(), CommonTodoStatus.DONE_STATUS_1);
-
-                }
-            }
         }
+        //更新巡检状态及添加退回理由、退回人Id（传任务主键id、退回理由）
+        LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(PatrolTask::getStatus, 3)
+                .set(PatrolTask::getBackId, sysUser.getId())
+                .set(PatrolTask::getBackReason, patrolTaskDTO.getBackReason())
+                .eq(PatrolTask::getId, patrolTaskDTO.getId());
+        update(updateWrapper);
+        // 发送消息给指派人，使得指派人重新指派任务
+        if (PatrolConstant.TASK_COMMON.equals(patrolTask.getSource()) || PatrolConstant.TASK_MANUAL.equals(patrolTask.getSource())) {
+            String assignId = patrolTask.getAssignId();
+            if (StrUtil.isNotEmpty(assignId)) {
+                LoginUser user = sysBaseApi.getUserById(assignId);
+                sysBaseApi.sendBusAnnouncement(new BusMessageDTO(sysUser.getUsername(), user.getUsername(), "巡视任务",
+                        "您指派的任务(编号为:" + patrolTask.getCode() + ")有用户退回，需要您重新指派！",
+                        CommonConstant.MSG_CATEGORY_2, SysAnnmentTypeEnum.PATROL_ASSIGN.getType(), patrolTask.getId()));
+                // 同时需要更新待执行任务为已办
+                isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_EXECUTE.getType(), patrolTask.getId(), sysUser.getId(), CommonTodoStatus.DONE_STATUS_1);
+            }
+            return;
+        }
+        // 个人领取的任务退回后发送消息给工班长
+        QueryWrapper<PatrolTaskOrganization> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0).eq(PatrolTaskOrganization::getTaskCode, patrolTask.getCode());
+        List<PatrolTaskOrganization> organizations = patrolTaskOrganizationMapper.selectList(wrapper);
+        List<String> orgCodes = organizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
+        String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(orgCodes, Arrays.asList(RoleConstant.FOREMAN));
+        if (StrUtil.isEmpty(userName)) {
+            return;
+        }
+        sysBaseApi.sendBusAnnouncement(
+                new BusMessageDTO(
+                        sysUser.getUsername(),
+                        userName,
+                        "巡视任务",
+                        "存在一条个人领取的巡视任务(编号为:" + patrolTask.getCode() + ")被退回，您可以对该任务进行指派！",
+                        CommonConstant.MSG_CATEGORY_2,
+                        SysAnnmentTypeEnum.PATROL_ASSIGN.getType(),
+                        patrolTask.getId()
+                )
+        );
     }
 
     @Override
@@ -770,22 +795,26 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<MajorDTO> major = new ArrayList<>();
         List<SubsystemDTO> subsystem = new ArrayList<>();
 
-        Optional.ofNullable(majorInfo).orElseGet(Collections::emptyList).stream().forEach(l -> {
-            MajorDTO majorDTO = new MajorDTO();
-            majorDTO.setMajorCode(l);
-            // 专业名称
-            String majorName = patrolTaskMapper.getMajorNameByMajorCode(l);
-            majorDTO.setMajorName(majorName);
-            major.add(majorDTO);
-        });
-        Optional.ofNullable(subSystemInfo).orElseGet(Collections::emptyList).stream().forEach(l -> {
-            SubsystemDTO subsystemDTO = new SubsystemDTO();
-            subsystemDTO.setSubsystemCode(l);
-            // 子系统名称
-            String majorName = patrolTaskMapper.getSubsystemNameBySystemCode(l);
-            subsystemDTO.setSubsystemName(majorName);
-            subsystem.add(subsystemDTO);
-        });
+        Optional.ofNullable(majorInfo).orElseGet(Collections::emptyList).stream()
+                .filter(l -> StrUtil.isNotEmpty(l))
+                .forEach(l -> {
+                    MajorDTO majorDTO = new MajorDTO();
+                    majorDTO.setMajorCode(l);
+                    // 专业名称
+                    String majorName = patrolTaskMapper.getMajorNameByMajorCode(l);
+                    majorDTO.setMajorName(majorName);
+                    major.add(majorDTO);
+                });
+        Optional.ofNullable(subSystemInfo).orElseGet(Collections::emptyList).stream()
+                .filter(l -> StrUtil.isNotEmpty(l))
+                .forEach(l -> {
+                    SubsystemDTO subsystemDTO = new SubsystemDTO();
+                    subsystemDTO.setSubsystemCode(l);
+                    // 子系统名称
+                    String majorName = patrolTaskMapper.getSubsystemNameBySystemCode(l);
+                    subsystemDTO.setSubsystemName(majorName);
+                    subsystem.add(subsystemDTO);
+                });
         // 获取专业下的子系统信息
         Optional.ofNullable(major).orElseGet(Collections::emptyList).stream().forEach(l -> {
             if (ObjectUtil.isNotEmpty(l.getMajorCode()) && CollectionUtil.isNotEmpty(subsystem)) {

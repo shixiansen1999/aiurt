@@ -27,7 +27,7 @@ public class FaultKnowledgeBaseModel {
     /**知识库名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "知识库名称")
-    @Excel(name = "知识库名称", width = 15)
+    @Excel(name = "知识库类别", width = 15)
     private java.lang.String knowledgeBaseTypeName;
 
     /**设备类型编码*/
@@ -38,7 +38,7 @@ public class FaultKnowledgeBaseModel {
     /**设备类型名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "设备类型名称")
-    @Excel(name = "设备类型名称", width = 15)
+    @Excel(name = "设备类型", width = 15)
     private java.lang.String deviceTypeName;
 
     /**设备组件编码*/
@@ -49,7 +49,7 @@ public class FaultKnowledgeBaseModel {
     /**设备组件名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "设备组件名称")
-    @Excel(name = "设备组件名称", width = 15)
+    @Excel(name = "设备组件", width = 15)
     private java.lang.String materialName;
 
     /**设备组件名称*/

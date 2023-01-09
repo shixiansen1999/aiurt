@@ -68,11 +68,10 @@ public interface IEmergencyTeamService extends IService<EmergencyTeam> {
      */
     IPage<EmergencyTeam> queryPageList(EmergencyTeamDTO emergencyTeamDTO, Integer pageNo, Integer pageSize);
     /**
-     * 根据部门查询队伍
-     * @param orgCode
+     * 根据权限查找应急队伍
      * @return
      */
-    Result<List<EmergencyTeam>> getTeamByCode(String orgCode);
+    Result<List<EmergencyTeam>> getTeamByCode();
     /**
      * 根据专业权限查找应急队伍
      * @param

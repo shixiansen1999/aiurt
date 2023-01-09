@@ -273,4 +273,12 @@
         WHERE ptd.del_flag = 0
         AND ptd.id = #{id}
     </select>
+
+    <select id="getAccompanyUserByTaskId" resultType="java.lang.String">
+        select group_concat(distinct pa.username) as accompanyName
+        from patrol_task_device ptd
+                 join patrol_accompany pa on ptd.patrol_number = pa.task_device_code and pa.del_flag = 0
+        where ptd.del_flag = 0
+          and ptd.task_id = #{taskId}
+    </select>
 </mapper>
