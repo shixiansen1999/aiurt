@@ -30,6 +30,7 @@ public interface EmergencyPlanMapper extends BaseMapper<EmergencyPlan> {
      * 应急预案分页审核
      * @param page
      * @param emergencyPlanQueryDTO
+     * @param userName
      * @return
      */
     IPage<EmergencyPlan> queryWorkToDo(@Param("page") Page<EmergencyPlan> page,

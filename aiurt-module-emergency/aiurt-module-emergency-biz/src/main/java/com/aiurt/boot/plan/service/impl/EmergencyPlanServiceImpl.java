@@ -642,6 +642,8 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                 Date nowDate = DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
                 emergencyPlan.setApprovedTime(nowDate);
                 break;
+            default:
+                break;
         }
         this.updateById(emergencyPlan);
     }
