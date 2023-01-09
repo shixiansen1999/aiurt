@@ -16,9 +16,10 @@ public interface ICommonService {
      *
      * @param orgIds 机构id
      * @param ignoreUserId 忽略的用户id
+     * @param majorId 专业id
      * @return
      */
-    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId);
+    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId,String majorId);
 
     /**
      * 查询设备
