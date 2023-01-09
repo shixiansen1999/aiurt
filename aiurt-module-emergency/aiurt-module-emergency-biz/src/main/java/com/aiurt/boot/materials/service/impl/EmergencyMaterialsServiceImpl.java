@@ -258,6 +258,12 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     @Override
     public Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList, String id) {
         List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsMapper.getMaterialInspection(pageList, id,"0");
+        LambdaQueryWrapper<EmergencyMaterialsInvoices> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper1.eq(EmergencyMaterialsInvoices::getDelFlag,0);
+        if (StrUtil.isNotBlank(id)){
+            lambdaQueryWrapper1.eq(EmergencyMaterialsInvoices::getId,id);
+        }
+        EmergencyMaterialsInvoices emergencyMaterialsInvoices = materialsInvoicesMapper.selectOne(lambdaQueryWrapper1);
         for (int i = 0; i < materialInspection.size(); i++) {
             EmergencyMaterialsInvoicesItem e = materialInspection.get(i);
             if (StrUtil.isNotBlank(e.getCategoryCode())){
@@ -269,19 +275,19 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                     e.setCategoryName(emergencyMaterialsCategory.getCategoryName());
                 }
             }
-            if (StrUtil.isNotBlank(e.getLineCode())) {
+            if (StrUtil.isNotBlank(emergencyMaterialsInvoices.getLineCode())) {
                 //根据线路编码查询线路名称
-                String position = iSysBaseAPI.getPosition(e.getLineCode());
+                String position = iSysBaseAPI.getPosition(emergencyMaterialsInvoices.getLineCode());
                 e.setLineName(position);
             }
-            if (StrUtil.isNotBlank(e.getStationCode())) {
+            if (StrUtil.isNotBlank(emergencyMaterialsInvoices.getStationCode())) {
                 //根据站点编码查询站点名称
-                String position = iSysBaseAPI.getPosition(e.getStationCode());
+                String position = iSysBaseAPI.getPosition(emergencyMaterialsInvoices.getStationCode());
                 e.setStationName(position);
             }
-            if (StrUtil.isNotBlank(e.getPositionCode())) {
+            if (StrUtil.isNotBlank(emergencyMaterialsInvoices.getPositionCode())) {
                 //根据位置编码查询位置名称
-                String position = iSysBaseAPI.getPosition(e.getPositionCode());
+                String position = iSysBaseAPI.getPosition(emergencyMaterialsInvoices.getPositionCode());
                 e.setPositionName(position);
             }
             if ("0".equals(e.getPid()) && StrUtil.isNotBlank(e.getId())){
@@ -297,19 +303,19 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                             q.setCategoryName(emergencyMaterialsCategory.getCategoryName());
                         }
                     }
-                    if (StrUtil.isNotBlank(q.getLineCode())) {
+                    if (StrUtil.isNotBlank(emergencyMaterialsInvoices.getLineCode())) {
                         //根据线路编码查询线路名称
-                        String position = iSysBaseAPI.getPosition(q.getLineCode());
+                        String position = iSysBaseAPI.getPosition(emergencyMaterialsInvoices.getLineCode());
                         q.setLineName(position);
                     }
-                    if (StrUtil.isNotBlank(q.getStationCode())) {
+                    if (StrUtil.isNotBlank(emergencyMaterialsInvoices.getStationCode())) {
                         //根据站点编码查询站点名称
-                        String position = iSysBaseAPI.getPosition(q.getStationCode());
+                        String position = iSysBaseAPI.getPosition(emergencyMaterialsInvoices.getStationCode());
                         q.setStationName(position);
                     }
-                    if (StrUtil.isNotBlank(q.getPositionCode())) {
+                    if (StrUtil.isNotBlank(emergencyMaterialsInvoices.getPositionCode())) {
                         //根据位置编码查询位置名称
-                        String position = iSysBaseAPI.getPosition(q.getPositionCode());
+                        String position = iSysBaseAPI.getPosition(emergencyMaterialsInvoices.getPositionCode());
                         q.setPositionName(position);
                     }
                 }
