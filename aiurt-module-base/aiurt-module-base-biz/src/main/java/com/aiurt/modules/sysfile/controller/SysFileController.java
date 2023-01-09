@@ -1,5 +1,6 @@
 package com.aiurt.modules.sysfile.controller;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.sysfile.constant.PatrolConstant;
 import com.aiurt.modules.sysfile.entity.SysFile;
@@ -46,6 +47,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -267,23 +269,24 @@ public class SysFileController {
 		//fileName = URLDecoder.decode(fileName.substring(fileName.indexOf("filename=") + 9), "UTF-8");
 		//sysFile.setName(fileName);
 		//System.out.println("文件名为：" + fileName);
-		double length = Double.parseDouble(Optional.ofNullable(sysFile.getFileSize()).orElse("0"));
-		String size = ((int) length) + "B";
-		for (int i = 0; i < 2; i++) {
-			if (length / CommonConstant.FILE_SIZE > CommonConstant.FILE_SIZE_MIN) {
-				length = length / CommonConstant.FILE_SIZE;
-				if (i == 0) {
-					size = length + "";
-					size = size.substring(0, size.indexOf(".") + 2).concat("KB");
-				} else {
-					size = length + "";
-					size = size.substring(0, size.indexOf(".") + 2).concat("MB");
-				}
-			} else {
-				break;
-			}
-		}
-		sysFile.setFileSize(size);
+		if (StrUtil.isNotBlank(sysFile.getFileSize())){
+            int integer = Integer.parseInt(sysFile.getFileSize());
+            if (integer>=0 && integer<1024){
+                BigDecimal div = NumberUtil.div(sysFile.getFileSize(), "1024", 1);
+                String string = div.stripTrailingZeros().toPlainString();
+                sysFile.setFileSize(string+"B");
+            }
+            if (integer>=1024 && integer<1048576){
+                BigDecimal div = NumberUtil.div(sysFile.getFileSize(), "1024", 1);
+                String string = div.stripTrailingZeros().toPlainString();
+                sysFile.setFileSize(string+"KB");
+            }
+            if (integer>=1048576){
+                BigDecimal div = NumberUtil.div(sysFile.getFileSize(), "1048576", 1);
+                String string = div.stripTrailingZeros().toPlainString();
+                sysFile.setFileSize(string+"MB");
+            }
+        }
 		try {
 			sysFileService.save(sysFile);
 			sysFileService.add(req,sysFile);
