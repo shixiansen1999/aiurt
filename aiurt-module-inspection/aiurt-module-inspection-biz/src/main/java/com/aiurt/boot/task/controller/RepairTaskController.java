@@ -1,5 +1,7 @@
 package com.aiurt.boot.task.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
@@ -7,12 +9,18 @@ import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.boot.task.dto.RepairTaskStationDTO;
 import com.aiurt.boot.task.entity.RepairTask;
+import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
+import com.aiurt.boot.task.entity.RepairTaskResult;
+import com.aiurt.boot.task.service.IRepairTaskDeviceRelService;
+import com.aiurt.boot.task.service.IRepairTaskEnclosureService;
+import com.aiurt.boot.task.service.IRepairTaskResultService;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -26,8 +34,10 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 检修任务
@@ -42,6 +52,16 @@ import java.util.List;
 public class RepairTaskController extends BaseController<RepairTask, IRepairTaskService> {
     @Autowired
     private IRepairTaskService repairTaskService;
+
+    @Autowired
+    private IRepairTaskDeviceRelService repairTaskDeviceRelService;
+
+    @Autowired
+    private IRepairTaskResultService repairTaskResultService;
+
+    @Autowired
+    private IRepairTaskEnclosureService repairTaskEnclosureService;
+
 
     /**
      * 分页列表查询
@@ -160,6 +180,39 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
         CheckListDTO checkListDto = repairTaskService.selectRepairTaskInfo(taskId,stationCode,deviceId);
         return Result.OK(checkListDto);
     }
+
+    @AutoLog(value = "检修任务-查看图片", operateType =  1, operateTypeAlias = "检修任务-查看图片", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "检修任务-查看图片", notes = "检修任务-查看图片")
+    @GetMapping(value = "/getPicture")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = RepairTaskEnclosure.class)
+    })
+    public Result<List<RepairTaskEnclosure>> getPicture(@RequestParam(value = "deviceCode", required = true)String deviceCode){
+        List<RepairTaskEnclosure> repairTaskEnclosureList = new ArrayList<>();
+        //根据检修单code查询检修单
+        LambdaQueryWrapper<RepairTaskDeviceRel> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(RepairTaskDeviceRel::getDelFlag,0)
+                          .eq(RepairTaskDeviceRel::getCode,deviceCode);
+        RepairTaskDeviceRel one = repairTaskDeviceRelService.getOne(lambdaQueryWrapper);
+        //根据检修单id查询检修结果
+        if (ObjectUtil.isNotEmpty(one)){
+            LambdaQueryWrapper<RepairTaskResult> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper1.eq(RepairTaskResult::getDelFlag,0)
+                               .eq(RepairTaskResult::getTaskDeviceRelId,one.getId());
+            List<RepairTaskResult> list = repairTaskResultService.list(lambdaQueryWrapper1);
+            //根据检修结果查询检修单附件信息
+            if (CollectionUtil.isNotEmpty(list)){
+                List<String> collect = list.stream().map(RepairTaskResult::getId).collect(Collectors.toList());
+                LambdaQueryWrapper<RepairTaskEnclosure> lambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper2.in(RepairTaskEnclosure::getRepairTaskResultId,collect);
+                repairTaskEnclosureList = repairTaskEnclosureService.list(lambdaQueryWrapper2);
+            }
+        }
+
+        return Result.OK(repairTaskEnclosureList);
+    }
+
+
 
 
 
