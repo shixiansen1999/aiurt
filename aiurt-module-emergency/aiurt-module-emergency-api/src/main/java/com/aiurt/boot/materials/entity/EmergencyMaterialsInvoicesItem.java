@@ -214,6 +214,17 @@ public class EmergencyMaterialsInvoicesItem extends DictEntity implements Serial
     @ApiModelProperty(value = "巡视位置名称")
     private java.lang.String positionName;
 
+    /**巡视标准编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡视标准编码")
+    private java.lang.String standardCode;
+
+
+    /**巡视标准名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡视标准名称")
+    private java.lang.String standardName;
+
     /**巡视日期*/
     @TableField(exist = false)
     @ApiModelProperty(value = "开始时间")
