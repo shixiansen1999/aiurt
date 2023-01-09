@@ -135,16 +135,17 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
     @ApiOperation(value = "查询启动应急预案列表", notes = "查询启动应急预案列表")
     @GetMapping(value = "/getAllPlanVersionList")
     public Result<List<EmergencyPlan>> getAllPlanVersionList() {
-        List<EmergencyPlan> list = emergencyPlanService.list();
+        List<EmergencyPlan> list = emergencyPlanService.lambdaQuery()
+                .eq(EmergencyPlan::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(EmergencyPlan::getStatus, EmergencyPlanConstant.VALID)
+                .list();
         List<EmergencyPlan> planVersionList = new ArrayList();
         if (CollUtil.isNotEmpty(list)) {
             for (EmergencyPlan emergencyPlan : list) {
-                if ((EmergencyPlanConstant.VALID).equals(emergencyPlan.getStatus())) {
                     String emergencyPlanName = emergencyPlan.getEmergencyPlanName();
                     String emergencyPlanVersion = emergencyPlan.getEmergencyPlanVersion();
                     emergencyPlan.setPlanVersion(emergencyPlanName + emergencyPlanVersion);
                     planVersionList.add(emergencyPlan);
-                }
             }
         }
         return Result.OK(planVersionList);
