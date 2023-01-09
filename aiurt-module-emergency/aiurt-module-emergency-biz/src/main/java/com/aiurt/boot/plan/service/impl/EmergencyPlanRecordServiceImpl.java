@@ -200,8 +200,9 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         EmergencyPlanRecord emergencyPlanRecord = new EmergencyPlanRecord();
         BeanUtils.copyProperties(emergencyPlanRecordDto, emergencyPlanRecord);
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Double version =1.0;
-        emergencyPlanRecord.setEmergencyPlanVersion(String.valueOf(version));
+        //应急预案版本
+        String emergencyPlanVersion = emergencyPlanRecordDto.getEmergencyPlanVersion();
+        emergencyPlanRecord.setEmergencyPlanVersion(emergencyPlanVersion);
         String username = loginUser.getUsername();
         emergencyPlanRecord.setRecorderId(username);
         emergencyPlanRecord.setOrgCode(loginUser.getOrgCode());
