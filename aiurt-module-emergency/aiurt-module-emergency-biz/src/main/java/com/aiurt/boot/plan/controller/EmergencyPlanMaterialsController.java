@@ -1,9 +1,11 @@
 package com.aiurt.boot.plan.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.materials.dto.MaterialAccountDTO;
 import com.aiurt.boot.plan.dto.EmergencyPlanMaterialsDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlanMaterials;
@@ -148,15 +150,14 @@ public class EmergencyPlanMaterialsController extends BaseController<EmergencyPl
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_plan_materials-通过id查询")
-	@ApiOperation(value="emergency_plan_materials-通过id查询", notes="emergency_plan_materials-通过id查询")
+	@ApiOperation(value="应急预案物资-通过id查询", notes="应急预案物资-通过id查询")
 	@GetMapping(value = "/queryById")
-	public Result<EmergencyPlanMaterials> queryById(@RequestParam(name="id",required=true) String id) {
-		EmergencyPlanMaterials emergencyPlanMaterials = emergencyPlanMaterialsService.getById(id);
-		if(emergencyPlanMaterials==null) {
+	public Result<List<EmergencyPlanMaterialsDTO>> queryById(@RequestParam(name="id",required=true) String id) {
+		List<EmergencyPlanMaterialsDTO> emergencyPlanMaterialsDtoS = emergencyPlanMaterialsService.queryById(id);
+		if(CollUtil.isEmpty(emergencyPlanMaterialsDtoS)) {
 			return Result.error("未找到对应数据");
 		}
-		return Result.OK(emergencyPlanMaterials);
+		return Result.OK(emergencyPlanMaterialsDtoS);
 	}
 
     /**

@@ -200,8 +200,9 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         EmergencyPlanRecord emergencyPlanRecord = new EmergencyPlanRecord();
         BeanUtils.copyProperties(emergencyPlanRecordDto, emergencyPlanRecord);
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Double version =1.0;
-        emergencyPlanRecord.setEmergencyPlanVersion(String.valueOf(version));
+        //应急预案版本
+        String emergencyPlanVersion = emergencyPlanRecordDto.getEmergencyPlanVersion();
+        emergencyPlanRecord.setEmergencyPlanVersion(emergencyPlanVersion);
         String username = loginUser.getUsername();
         emergencyPlanRecord.setRecorderId(username);
         emergencyPlanRecord.setOrgCode(loginUser.getOrgCode());
@@ -374,7 +375,8 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     public void delete(String id) {
         EmergencyPlanRecord emPlanRecord = this.getById(id);
         Assert.notNull(emPlanRecord, "未找到对应数据！");
-        this.removeById(id);
+        emPlanRecord.setDelFlag(EmergencyPlanConstant.DEL_FLAG1);
+        this.updateById(emPlanRecord);
 
         //关联应急队伍删除
         QueryWrapper<EmergencyPlanRecordTeam> planRecordTeamWrapper = new QueryWrapper<>();
@@ -858,16 +860,6 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
             int size = procedureList.size();
             Sheet sheet = workbook.getSheetAt(0);
-//            for (int j = 0 ;j < size; j++) {
-//                CellRangeAddress cellAddresses = new CellRangeAddress(10+j,10+j,4,6);
-//                //合并
-//                sheet.addMergedRegion(cellAddresses);
-//                //合并后设置下边框
-//                RegionUtil.setBorderBottom(BorderStyle.THIN, cellAddresses, sheet);
-//                RegionUtil.setBorderLeft(BorderStyle.THIN, cellAddresses, sheet);
-//                RegionUtil.setBorderTop(BorderStyle.THIN, cellAddresses, sheet);
-//                RegionUtil.setBorderRight(BorderStyle.THIN, cellAddresses, sheet);
-//            }
 
             //打包成压缩包导出
             String fileName = "应急预案启动记录.zip";
@@ -1055,6 +1047,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                     return Result.error("文件导入失败:应急预案处置程序不能为空！");
                 }
             }
+            //判断物资是否读取空数据，有则移除
             if(CollUtil.isNotEmpty(planRecordMaterialsList)){
                 Iterator<EmergencyPlanRecordMaterialsImportExcelDTO> iterator = planRecordMaterialsList.iterator();
                 if(CollUtil.isNotEmpty(iterator)){
@@ -1067,6 +1060,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                     }
                 }
             }
+            //判断问题及措施是否有空数据
             if(CollUtil.isNotEmpty(problemMeasuresList)){
                 Iterator<EmergencyPlanRecordProblemMeasuresImportExcelDTO> iterator = problemMeasuresList.iterator();
                 if(CollUtil.isNotEmpty(iterator)){

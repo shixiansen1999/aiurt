@@ -33,6 +33,15 @@
             <if test="standardCode != null and standardCode != ''">
                 and t3.standard_code = #{standardCode}
             </if>
+            <if test="lineCode != null and lineCode != ''">
+                and t3.line_code = #{lineCode}
+            </if>
+            <if test="stationCode != null and stationCode != ''">
+                and t3.station_code = #{stationCode}
+            </if>
+            <if test="positionCode != null and positionCode != ''">
+                and t3.position_code = #{positionCode}
+            </if>
             <if test="pid != null and pid != ''">
                 and t2.pid = #{pid}
             </if>

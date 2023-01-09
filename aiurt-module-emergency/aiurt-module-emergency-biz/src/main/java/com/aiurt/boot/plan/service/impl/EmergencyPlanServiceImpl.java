@@ -457,7 +457,8 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         if (!EmergencyPlanConstant.TO_SUBMITTED.equals(emergencyPlan.getEmergencyPlanStatus())) {
             throw new AiurtBootException("已提审的计划不允许删除！");
         }
-        this.removeById(id);
+        emergencyPlan.setDelFlag(EmergencyPlanConstant.DEL_FLAG1);
+        this.updateById(emergencyPlan);
 
         //关联应急队伍删除
         QueryWrapper<EmergencyPlanTeam> wrapper = new QueryWrapper<>();
@@ -1003,6 +1004,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                     return Result.error("文件导入失败:应急预案处置程序不能为空！");
                 }
             }
+            //判断物资是否读取空数据
             if(CollUtil.isNotEmpty(planMaterialsList)){
                 Iterator<EmergencyPlanMaterialsImportExcelDTO> iterator = planMaterialsList.iterator();
                 if(CollUtil.isNotEmpty(iterator)){

@@ -195,7 +195,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     private void sendTodo(String businessKey, String roleCode, String currentUserName, String taskName,String businessType) {
         TodoDTO todoDTO = new TodoDTO();
         if (StrUtil.isNotBlank(roleCode)) {
-            String userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(roleCode, ','));
+            String userName = null;
+            if (StrUtil.equalsAnyIgnoreCase(roleCode, RoleConstant.FOREMAN)) {
+                // 专业，子系统，站点
+                Fault fault = isExist(businessKey);
+                String majorCode = fault.getMajorCode();
+                String subSystemCode = fault.getSubSystemCode();
+                String stationCode = fault.getStationCode();
+
+                userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(roleCode, ','), majorCode, subSystemCode, stationCode);
+            }
             todoDTO.setCurrentUserName(userName);
         }else {
             todoDTO.setCurrentUserName(currentUserName);
@@ -480,7 +489,23 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 更新工班长指派的任务
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_ASSIGN.getType(), faultCode, user.getUsername(), "1");
         // 发送消息，告诉工班长已指派, // 工班长
-        sendMessage(user, faultCode, fault.getAssignUserName(), String.format("故障【%s】已被【%s】领取!", faultCode, user.getRealname()));
+       // sendMessage(user, faultCode, fault.getAssignUserName(), String.format("故障【%s】已被【%s】领取!", faultCode, user.getRealname()));
+        String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode());
+
+        BusMessageDTO message = new BusMessageDTO();
+        message.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+        message.setBusId(faultCode);
+        message.setFromUser(user.getUsername());
+
+        message.setToUser(receiveUserName);
+        message.setToAll(false);
+        message.setTitle("故障管理");
+        message.setContent(String.format("故障【%s】已被【%s】领取!", faultCode, user.getRealname()));
+        message.setCategory("2");
+        message.setLevel(null);
+        message.setPriority("L");
+        message.setStartTime(new Date());
+        sysBaseAPI.sendBusAnnouncement(message);
 
         // 维修待办
         sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
@@ -488,6 +513,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     }
 
     private void sendMessage(LoginUser user, String faultCode, String receiveUserName, String s) {
+        if (Objects.isNull(user) || StrUtil.isBlank(receiveUserName)) {
+            return;
+        }
         BusMessageDTO message = new BusMessageDTO();
         message.setBusType(SysAnnmentTypeEnum.FAULT.getType());
         message.setBusId(faultCode);
@@ -497,7 +525,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToAll(false);
         message.setTitle("故障管理");
         message.setContent(s);
-        message.setCategory("1");
+        message.setCategory("2");
         message.setLevel(null);
         message.setPriority("L");
         message.setStartTime(new Date());
@@ -544,7 +572,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToAll(false);
         message.setTitle("故障管理");
         message.setContent(String.format("故障(%s)已经被 %s 领取!", code, loginUser.getUsername()));
-        message.setCategory("1");
+        message.setCategory("2");
         message.setLevel(null);
         message.setPriority("L");
         message.setStartTime(new Date());
@@ -602,7 +630,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToAll(false);
         message.setTitle("故障管理");
         message.setContent(String.format("【%s】拒绝接收指派，请重新指派故障【%s】!",  loginUser.getUsername(), faultCode));
-        message.setCategory("1");
+        message.setCategory("2");
         message.setLevel(null);
         message.setPriority("L");
         message.setStartTime(new Date());
@@ -646,7 +674,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToAll(false);
         message.setTitle("故障管理");
         message.setContent(String.format("【%s】开始处理故障【%s】!",  user.getUsername(), code));
-        message.setCategory("1");
+        message.setCategory("2");
         message.setLevel(null);
         message.setPriority("L");
         message.setStartTime(new Date());
@@ -1438,11 +1466,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @param roleCode 角色编码
      * @return 人员账号用逗号隔开
      */
-    private String getUserNameByOrgCodeAndRoleCode(List<String> roleCode) {
+    private String getUserNameByOrgCodeAndRoleCode(List<String> roleCode,String majorCode, String subSystemCode, String stationCode) {
         if (CollUtil.isEmpty(roleCode)) {
             return "";
         }
-        List<String> result = baseMapper.selectUserNameByComplex(roleCode);
+        List<String> result = baseMapper.selectUserNameByComplex(roleCode, majorCode, subSystemCode, stationCode);
+        if (CollUtil.isNotEmpty(result)) {
+            result = baseMapper.selectUserNameByComplex(roleCode, null, null, null);
+        }
         return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
     }
 }

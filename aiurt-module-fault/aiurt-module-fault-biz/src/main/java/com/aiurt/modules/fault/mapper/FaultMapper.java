@@ -94,6 +94,7 @@ public interface FaultMapper extends BaseMapper<Fault> {
       * @param roleCodeList
       * @return
       */
-     List<String> selectUserNameByComplex(@Param("roleCodeList") List<String> roleCodeList);
+     List<String> selectUserNameByComplex(@Param("roleCodeList") List<String> roleCodeList,@Param("majorCode") String majorCode,
+                                          @Param("subSystemCode")String subSystemCode,  @Param("stationCode")String stationCode);
 
 }

@@ -149,9 +149,12 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 									  @RequestParam(name = "startTime",required=false) String  startTime,
 	                                  @RequestParam(name = "endTime",required=false) String  endTime,
 									  @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+									  @RequestParam(name = "lineCode",required=false) String  lineCode,
+									  @RequestParam(name = "stationCode",required=false) String  stationCode,
+									  @RequestParam(name = "positionCode",required=false) String  positionCode,
 									  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize){
 		 Page<EmergencyMaterialsInvoicesItem> pageList = new Page<>(pageNo, pageSize);
-		 Page<EmergencyMaterialsInvoicesItem> patrolRecord = iEmergencyMaterialsInvoicesItemService.getPatrolRecord(pageList, materialsCode, startTime, endTime,standardCode);
+		 Page<EmergencyMaterialsInvoicesItem> patrolRecord = iEmergencyMaterialsInvoicesItemService.getPatrolRecord(pageList, materialsCode, startTime, endTime,standardCode,lineCode,stationCode,positionCode);
 		 return  Result.OK(patrolRecord);
 	 }
 

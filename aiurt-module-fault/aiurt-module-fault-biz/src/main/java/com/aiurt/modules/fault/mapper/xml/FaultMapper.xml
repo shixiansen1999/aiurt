@@ -186,12 +186,30 @@
         FROM sys_user_role sur
         JOIN sys_user su ON sur.user_id = su.id
         JOIN sys_role sr ON sur.role_id = sr.id
+        LEFT join  cs_user_major cum ON  cum.user_id = su.id
+        LEFT JOIN  cs_major cm ON  cum.major_id = cm.id
+        LEFT JOIN  cs_user_subsystem cus on cus.user_id = su.id
+        LEFT JOIN  cs_subsystem cs ON  cs.id = cus.system_id
+        LEFT JOIN  cs_user_station us on us.user_id =  su.id
+        LEFT JOIN  cs_station c on us.station_id =  c.id
         where  su.del_flag = 0
         <if test="roleCodeList != null and roleCodeList.size() != 0 ">
             and sr.role_code in
             <foreach collection="roleCodeList" open="(" close=")" separator="," item="code">
                 #{code}
             </foreach>
+        </if>
+
+        <if test="majorCode != null and majorCode != ''">
+            and cm.major_code = #{majorCode}
+        </if>
+
+        <if test="subSystemCode != null and subSystemCode != ''">
+            and cs.system_code = #{subSystemCode}
+        </if>
+
+        <if test="stationCode != null and stationCode != ''">
+            and c.station_code = #{stationCode}
         </if>
 
     </select>

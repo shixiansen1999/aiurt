@@ -22,4 +22,9 @@ public class EmergencyRehearsalMonthVO extends EmergencyRehearsalMonth {
      */
     @ApiModelProperty(value = "年度")
     private String year;
+    /**
+     * 是否能删除标识
+     */
+    @ApiModelProperty(value = "是否能删除标识")
+    private Boolean delete;
 }

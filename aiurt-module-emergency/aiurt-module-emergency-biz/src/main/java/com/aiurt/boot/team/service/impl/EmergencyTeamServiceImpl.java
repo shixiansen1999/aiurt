@@ -23,6 +23,7 @@ import com.aiurt.boot.team.vo.EmergencyCrewVO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -96,12 +97,15 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         queryWrapper.orderByDesc(EmergencyTeam::getCreateTime).orderByDesc(EmergencyTeam::getUpdateTime);
         Page<EmergencyTeam> page = new Page<EmergencyTeam>(pageNo, pageSize);
         IPage<EmergencyTeam> pageList = this.page(page, queryWrapper);
+        //下面禁用数据过滤
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         List<EmergencyTeam> records = pageList.getRecords();
         if (CollUtil.isNotEmpty(records)) {
             for (EmergencyTeam record : records) {
                 this.translate(record);
             }
         }
+        GlobalThreadLocal.setDataFilter(b);
         return pageList;
     }
 
@@ -192,7 +196,13 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
         wrapper.eq(EmergencyCrew::getEmergencyTeamId, byId.getId());
-        emergencyCrewService.getBaseMapper().delete(wrapper);
+        List<EmergencyCrew> crewList = emergencyCrewService.getBaseMapper().selectList(wrapper);
+        if (CollUtil.isNotEmpty(crewList)) {
+            for (EmergencyCrew emergencyCrew : crewList) {
+                emergencyCrew.setDelFlag(TeamConstant.DEL_FLAG1);
+                emergencyCrewService.updateById(emergencyCrew);
+            }
+        }
         List<EmergencyCrew> emergencyCrewList = emergencyTeam.getEmergencyCrewList();
         if (CollUtil.isNotEmpty(emergencyCrewList)) {
             for (EmergencyCrew emergencyCrew : emergencyCrewList) {
