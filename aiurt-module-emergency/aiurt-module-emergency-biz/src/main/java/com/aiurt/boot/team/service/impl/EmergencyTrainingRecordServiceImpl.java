@@ -206,6 +206,10 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 emergencyTrainingRecordCrew.setEmergencyTrainingRecordId(id);
                 emergencyTrainingRecordCrewService.save(emergencyTrainingRecordCrew);
             }
+        } else {
+            LambdaQueryWrapper<EmergencyTrainingRecordCrew> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(EmergencyTrainingRecordCrew::getEmergencyTrainingRecordId, emergencyTrainingRecord.getId());
+            emergencyTrainingRecordCrewService.getBaseMapper().delete(queryWrapper);
         }
 
         List<EmergencyTrainingProcessRecord> processRecordList = emergencyTrainingRecord.getProcessRecordList();
