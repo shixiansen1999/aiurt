@@ -196,7 +196,13 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
         wrapper.eq(EmergencyCrew::getEmergencyTeamId, byId.getId());
-        emergencyCrewService.getBaseMapper().delete(wrapper);
+        List<EmergencyCrew> crewList = emergencyCrewService.getBaseMapper().selectList(wrapper);
+        if (CollUtil.isNotEmpty(crewList)) {
+            for (EmergencyCrew emergencyCrew : crewList) {
+                emergencyCrew.setDelFlag(TeamConstant.DEL_FLAG1);
+                emergencyCrewService.updateById(emergencyCrew);
+            }
+        }
         List<EmergencyCrew> emergencyCrewList = emergencyTeam.getEmergencyCrewList();
         if (CollUtil.isNotEmpty(emergencyCrewList)) {
             for (EmergencyCrew emergencyCrew : emergencyCrewList) {
