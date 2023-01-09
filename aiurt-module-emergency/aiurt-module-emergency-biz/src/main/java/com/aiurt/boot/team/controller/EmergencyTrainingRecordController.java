@@ -106,7 +106,7 @@ public class EmergencyTrainingRecordController extends BaseController<EmergencyT
 		 //如果是提交，判断是否所有内容填写完整
 		 Result<EmergencyTrainingRecordVO> result = this.queryById(id);
 		 if (CollUtil.isEmpty(result.getResult().getTrainingCrews()) || CollUtil.isEmpty(result.getResult().getProcessRecords()) ||CollUtil.isEmpty(result.getResult().getRecordAtts())) {
-			 return Result.error("还有内容没有填写，不能提交");
+			 return Result.error("信息未填写完整，无法提交");
 		 }
 		 record.setStatus(TeamConstant.SUBMITTED);
 		 emergencyTrainingRecordService.updateById(record);
