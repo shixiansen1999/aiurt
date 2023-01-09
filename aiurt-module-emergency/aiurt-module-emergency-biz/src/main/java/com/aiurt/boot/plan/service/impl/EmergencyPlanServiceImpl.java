@@ -1004,6 +1004,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                     return Result.error("文件导入失败:应急预案处置程序不能为空！");
                 }
             }
+            //判断物资是否读取空数据
             if(CollUtil.isNotEmpty(planMaterialsList)){
                 Iterator<EmergencyPlanMaterialsImportExcelDTO> iterator = planMaterialsList.iterator();
                 if(CollUtil.isNotEmpty(iterator)){

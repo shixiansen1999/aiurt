@@ -60,7 +60,9 @@ public class EmergencyPlanMaterialsServiceImpl extends ServiceImpl<EmergencyPlan
             for (EmergencyPlanMaterials planMaterial : planMaterials) {
                 EmergencyPlanMaterialsDTO emergencyPlanMaterialsDto = new EmergencyPlanMaterialsDTO();
                 String materialsCode = planMaterial.getMaterialsCode();
+                String MaterialId = planMaterial.getId();
                 Integer materialsNumber = planMaterial.getMaterialsNumber();
+                emergencyPlanMaterialsDto.setId(MaterialId);
                 emergencyPlanMaterialsDto.setMaterialsCode(materialsCode);
                 emergencyPlanMaterialsDto.setMaterialsNumber(materialsNumber);
                 //根据物资code查询物资信息
