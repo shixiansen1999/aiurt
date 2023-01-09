@@ -374,7 +374,8 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
     public void delete(String id) {
         EmergencyPlanRecord emPlanRecord = this.getById(id);
         Assert.notNull(emPlanRecord, "未找到对应数据！");
-        this.removeById(id);
+        emPlanRecord.setDelFlag(EmergencyPlanConstant.DEL_FLAG1);
+        this.updateById(emPlanRecord);
 
         //关联应急队伍删除
         QueryWrapper<EmergencyPlanRecordTeam> planRecordTeamWrapper = new QueryWrapper<>();

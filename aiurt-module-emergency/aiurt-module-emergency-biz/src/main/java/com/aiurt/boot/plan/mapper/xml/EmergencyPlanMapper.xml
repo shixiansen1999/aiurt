@@ -27,7 +27,7 @@
         <if test="condition.status != null">
             and ep.status = #{condition.status}
         </if>
-        order by ep.emergency_plan_status asc
+        order by ep.emergency_plan_status asc,ep.create_time desc
     </select>
 
     <select id="queryWorkToDo" resultType="com.aiurt.boot.plan.entity.EmergencyPlan">
