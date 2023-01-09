@@ -187,7 +187,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = RepairTaskEnclosure.class)
     })
-    public Result<List<RepairTaskEnclosure>> getPicture(@RequestParam(value = "deviceCode", required = true)String deviceCode){
+    public Result<List<RepairTaskEnclosure>> getPicture(@RequestParam(value = "检修单号", required = true)String deviceCode){
         List<RepairTaskEnclosure> repairTaskEnclosureList = new ArrayList<>();
         //根据检修单code查询检修单
         LambdaQueryWrapper<RepairTaskDeviceRel> lambdaQueryWrapper = new LambdaQueryWrapper<>();
