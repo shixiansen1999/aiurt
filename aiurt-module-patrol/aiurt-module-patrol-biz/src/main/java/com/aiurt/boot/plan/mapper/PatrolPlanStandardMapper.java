@@ -19,4 +19,10 @@ public interface PatrolPlanStandardMapper extends BaseMapper<PatrolPlanStandard>
      * @return
      */
     List<String> getPlanCodeByMajorSystem();
+
+    /**
+     * 查询
+     * @return
+     */
+    List<String> getPlanCodeByMajorSystemIsNull();
 }

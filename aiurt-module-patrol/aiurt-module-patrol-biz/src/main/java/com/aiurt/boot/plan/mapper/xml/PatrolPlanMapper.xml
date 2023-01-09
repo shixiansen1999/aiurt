@@ -118,6 +118,7 @@
                 #{item}
             </foreach>
         </if>
+
         GROUP BY pp.id
         ) AS abc
         WHERE
