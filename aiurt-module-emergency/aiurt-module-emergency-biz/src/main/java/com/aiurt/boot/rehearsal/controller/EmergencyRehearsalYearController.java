@@ -57,33 +57,6 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
         return Result.OK(pageList);
     }
 
-//    /**
-//     * 应急演练管理-年演练计划添加
-//     *
-//     * @param
-//     * @return
-//     */
-//    @AutoLog(value = "应急演练管理-年演练计划添加")
-//    @ApiOperation(value = "应急演练管理-年演练计划添加", notes = "应急演练管理-年演练计划添加")
-//    @PostMapping(value = "/add")
-//    public Result<String> add(@RequestBody @Validated(EmergencyRehearsalYearAddDTO.Save.class) EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO) {
-//        String id = emergencyRehearsalYearService.add(emergencyRehearsalYearAddDTO);
-//        return Result.OK("添加成功！ID为：【" + id + "】");
-//    }
-
-//    /**
-//     * 应急演练管理-年演练计划编辑
-//     *
-//     * @param
-//     * @return
-//     */
-//    @AutoLog(value = "应急演练管理-年演练计划编辑")
-//    @ApiOperation(value = "应急演练管理-年演练计划编辑", notes = "应急演练管理-年演练计划编辑")
-//    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-//    public Result<String> edit(@RequestBody @Validated(EmergencyRehearsalYearAddDTO.Update.class) EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO) {
-//        emergencyRehearsalYearService.edit(emergencyRehearsalYearAddDTO);
-//        return Result.OK("编辑成功!");
-//    }
 
     /**
      * 应急演练管理-年演练计划通过id删除

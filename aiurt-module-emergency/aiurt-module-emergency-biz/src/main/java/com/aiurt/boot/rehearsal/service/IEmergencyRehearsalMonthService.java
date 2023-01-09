@@ -31,4 +31,11 @@ public interface IEmergencyRehearsalMonthService extends IService<EmergencyRehea
      * @return
      */
     IPage<EmergencyRehearsalMonthVO> queryPageList(Page<EmergencyRehearsalMonthVO> page, EmergencyRehearsalMonth emergencyRehearsalMonth);
+
+    /**
+     * 应急月演练计划-通过id删除
+     *
+     * @param id
+     */
+    void delete(String id);
 }
