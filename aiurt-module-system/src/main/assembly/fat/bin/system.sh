@@ -13,7 +13,7 @@ APP_NAME=platform
 
 ##系统home目录  linux系统默认为 /home/ywpt/bdyw
 ##application home dir
-HyERP_HOME=/home/platform/aiurt-module-system
+HyERP_HOME=/home/test/platform/aiurt-module-system
 
 
 ##查询应用进程pid命令
