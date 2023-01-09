@@ -62,11 +62,13 @@ public interface IEmergencyPlanRecordService extends IService<EmergencyPlanRecor
 
     /**
      * 应急模块-责任部门和用户联动信息
+     * @return
      */
     List<SysDeptUserModel> getDeptUserGanged();
 
     /**
      * 应急模块-责任人信息
+     * @return
      */
     List<LoginUser> getDutyUser();
 

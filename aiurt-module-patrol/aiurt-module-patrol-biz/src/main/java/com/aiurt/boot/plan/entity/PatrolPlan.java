@@ -49,9 +49,9 @@ public class PatrolPlan implements Serializable {
 	@Excel(name = "是否委外：0否、1是", width = 15)
     @ApiModelProperty(value = "是否委外：0否、1是")
     private java.lang.Integer outsource;
-	/**巡检频次：1 一天1次、2 一周1次、3 一周2次*/
-	@Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次", width = 15)
-    @ApiModelProperty(value = "1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次")
+	/**巡检频次：1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次、6两天1次、7三天1次*/
+	@Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次、6两天1次、7三天1次", width = 15)
+    @ApiModelProperty(value = "1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次、6两天1次、7三天1次")
     private java.lang.Integer period;
 	/**生效状态：0停用、1启用*/
 	@Excel(name = "生效状态：0停用、1启用", width = 15)

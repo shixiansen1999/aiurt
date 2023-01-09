@@ -402,7 +402,7 @@ public class CommonCtroller {
     @GetMapping("/sysuser/queryDepartUserTree")
     @ApiOperation("根据机构人员树")
     public Result<List<SelectTable>> queryDepartUserTree() {
-        List<SelectTable> tables = commonService.queryDepartUserTree(null, null);
+        List<SelectTable> tables = commonService.queryDepartUserTree(null, null,null);
         return Result.OK(tables);
     }
 

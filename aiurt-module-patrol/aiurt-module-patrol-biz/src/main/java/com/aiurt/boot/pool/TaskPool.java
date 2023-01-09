@@ -1,6 +1,7 @@
 package com.aiurt.boot.pool;
 
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
@@ -132,33 +133,60 @@ public class TaskPool implements Job {
                         task.setStartTime(strategy.getStartTime()); // 巡检开始时间
                         task.setEndTime(strategy.getEndTime()); // 巡检结束时间
 
-                        if (PatrolConstant.STRATEGY_DAY.equals(strategy.getType())) {
+                        boolean match = strategyMatching(l, strategy);
+                        if (match) {
                             // 保存任务记录并复制相关关联表数据
                             saveAndCopyData(task, l);
-                        } else if (PatrolConstant.STRATEGY_WEEK.equals(strategy.getType())) {
-                            // 判断今天是一周中的星期几
-                            int week = DateUtil.dayOfWeek(date) == 1 ? 7 : DateUtil.dayOfWeek(date) - 1;
-                            if (week == strategy.getWeek()) {
-                                // 保存任务记录并复制相关关联表数据
-                                saveAndCopyData(task, l);
-                            }
-                        } else if (PatrolConstant.STRATEGY_MONTH.equals(strategy.getType())) {
-                            // 一个月中的第几周
-                            int weekOfMonth = date.weekOfMonth();
-                            // 一周中的星期几，工具类中以星期日为一周的开始，现以星期一为一周的开始
-                            int week = DateUtil.dayOfWeek(date) == 1 ? 7 : DateUtil.dayOfWeek(date) - 1;
-                            // 现以星期一为一周的开始
-                            int a = 7;
-                            if (week == a) {
-                                weekOfMonth -= 1;
-                            }
-                            if (weekOfMonth == strategy.getTime() && week == strategy.getWeek()) {
-                                // 保存任务记录并复制相关关联表数据
-                                saveAndCopyData(task, l);
-                            }
                         }
                     });
         });
+    }
+
+    /**
+     * 根据策略判断是否生成任务
+     *
+     * @param plan
+     * @param strategy
+     * @return
+     */
+    private boolean strategyMatching(PatrolPlan plan, PatrolPlanStrategy strategy) {
+        DateTime date = DateUtil.date();
+        Integer type = strategy.getType();
+        if (PatrolConstant.STRATEGY_DAY.equals(type)) {
+            Integer period = plan.getPeriod();
+            if (PatrolConstant.PLAN_PERIOD_TWO_DAY.equals(period) || PatrolConstant.PLAN_PERIOD_THREE_DAY.equals(period)) {
+                Date startDate = plan.getStartDate();
+                int compare = DateUtil.compare(DateUtil.parse(DateUtil.formatDate(startDate)), DateUtil.parse(DateUtil.formatDate(date)));
+                long between = DateUtil.betweenDay(startDate, date, true);
+                if (0 == compare || 0 == (between & 1) || 0 == (between % 3)) {
+                    return true;
+                }
+                return false;
+            }
+            return true;
+        }
+        if (PatrolConstant.STRATEGY_WEEK.equals(type)) {
+            // 判断今天是一周中的星期几
+            int week = DateUtil.dayOfWeek(date) == 1 ? 7 : DateUtil.dayOfWeek(date) - 1;
+            if (week == strategy.getWeek()) {
+                return true;
+            }
+        }
+        if (PatrolConstant.STRATEGY_MONTH.equals(type)) {
+            // 一个月中的第几周
+            int weekOfMonth = date.weekOfMonth();
+            // 一周中的星期几，工具类中以星期日为一周的开始，现以星期一为一周的开始
+            int week = DateUtil.dayOfWeek(date) == 1 ? 7 : DateUtil.dayOfWeek(date) - 1;
+            // 现以星期一为一周的开始
+            int a = 7;
+            if (week == a) {
+                weekOfMonth -= 1;
+            }
+            if (weekOfMonth == strategy.getTime() && week == strategy.getWeek()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

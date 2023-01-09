@@ -47,7 +47,7 @@ public class CommonServiceImpl implements ICommonService {
      * @return
      */
     @Override
-    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId) {
+    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId,String majorId) {
         LambdaQueryWrapper<SysDepart> queryWrapper = new LambdaQueryWrapper<>();
         if (CollectionUtil.isNotEmpty(orgIds)) {
             queryWrapper.in(SysDepart::getId, orgIds);
@@ -83,7 +83,7 @@ public class CommonServiceImpl implements ICommonService {
         for (SelectTable entity : collect) {
             resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
         }
-        dealUser(resultList, ignoreUserId);
+        dealUser(resultList, ignoreUserId,majorId);
         return resultList;
     }
 
@@ -136,13 +136,13 @@ public class CommonServiceImpl implements ICommonService {
         return list;
     }
 
-    private void dealUser(List<SelectTable> children, String ignoreUserId) {
+    private void dealUser(List<SelectTable> children, String ignoreUserId,String majorId) {
         if (CollectionUtil.isEmpty(children)) {
             return;
         }
         for (SelectTable child : children) {
             List<SelectTable> list = child.getChildren();
-            dealUser(list, ignoreUserId);
+            dealUser(list, ignoreUserId,majorId);
             if (CollectionUtil.isEmpty(list)) {
                 list = new ArrayList<>();
             }
@@ -152,6 +152,9 @@ public class CommonServiceImpl implements ICommonService {
             wrapper.eq(SysUser::getOrgId, orgId);
             wrapper.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);
             wrapper.eq(SysUser::getStatus, CommonConstant.USER_UNFREEZE);
+            wrapper.apply(StrUtil.isNotBlank(majorId),
+                    "id in (select user_id from cs_user_major where 1=1 and major_id in (select id from cs_major where 1=1 and ( id = {0} or major_code = {0})))",
+                    majorId);
             if (StrUtil.isNotBlank(ignoreUserId)) {
                 wrapper.notIn(SysUser::getId, Collections.singleton(ignoreUserId));
             }

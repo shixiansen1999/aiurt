@@ -138,6 +138,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0") && StrUtil.isNotBlank(condition.getCategoryCode())){
                 MaterialAccountDTO materialAccountDTO = new MaterialAccountDTO();
                 materialAccountDTO.setPid(e.getCategoryId());
+                materialAccountDTO.setMaterialsName(condition.getMaterialsName());
                 List<MaterialAccountDTO> materialAccountList1 = emergencyMaterialsMapper.getMaterialAccountList(pageList, materialAccountDTO);
                 if (CollUtil.isNotEmpty(materialAccountList1)){
                     materialAccountList1.forEach(q->{

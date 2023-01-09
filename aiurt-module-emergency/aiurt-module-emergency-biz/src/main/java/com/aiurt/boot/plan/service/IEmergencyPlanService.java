@@ -109,6 +109,7 @@ public interface IEmergencyPlanService extends IService<EmergencyPlan> {
     /**
      * 应急预案台账模板下载
      * @param response
+     * @param request
      * @throws IOException
      */
     void exportTemplateXls(HttpServletResponse response,HttpServletRequest request) throws IOException;
