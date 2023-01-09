@@ -404,9 +404,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<String> patrolTaskAudit(String id, Integer status, String remark, String backReason) {
-        LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Assert.notNull(loginUser, "检测到未登录，请登录后操作!");
+        if (StrUtil.isNotBlank(loginUser.getRoleCodes())) {
+            List<String> roleCodes = StrUtil.split(loginUser.getRoleCodes(), ',');
+            if (!roleCodes.contains(RoleConstant.FOREMAN)) {
+                throw new AiurtBootException("您没有审核操作权限！");
+            }
+        }
+        LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
         // 任务有一个人审核则更新待办消息
         isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_AUDIT.getType(), id, loginUser.getUsername(), CommonTodoStatus.DONE_STATUS_1);
         //不通过传0
@@ -833,11 +839,16 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         PatrolTask patrolTask = patrolTaskMapper.selectOne(wrapper);
         // 获取当前登录用户
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        patrolTask.setAuditorId(loginUser.getId());
-
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("未发现登录用户，请登录系统后操作！");
         }
+        if (StrUtil.isNotBlank(loginUser.getRoleCodes())) {
+            List<String> roleCodes = StrUtil.split(loginUser.getRoleCodes(), ',');
+            if (!roleCodes.contains(RoleConstant.FOREMAN)) {
+                throw new AiurtBootException("您没有审核操作权限！");
+            }
+        }
+        patrolTask.setAuditorId(loginUser.getId());
         if (PatrolConstant.AUDIT_NOPASS.equals(auditStatus)) {
             if (StrUtil.isEmpty(auditReason)) {
                 throw new AiurtBootException("审核不通过原因不能为空！");
