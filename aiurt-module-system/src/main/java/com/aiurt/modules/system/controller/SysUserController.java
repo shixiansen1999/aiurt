@@ -781,46 +781,45 @@ public class SysUserController {
                         for (String departId : departIdArray) {
                             userDepartList.add(new SysUserDepart(userId, departId));
                         }
-                        if (list.size()>0){
-                            //创建导入失败错误报告,进行模板导出
-                            Resource resource = new ClassPathResource("templates/sysUserError.xlsx");
-                            InputStream resourceAsStream = resource.getInputStream();
-                            //2.获取临时文件
-                            File fileTemp= new File("templates/sysUserError.xlsx");
-                            try {
-                                //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
-                                FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
-                            } catch (Exception e) {
-                                log.error(e.getMessage());
-                            }
-                            String path = fileTemp.getAbsolutePath();
-                            TemplateExportParams exportParams = new TemplateExportParams(path);
-                            List<Map<String, Object>> mapList = new ArrayList<>();
-                            list.forEach(l->{
-                                Map<String, Object> lm = new HashMap<String, Object>();
-                                lm.put("username",l.getUsername());
-                                lm.put("realname",l.getRealname());
-                                lm.put("buName",l.getBuName());
-                                lm.put("names",l.getNames());
-                                lm.put("phone",l.getPhone());
-                                lm.put("post",l.getPost());
-                                lm.put("workNo",l.getWorkNo());
-                                lm.put("text",l.getText());
-                                mapList.add(lm);
-                            });
-                            Map<String, Object> errorMap = new HashMap<String, Object>();
-                            errorMap.put("maplist", mapList);
-                            Workbook workbook = ExcelExportUtil.exportExcel(exportParams,errorMap);
-                            String fileName = "用户导入错误模板"+"_" + System.currentTimeMillis()+".xlsx";
-                            FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
-                            String  url = fileName;
-                            workbook.write(out);
-                            successLines+=(importVos.size()-errorLines);
-                            return ImportExcelUtil.imporReturnRes(errorLines,successLines,null,url);
-                        }
                         sysUserDepartService.saveBatch(userDepartList);
                     }
-
+                    if (list.size()>0){
+                        //创建导入失败错误报告,进行模板导出
+                        Resource resource = new ClassPathResource("templates/sysUserError.xlsx");
+                        InputStream resourceAsStream = resource.getInputStream();
+                        //2.获取临时文件
+                        File fileTemp= new File("templates/sysUserError.xlsx");
+                        try {
+                            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+                            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+                        } catch (Exception e) {
+                            log.error(e.getMessage());
+                        }
+                        String path = fileTemp.getAbsolutePath();
+                        TemplateExportParams exportParams = new TemplateExportParams(path);
+                        List<Map<String, Object>> mapList = new ArrayList<>();
+                        list.forEach(l->{
+                            Map<String, Object> lm = new HashMap<String, Object>();
+                            lm.put("username",l.getUsername());
+                            lm.put("realname",l.getRealname());
+                            lm.put("buName",l.getBuName());
+                            lm.put("names",l.getNames());
+                            lm.put("phone",l.getPhone());
+                            lm.put("post",l.getPost());
+                            lm.put("workNo",l.getWorkNo());
+                            lm.put("text",l.getText());
+                            mapList.add(lm);
+                        });
+                        Map<String, Object> errorMap = new HashMap<String, Object>();
+                        errorMap.put("maplist", mapList);
+                        Workbook workbook = ExcelExportUtil.exportExcel(exportParams,errorMap);
+                        String fileName = "用户导入错误模板"+"_" + System.currentTimeMillis()+".xlsx";
+                        FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
+                        String  url = fileName;
+                        workbook.write(out);
+                        successLines+=(importVos.size()-errorLines);
+                        return ImportExcelUtil.imporReturnRes(errorLines,successLines,errorMessage,url);
+                    }
                 }
             } catch (Exception e) {
                 errorMessage.add("发生异常：" + e.getMessage());
@@ -833,7 +832,7 @@ public class SysUserController {
                 }
             }
         }
-        return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorMessage);
+        return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorMessage,null);
     }
 
     /**
