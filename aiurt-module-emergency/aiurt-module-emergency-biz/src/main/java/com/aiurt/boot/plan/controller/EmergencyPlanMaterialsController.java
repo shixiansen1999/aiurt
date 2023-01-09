@@ -153,11 +153,11 @@ public class EmergencyPlanMaterialsController extends BaseController<EmergencyPl
 	@ApiOperation(value="应急预案物资-通过id查询", notes="应急预案物资-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<List<EmergencyPlanMaterialsDTO>> queryById(@RequestParam(name="id",required=true) String id) {
-		List<EmergencyPlanMaterialsDTO> emergencyPlanMaterialsDTOS = emergencyPlanMaterialsService.queryById(id);
-		if(CollUtil.isEmpty(emergencyPlanMaterialsDTOS)) {
+		List<EmergencyPlanMaterialsDTO> emergencyPlanMaterialsDtoS = emergencyPlanMaterialsService.queryById(id);
+		if(CollUtil.isEmpty(emergencyPlanMaterialsDtoS)) {
 			return Result.error("未找到对应数据");
 		}
-		return Result.OK(emergencyPlanMaterialsDTOS);
+		return Result.OK(emergencyPlanMaterialsDtoS);
 	}
 
     /**

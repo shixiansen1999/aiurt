@@ -860,16 +860,6 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
             int size = procedureList.size();
             Sheet sheet = workbook.getSheetAt(0);
-//            for (int j = 0 ;j < size; j++) {
-//                CellRangeAddress cellAddresses = new CellRangeAddress(10+j,10+j,4,6);
-//                //合并
-//                sheet.addMergedRegion(cellAddresses);
-//                //合并后设置下边框
-//                RegionUtil.setBorderBottom(BorderStyle.THIN, cellAddresses, sheet);
-//                RegionUtil.setBorderLeft(BorderStyle.THIN, cellAddresses, sheet);
-//                RegionUtil.setBorderTop(BorderStyle.THIN, cellAddresses, sheet);
-//                RegionUtil.setBorderRight(BorderStyle.THIN, cellAddresses, sheet);
-//            }
 
             //打包成压缩包导出
             String fileName = "应急预案启动记录.zip";
@@ -1057,6 +1047,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                     return Result.error("文件导入失败:应急预案处置程序不能为空！");
                 }
             }
+            //判断物资是否读取空数据，有则移除
             if(CollUtil.isNotEmpty(planRecordMaterialsList)){
                 Iterator<EmergencyPlanRecordMaterialsImportExcelDTO> iterator = planRecordMaterialsList.iterator();
                 if(CollUtil.isNotEmpty(iterator)){
@@ -1069,6 +1060,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                     }
                 }
             }
+            //判断问题及措施是否有空数据
             if(CollUtil.isNotEmpty(problemMeasuresList)){
                 Iterator<EmergencyPlanRecordProblemMeasuresImportExcelDTO> iterator = problemMeasuresList.iterator();
                 if(CollUtil.isNotEmpty(iterator)){
