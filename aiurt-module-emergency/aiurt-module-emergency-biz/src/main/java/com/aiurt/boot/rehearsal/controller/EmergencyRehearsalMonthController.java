@@ -94,7 +94,7 @@ public class EmergencyRehearsalMonthController extends BaseController<EmergencyR
     @ApiOperation(value = "应急月演练计划-通过id删除", notes = "应急月演练计划-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
-        emergencyRehearsalMonthService.removeById(id);
+        emergencyRehearsalMonthService.delete(id);
         return Result.OK("删除成功!");
     }
 

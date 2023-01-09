@@ -4,11 +4,15 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
+import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
+import com.aiurt.boot.rehearsal.mapper.EmergencyImplementationRecordMapper;
 import com.aiurt.boot.rehearsal.mapper.EmergencyRehearsalMonthMapper;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalMonthService;
 import com.aiurt.boot.rehearsal.vo.EmergencyRehearsalMonthVO;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -17,9 +21,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @Description: emergency_rehearsal_month
@@ -31,6 +38,8 @@ import java.util.Date;
 public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyRehearsalMonthMapper, EmergencyRehearsalMonth> implements IEmergencyRehearsalMonthService {
     @Autowired
     private EmergencyRehearsalMonthMapper emergencyRehearsalMonthMapper;
+    @Autowired
+    private EmergencyImplementationRecordMapper emergencyImplementationRecordMapper;
 
     @Override
     public String addMonthPlan(EmergencyRehearsalMonth emergencyRehearsalMonth) {
@@ -77,6 +86,23 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
             throw new AiurtBootException("年演练计划ID不能为空！");
         }
         IPage<EmergencyRehearsalMonthVO> pageList = emergencyRehearsalMonthMapper.queryPageList(page, emergencyRehearsalMonth);
+        pageList.getRecords().forEach(monthPlan -> {
+            boolean exists = emergencyImplementationRecordMapper.exists(new LambdaQueryWrapper<EmergencyImplementationRecord>()
+                    .eq(EmergencyImplementationRecord::getPlanId, monthPlan.getId())
+                    .eq(EmergencyImplementationRecord::getDelFlag, CommonConstant.DEL_FLAG_0));
+            monthPlan.setDelete(!exists);
+        });
         return pageList;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(String id) {
+        boolean exists = emergencyImplementationRecordMapper.exists(new LambdaQueryWrapper<EmergencyImplementationRecord>()
+                .eq(EmergencyImplementationRecord::getPlanId, id));
+        if (exists) {
+            throw new AiurtBootException("该月计划应急演练记录已在使用，不允许删除！");
+        }
+        this.removeById(id);
     }
 }
