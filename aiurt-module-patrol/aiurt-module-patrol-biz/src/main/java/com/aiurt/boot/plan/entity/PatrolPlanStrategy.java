@@ -40,8 +40,8 @@ public class PatrolPlanStrategy implements Serializable {
     @ApiModelProperty(value = "计划表主键")
     private java.lang.String planId;
 	/**巡检类型：0天巡、1周巡、2月巡*/
-	@Excel(name = "巡检类型：1周巡、2月巡", width = 15)
-    @ApiModelProperty(value = "巡检类型：1周巡、2月巡")
+	@Excel(name = "巡检类型：0天巡、1周巡、2月巡", width = 15)
+    @ApiModelProperty(value = "巡检类型：0天巡、1周巡、2月巡")
     private java.lang.Integer type;
 	/**巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日*/
 	@Excel(name = "巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日", width = 15)
