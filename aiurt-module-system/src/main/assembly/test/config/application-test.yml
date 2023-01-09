@@ -151,8 +151,8 @@ spring:
           #driver-class-name: com.mysql.cj.jdbc.Driver
   #redis 配置
   redis:
-    database: 1
-    host: 192.168.1.21
+    database: 6
+    host: 192.168.1.29
     lettuce:
       pool:
         max-active: 8   #最大连接数据库连接数,设 -1 为没有限制
