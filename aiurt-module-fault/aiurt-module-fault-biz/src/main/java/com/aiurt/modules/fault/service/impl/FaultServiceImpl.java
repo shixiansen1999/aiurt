@@ -501,7 +501,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToAll(false);
         message.setTitle("故障管理");
         message.setContent(String.format("故障【%s】已被【%s】领取!", faultCode, user.getRealname()));
-        message.setCategory("1");
+        message.setCategory("2");
         message.setLevel(null);
         message.setPriority("L");
         message.setStartTime(new Date());
@@ -525,7 +525,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToAll(false);
         message.setTitle("故障管理");
         message.setContent(s);
-        message.setCategory("1");
+        message.setCategory("2");
         message.setLevel(null);
         message.setPriority("L");
         message.setStartTime(new Date());
@@ -572,7 +572,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToAll(false);
         message.setTitle("故障管理");
         message.setContent(String.format("故障(%s)已经被 %s 领取!", code, loginUser.getUsername()));
-        message.setCategory("1");
+        message.setCategory("2");
         message.setLevel(null);
         message.setPriority("L");
         message.setStartTime(new Date());
@@ -630,7 +630,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToAll(false);
         message.setTitle("故障管理");
         message.setContent(String.format("【%s】拒绝接收指派，请重新指派故障【%s】!",  loginUser.getUsername(), faultCode));
-        message.setCategory("1");
+        message.setCategory("2");
         message.setLevel(null);
         message.setPriority("L");
         message.setStartTime(new Date());
@@ -674,7 +674,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToAll(false);
         message.setTitle("故障管理");
         message.setContent(String.format("【%s】开始处理故障【%s】!",  user.getUsername(), code));
-        message.setCategory("1");
+        message.setCategory("2");
         message.setLevel(null);
         message.setPriority("L");
         message.setStartTime(new Date());
