@@ -264,6 +264,7 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 													  HttpServletRequest req) {
 		EmergencyCrew emergencyCrew = new EmergencyCrew();
 		BeanUtil.copyProperties(emergencyCrewVO, emergencyCrew);
+		emergencyCrew.setDelFlag(TeamConstant.DEL_FLAG0);
 		QueryWrapper<EmergencyCrew> queryWrapper = QueryGenerator.initQueryWrapper(emergencyCrew, req.getParameterMap());
 		Page<EmergencyCrew> page = new Page<EmergencyCrew>(pageNo, pageSize);
 		IPage<EmergencyCrew> pageList = emergencyCrewService.page(page, queryWrapper);
