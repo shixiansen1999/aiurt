@@ -19,7 +19,6 @@ import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.task.dto.MajorDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
-import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
@@ -29,11 +28,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.CsUserMajorModel;
-import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,12 +63,13 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     private PatrolPlanMapper patrolPlanMapper;
     @Autowired
     private PatrolManager patrolManager;
+
     @Override
     public IPage<PatrolPlanDto> pageList(Page<PatrolPlanDto> page, PatrolPlanDto patrolPlan) {
-        if (Objects.nonNull(patrolPlan.getSiteCode())){
+        if (Objects.nonNull(patrolPlan.getSiteCode())) {
             List<String> strings = baseMapper.selectBySite(patrolPlan.getSiteCode());
-            if (CollUtil.isNotEmpty(strings)){
-                patrolPlan.setSiteCode(String.join("|",strings));
+            if (CollUtil.isNotEmpty(strings)) {
+                patrolPlan.setSiteCode(String.join("|", strings));
             }
         }
 //        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -107,8 +103,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         IPage<PatrolPlanDto> list = baseMapper.list(page, patrolPlan);
         // 局部禁用数据权限-begin
         boolean filter = GlobalThreadLocal.setDataFilter(true);
-        List <PatrolPlanDto> list1 =list.getRecords();
-        list1.forEach(l->{
+        List<PatrolPlanDto> list1 = list.getRecords();
+        list1.forEach(l -> {
             List<String> strings = Arrays.asList(l.getSiteCode().split(";"));
             List<StationDTO> stationDtos = baseMapper.selectStations(strings);
             l.setSiteName(patrolManager.translateStation(stationDtos));
@@ -120,12 +116,21 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
 
     /**
      * 巡视计划数据权限过滤
+     *
      * @return
      * @throws AiurtBootException
      */
     private List<String> planDataPermissionFilter() throws AiurtBootException {
         List<String> planCodeByOrg = patrolPlanOrganizationMapper.getPlanCodeByUserOrg();
+        // 局部禁用数据权限-begin
+        boolean filter = GlobalThreadLocal.setDataFilter(true);
+        List<String> planCodeByMajorSystemIsNull = patrolPlanStandardMapper.getPlanCodeByMajorSystemIsNull();
+        // 局部禁用数据权限-end
+        GlobalThreadLocal.setDataFilter(filter);
         List<String> planCodeByMajorSystem = patrolPlanStandardMapper.getPlanCodeByMajorSystem();
+        if (CollectionUtil.isNotEmpty(planCodeByMajorSystemIsNull)) {
+            planCodeByMajorSystem.addAll(planCodeByMajorSystemIsNull);
+        }
         List<String> planCodeByUserStation = patrolPlanStationMapper.getPlanCodeByUserStation();
         List<String> planCodes = CollectionUtil.intersection(planCodeByOrg, planCodeByMajorSystem, planCodeByUserStation).stream().collect(Collectors.toList());
         if (CollectionUtil.isEmpty(planCodes)) {
@@ -262,15 +267,15 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                     }
                 }
             });
-          }
         }
+    }
 
     @Override
     public PatrolPlanDto selectId(String id, String code) {
         PatrolPlanDto patrolPlanDto = baseMapper.selectId(id, code);
         if (ObjectUtil.isNotNull(patrolPlanDto.getSiteCode())) {
             patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(",")));
-            List<StationDTO>stationDtos=baseMapper.selectStations(patrolPlanDto.getSiteCodes());
+            List<StationDTO> stationDtos = baseMapper.selectStations(patrolPlanDto.getSiteCodes());
             patrolPlanDto.setSiteName(patrolManager.translateStation(stationDtos));
         }
         if (ObjectUtil.isNotNull(patrolPlanDto.getMechanismCode())) {
@@ -283,13 +288,13 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 PatrolPlanStandard patrolPlanStandard = patrolPlanStandardMapper.selectOne(
                         new LambdaQueryWrapper<PatrolPlanStandard>()
                                 .eq(PatrolPlanStandard::getStandardCode, p.getCode())
-                                .eq(PatrolPlanStandard::getPlanId,id));
+                                .eq(PatrolPlanStandard::getPlanId, id));
                 List<PatrolPlanDevice> patrolPlanDevices = patrolPlanDeviceMapper.selectList(
                         new LambdaQueryWrapper<PatrolPlanDevice>()
                                 .eq(PatrolPlanDevice::getPlanStandardId, patrolPlanStandard.getId()));
                 if (CollUtil.isNotEmpty(patrolPlanDevices)) {
                     p.setSpecifyDevice(1);
-                    List<Device>devices = viewDetails(patrolPlanStandard.getStandardCode(),id);
+                    List<Device> devices = viewDetails(patrolPlanStandard.getStandardCode(), id);
                     devices.forEach(object -> object.setPlanStandardCode(patrolPlanStandard.getStandardCode()));
                     p.setDevicesSs(devices);
                 }
@@ -328,7 +333,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     @Transactional(rollbackFor = Exception.class)
     public void updateId(PatrolPlanDto patrolPlanDto) {
         baseMapper.deleteIdorCode(patrolPlanDto.getId());
-         List<String> is = patrolPlanDto.getSiteCodes();
+        List<String> is = patrolPlanDto.getSiteCodes();
         List<Device> devices = patrolPlanDto.getDevices();
         List<Device> result = null;
         result = devices.stream()
@@ -394,8 +399,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     @Override
     public List<StandardDTO> selectPlanStandard(String planId, String majorCode, String subsystemCode) {
         List<StandardDTO> standardDtos = new ArrayList<StandardDTO>();
-        if (CollUtil.isNotEmpty(baseMapper.selectStandardList(planId, majorCode, subsystemCode))){
-           standardDtos = baseMapper.selectStandardList(planId, majorCode, subsystemCode);
+        if (CollUtil.isNotEmpty(baseMapper.selectStandardList(planId, majorCode, subsystemCode))) {
+            standardDtos = baseMapper.selectStandardList(planId, majorCode, subsystemCode);
         }
         return standardDtos;
     }
@@ -425,7 +430,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 d.setPositionCodeCcName(positionCodeCcName);
             }
         }
-        if(CollUtil.isEmpty(deviceListDTO.getSiteCodes())){
+        if (CollUtil.isEmpty(deviceListDTO.getSiteCodes())) {
             records = new ArrayList<>();
         }
         return deviceIpage;
@@ -480,7 +485,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     }
 
     public List<Device> viewDetails(String standardCode, String planId) {
-        List<Device> records =   baseMapper.viewDetails(standardCode, planId);
+        List<Device> records = baseMapper.viewDetails(standardCode, planId);
         if (records != null && records.size() > 0) {
             for (Device d : records) {
                 //线路

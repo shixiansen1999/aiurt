@@ -7,4 +7,14 @@
                  join patrol_plan pp on patrol_plan_standard.plan_id = pp.id and pp.del_flag = 0
         where patrol_plan_standard.del_flag = 0
     </select>
+    <select id="getPlanCodeByMajorSystemIsNull" resultType="java.lang.String">
+        SELECT distinct aa.code
+        from (select pp.*,
+                     pps.id as pid
+              FROM patrol_plan pp
+                       LEFT JOIN patrol_plan_standard pps ON pp.id = pps.plan_id
+                  AND pps.del_flag = 0
+              WHERE pp.del_flag = 0
+                AND pps.id IS NULL) aa
+    </select>
 </mapper>
