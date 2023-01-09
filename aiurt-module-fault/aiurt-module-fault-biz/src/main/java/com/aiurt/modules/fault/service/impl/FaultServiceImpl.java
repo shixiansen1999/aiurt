@@ -512,6 +512,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     }
 
     private void sendMessage(LoginUser user, String faultCode, String receiveUserName, String s) {
+        if (Objects.isNull(user) || StrUtil.isBlank(receiveUserName)) {
+            return;
+        }
         BusMessageDTO message = new BusMessageDTO();
         message.setBusType(SysAnnmentTypeEnum.FAULT.getType());
         message.setBusId(faultCode);
