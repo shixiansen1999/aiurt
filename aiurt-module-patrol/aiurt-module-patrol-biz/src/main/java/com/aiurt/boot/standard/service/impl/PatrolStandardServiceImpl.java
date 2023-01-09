@@ -12,7 +12,10 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
-import com.aiurt.boot.standard.dto.*;
+import com.aiurt.boot.standard.dto.InspectionStandardDto;
+import com.aiurt.boot.standard.dto.PatrolStandardDto;
+import com.aiurt.boot.standard.dto.PatrolStandardErrorModel;
+import com.aiurt.boot.standard.dto.PatrolStandardModel;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
@@ -86,7 +89,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         // 以下包含的代码权限拦截局部过滤
         boolean filter = GlobalThreadLocal.setDataFilter(false);
         page1.forEach(a -> {
-           String username = baseMapper.selectUserName(a.getCreateBy());
+            String username = baseMapper.selectUserName(a.getCreateBy());
             a.setCreateByName(null == username ? a.getCreateBy() : username);
             a.setNumber(baseMapper.number(a.getCode()));
         });
@@ -125,34 +128,92 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             JSONObject csMajor = sysBaseApi.getCsMajorByCode(standard.getProfessionCode());
             List<DictModel> deviceType = sysBaseApi.getDictItems("patrol_device_type");
             deviceType = deviceType.stream().filter(e -> e.getValue().equals(String.valueOf(standard.getDeviceType()))).collect(Collectors.toList());
-            String deviceTypeName = deviceType.stream().map(DictModel::getText).collect(Collectors.joining());
+            String isDeviceTypeName = deviceType.stream().map(DictModel::getText).collect(Collectors.joining());
             List<DictModel> status = sysBaseApi.getDictItems("patrol_standard_status");
             status = status.stream().filter(e -> e.getValue().equals(String.valueOf(standard.getStatus()))).collect(Collectors.toList());
             String statusName = status.stream().map(DictModel::getText).collect(Collectors.joining());
             standard.setStatusName(statusName);
-            standard.setDeviceTypeNames(deviceTypeName);
+            standard.setDeviceTypeNames(isDeviceTypeName);
             standard.setProfessionCode(csMajor.getString("majorName"));
-            List<PatrolStandardItems> patrolStandardItemsList = patrolStandardItemsMapper.selectList(new LambdaQueryWrapper<PatrolStandardItems>().
-                    eq(PatrolStandardItems::getStandardId, standard.getId()).eq(PatrolStandardItems::getDelFlag, CommonConstant.DEL_FLAG_0).
-                    eq(PatrolStandardItems::getHierarchyType, CommonConstant.DEL_FLAG_0));
-            standard.setPatrolStandardItemsList(patrolStandardItemsList);
-            for (PatrolStandardItems patrolStandardItems : patrolStandardItemsList) {
-                PatrolStandardItems translate = translate(patrolStandardItems);
-                BeanUtils.copyProperties(translate, patrolStandardItems);
-                List<PatrolStandardItems> itemsList = patrolStandardItemsMapper.selectList(new LambdaQueryWrapper<PatrolStandardItems>().eq(PatrolStandardItems::getParentId, patrolStandardItems.getId()));
-                if (CollUtil.isNotEmpty(itemsList)) {
-                    List<PatrolStandardItemsExport> exportList = itemsList.stream().map(
-                            todo -> {
-                                PatrolStandardItems standardItems = translate(todo);
-                                PatrolStandardItemsExport to = new PatrolStandardItemsExport();
-                                BeanUtils.copyProperties(standardItems, to);
-                                return to;
-                            }
-                    ).collect(Collectors.toList());
+            CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+            List<DictModel> subsystemModels = bean.queryTableDictItemsByCode("cs_subsystem", "system_name", "system_code");
+            subsystemModels =subsystemModels.stream().filter(e -> e.getValue().equals(String.valueOf(standard.getSubsystemCode()))).collect(Collectors.toList());
+            String subsystemName = subsystemModels.stream().map(DictModel::getText).collect(Collectors.joining());
+            standard.setSubsystemCode(subsystemName);
+            Integer modules = 2;
+            List<DictModel> deviceTypeModels = bean.queryTableDictItemsByCode("device_type", "name", "code");
+            deviceTypeModels =deviceTypeModels.stream().filter(e -> e.getValue().equals(String.valueOf(standard.getDeviceTypeCode()))).collect(Collectors.toList());
+            String deviceTypeName = deviceTypeModels.stream().map(DictModel::getText).collect(Collectors.joining());
+            standard.setDeviceTypeCode(deviceTypeName);
+            List<PatrolStandardItems> patrolStandardItemsList = patrolStandardItemsMapper.selectList(new LambdaQueryWrapper<PatrolStandardItems>()
+                    .eq(PatrolStandardItems::getStandardId, standard.getId()).eq(PatrolStandardItems::getDelFlag, CommonConstant.DEL_FLAG_0));
+            List<PatrolStandardItems> parentItem = patrolStandardItemsList.stream().filter(e -> 0 == e.getHierarchyType()).collect(Collectors.toList());
+            List<PatrolStandardItems> allItem = new ArrayList<>();
+            parentItem.sort(Comparator.comparing(PatrolStandardItems::getOrder,Comparator.nullsFirst(Integer::compareTo)));
+            for (PatrolStandardItems parent : parentItem) {
+                allItem.add(parent);
+                List<PatrolStandardItems> sonItem = patrolStandardItemsList.stream().filter(e -> e.getParentId().equals(parent.getId())).collect(Collectors.toList());
+                sonItem.sort(Comparator.comparing(PatrolStandardItems::getOrder,Comparator.nullsFirst(Integer::compareTo)));
+                if (CollUtil.isEmpty(sonItem)) {
+                    parent.setParent("无");
+                    parent.setDetailOrder(parent.getOrder()==null?"":String.valueOf(parent.getOrder()));
+                    PatrolStandardItems translate = translate(parent);
+                    BeanUtils.copyProperties(translate,parent);
+                    List<DictModel> requiredDictModels = bean.queryDictItemsByCode("patrol_input_type");
+                    requiredDictModels =requiredDictModels.stream().filter(e -> e.getValue().equals(String.valueOf(parent.getInputType()))).collect(Collectors.toList());
+                    String requiredDictName = requiredDictModels.stream().map(DictModel::getText).collect(Collectors.joining());
+                    parent.setInputTypeName(requiredDictName);
+
+                    List<DictModel> requiredModels = bean.queryDictItemsByCode("patrol_item_required");
+                    requiredModels =requiredModels.stream().filter(e -> e.getValue().equals(String.valueOf(parent.getRequired()))).collect(Collectors.toList());
+                    String requiredName = requiredModels.stream().map(DictModel::getText).collect(Collectors.joining());
+                    parent.setRequiredDictName(requiredName);
+                    List<DictModel> modelList = patrolStandardMapper.querySysDict(modules);
+                    modelList =modelList.stream().filter(e -> e.getValue().equals(String.valueOf(parent.getDictCode()))).collect(Collectors.toList());
+                    String modelName = modelList.stream().map(DictModel::getText).collect(Collectors.joining());
+                    parent.setDictCode(modelName);
+                } else {
+                    parent.setParent("无");
+                    parent.setDetailOrder(parent.getOrder()==null?"":String.valueOf(parent.getOrder()));
+                    PatrolStandardItems translate = translate(parent);
+                    BeanUtils.copyProperties(translate,parent);
+                    List<DictModel> requiredDictModels = bean.queryDictItemsByCode("patrol_input_type");
+                    requiredDictModels =requiredDictModels.stream().filter(e -> e.getValue().equals(String.valueOf(parent.getInputType()))).collect(Collectors.toList());
+                    String requiredDictName = requiredDictModels.stream().map(DictModel::getText).collect(Collectors.joining());
+                    parent.setInputTypeName(requiredDictName);
+
+                    List<DictModel> requiredModels = bean.queryDictItemsByCode("patrol_item_required");
+                    requiredModels =requiredModels.stream().filter(e -> e.getValue().equals(String.valueOf(parent.getRequired()))).collect(Collectors.toList());
+                    String requiredName = requiredModels.stream().map(DictModel::getText).collect(Collectors.joining());
+                    parent.setRequiredDictName(requiredName);
+                    List<DictModel> modelList = patrolStandardMapper.querySysDict(modules);
+                    modelList =modelList.stream().filter(e -> e.getValue().equals(String.valueOf(parent.getDictCode()))).collect(Collectors.toList());
+                    String modelName = modelList.stream().map(DictModel::getText).collect(Collectors.joining());
+                    parent.setDictCode(modelName);
+                    for (PatrolStandardItems son : sonItem) {
+                        allItem.add(son);
+                        son.setDetailOrder(son.getOrder()==null?"":String.valueOf(son.getOrder()));
+                        son.setParent(parent.getContent());
+                        PatrolStandardItems sonTranslate = translate(son);
+                        BeanUtils.copyProperties(sonTranslate,son);
+                        List<DictModel> requiredDictModelSon = bean.queryDictItemsByCode("patrol_input_type");
+                        requiredDictModelSon =requiredDictModelSon.stream().filter(e -> e.getValue().equals(String.valueOf(son.getInputType()))).collect(Collectors.toList());
+                        String requiredDictSonName = requiredDictModelSon.stream().map(DictModel::getText).collect(Collectors.joining());
+                        son.setInputTypeName(requiredDictSonName);
+
+                        List<DictModel> requiredModelSon = bean.queryDictItemsByCode("patrol_item_required");
+                        requiredModelSon =requiredModelSon.stream().filter(e -> e.getValue().equals(String.valueOf(son.getRequired()))).collect(Collectors.toList());
+                        String requiredSonName = requiredModelSon.stream().map(DictModel::getText).collect(Collectors.joining());
+                        parent.setRequiredDictName(requiredSonName);
+
+                        List<DictModel> modelSonList = patrolStandardMapper.querySysDict(modules);
+                        modelSonList =modelSonList.stream().filter(e -> e.getValue().equals(String.valueOf(son.getDictCode()))).collect(Collectors.toList());
+                        String modelSonName = modelSonList.stream().map(DictModel::getText).collect(Collectors.joining());
+                        parent.setDictCode(modelSonName);
+                    }
                 }
-
-
             }
+            standard.setPatrolStandardItemsList(allItem);
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String title = "巡检表数据";
@@ -176,9 +237,9 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
 
     public PatrolStandardItems translate(PatrolStandardItems items) {
         List<DictModel> hierarchyType = sysBaseApi.getDictItems("patrol_hierarchy_type");
+        List<DictModel> patrolCheck = sysBaseApi.getDictItems("patrol_check");
         hierarchyType = hierarchyType.stream().filter(e -> e.getValue().equals(String.valueOf(items.getHierarchyType()))).collect(Collectors.toList());
         String hierarchyTypeName = hierarchyType.stream().map(DictModel::getText).collect(Collectors.joining());
-        List<DictModel> patrolCheck = sysBaseApi.getDictItems("patrol_check");
         patrolCheck = patrolCheck.stream().filter(e -> e.getValue().equals(String.valueOf(items.getCheck()))).collect(Collectors.toList());
         String patrolCheckName = patrolCheck.stream().map(DictModel::getText).collect(Collectors.joining());
         items.setHierarchyTypeName(hierarchyTypeName);
@@ -223,7 +284,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         //信息数据校验
                         standard(model, patrolStandard, stringBuilder);
                         //配置项数据校验
-                        itemsModel(patrolStandard, errorLines,stringBuilder);
+                        itemsModel(patrolStandard, errorLines, stringBuilder);
                         if (stringBuilder.length() > 0) {
                             // 截取字符
                             stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -232,8 +293,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         }
                         if (errorLines > 0) {
                             for (PatrolStandardItems patrolStandardItems : patrolStandard.getPatrolStandardItemsList()) {
-                                if(patrolStandardItems.getIsNUll()!=true)
-                                {
+                                if (patrolStandardItems.getIsNUll() != true) {
                                     PatrolStandardErrorModel errorModel = new PatrolStandardErrorModel();
                                     BeanUtils.copyProperties(model, errorModel);
                                     BeanUtils.copyProperties(patrolStandardItems, errorModel);
@@ -256,8 +316,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         patrolStandardMapper.insert(patrolStandard);
                         List<PatrolStandardItems> items = patrolStandard.getPatrolStandardItemsList();
                         if (CollUtil.isNotEmpty(items)) {
-                            List<PatrolStandardItems> parents = items.stream().filter(e -> e.getHierarchyType()!=null&&e.getHierarchyType() == 0).collect(Collectors.toList());
-                            List<PatrolStandardItems> sons = items.stream().filter(e -> e.getHierarchyType()!=null&&e.getHierarchyType() == 1).collect(Collectors.toList());
+                            List<PatrolStandardItems> parents = items.stream().filter(e -> e.getHierarchyType() != null && e.getHierarchyType() == 0).collect(Collectors.toList());
+                            List<PatrolStandardItems> sons = items.stream().filter(e -> e.getHierarchyType() != null && e.getHierarchyType() == 1).collect(Collectors.toList());
                             for (PatrolStandardItems item : parents) {
                                 item.setParentId("0");
                                 item.setStandardId(patrolStandard.getId());
@@ -529,6 +589,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             stringBuilder.append("巡视标准表名称、适用专业、是否与设备类型相关、生效状态不能为空;");
         }
     }
+
     public boolean checkObjAllFieldsIsNull(Object object) {
         if (null == object) {
             return true;
@@ -545,19 +606,17 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         }
         return true;
     }
-    private void itemsModel(PatrolStandard patrolStandard, int errorLines,StringBuilder stringBuilder) {
+
+    private void itemsModel(PatrolStandard patrolStandard, int errorLines, StringBuilder stringBuilder) {
         List<PatrolStandardItems> standardItems = patrolStandard.getPatrolStandardItemsList();
         if (CollUtil.isNotEmpty(standardItems)) {
             int i = 0;
             Map<Object, Integer> duplicateData = new HashMap<>(16);
             for (PatrolStandardItems items : standardItems) {
                 boolean isNull = checkObjAllFieldsIsNull(items);
-                if(isNull)
-                {
+                if (isNull) {
                     items.setIsNUll(true);
-                }
-                else
-                {
+                } else {
                     items.setIsNUll(false);
                 }
                 String hierarchyTypeName = items.getHierarchyTypeName();
@@ -582,13 +641,10 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                 stringBuilder.append("层级为一级(父级填写无),");
                             }
                         } else {
-                            if(ObjectUtil.isEmpty(items.getParent()))
-                            {
+                            if (ObjectUtil.isEmpty(items.getParent())) {
                                 stringBuilder.append("子级要有父级,");
-                            }
-                            else
-                            {
-                                itemsList = standardItems.stream().filter(e -> e.getContent()!=null&&e.getContent().equals(items.getParent())&& !e.equals(items) && e.getHierarchyTypeName().equals(PatrolConstant.ONE_LEVEL)).collect(Collectors.toList());
+                            } else {
+                                itemsList = standardItems.stream().filter(e -> e.getContent() != null && e.getContent().equals(items.getParent()) && !e.equals(items) && e.getHierarchyTypeName().equals(PatrolConstant.ONE_LEVEL)).collect(Collectors.toList());
                                 if (itemsList.size() == 0 && items.getHierarchyTypeName().equals(PatrolConstant.SON_LEVEL)) {
                                     stringBuilder.append("父级不存在,");
                                 }
@@ -607,9 +663,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     }
                     if (!(PatrolConstant.IS_DEVICE_TYPE + PatrolConstant.IS_NOT_DEVICE_TYPE).contains(checkName)) {
                         stringBuilder.append("是否为巡视项目填写不规范，");
-                    }
-                    else
-                    {
+                    } else {
                         items.setCheck(PatrolConstant.IS_DEVICE_TYPE.equals(checkName) ? 1 : 0);
                     }
                     if (items.getCheck() == 0 && items.getHierarchyType() == 0) {
@@ -619,8 +673,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     }
                     if (items.getCheck() == 1 && items.getHierarchyType() == 0) {
                         List<PatrolStandardItems> sonList = standardItems.stream().filter(e -> e.getParent().equals(items.getContent())).collect(Collectors.toList());
-                        if(CollUtil.isNotEmpty(sonList))
-                        {
+                        if (CollUtil.isNotEmpty(sonList)) {
                             stringBuilder.append("不能有子级，");
                         }
                     }
@@ -638,9 +691,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         if (ObjectUtil.isNotEmpty(items.getInputTypeName())) {
                             if (!(PatrolConstant.DATE_TYPE_IP + PatrolConstant.DATE_TYPE_OT + PatrolConstant.DATE_TYPE_NO).contains(items.getInputTypeName())) {
                                 stringBuilder.append("检查值类型选择不正确，");
-                            }
-                            else
-                            {
+                            } else {
                                 if (items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_IP)) {
                                     items.setInputType(3);
                                 } else {
@@ -680,11 +731,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                     }
                                 }
                             }
-                        }
-                        else
-                        {
-                            if(ObjectUtil.isNotEmpty(items.getRegular())||ObjectUtil.isNotEmpty(items.getDictCode()))
-                            {
+                        } else {
+                            if (ObjectUtil.isNotEmpty(items.getRegular()) || ObjectUtil.isNotEmpty(items.getDictCode())) {
                                 stringBuilder.append("关联数据字典、数据校验表达式不用填写，");
                             }
                         }

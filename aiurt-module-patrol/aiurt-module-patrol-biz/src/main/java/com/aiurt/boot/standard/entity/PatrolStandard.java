@@ -44,10 +44,12 @@ public class PatrolStandard extends DictEntity implements Serializable {
     @ApiModelProperty(value = "巡视标准表名称")
     private java.lang.String name;
 	/**专业code*/
+    @Excel(name = "适用专业", width = 15,needMerge = true)
     @ApiModelProperty(value = "专业code")
     @MajorFilterColumn
     private java.lang.String professionCode;
 	/**适用系统code*/
+    @Excel(name = "适用子系统", width = 15,needMerge = true)
     @ApiModelProperty(value = "适用系统code")
     @SystemFilterColumn
     private java.lang.String subsystemCode;
@@ -55,7 +57,7 @@ public class PatrolStandard extends DictEntity implements Serializable {
     @ApiModelProperty(value = "与设备类型相关：0否 1 是")
     private java.lang.Integer deviceType;
     /**与设备类型相关：0否 1 是*/
-    @Excel(name = "是否与设备类型相关", width = 15,needMerge = true)
+    @Excel(name = "是否与设备类型相关", width = 15,needMerge = true,dict = "")
     @ApiModelProperty(value = "与设备类型相关：0否 1 是")
     @TableField(exist = false)
     private java.lang.String deviceTypeNames;
