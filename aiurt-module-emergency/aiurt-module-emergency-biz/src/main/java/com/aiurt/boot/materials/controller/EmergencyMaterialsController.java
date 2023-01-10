@@ -220,6 +220,10 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 if (StrUtil.isNotBlank(emergencyMaterialsDTO.getStandardCode())){
 			 emergencyMaterialsInvoices.setStandardCode(emergencyMaterialsDTO.getStandardCode());
 		 }
+		 //巡检名称
+		 if (StrUtil.isNotBlank(emergencyMaterialsDTO.getStandardName())){
+			 emergencyMaterialsInvoices.setStandardName(emergencyMaterialsDTO.getStandardName());
+		 }
 		 //巡检日期
 		 emergencyMaterialsInvoices.setPatrolDate(emergencyMaterialsDTO.getPatrolDate());
           //巡检线路

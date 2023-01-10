@@ -14,7 +14,9 @@
 	      t2.pid as pid,
           t3.patrol_date as patrolDate,
           t3.user_id as patrolId,
-          t3.department_code as patrolTeamCode
+          t3.department_code as patrolTeamCode,
+          t3.standard_code as standardCode,
+          t3.standard_name as standardName
        FROM
       emergency_materials_invoices_item t2
 	  LEFT JOIN emergency_materials_invoices t3 ON t2.invoices_id = t3.id
@@ -46,6 +48,6 @@
                 and t2.pid = #{pid}
             </if>
         </where>
-        group by t2.invoices_id
+        order by  t3.create_time desc
     </select>
 </mapper>
