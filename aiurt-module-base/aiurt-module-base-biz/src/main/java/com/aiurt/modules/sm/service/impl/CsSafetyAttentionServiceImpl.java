@@ -211,6 +211,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                 lm.put("majorName",l.getMajorName());
                 lm.put("systemName",l.getSystemName());
                 lm.put("attentionContent",l.getAttentionContent());
+                lm.put("attentionMeasures",l.getAttentionMeasures());
                 lm.put("stateName",l.getStateName());
                 lm.put("text",l.getText());
                 mapList.add(lm);
