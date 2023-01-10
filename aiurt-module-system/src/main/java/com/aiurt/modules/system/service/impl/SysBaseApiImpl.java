@@ -1622,17 +1622,23 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<CsStationPosition> getPositionCodeByStationCode(String stationCode) {
-        List<CsStationPosition> list = new ArrayList<>();
+    public CsStation getPositionCodeByStationCode(String stationCode) {
+         CsStation csStation1 = new CsStation();
         if (StrUtil.isNotBlank(stationCode)) {
+            LambdaQueryWrapper<CsStation> wrapper1 = new LambdaQueryWrapper<>();
+            wrapper1.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0).eq(CsStation::getStationCode, stationCode);
+            CsStation csStation = csStationMapper.selectOne(wrapper1);
+
             LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0).eq(CsStationPosition::getStaionCode, stationCode);
             List<CsStationPosition> csStationPositions = csStationPositionMapper.selectList(wrapper);
-            if (CollectionUtil.isNotEmpty(csStationPositions)) {
-                return csStationPositions;
+            if (CollectionUtil.isNotEmpty(csStationPositions)){
+                csStation.setCsStationPositionList(csStationPositions);
             }
+            return csStation;
+
         }
-        return list;
+        return csStation1;
     }
 
     /**
