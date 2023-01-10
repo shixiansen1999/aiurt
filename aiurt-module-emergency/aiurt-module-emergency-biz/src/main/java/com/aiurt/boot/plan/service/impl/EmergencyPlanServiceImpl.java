@@ -414,6 +414,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         newEmergencyPlanDto.setKeyWord(emergencyPlanDto.getKeyWord());
         newEmergencyPlanDto.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
         newEmergencyPlanDto.setOrgCode(orgCode);
+        newEmergencyPlanDto.setChangeCount(size);
         String emergencyPlanVersion = emergencyPlanDto.getEmergencyPlanVersion();
         newEmergencyPlanDto.setEmergencyPlanVersion(String.valueOf(Double.valueOf(emergencyPlanVersion)+size+1));
         newEmergencyPlanDto.setOldPlanId(emergencyPlanDto.getId());
