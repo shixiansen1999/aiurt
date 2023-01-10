@@ -1621,6 +1621,20 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return list;
     }
 
+    @Override
+    public List<CsStationPosition> getPositionCodeByStationCode(String stationCode) {
+        List<CsStationPosition> list = new ArrayList<>();
+        if (StrUtil.isNotBlank(stationCode)) {
+            LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0).eq(CsStationPosition::getStaionCode, stationCode);
+            List<CsStationPosition> csStationPositions = csStationPositionMapper.selectList(wrapper);
+            if (CollectionUtil.isNotEmpty(csStationPositions)) {
+                return csStationPositions;
+            }
+        }
+        return list;
+    }
+
     /**
      * 通过线路和专业过滤出班组
      *
