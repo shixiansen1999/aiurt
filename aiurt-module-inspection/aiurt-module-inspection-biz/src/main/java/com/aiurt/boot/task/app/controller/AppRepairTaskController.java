@@ -15,10 +15,12 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.position.entity.CsStationPosition;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,6 +44,9 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
 
     @Autowired
     private IRepairTaskDeviceRelService repairTaskDeviceRelService;
+
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
 
 
     /**
@@ -354,6 +359,18 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
         Page<RepairTask> pageList = new Page<>(pageNo, pageSize);
         Page<RepairTask> repairTaskPage = repairTaskService.selectables(pageList, condition);
         return Result.OK(repairTaskPage);
+    }
+
+
+    @AutoLog(value = "app检修任务-检修单无设备的检修位置", operateType = 1, operateTypeAlias = "app检修任务-检修单无设备的检修位置", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "app检修任务-检修单无设备的检修位置", notes = "app检修任务-检修单无设备的检修位置")
+    @GetMapping(value = "/getPositionCodeByStationCode")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = CsStationPosition.class)
+    })
+    public Result<List<CsStationPosition>> getPositionCodeByStationCode(@RequestParam @ApiParam(name = "stationCode", required = true, value = "检修单站点编号") String stationCode){
+        List<CsStationPosition> positionCodeByStationCode = iSysBaseAPI.getPositionCodeByStationCode(stationCode);
+        return Result.OK(positionCodeByStationCode);
     }
 
     /**
