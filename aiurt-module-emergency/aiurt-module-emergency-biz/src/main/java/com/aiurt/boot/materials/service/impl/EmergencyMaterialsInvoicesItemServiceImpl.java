@@ -54,6 +54,15 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
             if (CollectionUtil.isNotEmpty(collect)){
                 lambdaQueryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag,0);
                 lambdaQueryWrapper.orderByDesc(EmergencyMaterialsInvoices::getCreateTime);
+                 if (StrUtil.isNotBlank(lineCode)){
+                    lambdaQueryWrapper.eq(EmergencyMaterialsInvoices::getLineCode,lineCode);
+                 }
+                 if (StrUtil.isNotBlank(stationCode)){
+                    lambdaQueryWrapper.eq(EmergencyMaterialsInvoices::getStationCode,stationCode);
+                 }
+                 if (StrUtil.isNotBlank(positionCode)){
+                   lambdaQueryWrapper.eq(EmergencyMaterialsInvoices::getPositionCode,positionCode);
+                 }
                 lambdaQueryWrapper.in(EmergencyMaterialsInvoices::getId, collect);
                 lambdaQueryWrapper.last("limit 1");
             }
