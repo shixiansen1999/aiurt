@@ -148,5 +148,5 @@ public class ScheduleLog {
 	private Date endDate;
 
 	@TableField(exist = false)
-	private List<String> orgList;
+	private List<String> userList;
 }

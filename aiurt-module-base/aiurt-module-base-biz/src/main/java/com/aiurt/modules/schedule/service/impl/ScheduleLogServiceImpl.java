@@ -44,7 +44,7 @@ public class ScheduleLogServiceImpl extends ServiceImpl<ScheduleLogMapper, Sched
         if (CollUtil.isNotEmpty(userIds)) {
             List<String> collect = allUsers.stream().map(LoginUser::getId).collect(Collectors.toList());
             userIds.addAll(collect);
-            scheduleLog.setOrgList(userIds);
+            scheduleLog.setUserList(userIds);
         }else {
             return page.setRecords(new ArrayList<>());
         }
