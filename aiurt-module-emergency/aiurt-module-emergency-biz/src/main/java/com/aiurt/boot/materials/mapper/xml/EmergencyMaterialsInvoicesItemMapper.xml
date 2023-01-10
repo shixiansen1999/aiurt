@@ -16,7 +16,8 @@
           t3.user_id as patrolId,
           t3.department_code as patrolTeamCode,
           t3.standard_code as standardCode,
-          t3.standard_name as standardName
+          t3.standard_name as standardName,
+          t2.code as code
        FROM
       emergency_materials_invoices_item t2
 	  LEFT JOIN emergency_materials_invoices t3 ON t2.invoices_id = t3.id
