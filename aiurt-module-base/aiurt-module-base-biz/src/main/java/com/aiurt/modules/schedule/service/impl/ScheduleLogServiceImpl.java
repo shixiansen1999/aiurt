@@ -41,7 +41,7 @@ public class ScheduleLogServiceImpl extends ServiceImpl<ScheduleLogMapper, Sched
         //根据数据规则查出所属权限的人员，这个只有根据部门权限查部门的人
         List<LoginUser> allUsers = iSysBaseAPI.getAllUsers();
         List<String> userIds = new ArrayList<>();
-        if (CollUtil.isNotEmpty(userIds)) {
+        if (CollUtil.isNotEmpty(allUsers)) {
             List<String> collect = allUsers.stream().map(LoginUser::getId).collect(Collectors.toList());
             userIds.addAll(collect);
             scheduleLog.setUserList(userIds);
