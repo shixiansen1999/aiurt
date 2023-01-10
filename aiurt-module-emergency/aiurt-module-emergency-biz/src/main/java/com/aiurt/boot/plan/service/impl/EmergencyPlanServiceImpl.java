@@ -536,6 +536,11 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         EmergencyPlanDTO planDto = new EmergencyPlanDTO();
         BeanUtils.copyProperties(plan, planDto);
 
+        //查询预案变更次数
+        List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, id).list();
+        int size = oldPlanList.size();
+        planDto.setChangeCount(size);
+
         // 获取应急队伍
         List<EmergencyPlanTeam> teamList = emergencyPlanTeamService.lambdaQuery()
                 .eq(EmergencyPlanTeam::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
