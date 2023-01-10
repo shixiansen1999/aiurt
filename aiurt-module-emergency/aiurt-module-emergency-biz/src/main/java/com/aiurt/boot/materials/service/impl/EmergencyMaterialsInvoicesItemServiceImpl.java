@@ -2,6 +2,7 @@ package com.aiurt.boot.materials.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoices;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesItemMapper;
@@ -68,12 +69,11 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
             }
             emergencyMaterialsInvoices = emergencyMaterialsInvoicesMapper.selectOne(lambdaQueryWrapper);
         }
-
         List<EmergencyMaterialsInvoicesItem> patrolRecord = emergencyMaterialsInvoicesItemMapper.getPatrolRecord(pageList,
                                                  materialsCode,
                                                  startTime,
                                                  endTime,
-                                                 StrUtil.isBlank(standardCode) ? emergencyMaterialsInvoices.getStandardCode() : standardCode,
+                                                 StrUtil.isBlank(standardCode)&& ObjectUtil.isNotEmpty(emergencyMaterialsInvoices) ? emergencyMaterialsInvoices.getStandardCode() : standardCode,
                                                   "0",
                                                  lineCode,
                                                  stationCode,
