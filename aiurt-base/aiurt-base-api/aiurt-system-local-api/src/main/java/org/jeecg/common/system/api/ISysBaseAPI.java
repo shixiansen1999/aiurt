@@ -540,11 +540,11 @@ public interface ISysBaseAPI extends CommonAPI {
     List<String> getStationCodeByLineCode(List<String> lineCodes);
 
     /**
-     * 根据站点编号查询对应的位置信息
+     * 根据站点编号查询对应的位置信息(没有位置就返回站点)
      * @param stationCode
      * @return
      */
-    List<CsStationPosition> getPositionCodeByStationCode(String stationCode);
+    CsStation getPositionCodeByStationCode(String stationCode);
 
     /**
      * 通过线路和专业过滤出班组

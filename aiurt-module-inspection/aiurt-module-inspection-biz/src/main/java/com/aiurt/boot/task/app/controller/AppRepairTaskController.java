@@ -15,6 +15,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.entity.CsStationPosition;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
@@ -368,8 +369,8 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = CsStationPosition.class)
     })
-    public Result<List<CsStationPosition>> getPositionCodeByStationCode(@RequestParam @ApiParam(name = "stationCode", required = true, value = "检修单站点编号") String stationCode){
-        List<CsStationPosition> positionCodeByStationCode = iSysBaseAPI.getPositionCodeByStationCode(stationCode);
+    public Result<CsStation> getPositionCodeByStationCode(@RequestParam @ApiParam(name = "stationCode", required = true, value = "检修单站点编号") String stationCode){
+        CsStation positionCodeByStationCode = iSysBaseAPI.getPositionCodeByStationCode(stationCode);
         return Result.OK(positionCodeByStationCode);
     }
 
