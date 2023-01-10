@@ -157,7 +157,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         baseMapper.insert(patrolPlan);
         PatrolPlan id = baseMapper.selectByCode(patrolPlanDto.getCode());
         if (patrolPlanDto.getPeriod() != null) {
-            if (patrolPlanDto.getPeriod() == 1) {
+            if (patrolPlanDto.getPeriod() == 1 || PatrolConstant.PLAN_PERIOD_TWO_DAY.equals(patrolPlanDto.getPeriod())
+                    || PatrolConstant.PLAN_PERIOD_THREE_DAY.equals(patrolPlanDto.getPeriod())) {
                 PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
                 patrolPlanStrategy.setPlanId(id.getId());
                 patrolPlanStrategy.setType(0);
