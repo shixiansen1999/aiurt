@@ -119,6 +119,10 @@ public class EmergencyPlan extends DictEntity implements Serializable {
     @TableField(exist = false)
     private Boolean haveButton;
 
+    @ApiModelProperty(value = "变更次数")
+    @TableField(exist = false)
+    private Integer changeCount;
+
     /**
      * 实例id
      */

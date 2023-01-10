@@ -2,6 +2,7 @@ package com.aiurt.boot.materials.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoices;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesItemMapper;
@@ -54,17 +55,25 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
             if (CollectionUtil.isNotEmpty(collect)){
                 lambdaQueryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag,0);
                 lambdaQueryWrapper.orderByDesc(EmergencyMaterialsInvoices::getCreateTime);
+                 if (StrUtil.isNotBlank(lineCode)){
+                    lambdaQueryWrapper.eq(EmergencyMaterialsInvoices::getLineCode,lineCode);
+                 }
+                 if (StrUtil.isNotBlank(stationCode)){
+                    lambdaQueryWrapper.eq(EmergencyMaterialsInvoices::getStationCode,stationCode);
+                 }
+                 if (StrUtil.isNotBlank(positionCode)){
+                   lambdaQueryWrapper.eq(EmergencyMaterialsInvoices::getPositionCode,positionCode);
+                 }
                 lambdaQueryWrapper.in(EmergencyMaterialsInvoices::getId, collect);
                 lambdaQueryWrapper.last("limit 1");
             }
             emergencyMaterialsInvoices = emergencyMaterialsInvoicesMapper.selectOne(lambdaQueryWrapper);
         }
-
         List<EmergencyMaterialsInvoicesItem> patrolRecord = emergencyMaterialsInvoicesItemMapper.getPatrolRecord(pageList,
                                                  materialsCode,
                                                  startTime,
                                                  endTime,
-                                                 StrUtil.isBlank(standardCode) ? emergencyMaterialsInvoices.getStandardCode() : standardCode,
+                                                 StrUtil.isBlank(standardCode)&& ObjectUtil.isNotEmpty(emergencyMaterialsInvoices) ? emergencyMaterialsInvoices.getStandardCode() : standardCode,
                                                   "0",
                                                  lineCode,
                                                  stationCode,

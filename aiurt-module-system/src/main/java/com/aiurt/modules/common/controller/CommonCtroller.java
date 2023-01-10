@@ -392,7 +392,7 @@ public class CommonCtroller {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "stationCode", value = "站所编码", required = true, paramType = "query")
     })
-    public Result<List<CsStationPosition>> queryPositionByStationCode(@RequestParam(value = "stationCode") String stationCode) {
+    public Result<List<CsStationPosition>> queryPositionByStationCode(@RequestParam(value = "stationCode",required = false) String stationCode) {
         LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(CsStationPosition::getStaionCode, stationCode);
         List<CsStationPosition> stationList = stationPositionService.getBaseMapper().selectList(wrapper);
@@ -401,8 +401,8 @@ public class CommonCtroller {
 
     @GetMapping("/sysuser/queryDepartUserTree")
     @ApiOperation("根据机构人员树")
-    public Result<List<SelectTable>> queryDepartUserTree() {
-        List<SelectTable> tables = commonService.queryDepartUserTree(null, null,null);
+    public Result<List<SelectTable>> queryDepartUserTree(@RequestParam(value = "majorId",required = false) String majorId) {
+        List<SelectTable> tables = commonService.queryDepartUserTree(null, null,majorId);
         return Result.OK(tables);
     }
 

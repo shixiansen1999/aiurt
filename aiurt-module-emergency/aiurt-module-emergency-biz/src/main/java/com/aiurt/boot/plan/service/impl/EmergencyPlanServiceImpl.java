@@ -414,6 +414,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         newEmergencyPlanDto.setKeyWord(emergencyPlanDto.getKeyWord());
         newEmergencyPlanDto.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
         newEmergencyPlanDto.setOrgCode(orgCode);
+        newEmergencyPlanDto.setChangeCount(size);
         String emergencyPlanVersion = emergencyPlanDto.getEmergencyPlanVersion();
         newEmergencyPlanDto.setEmergencyPlanVersion(String.valueOf(Double.valueOf(emergencyPlanVersion)+size+1));
         newEmergencyPlanDto.setOldPlanId(emergencyPlanDto.getId());
@@ -534,6 +535,11 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         Assert.notNull(plan, "未找到对应记录！");
         EmergencyPlanDTO planDto = new EmergencyPlanDTO();
         BeanUtils.copyProperties(plan, planDto);
+
+        //查询预案变更次数
+        List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, id).list();
+        int size = oldPlanList.size();
+        planDto.setChangeCount(size);
 
         // 获取应急队伍
         List<EmergencyPlanTeam> teamList = emergencyPlanTeamService.lambdaQuery()
