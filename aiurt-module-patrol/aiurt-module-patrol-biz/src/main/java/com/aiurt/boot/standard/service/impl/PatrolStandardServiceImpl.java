@@ -125,91 +125,26 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     public void exportXls(HttpServletRequest request, HttpServletResponse response, PatrolStandard patrolStandard) {
         List<PatrolStandard> patrolStandardList = patrolStandardMapper.getList(patrolStandard);
         for (PatrolStandard standard : patrolStandardList) {
-            JSONObject csMajor = sysBaseApi.getCsMajorByCode(standard.getProfessionCode());
-            List<DictModel> deviceType = sysBaseApi.getDictItems("patrol_device_type");
-            deviceType = deviceType.stream().filter(e -> e.getValue().equals(String.valueOf(standard.getDeviceType()))).collect(Collectors.toList());
-            String isDeviceTypeName = deviceType.stream().map(DictModel::getText).collect(Collectors.joining());
-            List<DictModel> status = sysBaseApi.getDictItems("patrol_standard_status");
-            status = status.stream().filter(e -> e.getValue().equals(String.valueOf(standard.getStatus()))).collect(Collectors.toList());
-            String statusName = status.stream().map(DictModel::getText).collect(Collectors.joining());
-            standard.setStatusName(statusName);
-            standard.setDeviceTypeNames(isDeviceTypeName);
-            standard.setProfessionCode(csMajor.getString("majorName"));
-            CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
-            List<DictModel> subsystemModels = bean.queryTableDictItemsByCode("cs_subsystem", "system_name", "system_code");
-            subsystemModels =subsystemModels.stream().filter(e -> e.getValue().equals(String.valueOf(standard.getSubsystemCode()))).collect(Collectors.toList());
-            String subsystemName = subsystemModels.stream().map(DictModel::getText).collect(Collectors.joining());
-            standard.setSubsystemCode(subsystemName);
-            Integer modules = 2;
-            List<DictModel> deviceTypeModels = bean.queryTableDictItemsByCode("device_type", "name", "code");
-            deviceTypeModels =deviceTypeModels.stream().filter(e -> e.getValue().equals(String.valueOf(standard.getDeviceTypeCode()))).collect(Collectors.toList());
-            String deviceTypeName = deviceTypeModels.stream().map(DictModel::getText).collect(Collectors.joining());
-            standard.setDeviceTypeCode(deviceTypeName);
+            translate(standard, null);
             List<PatrolStandardItems> patrolStandardItemsList = patrolStandardItemsMapper.selectList(new LambdaQueryWrapper<PatrolStandardItems>()
                     .eq(PatrolStandardItems::getStandardId, standard.getId()).eq(PatrolStandardItems::getDelFlag, CommonConstant.DEL_FLAG_0));
             List<PatrolStandardItems> parentItem = patrolStandardItemsList.stream().filter(e -> 0 == e.getHierarchyType()).collect(Collectors.toList());
             List<PatrolStandardItems> allItem = new ArrayList<>();
-            parentItem.sort(Comparator.comparing(PatrolStandardItems::getOrder,Comparator.nullsFirst(Integer::compareTo)));
+            parentItem.sort(Comparator.comparing(PatrolStandardItems::getOrder, Comparator.nullsFirst(Integer::compareTo)));
             for (PatrolStandardItems parent : parentItem) {
                 allItem.add(parent);
                 List<PatrolStandardItems> sonItem = patrolStandardItemsList.stream().filter(e -> e.getParentId().equals(parent.getId())).collect(Collectors.toList());
-                sonItem.sort(Comparator.comparing(PatrolStandardItems::getOrder,Comparator.nullsFirst(Integer::compareTo)));
+                sonItem.sort(Comparator.comparing(PatrolStandardItems::getOrder, Comparator.nullsFirst(Integer::compareTo)));
                 if (CollUtil.isEmpty(sonItem)) {
                     parent.setParent("无");
-                    parent.setDetailOrder(parent.getOrder()==null?"":String.valueOf(parent.getOrder()));
-                    PatrolStandardItems translate = translate(parent);
-                    BeanUtils.copyProperties(translate,parent);
-                    List<DictModel> requiredDictModels = bean.queryDictItemsByCode("patrol_input_type");
-                    requiredDictModels =requiredDictModels.stream().filter(e -> e.getValue().equals(String.valueOf(parent.getInputType()))).collect(Collectors.toList());
-                    String requiredDictName = requiredDictModels.stream().map(DictModel::getText).collect(Collectors.joining());
-                    parent.setInputTypeName(requiredDictName);
-
-                    List<DictModel> requiredModels = bean.queryDictItemsByCode("patrol_item_required");
-                    requiredModels =requiredModels.stream().filter(e -> e.getValue().equals(String.valueOf(parent.getRequired()))).collect(Collectors.toList());
-                    String requiredName = requiredModels.stream().map(DictModel::getText).collect(Collectors.joining());
-                    parent.setRequiredDictName(requiredName);
-                    List<DictModel> modelList = patrolStandardMapper.querySysDict(modules);
-                    modelList =modelList.stream().filter(e -> e.getValue().equals(String.valueOf(parent.getDictCode()))).collect(Collectors.toList());
-                    String modelName = modelList.stream().map(DictModel::getText).collect(Collectors.joining());
-                    parent.setDictCode(modelName);
+                    translate(null, parent);
                 } else {
                     parent.setParent("无");
-                    parent.setDetailOrder(parent.getOrder()==null?"":String.valueOf(parent.getOrder()));
-                    PatrolStandardItems translate = translate(parent);
-                    BeanUtils.copyProperties(translate,parent);
-                    List<DictModel> requiredDictModels = bean.queryDictItemsByCode("patrol_input_type");
-                    requiredDictModels =requiredDictModels.stream().filter(e -> e.getValue().equals(String.valueOf(parent.getInputType()))).collect(Collectors.toList());
-                    String requiredDictName = requiredDictModels.stream().map(DictModel::getText).collect(Collectors.joining());
-                    parent.setInputTypeName(requiredDictName);
-
-                    List<DictModel> requiredModels = bean.queryDictItemsByCode("patrol_item_required");
-                    requiredModels =requiredModels.stream().filter(e -> e.getValue().equals(String.valueOf(parent.getRequired()))).collect(Collectors.toList());
-                    String requiredName = requiredModels.stream().map(DictModel::getText).collect(Collectors.joining());
-                    parent.setRequiredDictName(requiredName);
-                    List<DictModel> modelList = patrolStandardMapper.querySysDict(modules);
-                    modelList =modelList.stream().filter(e -> e.getValue().equals(String.valueOf(parent.getDictCode()))).collect(Collectors.toList());
-                    String modelName = modelList.stream().map(DictModel::getText).collect(Collectors.joining());
-                    parent.setDictCode(modelName);
+                    translate(null, parent);
                     for (PatrolStandardItems son : sonItem) {
                         allItem.add(son);
-                        son.setDetailOrder(son.getOrder()==null?"":String.valueOf(son.getOrder()));
+                        translate(null,son);
                         son.setParent(parent.getContent());
-                        PatrolStandardItems sonTranslate = translate(son);
-                        BeanUtils.copyProperties(sonTranslate,son);
-                        List<DictModel> requiredDictModelSon = bean.queryDictItemsByCode("patrol_input_type");
-                        requiredDictModelSon =requiredDictModelSon.stream().filter(e -> e.getValue().equals(String.valueOf(son.getInputType()))).collect(Collectors.toList());
-                        String requiredDictSonName = requiredDictModelSon.stream().map(DictModel::getText).collect(Collectors.joining());
-                        son.setInputTypeName(requiredDictSonName);
-
-                        List<DictModel> requiredModelSon = bean.queryDictItemsByCode("patrol_item_required");
-                        requiredModelSon =requiredModelSon.stream().filter(e -> e.getValue().equals(String.valueOf(son.getRequired()))).collect(Collectors.toList());
-                        String requiredSonName = requiredModelSon.stream().map(DictModel::getText).collect(Collectors.joining());
-                        parent.setRequiredDictName(requiredSonName);
-
-                        List<DictModel> modelSonList = patrolStandardMapper.querySysDict(modules);
-                        modelSonList =modelSonList.stream().filter(e -> e.getValue().equals(String.valueOf(son.getDictCode()))).collect(Collectors.toList());
-                        String modelSonName = modelSonList.stream().map(DictModel::getText).collect(Collectors.joining());
-                        parent.setDictCode(modelSonName);
                     }
                 }
             }
@@ -235,16 +170,61 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         }
     }
 
-    public PatrolStandardItems translate(PatrolStandardItems items) {
-        List<DictModel> hierarchyType = sysBaseApi.getDictItems("patrol_hierarchy_type");
-        List<DictModel> patrolCheck = sysBaseApi.getDictItems("patrol_check");
-        hierarchyType = hierarchyType.stream().filter(e -> e.getValue().equals(String.valueOf(items.getHierarchyType()))).collect(Collectors.toList());
-        String hierarchyTypeName = hierarchyType.stream().map(DictModel::getText).collect(Collectors.joining());
-        patrolCheck = patrolCheck.stream().filter(e -> e.getValue().equals(String.valueOf(items.getCheck()))).collect(Collectors.toList());
-        String patrolCheckName = patrolCheck.stream().map(DictModel::getText).collect(Collectors.joining());
-        items.setHierarchyTypeName(hierarchyTypeName);
-        items.setCheckName(patrolCheckName);
-        return items;
+    /**
+     * 配置项翻译
+     *
+     * @param items
+     */
+    private void translate(PatrolStandard standard, PatrolStandardItems items) {
+        CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+        //标准表翻译
+        if (ObjectUtil.isNotEmpty(standard)) {
+            JSONObject csMajor = sysBaseApi.getCsMajorByCode(standard.getProfessionCode());
+            List<DictModel> deviceType = sysBaseApi.getDictItems("patrol_device_type");
+            deviceType = deviceType.stream().filter(e -> e.getValue().equals(String.valueOf(standard.getDeviceType()))).collect(Collectors.toList());
+            String isDeviceTypeName = deviceType.stream().map(DictModel::getText).collect(Collectors.joining());
+            List<DictModel> status = sysBaseApi.getDictItems("patrol_standard_status");
+            status = status.stream().filter(e -> e.getValue().equals(String.valueOf(standard.getStatus()))).collect(Collectors.toList());
+            String statusName = status.stream().map(DictModel::getText).collect(Collectors.joining());
+            standard.setStatusName(statusName);
+            standard.setDeviceTypeNames(isDeviceTypeName);
+            standard.setProfessionCode(csMajor.getString("majorName"));
+
+            List<DictModel> subsystemModels = bean.queryTableDictItemsByCode("cs_subsystem", "system_name", "system_code");
+            subsystemModels = subsystemModels.stream().filter(e -> e.getValue().equals(String.valueOf(standard.getSubsystemCode()))).collect(Collectors.toList());
+            String subsystemName = subsystemModels.stream().map(DictModel::getText).collect(Collectors.joining());
+            standard.setSubsystemCode(subsystemName);
+            List<DictModel> deviceTypeModels = bean.queryTableDictItemsByCode("device_type", "name", "code");
+            deviceTypeModels = deviceTypeModels.stream().filter(e -> e.getValue().equals(String.valueOf(standard.getDeviceTypeCode()))).collect(Collectors.toList());
+            String deviceTypeName = deviceTypeModels.stream().map(DictModel::getText).collect(Collectors.joining());
+            standard.setDeviceTypeCode(deviceTypeName);
+        }
+        //配置项翻译
+        Integer modules = 2;
+        if (ObjectUtil.isNotEmpty(items)) {
+            List<DictModel> hierarchyType = sysBaseApi.getDictItems("patrol_hierarchy_type");
+            List<DictModel> patrolCheck = sysBaseApi.getDictItems("patrol_check");
+            hierarchyType = hierarchyType.stream().filter(e -> e.getValue().equals(String.valueOf(items.getHierarchyType()))).collect(Collectors.toList());
+            String hierarchyTypeName = hierarchyType.stream().map(DictModel::getText).collect(Collectors.joining());
+            patrolCheck = patrolCheck.stream().filter(e -> e.getValue().equals(String.valueOf(items.getCheck()))).collect(Collectors.toList());
+            String patrolCheckName = patrolCheck.stream().map(DictModel::getText).collect(Collectors.joining());
+            items.setHierarchyTypeName(hierarchyTypeName);
+            items.setCheckName(patrolCheckName);
+            items.setDetailOrder(items.getOrder() == null ? "" : String.valueOf(items.getOrder()));
+            List<DictModel> requiredDictModels = bean.queryDictItemsByCode("patrol_input_type");
+            requiredDictModels = requiredDictModels.stream().filter(e -> e.getValue().equals(String.valueOf(items.getInputType()))).collect(Collectors.toList());
+            String requiredDictName = requiredDictModels.stream().map(DictModel::getText).collect(Collectors.joining());
+            items.setInputTypeName(requiredDictName);
+            List<DictModel> requiredModels = bean.queryDictItemsByCode("patrol_item_required");
+            requiredModels = requiredModels.stream().filter(e -> e.getValue().equals(String.valueOf(items.getRequired()))).collect(Collectors.toList());
+            String requiredName = requiredModels.stream().map(DictModel::getText).collect(Collectors.joining());
+            items.setRequiredDictName(requiredName);
+            List<DictModel> modelList = patrolStandardMapper.querySysDict(modules);
+            modelList = modelList.stream().filter(e -> e.getValue().equals(String.valueOf(items.getDictCode()))).collect(Collectors.toList());
+            String modelName = modelList.stream().map(DictModel::getText).collect(Collectors.joining());
+            items.setDictCode(modelName);
+        }
+
     }
 
     @Override
