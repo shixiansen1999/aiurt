@@ -18,9 +18,9 @@
     <if test="scheduleLog.userId!=null and scheduleLog.userId!=''">
         and sl.user_id = #{scheduleLog.userId}
     </if>
-    <if test="scheduleLog.orgList != null and scheduleLog.orgList.size() != 0">
-        and su.org_id in
-        <foreach collection="scheduleLog.orgList" index="index" item="item" open="(" separator="," close=")">
+    <if test="scheduleLog.userList != null and scheduleLog.userList.size() != 0">
+        and su.id in
+        <foreach collection="scheduleLog.userList" index="index" item="item" open="(" separator="," close=")">
             #{item}
         </foreach>
     </if>
