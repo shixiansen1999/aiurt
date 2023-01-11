@@ -5,8 +5,11 @@
 <select id="selectFilePage" resultType="com.aiurt.modules.sysfile.entity.SysFile">
 	select * from sys_file
 		<where>
-			<if test="typeId != null">
-				type_id = #{typeId}
+			<if test="typeId != null and typeId.size() != 0">
+				type_id in
+				<foreach collection="typeId" index="index" open="(" separator="," close=")" item="item">
+					#{item}
+				</foreach>
 			</if>
 			<if test="fileName != null">
 				and `name` LIKE CONCAT ('%', #{fileName}, '%')
