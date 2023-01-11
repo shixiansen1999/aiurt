@@ -13,6 +13,9 @@ import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.aiurt.boot.rehearsal.mapper.EmergencyRehearsalYearMapper;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalMonthService;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalYearService;
+import com.aiurt.boot.rehearsal.service.strategy.AuditContext;
+import com.aiurt.boot.rehearsal.service.strategy.NodeAudit;
+import com.aiurt.boot.rehearsal.service.strategy.NodeFactory;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
@@ -319,21 +322,25 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
             throw new AiurtBootException("未找到ID为【" + businessKey + "】的数据！");
         }
         int states = updateStateEntity.getStates();
-        switch (states) {
-            case 2:
-                // 演练计划负责人审批
-                rehearsalYear.setStatus(EmergencyConstant.YEAR_STATUS_2);
-                break;
-            case 3:
-                // 演练计划负责人驳回，更新状态为待提交状态
-                rehearsalYear.setStatus(EmergencyConstant.YEAR_STATUS_1);
-                break;
-            case 4:
-                // 已通过
-                rehearsalYear.setStatus(EmergencyConstant.YEAR_STATUS_3);
-                break;
-        }
-        this.updateById(rehearsalYear);
+//        switch (states) {
+//            case 2:
+//                // 演练计划负责人审批
+//                rehearsalYear.setStatus(EmergencyConstant.YEAR_STATUS_2);
+//                break;
+//            case 3:
+//                // 演练计划负责人驳回，更新状态为待提交状态
+//                rehearsalYear.setStatus(EmergencyConstant.YEAR_STATUS_1);
+//                break;
+//            case 4:
+//                // 已通过
+//                rehearsalYear.setStatus(EmergencyConstant.YEAR_STATUS_3);
+//                break;
+//        }
+//        this.updateById(rehearsalYear);
+        AuditContext context = new AuditContext(NodeFactory.getNode(states));
+        EmergencyRehearsalYear emergencyRehearsalYear = context.doAudit(rehearsalYear);
+        this.updateById(emergencyRehearsalYear);
+
     }
 
 }
