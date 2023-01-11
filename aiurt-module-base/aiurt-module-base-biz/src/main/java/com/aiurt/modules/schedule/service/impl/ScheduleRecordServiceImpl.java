@@ -361,14 +361,12 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                     if (ObjectUtil.isNotEmpty(one)) {
                         dto.setScheduleRecordId(one.getId());
                     }
-                    dto.setDeleteFlag(scheduleRecordREditDTO.getDeleteFlag());
                     dto.setSchedulingMethod("1");
                     dto.setUserId(scheduleRecordREditDTO.getUserId());
-                    if (!scheduleRecordREditDTO.getDeleteFlag()) {
-                        int index = (i % itemSize == 0 ? itemSize : i % itemSize);
-                        Integer ruleItemId = scheduleRuleItemMap.get(index);
-                        dto.setScheduleItemId(ruleItemId);
-                    }
+                    //获取班次
+                    int index = (i % itemSize == 0 ? itemSize : i % itemSize);
+                    Integer ruleItemId = scheduleRuleItemMap.get(index);
+                    dto.setScheduleItemId(ruleItemId);
                     dto.setDate(start.getTime());
                     scheduleRecordREditDTOS.add(dto);
                     start.add(Calendar.DAY_OF_YEAR, 1);
@@ -395,27 +393,10 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
             if (ObjectUtil.isNotEmpty(value.getScheduleRecordId())) {
                 ScheduleRecord scheduleRecordEntity = this.getById(value.getScheduleRecordId());
                 if (!scheduleRecordEntity.getItemId().equals(value.getScheduleItemId())) {
-                    if (value.getDeleteFlag()) {
-                        ScheduleItem oldItem = itemService.getById(scheduleRecordEntity.getItemId());
-                        ScheduleLog log = new ScheduleLog();
-                        log.setDate(scheduleRecordEntity.getDate());
-                        log.setRecordId(scheduleRecordEntity.getId());
-                        log.setDelFlag(0);
-                        log.setSourceItemId(oldItem.getId());
-                        log.setSourceItemName(oldItem.getName());
-                        log.setUserId(scheduleRecordEntity.getUserId());
-                        LoginUser user = userService.getUserById(log.getUserId());
-                        log.setUserName(user.getRealname());
-                        logService.save(log);
-                        this.baseMapper.deleteById(value.getScheduleRecordId());
-                    } else {
-                        updateRecordByItem(scheduleRecordEntity, value);
-                    }
+                    updateRecordByItem(scheduleRecordEntity, value);
                 }
             }else {
-                if (!value.getDeleteFlag()) {
-                    insertRecordByItem(value);
-                }
+                insertRecordByItem(value);
             }
         }
         result.success("修改成功!");
@@ -461,18 +442,6 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                 .delFlag(0)
                 .build();
         this.save(record);
-
-        ScheduleLog log = new ScheduleLog();
-        log.setDate(record.getDate());
-        log.setRecordId(record.getId());
-        log.setDelFlag(0);
-        log.setTargetItemId(newItem.getId());
-        log.setTargetItemName(newItem.getName());
-        log.setUserId(record.getUserId());
-//            LoginUser user = new LoginUser();
-        LoginUser user = userService.getUserById(log.getUserId());
-        log.setUserName(user.getRealname());
-        logService.save(log);
     }
 
 }
