@@ -61,7 +61,7 @@
         </if>)
         ) a
         where
-            1=1
+             1=1
             <if test="condition.id!=null and condition.id!=''">
                 and a.id =#{condition.id}
             </if>
