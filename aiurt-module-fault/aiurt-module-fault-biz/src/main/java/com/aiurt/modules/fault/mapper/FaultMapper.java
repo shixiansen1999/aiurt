@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -96,5 +97,15 @@ public interface FaultMapper extends BaseMapper<Fault> {
       */
      List<String> selectUserNameByComplex(@Param("roleCodeList") List<String> roleCodeList,@Param("majorCode") String majorCode,
                                           @Param("subSystemCode")String subSystemCode,  @Param("stationCode")String stationCode);
+
+
+    /**
+     * 故障选择查询
+     * @param page
+     * @param condition
+     * @param faultCodes
+     * @return List<Fault>
+     * */
+    List<FaultDTO> getFault(@Param("page")Page<FaultDTO> page, @Param("condition")FaultDTO condition, @Param("faultCodes")List<String> faultCodes);
 
 }

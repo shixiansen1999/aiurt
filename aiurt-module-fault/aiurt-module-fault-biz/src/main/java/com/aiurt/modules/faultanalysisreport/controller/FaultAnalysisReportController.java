@@ -195,6 +195,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 @ApiResponses({
 			 @ApiResponse(code = 200, message = "OK", response = Fault.class)
 	 })
+	 @PermissionData(pageComponent = "fault/FaultAnalysisReportListChange")
 	 public Result<IPage<FaultDTO>> getFault(FaultDTO faultDTO,
 											   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 											   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
