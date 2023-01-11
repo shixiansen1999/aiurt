@@ -553,8 +553,16 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         BeanUtils.copyProperties(plan, planDto);
 
         //查询预案变更次数
-        List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, id).list();
-        int size = oldPlanList.size();
+        int size = 0;
+        String emergencyOldPlanId = plan.getOldPlanId();
+        if(StrUtil.isNotEmpty(emergencyOldPlanId)){
+            List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, emergencyOldPlanId).list();
+            size = oldPlanList.size();
+        }else{
+            String planId = plan.getId();
+            List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, planId).list();
+            size = oldPlanList.size();
+        }
         planDto.setChangeCount(size);
 
         // 获取应急队伍
