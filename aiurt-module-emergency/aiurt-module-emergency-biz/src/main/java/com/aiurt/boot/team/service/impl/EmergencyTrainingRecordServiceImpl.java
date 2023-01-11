@@ -431,7 +431,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
 
             String fileName = "应急队伍训练记录导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
             FileOutputStream out = new FileOutputStream(errorExcelUpload+ File.separator+fileName);
-            url = fileName;
+            url = File.separator+"errorExcelFiles"+ File.separator+fileName;
             workbook.write(out);
 
         } catch (IOException e) {
