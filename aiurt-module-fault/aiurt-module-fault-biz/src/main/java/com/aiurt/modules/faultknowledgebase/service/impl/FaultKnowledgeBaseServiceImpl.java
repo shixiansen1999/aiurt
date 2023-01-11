@@ -619,10 +619,12 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 //专业技术负责人审核
                 faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
                 faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
+                break;
             case 4:
                 //专业技术负责人驳回
                 faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
                 faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+                break;
             default:
                 break;
         }
