@@ -519,7 +519,6 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         if (StrUtil.isNotBlank(lineName) && StrUtil.isNotBlank(stationName) && StrUtil.isNotBlank(positionName)) {
             JSONObject lineByName = iSysBaseAPI.getLineByName(lineName);
             JSONObject stationByName = iSysBaseAPI.getStationByName(stationName);
-            JSONObject positionByName = iSysBaseAPI.getPositionByName(positionName,lineByName.getString("lineCode"),stationByName.getString("stationCode"));
             if (ObjectUtil.isNotNull(lineByName)) {
                 emergencyTeam.setLineCode(lineByName.getString("lineCode"));
             } else {
@@ -538,10 +537,13 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             } else {
                 stringBuilder.append("系统不存在该站点，");
             }
-            if (ObjectUtil.isNotNull(positionByName)) {
-                emergencyTeam.setPositionCode(positionByName.getString("positionCode"));
-            } else {
-                stringBuilder.append("系统不存在该线路站点下的位置，");
+            if (ObjectUtil.isNotNull(lineByName)&&ObjectUtil.isNotNull(stationByName)) {
+                JSONObject positionByName = iSysBaseAPI.getPositionByName(positionName,lineByName.getString("lineCode"),stationByName.getString("stationCode"));
+                if (ObjectUtil.isNotNull(positionByName)) {
+                    emergencyTeam.setPositionCode(positionByName.getString("positionCode"));
+                } else {
+                    stringBuilder.append("系统不存在该线路站点下的位置，");
+                }
             }
         } else {
             stringBuilder.append("线路，站点，驻扎地不能为空，");
@@ -661,6 +663,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 TeamModel teamModel = new TeamModel();
                 BeanUtil.copyProperties(record,teamModel);
                 teamModel.setSort(Convert.toStr(sort));
+                teamModel.setWorkAreaName(record.getWorkareaName());
                 teamModels.add(teamModel);
                 sort++;
             }
