@@ -415,10 +415,17 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         newEmergencyPlanDto.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
         newEmergencyPlanDto.setOrgCode(orgCode);
         newEmergencyPlanDto.setChangeCount(size);
-        //变更版本：原版本+变更次数+1
+        //变更版本：（原版本+变更次数+1）-（原版本-1）
         String emergencyPlanVersion = emergencyPlanDto.getEmergencyPlanVersion();
-        newEmergencyPlanDto.setEmergencyPlanVersion(String.valueOf(Double.valueOf(emergencyPlanVersion)+size+1));
-        newEmergencyPlanDto.setOldPlanId(emergencyPlanDto.getId());
+        double version = (Double.valueOf(emergencyPlanVersion) + size + 1) - (Double.valueOf(emergencyPlanVersion) - 1);
+        newEmergencyPlanDto.setEmergencyPlanVersion(String.valueOf(version));
+        //变更后保存父级预案id
+        String oldPlanId = emergencyPlanDto.getOldPlanId();
+        if(StrUtil.isEmpty(oldPlanId)){
+            newEmergencyPlanDto.setOldPlanId(emergencyPlanDto.getId());
+        }else{
+            newEmergencyPlanDto.setOldPlanId(oldPlanId);
+        }
         newEmergencyPlanDto.setStatus(null);
         newEmergencyPlanDto.setEmergencyPlanAtt(emergencyPlanDto.getEmergencyPlanAtt());
         newEmergencyPlanDto.setEmergencyTeamId(emergencyPlanDto.getEmergencyTeamId());
