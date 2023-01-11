@@ -41,10 +41,10 @@ public class ScheduleLogServiceImpl extends ServiceImpl<ScheduleLogMapper, Sched
         //根据数据规则查出所属权限的人员，这个只有根据部门权限查部门的人
         List<LoginUser> allUsers = iSysBaseAPI.getAllUsers();
         List<String> userIds = new ArrayList<>();
-        if (CollUtil.isNotEmpty(userIds)) {
+        if (CollUtil.isNotEmpty(allUsers)) {
             List<String> collect = allUsers.stream().map(LoginUser::getId).collect(Collectors.toList());
             userIds.addAll(collect);
-            scheduleLog.setOrgList(userIds);
+            scheduleLog.setUserList(userIds);
         }else {
             return page.setRecords(new ArrayList<>());
         }
@@ -55,9 +55,9 @@ public class ScheduleLogServiceImpl extends ServiceImpl<ScheduleLogMapper, Sched
                 LoginUser userById = iSysBaseAPI.queryUser(log.getCreateBy());
                 log.setCreateBy(userById.getRealname());
                 if (StrUtil.isEmpty(log.getSourceItemName()) && ObjectUtil.isEmpty(log.getSourceItemId())) {
-                    log.setShiftRecord("由休息调整为" + log.getTargetItemName());
+                    log.setShiftRecord("由无排班调整为" + log.getTargetItemName());
                 } else if (StrUtil.isEmpty(log.getTargetItemName()) && ObjectUtil.isEmpty(log.getTargetItemId())) {
-                    log.setShiftRecord("由" + log.getSourceItemName() + "调整为休息");
+                    log.setShiftRecord("由" + log.getSourceItemName() + "调整为无排班");
                 } else {
                     log.setShiftRecord("由" + log.getSourceItemName() + "调整为" + log.getTargetItemName());
                 }

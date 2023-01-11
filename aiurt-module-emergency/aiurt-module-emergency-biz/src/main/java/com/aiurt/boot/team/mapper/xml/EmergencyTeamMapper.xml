@@ -13,6 +13,6 @@
     from emergency_training_record  etr
     left join emergency_training_program etp on etr.emergency_training_program_id = etp.id
     where etr.emergency_team_id = #{id}
-    and etr.del_flag = 0
+    and etr.del_flag = 0 and etr.status = 2
     </select>
 </mapper>

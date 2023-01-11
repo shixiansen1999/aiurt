@@ -83,64 +83,6 @@
         ORDER BY a.create_time DESC
 </select>
 
-<select id="getFault" resultType="com.aiurt.modules.faultanalysisreport.dto.FaultDTO">
-   SELECT
-    f.id,
-    f.`code`,
-    f.major_code,
-    f.fault_mode_code,
-    f.sub_system_code,
-    f.line_code,
-    f.station_code,
-    fkbt.name as faultPhenomenon,
-    f.fault_applicant,
-    f.happen_time,
-    f.station_position_code,
-    (select group_concat(device_code) from fault_device where fault_code = f.`code`) as deviceCode,
-    ( select group_concat(d.name) from
-    (select device_code from fault_device where fault_code = f.`code`) a
-    left join device d on d.`code` = a.device_code ) as deviceName,
-    f.end_time,
-    f.hang_up_reason
-    FROM
-    fault f
-    left join fault_knowledge_base_type fkbt on fkbt.code = f.fault_phenomenon
-    where
-    f.status = 12
-    <if test="condition.code != null and condition.code != ''">
-        and f.`code` like concat('%',#{condition.code},'%')
-    </if>
-    <if test="condition.faultModeCode != null and condition.faultModeCode != ''">
-        and f.fault_mode_code = #{condition.faultModeCode}
-    </if>
-    <if test="condition.stationCode != null and condition.stationCode != ''">
-        and (f.station_code = #{condition.stationCode}
-        or f.line_code =#{condition.stationCode}
-        or f.station_position_code =#{condition.stationCode})
-    </if>
-    <if test="condition.deviceCode != null and condition.deviceCode != ''">
-        and f.`code` in ((select fault_code from fault_device where device_code like concat('%',#{condition.deviceCode},'%')))
-    </if>
-    <if test="condition.majorCode != null  and condition.majorCode !=''">
-        and f.major_code =#{condition.majorCode}
-    </if>
-    <if test="condition.subSystemCode != null  and condition.subSystemCode !=''">
-        and f.sub_system_code =#{condition.subSystemCode}
-    </if>
-    <if test="allSubSystem != null and allSubSystem.size != 0">
-        and f.sub_system_code in
-        <foreach collection="allSubSystem" index="index" item="item" open="(" separator="," close=")">
-            #{item}
-        </foreach>
-    </if>
-    <if test="faultCodes != null and faultCodes.size() != 0">
-        and  f.`code` not in
-        <foreach collection="faultCodes" index="index" item="item" open="(" separator="," close=")">
-            #{item}
-        </foreach>
-    </if>
-</select>
-
 <select id="getDetail" resultType="com.aiurt.modules.faultanalysisreport.dto.FaultDTO">
     SELECT
     f.id,

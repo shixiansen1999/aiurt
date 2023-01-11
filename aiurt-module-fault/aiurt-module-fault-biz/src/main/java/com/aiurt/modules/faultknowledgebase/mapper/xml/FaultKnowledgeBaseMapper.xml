@@ -3,7 +3,8 @@
 <mapper namespace="com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper">
 
 <select id="readAll" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
-    select a.* from
+    select a.*
+    from
         ((SELECT
         fkb.id,
         fkb.device_type_code,
@@ -60,7 +61,7 @@
         </if>)
         ) a
         where
-            1=1
+             1=1
             <if test="condition.id!=null and condition.id!=''">
                 and a.id =#{condition.id}
             </if>

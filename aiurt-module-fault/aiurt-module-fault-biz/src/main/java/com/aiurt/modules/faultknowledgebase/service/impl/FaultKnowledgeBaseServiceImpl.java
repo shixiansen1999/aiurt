@@ -10,9 +10,14 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.common.api.CommonAPI;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
+import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
+import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
+import com.aiurt.modules.common.entity.UpdateStateEntity;
 import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
@@ -25,10 +30,10 @@ import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -67,7 +72,7 @@ import java.util.stream.Collectors;
  * @Version: V1.0
  */
 @Service
-public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBaseMapper, FaultKnowledgeBase> implements IFaultKnowledgeBaseService {
+public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBaseMapper, FaultKnowledgeBase> implements IFaultKnowledgeBaseService, IFlowableBaseUpdateStatusService {
 
     @Autowired
     private FaultKnowledgeBaseMapper faultKnowledgeBaseMapper;
@@ -80,6 +85,8 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
 
+    @Autowired
+    private FaultMapper faultMapper;
     @Override
     public IPage<FaultKnowledgeBase> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -127,10 +134,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     @Override
     public IPage<FaultDTO> getFault(Page<FaultDTO> page, FaultDTO faultDTO) {
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //当前用户拥有的子系统
-        List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
-        List<FaultDTO> faults = faultAnalysisReportMapper.getFault(page, faultDTO,allSubSystem,null);
+        List<FaultDTO> faults = faultMapper.getFault(page, faultDTO,null);
         return page.setRecords(faults);
     }
 
@@ -543,5 +547,87 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             return true;
         }
         return false;
+    }
+
+    public String startProcess(FaultKnowledgeBase faultKnowledgeBase){
+        String id = faultKnowledgeBase.getId();
+        if (StrUtil.isEmpty(id)) {
+            //list转string
+            getFaultCodeList(faultKnowledgeBase);
+            faultKnowledgeBase.setStatus(FaultConstant.PENDING);
+            faultKnowledgeBase.setDelFlag(0);
+            if (org.apache.commons.lang3.StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode())|| org.apache.commons.lang3.StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
+                Result<String> result = new Result<>();
+                result.error500("设备或组件不能为空");
+            }
+            faultKnowledgeBaseMapper.insert(faultKnowledgeBase);
+            String newId = faultKnowledgeBase.getId();
+            return newId;
+        }else{
+            getFaultCodeList(faultKnowledgeBase);
+            faultKnowledgeBaseMapper.updateById(faultKnowledgeBase);
+            return id;
+        }
+
+    }
+
+    /**list转string*/
+    private void getFaultCodeList(FaultKnowledgeBase faultKnowledgeBase) {
+        List<String> faultCodeList = faultKnowledgeBase.getFaultCodeList();
+        if (CollectionUtils.isNotEmpty(faultCodeList)) {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (String faultCode : faultCodeList) {
+                stringBuilder.append(faultCode);
+                stringBuilder.append(",");
+            }
+            // 判断字符串长度是否有效
+            if (stringBuilder.length() > 0)
+            {
+                // 截取字符
+                stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            }
+            faultKnowledgeBase.setFaultCodes(stringBuilder.toString());
+        }
+        faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+    }
+
+    @Override
+    public void rejectFirstUserTaskEvent(RejectFirstUserTaskEntity entity) {
+
+    }
+
+    @Override
+    public void updateState(UpdateStateEntity updateStateEntity) {
+        String businessKey = updateStateEntity.getBusinessKey();
+        FaultKnowledgeBase faultKnowledgeBase = this.getById(businessKey);
+        if (ObjectUtil.isEmpty(faultKnowledgeBase)) {
+            throw new AiurtBootException("未找到ID为【" + businessKey + "】的数据！");
+        }
+        int states = updateStateEntity.getStates();
+        switch (states) {
+            case 1:
+                // 技术员审核
+                faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
+                faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
+                break;
+            case 2:
+                // 技术员驳回，更新状态为待审核状态
+                faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
+                faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+                break;
+            case 3:
+                //专业技术负责人审核
+                faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
+                faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
+                break;
+            case 4:
+                //专业技术负责人驳回
+                faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
+                faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+                break;
+            default:
+                break;
+        }
+        this.updateById(faultKnowledgeBase);
     }
 }

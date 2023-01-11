@@ -189,4 +189,35 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @TableField(exist = false)
     private List<String> deviceCodeList;
 
+    /**排序方式*/
+    @ApiModelProperty(value = "流程发起人(0:工班长,1:技术员)")
+    @TableField(exist = false)
+    private Integer processInitiator;
+
+    /**
+     * 实例id
+     */
+    @ApiModelProperty(value = "实例id")
+    @TableField(exist = false)
+    private String processInstanceId;
+    /**
+     * 任务id
+     */
+    @ApiModelProperty(value = "任务id")
+    @TableField(exist = false)
+    private String taskId;
+    /**
+     * 任务名称
+     */
+    @ApiModelProperty(value = "任务名称")
+    @TableField(exist = false)
+    private String taskName;
+    /**
+     * 模板key，流程标识
+     */
+    @ApiModelProperty(value = "模板key，流程标识")
+    @TableField(exist = false)
+    private String modelKey;
+
+
 }

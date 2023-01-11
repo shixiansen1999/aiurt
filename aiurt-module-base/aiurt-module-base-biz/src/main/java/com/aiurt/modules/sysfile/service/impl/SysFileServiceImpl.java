@@ -1,6 +1,7 @@
 package com.aiurt.modules.sysfile.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.sysfile.entity.SysFile;
@@ -47,6 +48,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> implements ISysFileService {
+
+	private final ISysFileRoleService sysFileRoleService;
 
 	private final SysFileTypeMapper sysFileTypeMapper;
 	@Autowired
@@ -108,12 +111,39 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 			return page;
 		}
 
+		if (param.getTypeId() != null && StrUtil.isNotBlank(param.getFileName())){
+			long l = len - total;
+			long l1 = l % param.getPageSize() > 0 ? (l / param.getPageSize()) + 1 : l / param.getPageSize();
+			long size = l > 10 ? 10 : l;
+			long no = l1 - 1;
+			List<Long> longs = Arrays.asList(param.getTypeId());
+			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(no, size), longs,param.getFileName());
+			Optional.ofNullable(filePage.getRecords()).ifPresent(sysFiles -> {
+				sysFiles.forEach(f -> {
+					FileAppVO appVO = new FileAppVO();
+					appVO.setFileName(f.getName()).setId(f.getId()).setUrl(f.getUrl()).setStatus(1).setTypeId(f.getTypeId()).setDownStatus(f.getDownStatus());
+					Result<SysFileTypeDetailVO> detail = this.detail(req, f.getId());
+					appVO.setFileDetail(detail.getResult());
+
+					Result<SysFileTypeDetailVO> detail1 = sysFileTypeService.detail(req, f.getTypeId());
+					appVO.setFileTypeDetail(detail1.getResult());
+					list.add(appVO);
+				});
+			});
+			page.setRecords(list).setTotal(total + filePage.getTotal());
+			return page;
+		}else {
+			//
+			page.setRecords(list);
+		}
+
 		if (param.getTypeId() != null){
 			long l = len - total;
 			long l1 = l % param.getPageSize() > 0 ? (l / param.getPageSize()) + 1 : l / param.getPageSize();
 			long size = l > 10 ? 10 : l;
 			long no = l1 - 1;
-			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(no, size), param.getTypeId(),param.getFileName());
+			List<Long> longs = Arrays.asList(param.getTypeId());
+			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(no, size), longs,null);
 			Optional.ofNullable(filePage.getRecords()).ifPresent(sysFiles -> {
 				sysFiles.forEach(f -> {
 					FileAppVO appVO = new FileAppVO();
@@ -138,7 +168,20 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 			long l1 = l % param.getPageSize() > 0 ? (l / param.getPageSize()) + 1 : l / param.getPageSize();
 			long size = l > 10 ? 10 : l;
 			long no = l1 - 1;
-			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(no, size), param.getTypeId(),param.getFileName());
+			LambdaQueryWrapper<SysFileType> typeQueryWrapper1 = new LambdaQueryWrapper<SysFileType>()
+					.eq(SysFileType::getDelFlag, CommonConstant.DEL_FLAG_0)
+					.select(SysFileType::getId, SysFileType::getName)
+					.in(SysFileType::getId, role);
+			typeQueryWrapper1.eq(SysFileType::getParentId, 0);
+			List<SysFileType> sysFileTypes = sysFileTypeMapper.selectList(typeQueryWrapper1);
+			List<Long> id = new ArrayList<>();
+			if (CollectionUtil.isNotEmpty(sysFileTypes)){
+				List<Long> collect = sysFileTypes.stream().map(SysFileType::getId).collect(Collectors.toList());
+				List<Long> longs = new ArrayList<>();
+				longs.addAll(collect);
+				id= this.getId(collect, longs);
+			}
+			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(no, size), id,param.getFileName());
 			Optional.ofNullable(filePage.getRecords()).ifPresent(sysFiles -> {
 				sysFiles.forEach(f -> {
 					FileAppVO appVO = new FileAppVO();
@@ -160,7 +203,18 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 		return page;
 	}
 
-	private final ISysFileRoleService sysFileRoleService;
+    private  List<Long> getId(List<Long> id,List<Long> longs){
+		LambdaQueryWrapper<SysFileType> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+		lambdaQueryWrapper.eq(SysFileType::getDelFlag,CommonConstant.DEL_FLAG_0);
+		lambdaQueryWrapper.in(SysFileType::getParentId,id);
+		List<SysFileType> sysFileTypes = sysFileTypeMapper.selectList(lambdaQueryWrapper);
+        if (CollectionUtil.isNotEmpty(sysFileTypes)){
+			List<Long> collect = sysFileTypes.stream().map(SysFileType::getId).collect(Collectors.toList());
+			longs.addAll(collect);
+			this.getId(collect,longs);
+		}
+		return longs;
+	}
 
 	@Override
 	public List<FIlePlanVO> selectList() {

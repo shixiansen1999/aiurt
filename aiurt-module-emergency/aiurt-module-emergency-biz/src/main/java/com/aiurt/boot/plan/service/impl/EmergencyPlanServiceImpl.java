@@ -400,8 +400,16 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             throw new AiurtBootException("未审核通过的预案不能变更！");
         }
         //查询预案变更次数
-        List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, id).list();
-        int size = oldPlanList.size();
+        int size = 0;
+        String emergencyOldPlanId = emergencyPlanDto.getOldPlanId();
+        if(StrUtil.isNotEmpty(emergencyOldPlanId)){
+            List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, emergencyOldPlanId).list();
+             size = oldPlanList.size();
+        }else{
+            String planId = emergencyPlanDto.getId();
+            List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, planId).list();
+             size = oldPlanList.size();
+        }
 
         //获取部门
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -415,9 +423,17 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         newEmergencyPlanDto.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
         newEmergencyPlanDto.setOrgCode(orgCode);
         newEmergencyPlanDto.setChangeCount(size);
+        //变更版本：（原版本+变更次数+1）-（原版本-1）
         String emergencyPlanVersion = emergencyPlanDto.getEmergencyPlanVersion();
-        newEmergencyPlanDto.setEmergencyPlanVersion(String.valueOf(Double.valueOf(emergencyPlanVersion)+size+1));
-        newEmergencyPlanDto.setOldPlanId(emergencyPlanDto.getId());
+        double version = (Double.valueOf(emergencyPlanVersion) + size + 1) - (Double.valueOf(emergencyPlanVersion) - 1);
+        newEmergencyPlanDto.setEmergencyPlanVersion(String.valueOf(version));
+        //变更后保存父级预案id
+        String oldPlanId = emergencyPlanDto.getOldPlanId();
+        if(StrUtil.isEmpty(oldPlanId)){
+            newEmergencyPlanDto.setOldPlanId(emergencyPlanDto.getId());
+        }else{
+            newEmergencyPlanDto.setOldPlanId(oldPlanId);
+        }
         newEmergencyPlanDto.setStatus(null);
         newEmergencyPlanDto.setEmergencyPlanAtt(emergencyPlanDto.getEmergencyPlanAtt());
         newEmergencyPlanDto.setEmergencyTeamId(emergencyPlanDto.getEmergencyTeamId());
@@ -1186,9 +1202,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             // 错误信息
             StringBuilder errorMessage = new StringBuilder();
             EmergencyPlanDisposalProcedure emergencyPlanDisposalProcedure = new EmergencyPlanDisposalProcedure();
-            if(ObjectUtil.isEmpty(emergencyPlanDisposalProcedureImportExcelDTO.getOrgName())){
-                errorMessage.append("处置部门不能为空!");
-            }else{
+            if(ObjectUtil.isNotEmpty(emergencyPlanDisposalProcedureImportExcelDTO.getOrgName())){
                 String orgName = emergencyPlanDisposalProcedureImportExcelDTO.getOrgName();
                 String orgCode = emergencyPlanMapper.selectDepartCode(orgName);
                 if(ObjectUtil.isNotEmpty(orgCode)){
@@ -1197,9 +1211,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                     errorMessage.append("不存在这个部门!");
                 }
             }
-            if(ObjectUtil.isEmpty(emergencyPlanDisposalProcedureImportExcelDTO.getRoleName())){
-                errorMessage.append("处置角色不能为空!");
-            }else{
+            if(ObjectUtil.isNotEmpty(emergencyPlanDisposalProcedureImportExcelDTO.getRoleName())){
                 String roleName = emergencyPlanDisposalProcedureImportExcelDTO.getRoleName();
                 String roleId = emergencyPlanMapper.selectRoleId(roleName);
                 if(ObjectUtil.isNotEmpty(roleId)){
@@ -1260,7 +1272,9 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                 errorSign = true;
             } else {
                 emergencyPlanMaterials.setMaterialsCode(emergencyPlanMaterialsImportExcelDTO.getMaterialsCode());
-                emergencyPlanMaterials.setMaterialsNumber(Integer.valueOf(emergencyPlanMaterialsImportExcelDTO.getMaterialsNumber()));
+                if(StrUtil.isNotEmpty(emergencyPlanMaterialsImportExcelDTO.getMaterialsNumber())){
+                    emergencyPlanMaterials.setMaterialsNumber(Integer.valueOf(emergencyPlanMaterialsImportExcelDTO.getMaterialsNumber()));
+                }
                 materialList.add(emergencyPlanMaterials);
             }
         }

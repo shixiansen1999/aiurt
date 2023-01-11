@@ -81,7 +81,7 @@ public class StrategyService {
                          List<RepairPoolCode> newStaIds,
                          List<InspectionStrOrgRel> orgList,
                          List<InspectionStrStaRel> stationList) {
-        //获取当前规范的年份,如果是今年就生成今年剩下的任务，如果是明年，则生成明年的所有任务
+        // 获取当前规范的年份,如果是今年就生成今年剩下的任务，如果是明年，则生成明年的所有任务
         Date date;
         if (Integer.valueOf(DateUtils.getYear()).equals(Integer.valueOf(ins.getYear()))) {
             date = DateUtils.getDate();
@@ -89,10 +89,9 @@ public class StrategyService {
             Calendar calendar = Calendar.getInstance();
             calendar.set(Calendar.YEAR, ins.getYear());
             date = DateUtil.beginOfYear(new DateTime(calendar));
-//            date = DateUtils.getNextYearFirstDay();
         }
 
-        //生成时间限制
+        // 生成时间限制
         List<Date[]> list = DateUtils.yearWeekList(date);
         if (CollUtil.isEmpty(list)) {
             throw new AiurtBootException("本年度最后一周无法生成周检");
@@ -104,6 +103,55 @@ public class StrategyService {
         }
     }
 
+    /**
+     * 半月检
+     *
+     * @param ins         检修策略
+     * @param newStaIds   新的检修标准
+     * @param orgList     组织机构
+     * @param stationList 站点
+     */
+    public void halfMonth(InspectionStrategy ins,
+                          List<RepairPoolCode> newStaIds,
+                          List<InspectionStrOrgRel> orgList,
+                          List<InspectionStrStaRel> stationList) {
+        //获取当前规范的年份,如果是今年就生成今年剩下的任务，如果是明年，则生成明年的所有任务
+        boolean thisYear = isThisYear(ins.getYear());
+
+        //获取当前月
+        int month = DateUtils.getMonth();
+
+        // 保证最多有4周，获取当前周数
+        int week = DateUtil.weekOfMonth(new Date()) == 1 ? 1 : DateUtil.weekOfMonth(new Date()) - 1;
+
+        if (!thisYear) {
+            month = 1;
+        }
+
+        for (int j = month; j <= InspectionConstant.MONTHAMOUNT; j++) {
+            // 最多是2周
+            Integer tactics = ins.getTactics();
+            if (tactics > 2) {
+                throw new AiurtBootException("无可生成计划");
+            }
+
+            for (int i = tactics; i <= InspectionConstant.MONTH_WEEK_4; i = i + 2) {
+                // 如果是今年,这个月的周数 大于 策略的周数 跳出当前循环
+                if ((thisYear && j == month && week > i)) {
+                    continue;
+                }
+
+                // 获取j月第tactics周的时间
+                Date[] date = DateUtils.getDateByMonthAndWeek(ins.getYear(), j, i);
+                if (date == null) {
+                    throw new AiurtBootException("无可生成计划");
+                }
+
+                // 设置每个月的第几周新增任务
+                addEveryWeekTask(InspectionConstant.HALF_MONTH_6, ins, newStaIds, date[0], date[1], orgList, stationList);
+            }
+        }
+    }
 
     /**
      * 月检
@@ -665,6 +713,9 @@ public class StrategyService {
         });
         map.put(InspectionConstant.ANNUAL, (InspectionStrategy ins, List<RepairPoolCode> repairPoolCodes, List<InspectionStrOrgRel> inspectionStrOrgRels, List<InspectionStrStaRel> inspectionStrStaRels) -> {
             this.annualPlan(ins, repairPoolCodes, inspectionStrOrgRels, inspectionStrStaRels);
+        });
+        map.put(InspectionConstant.HALF_MONTH_6, (InspectionStrategy ins, List<RepairPoolCode> repairPoolCodes, List<InspectionStrOrgRel> inspectionStrOrgRels, List<InspectionStrStaRel> inspectionStrStaRels) -> {
+            this.halfMonth(ins, repairPoolCodes, inspectionStrOrgRels, inspectionStrStaRels);
         });
     }
 

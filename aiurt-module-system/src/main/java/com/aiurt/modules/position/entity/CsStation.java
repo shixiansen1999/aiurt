@@ -17,6 +17,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: cs_station
@@ -147,5 +148,11 @@ public class CsStation implements Serializable {
     @ApiModelProperty(value = "站点名字")
     @TableField(exist = false)
     private String title;
+
+
+    /**位置集合*/
+    @ApiModelProperty(value = "位置集合")
+    @TableField(exist = false)
+    private List<CsStationPosition> csStationPositionList;
 
 }

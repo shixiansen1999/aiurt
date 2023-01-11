@@ -211,6 +211,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                 lm.put("majorName",l.getMajorName());
                 lm.put("systemName",l.getSystemName());
                 lm.put("attentionContent",l.getAttentionContent());
+                lm.put("attentionMeasures",l.getAttentionMeasures());
                 lm.put("stateName",l.getStateName());
                 lm.put("text",l.getText());
                 mapList.add(lm);
@@ -228,7 +229,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
         }
             errorLines += errorStrs.size();
             successLines += (listMaterial.size() - errorLines);
-            return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs);
+            return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs,null);
         }
     @Override
     public List<CsSafetyAttention> isFirstByCode(String code, Integer status, String majorCode, String systemCode) {

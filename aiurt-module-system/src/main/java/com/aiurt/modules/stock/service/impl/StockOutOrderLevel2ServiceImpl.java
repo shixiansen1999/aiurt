@@ -1,13 +1,6 @@
 package com.aiurt.modules.stock.service.impl;
 
-import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.util.XlsExport;
-import com.aiurt.modules.major.entity.CsMajor;
-import com.aiurt.modules.major.service.ICsMajorService;
-import com.aiurt.modules.material.entity.MaterialBase;
-import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.sparepart.entity.SparePartApplyMaterial;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
@@ -19,32 +12,24 @@ import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.stock.entity.*;
 import com.aiurt.modules.stock.mapper.StockOutOrderLevel2Mapper;
 import com.aiurt.modules.stock.service.*;
-import com.aiurt.modules.subsystem.entity.CsSubsystem;
-import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.service.ISysDepartService;
-import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -146,9 +131,13 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 				SparePartInOrder sparePartInOrder = new SparePartInOrder();
 				sparePartInOrder.setMaterialCode(materialCode);
 				sparePartInOrder.setWarehouseCode(stockOutOrderLevel2.getCustodialWarehouseCode());
-				sparePartInOrder.setNum(sparePartApplyMaterial.getActualNum());
+				sparePartInOrder.setNum(null!=sparePartApplyMaterial.getActualNum()?sparePartApplyMaterial.getActualNum():1);
 				SparePartStockInfo sparePartStockInfo = sparePartStockInfoMapper.selectOne(new LambdaQueryWrapper<SparePartStockInfo>().eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0).eq(SparePartStockInfo::getWarehouseCode,stockOutOrderLevel2.getCustodialWarehouseCode()));
-				SysDepart sysDepart = iSysDepartService.getById(sparePartStockInfo.getOrganizationId());
+				SysDepart sysDepart = new SysDepart();
+				if (ObjectUtils.isNotEmpty(sparePartStockInfo)){
+					sysDepart = iSysDepartService.getById(sparePartStockInfo.getOrganizationId());
+				}
+
 				sparePartInOrder.setOrgId(null!=sysDepart?sysDepart.getId():null);
                 sparePartInOrder.setSysOrgCode(null!=sysDepart?sysDepart.getOrgCode():null);
 				sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_0);
@@ -159,7 +148,7 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
                 StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>().eq("material_code",materialCode).eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
                 if(stockLevel2 != null){
                     Integer num = stockLevel2.getNum();
-                    stockLevel2.setNum(num - sparePartApplyMaterial.getActualNum());
+                    stockLevel2.setNum(num - (null!=sparePartApplyMaterial.getActualNum()?sparePartApplyMaterial.getActualNum():1));
                     stockLevel2Service.updateById(stockLevel2);
                 }
                 //7. 如果存在盘点单，对盘点物资修改

@@ -86,12 +86,9 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
 
     @Override
     public IPage<FaultDTO> getFault(Page<FaultDTO> page, FaultDTO faultDTO) {
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //当前用户拥有的子系统
-        List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
         //查询已经被引用的故障
         List<String> faultCodes = faultAnalysisReportMapper.getFaultCode();
-        List<FaultDTO> faults = faultAnalysisReportMapper.getFault(page, faultDTO,allSubSystem,faultCodes);
+        List<FaultDTO> faults = faultMapper.getFault(page, faultDTO,faultCodes);
         return page.setRecords(faults);
     }
 

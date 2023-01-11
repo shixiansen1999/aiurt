@@ -231,6 +231,19 @@
                             </descriptors>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>make-assembly-docker</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <skipAssembly>${skipAssemblyDocker}</skipAssembly>
+                            <descriptors>
+                                <descriptor>src/main/assembly/docker/assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 
@@ -309,6 +322,7 @@
                 <skipAssemblyTest>true</skipAssemblyTest>
                 <skipAssemblyFat>true</skipAssemblyFat>
                 <skipAssemblyUat>true</skipAssemblyUat>
+                <skipAssemblyDocker>true</skipAssemblyDocker>
             </properties>
             <build>
                 <finalName>${project.artifactId}-${project.version}</finalName>
@@ -325,6 +339,7 @@
                 <skipAssemblyTest>false</skipAssemblyTest>
                 <skipAssemblyFat>true</skipAssemblyFat>
                 <skipAssemblyUat>true</skipAssemblyUat>
+                <skipAssemblyDocker>true</skipAssemblyDocker>
             </properties>
             <build>
                 <finalName>${project.artifactId}-${project.version}-test</finalName>
@@ -341,6 +356,7 @@
                 <skipAssemblyTest>true</skipAssemblyTest>
                 <skipAssemblyFat>true</skipAssemblyFat>
                 <skipAssemblyUat>false</skipAssemblyUat>
+                <skipAssemblyDocker>true</skipAssemblyDocker>
             </properties>
             <build>
                 <finalName>${project.artifactId}-${project.version}-uat</finalName>
@@ -358,9 +374,28 @@
                 <skipAssemblyTest>true</skipAssemblyTest>
                 <skipAssemblyFat>false</skipAssemblyFat>
                 <skipAssemblyUat>true</skipAssemblyUat>
+                <skipAssemblyDocker>true</skipAssemblyDocker>
             </properties>
             <build>
                 <finalName>${project.artifactId}-${project.version}-fat</finalName>
+            </build>
+        </profile>
+
+        <profile>
+            <id>docker</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <env.devMode>docker</env.devMode>
+                <skipAssemblyProd>true</skipAssemblyProd>
+                <skipAssemblyTest>true</skipAssemblyTest>
+                <skipAssemblyFat>true</skipAssemblyFat>
+                <skipAssemblyUat>true</skipAssemblyUat>
+                <skipAssemblyDocker>false</skipAssemblyDocker>
+            </properties>
+            <build>
+                <finalName>${project.artifactId}-${project.version}</finalName>
             </build>
         </profile>
     </profiles>
