@@ -15,6 +15,11 @@ public final class FlowApprovalType {
      * 保存。
      */
     public static final String SAVE = "save";
+
+    /**
+     * 保存发起流程
+     */
+    public static final String ONLY_SAVE = "only_save";
     /**
      * 同意。
      */

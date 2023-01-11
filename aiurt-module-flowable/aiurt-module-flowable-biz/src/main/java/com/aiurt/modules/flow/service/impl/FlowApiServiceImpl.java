@@ -188,6 +188,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void startAndTakeFirst(StartBpmnDTO startBpmnDTO) {
+        // 保存数据不发起流程
         log.info("启动流程请求参数：[{}]", JSON.toJSONString(startBpmnDTO));
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (Objects.isNull(loginUser)) {
@@ -228,6 +229,14 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 保存中间业务数据，将业务数据id返回
         Object businessKey = flowElementUtil.saveBusData(result.getId(), userTask.getId(), busData);
 
+        // 保存数据不发起流程
+        FlowTaskCompleteCommentDTO flowTaskCompleteDTO = startBpmnDTO.getFlowTaskCompleteDTO();
+        if (Objects.nonNull(flowTaskCompleteDTO)
+                && StrUtil.equalsAnyIgnoreCase(flowTaskCompleteDTO.getApprovalType(), FlowApprovalType.ONLY_SAVE)) {
+            log.info("仅保存数据不发起流程！！！");
+            return;
+        }
+
 
         String loginName = loginUser.getUsername();
         Authentication.setAuthenticatedUserId(loginName);
@@ -248,7 +257,6 @@ public class FlowApiServiceImpl implements FlowApiService {
             saveData(task, busData, processInstance.getProcessInstanceId(), task.getId(), processInstance);
         }
         // 完成流程启动后的第一个任务
-        FlowTaskCompleteCommentDTO flowTaskCompleteDTO = startBpmnDTO.getFlowTaskCompleteDTO();
         if (Objects.nonNull(flowTaskCompleteDTO) && StrUtil.equalsAnyIgnoreCase(flowTaskCompleteDTO.getApprovalType(), FlowApprovalType.AGREE)) {
             // 按照规则，调用该方法的用户，就是第一个任务的assignee，因此默认会自动执行complete。
             ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(flowTaskCompleteDTO, ActCustomTaskComment.class);
