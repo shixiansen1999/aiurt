@@ -1212,7 +1212,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             Pattern pattern = Pattern.compile(regular);
             Matcher matcher = pattern.matcher(emergencyPlanVersion);
             if (matcher.find()) {
-                emergencyPlanRecordDTO.setEmergencyPlanVersion(emergencyPlanVersion);
+                emergencyPlanRecordDTO.setEmergencyPlanVersion(emergencyPlanVersion+".0");
             } else {
                 errorMessage.append("应急预案版本(填写必须是数字)，");
             }
@@ -1306,8 +1306,9 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             if(ObjectUtil.isEmpty(emergencyPlanRecordDisposalProcedureImportExcelDTO.getDisposalProcedureContent())){
                 errorMessage.append("处置内容不能为空!");
             }
-            if(ObjectUtil.isEmpty(emergencyPlanRecordDisposalProcedureImportExcelDTO.getDisposalProcedureSituation())){
-                errorMessage.append("处置情况不能为空!");
+            //处置情况
+            if(ObjectUtil.isNotEmpty(emergencyPlanRecordDisposalProcedureImportExcelDTO.getDisposalProcedureSituation())){
+                emergencyPlanRecordDisposalProcedure.setDisposalProcedureSituation(emergencyPlanRecordDisposalProcedureImportExcelDTO.getDisposalProcedureSituation());
             }
 
             if (errorMessage.length() > 0) {
@@ -1317,7 +1318,6 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                 errorSign = true;
             } else {
                 emergencyPlanRecordDisposalProcedure.setDisposalProcedureContent(emergencyPlanRecordDisposalProcedureImportExcelDTO.getDisposalProcedureContent());
-                emergencyPlanRecordDisposalProcedure.setDisposalProcedureSituation(emergencyPlanRecordDisposalProcedureImportExcelDTO.getDisposalProcedureSituation());
                 disposalProcedureList.add(emergencyPlanRecordDisposalProcedure);
             }
         }
