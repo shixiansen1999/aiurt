@@ -229,7 +229,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
         }
             errorLines += errorStrs.size();
             successLines += (listMaterial.size() - errorLines);
-            return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs);
+            return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs,null);
         }
     @Override
     public List<CsSafetyAttention> isFirstByCode(String code, Integer status, String majorCode, String systemCode) {
