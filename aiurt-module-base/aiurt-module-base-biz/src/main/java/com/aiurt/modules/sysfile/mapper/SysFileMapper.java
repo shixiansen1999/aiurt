@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.aiurt.modules.sysfile.entity.SysFile;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @Description: 文档表
  * @Author: swsc
@@ -14,5 +16,5 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface SysFileMapper extends BaseMapper<SysFile> {
 
-	IPage<SysFile> selectFilePage(Page page, @Param("typeId") Long typeId,@Param("fileName") String fileName);
+	IPage<SysFile> selectFilePage(Page page, @Param("typeId") List<Long> typeId, @Param("fileName") String fileName);
 }
