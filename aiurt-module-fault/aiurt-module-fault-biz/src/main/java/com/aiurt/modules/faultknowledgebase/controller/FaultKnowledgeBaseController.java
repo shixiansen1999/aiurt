@@ -34,20 +34,16 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -330,6 +326,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 @ApiResponses({
 			 @ApiResponse(code = 200, message = "OK", response = Fault.class)
 	 })
+	 @PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
 	 public Result<IPage<FaultDTO>> getFault(FaultDTO faultDTO,
 											 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 											 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
