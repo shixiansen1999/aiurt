@@ -400,7 +400,8 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             throw new AiurtBootException("未审核通过的预案不能变更！");
         }
         //查询预案变更次数
-        List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, id).list();
+        String emergencyOldPlanId = emergencyPlanDto.getOldPlanId();
+        List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, emergencyOldPlanId).list();
         int size = oldPlanList.size();
 
         //获取部门
