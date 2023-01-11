@@ -117,7 +117,7 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 			long size = l > 10 ? 10 : l;
 			long no = l1 - 1;
 			List<Long> longs = Arrays.asList(param.getTypeId());
-			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(no, size), longs,param.getFileName());
+			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(param.getPageNo(), param.getPageSize()), longs,param.getFileName());
 			Optional.ofNullable(filePage.getRecords()).ifPresent(sysFiles -> {
 				sysFiles.forEach(f -> {
 					FileAppVO appVO = new FileAppVO();
@@ -143,7 +143,7 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 			long size = l > 10 ? 10 : l;
 			long no = l1 - 1;
 			List<Long> longs = Arrays.asList(param.getTypeId());
-			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(no, size), longs,null);
+			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(param.getPageNo(), param.getPageSize()), longs,null);
 			Optional.ofNullable(filePage.getRecords()).ifPresent(sysFiles -> {
 				sysFiles.forEach(f -> {
 					FileAppVO appVO = new FileAppVO();
@@ -181,7 +181,7 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 				longs.addAll(collect);
 				id= this.getId(collect, longs);
 			}
-			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(no, size), id,param.getFileName());
+			IPage<SysFile> filePage = this.baseMapper.selectFilePage(new Page(param.getPageNo(), param.getPageSize()), id,param.getFileName());
 			Optional.ofNullable(filePage.getRecords()).ifPresent(sysFiles -> {
 				sysFiles.forEach(f -> {
 					FileAppVO appVO = new FileAppVO();
