@@ -37,18 +37,24 @@
             <version>4.3.0</version>
         </dependency>
 
-
-<!--
-        &lt;!&ndash; feign &ndash;&gt;
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <groupId>com.aiurt.boot</groupId>
+            <artifactId>aiurt-module-flowable-api</artifactId>
+            <version>3.2.0</version>
         </dependency>
-        &lt;!&ndash; sentinel限流熔断降级&ndash;&gt;
-        <dependency>
-            <groupId>com.alibaba.cloud</groupId>
-            <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
-        </dependency>-->
+
+
+        <!--
+                &lt;!&ndash; feign &ndash;&gt;
+                <dependency>
+                    <groupId>org.springframework.cloud</groupId>
+                    <artifactId>spring-cloud-starter-openfeign</artifactId>
+                </dependency>
+                &lt;!&ndash; sentinel限流熔断降级&ndash;&gt;
+                <dependency>
+                    <groupId>com.alibaba.cloud</groupId>
+                    <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+                </dependency>-->
 
     </dependencies>
     <build>
