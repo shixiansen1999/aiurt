@@ -1285,9 +1285,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             // 错误信息
             StringBuilder errorMessage = new StringBuilder();
             EmergencyPlanRecordDisposalProcedure emergencyPlanRecordDisposalProcedure = new EmergencyPlanRecordDisposalProcedure();
-            if(ObjectUtil.isEmpty(emergencyPlanRecordDisposalProcedureImportExcelDTO.getOrgName())){
-                errorMessage.append("处置部门不能为空!");
-            }else{
+            if(ObjectUtil.isNotEmpty(emergencyPlanRecordDisposalProcedureImportExcelDTO.getOrgName())){
                 String orgName = emergencyPlanRecordDisposalProcedureImportExcelDTO.getOrgName();
                 String orgCode = emergencyPlanMapper.selectDepartCode(orgName);
                 if(ObjectUtil.isNotEmpty(orgCode)){
@@ -1296,9 +1294,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                     errorMessage.append("不存在这个部门!");
                 }
             }
-            if(ObjectUtil.isEmpty(emergencyPlanRecordDisposalProcedureImportExcelDTO.getRoleName())){
-                errorMessage.append("处置角色不能为空!");
-            }else{
+            if(ObjectUtil.isNotEmpty(emergencyPlanRecordDisposalProcedureImportExcelDTO.getRoleName())){
                 String roleName = emergencyPlanRecordDisposalProcedureImportExcelDTO.getRoleName();
                 String roleId = emergencyPlanMapper.selectRoleId(roleName);
                 if(ObjectUtil.isNotEmpty(roleId)){
@@ -1363,7 +1359,9 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                 errorSign = true;
             } else {
                 emergencyPlanMaterials.setMaterialsCode(emergencyPlanRecordMaterialsImportExcelDTO.getMaterialsCode());
-                emergencyPlanMaterials.setMaterialsNumber(Integer.valueOf(emergencyPlanRecordMaterialsImportExcelDTO.getMaterialsNumber()));
+                if(StrUtil.isNotEmpty(emergencyPlanRecordMaterialsImportExcelDTO.getMaterialsNumber())){
+                    emergencyPlanMaterials.setMaterialsNumber(Integer.valueOf(emergencyPlanRecordMaterialsImportExcelDTO.getMaterialsNumber()));
+                }
                 materialList.add(emergencyPlanMaterials);
             }
         }
