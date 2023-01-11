@@ -55,9 +55,9 @@ public class ScheduleLogServiceImpl extends ServiceImpl<ScheduleLogMapper, Sched
                 LoginUser userById = iSysBaseAPI.queryUser(log.getCreateBy());
                 log.setCreateBy(userById.getRealname());
                 if (StrUtil.isEmpty(log.getSourceItemName()) && ObjectUtil.isEmpty(log.getSourceItemId())) {
-                    log.setShiftRecord("由休息调整为" + log.getTargetItemName());
+                    log.setShiftRecord("由无排班调整为" + log.getTargetItemName());
                 } else if (StrUtil.isEmpty(log.getTargetItemName()) && ObjectUtil.isEmpty(log.getTargetItemId())) {
-                    log.setShiftRecord("由" + log.getSourceItemName() + "调整为休息");
+                    log.setShiftRecord("由" + log.getSourceItemName() + "调整为无排班");
                 } else {
                     log.setShiftRecord("由" + log.getSourceItemName() + "调整为" + log.getTargetItemName());
                 }
