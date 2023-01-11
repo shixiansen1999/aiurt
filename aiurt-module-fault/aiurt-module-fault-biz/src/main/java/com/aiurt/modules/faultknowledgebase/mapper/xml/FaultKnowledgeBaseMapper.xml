@@ -3,11 +3,7 @@
 <mapper namespace="com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper">
 
 <select id="readAll" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
-    select a.*,
-    ahp.PROC_INST_ID_ as process_instance_id,
-    ara.ID_           as task_id,
-    ara.NAME_         as task_name,
-    arp.KEY_          as model_key
+    select a.*
     from
         ((SELECT
         fkb.id,
@@ -18,7 +14,6 @@
         (SELECT material_name from device_assembly WHERE material_code = fkb.material_code group by material_code) as materialName,
         fkb.fault_codes,
         fkb.fault_phenomenon,
-        fkb.create_by,
         fkb.fault_reason,
         fkb.method,
         fkb.solution,
@@ -49,7 +44,6 @@
         (SELECT material_name from device_assembly WHERE material_code = fkb.material_code group by material_code) as materialName,
         fkb.fault_codes,
         fkb.fault_phenomenon,
-        fkb.create_by,
         fkb.fault_reason,
         fkb.method,
         fkb.solution,
@@ -66,12 +60,8 @@
             and fkb.approved_result =#{condition.approvedResult}
         </if>)
         ) a
-        left join sys_user su on su.username = a.create_by
-        Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = a.id
-        LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
-        LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
         where
-             ahp.ID_ is not null
+             1=1
             <if test="condition.id!=null and condition.id!=''">
                 and a.id =#{condition.id}
             </if>
