@@ -1,18 +1,19 @@
 package com.aiurt.modules.schedule.entity;
 
-import java.util.Date;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 
 /**
  * @Description: schedule_item
@@ -31,6 +32,11 @@ public class ScheduleItem {
 	@TableId(type= IdType.AUTO)
     @ApiModelProperty(value = "id")
 	private  Integer  id;
+
+	/**是否是休息日（0：是；1：否）*/
+	@Excel(name = "是否是休息日（0：是；1：否）", width = 15)
+	@ApiModelProperty(value = "是否是休息日（0：是；1：否）")
+	private  Integer  isRestDay;
 
 	/**班次名称*/
 	@Excel(name = "班次名称", width = 15)
