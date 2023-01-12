@@ -338,7 +338,6 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
             ImportParams params = new ImportParams();
             params.setTitleRows(2);
             params.setHeadRows(2);
-            params.setNeedSave(true);
             List<InspectionCodeErrorDTO> deviceAssemblyErrorModels = new ArrayList<>();
             List<InspectionCode> standardList = new ArrayList<>();
             try {
