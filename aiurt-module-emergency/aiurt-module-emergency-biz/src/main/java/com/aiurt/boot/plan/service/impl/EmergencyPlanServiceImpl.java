@@ -401,14 +401,14 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         }
         //查询预案变更次数
         int size = 0;
-        String emergencyOldPlanId = emergencyPlanDto.getOldPlanId();
-        if(StrUtil.isNotEmpty(emergencyOldPlanId)){
-            List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, emergencyOldPlanId).list();
-             size = oldPlanList.size();
+        String oldPlanId = emergencyPlanDto.getOldPlanId();
+        //获取根节点id
+        if(StrUtil.isNotBlank(oldPlanId)){
+            String firstPlanId = StrUtil.splitTrim(oldPlanId, "/").get(0);
+            size = emergencyPlanService.lambdaQuery().like(EmergencyPlan::getOldPlanId, firstPlanId).list().size();
         }else{
-            String planId = emergencyPlanDto.getId();
-            List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, planId).list();
-             size = oldPlanList.size();
+            size = emergencyPlanService.lambdaQuery().like(EmergencyPlan::getOldPlanId, emergencyPlanDto.getId()).list().size();
+
         }
 
         //获取部门
@@ -423,16 +423,14 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         newEmergencyPlanDto.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
         newEmergencyPlanDto.setOrgCode(orgCode);
         newEmergencyPlanDto.setChangeCount(size);
-        //变更版本：（原版本+变更次数+1）-（原版本-1）
-        String emergencyPlanVersion = emergencyPlanDto.getEmergencyPlanVersion();
-        double version = (Double.valueOf(emergencyPlanVersion) + size + 1) - (Double.valueOf(emergencyPlanVersion) - 1);
+        //变更版本：原版本+变更次数+1
+        double version = (1.0 + size + 1);
         newEmergencyPlanDto.setEmergencyPlanVersion(String.valueOf(version));
         //变更后保存父级预案id
-        String oldPlanId = emergencyPlanDto.getOldPlanId();
         if(StrUtil.isEmpty(oldPlanId)){
             newEmergencyPlanDto.setOldPlanId(emergencyPlanDto.getId());
         }else{
-            newEmergencyPlanDto.setOldPlanId(oldPlanId);
+            newEmergencyPlanDto.setOldPlanId(oldPlanId+"/"+emergencyPlanDto.getId());
         }
         newEmergencyPlanDto.setStatus(null);
         newEmergencyPlanDto.setEmergencyPlanAtt(emergencyPlanDto.getEmergencyPlanAtt());
@@ -554,14 +552,11 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
 
         //查询预案变更次数
         int size = 0;
-        String emergencyOldPlanId = plan.getOldPlanId();
-        if(StrUtil.isNotEmpty(emergencyOldPlanId)){
-            List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, emergencyOldPlanId).list();
-            size = oldPlanList.size();
-        }else{
-            String planId = plan.getId();
-            List<EmergencyPlan> oldPlanList = emergencyPlanService.lambdaQuery().eq(EmergencyPlan::getOldPlanId, planId).list();
-            size = oldPlanList.size();
+        String oldPlanId = plan.getOldPlanId();
+        //获取根节点id
+        if(StrUtil.isNotBlank(oldPlanId)){
+            String firstPlanId = StrUtil.splitTrim(oldPlanId, "/").get(0);
+            size = emergencyPlanService.lambdaQuery().like(EmergencyPlan::getOldPlanId, firstPlanId).list().size();
         }
         planDto.setChangeCount(size);
 
@@ -661,9 +656,14 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                 emergencyPlan.setStatus(EmergencyPlanConstant.VALID);
                 //新版本更新后，更改旧版本的状态为停用
                 if(ObjectUtil.isNotEmpty(emergencyPlan.getOldPlanId())){
+                    //获取父级id
+               String oldPlanId1 = emergencyPlan.getOldPlanId();
+               List<String> parentList = StrUtil.splitTrim(oldPlanId1, "/");
+               String lastPlanId = parentList.get(parentList.size() - 1);
+
                     List<EmergencyPlan> list = emergencyPlanService.lambdaQuery()
                             .eq(EmergencyPlan::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
-                            .eq(EmergencyPlan::getId, emergencyPlan.getOldPlanId()).list();
+                            .eq(EmergencyPlan::getId, lastPlanId).list();
                     for (EmergencyPlan plan : list) {
                         plan.setStatus(EmergencyPlanConstant.STOPPED);
                         this.updateById(plan);
