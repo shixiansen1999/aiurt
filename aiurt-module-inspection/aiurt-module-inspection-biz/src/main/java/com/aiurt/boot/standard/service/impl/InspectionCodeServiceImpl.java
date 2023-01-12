@@ -522,7 +522,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                     if (!InspectionConstant.IS_EFFECT.equals(statusCode) && !InspectionConstant.NO_IS_EFFECT.equals(statusCode)) {
                         stringBuilder.append("生效状态填写不规范，");
                     } else {
-                        inspectionCode.setStatus(statusName.equals(InspectionConstant.IS_EFFECT) ? 1 : 0);
+                        inspectionCode.setStatus(statusCode.equals(InspectionConstant.IS_EFFECT) ? 1 : 0);
                     }
                 } else {
                     stringBuilder.append("系统不存在该专业，");
@@ -534,11 +534,11 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                     if (!InspectionConstant.IS_EFFECT.equals(statusCode) || !InspectionConstant.NO_IS_EFFECT.equals(statusCode)) {
                         stringBuilder.append("生效状态填写不规范，");
                     } else {
-                        inspectionCode.setStatus(statusName.equals(InspectionConstant.IS_EFFECT) ? 1 : 0);
+                        inspectionCode.setStatus(statusCode.equals(InspectionConstant.IS_EFFECT) ? 1 : 0);
                     }
                 }
             } else {
-                stringBuilder.append("巡视标准表名称、适用专业、是否与设备类型相关、生效状态不能为空;");
+                stringBuilder.append("检修标准名称、适用专业、是否与设备类型相关、生效状态不能为空;");
             }
         }
 
