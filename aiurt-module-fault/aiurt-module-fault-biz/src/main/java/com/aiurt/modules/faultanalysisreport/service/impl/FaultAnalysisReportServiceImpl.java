@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultanalysisreport.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
@@ -13,6 +14,7 @@ import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
+import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -89,6 +91,14 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         //查询已经被引用的故障
         List<String> faultCodes = faultAnalysisReportMapper.getFaultCode();
         List<FaultDTO> faults = faultMapper.getFault(page, faultDTO,faultCodes);
+        if (CollUtil.isNotEmpty(faults)) {
+            for (FaultDTO fault : faults) {
+                LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(FaultKnowledgeBaseType::getCode, fault.getFaultPhenomenon());
+                FaultKnowledgeBaseType faultKnowledgeBaseType = faultKnowledgeBaseTypeMapper.selectOne(queryWrapper);
+                fault.setFaultPhenomenon(faultKnowledgeBaseType != null ? faultKnowledgeBaseType.getName() : null);
+            }
+        }
         return page.setRecords(faults);
     }
 

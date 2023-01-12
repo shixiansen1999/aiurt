@@ -135,6 +135,14 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     @Override
     public IPage<FaultDTO> getFault(Page<FaultDTO> page, FaultDTO faultDTO) {
         List<FaultDTO> faults = faultMapper.getFault(page, faultDTO,null);
+        if (CollUtil.isNotEmpty(faults)) {
+            for (FaultDTO fault : faults) {
+                LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(FaultKnowledgeBaseType::getCode, fault.getFaultPhenomenon());
+                FaultKnowledgeBaseType faultKnowledgeBaseType = faultKnowledgeBaseTypeMapper.selectOne(queryWrapper);
+                fault.setFaultPhenomenon(faultKnowledgeBaseType != null ? faultKnowledgeBaseType.getName() : null);
+            }
+        }
         return page.setRecords(faults);
     }
 
