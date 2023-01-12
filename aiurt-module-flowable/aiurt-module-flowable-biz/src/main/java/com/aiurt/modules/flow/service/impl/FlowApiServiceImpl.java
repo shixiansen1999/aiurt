@@ -1602,19 +1602,21 @@ public class FlowApiServiceImpl implements FlowApiService {
                 }
             }
             String json = customTaskExt.getOperationListJson();
-            List<ActOperationEntity> objectList = JSONObject.parseArray(json, ActOperationEntity.class);
-            // 过滤 取消按钮不展示
-            objectList = objectList.stream().filter(entity -> !StrUtil.equalsIgnoreCase(entity.getType(), FlowApprovalType.CANCEL)).collect(Collectors.toList());
-            // 排序
-            objectList.stream().forEach(entity -> {
-                Integer o = entity.getShowOrder();
-                if (Objects.isNull(o)) {
-                    entity.setShowOrder(0);
-                }
-            });
-            objectList = objectList.stream().sorted(Comparator.comparing(ActOperationEntity::getShowOrder)).collect(Collectors.toList());
+            if (StrUtil.isNotBlank(json)) {
+                List<ActOperationEntity> objectList = JSONObject.parseArray(json, ActOperationEntity.class);
+                // 过滤 取消按钮不展示
+                objectList = objectList.stream().filter(entity -> !StrUtil.equalsIgnoreCase(entity.getType(), FlowApprovalType.CANCEL)).collect(Collectors.toList());
+                // 排序
+                objectList.stream().forEach(entity -> {
+                    Integer o = entity.getShowOrder();
+                    if (Objects.isNull(o)) {
+                        entity.setShowOrder(0);
+                    }
+                });
+                objectList = objectList.stream().sorted(Comparator.comparing(ActOperationEntity::getShowOrder)).collect(Collectors.toList());
 
-            taskInfoDTO.setOperationList(objectList);
+                taskInfoDTO.setOperationList(objectList);
+            }
         }
         taskInfoDTO.setProcessName(processDefinition.getName());
         taskInfoDTO.setProcessDefinitionKey(processDefinitionKey);
