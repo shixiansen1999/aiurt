@@ -229,8 +229,12 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@AutoLog(value = "故障知识库-导出excel", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识库-导出excel", notes="故障知识库-导出excel")
     @RequestMapping(value = "/exportXls")
-    public void exportXls(HttpServletRequest request, HttpServletResponse response, FaultKnowledgeBase faultKnowledgeBase) {
-		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(1, Integer.MAX_VALUE);
+    public void exportXls(HttpServletRequest request,
+						  HttpServletResponse response,
+						  FaultKnowledgeBase faultKnowledgeBase,
+						  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+						  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
+		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(pageNo, pageSize);
 		IPage<FaultKnowledgeBase> faultKnowledgeBasePage = faultKnowledgeBaseService.readAll(page, faultKnowledgeBase);
         //查询导出的数据
 		List<FaultKnowledgeBase> records = faultKnowledgeBasePage.getRecords();
