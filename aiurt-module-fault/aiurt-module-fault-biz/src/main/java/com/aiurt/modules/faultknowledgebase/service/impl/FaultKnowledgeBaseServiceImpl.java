@@ -453,7 +453,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         try {
             String fileName = "故障知识库导入错误清单" + "_" + System.currentTimeMillis() + "." + type;
             FileOutputStream out = new FileOutputStream(upLoadPath + File.separator + fileName);
-            url = fileName;
+            url = File.separator+"errorExcelFiles"+ File.separator+fileName;
             workbook.write(out);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
