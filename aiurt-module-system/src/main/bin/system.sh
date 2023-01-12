@@ -75,7 +75,7 @@ case "$1" in
  echo "Jump dir $HyERP_HOME"
  cd $HyERP_HOME
  echo "Execute shell cmd"
- nohup java  -jar  $JAVA_OPTIONS_MIN $JAVA_OPTIONS_MAX "./"$APP_JAR_NAME  > "./logs/"$APP_NAME"_local.log" 2>"./logs/"$APP_NAME"_out".log &
+ nohup java  -jar -Duser.timezone=GMT+8  $JAVA_OPTIONS_MIN $JAVA_OPTIONS_MAX "./"$APP_JAR_NAME  > "./logs/"$APP_NAME"_local.log" 2>"./logs/"$APP_NAME"_out".log &
  echo -ne "\033[32m Starting \033[0m"
  for i in {1..20}; do
  echo -ne "\033[32m.\033[0m"
