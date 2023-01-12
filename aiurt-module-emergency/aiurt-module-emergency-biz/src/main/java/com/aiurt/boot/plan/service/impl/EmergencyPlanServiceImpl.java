@@ -403,8 +403,8 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         int size = 0;
         String oldPlanId = emergencyPlanDto.getOldPlanId();
         //获取根节点id
-        String firstPlanId = StrUtil.splitTrim(oldPlanId, "/").get(0);
-        if(StrUtil.isNotEmpty(firstPlanId)){
+        if(StrUtil.isNotBlank(oldPlanId)){
+            String firstPlanId = StrUtil.splitTrim(oldPlanId, "/").get(0);
             size = emergencyPlanService.lambdaQuery().like(EmergencyPlan::getId, firstPlanId).list().size();
         }
 
@@ -551,8 +551,8 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         int size = 0;
         String oldPlanId = plan.getOldPlanId();
         //获取根节点id
-        String firstPlanId = StrUtil.splitTrim(oldPlanId, "/").get(0);
-        if(StrUtil.isNotEmpty(firstPlanId)){
+        if(StrUtil.isNotBlank(oldPlanId)){
+            String firstPlanId = StrUtil.splitTrim(oldPlanId, "/").get(0);
             size = emergencyPlanService.lambdaQuery().like(EmergencyPlan::getId, firstPlanId).list().size();
         }
         planDto.setChangeCount(size);

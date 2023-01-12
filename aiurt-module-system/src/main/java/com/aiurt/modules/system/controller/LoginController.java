@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateUnit;
@@ -469,6 +470,12 @@ public class LoginController {
 			depart = Optional.ofNullable(depart).orElse(new SysDepart());
 			sysUser.setOrgCode(depart.getOrgCode());
 			sysUser.setOrgName(depart.getDepartName());
+		}
+		//获取用户角色名称
+		String userId = sysUser.getId();
+		List<String> roleNamesById = sysBaseApi.getRoleNamesById(userId);
+		if(CollUtil.isNotEmpty(roleNamesById)){
+			obj.put("roleNames",roleNamesById);
 		}
 
 		String tenantIds = sysUser.getRelTenantIds();
