@@ -346,6 +346,19 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                     tipMessage = "导入失败，该文件为空。";
                     return imporReturnRes(errorLines, successLines, tipMessage, false, null);
                 }
+                //判断检修标准是否读取空数据
+                if(CollUtil.isNotEmpty(list)){
+                    Iterator<InspectionCodeImportDTO> iterator = list.iterator();
+                    if(CollUtil.isNotEmpty(iterator)){
+                        while (iterator.hasNext()) {
+                            InspectionCodeImportDTO model = iterator.next();
+                            boolean a = XlsUtil.checkObjAllFieldsIsNull(model);
+                            if (a) {
+                                iterator.remove();
+                            }
+                        }
+                    }
+                }
                 for (InspectionCodeImportDTO inspectionCodeImportDTO : list) {
                     List<InspectionCodeContent> inspectionCodeContentList = inspectionCodeImportDTO.getInspectionCodeContentList();
                     //判断配置项是否读取空数据
