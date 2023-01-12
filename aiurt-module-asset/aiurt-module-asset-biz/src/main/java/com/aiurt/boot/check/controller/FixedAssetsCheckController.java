@@ -1,40 +1,24 @@
 package com.aiurt.boot.check.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.boot.check.entity.FixedAssetsCheck;
 import com.aiurt.boot.check.service.IFixedAssetsCheckService;
-
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
-
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-import com.aiurt.common.system.base.controller.BaseController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 
  /**
  * @Description: fixed_assets_check
@@ -42,7 +26,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2023-01-11
  * @Version: V1.0
  */
-@Api(tags="fixed_assets_check")
+@Api(tags="固定资产盘点任务信息表")
 @RestController
 @RequestMapping("/check/fixedAssetsCheck")
 @Slf4j
@@ -60,7 +44,7 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 	 * @return
 	 */
 	//@AutoLog(value = "fixed_assets_check-分页列表查询")
-	@ApiOperation(value="fixed_assets_check-分页列表查询", notes="fixed_assets_check-分页列表查询")
+	@ApiOperation(value="固定资产盘点任务信息表-分页列表查询", notes="固定资产盘点任务信息表-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<FixedAssetsCheck>> queryPageList(FixedAssetsCheck fixedAssetsCheck,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -78,8 +62,8 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 	 * @param fixedAssetsCheck
 	 * @return
 	 */
-	@AutoLog(value = "fixed_assets_check-添加")
-	@ApiOperation(value="fixed_assets_check-添加", notes="fixed_assets_check-添加")
+	@AutoLog(value = "固定资产盘点任务信息表-添加")
+	@ApiOperation(value="固定资产盘点任务信息表-添加", notes="固定资产盘点任务信息表-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FixedAssetsCheck fixedAssetsCheck) {
 		fixedAssetsCheckService.save(fixedAssetsCheck);
@@ -92,8 +76,8 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 	 * @param fixedAssetsCheck
 	 * @return
 	 */
-	@AutoLog(value = "fixed_assets_check-编辑")
-	@ApiOperation(value="fixed_assets_check-编辑", notes="fixed_assets_check-编辑")
+	@AutoLog(value = "固定资产盘点任务信息表-编辑")
+	@ApiOperation(value="固定资产盘点任务信息表-编辑", notes="固定资产盘点任务信息表-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody FixedAssetsCheck fixedAssetsCheck) {
 		fixedAssetsCheckService.updateById(fixedAssetsCheck);
@@ -106,8 +90,8 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "fixed_assets_check-通过id删除")
-	@ApiOperation(value="fixed_assets_check-通过id删除", notes="fixed_assets_check-通过id删除")
+	@AutoLog(value = "固定资产盘点任务信息表-通过id删除")
+	@ApiOperation(value="固定资产盘点任务信息表-通过id删除", notes="固定资产盘点任务信息表-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		fixedAssetsCheckService.removeById(id);
@@ -120,8 +104,8 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "fixed_assets_check-批量删除")
-	@ApiOperation(value="fixed_assets_check-批量删除", notes="fixed_assets_check-批量删除")
+	@AutoLog(value = "固定资产盘点任务信息表-批量删除")
+	@ApiOperation(value="固定资产盘点任务信息表-批量删除", notes="固定资产盘点任务信息表-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.fixedAssetsCheckService.removeByIds(Arrays.asList(ids.split(",")));
@@ -135,7 +119,7 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 	 * @return
 	 */
 	//@AutoLog(value = "fixed_assets_check-通过id查询")
-	@ApiOperation(value="fixed_assets_check-通过id查询", notes="fixed_assets_check-通过id查询")
+	@ApiOperation(value="固定资产盘点任务信息表-通过id查询", notes="固定资产盘点任务信息表-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<FixedAssetsCheck> queryById(@RequestParam(name="id",required=true) String id) {
 		FixedAssetsCheck fixedAssetsCheck = fixedAssetsCheckService.getById(id);

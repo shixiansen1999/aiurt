@@ -1,21 +1,18 @@
 package com.aiurt.boot.asset.entity;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: fixed_assets
@@ -99,10 +96,6 @@ public class FixedAssets implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "开始使用日期")
     private java.util.Date startDate;
-	/**使用年限*/
-	@Excel(name = "使用年限", width = 15)
-    @ApiModelProperty(value = "使用年限")
-    private java.lang.String usedYear;
 	/**账面原值*/
 	@Excel(name = "账面原值", width = 15)
     @ApiModelProperty(value = "账面原值")
