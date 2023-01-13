@@ -2,6 +2,7 @@ package com.aiurt.boot.rehearsal.controller;
 
 import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.plan.service.IEmergencyPlanService;
+import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalMonthDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalMonthService;
 import com.aiurt.boot.rehearsal.vo.EmergencyRehearsalMonthVO;
@@ -38,7 +39,7 @@ public class EmergencyRehearsalMonthController extends BaseController<EmergencyR
     /**
      * 应急月演练计划-分页列表查询
      *
-     * @param emergencyRehearsalMonth
+     * @param emergencyRehearsalMonthDTO
      * @param pageNo
      * @param pageSize
      * @param req
@@ -47,12 +48,12 @@ public class EmergencyRehearsalMonthController extends BaseController<EmergencyR
     @AutoLog(value = "应急月演练计划-分页列表查询")
     @ApiOperation(value = "应急月演练计划-分页列表查询", notes = "应急月演练计划-分页列表查询")
     @GetMapping(value = "/list")
-    public Result<IPage<EmergencyRehearsalMonthVO>> queryPageList(EmergencyRehearsalMonth emergencyRehearsalMonth,
+    public Result<IPage<EmergencyRehearsalMonthVO>> queryPageList(EmergencyRehearsalMonthDTO emergencyRehearsalMonthDTO,
                                                                   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                                   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                                   HttpServletRequest req) {
         Page<EmergencyRehearsalMonthVO> page = new Page<EmergencyRehearsalMonthVO>(pageNo, pageSize);
-        IPage<EmergencyRehearsalMonthVO> pageList = emergencyRehearsalMonthService.queryPageList(page, emergencyRehearsalMonth);
+        IPage<EmergencyRehearsalMonthVO> pageList = emergencyRehearsalMonthService.queryPageList(page, emergencyRehearsalMonthDTO);
         return Result.OK(pageList);
     }
 

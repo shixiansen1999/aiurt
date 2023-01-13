@@ -1,5 +1,6 @@
 package com.aiurt.boot.rehearsal.service;
 
+import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalMonthDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
 import com.aiurt.boot.rehearsal.vo.EmergencyRehearsalMonthVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -27,10 +28,10 @@ public interface IEmergencyRehearsalMonthService extends IService<EmergencyRehea
      * 应急月演练计划-分页列表查询
      *
      * @param page
-     * @param emergencyRehearsalMonth
+     * @param emergencyRehearsalMonthDTO
      * @return
      */
-    IPage<EmergencyRehearsalMonthVO> queryPageList(Page<EmergencyRehearsalMonthVO> page, EmergencyRehearsalMonth emergencyRehearsalMonth);
+    IPage<EmergencyRehearsalMonthVO> queryPageList(Page<EmergencyRehearsalMonthVO> page, EmergencyRehearsalMonthDTO emergencyRehearsalMonthDTO);
 
     /**
      * 应急月演练计划-通过id删除

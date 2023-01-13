@@ -38,6 +38,17 @@
         <if test="condition.step != null and condition.step != ''">
             and erm.step like concat('%', #{condition.step}, '%')
         </if>
+        <if test="condition.recordInterface != null and condition.recordInterface">
+            and erm.id not in (
+            select plan_id
+            from emergency_implementation_record
+            where del_flag = 0
+              and org_code in
+            <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            )
+        </if>
         order by erm.create_time desc
     </select>
 </mapper>
