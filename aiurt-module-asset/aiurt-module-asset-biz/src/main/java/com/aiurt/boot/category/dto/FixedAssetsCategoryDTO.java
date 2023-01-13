@@ -39,6 +39,10 @@ public class FixedAssetsCategoryDTO {
     @Excel(name = "分类编码", width = 15)
     @ApiModelProperty(value = "分类编码")
     private java.lang.String categoryCode;
+    /**树查询编码*/
+    @Excel(name = "树查询编码", width = 15)
+    @ApiModelProperty(value = "树查询编码")
+    private List<String> treeCode;
     /**分类编码*/
     @Excel(name = "层级", width = 15)
     @ApiModelProperty(value = "层级")

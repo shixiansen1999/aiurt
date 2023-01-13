@@ -2,36 +2,21 @@ package com.aiurt.boot.category.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.category.constant.CategoryConstant;
 import com.aiurt.boot.category.dto.FixedAssetsCategoryDTO;
-import com.aiurt.boot.category.dto.FixedAssetsCategoryImport;
 import com.aiurt.boot.category.entity.FixedAssetsCategory;
 import com.aiurt.boot.category.mapper.FixedAssetsCategoryMapper;
 import com.aiurt.boot.category.service.IFixedAssetsCategoryService;
 import com.aiurt.common.constant.CommonConstant;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.jeecg.common.api.vo.Result;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -47,6 +32,17 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
 
     @Override
     public Page<FixedAssetsCategoryDTO> pageList(Page<FixedAssetsCategoryDTO> pageList, FixedAssetsCategoryDTO fixedAssetsCategory) {
+        //树形查询:输入pid,获取本身及底下所有子级的code
+        if(ObjectUtil.isNotEmpty(fixedAssetsCategory.getPid())){
+            LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(FixedAssetsCategory::getDelFlag,CommonConstant.DEL_FLAG_0);
+            List<FixedAssetsCategory> list = categoryMapper.selectList(queryWrapper);
+            FixedAssetsCategory category = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getCategoryCode, fixedAssetsCategory.getCategoryCode()));
+            List<FixedAssetsCategory> allChildren = treeMenuList(list, category, new ArrayList<FixedAssetsCategory>());
+            List<String> allChildrenCode = allChildren.stream().map(FixedAssetsCategory::getCategoryCode).collect(Collectors.toList());
+            fixedAssetsCategory.setTreeCode(allChildrenCode);
+        }
+
         List<FixedAssetsCategoryDTO> list = categoryMapper.pageList(pageList, fixedAssetsCategory);
         for (FixedAssetsCategoryDTO categoryDTO : list) {
             LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
@@ -77,6 +73,13 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
         return categoryTree;
     }
 
+    /**
+     * 递归构建子节点
+     * @param level
+     * @param list
+     * @param parentCategory
+     * @return
+     */
     private FixedAssetsCategoryDTO buildChildTree(Integer level,List<FixedAssetsCategoryDTO> list, FixedAssetsCategoryDTO parentCategory) {
         List<FixedAssetsCategoryDTO> childList = new ArrayList<>();
         for (FixedAssetsCategoryDTO dto : list) {
@@ -90,6 +93,25 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
         }
         parentCategory.setChildren(childList);
         return parentCategory;
+    }
+    /**
+     * 获取某个父节点下面的所有子节点
+     * @param list
+     * @param assetsCategory
+     * @param allChildren
+     * @return
+     */
+    public static List<FixedAssetsCategory> treeMenuList(List<FixedAssetsCategory> list, FixedAssetsCategory assetsCategory,List<FixedAssetsCategory> allChildren) {
+
+        for (FixedAssetsCategory category : list) {
+            //遍历出父id等于参数的id，add进子节点集合
+            if (category.getPid() == assetsCategory.getId()) {
+                //递归遍历下一级
+                treeMenuList(list, category,allChildren);
+                allChildren.add(category);
+            }
+        }
+        return allChildren;
     }
     @Override
     public List<FixedAssetsCategoryDTO> getCategoryList(FixedAssetsCategoryDTO categoryDTO) {

@@ -174,8 +174,12 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id, @RequestParam(name = "code", required = true) String code) {
         List<FixedAssets> list = fixedAssetsService.list(new LambdaQueryWrapper<FixedAssets>().eq(FixedAssets::getCategoryCode, code));
+        List<FixedAssetsCategory> categoryList = fixedAssetsCategoryService.list(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getId, id));
         if (CollUtil.isNotEmpty(list)) {
             return Result.error("分类下有固资不允许删除!");
+        }
+        if(CollUtil.isNotEmpty(categoryList)){
+            return Result.error("该分类下有子节点，请删除后再操作!");
         }
         fixedAssetsCategoryService.removeById(id);
         return Result.OK("删除成功!");
