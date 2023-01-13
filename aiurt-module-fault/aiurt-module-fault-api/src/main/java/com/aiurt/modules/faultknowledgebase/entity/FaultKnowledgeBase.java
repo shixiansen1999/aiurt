@@ -165,6 +165,10 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @TableField(exist = false)
     private Boolean haveButton;
 
+    @ApiModelProperty(value = "判断登录人是否是创建人")
+    @TableField(exist = false)
+    private Boolean isCreateUser;
+
     /**关联故障list*/
     @ApiModelProperty(value = "关联故障list")
     @TableField(exist = false)
