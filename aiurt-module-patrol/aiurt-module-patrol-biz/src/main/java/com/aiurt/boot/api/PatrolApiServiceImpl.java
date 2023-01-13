@@ -122,9 +122,9 @@ public class PatrolApiServiceImpl implements PatrolApi {
                 List<PatrolTaskDevice> collect = taskDeviceList.stream().distinct().collect(Collectors.toList());
                 for (PatrolTaskDevice patrolTaskDevice : collect) {
                     String lineName = iSysBaseAPI.getPosition(patrolTaskDevice.getLineCode());
-                    String positionName = iSysBaseAPI.getPosition(patrolTaskDevice.getPositionCode());
+                    String stationName = iSysBaseAPI.getPosition(patrolTaskDevice.getStationCode());
                     LoginUser userById = iSysBaseAPI.getUserById(patrolTaskDevice.getUserId());
-                    content.append(lineName).append("通信专业车站各系统专用设备").append("-").append(positionName).append(" ").append(" 巡视人:").append(userById.getRealname()).append("。").append('\n');
+                    content.append(lineName).append("通信专业车站各系统专用设备").append("-").append(stationName).append(" ").append(" 巡视人:").append(userById.getRealname()).append("。").append('\n');
                     code.append(patrolTaskDevice.getTaskCode()).append(",");
                 }
             }
