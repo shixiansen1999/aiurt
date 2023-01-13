@@ -294,6 +294,21 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(e.getEquipmentCode());
                 e.setEquipmentLocation(manager.translateStation(stationDTOList));
             }
+            //翻译线路
+            if(StrUtil.isNotBlank(e.getLineCode())){
+                String s = manager.translateLine(e.getLineCode());
+                e.setLineName(s);
+            }
+            //翻译站点
+            if(StrUtil.isNotBlank(e.getStationCode())){
+                String s = manager.translateStation(e.getStationCode());
+                e.setStationName(s);
+            }
+            //翻译位置
+            if(StrUtil.isNotBlank(e.getPositionCode())){
+                String s = manager.translatePosition(e.getPositionCode());
+                e.setPositionName(s);
+            }
             //提交人名称
             if (e.getOverhaulId() != null) {
                 String realName = repairTaskMapper.getRealName(e.getOverhaulId());
