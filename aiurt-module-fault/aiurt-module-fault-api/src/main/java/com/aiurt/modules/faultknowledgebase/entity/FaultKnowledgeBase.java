@@ -161,6 +161,10 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String picture;
 
+    @ApiModelProperty(value = "判断是否有审核按钮")
+    @TableField(exist = false)
+    private Boolean haveButton;
+
     /**关联故障list*/
     @ApiModelProperty(value = "关联故障list")
     @TableField(exist = false)
