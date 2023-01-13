@@ -29,5 +29,5 @@ public interface FixedAssetsCategoryMapper extends BaseMapper<FixedAssetsCategor
      * 资产分类-查询全部的数据
      * @return
      */
-    List<FixedAssetsCategoryDTO> getList();
+    List<FixedAssetsCategoryDTO> getList( @Param("condition") FixedAssetsCategoryDTO condition);
 }

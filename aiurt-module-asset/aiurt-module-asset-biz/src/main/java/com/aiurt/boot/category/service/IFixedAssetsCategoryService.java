@@ -26,7 +26,17 @@ public interface IFixedAssetsCategoryService extends IService<FixedAssetsCategor
 
     /**
      * 资产分类-树形
+     *
      * @return
      */
     List<FixedAssetsCategoryDTO> getCategoryTree();
+
+    /**
+     * 获取分类信息
+     *
+     * @param categoryDTO
+     * @return
+     */
+    List<FixedAssetsCategoryDTO> getCategoryList(FixedAssetsCategoryDTO categoryDTO);
+
 }

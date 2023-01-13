@@ -1,5 +1,7 @@
 package com.aiurt.boot.category.controller;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.asset.entity.FixedAssets;
@@ -16,14 +18,28 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -200,23 +216,65 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
      * 导出excel
      *
      * @param request
-     * @param fixedAssetsCategory
+     * @param categoryDTO
      */
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, FixedAssetsCategory fixedAssetsCategory) {
-        return super.exportXls(request, fixedAssetsCategory, FixedAssetsCategory.class, "fixed_assets_category");
+    public ModelAndView exportXls(HttpServletRequest request, FixedAssetsCategoryDTO categoryDTO) {
+        List<FixedAssetsCategoryDTO> list = fixedAssetsCategoryService.getCategoryList(categoryDTO);
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        mv.addObject(NormalExcelConstants.FILE_NAME, "固定资产分类");
+        mv.addObject(NormalExcelConstants.CLASS, FixedAssetsCategoryDTO.class);
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("固定资产分类", "固定资产分类导出信息", ExcelType.XSSF));
+        mv.addObject(NormalExcelConstants.DATA_LIST, list);
+        return mv;
     }
 
+//    /**
+//     * 通过excel导入数据
+//     *
+//     * @param request
+//     * @param response
+//     * @return
+//     */
+//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response)throws IOException {
+//        return fixedAssetsCategoryService.importExcel(request, response);
+//    }
     /**
-     * 通过excel导入数据
+     * 下载模板
      *
      * @param request
      * @param response
      * @return
      */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, FixedAssetsCategory.class);
+    @RequestMapping(value = "/downloadTemple", method = RequestMethod.GET)
+    public void downloadTemple(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        //获取输入流，原始模板位置
+        Resource resource = new ClassPathResource("/templates/fixedAssetsCategory.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+        //2.获取临时文件
+        File fileTemp = new File("/templates/fixedAssetsCategory.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(16);
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+        String fileName = "固定资产分类导入模板.xlsx";
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename=" + "固定资产分类导入模板.xlsx");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
-
 }

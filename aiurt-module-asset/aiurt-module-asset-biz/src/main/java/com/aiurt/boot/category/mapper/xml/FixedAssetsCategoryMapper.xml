@@ -17,8 +17,17 @@
         order by create_time desc
     </select>
     <select id="getList" resultType="com.aiurt.boot.category.dto.FixedAssetsCategoryDTO">
-        select id, pid, category_name, category_code, remark
+        select id, pid, category_name, category_code, remark,create_time
         from fixed_assets_category
-        where del_flag = 0;
+        where del_flag = 0
+         <if test="condition.categoryCode != null and condition.categoryCode != ''">
+            and category_code  like concat('%' ,#{condition.categoryCode},'%')
+        </if>
+        <if test="condition.categoryName != null and condition.categoryName != ''">
+            and category_name like concat('%' ,#{condition.categoryName},'%')
+        </if>
+         <if test="condition.id != null and condition.id != ''">
+            and id = #{condition.id}
+        </if>
     </select>
 </mapper>

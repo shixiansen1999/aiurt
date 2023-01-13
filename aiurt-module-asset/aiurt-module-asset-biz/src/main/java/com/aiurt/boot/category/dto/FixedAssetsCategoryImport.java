@@ -4,11 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
-
-import java.util.List;
 
 /**
  * @Description: fixed_assets_category
@@ -17,9 +13,8 @@ import java.util.List;
  * @Version: V1.0
  */
 @Data
-@Accessors(chain = true)
-@EqualsAndHashCode(callSuper = false)
-public class FixedAssetsCategoryDTO {
+public class FixedAssetsCategoryImport {
+
     /**主键*/
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
@@ -47,6 +42,9 @@ public class FixedAssetsCategoryDTO {
     @Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")
     private java.lang.String remark;
-    private java.util.Date createTime;
-    private List<FixedAssetsCategoryDTO> children;
+    /**错误原因*/
+    @Excel(name = "错误原因", width = 15)
+    @ApiModelProperty(value = "错误原因")
+    private java.lang.String wrongReason;
+
 }
