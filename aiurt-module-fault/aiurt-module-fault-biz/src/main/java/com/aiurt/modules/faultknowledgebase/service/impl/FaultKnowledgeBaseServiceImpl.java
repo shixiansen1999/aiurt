@@ -130,6 +130,12 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 }else{
                     knowledgeBase.setHaveButton(false);
                 }
+                //当前登录人不是创建人，则为false
+                if(knowledgeBase.getCreateBy().equals(sysUser.getUsername())){
+                    knowledgeBase.setIsCreateUser(true);
+                }else{
+                    knowledgeBase.setIsCreateUser(false);
+                }
             }
         }
 
