@@ -28,6 +28,9 @@ import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
+import com.aiurt.modules.flow.api.FlowBaseApi;
+import com.aiurt.modules.flow.dto.TaskInfoDTO;
+import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -87,6 +90,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     @Autowired
     private FaultMapper faultMapper;
+
+    @Autowired
+    private FlowBaseApi flowBaseApi;
     @Override
     public IPage<FaultKnowledgeBase> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -113,6 +119,20 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         }
 
         List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll2(page, faultKnowledgeBase,ids,sysUser.getUsername());
+        //解决不是审核人去除审核按钮
+        if(CollUtil.isNotEmpty(faultKnowledgeBases)){
+            for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
+                TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfo(knowledgeBase.getProcessInstanceId(), knowledgeBase.getTaskId());
+                List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
+                //operationList为空，没有审核按钮
+                if(CollUtil.isNotEmpty(operationList)){
+                    knowledgeBase.setHaveButton(true);
+                }else{
+                    knowledgeBase.setHaveButton(false);
+                }
+            }
+        }
+
         GlobalThreadLocal.setDataFilter(b);
         faultKnowledgeBases.forEach(f->{
             String faultCodes = f.getFaultCodes();
