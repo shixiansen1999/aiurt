@@ -2320,4 +2320,13 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return loginUsers;
     }
+
+    @Override
+    public JSONObject getCsStationByCode(String stationCode) {
+        CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode,stationCode));
+        if (Objects.isNull(csStation)) {
+            return null;
+        }
+        return JSONObject.parseObject(JSON.toJSONString(csStation));
+    }
 }

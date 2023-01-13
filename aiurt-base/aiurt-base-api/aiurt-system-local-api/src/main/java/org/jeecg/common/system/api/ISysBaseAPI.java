@@ -7,7 +7,6 @@ import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.position.entity.CsStation;
-import com.aiurt.modules.position.entity.CsStationPosition;
 import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.vo.*;
@@ -852,5 +851,11 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getUserNameByDeptAuthCodeAndRoleCode(List<String> orgCodes, List<String> roleCodes);
+    /**
+     * 根据站点id获取站点信息
+     * @param stationCode
+     * @return
+     */
+    JSONObject getCsStationByCode(String stationCode);
 }
 
