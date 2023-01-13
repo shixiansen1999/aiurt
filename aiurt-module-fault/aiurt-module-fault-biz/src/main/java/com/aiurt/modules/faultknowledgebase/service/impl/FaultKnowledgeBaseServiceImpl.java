@@ -101,14 +101,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         List<FaultKnowledgeBase> bases = faultKnowledgeBaseMapper.selectList(queryWrapper.eq(FaultKnowledgeBase::getDelFlag, "0"));
         List<String> ids = bases.stream().map(FaultKnowledgeBase::getId).distinct().collect(Collectors.toList());
         List<String> rolesByUsername = sysBaseApi.getRolesByUsername(sysUser.getUsername());
-//        //根据用户角色是否显示未通过的知识库
-//        if (!rolesByUsername.contains(RoleConstant.ADMIN)&&!rolesByUsername.contains(RoleConstant.FOREMAN)&&!rolesByUsername.contains(RoleConstant.MAJOR_PEOPLE)) {
-//            faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
-//        }
-//        //工班长只能看到审核通过的和自己创建的未审核通过的
-//        if (rolesByUsername.size()==1 && rolesByUsername.contains(RoleConstant.FOREMAN)) {
-//            faultKnowledgeBase.setCreateBy(sysUser.getUsername());
-//        }
+
         //下面禁用数据过滤
         boolean b = GlobalThreadLocal.setDataFilter(false);
         String id = faultKnowledgeBase.getId();
@@ -118,7 +111,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             faultKnowledgeBase.setId(substring);
         }
 
-        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll2(page, faultKnowledgeBase,ids,sysUser.getUsername());
+        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,ids,sysUser.getUsername());
         //解决不是审核人去除审核按钮
         if(CollUtil.isNotEmpty(faultKnowledgeBases)){
             for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {

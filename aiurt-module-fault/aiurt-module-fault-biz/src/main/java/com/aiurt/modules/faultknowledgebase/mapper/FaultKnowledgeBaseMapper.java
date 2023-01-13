@@ -24,11 +24,10 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
      * @param page
      * @param condition
      * @param ids
+     * @param userName
      * @return
      */
-    List<FaultKnowledgeBase> readAll(@Param("page")Page<FaultKnowledgeBase> page, @Param("condition")FaultKnowledgeBase condition,@Param("ids") List<String> ids);
-
-    List<FaultKnowledgeBase> readAll2(@Param("page")Page<FaultKnowledgeBase> page, @Param("condition")FaultKnowledgeBase condition,@Param("ids") List<String> ids,@Param("userName")String userName);
+    List<FaultKnowledgeBase> readAll(@Param("page")Page<FaultKnowledgeBase> page, @Param("condition")FaultKnowledgeBase condition,@Param("ids") List<String> ids,@Param("userName")String userName);
 
     /**
      * 分页查询故障知识库
