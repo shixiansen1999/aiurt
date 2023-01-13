@@ -102,6 +102,15 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
     @ApiOperation(value = "资产分类-添加", notes = "资产分类-添加")
     @PostMapping(value = "/add")
     public Result<String> add(@RequestBody FixedAssetsCategory fixedAssetsCategory) {
+        LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(FixedAssetsCategory::getCategoryCode,fixedAssetsCategory.getParentCode());
+        if("0".equals(fixedAssetsCategory.getParentCode())){
+            fixedAssetsCategory.setPid("0");
+        }
+        else {
+            FixedAssetsCategory assetsCategory = fixedAssetsCategoryService.getOne(queryWrapper);
+            fixedAssetsCategory.setPid(assetsCategory.getId());
+        }
         fixedAssetsCategoryService.save(fixedAssetsCategory);
         return Result.OK("添加成功！");
     }

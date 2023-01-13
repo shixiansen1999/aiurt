@@ -1,6 +1,7 @@
 package com.aiurt.boot.category.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -36,6 +37,11 @@ public class FixedAssetsCategory implements Serializable {
 	@Excel(name = "父级ID，第一级默认0", width = 15)
     @ApiModelProperty(value = "父级ID，第一级默认0")
     private java.lang.String pid;
+    /**父级ID，第一级默认0*/
+    @Excel(name = "父级Code", width = 15)
+    @ApiModelProperty(value = "父级code")
+    @TableField(exist = false)
+    private java.lang.String parentCode;
 	/**分类名称*/
 	@Excel(name = "分类名称", width = 15)
     @ApiModelProperty(value = "分类名称")
