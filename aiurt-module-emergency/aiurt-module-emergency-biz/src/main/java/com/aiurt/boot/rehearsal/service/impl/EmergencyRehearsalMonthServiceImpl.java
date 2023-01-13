@@ -1,9 +1,11 @@
 package com.aiurt.boot.rehearsal.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
+import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalMonthDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
 import com.aiurt.boot.rehearsal.mapper.EmergencyImplementationRecordMapper;
@@ -16,7 +18,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +33,7 @@ import org.springframework.util.Assert;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @Description: emergency_rehearsal_month
@@ -40,6 +47,8 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
     private EmergencyRehearsalMonthMapper emergencyRehearsalMonthMapper;
     @Autowired
     private EmergencyImplementationRecordMapper emergencyImplementationRecordMapper;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
 
     @Override
     public String addMonthPlan(EmergencyRehearsalMonth emergencyRehearsalMonth) {
@@ -81,11 +90,22 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
     }
 
     @Override
-    public IPage<EmergencyRehearsalMonthVO> queryPageList(Page<EmergencyRehearsalMonthVO> page, EmergencyRehearsalMonth emergencyRehearsalMonth) {
-        if (ObjectUtil.isEmpty(emergencyRehearsalMonth) || StrUtil.isEmpty(emergencyRehearsalMonth.getPlanId())) {
+    public IPage<EmergencyRehearsalMonthVO> queryPageList(Page<EmergencyRehearsalMonthVO> page, EmergencyRehearsalMonthDTO emergencyRehearsalMonthDTO) {
+        if (ObjectUtil.isEmpty(emergencyRehearsalMonthDTO) || StrUtil.isEmpty(emergencyRehearsalMonthDTO.getPlanId())) {
             throw new AiurtBootException("年演练计划ID不能为空！");
         }
-        IPage<EmergencyRehearsalMonthVO> pageList = emergencyRehearsalMonthMapper.queryPageList(page, emergencyRehearsalMonth);
+        // 允许挑选用户组织机构权限下的月计划
+        if (ObjectUtil.isNotEmpty(emergencyRehearsalMonthDTO.getRecordInterface()) && emergencyRehearsalMonthDTO.getRecordInterface()) {
+            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
+            List<CsUserDepartModel> depts = sysBaseApi.getDepartByUserId(loginUser.getId());
+            List<String> orgCodes = depts.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+            if (CollectionUtil.isEmpty(orgCodes)) {
+                return page;
+            }
+            emergencyRehearsalMonthDTO.setOrgCodes(orgCodes);
+        }
+        IPage<EmergencyRehearsalMonthVO> pageList = emergencyRehearsalMonthMapper.queryPageList(page, emergencyRehearsalMonthDTO);
         pageList.getRecords().forEach(monthPlan -> {
             boolean exists = emergencyImplementationRecordMapper.exists(new LambdaQueryWrapper<EmergencyImplementationRecord>()
                     .eq(EmergencyImplementationRecord::getPlanId, monthPlan.getId())

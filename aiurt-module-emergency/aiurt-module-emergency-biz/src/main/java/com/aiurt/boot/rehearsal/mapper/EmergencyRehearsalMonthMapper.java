@@ -1,5 +1,6 @@
 package com.aiurt.boot.rehearsal.mapper;
 
+import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalMonthDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
 import com.aiurt.boot.rehearsal.vo.EmergencyRehearsalMonthVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -18,8 +19,8 @@ public interface EmergencyRehearsalMonthMapper extends BaseMapper<EmergencyRehea
      * 应急月演练计划-分页列表查询
      *
      * @param page
-     * @param emergencyRehearsalMonth
+     * @param emergencyRehearsalMonthDTO
      * @return
      */
-    IPage<EmergencyRehearsalMonthVO> queryPageList(@Param("page") Page<EmergencyRehearsalMonthVO> page, @Param("condition") EmergencyRehearsalMonth emergencyRehearsalMonth);
+    IPage<EmergencyRehearsalMonthVO> queryPageList(@Param("page") Page<EmergencyRehearsalMonthVO> page, @Param("condition") EmergencyRehearsalMonthDTO emergencyRehearsalMonthDTO);
 }
