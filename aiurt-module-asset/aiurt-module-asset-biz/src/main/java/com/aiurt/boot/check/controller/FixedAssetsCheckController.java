@@ -1,17 +1,19 @@
 package com.aiurt.boot.check.controller;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.asset.entity.FixedAssets;
+import com.aiurt.boot.category.entity.FixedAssetsCategory;
 import com.aiurt.boot.check.entity.FixedAssetsCheck;
 import com.aiurt.boot.check.service.IFixedAssetsCheckService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -19,8 +21,10 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
 
- /**
+/**
  * @Description: fixed_assets_check
  * @Author: aiurt
  * @Date:   2023-01-11
@@ -50,9 +54,8 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		QueryWrapper<FixedAssetsCheck> queryWrapper = QueryGenerator.initQueryWrapper(fixedAssetsCheck, req.getParameterMap());
 		Page<FixedAssetsCheck> page = new Page<FixedAssetsCheck>(pageNo, pageSize);
-		IPage<FixedAssetsCheck> pageList = fixedAssetsCheckService.page(page, queryWrapper);
+		IPage<FixedAssetsCheck> pageList = fixedAssetsCheckService.queryPageList(page,fixedAssetsCheck);
 		return Result.OK(pageList);
 	}
 
@@ -66,10 +69,37 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 	@ApiOperation(value="固定资产盘点任务信息表-添加", notes="固定资产盘点任务信息表-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FixedAssetsCheck fixedAssetsCheck) {
+		fixedAssetsCheck.setInventoryList(this.generateCode());
 		fixedAssetsCheckService.save(fixedAssetsCheck);
 		return Result.OK("添加成功！");
 	}
 
+	/**
+	 *  填写盘点记录保存接口
+	 *
+	 * @param fixedAssetsCheck
+	 * @return
+	 */
+	@AutoLog(value = "固定资产盘点任务信息表-填写盘点记录保存接口")
+	@ApiOperation(value="固定资产盘点任务信息表-填写盘点记录保存接口", notes="固定资产盘点任务信息表-填写盘点记录保存接口")
+	@RequestMapping(value = "/addInventoryResults", method = {RequestMethod.PUT,RequestMethod.POST})
+	public Result<String> addInventoryResults(@RequestBody FixedAssetsCheck fixedAssetsCheck) {
+		fixedAssetsCheckService.addInventoryResults(fixedAssetsCheck);
+		return Result.OK("编辑成功!");
+	}
+	/**
+	 *  填写盘点记录提交接口
+	 *
+	 * @param fixedAssetsCheck
+	 * @return
+	 */
+	@AutoLog(value = "固定资产盘点任务信息表-填写盘点记录提交接口")
+	@ApiOperation(value="固定资产盘点任务信息表-填写盘点记录提交接口", notes="固定资产盘点任务信息表-填写盘点记录提交接口")
+	@RequestMapping(value = "/addInventoryResultsBySubmit", method = {RequestMethod.PUT,RequestMethod.POST})
+	public Result<String> addInventoryResultsBySubmit(@RequestBody FixedAssetsCheck fixedAssetsCheck) {
+		fixedAssetsCheckService.addInventoryResultsBySubmit(fixedAssetsCheck);
+		return Result.OK("编辑成功!");
+	}
 	/**
 	 *  编辑
 	 *
@@ -83,7 +113,6 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 		fixedAssetsCheckService.updateById(fixedAssetsCheck);
 		return Result.OK("编辑成功!");
 	}
-
 	/**
 	 *   通过id删除
 	 *
@@ -94,7 +123,10 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 	@ApiOperation(value="固定资产盘点任务信息表-通过id删除", notes="固定资产盘点任务信息表-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		fixedAssetsCheckService.removeById(id);
+		FixedAssetsCheck fixedAssetsCheck =new FixedAssetsCheck();
+		fixedAssetsCheck.setId(id);
+		fixedAssetsCheck.setDelFlag(1);
+		fixedAssetsCheckService.updateById(fixedAssetsCheck);
 		return Result.OK("删除成功!");
 	}
 
@@ -108,27 +140,81 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 	@ApiOperation(value="固定资产盘点任务信息表-批量删除", notes="固定资产盘点任务信息表-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.fixedAssetsCheckService.removeByIds(Arrays.asList(ids.split(",")));
+		Arrays.asList(ids.split(",")).forEach(id->{
+			this.delete(id);
+		});
 		return Result.OK("批量删除成功!");
 	}
-
+	/**
+	 * 点击修状态接口
+	 *
+	 * @param id
+	 * @return
+	 */
+	//@AutoLog(value = "fixed_assets_check-详情")
+	@ApiOperation(value="固定资产盘点任务信息表-点击修状态接口", notes="固定资产盘点任务信息表-点击修状态接口")
+	@GetMapping(value = "/updateStatus")
+	public Result<String> updateStatus(@RequestParam(name="id",required=true) String id,
+									   @RequestParam(name = "status")Integer status,
+									   @RequestParam(name = "num",required = false) Integer num) {
+		 fixedAssetsCheckService.updateStatus(id,status,num);
+		return Result.OK("成功");
+	}
 	/**
 	 * 通过id查询
 	 *
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "fixed_assets_check-通过id查询")
-	@ApiOperation(value="固定资产盘点任务信息表-通过id查询", notes="固定资产盘点任务信息表-通过id查询")
+	//@AutoLog(value = "fixed_assets_check-详情")
+	@ApiOperation(value="固定资产盘点任务信息表-详情", notes="固定资产盘点任务信息表-通过id查询-详情")
 	@GetMapping(value = "/queryById")
 	public Result<FixedAssetsCheck> queryById(@RequestParam(name="id",required=true) String id) {
 		FixedAssetsCheck fixedAssetsCheck = fixedAssetsCheckService.getById(id);
-		if(fixedAssetsCheck==null) {
-			return Result.error("未找到对应数据");
-		}
 		return Result.OK(fixedAssetsCheck);
 	}
-
+	/**
+	 * 查询资产分类下拉框
+	 *
+	 * @param orgCodes
+	 * @return
+	 */
+	//@AutoLog(value = "查询资产分类下拉框")
+	@ApiOperation(value="查询资产分类下拉框", notes="查询资产分类下拉框")
+	@GetMapping(value = "/queryBySpinner")
+	public Result<List<FixedAssetsCategory>> queryBySpinner(@RequestParam(name="orgCodes",required=true) String orgCodes) {
+		List<FixedAssetsCategory> fixedAssetsCategories = fixedAssetsCheckService.queryBySpinner(orgCodes);
+		return Result.OK(fixedAssetsCategories);
+	}
+	 //@AutoLog(value = "fixed_assets_check-详情")
+	 @ApiOperation(value="固定资产盘点任务信息表-填写盘点结果查询", notes="固定资产盘点任务信息表-通过id查询-填写盘点结果查询")
+	 @GetMapping(value = "/queryInventoryResults")
+	 public Result<List<FixedAssets>> queryInventoryResults(@RequestParam(name="orgCodes",required=true) String orgCodes,
+														   @RequestParam(name="categoryCodes",required=true) String categoryCodes,
+															@RequestParam(name = "id")String id) {
+		 List<FixedAssets> fixedAssets = fixedAssetsCheckService.queryInventoryResults(orgCodes,categoryCodes,id);
+		 return Result.OK(fixedAssets);
+	 }
+	 /**
+	  * 生成盘点任务编号
+	  * @return
+	  */
+	 public String generateCode() {
+		 Calendar calendar = Calendar.getInstance();
+	 	 String time = Integer.toString(calendar.get(Calendar.YEAR)) + Integer.toString((calendar.get(Calendar.MONTH) + 1))  + Integer.toString(calendar.get(Calendar.DATE));
+	 	 FixedAssetsCheck fixedAssetsCheck = fixedAssetsCheckService.lambdaQuery()
+				 .like(FixedAssetsCheck::getInventoryList,time)
+				 .orderByDesc(FixedAssetsCheck::getInventoryList)
+				 .last("limit 1").one();
+		 String fixedAssetsCheckCode = "";
+		 if (ObjectUtil.isNotEmpty(fixedAssetsCheck)){
+		 	String newStr= StrUtil.sub(fixedAssetsCheck.getInventoryList(),fixedAssetsCheck.getInventoryList().length() -3,fixedAssetsCheck.getInventoryList().length());
+		 	fixedAssetsCheckCode = "ZP"+time+ String.valueOf(Integer.valueOf(newStr)+1);
+		 }else {
+			 fixedAssetsCheckCode = "ZP"+time+"001";
+		 }
+		 return fixedAssetsCheckCode;
+	 }
     /**
     * 导出excel
     *

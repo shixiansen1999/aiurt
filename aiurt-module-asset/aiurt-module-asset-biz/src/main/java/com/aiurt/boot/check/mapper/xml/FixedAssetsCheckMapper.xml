@@ -2,4 +2,52 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.check.mapper.FixedAssetsCheckMapper">
 
+    <select id="selectPageList" resultType="com.aiurt.boot.check.entity.FixedAssetsCheck">
+        select a.* from fixed_assets_check a
+        left join sys_user s on a.check_id = s.id
+        where a.del_flag = 0
+        <if test="fixedAssetsCheck.inventoryList!=null">
+            and a.inventory_list = #{fixedAssetsCheck.inventoryList}
+        </if>
+        <if test="fixedAssetsCheck.checkId!=null">
+            and s.realname LIKE CONCAT ('%', #{fixedAssetsCheck.checkId}, '%')
+        </if>
+        <if test="fixedAssetsCheck.status!=null">
+            and a.status = #{fixedAssetsCheck.status}
+        </if>
+        <if test="fixedAssetsCheck.planStartDate!=null">
+            and DATE_FORMAT(a.plan_start_date,'%Y-%m-%d') => DATE_FORMAT( #{fixedAssetsCheck.planStartDate},'%Y-%m-%d')
+        </if>
+        <if test="fixedAssetsCheck.planEndDate!=null">
+            and DATE_FORMAT(a.plan_end_date,'%Y-%m-%d') &lt;= DATE_FORMAT( #{fixedAssetsCheck.planEndDate},'%Y-%m-%d')
+        </if>
+        <if test="fixedAssetsCheck.orgCode!=null">
+            and a.org_code =  #{fixedAssetsCheck.orgCode}
+        </if>
+        <if test="fixedAssetsCheck.categoryCode!=null">
+            and a.category_code =  #{fixedAssetsCheck.categoryCode}
+        </if>
+    </select>
+    <select id="selectOrgName" resultType="java.lang.String">
+        select depart_name
+        from sys_depart
+        where del_flag= 0
+        <if test="orgCode.size()>0">
+            AND org_code in
+            <foreach item="orgCode" collection="orgCode" separator="," open="(" close=")" index="">
+                #{orgCode}
+            </foreach>
+        </if>
+    </select>
+    <select id="selectCategoryName" resultType="java.lang.String">
+        select  category_name from fixed_assets_category
+        <where>
+            <if test="categoryCode.size()>0">
+                category_code in
+                <foreach item="categoryCode" collection="categoryCode" separator="," open="(" close=")" index="">
+                    #{categoryCode}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

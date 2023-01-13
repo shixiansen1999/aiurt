@@ -1,6 +1,7 @@
 package com.aiurt.boot.asset.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -36,6 +37,10 @@ public class FixedAssets implements Serializable {
 	@Excel(name = "资产名称", width = 15)
     @ApiModelProperty(value = "资产名称")
     private java.lang.String assetName;
+    /**资产名称*/
+    @Excel(name = "资产编号", width = 15)
+    @ApiModelProperty(value = "资产编号")
+    private java.lang.String assetCode;
 	/**资产分类编码*/
 	@Excel(name = "资产分类编码", width = 15)
     @ApiModelProperty(value = "资产分类编码")
@@ -48,6 +53,16 @@ public class FixedAssets implements Serializable {
 	@Excel(name = "账面数量", width = 15)
     @ApiModelProperty(value = "账面数量")
     private java.lang.Integer number;
+    /**实盘数量*/
+    @Excel(name = "实盘数量", width = 15)
+    @ApiModelProperty(value = "实盘数量")
+    @TableField(exist = false)
+    private java.lang.Integer actualNumber;
+    /**实盘数量*/
+    @Excel(name = "盘盈盘亏", width = 15)
+    @ApiModelProperty(value = "盘盈盘亏")
+    @TableField(exist = false)
+    private java.lang.Integer num;
 	/**存放地点编码*/
 	@Excel(name = "存放地点编码", width = 15)
     @ApiModelProperty(value = "存放地点编码")
