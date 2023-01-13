@@ -90,19 +90,19 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     @Override
     public IPage<FaultKnowledgeBase> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //当前用户拥有的子系统
+
         LambdaQueryWrapper<FaultKnowledgeBase> queryWrapper = new LambdaQueryWrapper<>();
         List<FaultKnowledgeBase> bases = faultKnowledgeBaseMapper.selectList(queryWrapper.eq(FaultKnowledgeBase::getDelFlag, "0"));
         List<String> ids = bases.stream().map(FaultKnowledgeBase::getId).distinct().collect(Collectors.toList());
         List<String> rolesByUsername = sysBaseApi.getRolesByUsername(sysUser.getUsername());
-        //根据用户角色是否显示未通过的知识库
-        if (!rolesByUsername.contains(RoleConstant.ADMIN)&&!rolesByUsername.contains(RoleConstant.FOREMAN)&&!rolesByUsername.contains(RoleConstant.MAJOR_PEOPLE)) {
-            faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
-        }
-        //工班长只能看到审核通过的和自己创建的未审核通过的
-        if (rolesByUsername.size()==1 && rolesByUsername.contains(RoleConstant.FOREMAN)) {
-            faultKnowledgeBase.setCreateBy(sysUser.getUsername());
-        }
+//        //根据用户角色是否显示未通过的知识库
+//        if (!rolesByUsername.contains(RoleConstant.ADMIN)&&!rolesByUsername.contains(RoleConstant.FOREMAN)&&!rolesByUsername.contains(RoleConstant.MAJOR_PEOPLE)) {
+//            faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
+//        }
+//        //工班长只能看到审核通过的和自己创建的未审核通过的
+//        if (rolesByUsername.size()==1 && rolesByUsername.contains(RoleConstant.FOREMAN)) {
+//            faultKnowledgeBase.setCreateBy(sysUser.getUsername());
+//        }
         //下面禁用数据过滤
         boolean b = GlobalThreadLocal.setDataFilter(false);
         String id = faultKnowledgeBase.getId();
@@ -112,7 +112,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             faultKnowledgeBase.setId(substring);
         }
 
-        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,ids);
+        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll2(page, faultKnowledgeBase,ids,sysUser.getUsername());
         GlobalThreadLocal.setDataFilter(b);
         faultKnowledgeBases.forEach(f->{
             String faultCodes = f.getFaultCodes();
@@ -613,25 +613,24 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         }
         int states = updateStateEntity.getStates();
         switch (states) {
-            case 1:
-                // 技术员审核
-                faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
-                faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
+            case 0:
+                // 技术员或者专业技术负责人审核
+                faultKnowledgeBase.setStatus(FaultConstant.PENDING);
                 break;
             case 2:
-                // 技术员驳回，更新状态为待审核状态
+                // 技术员驳回，更新状态为已驳回状态
                 faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
                 faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
-                break;
-            case 3:
-                //专业技术负责人审核
-                faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
-                faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
                 break;
             case 4:
                 //专业技术负责人驳回
                 faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
                 faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+                break;
+            case 5:
+                //已审批
+                faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
+                faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
                 break;
             default:
                 break;
