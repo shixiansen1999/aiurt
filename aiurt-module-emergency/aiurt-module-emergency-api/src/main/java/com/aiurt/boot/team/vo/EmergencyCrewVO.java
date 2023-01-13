@@ -50,9 +50,6 @@ public class EmergencyCrewVO {
     @Excel(name = "电话", width = 15)
     private String phone;
 
-    @ApiModelProperty(value = "角色名")
-    private String roleNames;
-
     /**
      * 部门name(当前选择登录部门)
      */
@@ -64,4 +61,8 @@ public class EmergencyCrewVO {
     @ApiModelProperty(value = "备注")
     private String remark;
 
+    /**岗位*/
+    @ApiModelProperty(value = "岗位")
+    @Dict(dicCode = "sys_post")
+    private String jobName;
 }

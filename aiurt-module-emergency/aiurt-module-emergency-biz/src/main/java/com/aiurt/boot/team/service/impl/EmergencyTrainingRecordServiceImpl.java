@@ -116,11 +116,10 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
         List<EmergencyCrewVO> trainingCrews = emergencyTrainingRecordMapper.getTrainingCrews(id);
         if (CollUtil.isNotEmpty(trainingCrews)) {
             for (EmergencyCrewVO trainingCrew : trainingCrews) {
-                List<String> roleNamesById = iSysBaseAPI.getRoleNamesById(trainingCrew.getUserId());
-                if (CollUtil.isNotEmpty(roleNamesById)) {
-                    String join = StrUtil.join(",", roleNamesById);
-                    trainingCrew.setRoleNames(join);
-                }
+                LoginUser userById = iSysBaseAPI.getUserById(trainingCrew.getUserId());
+                trainingCrew.setRealname(userById.getRealname());
+                String jobName = iSysBaseAPI.translateDict(TeamConstant.SYS_POST, Convert.toStr(userById.getJobName()));
+                trainingCrew.setJobName(jobName!=null?jobName:"");
             }
         }
         emergencyTrainingRecordVO.setTrainingCrews(trainingCrews);
