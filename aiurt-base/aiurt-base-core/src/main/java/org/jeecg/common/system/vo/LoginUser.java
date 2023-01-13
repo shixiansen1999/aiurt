@@ -145,4 +145,7 @@ public class LoginUser {
 	 * 工号，唯一键
 	 */
 	private String workNo;
+
+	/**岗位*/
+	private String jobName;
 }

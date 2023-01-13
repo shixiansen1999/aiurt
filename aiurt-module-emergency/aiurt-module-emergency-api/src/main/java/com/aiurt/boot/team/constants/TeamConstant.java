@@ -50,4 +50,9 @@ public class TeamConstant {
      *职务字典值编码
      */
     public static final String EMERGENCY_POST = "emergency_post";
+    /**
+     *岗位字典值编码
+     */
+    public static final String SYS_POST = "sys_post";
+
 }

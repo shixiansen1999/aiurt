@@ -2,7 +2,7 @@ package com.aiurt.boot.team.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.convert.Convert;
 import com.aiurt.boot.team.constants.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTeamDTO;
 import com.aiurt.boot.team.entity.EmergencyCrew;
@@ -273,11 +273,8 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 			for (EmergencyCrew record : records) {
 				LoginUser userById = iSysBaseAPI.getUserById(record.getUserId());
 				record.setRealname(userById.getRealname());
-				List<String> roleNamesById = iSysBaseAPI.getRoleNamesById(record.getUserId());
-				if (CollUtil.isNotEmpty(roleNamesById)) {
-					String join = StrUtil.join(",", roleNamesById);
-					record.setRoleNames(join);
-				}
+				String jobName = iSysBaseAPI.translateDict(TeamConstant.SYS_POST, Convert.toStr(userById.getJobName()));
+				record.setJobName(jobName!=null?jobName:"");
 			}
 		}
 		return Result.OK(pageList);

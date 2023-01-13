@@ -147,12 +147,9 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             List<EmergencyCrewVO> list = new ArrayList<>();
             for (EmergencyCrew emergencyCrew : emergencyCrews) {
                 EmergencyCrewVO emergencyCrewVO = new EmergencyCrewVO();
-                List<String> roleNamesById = iSysBaseAPI.getRoleNamesById(emergencyCrew.getUserId());
-                if (CollUtil.isNotEmpty(roleNamesById)) {
-                    String join = StrUtil.join(",", roleNamesById);
-                    emergencyCrewVO.setRoleNames(join);
-                }
                 LoginUser userById = iSysBaseAPI.getUserById(emergencyCrew.getUserId());
+                String jobName = iSysBaseAPI.translateDict(TeamConstant.SYS_POST, Convert.toStr(userById.getJobName()));
+                emergencyCrewVO.setJobName(jobName!=null?jobName:"");
                 emergencyCrewVO.setScheduleItem(emergencyCrew.getScheduleItem());
                 emergencyCrewVO.setUserId(emergencyCrew.getUserId());
                 emergencyCrewVO.setRealname(userById.getRealname());
@@ -695,7 +692,8 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 crewModel.setScheduleItem(record.getScheduleItem());
                 crewModel.setRealName(record.getRealname());
                 crewModel.setUserPhone(record.getPhone());
-                crewModel.setRoleNames(record.getRoleNames());
+                String jobName = iSysBaseAPI.translateDict(TeamConstant.SYS_POST, Convert.toStr(record.getJobName()));
+                crewModel.setJobName(jobName!=null?jobName:"");
                 Integer post = record.getPost();
                 String s = iSysBaseAPI.translateDict(TeamConstant.EMERGENCY_POST, Convert.toStr(post));
                 crewModel.setPostName(s);

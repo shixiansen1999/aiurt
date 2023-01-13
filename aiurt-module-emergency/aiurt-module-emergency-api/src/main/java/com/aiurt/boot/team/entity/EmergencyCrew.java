@@ -97,7 +97,9 @@ public class EmergencyCrew implements Serializable {
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
 
-    @ApiModelProperty(value = "岗位名称")
+    /**岗位*/
+    @ApiModelProperty(value = "岗位")
+    @Dict(dicCode = "sys_post")
     @TableField(exist = false)
-    private String roleNames;
+    private String jobName;
 }
