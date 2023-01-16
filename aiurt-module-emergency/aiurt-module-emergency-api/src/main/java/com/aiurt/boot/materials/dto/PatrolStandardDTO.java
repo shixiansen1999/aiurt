@@ -10,6 +10,11 @@ import lombok.Data;
 @Data
 public class PatrolStandardDTO {
 
+    /**巡检单id*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡检单id")
+    private java.lang.String id;
+
     /**巡视标准Id*/
     @TableField(exist = false)
     @ApiModelProperty(value = "巡视标准Id")

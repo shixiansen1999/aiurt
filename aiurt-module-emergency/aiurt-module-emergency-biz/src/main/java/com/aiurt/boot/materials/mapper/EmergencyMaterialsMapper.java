@@ -27,6 +27,14 @@ public interface EmergencyMaterialsMapper extends BaseMapper<EmergencyMaterials>
 
    List<PatrolStandardDTO> getPatrolStandardList(@Param("majorCode")List<String> majorCode);
 
+   List<PatrolStandardDTO> getPatrolStandardNameList(@Param("code")List<String> code);
+
+    List<PatrolStandardDTO> getStandingBook(@Param("materialsCode") String materialsCode,
+                                            @Param("categoryCode") String categoryCode,
+                                            @Param("lineCode") String lineCode,
+                                            @Param("stationCode") String stationCode,
+                                            @Param("positionCode") String positionCode);
+
    List<EmergencyMaterialsInvoicesItem> getMaterialInspection(@Param("pageList") Page<EmergencyMaterialsInvoicesItem> pageList,@Param("id") String id,@Param("pid") String pid);
 
     /**

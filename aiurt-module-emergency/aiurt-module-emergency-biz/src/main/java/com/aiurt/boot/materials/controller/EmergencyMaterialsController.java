@@ -113,13 +113,26 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	 }
 
 
-	 @AutoLog(value = "物资信息-应急物资台账检查-巡检标准下拉列表")
-	 @ApiOperation(value="物资信息-应急物资台账检查-巡检标准下拉列表", notes="物资信息-应急物资台账检查-巡检标准下拉列表")
+	 @AutoLog(value = "物资信息-应急物资巡检-巡检标准下拉列表")
+	 @ApiOperation(value="物资信息-应急物资巡检-巡检标准下拉列表", notes="物资信息-应急物资巡检-巡检标准下拉列表")
 	 @GetMapping(value = "/getMaterialPatrol")
 	 public Result<?> getMaterialPatrol(){
 		 MaterialPatrolDTO materialPatrol = emergencyMaterialsService.getMaterialPatrol();
 		 return Result.OK(materialPatrol);
 	 }
+
+
+	@AutoLog(value = "物资信息-应急物资台账-巡检标准下拉列表")
+	@ApiOperation(value="物资信息-应急物资台账-巡检标准下拉列表", notes="物资信息-应急物资台账-巡检标准下拉列表")
+	@GetMapping(value = "/getStandingBook")
+	public Result<?> getStandingBook(@RequestParam(name = "materialsCode",required=true) String materialsCode,
+									 @RequestParam(name = "categoryCode",required=true) String categoryCode,
+			                         @RequestParam(name = "lineCode",required=false) String  lineCode,
+									 @RequestParam(name = "stationCode",required=false) String  stationCode,
+									 @RequestParam(name = "positionCode",required=false) String  positionCode){
+		MaterialPatrolDTO materialPatrol = emergencyMaterialsService.getStandingBook(materialsCode,categoryCode,lineCode,stationCode,positionCode);
+		return Result.OK(materialPatrol);
+	}
 
 	 @AutoLog(value = "物资信息-应急物资台账检查-巡检人下拉列表")
 	 @ApiOperation(value="物资信息-应急物资台账检查-巡检人下拉列表", notes="物资信息-应急物资台账检查-巡检人下拉列表")
