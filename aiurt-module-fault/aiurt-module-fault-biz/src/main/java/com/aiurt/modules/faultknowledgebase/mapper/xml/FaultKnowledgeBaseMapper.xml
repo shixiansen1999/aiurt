@@ -27,6 +27,7 @@
         fkb.file_path,
         fkb.approved_remark,
         fkb.status,
+        fkb.del_flag,
         fkb.tools
         FROM fault_knowledge_base fkb
         left join sys_user su on su.username = fkb.create_by
@@ -61,6 +62,7 @@
         fkb.file_path,
         fkb.approved_remark,
         fkb.status,
+        fkb.del_flag,
         fkb.tools
         FROM fault_knowledge_base fkb
         left join sys_user su on su.username = fkb.create_by
@@ -100,6 +102,7 @@
         fkb.file_path,
         fkb.approved_remark,
         fkb.status,
+        fkb.del_flag,
         fkb.tools
         FROM fault_knowledge_base fkb
         left join sys_user su on su.username = fkb.create_by
@@ -122,9 +125,10 @@
         ))
         )
         ) a
-        where 1=1
+        where
+            a.del_flag = 0
         <if test="condition.id!=null and condition.id!=''">
-            and a.id =#{condition.id}
+              and a.id =#{condition.id}
         </if>
         <if test="condition.deviceTypeCode != null and condition.deviceTypeCode !='' ">
             and a.device_type_code =#{condition.deviceTypeCode}
