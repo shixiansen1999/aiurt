@@ -4,6 +4,7 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -29,6 +30,7 @@ import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.flow.api.FlowBaseApi;
+import com.aiurt.modules.flow.dto.StartBpmnImportDTO;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.alibaba.fastjson.JSONObject;
@@ -338,11 +340,26 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     return getErrorExcel(errorLines, list, errorMessage, successLines, type, url);
                 } else {
                     successLines = list.size();
-                    for (FaultKnowledgeBase material : faultKnowledgeBaseList) {
-                        material.setDelFlag(0);
-                        material.setApprovedResult(0);
-                        material.setStatus(0);
-                        faultKnowledgeBaseMapper.insert(material);
+                    for (FaultKnowledgeBase faultKnowledgeBase : faultKnowledgeBaseList) {
+                        faultKnowledgeBase.setDelFlag(0);
+                        faultKnowledgeBase.setApprovedResult(0);
+                        faultKnowledgeBase.setStatus(0);
+//                        faultKnowledgeBaseMapper.insert(material);
+                        //插入数据库，并获取预案id
+                        String businessKey = this.startProcess(faultKnowledgeBase);
+                        //获取登录人信息
+                        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                        String userName = loginUser.getUsername();
+                        //导入实体转换成Map
+                        Map<String, Object> busData = BeanUtil.beanToMap(faultKnowledgeBase);
+                        //创建流程实体
+                        StartBpmnImportDTO startBpmnImportDTO = new StartBpmnImportDTO();
+                        startBpmnImportDTO.setModelKey("fault_knowledge_base");
+                        startBpmnImportDTO.setUserName(userName);
+                        startBpmnImportDTO.setBusData(busData);
+                        startBpmnImportDTO.setBusinessKey(businessKey);
+                        //导入数据走流程
+                        flowBaseApi.startBpmnWithImport(startBpmnImportDTO);
                     }
                     return imporReturnRes(errorLines, successLines, tipMessage, true, null);
                 }
