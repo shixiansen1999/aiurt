@@ -4,14 +4,17 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.asset.entity.FixedAssets;
 import com.aiurt.boot.category.entity.FixedAssetsCategory;
+import com.aiurt.boot.check.dto.AssetsResultDTO;
 import com.aiurt.boot.check.entity.FixedAssetsCheck;
 import com.aiurt.boot.check.service.IFixedAssetsCheckService;
+import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,32 +77,32 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 		return Result.OK("添加成功！");
 	}
 
-	/**
-	 *  填写盘点记录保存接口
-	 *
-	 * @param fixedAssetsCheck
-	 * @return
-	 */
-	@AutoLog(value = "固定资产盘点任务信息表-填写盘点记录保存接口")
-	@ApiOperation(value="固定资产盘点任务信息表-填写盘点记录保存接口", notes="固定资产盘点任务信息表-填写盘点记录保存接口")
-	@RequestMapping(value = "/addInventoryResults", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> addInventoryResults(@RequestBody FixedAssetsCheck fixedAssetsCheck) {
-		fixedAssetsCheckService.addInventoryResults(fixedAssetsCheck);
-		return Result.OK("编辑成功!");
-	}
-	/**
-	 *  填写盘点记录提交接口
-	 *
-	 * @param fixedAssetsCheck
-	 * @return
-	 */
-	@AutoLog(value = "固定资产盘点任务信息表-填写盘点记录提交接口")
-	@ApiOperation(value="固定资产盘点任务信息表-填写盘点记录提交接口", notes="固定资产盘点任务信息表-填写盘点记录提交接口")
-	@RequestMapping(value = "/addInventoryResultsBySubmit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> addInventoryResultsBySubmit(@RequestBody FixedAssetsCheck fixedAssetsCheck) {
-		fixedAssetsCheckService.addInventoryResultsBySubmit(fixedAssetsCheck);
-		return Result.OK("编辑成功!");
-	}
+//	/**
+//	 *  填写盘点记录保存接口
+//	 *
+//	 * @param fixedAssetsCheck
+//	 * @return
+//	 */
+//	@AutoLog(value = "固定资产盘点任务信息表-填写盘点记录保存接口")
+//	@ApiOperation(value="固定资产盘点任务信息表-填写盘点记录保存接口", notes="固定资产盘点任务信息表-填写盘点记录保存接口")
+//	@RequestMapping(value = "/addInventoryResults", method = {RequestMethod.PUT,RequestMethod.POST})
+//	public Result<String> addInventoryResults(@RequestBody FixedAssetsCheck fixedAssetsCheck) {
+//		fixedAssetsCheckService.addInventoryResults(fixedAssetsCheck);
+//		return Result.OK("编辑成功!");
+//	}
+//	/**
+//	 *  填写盘点记录提交接口
+//	 *
+//	 * @param fixedAssetsCheck
+//	 * @return
+//	 */
+//	@AutoLog(value = "固定资产盘点任务信息表-填写盘点记录提交接口")
+//	@ApiOperation(value="固定资产盘点任务信息表-填写盘点记录提交接口", notes="固定资产盘点任务信息表-填写盘点记录提交接口")
+//	@RequestMapping(value = "/addInventoryResultsBySubmit", method = {RequestMethod.PUT,RequestMethod.POST})
+//	public Result<String> addInventoryResultsBySubmit(@RequestBody FixedAssetsCheck fixedAssetsCheck) {
+//		fixedAssetsCheckService.addInventoryResultsBySubmit(fixedAssetsCheck);
+//		return Result.OK("编辑成功!");
+//	}
 	/**
 	 *  编辑
 	 *
@@ -139,26 +142,32 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 	@AutoLog(value = "固定资产盘点任务信息表-批量删除")
 	@ApiOperation(value="固定资产盘点任务信息表-批量删除", notes="固定资产盘点任务信息表-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		Arrays.asList(ids.split(",")).forEach(id->{
-			this.delete(id);
-		});
+	public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
+		List<String> id = Arrays.asList(ids.split(","));
+		fixedAssetsCheckService.removeBatchByIds(id);
 		return Result.OK("批量删除成功!");
 	}
-	/**
-	 * 点击修状态接口
-	 *
-	 * @param id
-	 * @return
-	 */
-	//@AutoLog(value = "fixed_assets_check-详情")
-	@ApiOperation(value="固定资产盘点任务信息表-点击修状态接口", notes="固定资产盘点任务信息表-点击修状态接口")
-	@GetMapping(value = "/updateStatus")
-	public Result<String> updateStatus(@RequestParam(name="id",required=true) String id,
-									   @RequestParam(name = "status")Integer status,
-									   @RequestParam(name = "num",required = false) Integer num) {
-		 fixedAssetsCheckService.updateStatus(id,status,num);
-		return Result.OK("成功");
+//	/**
+//	 * 点击修状态接口
+//	 *
+//	 * @param id
+//	 * @return
+//	 */
+//	//@AutoLog(value = "fixed_assets_check-详情")
+//	@ApiOperation(value="固定资产盘点任务信息表-点击修状态接口", notes="固定资产盘点任务信息表-点击修状态接口")
+//	@GetMapping(value = "/updateStatus")
+//	public Result<String> updateStatus(@RequestParam(name="id",required=true) String id,
+//									   @RequestParam(name = "status")Integer status,
+//									   @RequestParam(name = "num",required = false) Integer num) {
+//		 fixedAssetsCheckService.updateStatus(id,status,num);
+//		return Result.OK("成功");
+//	}
+
+	@ApiOperation(value = "盘点管理-下发接口", notes = "盘点管理-下发接口")
+	@GetMapping(value = "/issued")
+	public Result<String> issued(@RequestParam @ApiParam(name = "id", value = "记录ID") String id) {
+		fixedAssetsCheckService.issued(id);
+		return Result.OK("下发成功!");
 	}
 	/**
 	 * 通过id查询
@@ -215,6 +224,17 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
 		 }
 		 return fixedAssetsCheckCode;
 	 }
+
+	/**
+	 * 固定资产盘点管理-更新盘点结果数据记录(保存/提交)
+	 */
+	@ApiOperation(value = "固定资产盘点管理-更新盘点结果数据记录(保存/提交)", notes = "固定资产盘点管理-更新盘点结果数据记录(保存/提交)")
+	@GetMapping(value = "/startProcess")
+	public Result<IPage<FixedAssetsCheckRecord>> startProcess(@RequestBody AssetsResultDTO assetsResultDTO) {
+		String a = fixedAssetsCheckService.startProcess(assetsResultDTO);
+		return Result.OK();
+	}
+
     /**
     * 导出excel
     *

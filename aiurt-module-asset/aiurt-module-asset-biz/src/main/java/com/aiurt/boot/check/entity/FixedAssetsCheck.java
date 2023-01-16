@@ -2,6 +2,7 @@ package com.aiurt.boot.check.entity;
 
 import com.aiurt.boot.asset.entity.FixedAssets;
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -29,7 +30,7 @@ import java.util.List;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="fixed_assets_check对象", description="fixed_assets_check")
-public class FixedAssetsCheck implements Serializable {
+public class FixedAssetsCheck extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
@@ -49,7 +50,7 @@ public class FixedAssetsCheck implements Serializable {
     @ApiModelProperty(value = "适用组织机构名称")
     @TableField(exist = false)
     private java.lang.String orgName;
-    /**适用组织机构编码*/
+    /**盘点状态*/
     @Excel(name = "盘点状态", width = 15)
     @ApiModelProperty(value = "盘点状态")
     @Dict(dicCode = "fixed_assets_check_status")

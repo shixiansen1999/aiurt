@@ -1,21 +1,19 @@
 package com.aiurt.boot.record.entity;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: fixed_assets_check_record
@@ -55,6 +53,10 @@ public class FixedAssetsCheckRecord implements Serializable {
 	@Excel(name = "资产分类编码", width = 15)
     @ApiModelProperty(value = "资产分类编码")
     private java.lang.String categoryCode;
+    /**使用组织机构编码*/
+    @Excel(name = "使用组织机构编码", width = 15)
+    @ApiModelProperty(value = "使用组织机构编码")
+    private java.lang.String orgCode;
 	/**账面数量*/
 	@Excel(name = "账面数量", width = 15)
     @ApiModelProperty(value = "账面数量")
@@ -111,4 +113,16 @@ public class FixedAssetsCheckRecord implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
+    /**
+     * 盘盈(+)/盘亏(-)
+     */
+    @ApiModelProperty(value = "盘盈(+)/盘亏(-)")
+    @TableField(exist = false)
+    private java.lang.String profitAndLoss;
+    /**
+     * 已使用年限
+     */
+    @ApiModelProperty(value = "已使用年限")
+    @TableField(exist = false)
+    private java.lang.Integer usefulLife;
 }

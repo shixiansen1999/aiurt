@@ -2,6 +2,7 @@ package com.aiurt.boot.check.service;
 
 import com.aiurt.boot.asset.entity.FixedAssets;
 import com.aiurt.boot.category.entity.FixedAssetsCategory;
+import com.aiurt.boot.check.dto.AssetsResultDTO;
 import com.aiurt.boot.check.entity.FixedAssetsCheck;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -58,4 +59,19 @@ public interface IFixedAssetsCheckService extends IService<FixedAssetsCheck> {
      * @param fixedAssetsCheck
      */
     void addInventoryResultsBySubmit(FixedAssetsCheck fixedAssetsCheck);
+
+    /**
+     * 盘点管理-下发接口
+     *
+     * @param id
+     */
+    void issued(String id);
+
+    /**
+     * 固定资产盘点管理-更新盘点结果数据记录(保存/提交)
+     *
+     * @param assetsResultDTO
+     * @return
+     */
+    String startProcess(AssetsResultDTO assetsResultDTO);
 }
