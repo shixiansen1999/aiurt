@@ -231,7 +231,8 @@
         (select device_code from fault_device where fault_code = `code`) a
         left join device d on d.`code` = a.device_code ) as deviceName,
         end_time,
-        hang_up_reason
+        hang_up_reason,
+        fault_phenomenon
         FROM
         fault
         where
