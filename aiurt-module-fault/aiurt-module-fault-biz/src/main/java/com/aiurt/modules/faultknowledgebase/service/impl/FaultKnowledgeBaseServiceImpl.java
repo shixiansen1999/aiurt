@@ -30,6 +30,8 @@ import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.flow.api.FlowBaseApi;
+import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
+import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.dto.StartBpmnImportDTO;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
@@ -344,22 +346,28 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                         faultKnowledgeBase.setDelFlag(0);
                         faultKnowledgeBase.setApprovedResult(0);
                         faultKnowledgeBase.setStatus(0);
-//                        faultKnowledgeBaseMapper.insert(material);
                         //插入数据库，并获取预案id
-                        String businessKey = this.startProcess(faultKnowledgeBase);
-                        //获取登录人信息
-                        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-                        String userName = loginUser.getUsername();
-                        //导入实体转换成Map
-                        Map<String, Object> busData = BeanUtil.beanToMap(faultKnowledgeBase);
-                        //创建流程实体
-                        StartBpmnImportDTO startBpmnImportDTO = new StartBpmnImportDTO();
-                        startBpmnImportDTO.setModelKey("fault_knowledge_base");
-                        startBpmnImportDTO.setUserName(userName);
-                        startBpmnImportDTO.setBusData(busData);
-                        startBpmnImportDTO.setBusinessKey(businessKey);
-                        //导入数据走流程
-                        flowBaseApi.startBpmnWithImport(startBpmnImportDTO);
+                         this.startProcess(faultKnowledgeBase);
+
+                        //引用流程开始接口
+                        StartBpmnDTO startBpmnDto  = new StartBpmnDTO();
+                        startBpmnDto.setModelKey("fault_knowledge_base");
+                        Map<String,Object> map = new HashMap<>(32);
+                        map.put("id",faultKnowledgeBase.getId());
+                        map.put("deviceCode",faultKnowledgeBase.getDeviceCode());
+                        map.put("deviceTypeCode",faultKnowledgeBase.getDeviceTypeCode());
+                        map.put("faultPhenomenon",faultKnowledgeBase.getFaultPhenomenon());
+                        map.put("knowledgeBaseTypeCode",faultKnowledgeBase.getKnowledgeBaseTypeCode());
+                        map.put("majorCode",faultKnowledgeBase.getMajorCode());
+                        map.put("processInitiator",faultKnowledgeBase.getProcessInitiator());
+                        map.put("solution",faultKnowledgeBase.getSolution());
+                        map.put("systemCode",faultKnowledgeBase.getSystemCode());
+                        startBpmnDto.setBusData(map);
+                        FlowTaskCompleteCommentDTO flowTaskCompleteCommentDTO = new FlowTaskCompleteCommentDTO();
+                        flowTaskCompleteCommentDTO.setApprovalType("agree");
+                        startBpmnDto.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
+                        flowBaseApi.startAndTakeFirst(startBpmnDto);
+
                     }
                     return imporReturnRes(errorLines, successLines, tipMessage, true, null);
                 }
@@ -386,6 +394,8 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     private void examine(FaultKnowledgeBaseModel faultKnowledgeBaseModel, FaultKnowledgeBase faultKnowledgeBase, StringBuilder stringBuilder, List<FaultKnowledgeBaseModel> list) {
         BeanUtils.copyProperties(faultKnowledgeBaseModel, faultKnowledgeBase);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
 
         if (StrUtil.isBlank(faultKnowledgeBaseModel.getKnowledgeBaseTypeName())) {
             stringBuilder.append("知识库类别必填，");
@@ -446,6 +456,18 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         }else{
             faultKnowledgeBase.setSolution(faultKnowledgeBaseModel.getSolution());
         }
+        //设置导入流程是工班长还是技术员
+        String roleNames = sysUser.getRoleNames();
+        List<String> roleList = StrUtil.splitTrim(roleNames, ",");
+        for (String roleName : roleList) {
+            if("工班长".equals(roleName)){
+                faultKnowledgeBase.setProcessInitiator(0);
+            }
+            if("技术员".equals(roleName)){
+                faultKnowledgeBase.setProcessInitiator(1);
+            }
+        }
+
         faultKnowledgeBase.setFaultReason(faultKnowledgeBaseModel.getFaultReason());
         faultKnowledgeBase.setMethod(faultKnowledgeBaseModel.getMethod());
         faultKnowledgeBase.setTools(faultKnowledgeBaseModel.getTools());
