@@ -443,6 +443,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 重新写任务，指派人
         // sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
+        sendMessage(loginUser.getUsername(), faultCode, user.getUsername(), String.format("【%s】给你指派了一条故障【%s】，请查看。", user.getRealname(), faultCode));
+
     }
 
 
@@ -644,7 +646,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToUser(fault.getAssignUserName());
         message.setToAll(false);
         message.setTitle("故障管理");
-        message.setContent(String.format("【%s】开始处理故障【%s】!",  user.getUsername(), code));
+        message.setContent(String.format("【%s】开始处理故障【%s】!",  user.getRealname(), code));
         message.setCategory("2");
         message.setLevel(null);
         message.setPriority("L");
