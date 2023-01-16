@@ -557,6 +557,9 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         if(StrUtil.isNotBlank(oldPlanId)){
             String firstPlanId = StrUtil.splitTrim(oldPlanId, "/").get(0);
             size = emergencyPlanService.lambdaQuery().like(EmergencyPlan::getOldPlanId, firstPlanId).list().size();
+        }else{
+            size = emergencyPlanService.lambdaQuery().like(EmergencyPlan::getOldPlanId, plan.getId()).list().size();
+
         }
         planDto.setChangeCount(size);
 
