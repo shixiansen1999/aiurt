@@ -21,6 +21,6 @@
             </if>
         </where>
         GROUP BY t.emergency_plan_record_id,t.materials_code
-        ORDER BY t1.create_time desc
+        ORDER BY t1.create_time desc,t1.update_time desc
     </select>
 </mapper>
