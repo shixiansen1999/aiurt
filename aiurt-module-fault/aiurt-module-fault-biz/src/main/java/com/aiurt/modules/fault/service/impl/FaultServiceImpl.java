@@ -952,6 +952,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             // 重新指派
             // 仅需要发送消息，不需要更新待办
             sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType());
+            String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
+
+            sendMessage(loginUser.getUsername(), faultCode, name, String.format("【%s】无法解决故障【%s】，请重新指派", loginUser.getRealname(), faultCode));
         }
         // 已解决
         if (flag.equals(solveStatus)) {
@@ -1129,11 +1132,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
 
             saveLog(loginUser, "维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), null);
+            List<String> userNameList = new ArrayList<>();
+            userNameList.add(fault.getAppointUserName());
+            String remindUserName = fault.getRemindUserName();
+            List<String> list = StrUtil.split(remindUserName, ',');
+            userNameList.addAll(list);
+            //  发送消息
+            sendMessage(loginUser.getUsername(), faultCode, StrUtil.join(",", list), String.format("故障【%s】维修结果审核已通过", faultCode));
         } else {
+           // FaultRepairRecord faultRepairRecord = getFaultRepairRecord(faultCode, null);
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
             saveLog(loginUser, "维修结果驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), resultDTO.getApprovalRejection());
             // 审核
-            sendTodo(faultCode, null, fault.getAppointUserName(), "故障维修处理", TodoBusinessTypeEnum.FAULT_RESULT.getType());
+            sendTodo(faultCode, null, fault.getAppointUserName(), "故障维修处理", TodoBusinessTypeEnum.FAULT_DEAL.getType());
+            sendMessage(loginUser.getUsername(), faultCode, fault.getAppointUserName(), String.format("故障【%s】维修结果审核不通过，请及时处理。", faultCode));
         }
 
         updateById(fault);
