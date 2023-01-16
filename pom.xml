@@ -73,7 +73,7 @@
 		<module>aiurt-module-base</module>
         <module>aiurt-module-construction</module>
         <module>aiurt-module-emergency</module>
-        <module>aiurt-module-asset</module>
+       <!-- <module>aiurt-module-asset</module>-->
 	</modules>
 
 	<distributionManagement>
