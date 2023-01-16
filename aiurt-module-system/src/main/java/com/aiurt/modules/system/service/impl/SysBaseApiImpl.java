@@ -889,6 +889,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public SysDepartModel selectAllById(String id) {
         SysDepart sysDepart = sysDepartService.getById(id);
         SysDepartModel sysDepartModel = new SysDepartModel();
+        // fix 属性copy 空指针异常。
+        if (Objects.isNull(sysDepart)) {
+            return sysDepartModel;
+        }
         BeanUtils.copyProperties(sysDepart, sysDepartModel);
         return sysDepartModel;
     }
