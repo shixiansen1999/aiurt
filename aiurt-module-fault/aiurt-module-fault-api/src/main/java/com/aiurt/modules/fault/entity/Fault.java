@@ -357,4 +357,7 @@ public class Fault extends DictEntity implements Serializable {
     @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String remindUserName;
 
+    @ApiModelProperty(value = "故障现象")
+    private String symptoms;
+
 }

@@ -933,7 +933,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }).collect(Collectors.toList());
             repairParticipantsService.saveBatch(participantsList);
         }
-
+        // 故障现象
+        fault.setSymptoms(repairRecordDTO.getSymptoms());
         // 设备
         fault.setDeviceCodes(repairRecordDTO.getDeviceCodes());
         dealDevice(fault, repairRecordDTO.getDeviceList());
@@ -952,6 +953,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         one.setFilePath(repairRecordDTO.getFilePath());
         one.setFaultAnalysis(repairRecordDTO.getFaultAnalysis());
         one.setMaintenanceMeasures(repairRecordDTO.getMaintenanceMeasures());
+        one.setSymptoms(repairRecordDTO.getSymptoms());
 
         // 如果是提交未解决, 0
         Integer assignFlag = repairRecordDTO.getAssignFlag();
