@@ -125,4 +125,7 @@ public class RepairRecordDTO implements Serializable {
 
     @ApiModelProperty(value = "工作票号")
     private String workTicketCode;
+
+    @ApiModelProperty(value = "故障现象")
+    private String symptoms;
 }
