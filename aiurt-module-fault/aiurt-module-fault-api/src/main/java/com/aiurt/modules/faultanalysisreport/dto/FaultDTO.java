@@ -111,6 +111,21 @@ public class FaultDTO extends DictEntity implements Serializable {
     @ApiModelProperty(value = "故障分析")
     private String faultAnalysis;
 
+    /**设备类型*/
+    @Excel(name = "设备类型", width = 15)
+    @ApiModelProperty(value = "设备类型")
+    private String deviceTypeCode;
+
+    /**设备组件*/
+    @Excel(name = "设备组件", width = 15)
+    @ApiModelProperty(value = "设备组件")
+    private String materialCode;
+
+    /**故障措施/解决方案*/
+    @cn.afterturn.easypoi.excel.annotation.Excel(name = "解决方案", width = 15)
+    @ApiModelProperty(value = "故障措施/解决方案")
+    private String solution;
+
     /**维修完成时间*/
     @Excel(name = "维修完成时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
