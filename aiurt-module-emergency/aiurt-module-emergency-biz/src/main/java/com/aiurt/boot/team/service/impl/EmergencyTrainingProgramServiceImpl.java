@@ -189,6 +189,9 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
                 emergencyTrainingTeamService.save(emergencyTrainingTeam);
             }
         }
+        if (TeamConstant.PUBLISH.equals(emergencyTrainingProgram.getSaveFlag())) {
+            return Result.OK("下发成功");
+        }
         return Result.OK("编辑成功");
     }
 
