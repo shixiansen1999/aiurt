@@ -35,7 +35,7 @@
         LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
         LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
         WHERE fkb.del_flag = 0
-        and ahp.ID_ is not null)
+        )
 
         union
 
@@ -70,7 +70,6 @@
         LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
         LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
         WHERE fkb.del_flag = 0
-        and ahp.ID_ is not null
         and fkb.status = 0
         <if test="condition.createBy!=null and condition.createBy!=''">
             and fkb.create_by =#{condition.createBy}
@@ -110,8 +109,7 @@
         LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
         LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
         WHERE fkb.del_flag = 0
-        and ahp.ID_ is not null
-        and fkb.status = 3
+        and fkb.status = 0
         <if test="condition.createBy!=null and condition.createBy!=''">
             and fkb.create_by =#{condition.createBy}
         </if>
