@@ -6,7 +6,7 @@
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <fileSet>
-            <directory>src/main/bin</directory>  <!-- 项目文件目录-->
+            <directory>src/main/assembly/docker/bin</directory>  <!-- 项目文件目录-->
             <outputDirectory>aiurt-module-system/bin</outputDirectory> <!--生成bin目录-->
             <directoryMode>0755</directoryMode> <!--目录执行权限-->
             <fileMode>0755</fileMode><!--文件执行权限-->
