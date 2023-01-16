@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: aiurt-system
+  profiles:
+    active: docker
