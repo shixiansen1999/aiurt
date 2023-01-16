@@ -208,6 +208,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 String stationCode = fault.getStationCode();
 
                 userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(roleCode, ','), majorCode, subSystemCode, stationCode);
+            }else {
+                userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(roleCode, ','), null, null, null);
             }
             todoDTO.setCurrentUserName(userName);
         }else {
@@ -1462,7 +1464,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             return "";
         }
         List<String> result = baseMapper.selectUserNameByComplex(roleCode, majorCode, subSystemCode, stationCode);
-        if (CollUtil.isNotEmpty(result)) {
+        if (CollUtil.isEmpty(result)) {
             result = baseMapper.selectUserNameByComplex(roleCode, null, null, null);
         }
         return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
