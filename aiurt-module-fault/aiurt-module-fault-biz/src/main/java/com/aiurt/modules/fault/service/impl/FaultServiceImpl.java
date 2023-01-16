@@ -443,6 +443,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 重新写任务，指派人
         // sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
+        sendMessage(loginUser.getUsername(), faultCode, user.getUsername(), String.format("【%s】给你指派了一条故障【%s】，请查看。", user.getRealname(), faultCode));
+
     }
 
 
@@ -501,26 +503,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 维修待办
         sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
 
-    }
-
-    private void sendMessage(LoginUser user, String faultCode, String receiveUserName, String s) {
-        if (Objects.isNull(user) || StrUtil.isBlank(receiveUserName)) {
-            return;
-        }
-        BusMessageDTO message = new BusMessageDTO();
-        message.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-        message.setBusId(faultCode);
-        message.setFromUser(user.getUsername());
-
-        message.setToUser(receiveUserName);
-        message.setToAll(false);
-        message.setTitle("故障管理");
-        message.setContent(s);
-        message.setCategory("1");
-        message.setLevel(null);
-        message.setPriority("L");
-        message.setStartTime(new Date());
-        sysBaseAPI.sendBusAnnouncement(message);
     }
 
     /**
@@ -621,7 +603,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToAll(false);
         message.setTitle("故障管理");
         message.setContent(String.format("【%s】拒绝接收指派，请重新指派故障【%s】!",  loginUser.getUsername(), faultCode));
-        message.setCategory("1");
+        message.setCategory("2");
         message.setLevel(null);
         message.setPriority("L");
         message.setStartTime(new Date());
@@ -664,8 +646,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToUser(fault.getAssignUserName());
         message.setToAll(false);
         message.setTitle("故障管理");
-        message.setContent(String.format("【%s】开始处理故障【%s】!",  user.getUsername(), code));
-        message.setCategory("1");
+        message.setContent(String.format("【%s】开始处理故障【%s】!",  user.getRealname(), code));
+        message.setCategory("2");
         message.setLevel(null);
         message.setPriority("L");
         message.setStartTime(new Date());
@@ -752,7 +734,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         if (flag) {
             // 消息通知，发送给指派人
-            sendMessage(user, faultCode, faultRepairRecord.getAppointUserName(), String.format("故障(%s)挂起审核已通过!", faultCode));
+            sendMessage(user.getUsername(), faultCode, faultRepairRecord.getAppointUserName(), String.format("故障(%s)挂起审核已通过!", faultCode));
         }else {
             // 维修待办
             sendTodo(faultCode, null, faultRepairRecord.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
@@ -786,7 +768,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         Date reqHangupTime = faultRepairRecord.getReqHangupTime();
 
         long between = DateUtil.between(reqHangupTime, new Date(), DateUnit.SECOND);
-
 
         saveLog(loginUser, "取消挂起", code, FaultStatusEnum.REPAIR.getStatus(), null, between);
 
