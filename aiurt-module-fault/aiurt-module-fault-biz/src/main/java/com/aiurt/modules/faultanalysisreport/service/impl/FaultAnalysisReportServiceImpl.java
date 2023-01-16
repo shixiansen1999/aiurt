@@ -1,6 +1,5 @@
 package com.aiurt.modules.faultanalysisreport.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
@@ -90,15 +89,6 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         //查询已经被引用的故障
         List<String> faultCodes = faultAnalysisReportMapper.getFaultCode();
         List<FaultDTO> faults = faultMapper.getFault(page, faultDTO,faultCodes);
-        if (CollUtil.isNotEmpty(faults)) {
-            for (FaultDTO fault : faults) {
-                //获取故障详情
-                FaultDTO detail = faultAnalysisReportMapper.getDetail(fault.getId());
-                fault.setSolution(detail.getSolution());
-                fault.setDeviceTypeCode(detail.getDeviceTypeCode());
-                fault.setMaterialCode(detail.getMaterialCode());
-            }
-        }
         return page.setRecords(faults);
     }
 
@@ -119,6 +109,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         }else {
             FaultKnowledgeBase faultKnowledgeBase1 = new FaultKnowledgeBase();
             faultKnowledgeBase1.setFaultPhenomenon(faultDTO.getFaultPhenomenon());
+            faultKnowledgeBase1.setSolution(faultDTO.getSolution());
             faultDTO.setFaultKnowledgeBase(faultKnowledgeBase1);
 
         }
