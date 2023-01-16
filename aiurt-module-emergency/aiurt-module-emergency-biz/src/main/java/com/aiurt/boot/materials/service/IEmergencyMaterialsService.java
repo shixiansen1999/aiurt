@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.api.vo.Result;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +46,17 @@ public interface IEmergencyMaterialsService extends IService<EmergencyMaterials>
      * @return
      */
     MaterialPatrolDTO getMaterialPatrol();
+
+
+    /**
+     * 应急物资巡检登记
+     * @return
+     */
+    MaterialPatrolDTO getStandingBook(String materialsCode,
+                                      String categoryCode,
+                                      String lineCode,
+                                      String stationCode,
+                                      String positionCode);
 
 
     /**

@@ -256,6 +256,44 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     }
 
     @Override
+    public MaterialPatrolDTO getStandingBook(String materialsCode,
+                                             String categoryCode,
+                                             String  lineCode,
+                                             String  stationCode,
+                                             String  positionCode) {
+        MaterialPatrolDTO materialPatrolDTO = new MaterialPatrolDTO();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        materialPatrolDTO.setPatrolName(sysUser.getRealname());
+
+        //根据条件查询巡检表
+        List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getStandingBook(materialsCode,categoryCode,lineCode,stationCode,positionCode);
+        if (CollectionUtil.isNotEmpty(patrolStandardList)){
+            List<String> collect = patrolStandardList.stream().map(PatrolStandardDTO::getStandardCode).collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(collect)) {
+                List<PatrolStandardDTO> patrolStandardNameList = emergencyMaterialsMapper.getPatrolStandardNameList(collect);
+                materialPatrolDTO.setPatrolStandardDTOList(CollUtil.isNotEmpty(patrolStandardNameList) ? patrolStandardNameList : null);
+            }
+        }
+
+        //生成4位英文随机字符串
+        String random = org.apache.commons.lang3.RandomStringUtils.random(4, true, false);
+        //转换为大写
+        String string = random.toUpperCase();
+
+        //生成3位数字随机字符串
+        String random1 = RandomStringUtils.random(3, false, true);
+
+        //当前时间
+        String replace = DateUtil.formatDate(DateUtil.date()).replace("-", "");
+
+        //拼接字符串
+        String string1 = String.join("-", string, replace, random1);
+
+        materialPatrolDTO.setMaterialsPatrolCode(string1);
+        return materialPatrolDTO;
+    }
+
+    @Override
     public Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList, String id) {
         List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsMapper.getMaterialInspection(pageList, id,"0");
         LambdaQueryWrapper<EmergencyMaterialsInvoices> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
