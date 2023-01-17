@@ -422,6 +422,28 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
                 for (MaterialBase materialBase : materialBaseList) {
                     String code = materialBase.getCode();
                     sparePartInOrder.setMaterialCode(code);
+
+                    //获取与物资关联的系统
+                    String systemCode = materialBase.getSystemCode();
+                    //获取与物资关联的专业
+                    String majorCode = materialBase.getMajorCode();
+                    //导入填写的专业code
+                    JSONObject major = sysBaseApi.getCsMajorByName(majorName);
+                    String importMajorCode = major.getString("majorCode");
+                    //导入填写的系统
+                    JSONObject sName = sysBaseApi.getSystemName(major.getString("majorCode"), systemName);
+                    String importSystemCode = sName.getString("systemCode");
+                    //判断填写的专业和子系统是否和物资code绑定的专业和子系统一致
+                    if(systemCode.equals(importSystemCode)){
+                        sparePartInOrder.setSystemName(importSystemCode);
+                    }else{
+                        errorMessage.append("该子系统和物资不匹配，");
+                    }
+                    if(majorCode.equals(importMajorCode)){
+                        sparePartInOrder.setMajorName(importMajorCode);
+                    }else{
+                        errorMessage.append("该专业和物资不匹配，");
+                    }
                 }
             } else {
                 errorMessage.append("物资编码不存在，");
