@@ -7,6 +7,10 @@
     a.id,a.status,a.faultCode ,a.fault_phenomenon,a.solution,a.name,a.createTime,a.faultId,a.fault_analysis,a.file_path
     from
     (( SELECT
+            ahp.PROC_INST_ID_ as process_instance_id,
+            ara.ID_           as task_id,
+            ara.NAME_         as task_name,
+            arp.KEY_          as model_key,
             far.id,
             far.status,
             f.`code` as faultCode ,
@@ -24,18 +28,52 @@
             fault_analysis_report far
                     LEFT JOIN fault f ON f.CODE = far.fault_code
                     LEFT JOIN fault_type ft on ft.`code` = f.fault_type_code
+                    Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = far.id
+                    LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
+                    LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
     WHERE
             far.del_flag = 0
-            and far.approved_result = 0
-            <if test="condition.approvedResult != null and condition.approvedResult != ''">
-                and far.approved_result = #{condition.approvedResult}
-            </if>
-            <if test="condition.createBy != null and condition.createBy != ''">
-                and far.create_by = #{condition.createBy}
-            </if>
+            and far.status = 1
+            and ahp.ID_ is not null
     )
-    union all
+    union
     ( SELECT
+            ahp.PROC_INST_ID_ as process_instance_id,
+            ara.ID_           as task_id,
+            ara.NAME_         as task_name,
+            arp.KEY_          as model_key,
+            far.id,
+            far.STATUS,
+            f.`code` AS faultCode,
+            f.fault_phenomenon,
+            far.solution,
+            ft.NAME,
+            far.create_time,
+            f.id AS faultId,
+            ft.`code` as faultTypeCode,
+            far.create_time as createTime,
+            f.sub_system_code,
+            far.fault_analysis,
+            far.file_path
+            FROM
+            fault_analysis_report far
+            LEFT JOIN fault f ON f.CODE = far.fault_code
+            LEFT JOIN fault_type ft ON ft.`code` = f.fault_type_code
+            Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = far.id
+            LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
+            LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+            WHERE
+            far.del_flag = 0
+            and ahp.ID_ is not null
+            and far.status = 2
+            and far.create_by =#{condition.createBy}
+    )
+    union
+    ( SELECT
+            ahp.PROC_INST_ID_ as process_instance_id,
+            ara.ID_           as task_id,
+            ara.NAME_         as task_name,
+            arp.KEY_          as model_key,
             far.id,
             far.STATUS,
             f.`code` AS faultCode,
@@ -53,12 +91,23 @@
             fault_analysis_report far
             LEFT JOIN fault f ON f.CODE = far.fault_code
             LEFT JOIN fault_type ft ON ft.`code` = f.fault_type_code
+            Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = far.id
+            LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
+            LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
     WHERE
             far.del_flag = 0
-            and far.approved_result = 1
-            <if test="condition.approvedResult != null and condition.approvedResult != ''">
-                and far.approved_result = #{condition.approvedResult}
-            </if>
+            and ahp.ID_ is not null
+            and far.status = 0
+            and far.create_by =#{condition.createBy}
+            or (ara.ASSIGNEE_ = #{userName} OR ara.ID_ in (
+            SELECT TASK_ID_
+            FROM act_ru_identitylink ari
+            WHERE ari.TYPE_ = 'candidate'
+            AND ari.USER_ID_ = #{userName}
+            AND ari.TASK_ID_ = ara.ID_
+            AND (ara.assignee_ = '' or ara.assignee_ is null)
+            ))
+
     ))a
     where 1=1
         <if test="condition.faultCode != null and condition.faultCode != ''">
@@ -82,6 +131,74 @@
         </if>
         ORDER BY a.create_time DESC
 </select>
+
+    <select id="readAll2" resultType="com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport">
+        select
+        a.*,
+        ahp.PROC_INST_ID_ as process_instance_id,
+        ara.ID_           as task_id,
+        ara.NAME_         as task_name,
+        arp.KEY_          as model_key
+        from
+        ( SELECT
+        far.id,
+        far.STATUS,
+        f.`code` AS faultCode,
+        f.fault_phenomenon,
+        far.solution,
+        ft.NAME,
+        far.create_by,
+        f.id AS faultId,
+        ft.`code` as faultTypeCode,
+        far.create_time,
+        f.sub_system_code,
+        far.fault_analysis,
+        far.file_path
+        FROM
+        fault_analysis_report far
+        LEFT JOIN fault f ON f.CODE = far.fault_code
+        LEFT JOIN fault_type ft ON ft.`code` = f.fault_type_code
+        WHERE
+        far.del_flag = 0
+        )a
+        Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = a.id
+        LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
+        LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+        where 1=1
+        <if test="condition.faultCode != null and condition.faultCode != ''">
+            and a.faultCode LIKE concat('%',#{condition.faultCode},'%')
+        </if>
+        <if test="condition.faultPhenomenon != null and condition.faultPhenomenon != ''">
+            and a.fault_phenomenon LIKE concat('%',#{condition.faultPhenomenon}',%')
+        </if>
+        <if test="condition.faultTypeCode != null and condition.faultTypeCode != ''">
+            and a.faultTypeCode like concat('%',#{condition.faultTypeCode},'%')
+        </if>
+        <if test="condition.startTime != null and condition.endTime != null ">
+            and DATE_FORMAT(a.create_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime},'%Y-%m-%d')
+            and DATE_FORMAT(a.create_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime},'%Y-%m-%d')
+        </if>
+        and ahp.ID_ is not null
+        <if test="reportList != null and reportList.size() > 0">
+            <foreach collection="reportList" index="index" item="item" >
+                <if test="item.status == 0">
+                    and a.create_by =#{condition.createBy}
+                    or (ara.ASSIGNEE_ = #{userName} OR ara.ID_ in (
+                    SELECT TASK_ID_
+                    FROM act_ru_identitylink ari
+                    WHERE ari.TYPE_ = 'candidate'
+                    AND ari.USER_ID_ = #{userName}
+                    AND ari.TASK_ID_ = ara.ID_
+                    AND (ara.assignee_ = '' or ara.assignee_ is null)
+                    ))
+                </if>
+                <if test="item.status == 1">
+                    and a.create_by =#{condition.createBy}
+                </if>
+            </foreach>
+        </if>
+        ORDER BY a.create_time DESC
+    </select>
 
 <select id="getDetail" resultType="com.aiurt.modules.faultanalysisreport.dto.FaultDTO">
     SELECT

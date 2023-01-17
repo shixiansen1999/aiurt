@@ -1,25 +1,20 @@
 package com.aiurt.modules.faultanalysisreport.entity;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.math.BigDecimal;
-import java.util.List;
-
-import com.aiurt.modules.faultknowledgebasetype.dto.SubSystemDTO;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @Description: fault_analysis_report
@@ -152,4 +147,41 @@ public class FaultAnalysisReport implements Serializable {
     private String order;
 
 
+    /**排序方式*/
+    @ApiModelProperty(value = "流程发起人(0:工班长,1:技术员)")
+    @TableField(exist = false)
+    private Integer processInitiator;
+
+    /**
+     * 实例id
+     */
+    @ApiModelProperty(value = "实例id")
+    @TableField(exist = false)
+    private String processInstanceId;
+    /**
+     * 任务id
+     */
+    @ApiModelProperty(value = "任务id")
+    @TableField(exist = false)
+    private String taskId;
+    /**
+     * 任务名称
+     */
+    @ApiModelProperty(value = "任务名称")
+    @TableField(exist = false)
+    private String taskName;
+    /**
+     * 模板key，流程标识
+     */
+    @ApiModelProperty(value = "模板key，流程标识")
+    @TableField(exist = false)
+    private String modelKey;
+
+    @ApiModelProperty(value = "判断是否有审核按钮")
+    @TableField(exist = false)
+    private Boolean haveButton;
+
+    @ApiModelProperty(value = "判断登录人是否是创建人")
+    @TableField(exist = false)
+    private Boolean isCreateUser;
 }

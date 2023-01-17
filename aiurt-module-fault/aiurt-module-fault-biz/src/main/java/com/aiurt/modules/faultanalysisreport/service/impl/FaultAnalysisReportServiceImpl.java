@@ -1,8 +1,13 @@
 package com.aiurt.modules.faultanalysisreport.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
+import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
+import com.aiurt.modules.common.entity.UpdateStateEntity;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
@@ -14,6 +19,9 @@ import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
+import com.aiurt.modules.flow.api.FlowBaseApi;
+import com.aiurt.modules.flow.dto.TaskInfoDTO;
+import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -28,10 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +46,7 @@ import java.util.stream.Collectors;
  * @Version: V1.0
  */
 @Service
-public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisReportMapper, FaultAnalysisReport> implements IFaultAnalysisReportService {
+public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisReportMapper, FaultAnalysisReport> implements IFaultAnalysisReportService, IFlowableBaseUpdateStatusService {
 
     @Autowired
     private FaultAnalysisReportMapper faultAnalysisReportMapper;
@@ -55,26 +60,49 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     private IFaultKnowledgeBaseService faultKnowledgeBaseService;
     @Autowired
     private FaultMapper faultMapper;
-
+    @Autowired
+    private FlowBaseApi flowBaseApi;
     @Override
     public IPage<FaultAnalysisReport> readAll(Page<FaultAnalysisReport> page, FaultAnalysisReport faultAnalysisReport) {
-        //通过数据权限获取当前拥有的子系统
+        //获取权限查询的数据集合
         LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
         List<Fault> faults = faultMapper.selectList(queryWrapper);
         List<String> ids = faults.stream().map(Fault::getId).distinct().collect(Collectors.toList());
+        LambdaQueryWrapper<FaultAnalysisReport> reportLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        reportLambdaQueryWrapper.in(FaultAnalysisReport::getFaultId, ids);
+        List<FaultAnalysisReport> reportList = this.getBaseMapper().selectList(reportLambdaQueryWrapper);
+
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //根据角色决定是否查询未审核通过的故障分析
-        if ( getRole()) {faultAnalysisReport.setApprovedResult(FaultConstant.PASSED);}
-        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
-        //工班长只能看到审核通过的和自己创建的未审核通过的
-        if (rolesByUsername.size()==1 && rolesByUsername.contains(RoleConstant.FOREMAN)) {
-            faultAnalysisReport.setCreateBy(sysUser.getUsername());
+        faultAnalysisReport.setCreateBy(sysUser.getUsername());
+        if (CollUtil.isEmpty(reportList)) {
+            return page.setRecords(new ArrayList<>());
         }
-        List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,ids);
+        //List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,ids,sysUser.getUsername());
+        List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll2(page, faultAnalysisReport,reportList,sysUser.getUsername());
+
+        //解决不是审核人去除审核按钮
+        if(CollUtil.isNotEmpty(faultAnalysisReports)){
+            for (FaultAnalysisReport report : faultAnalysisReports) {
+                TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfo(report.getProcessInstanceId(), report.getTaskId());
+                List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
+                //operationList为空，没有审核按钮
+                if(CollUtil.isNotEmpty(operationList)){
+                    report.setHaveButton(true);
+                }else{
+                    report.setHaveButton(false);
+                }
+                //当前登录人不是创建人，则为false
+                if(report.getCreateBy().equals(sysUser.getUsername())){
+                    report.setIsCreateUser(true);
+                }else{
+                    report.setIsCreateUser(false);
+                }
+            }
+        }
         String asc = "asc";
         if (asc.equals(faultAnalysisReport.getOrder())) {
-            List<FaultAnalysisReport> reportList = faultAnalysisReports.stream().sorted(Comparator.comparing(FaultAnalysisReport::getCreateTime)).collect(Collectors.toList());
-            return page.setRecords(reportList);
+            List<FaultAnalysisReport> result = faultAnalysisReports.stream().sorted(Comparator.comparing(FaultAnalysisReport::getCreateTime)).collect(Collectors.toList());
+            return page.setRecords(result);
         }
         return page.setRecords(faultAnalysisReports);
     }
@@ -249,6 +277,91 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void rejectFirstUserTaskEvent(RejectFirstUserTaskEntity entity) {
+
+    }
+
+    @Override
+    public void updateState(UpdateStateEntity updateStateEntity) {
+        String businessKey = updateStateEntity.getBusinessKey();
+        FaultAnalysisReport analysisReport = this.getById(businessKey);
+        if (ObjectUtil.isEmpty(analysisReport)) {
+            throw new AiurtBootException("未找到ID为【" + businessKey + "】的数据！");
+        }
+        int states = updateStateEntity.getStates();
+        switch (states) {
+            case 0:
+                // 技术员审核
+                analysisReport.setStatus(FaultConstant.PENDING);
+                break;
+            case 2:
+                // 技术员驳回，更新状态为已驳回状态
+                analysisReport.setStatus(FaultConstant.REJECTED);
+                analysisReport.setApprovedResult(FaultConstant.NO_PASS);
+                break;
+            case 1:
+                //已审批
+                analysisReport.setStatus(FaultConstant.APPROVED);
+                analysisReport.setApprovedResult(FaultConstant.PASSED);
+                //修改知识库状态
+                String faultKnowledgeBaseId = this.getById(analysisReport.getId()).getFaultKnowledgeBaseId();
+                if (StringUtils.isNotEmpty(faultKnowledgeBaseId)) {
+                    FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.getById(faultKnowledgeBaseId);
+                    faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
+                    faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
+                    faultKnowledgeBase.setDelFlag(0);
+                    faultKnowledgeBaseService.updateById(faultKnowledgeBase);
+                }
+                break;
+            default:
+                break;
+        }
+        this.updateById(analysisReport);
+    }
+
+    public Result<String> startProcess(FaultDTO faultDTO){
+        String id = faultDTO.getId();
+        FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
+        faultAnalysisReport.setStatus(FaultConstant.PENDING);
+        faultAnalysisReport.setApprovedResult(FaultConstant.NO_PASS);
+        faultAnalysisReport.setDelFlag(0);
+        faultAnalysisReport.setScanSum(0);
+        FaultKnowledgeBase faultKnowledgeBase = faultDTO.getFaultKnowledgeBase();
+        if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
+            faultKnowledgeBase.setStatus(FaultConstant.PENDING);
+            faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+            faultKnowledgeBase.setFaultCodes(faultDTO.getCode());
+            faultKnowledgeBase.setMajorCode(faultDTO.getMajorCode());
+            faultKnowledgeBase.setSystemCode(faultDTO.getSubSystemCode());
+            //先隐藏，审批通过后再展示
+            faultKnowledgeBase.setDelFlag(1);
+        }
+        if (StrUtil.isEmpty(id)) {
+            if (StrUtil.isEmpty(faultDTO.getCode())) {
+                return Result.error("故障编号不能为空");
+            }
+            if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
+                faultKnowledgeBaseService.save(faultKnowledgeBase);
+                faultAnalysisReport.setFaultKnowledgeBaseId(faultKnowledgeBase.getId());
+            }
+            this.save(faultAnalysisReport);
+            String newId = faultAnalysisReport.getId();
+            return Result.OK(newId);
+        }else{
+            if (ObjectUtil.isNotNull(faultKnowledgeBase.getId())) {
+                faultKnowledgeBaseService.updateById(faultKnowledgeBase);
+            } else {
+                //如果编辑之后新增同步到知识库则save
+                faultKnowledgeBaseService.save(faultKnowledgeBase);
+                faultAnalysisReport.setFaultKnowledgeBaseId(faultKnowledgeBase.getId());
+            }
+            this.updateById(faultAnalysisReport);
+            return Result.OK(id);
+        }
+
     }
 
 }

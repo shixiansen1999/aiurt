@@ -25,7 +25,9 @@ public interface FaultAnalysisReportMapper extends BaseMapper<FaultAnalysisRepor
      * @param ids
      * @return List<FaultAnalysisReport>
      * */
-    List<FaultAnalysisReport> readAll(@Param("page")Page<FaultAnalysisReport> page, @Param("condition")FaultAnalysisReport condition,@Param("ids")List<String> ids);
+    List<FaultAnalysisReport> readAll(@Param("page")Page<FaultAnalysisReport> page, @Param("condition")FaultAnalysisReport condition,@Param("ids")List<String> ids,@Param("userName")String userName);
+
+    List<FaultAnalysisReport> readAll2(@Param("page")Page<FaultAnalysisReport> page, @Param("condition")FaultAnalysisReport condition, @Param("reportList")List<FaultAnalysisReport> reportList, @Param("userName")String userName);
 
     /**
      * 查询已经被引用的故障
