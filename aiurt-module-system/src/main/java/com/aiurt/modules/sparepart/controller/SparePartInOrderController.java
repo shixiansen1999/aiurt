@@ -63,9 +63,8 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 														 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 														 HttpServletRequest req) {
 /*		QueryWrapper<SparePartInOrder> queryWrapper = QueryGenerator.initQueryWrapper(sparePartInOrder, req.getParameterMap());*/
-		Page<SparePartInOrder> page = new Page<SparePartInOrder>(pageNo, pageSize);
+		Page<SparePartInOrder> page = new Page<>(pageNo, pageSize);
 		List<SparePartInOrder> list = sparePartInOrderService.selectList(page, sparePartInOrder);
-		list = list.stream().distinct().collect(Collectors.toList());
         page.setRecords(list);
 		return Result.OK(page);
 	}
