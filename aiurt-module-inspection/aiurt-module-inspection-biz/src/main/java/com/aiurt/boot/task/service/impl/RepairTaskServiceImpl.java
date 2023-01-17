@@ -2140,7 +2140,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         String lineName = iSysBaseAPI.getPosition(deviceRel.getLineCode());
                         LoginUser userById = iSysBaseAPI.getUserById(deviceRel.getStaffId());
                         content.append(lineName).append("-").append(stationName).append(" ").append("第").append(deviceRel.getWeeks()).append("周检修任务").append(" ").append(" 检修人:").append(userById.getRealname()).append("。").append('\n');
-                        code.append(deviceRel.getCode()).append(",");
+                        code.append(deviceRel.getTaskCode()).append(",");
                     }
                 }
             }

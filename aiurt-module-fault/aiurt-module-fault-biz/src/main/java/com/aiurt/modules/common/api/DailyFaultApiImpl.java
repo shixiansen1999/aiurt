@@ -82,12 +82,12 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         List<FaultRepairParticipants> participantsList = participantsMapper.selectList(new LambdaQueryWrapper<FaultRepairParticipants>().in(FaultRepairParticipants::getUserName, userNames));
         //去重复
         Set <FaultRepairRecord> faultRepairRecords = new HashSet<>();
+        faultRepairRecords.addAll(list);
         if (CollUtil.isNotEmpty(participantsList)) {
             participantsList.stream().forEach(p->{
                 FaultRepairRecord record = recordMapper.selectById(p.getFaultRepairRecordId());
                 faultRepairRecords.add(record);
             });
-            faultRepairRecords.addAll(list);
         }
 
         StringBuilder content = new StringBuilder();
