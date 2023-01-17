@@ -1181,6 +1181,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         LoginUser loginUser = manager.checkLogin();
         String realName = repairTaskMapper.getRealName(loginUser.getId());
         RepairTask repairTask1 = new RepairTask();
+        repairTask1.setCode(repairTask.getCode());
         status(examineDTO, loginUser, realName, repairTask1, repairTask.getRepairPoolId());
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) && repairTask.getIsReceipt().equals(InspectionConstant.IS_EFFECT)) {
             //修改检修任务状态
@@ -1197,6 +1198,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPool.setStatus(InspectionConstant.PENDING_RECEIPT);
                 repairPoolMapper.updateById(repairPool);
             }
+            sendAcceptanceMessage(repairTask);
         }
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) && repairTask.getIsReceipt().equals(InspectionConstant.NO_IS_EFFECT)) {
             repairTask1.setId(examineDTO.getId());
@@ -1213,6 +1215,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPool.setStatus(InspectionConstant.COMPLETED);
                 repairPoolMapper.updateById(repairPool);
             }
+            sendAcceptanceMessage(repairTask);
         }
 
         // 修改审核待办任务的状态
@@ -1223,6 +1226,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             String currentUserName = getUserName(repairTask.getCode(), RoleConstant.TECHNICIAN);
             if (StrUtil.isNotEmpty(currentUserName)) {
                 createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_RECEIPT.getType(),repairTask.getId(), "检修任务验收", "", "");
+            }
+        }
+    }
+
+    /**
+     * 发送审核通过消息
+     * @param repairTask1
+     */
+    public void sendAcceptanceMessage(RepairTask repairTask1) {
+        // 审核通过，消息通知检修人
+        List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().eq(RepairTaskUser::getRepairTaskCode, repairTask1.getCode()).eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if(CollUtil.isNotEmpty(repairTaskUsers)){
+            String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
+            List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+            if (CollUtil.isNotEmpty(loginUsers)) {
+                sysBaseApi.sendSysAnnouncement(new MessageDTO(manager.checkLogin().getUsername(), loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(",")), "检修任务审核", "你执行的检修单号为:"+repairTask1.getCode()+"的检修任务审核通过,请查收"));
             }
         }
     }
@@ -1353,6 +1372,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
         RepairTask repairTask1 = new RepairTask();
+        repairTask1.setCode(repairTask.getCode());
         LoginUser loginUser = manager.checkLogin();
         String realName = repairTaskMapper.getRealName(loginUser.getId());
         status(examineDTO, loginUser, realName, repairTask1, repairTask.getRepairPoolId());
@@ -1418,6 +1438,16 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (ObjectUtil.isNotEmpty(repairPool)) {
             repairPool.setStatus(InspectionConstant.COMPLETED);
             repairPoolMapper.updateById(repairPool);
+        }
+
+        // 验收通过，消息通知检修人
+        List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().eq(RepairTaskUser::getRepairTaskCode, repairTask1.getCode()).eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if(CollUtil.isNotEmpty(repairTaskUsers)){
+            String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
+            List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+            if (CollUtil.isNotEmpty(loginUsers)) {
+                sysBaseApi.sendSysAnnouncement(new MessageDTO(manager.checkLogin().getUsername(), loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(",")), "检修任务验收", "你执行的检修单号为:"+repairTask1.getCode()+"的检修任务验收通过,请查收"));
+            }
         }
     }
 
