@@ -9,6 +9,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import io.swagger.annotations.ApiParam;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
@@ -36,41 +38,35 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import com.aiurt.common.aspect.annotation.AutoLog;
 
- /**
+/**
  * @Description: fixed_assets_check_detail
  * @Author: aiurt
- * @Date:   2023-01-17
+ * @Date: 2023-01-17
  * @Version: V1.0
  */
-@Api(tags="fixed_assets_check_detail")
+@Api(tags = "fixed_assets_check_detail")
 @RestController
 @RequestMapping("/check/fixedAssetsCheckDetail")
 @Slf4j
 public class FixedAssetsCheckDetailController extends BaseController<FixedAssetsCheckDetail, IFixedAssetsCheckDetailService> {
-	@Autowired
-	private IFixedAssetsCheckDetailService fixedAssetsCheckDetailService;
-//
-//	/**
-//	 * 分页列表查询
-//	 *
-//	 * @param fixedAssetsCheckDetail
-//	 * @param pageNo
-//	 * @param pageSize
-//	 * @param req
-//	 * @return
-//	 */
-//	//@AutoLog(value = "fixed_assets_check_detail-分页列表查询")
-//	@ApiOperation(value="fixed_assets_check_detail-分页列表查询", notes="fixed_assets_check_detail-分页列表查询")
-//	@GetMapping(value = "/list")
-//	public Result<IPage<FixedAssetsCheckDetail>> queryPageList(FixedAssetsCheckDetail fixedAssetsCheckDetail,
-//								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-//								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-//								   HttpServletRequest req) {
-//		QueryWrapper<FixedAssetsCheckDetail> queryWrapper = QueryGenerator.initQueryWrapper(fixedAssetsCheckDetail, req.getParameterMap());
-//		Page<FixedAssetsCheckDetail> page = new Page<FixedAssetsCheckDetail>(pageNo, pageSize);
-//		IPage<FixedAssetsCheckDetail> pageList = fixedAssetsCheckDetailService.page(page, queryWrapper);
-//		return Result.OK(pageList);
-//	}
+    @Autowired
+    private IFixedAssetsCheckDetailService fixedAssetsCheckDetailService;
+
+    /**
+     * 固定资产盘点任务详情-变更明细分页列表查询
+     *
+     * @return
+     */
+    @ApiOperation(value = "固定资产盘点任务详情-变更明细分页列表查询", notes = "固定资产盘点任务详情-变更明细分页列表查询")
+    @GetMapping(value = "/list")
+    public Result<IPage<FixedAssetsCheckDetail>> queryPageList(@RequestParam(name = "id") @ApiParam(value = "任务记录ID") String id,
+                                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                               HttpServletRequest req) {
+        Page<FixedAssetsCheckDetail> page = new Page<FixedAssetsCheckDetail>(pageNo, pageSize);
+        IPage<FixedAssetsCheckDetail> pageList = fixedAssetsCheckDetailService.queryPageList(page, id);
+        return Result.OK(pageList);
+    }
 //
 //	/**
 //	 *   添加

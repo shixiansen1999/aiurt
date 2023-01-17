@@ -54,6 +54,7 @@ public class FixedAssetsCheckDetail implements Serializable {
 	/**资产分类编码*/
 	@Excel(name = "资产分类编码", width = 15)
     @ApiModelProperty(value = "资产分类编码")
+    @Dict(dictTable = "fixed_assets_category", dicCode = "category_code", dicText = "category_name")
     private String categoryCode;
 	/**盘点前账面数量*/
 	@Excel(name = "盘点前账面数量", width = 15)

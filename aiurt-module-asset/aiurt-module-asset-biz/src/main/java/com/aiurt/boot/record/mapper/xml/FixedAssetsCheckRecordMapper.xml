@@ -7,7 +7,8 @@
                fa.asset_name,
                fa.location,
                fa.category_code,
-               fa.number
+               fa.number,
+               fa.asset_original
         from fixed_assets fa
         where fa.del_flag = 0
           and fa.category_code in

@@ -1,5 +1,6 @@
 package com.aiurt.boot.record.service;
 
+import com.aiurt.boot.record.FixedAssetsCheckRecordVO;
 import com.aiurt.boot.record.dto.FixedAssetsCheckRecordDTO;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -30,5 +31,5 @@ public interface IFixedAssetsCheckRecordService extends IService<FixedAssetsChec
      * @param fixedAssetsCheckRecordDTO
      * @return
      */
-    List<FixedAssetsCheckRecord> nonsortList(FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO);
+    List<FixedAssetsCheckRecordVO> nonsortList(FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO);
 }

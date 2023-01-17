@@ -76,19 +76,19 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
     @Override
     public IPage<FixedAssetsCheck> queryPageList(Page<FixedAssetsCheck> page, FixedAssetsCheck fixedAssetsCheck) {
         Page<FixedAssetsCheck> fixedAssetsCheckPage = baseMapper.selectPageList(page, fixedAssetsCheck);
-        fixedAssetsCheckPage.getRecords().forEach(f -> {
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-            f.setTime(format.format(f.getPlanStartDate()) + "至" + format.format(f.getPlanEndDate()));
-            List<String> orgName = baseMapper.selectOrgName(Arrays.asList(f.getOrgCode().split(",")));
-            f.setOrgName(String.join(",", orgName));
-            List<String> categoryName = baseMapper.selectCategoryName(Arrays.asList(f.getCategoryCode().split(",")));
-            f.setCategoryName(String.join(",", categoryName));
-            if (f.getStatus() > 2) {
-                List<FixedAssetsCheckRecord> list = fixedAssetsCheckRecordService.lambdaQuery().eq(FixedAssetsCheckRecord::getCheckId, f.getId())
-                        .eq(FixedAssetsCheckRecord::getDelFlag, 0).list();
-                f.setNumber(list.stream().map(e -> e.getActualNumber()).reduce(Integer::sum).get());
-            }
-        });
+//        fixedAssetsCheckPage.getRecords().forEach(f -> {
+//            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+//            f.setTime(format.format(f.getPlanStartDate()) + "至" + format.format(f.getPlanEndDate()));
+//            List<String> orgName = baseMapper.selectOrgName(Arrays.asList(f.getOrgCode().split(",")));
+//            f.setOrgName(String.join(",", orgName));
+//            List<String> categoryName = baseMapper.selectCategoryName(Arrays.asList(f.getCategoryCode().split(",")));
+//            f.setCategoryName(String.join(",", categoryName));
+//            if (f.getStatus() > 2) {
+//                List<FixedAssetsCheckRecord> list = fixedAssetsCheckRecordService.lambdaQuery().eq(FixedAssetsCheckRecord::getCheckId, f.getId())
+//                        .eq(FixedAssetsCheckRecord::getDelFlag, 0).list();
+//                f.setNumber(list.stream().map(e -> e.getActualNumber()).reduce(Integer::sum).get());
+//            }
+//        });
         return fixedAssetsCheckPage;
     }
 
@@ -191,32 +191,38 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         this.updateById(fixedAssetsCheck);
 
         // 生成盘点结果
-        String orgCode = fixedAssetsCheck.getOrgCode();
-        String categoryCode = fixedAssetsCheck.getCategoryCode();
-        if (StrUtil.isNotBlank(orgCode) && StrUtil.isNotEmpty(categoryCode)) {
-            List<String> orgCodes = StrUtil.split(orgCode, ',');
-            List<FixedAssets> fixedAssets = fixedAssetsService.lambdaQuery()
-                    .eq(FixedAssets::getDelFlag, CommonConstant.DEL_FLAG_0)
-                    .eq(FixedAssets::getCategoryCode, categoryCode)
-                    .in(FixedAssets::getOrgCode, orgCodes)
-                    .list();
-            List<FixedAssetsCheckRecord> records = new ArrayList<>();
-            FixedAssetsCheckRecord checkRecord = null;
-            for (FixedAssets assets : fixedAssets) {
-                checkRecord = new FixedAssetsCheckRecord();
-                checkRecord.setCheckId(id);
-                checkRecord.setAssetCode(assets.getAssetCode());
-                checkRecord.setAssetName(assets.getAssetName());
-                checkRecord.setLocation(assets.getLocation());
-                checkRecord.setOrgCode(assets.getOrgCode());
-                checkRecord.setCategoryCode(assets.getCategoryCode());
-                checkRecord.setNumber(assets.getNumber());
-                records.add(checkRecord);
-            }
-            if (CollectionUtil.isNotEmpty(records)) {
-                fixedAssetsCheckRecordService.saveBatch(records);
-            }
+        List<FixedAssetsCheckCategory> categoryList = fixedAssetsCheckCategoryService.lambdaQuery()
+                .eq(FixedAssetsCheckCategory::getCheckId, id)
+                .list();
+        List<FixedAssetsCheckDept> deptList = fixedAssetsCheckDeptService.lambdaQuery()
+                .eq(FixedAssetsCheckDept::getCheckId, id).list();
+        List<String> categoryCodes = categoryList.stream().map(FixedAssetsCheckCategory::getCategoryCode).collect(Collectors.toList());
+        List<String> orgCodes = deptList.stream().map(FixedAssetsCheckDept::getOrgCode).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(categoryCodes) || CollectionUtil.isEmpty(orgCodes)) {
+            throw new AiurtBootException("所属的物资分类和组织机构中暂无需要盘点的数据！");
         }
+        List<FixedAssets> fixedAssets = fixedAssetsService.lambdaQuery()
+                .eq(FixedAssets::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .in(FixedAssets::getCategoryCode, categoryCodes)
+                .in(FixedAssets::getOrgCode, orgCodes)
+                .list();
+        List<FixedAssetsCheckRecord> records = new ArrayList<>();
+        FixedAssetsCheckRecord checkRecord = null;
+        for (FixedAssets assets : fixedAssets) {
+            checkRecord = new FixedAssetsCheckRecord();
+            checkRecord.setCheckId(id);
+            checkRecord.setAssetCode(assets.getAssetCode());
+            checkRecord.setAssetName(assets.getAssetName());
+            checkRecord.setLocation(assets.getLocation());
+            checkRecord.setOrgCode(assets.getOrgCode());
+            checkRecord.setCategoryCode(assets.getCategoryCode());
+            checkRecord.setNumber(assets.getNumber());
+            records.add(checkRecord);
+        }
+        if (CollectionUtil.isEmpty(records)) {
+            throw new AiurtBootException("所属的物资分类和组织机构中暂无需要盘点的数据！");
+        }
+        fixedAssetsCheckRecordService.saveBatch(records);
     }
 
     /**
@@ -245,7 +251,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         fixedAssetsCheck.setActualStartTime(assetsResultDTO.getActualStartTime());
         fixedAssetsCheck.setActualEndTime(assetsResultDTO.getActualEndTime());
         // 执行中
-        fixedAssetsCheck.setStatus(FixedAssetsConstant.status_2);
+        fixedAssetsCheck.setStatus(FixedAssetsConstant.status_1);
         fixedAssetsCheck.setCheckId(loginUser.getId());
         this.updateById(fixedAssetsCheck);
 
@@ -312,8 +318,8 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
         fixedAssetsCheckDTO = Optional.ofNullable(fixedAssetsCheckDTO).orElseGet(FixedAssetsCheckDTO::new);
-        fixedAssetsCheckDTO.setAuditStatus(FixedAssetsConstant.status_1);
-        fixedAssetsCheckDTO.setUserName(loginUser.getRealname());
+        fixedAssetsCheckDTO.setAuditStatus(FixedAssetsConstant.status_2);
+        fixedAssetsCheckDTO.setUserName(loginUser.getUsername());
         IPage<FixedAssetsCheckVO> pageList = fixedAssetsCheckMapper.pageList(page, fixedAssetsCheckDTO);
         if (CollectionUtil.isNotEmpty(pageList.getRecords())) {
             Map<String, String> orgMap = sysBaseApi.getAllSysDepart().stream()

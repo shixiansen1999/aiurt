@@ -1,5 +1,6 @@
 package com.aiurt.boot.record.controller;
 
+import com.aiurt.boot.record.FixedAssetsCheckRecordVO;
 import com.aiurt.boot.record.dto.FixedAssetsCheckRecordDTO;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.boot.record.service.IFixedAssetsCheckRecordService;
@@ -16,57 +17,71 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
- /**
+/**
  * @Description: fixed_assets_check_record
  * @Author: aiurt
- * @Date:   2023-01-11
+ * @Date: 2023-01-11
  * @Version: V1.0
  */
-@Api(tags="固定资产盘点记录表")
+@Api(tags = "固定资产盘点记录表")
 @RestController
 @RequestMapping("/record/fixedAssetsCheckRecord")
 @Slf4j
 public class FixedAssetsCheckRecordController extends BaseController<FixedAssetsCheckRecord, IFixedAssetsCheckRecordService> {
-	@Autowired
-	private IFixedAssetsCheckRecordService fixedAssetsCheckRecordService;
-
-	 /**
-	  * 固定资产盘点记录-盘点结果记录分页查询
-	  *
-	  * @param fixedAssetsCheckRecordDTO
-	  * @param pageNo
-	  * @param pageSize
-	  * @return
-	  */
-	 @ApiOperation(value = "固定资产盘点记录表-分页列表查询", notes = "固定资产盘点记录表-分页列表查询")
-	 @GetMapping(value = "/list")
-	 public Result<IPage<FixedAssetsCheckRecord>> queryPageList(FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO,
-																@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-																@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
-		 Page<FixedAssetsCheckRecord> page = new Page<FixedAssetsCheckRecord>(pageNo, pageSize);
-		 IPage<FixedAssetsCheckRecord> pageList = fixedAssetsCheckRecordService.queryPageList(page, fixedAssetsCheckRecordDTO);
-		 return Result.OK(pageList);
-	 }
+    @Autowired
+    private IFixedAssetsCheckRecordService fixedAssetsCheckRecordService;
 
     /**
-    * 导出excel
-    *
-    * @param request
-    * @param fixedAssetsCheckRecord
-    */
+     * 固定资产盘点记录-盘点结果记录分页查询
+     *
+     * @param fixedAssetsCheckRecordDTO
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    @ApiOperation(value = "固定资产盘点记录表-分页列表查询", notes = "固定资产盘点记录表-分页列表查询")
+    @GetMapping(value = "/list")
+    public Result<IPage<FixedAssetsCheckRecord>> queryPageList(FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO,
+                                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<FixedAssetsCheckRecord> page = new Page<FixedAssetsCheckRecord>(pageNo, pageSize);
+        IPage<FixedAssetsCheckRecord> pageList = fixedAssetsCheckRecordService.queryPageList(page, fixedAssetsCheckRecordDTO);
+        return Result.OK(pageList);
+    }
+
+    /**
+     * 固定资产盘点记录-盘点结果记录(不分页)
+     *
+     * @param fixedAssetsCheckRecordDTO
+     * @return
+     */
+    @ApiOperation(value = "固定资产盘点记录表-盘点结果记录(不分页)", notes = "固定资产盘点记录表-盘点结果记录(不分页)")
+    @GetMapping(value = "/nonsortList")
+    public Result<List<FixedAssetsCheckRecordVO>> nonsortList(FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO) {
+        List<FixedAssetsCheckRecordVO> pageList = fixedAssetsCheckRecordService.nonsortList(fixedAssetsCheckRecordDTO);
+        return Result.OK(pageList);
+    }
+
+    /**
+     * 导出excel
+     *
+     * @param request
+     * @param fixedAssetsCheckRecord
+     */
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, FixedAssetsCheckRecord fixedAssetsCheckRecord) {
         return super.exportXls(request, fixedAssetsCheckRecord, FixedAssetsCheckRecord.class, "fixed_assets_check_record");
     }
 
     /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
+     * 通过excel导入数据
+     *
+     * @param request
+     * @param response
+     * @return
+     */
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, FixedAssetsCheckRecord.class);
