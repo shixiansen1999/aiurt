@@ -68,7 +68,6 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
                                   HttpServletRequest req) {
        Page<SparePartOutOrder> page = new Page<SparePartOutOrder>(pageNo, pageSize);
        List<SparePartOutOrder> list = sparePartOutOrderService.selectList(page, sparePartOutOrder);
-       list = list.stream().distinct().collect(Collectors.toList());
        page.setRecords(list);
        return Result.OK(page);
    }
