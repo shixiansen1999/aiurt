@@ -232,7 +232,8 @@
         left join device d on d.`code` = a.device_code ) as deviceName,
         end_time,
         hang_up_reason,
-        fault_phenomenon
+        fault_phenomenon,
+        symptoms
         FROM
         fault
         where
