@@ -1645,6 +1645,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         // 生成检修标准关联、检修设备清单、检修结果信息
         repairPoolService.generate(repairPool, repairTask.getId(), repairPool.getCode());
 
+        // 生成待办任务
+        String currentUserName = manager.checkLogin().getUsername();
+        if (StrUtil.isNotEmpty(currentUserName)) {
+            createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(),repairTask.getId(), "执行检修任务", "", "");
+        }
     }
 
     /**
