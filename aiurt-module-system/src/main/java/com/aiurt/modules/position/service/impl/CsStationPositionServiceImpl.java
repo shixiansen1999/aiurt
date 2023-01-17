@@ -165,7 +165,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
                           continue;
                       }
                       if (StrUtil.isNotEmpty(csStationPosition.getPositionTypeName())){
-                          List<DictModel> dictItems = sysBaseAPI.getDictItems("station_level_tow");
+                          List<DictModel> dictItems = sysBaseAPI.getDictItems("station_level_two");
                           dictItems.forEach(s -> {
                               if (s.getText().equals(csStationPosition.getPositionTypeName())) {
                                   csStationPosition.setPositionType(Integer.valueOf(s.getValue()));
