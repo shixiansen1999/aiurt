@@ -142,4 +142,7 @@ public class FaultDTO extends DictEntity implements Serializable {
     @ApiModelProperty(value = "故障知识库",  required = true)
     private FaultKnowledgeBase faultKnowledgeBase;
 
+    @ApiModelProperty(value = "故障现象")
+    private String symptoms;
+
 }
