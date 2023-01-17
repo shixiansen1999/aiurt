@@ -34,7 +34,7 @@ public class AssetsResultDTO {
     @ApiModelProperty(value = "已盘数量")
     private Integer done;
     /**
-     * 统计数量
+     * 总计数量
      */
     @ApiModelProperty(value = "统计数量")
     private Integer total;

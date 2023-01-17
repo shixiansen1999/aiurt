@@ -1,5 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.record.mapper.FixedAssetsCheckRecordMapper">
-
+    <select id="pageList" resultType="com.aiurt.boot.record.entity.FixedAssetsCheckRecord">
+        select fa.id as checkId,
+               fa.asset_code,
+               fa.asset_name,
+               fa.location,
+               fa.category_code,
+               fa.number
+        from fixed_assets fa
+        where fa.del_flag = 0
+          and fa.category_code in
+        <foreach collection="categoryCodes" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and fa.org_code in
+        <foreach collection="orgCodes" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        <if test="condition.categoryCode != null and condition.categoryCode != ''">
+            and fa.category_code = #{condition.categoryCode}
+        </if>
+        <if test="condition.assetCode != null and condition.assetCode != ''">
+            and fa.asset_code = #{condition.assetCode}
+        </if>
+        <if test="condition.assetName != null and condition.assetName != ''">
+            and fa.asset_name like concat('%', #{condition.assetName}, '%')
+        </if>
+        <if test="condition.result != null">
+        </if>
+    </select>
 </mapper>
