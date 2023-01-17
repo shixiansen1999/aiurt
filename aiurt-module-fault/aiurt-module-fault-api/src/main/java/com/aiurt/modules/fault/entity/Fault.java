@@ -329,6 +329,9 @@ public class Fault extends DictEntity implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date approvalPassTime;
 
+    @ApiModelProperty(value = "上报审核人员")
+    private String approvalUserName;
+
     @ApiModelProperty(value = "超时时长")
     @TableField(exist = false)
     private String overTime;

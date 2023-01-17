@@ -177,8 +177,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 抄送
         String remindUserName = fault.getRemindUserName();
-        sendMessage(user.getUsername(), fault.getCode(), remindUserName,String.format("新的故障【%s】上报。", fault.getCode()));
-
+        if (StrUtil.isBlank(remindUserName)) {
+            sendMessage(user.getUsername(), fault.getCode(), remindUserName,String.format("新的故障【%s】上报。", fault.getCode()));
+        }
         // 回调
         if (StrUtil.isNotBlank(fault.getRepairCode())) {
             FaultCallbackDTO faultCallbackDTO = new FaultCallbackDTO();
@@ -249,6 +250,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .processPerson(user.getUsername())
                 .build();
         fault.setApprovalTime(new Date());
+        fault.setApprovalUserName(user.getUsername());
 
         // 判断是否为审批通过
         boolean b = Objects.isNull(approvalStatus) || status.equals(approvalStatus);
@@ -338,6 +340,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 记录日志
         saveLog(user, FaultStatusEnum.CANCEL.getMessage(), fault.getCode(), FaultStatusEnum.CANCEL.getStatus(), cancelDTO.getCancelRemark());
+
+        String receiveUserName = fault.getReceiveUserName();
+
+        if (!StrUtil.equalsAnyIgnoreCase(receiveUserName, user.getUsername())) {
+            sendMessage(user.getUsername(), fault.getCode(), receiveUserName, String.format("故障【%s】已被【%s】作废",fault.getCode(), user.getRealname()));
+        }
 
     }
 
@@ -555,17 +563,18 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         String faultCode = refuseAssignmentDTO.getFaultCode();
         Fault fault = isExist(faultCode);
 
-        /*FaultRepairRecord repairRecord = getFaultRepairRecord(refuseAssignmentDTO.getFaultCode(), loginUser);
+        FaultRepairRecord repairRecord = getFaultRepairRecord(refuseAssignmentDTO.getFaultCode(), loginUser);
 
-        if (Objects.isNull(repairRecord)) {
-            throw new AiurtBootException("该工单您的，您没有权限拒绝接收指派工单！");
+        if (Objects.nonNull(repairRecord)) {
+            repairRecord.setRefuseAssignTime(new Date());
+            repairRecord.setRefuseAssignRemark(refuseAssignmentDTO.getRefuseRemark());
         }
 
-        repairRecord.setRefuseAssignTime(new Date());
-        repairRecord.setRefuseAssignRemark(refuseAssignmentDTO.getRefuseRemark());*/
+
 
         // 状态-已审批待指派
         fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
+        fault.setAppointUserName(null);
 
         updateById(fault);
 
@@ -625,12 +634,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         saveLog(user, "开始维修", code, FaultStatusEnum.REPAIR.getStatus(), null);
 
         // 发送给指派人
+        String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode());
         BusMessageDTO message = new BusMessageDTO();
         message.setBusType(SysAnnmentTypeEnum.FAULT.getType());
         message.setBusId(code);
         message.setFromUser(user.getUsername());
         // 工班长
-        message.setToUser(fault.getAssignUserName());
+        message.setToUser(receiveUserName);
         message.setToAll(false);
         message.setTitle("故障管理");
         message.setContent(String.format("【%s】开始处理故障【%s】!",  user.getRealname(), code));
@@ -1119,13 +1129,19 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
 
             saveLog(loginUser, "维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), null);
-            List<String> userNameList = new ArrayList<>();
-            userNameList.add(fault.getAppointUserName());
+            Set<String> userNameSet = new HashSet<>();
+            userNameSet.add(fault.getAppointUserName());
+            userNameSet.add(fault.getReceiveUserName());
+            if (StrUtil.isNotBlank(fault.getApprovalUserName())) {
+                userNameSet.add(fault.getApprovalUserName());
+            }
             String remindUserName = fault.getRemindUserName();
             List<String> list = StrUtil.split(remindUserName, ',');
-            userNameList.addAll(list);
+            //
+            getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
+            userNameSet.addAll(list);
             //  发送消息
-            sendMessage(loginUser.getUsername(), faultCode, StrUtil.join(",", list), String.format("故障【%s】维修结果审核已通过", faultCode));
+            sendMessage(loginUser.getUsername(), faultCode, StrUtil.join(",", userNameSet), String.format("故障【%s】维修结果审核已通过", faultCode));
         } else {
            // FaultRepairRecord faultRepairRecord = getFaultRepairRecord(faultCode, null);
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
