@@ -2139,8 +2139,16 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         String stationName = iSysBaseAPI.getPosition(deviceRel.getStationCode());
                         String lineName = iSysBaseAPI.getPosition(deviceRel.getLineCode());
                         LoginUser userById = iSysBaseAPI.getUserById(deviceRel.getStaffId());
+                        if (deviceRel.getWeeks() == null) {
+                            Calendar c = Calendar.getInstance();
+                            c.setFirstDayOfWeek(Calendar.MONDAY);
+                            c.setTime(deviceRel.getStartTime());
+                            c.setMinimalDaysInFirstWeek(7);
+                            int i = c.get(Calendar.WEEK_OF_YEAR);
+                            deviceRel.setWeeks(i);
+                        }
                         content.append(lineName).append("-").append(stationName).append(" ").append("第").append(deviceRel.getWeeks()).append("周检修任务").append(" ").append(" 检修人:").append(userById.getRealname()).append("。").append('\n');
-                        code.append(deviceRel.getCode()).append(",");
+                        code.append(deviceRel.getTaskCode()).append(",");
                     }
                 }
             }
