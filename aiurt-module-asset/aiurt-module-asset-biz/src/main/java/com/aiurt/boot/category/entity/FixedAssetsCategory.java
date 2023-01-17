@@ -42,6 +42,10 @@ public class FixedAssetsCategory implements Serializable {
     @ApiModelProperty(value = "父级code")
     @TableField(exist = false)
     private java.lang.String parentCode;
+	/**层级*/
+	@Excel(name = "层级", width = 15)
+    @ApiModelProperty(value = "层级")
+    private java.lang.String level;
 	/**分类名称*/
 	@Excel(name = "分类名称", width = 15)
     @ApiModelProperty(value = "分类名称")

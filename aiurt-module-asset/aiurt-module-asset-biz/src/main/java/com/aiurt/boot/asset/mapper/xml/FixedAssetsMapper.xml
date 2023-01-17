@@ -5,14 +5,14 @@
         select *
         from fixed_assets
                 where del_flag = 0
-        <if test="condition.categoryCode != null and condition.categoryCode != ''">
-            and category_code = #{condition.categoryCode}
-        </if>
         <if test="condition.assetCode != null and condition.assetCode != ''">
-            and  asset_code = #{condition.assetCode}
+            and  asset_code like concat('%', #{condition.assetCode}, '%')
         </if>
         <if test="condition.assetName != null and condition.assetName != ''">
-            and  asset_Name = #{condition.assetName}
+            and  asset_Name like concat('%', #{condition.assetName}, '%')
+        </if>
+          <if test="condition.orgCode != null and condition.orgCode != ''">
+            and  org_code = #{condition.orgCode}
         </if>
         <if test="condition.lineStations != null and condition.lineStations.size() != 0">
             and location in
@@ -20,8 +20,17 @@
                 #{item}
             </foreach>
         </if>
-         <if test="condition.location != null and condition.location != ''and condition.lineStations.size() == 0">
-            and location  = #{condition.location}
+        <if test="condition.location != null and condition.location != ''and condition.lineStations.size() == 0">
+            and location = #{condition.location}
+        </if>
+        <if test="condition.status != null">
+            and  status = #{condition.status}
+        </if>
+            <if test="condition.treeCode != null and condition.treeCode.size() != 0">
+            and category_code in
+            <foreach collection="condition.treeCode" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
         </if>
         order by create_time desc
     </select>

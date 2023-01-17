@@ -31,6 +31,10 @@ public class FixedAssetsCategoryDTO {
     @Excel(name = "上级节点", width = 15)
     @ApiModelProperty(value = "上级节点")
     private java.lang.String pidName;
+    /**上级节点编码*/
+    @Excel(name = "上级节点编码", width = 15)
+    @ApiModelProperty(value = "上级节点编码")
+    private java.lang.String parentCode;
     /**分类名称*/
     @Excel(name = "分类名称", width = 15)
     @ApiModelProperty(value = "分类名称")
@@ -39,6 +43,10 @@ public class FixedAssetsCategoryDTO {
     @Excel(name = "分类编码", width = 15)
     @ApiModelProperty(value = "分类编码")
     private java.lang.String categoryCode;
+    /**分类编码*/
+    @Excel(name = "分类编码", width = 15)
+    @ApiModelProperty(value = "分类编码")
+    private java.lang.String treeCategoryCode;
     /**树查询编码*/
     @Excel(name = "树查询编码", width = 15)
     @ApiModelProperty(value = "树查询编码")
