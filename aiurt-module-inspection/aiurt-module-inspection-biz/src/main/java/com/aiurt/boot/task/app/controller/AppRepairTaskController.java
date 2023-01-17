@@ -155,7 +155,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     @PostMapping(value = "/appRepairToExamine")
     public Result<String> appRepairToExamine(@RequestBody ExamineDTO examineDTO) {
         repairTaskService.toExamine(examineDTO);
-        return Result.OK("审核成功！");
+        return Result.OK("操作成功！");
     }
 
 
@@ -184,7 +184,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     @PostMapping(value = "/appRepairAcceptance")
     public Result<String> appRepairAcceptance(@RequestBody ExamineDTO examineDTO) {
         repairTaskService.acceptance(examineDTO);
-        return Result.OK("验收成功！");
+        return Result.OK("操作成功！");
     }
 
     /**
