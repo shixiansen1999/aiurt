@@ -443,7 +443,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 重新写任务，指派人
         // sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
-        sendMessage(loginUser.getUsername(), faultCode, user.getUsername(), String.format("【%s】给你指派了一条故障【%s】，请查看。", user.getRealname(), faultCode));
+        sendMessage(user.getUsername(), faultCode, loginUser.getUsername(), String.format("【%s】给你指派了一条故障【%s】，请查看。", user.getRealname(), faultCode));
 
     }
 
@@ -535,21 +535,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         saveLog(loginUser, "接收指派", code, FaultStatusEnum.RECEIVE_ASSIGN.getStatus(), null);
 
-        // 发送消息通知指派人
-        BusMessageDTO message = new BusMessageDTO();
-        message.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-        message.setBusId(code);
-        message.setFromUser(loginUser.getUsername());
-        // 工班长
-        message.setToUser(fault.getAssignUserName());
-        message.setToAll(false);
-        message.setTitle("故障管理");
-        message.setContent(String.format("故障(%s)已经被 %s 领取!", code, loginUser.getUsername()));
-        message.setCategory("2");
-        message.setLevel(null);
-        message.setPriority("L");
-        message.setStartTime(new Date());
-        sysBaseAPI.sendBusAnnouncement(message);
+
+        sendMessage(loginUser.getUsername(), code, fault.getAssignUserName(), String.format("故障【%s】已经被 【%s】 领取", code, loginUser.getRealname()));
 
         // 待办任务
         sendTodo(code, null, loginUser.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
@@ -602,7 +589,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         message.setToUser(fault.getAssignUserName());
         message.setToAll(false);
         message.setTitle("故障管理");
-        message.setContent(String.format("【%s】拒绝接收指派，请重新指派故障【%s】!",  loginUser.getUsername(), faultCode));
+        message.setContent(String.format("【%s】拒绝接收指派，请重新指派故障【%s】",  loginUser.getRealname(), faultCode));
         message.setCategory("2");
         message.setLevel(null);
         message.setPriority("L");
@@ -774,7 +761,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_HANG_UP.getType(), code, null, "1");
 
         // 维修待办
-        sendTodo(code, null, loginUser.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
+        sendTodo(code, null, fault.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
 
     }
 
