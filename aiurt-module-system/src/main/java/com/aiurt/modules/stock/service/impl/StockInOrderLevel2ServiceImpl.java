@@ -548,7 +548,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		}
 
 		try {
-			String fileName = "应急队伍导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
+			String fileName = "二级库入库错误信息清单"+"_" + System.currentTimeMillis()+"."+type;
 			FileOutputStream out = new FileOutputStream(errorExcelUpload+ File.separator+fileName);
 			url = File.separator+"errorExcelFiles"+ File.separator+fileName;
 			workbook.write(out);
