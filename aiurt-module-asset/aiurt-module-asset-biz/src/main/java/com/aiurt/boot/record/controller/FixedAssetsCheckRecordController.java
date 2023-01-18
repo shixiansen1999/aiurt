@@ -1,14 +1,16 @@
 package com.aiurt.boot.record.controller;
 
-import com.aiurt.boot.record.vo.FixedAssetsCheckRecordVO;
 import com.aiurt.boot.record.dto.FixedAssetsCheckRecordDTO;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.boot.record.service.IFixedAssetsCheckRecordService;
+import com.aiurt.boot.record.vo.CheckResultTotalVO;
+import com.aiurt.boot.record.vo.FixedAssetsCheckRecordVO;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +46,8 @@ public class FixedAssetsCheckRecordController extends BaseController<FixedAssets
     @ApiOperation(value = "固定资产盘点记录表-分页列表查询", notes = "固定资产盘点记录表-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<FixedAssetsCheckRecordVO>> queryPageList(FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO,
-                                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+                                                                 @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         Page<FixedAssetsCheckRecordVO> page = new Page<FixedAssetsCheckRecordVO>(pageNo, pageSize);
         IPage<FixedAssetsCheckRecordVO> pageList = fixedAssetsCheckRecordService.queryPageList(page, fixedAssetsCheckRecordDTO);
         return Result.OK(pageList);
@@ -62,6 +64,16 @@ public class FixedAssetsCheckRecordController extends BaseController<FixedAssets
     public Result<List<FixedAssetsCheckRecordVO>> nonsortList(FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO) {
         List<FixedAssetsCheckRecordVO> pageList = fixedAssetsCheckRecordService.nonsortList(fixedAssetsCheckRecordDTO);
         return Result.OK(pageList);
+    }
+
+    /**
+     * 固定资产-盘点结果统计
+     */
+    @ApiOperation(value = "固定资产-盘点结果统计", notes = "固定资产-盘点结果统计")
+    @GetMapping(value = "/checkResultTotal")
+    public Result<CheckResultTotalVO> checkResultTotal(@RequestParam @ApiParam(name = "id", value = "盘点任务记录ID") String id) {
+        CheckResultTotalVO totalVO = fixedAssetsCheckRecordService.checkResultTotal(id);
+        return Result.OK(totalVO);
     }
 
     /**

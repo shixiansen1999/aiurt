@@ -5,6 +5,7 @@ import com.aiurt.boot.category.entity.FixedAssetsCategory;
 import com.aiurt.boot.check.dto.AssetsResultDTO;
 import com.aiurt.boot.check.dto.FixedAssetsCheckDTO;
 import com.aiurt.boot.check.entity.FixedAssetsCheck;
+import com.aiurt.boot.check.vo.CheckUserVO;
 import com.aiurt.boot.check.vo.FixedAssetsCheckVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -122,4 +123,11 @@ public interface IFixedAssetsCheckService extends IService<FixedAssetsCheck> {
      * @return
      */
     IPage<FixedAssetsCheckVO> pageList(Page<FixedAssetsCheckVO> page, FixedAssetsCheckDTO fixedAssetsCheckDTO);
+
+    /**
+     * 固定资产盘点任务记录-记录的盘点人下拉接口
+     *
+     * @return
+     */
+    List<CheckUserVO> checkUserInfo();
 }

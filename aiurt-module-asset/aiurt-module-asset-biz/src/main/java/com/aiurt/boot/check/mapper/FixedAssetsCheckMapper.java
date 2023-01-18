@@ -2,6 +2,7 @@ package com.aiurt.boot.check.mapper;
 
 import com.aiurt.boot.check.dto.FixedAssetsCheckDTO;
 import com.aiurt.boot.check.entity.FixedAssetsCheck;
+import com.aiurt.boot.check.vo.CheckUserVO;
 import com.aiurt.boot.check.vo.FixedAssetsCheckVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -48,4 +49,11 @@ public interface FixedAssetsCheckMapper extends BaseMapper<FixedAssetsCheck> {
      * @return
      */
     IPage<FixedAssetsCheckVO> pageList(@Param("page") Page<FixedAssetsCheckVO> page, @Param("condition") FixedAssetsCheckDTO fixedAssetsCheckDTO);
+
+    /**
+     * 固定资产盘点任务记录-记录的盘点人下拉接口
+     *
+     * @return
+     */
+    List<CheckUserVO> checkUserInfo();
 }

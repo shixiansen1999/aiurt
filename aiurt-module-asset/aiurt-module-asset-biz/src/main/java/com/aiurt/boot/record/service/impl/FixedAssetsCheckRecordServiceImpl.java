@@ -17,6 +17,7 @@ import com.aiurt.boot.record.dto.FixedAssetsCheckRecordDTO;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.boot.record.mapper.FixedAssetsCheckRecordMapper;
 import com.aiurt.boot.record.service.IFixedAssetsCheckRecordService;
+import com.aiurt.boot.record.vo.CheckResultTotalVO;
 import com.aiurt.boot.record.vo.FixedAssetsCheckRecordVO;
 import com.aiurt.common.constant.CommonConstant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -30,6 +31,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,7 +88,15 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
             if (ObjectUtils.isNotEmpty(fixedAssetsCheckRecordDTO)) {
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getCheckId()).ifPresent(checkid -> wrapper.eq(FixedAssetsCheckRecord::getCheckId, checkid));
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getAssetName()).ifPresent(assetName -> wrapper.like(FixedAssetsCheckRecord::getAssetName, assetName));
-//            Optional.ofNullable(fixedAssetsCheckRecordDTO.getResult()).ifPresent(result -> wrapper.like(FixedAssetsCheckRecord::getre, assetCode));
+                Optional.ofNullable(fixedAssetsCheckRecordDTO.getResult()).ifPresent(result -> {
+                    if (FixedAssetsConstant.check_result_0.equals(result)) {
+                        wrapper.eq(FixedAssetsCheckRecord::getProfitLoss, 0);
+                    } else if (FixedAssetsConstant.check_result_1.equals(result)) {
+                        wrapper.gt(FixedAssetsCheckRecord::getProfitLoss, 0);
+                    } else if (FixedAssetsConstant.check_result_2.equals(result)) {
+                        wrapper.lt(FixedAssetsCheckRecord::getProfitLoss, 0);
+                    }
+                });
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getCategoryCode()).ifPresent(categoryCode -> wrapper.like(FixedAssetsCheckRecord::getCategoryCode, categoryCode));
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getAssetCode()).ifPresent(assetCode -> wrapper.like(FixedAssetsCheckRecord::getAssetCode, assetCode));
             }
@@ -165,6 +175,15 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getAssetName()).ifPresent(assetName -> wrapper.like(FixedAssetsCheckRecord::getAssetName, assetName));
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getCategoryCode()).ifPresent(categoryCode -> wrapper.like(FixedAssetsCheckRecord::getCategoryCode, categoryCode));
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getAssetCode()).ifPresent(assetCode -> wrapper.like(FixedAssetsCheckRecord::getAssetCode, assetCode));
+                Optional.ofNullable(fixedAssetsCheckRecordDTO.getResult()).ifPresent(result -> {
+                    if (FixedAssetsConstant.check_result_0.equals(result)) {
+                        wrapper.eq(FixedAssetsCheckRecord::getProfitLoss, 0);
+                    } else if (FixedAssetsConstant.check_result_1.equals(result)) {
+                        wrapper.gt(FixedAssetsCheckRecord::getProfitLoss, 0);
+                    } else if (FixedAssetsConstant.check_result_2.equals(result)) {
+                        wrapper.lt(FixedAssetsCheckRecord::getProfitLoss, 0);
+                    }
+                });
             }
             List<FixedAssetsCheckRecord> list = this.list(wrapper);
             for (FixedAssetsCheckRecord record : list) {
@@ -198,5 +217,31 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
             record.setLocationName(position);
         }
         return records;
+    }
+
+    @Override
+    public CheckResultTotalVO checkResultTotal(String id) {
+        FixedAssetsCheck fixedAssetsCheck = fixedAssetsCheckService.getById(id);
+        Assert.notNull(fixedAssetsCheck, "不存在该盘点任务数据！");
+        CheckResultTotalVO totalVO = new CheckResultTotalVO();
+        if (!FixedAssetsConstant.status_3.equals(fixedAssetsCheck.getStatus())) {
+            return totalVO;
+        }
+        Long profit = this.lambdaQuery().eq(FixedAssetsCheckRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(FixedAssetsCheckRecord::getCheckId, id)
+                .gt(FixedAssetsCheckRecord::getProfitLoss, 0)
+                .count();
+        Long loss = this.lambdaQuery().eq(FixedAssetsCheckRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(FixedAssetsCheckRecord::getCheckId, id)
+                .lt(FixedAssetsCheckRecord::getProfitLoss, 0)
+                .count();
+        Long equality = this.lambdaQuery().eq(FixedAssetsCheckRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(FixedAssetsCheckRecord::getCheckId, id)
+                .eq(FixedAssetsCheckRecord::getProfitLoss, 0)
+                .count();
+        totalVO.setProfit(profit);
+        totalVO.setLoss(loss);
+        totalVO.setEquality(equality);
+        return totalVO;
     }
 }

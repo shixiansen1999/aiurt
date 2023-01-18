@@ -107,4 +107,9 @@
             </when>
         </choose>
     </select>
+    <select id="checkUserInfo" resultType="com.aiurt.boot.check.vo.CheckUserVO">
+        select distinct check_id
+        from fixed_assets_check
+        where del_flag = 0
+    </select>
 </mapper>

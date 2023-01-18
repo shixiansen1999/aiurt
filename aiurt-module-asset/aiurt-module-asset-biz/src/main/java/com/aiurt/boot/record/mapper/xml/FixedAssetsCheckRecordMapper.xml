@@ -30,7 +30,5 @@
         <if test="condition.assetName != null and condition.assetName != ''">
             and fa.asset_name like concat('%', #{condition.assetName}, '%')
         </if>
-        <if test="condition.result != null">
-        </if>
     </select>
 </mapper>

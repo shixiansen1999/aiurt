@@ -20,4 +20,16 @@ public interface FixedAssetsConstant {
      * 盘点状态-已完成
      */
     Integer status_3 = 3;
+    /**
+     * 盘点结果-盘平
+     */
+    Integer check_result_0 = 0;
+    /**
+     * 盘点结果-盘盈
+     */
+    Integer check_result_1 = 1;
+    /**
+     * 盘点结果-盘亏
+     */
+    Integer check_result_2 = 2;
 }

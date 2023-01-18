@@ -23,9 +23,9 @@ public class FixedAssetsCheckRecordDTO {
     @ApiModelProperty(value = "资产名称")
     private String assetName;
     /**
-     * 盘点结果
+     * 盘点结果 0:盘平、1盘盈、2盘亏
      */
-    @ApiModelProperty(value = "盘点结果")
+    @ApiModelProperty(value = "盘点结果 0:盘平、1盘盈、2盘亏")
     private Integer result;
     /**
      * 资产分类编码

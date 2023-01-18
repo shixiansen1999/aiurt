@@ -12,11 +12,14 @@ import com.aiurt.boot.check.dto.FixedAssetsCheckDTO;
 import com.aiurt.boot.check.entity.FixedAssetsCheck;
 import com.aiurt.boot.check.entity.FixedAssetsCheckCategory;
 import com.aiurt.boot.check.entity.FixedAssetsCheckDept;
+import com.aiurt.boot.check.entity.FixedAssetsCheckDetail;
 import com.aiurt.boot.check.mapper.FixedAssetsCheckCategoryMapper;
 import com.aiurt.boot.check.mapper.FixedAssetsCheckMapper;
 import com.aiurt.boot.check.service.IFixedAssetsCheckCategoryService;
 import com.aiurt.boot.check.service.IFixedAssetsCheckDeptService;
+import com.aiurt.boot.check.service.IFixedAssetsCheckDetailService;
 import com.aiurt.boot.check.service.IFixedAssetsCheckService;
+import com.aiurt.boot.check.vo.CheckUserVO;
 import com.aiurt.boot.check.vo.FixedAssetsCheckVO;
 import com.aiurt.boot.constant.FixedAssetsConstant;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
@@ -38,11 +41,11 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -68,6 +71,9 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
     private IFixedAssetsCheckCategoryService fixedAssetsCheckCategoryService;
     @Autowired
     private IFixedAssetsCheckDeptService fixedAssetsCheckDeptService;
+    @Lazy
+    @Autowired
+    private IFixedAssetsCheckDetailService fixedAssetsCheckDetailService;
     @Autowired
     private FixedAssetsCheckCategoryMapper fixedAssetsCheckCategoryMapper;
     @Autowired
@@ -207,7 +213,9 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
                 .in(FixedAssets::getOrgCode, orgCodes)
                 .list();
         List<FixedAssetsCheckRecord> records = new ArrayList<>();
+        List<FixedAssetsCheckDetail> details = new ArrayList<>();
         FixedAssetsCheckRecord checkRecord = null;
+        FixedAssetsCheckDetail detail = null;
         for (FixedAssets assets : fixedAssets) {
             checkRecord = new FixedAssetsCheckRecord();
             checkRecord.setCheckId(id);
@@ -218,12 +226,21 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
             checkRecord.setCategoryCode(assets.getCategoryCode());
             checkRecord.setNumber(assets.getNumber());
             records.add(checkRecord);
+
+            detail = new FixedAssetsCheckDetail();
+            detail.setCheckId(id);
+            detail.setAssetCode(assets.getAssetCode());
+            detail.setAssetName(assets.getAssetName());
+            detail.setLocation(assets.getLocation());
+            detail.setCategoryCode(assets.getCategoryCode());
+            detail.setBeforeNumber(assets.getNumber());
+            details.add(detail);
         }
         if (CollectionUtil.isEmpty(records)) {
             throw new AiurtBootException("所属的物资分类和组织机构中暂无需要盘点的数据！");
         }
         fixedAssetsCheckRecordService.saveBatch(records);
-        // TODO: 2023/1/18 保存变更明细数据
+        fixedAssetsCheckDetailService.saveBatch(details);
     }
 
     @Override
@@ -252,7 +269,11 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteCheckInfo(String id) {
-        // TODO: 2023/1/17 限制哪种状态下不允许删除
+        FixedAssetsCheck fixedAssetsCheck = this.getById(id);
+        Assert.notNull(fixedAssetsCheck, "未找到对应数据！");
+        if (!FixedAssetsConstant.status_0.equals(fixedAssetsCheck.getStatus())) {
+            throw new AiurtBootException("待下发状态的记录才允许删除！");
+        }
         this.removeById(id);
         fixedAssetsCheckCategoryService.remove(new LambdaQueryWrapper<FixedAssetsCheckCategory>().eq(FixedAssetsCheckCategory::getCheckId, id));
         fixedAssetsCheckDeptService.remove(new LambdaQueryWrapper<FixedAssetsCheckDept>().eq(FixedAssetsCheckDept::getCheckId, id));
@@ -307,6 +328,16 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         }
         return pageList;
 
+    }
+
+    @Override
+    public List<CheckUserVO> checkUserInfo() {
+        List<CheckUserVO> checkUserInfo = fixedAssetsCheckMapper.checkUserInfo();
+        checkUserInfo.forEach(check -> {
+            LoginUser user = sysBaseApi.getUserById(check.getCheckId());
+            Optional.ofNullable(user).ifPresent(u -> check.setCheckName(u.getRealname()));
+        });
+        return checkUserInfo;
     }
 
     /**
@@ -412,7 +443,9 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
             case 4:
                 // 审核通过
                 assetsCheck.setStatus(FixedAssetsConstant.status_3);
+                assetsCheck.setAuditTime(new Date());
                 assetsCheck.setAuditId(userId);
+                assetsCheck.setAuditReason(updateStateEntity.getReason());
                 // TODO: 2023/1/17 生成资产变更明细数据
                 break;
         }
