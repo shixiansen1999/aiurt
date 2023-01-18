@@ -67,9 +67,9 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         //获取权限查询的数据集合
         LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
         List<Fault> faults = faultMapper.selectList(queryWrapper);
-        List<String> ids = faults.stream().map(Fault::getId).distinct().collect(Collectors.toList());
+        List<String> codes = faults.stream().map(Fault::getCode).distinct().collect(Collectors.toList());
         LambdaQueryWrapper<FaultAnalysisReport> reportLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        reportLambdaQueryWrapper.in(FaultAnalysisReport::getFaultId, ids);
+        reportLambdaQueryWrapper.in(FaultAnalysisReport::getFaultCode, codes);
         List<FaultAnalysisReport> reportList = this.getBaseMapper().selectList(reportLambdaQueryWrapper);
 
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
