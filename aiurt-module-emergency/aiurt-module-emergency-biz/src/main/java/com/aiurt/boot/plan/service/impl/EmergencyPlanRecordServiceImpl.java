@@ -1575,7 +1575,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         //问题及措施
         List<EmergencyPlanRecordProblemMeasuresImportExcelDTO> problemMeasuresList = emergencyPlanRecordImportExcelDTO.getProblemMeasuresList();
         if(CollUtil.isNotEmpty(problemMeasuresList)){
-            for (int i = 0; i < planMaterialsList.size(); i++) {
+            for (int i = 0; i < problemMeasuresList.size(); i++) {
                 EmergencyPlanRecordProblemMeasuresImportExcelDTO emergencyPlanRecordProblemMeasuresImportExcelDTO = problemMeasuresList.get(i);
                 Map<String, String> map3 = new HashMap<>();
                 map3.put("sort", Convert.toStr(i+1));
