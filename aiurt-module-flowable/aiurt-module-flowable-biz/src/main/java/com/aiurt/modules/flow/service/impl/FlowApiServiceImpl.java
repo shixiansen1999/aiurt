@@ -338,7 +338,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     }
 
 
-    private void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData, Map<String, Object> variableData) {
+    public void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData, Map<String, Object> variableData) {
         String processInstanceId = task.getProcessInstanceId();
         String taskId = task.getId();
         // 获取流程任务
