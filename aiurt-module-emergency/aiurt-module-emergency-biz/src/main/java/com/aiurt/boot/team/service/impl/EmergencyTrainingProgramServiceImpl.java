@@ -300,38 +300,36 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
                         trainingProgramModel.setMistake(stringBuilder.toString());
                         errorLines++;
                     }
-
-                    if (errorLines > 0) {
-                        //存在错误，导出错误清单
-                        return getErrorExcel(errorLines, errorMessage, trainingProgramModels, successLines, null, type);
-                    }
-
-                    //校验通过，添加数据
-                    for (TrainingProgramModel programModel : trainingProgramModels) {
-                        String trainPlanCode = this.getTrainPlanCode();
-                        EmergencyTrainingProgram emergencyTrainingProgram = new EmergencyTrainingProgram();
-                        emergencyTrainingProgram.setTrainingProgramCode(trainPlanCode);
-                        emergencyTrainingProgram.setTrainingProgramName(programModel.getTrainingProgramName());
-                        DateTime time = DateUtil.parse(programModel.getTrainingPlanTime(), "yyyy年MM月");
-                        String format = DateUtil.format(time, "yyyy-MM");
-                        emergencyTrainingProgram.setTrainingPlanTime(DateUtil.parse(format,"yyyy-MM"));
-                        emergencyTrainingProgram.setTraineesNum(programModel.getPeopleNum());
-                        emergencyTrainingProgram.setStatus(TeamConstant.WAIT_PUBLISH);
-                        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-                        emergencyTrainingProgram.setOrgCode(user.getOrgCode());
-                        this.save(emergencyTrainingProgram);
-
-                        List<String> trainingTeamId = programModel.getTrainingTeamId();
-                        for (String teamId : trainingTeamId) {
-                            EmergencyTrainingTeam emergencyTrainingTeam = new EmergencyTrainingTeam();
-                            emergencyTrainingTeam.setEmergencyTrainingProgramId(emergencyTrainingProgram.getId());
-                            emergencyTrainingTeam.setEmergencyTeamId(teamId);
-                            emergencyTrainingTeamService.save(emergencyTrainingTeam);
-                        }
-                    }
-                    return Result.ok("文件导入成功！");
+                }
+                if (errorLines > 0) {
+                    //存在错误，导出错误清单
+                    return getErrorExcel(errorLines, errorMessage, trainingProgramModels, successLines, null, type);
                 }
 
+                //校验通过，添加数据
+                for (TrainingProgramModel programModel : trainingProgramModels) {
+                    String trainPlanCode = this.getTrainPlanCode();
+                    EmergencyTrainingProgram emergencyTrainingProgram = new EmergencyTrainingProgram();
+                    emergencyTrainingProgram.setTrainingProgramCode(trainPlanCode);
+                    emergencyTrainingProgram.setTrainingProgramName(programModel.getTrainingProgramName());
+                    DateTime time = DateUtil.parse(programModel.getTrainingPlanTime(), "yyyy年MM月");
+                    String format = DateUtil.format(time, "yyyy-MM");
+                    emergencyTrainingProgram.setTrainingPlanTime(DateUtil.parse(format,"yyyy-MM"));
+                    emergencyTrainingProgram.setTraineesNum(programModel.getPeopleNum());
+                    emergencyTrainingProgram.setStatus(TeamConstant.WAIT_PUBLISH);
+                    LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                    emergencyTrainingProgram.setOrgCode(user.getOrgCode());
+                    this.save(emergencyTrainingProgram);
+
+                    List<String> trainingTeamId = programModel.getTrainingTeamId();
+                    for (String teamId : trainingTeamId) {
+                        EmergencyTrainingTeam emergencyTrainingTeam = new EmergencyTrainingTeam();
+                        emergencyTrainingTeam.setEmergencyTrainingProgramId(emergencyTrainingProgram.getId());
+                        emergencyTrainingTeam.setEmergencyTeamId(teamId);
+                        emergencyTrainingTeamService.save(emergencyTrainingTeam);
+                    }
+                }
+                return Result.ok("文件导入成功！");
             } catch (Exception e) {
                 e.printStackTrace();
             }
