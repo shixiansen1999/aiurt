@@ -24,4 +24,7 @@ public class StartBpmnImportDTO implements Serializable {
 
     @ApiModelProperty("主键id")
     private String businessKey;
+
+    @ApiModelProperty("流程审批批注对象")
+    private FlowTaskCompleteCommentDTO flowTaskCompleteDTO;
 }
