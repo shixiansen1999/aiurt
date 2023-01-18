@@ -67,10 +67,18 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
+		// fix 状态查询
+		Integer extendStatus = actCustomModelInfo.getExtendStatus();
+		if (Objects.nonNull(extendStatus)) {
+			actCustomModelInfo.setExtendStatus(null);
+			actCustomModelInfo.setStatus(extendStatus);
+		}
+
 		QueryWrapper<ActCustomModelInfo> queryWrapper = QueryGenerator.initQueryWrapper(actCustomModelInfo, req.getParameterMap());
 		Page<ActCustomModelInfo> page = new Page<>(pageNo, pageSize);
 		IPage<ActCustomModelInfo> pageList = actCustomModelInfoService.page(page, queryWrapper);
 
+		// 已发布的
 		pageList.getRecords().stream().forEach(modeInfo->{
 
 			try {
