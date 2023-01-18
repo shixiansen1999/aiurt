@@ -60,9 +60,7 @@ public class EmergencyPlanMaterialsServiceImpl extends ServiceImpl<EmergencyPlan
             for (EmergencyPlanMaterials planMaterial : planMaterials) {
                 EmergencyPlanMaterialsDTO emergencyPlanMaterialsDto = new EmergencyPlanMaterialsDTO();
                 String materialsCode = planMaterial.getMaterialsCode();
-                String MaterialId = planMaterial.getId();
                 Integer materialsNumber = planMaterial.getMaterialsNumber();
-                emergencyPlanMaterialsDto.setId(MaterialId);
                 emergencyPlanMaterialsDto.setMaterialsCode(materialsCode);
                 emergencyPlanMaterialsDto.setMaterialsNumber(materialsNumber);
                 //根据物资code查询物资信息
@@ -70,6 +68,9 @@ public class EmergencyPlanMaterialsServiceImpl extends ServiceImpl<EmergencyPlan
                         .eq(EmergencyMaterials::getMaterialsCode, materialsCode).list();
                 if(CollUtil.isNotEmpty(materialsList)){
                     for (EmergencyMaterials emergencyMaterials : materialsList) {
+                        String MaterialId = emergencyMaterials.getId();
+                        emergencyPlanMaterialsDto.setId(MaterialId);
+
                         String categoryCode = emergencyMaterials.getCategoryCode();
                         //查询物资分类信息
                         List<EmergencyMaterialsCategory> list = emergencyMaterialsCategoryService.lambdaQuery()
