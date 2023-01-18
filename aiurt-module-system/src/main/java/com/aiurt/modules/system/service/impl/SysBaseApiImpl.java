@@ -1451,8 +1451,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
             LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
             List<Device> devices = deviceMapper.selectList(queryWrapper.in(Device::getCode, arrayList));
-            List<String> collect = devices.stream().map(Device::getDeviceTypeCode).collect(Collectors.toList());
-            deviceTypeQueryWrapper.in("`code`", collect);
+            List<String> deviceTypeCodeList = devices.stream().map(Device::getDeviceTypeCode).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(deviceTypeCodeList)) {
+                deviceTypeQueryWrapper.in("`code`", deviceTypeCodeList);
+            }
         }
         List<DeviceType> deviceTypeList = deviceTypeService.list(deviceTypeQueryWrapper);
         List<DeviceTypeTable> list = new ArrayList<>();

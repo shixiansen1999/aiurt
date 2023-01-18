@@ -118,7 +118,7 @@ public class GitProperties {
 
             version = read.getVersion();
         } catch (Exception e) {
-           log.error(e.getMessage(), e);
+
         } finally {
         }
         return version;
