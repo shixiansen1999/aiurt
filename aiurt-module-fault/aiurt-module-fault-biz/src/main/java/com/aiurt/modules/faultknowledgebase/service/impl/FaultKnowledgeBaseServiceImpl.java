@@ -346,28 +346,25 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                         faultKnowledgeBase.setDelFlag(0);
                         faultKnowledgeBase.setApprovedResult(0);
                         faultKnowledgeBase.setStatus(0);
-                        //插入数据库，并获取预案id
-                         this.startProcess(faultKnowledgeBase);
+                        //插入数据库，并获取故障知识库Id
+                        String businessKey = this.startProcess(faultKnowledgeBase);
 
-                        //引用流程开始接口
-                        StartBpmnDTO startBpmnDto  = new StartBpmnDTO();
-                        startBpmnDto.setModelKey("fault_knowledge_base");
-                        Map<String,Object> map = new HashMap<>(32);
-                        map.put("id",faultKnowledgeBase.getId());
-                        map.put("deviceCode",faultKnowledgeBase.getDeviceCode());
-                        map.put("deviceTypeCode",faultKnowledgeBase.getDeviceTypeCode());
-                        map.put("faultPhenomenon",faultKnowledgeBase.getFaultPhenomenon());
-                        map.put("knowledgeBaseTypeCode",faultKnowledgeBase.getKnowledgeBaseTypeCode());
-                        map.put("majorCode",faultKnowledgeBase.getMajorCode());
-                        map.put("processInitiator",faultKnowledgeBase.getProcessInitiator());
-                        map.put("solution",faultKnowledgeBase.getSolution());
-                        map.put("systemCode",faultKnowledgeBase.getSystemCode());
-                        startBpmnDto.setBusData(map);
+                        //获取登录人信息
+                        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                        String userName = loginUser.getUsername();
+                        //导入实体转换成Map
+                        Map<String, Object> busData = BeanUtil.beanToMap(faultKnowledgeBase);
+                        //创建流程实体
+                        StartBpmnImportDTO startBpmnImportDTO = new StartBpmnImportDTO();
+                        startBpmnImportDTO.setModelKey("fault_knowledge_base");
+                        startBpmnImportDTO.setUserName(userName);
+                        startBpmnImportDTO.setBusData(busData);
+                        startBpmnImportDTO.setBusinessKey(businessKey);
                         FlowTaskCompleteCommentDTO flowTaskCompleteCommentDTO = new FlowTaskCompleteCommentDTO();
                         flowTaskCompleteCommentDTO.setApprovalType("agree");
-                        startBpmnDto.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
-                        flowBaseApi.startAndTakeFirst(startBpmnDto);
-
+                        startBpmnImportDTO.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
+                        //导入数据走流程
+                        flowBaseApi.startBpmnWithImport(startBpmnImportDTO);
                     }
                     return imporReturnRes(errorLines, successLines, tipMessage, true, null);
                 }

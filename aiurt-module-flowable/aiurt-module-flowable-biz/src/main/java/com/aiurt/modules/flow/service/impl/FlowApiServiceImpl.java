@@ -256,7 +256,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 flowTaskComment.fillWith(task);
             }
             // 不需要保存中间业务数据了
-            this.completeTask(task, flowTaskComment, null);
+            this.completeTask(task, flowTaskComment, null, variableData);
         }
     }
 
@@ -326,6 +326,11 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData) {
+        completeTask(task, comment, busData, new HashMap<>(16));
+    }
+
+
+    private void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData, Map<String, Object> variableData) {
         String processInstanceId = task.getProcessInstanceId();
         String taskId = task.getId();
         // 获取流程任务
@@ -341,7 +346,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         String approvalType = comment.getApprovalType();
         String commentStr = comment.getComment();
 
-        Map<String, Object> variableData = new HashMap<>(16);
+
         // todo 中间变量
         variableData.put("operationType", approvalType);
         variableData.put("comment", commentStr);
