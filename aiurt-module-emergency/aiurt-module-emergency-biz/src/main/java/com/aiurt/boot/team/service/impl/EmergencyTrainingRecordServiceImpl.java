@@ -2,6 +2,7 @@ package com.aiurt.boot.team.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
@@ -352,7 +353,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             }
 
             //校验通过，添加数据
-          /*  EmergencyTrainingRecord emergencyTrainingRecord = new EmergencyTrainingRecord();
+            EmergencyTrainingRecord emergencyTrainingRecord = new EmergencyTrainingRecord();
             emergencyTrainingRecord.setStatus(TeamConstant.To_BE_SUBMITTED);
             BeanUtil.copyProperties(recordModel, emergencyTrainingRecord);
             List<EmergencyTrainingProcessRecord> processRecordList = new ArrayList<>();
@@ -363,7 +364,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 processRecordList.add(processRecord);
             }
             emergencyTrainingRecord.setProcessRecordList(processRecordList);
-            this.add(emergencyTrainingRecord);*/
+            this.add(emergencyTrainingRecord);
             return Result.ok("文件导入成功！");
         }
         return Result.ok("文件导入失败！");
