@@ -125,4 +125,10 @@ public class FixedAssetsCheckRecord implements Serializable {
     @ApiModelProperty(value = "已使用年限")
     @TableField(exist = false)
     private java.lang.Integer usefulLife;
+    /**
+     * 账面原值
+     */
+    @ApiModelProperty(value = "账面原值")
+    @TableField(exist = false)
+    private java.math.BigDecimal assetOriginal;
 }

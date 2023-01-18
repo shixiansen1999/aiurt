@@ -4,6 +4,7 @@ import com.aiurt.boot.category.dto.FixedAssetsCategoryDTO;
 import com.aiurt.boot.category.entity.FixedAssetsCategory;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 import java.util.List;
 
@@ -39,4 +40,11 @@ public interface IFixedAssetsCategoryService extends IService<FixedAssetsCategor
      */
     List<FixedAssetsCategoryDTO> getCategoryList(FixedAssetsCategoryDTO categoryDTO);
 
+    /**
+     * 校验分类编码、分类名称
+     *
+     * @param fixedAssetsCategory
+     * @return
+     */
+    Result<String> checkCodeName(FixedAssetsCategoryDTO fixedAssetsCategory);
 }

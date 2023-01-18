@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.boot.check.mapper.FixedAssetsCheckCategoryMapper">
+    <select id="getCategoryList" resultType="com.aiurt.boot.check.entity.FixedAssetsCheckCategory">
+        select facc.*, fac.category_name as categoryName
+        from fixed_assets_check_category facc
+                 left join fixed_assets_category fac on facc.category_code = fac.category_code
+        where facc.check_id = #{id}
+    </select>
+</mapper>

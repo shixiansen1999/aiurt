@@ -4,6 +4,7 @@ import com.aiurt.boot.asset.dto.FixedAssetsDTO;
 import com.aiurt.boot.asset.entity.FixedAssets;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 /**
  * @Description: fixed_assets
@@ -20,4 +21,12 @@ public interface IFixedAssetsService extends IService<FixedAssets> {
      * @return
      */
     Page<FixedAssetsDTO> pageList(Page<FixedAssetsDTO> pageList, FixedAssetsDTO fixedAssetsDTO);
+
+    /**
+     * 固定资产-详情
+     *
+     * @param code
+     * @return
+     */
+    Result<FixedAssetsDTO> detail(String code);
 }

@@ -1,38 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.check.mapper.FixedAssetsCheckMapper">
-
     <select id="selectPageList" resultType="com.aiurt.boot.check.entity.FixedAssetsCheck">
-        select a.* from fixed_assets_check a
-        left join sys_user s on a.check_id = s.id
+        select a.*
+        from fixed_assets_check a
+                 left join sys_user s on a.check_id = s.id
         where a.del_flag = 0
-        <if test="fixedAssetsCheck.inventoryList!=null">
+        <if test="fixedAssetsCheck.inventoryList != null">
             and a.inventory_list = #{fixedAssetsCheck.inventoryList}
         </if>
-        <if test="fixedAssetsCheck.checkId!=null">
-            and s.realname LIKE CONCAT ('%', #{fixedAssetsCheck.checkId}, '%')
+        <if test="fixedAssetsCheck.checkId != null">
+            and s.realname LIKE CONCAT('%', #{fixedAssetsCheck.checkId}, '%')
         </if>
-        <if test="fixedAssetsCheck.status!=null">
+        <if test="fixedAssetsCheck.status != null">
             and a.status = #{fixedAssetsCheck.status}
         </if>
-        <if test="fixedAssetsCheck.planStartDate!=null">
-            and DATE_FORMAT(a.plan_start_date,'%Y-%m-%d') => DATE_FORMAT( #{fixedAssetsCheck.planStartDate},'%Y-%m-%d')
+        <if test="fixedAssetsCheck.planStartDate != null">
+            and DATE_FORMAT(a.plan_start_date, '%Y-%m-%d') = >
+                DATE_FORMAT(#{fixedAssetsCheck.planStartDate}, '%Y-%m-%d')
         </if>
-        <if test="fixedAssetsCheck.planEndDate!=null">
-            and DATE_FORMAT(a.plan_end_date,'%Y-%m-%d') &lt;= DATE_FORMAT( #{fixedAssetsCheck.planEndDate},'%Y-%m-%d')
+        <if test="fixedAssetsCheck.planEndDate != null">
+            and DATE_FORMAT(a.plan_end_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{fixedAssetsCheck.planEndDate}, '%Y-%m-%d')
         </if>
-        <if test="fixedAssetsCheck.orgCode!=null">
-            and a.org_code =  #{fixedAssetsCheck.orgCode}
+        <if test="fixedAssetsCheck.orgCode != null">
+            and find_in_set(#{fixedAssetsCheck.orgCode}, a.org_code)
         </if>
-        <if test="fixedAssetsCheck.categoryCode!=null">
-            and a.category_code =  #{fixedAssetsCheck.categoryCode}
+        <if test="fixedAssetsCheck.categoryCode != null">
+            and find_in_set(#{fixedAssetsCheck.categoryCode}, a.category_code)
         </if>
     </select>
     <select id="selectOrgName" resultType="java.lang.String">
         select depart_name
         from sys_depart
-        where del_flag= 0
-        <if test="orgCode.size()>0">
+        where del_flag = 0
+        <if test="orgCode.size() > 0">
             AND org_code in
             <foreach item="orgCode" collection="orgCode" separator="," open="(" close=")" index="">
                 #{orgCode}
@@ -40,14 +41,70 @@
         </if>
     </select>
     <select id="selectCategoryName" resultType="java.lang.String">
-        select  category_name from fixed_assets_category
+        select category_name
+        from fixed_assets_category
         <where>
-            <if test="categoryCode.size()>0">
+            <if test="categoryCode.size() > 0">
                 category_code in
                 <foreach item="categoryCode" collection="categoryCode" separator="," open="(" close=")" index="">
                     #{categoryCode}
                 </foreach>
             </if>
         </where>
+    </select>
+
+    <select id="pageList" resultType="com.aiurt.boot.check.vo.FixedAssetsCheckVO">
+        select fac.*,
+               ahp.PROC_INST_ID_ as process_instance_id,
+               ara.ID_           as task_id,
+               ara.NAME_         as task_name,
+               arp.KEY_          as model_key
+        from fixed_assets_check fac
+                 Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fac.id
+                 LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
+                 LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+        where fac.del_flag = 0
+        <if test="condition.inventoryList != null and condition.inventoryList != ''">
+            and fac.inventory_list = #{condition.inventoryList}
+        </if>
+        <if test="condition.orgCode != null and condition.orgCode != ''">
+            and fac.id in (
+                select distinct check_id
+                from fixed_assets_check_dept
+                where org_code = #{condition.orgCode}
+            )
+        </if>
+        <if test="condition.status != null">
+            and fac.status = #{condition.status}
+        </if>
+        <if test="condition.categoryCode != null and condition.categoryCode != ''">
+            and fac.id in (
+                select distinct check_id
+                from fixed_assets_check_category
+                where category_code = #{condition.categoryCode}
+            )
+        </if>
+        <if test="condition.checkId != null and condition.checkId != ''">
+            and fac.check_id = #{condition.checkId}
+        </if>
+        <if test="condition.planStartDate != null and condition.planEndDate != null">
+            and date_format(fac.plan_start_date, '%Y-%m-%d')
+                between date_format(#{condition.planStartDate}, '%Y-%m-%d')
+                and date_format(#{condition.planEndDate}, '%Y-%m-%d')
+        </if>
+        <choose>
+            <when test="condition.flag != null and condition.flag">
+                and ahp.ID_ is not null
+                and fac.status in (#{condition.auditStatus})
+                and (ara.ASSIGNEE_ = #{condition.userName} OR ara.ID_ in (
+                    SELECT TASK_ID_
+                    FROM act_ru_identitylink ari
+                    WHERE ari.TYPE_ = 'candidate'
+                      AND ari.USER_ID_ = #{condition.userName}
+                      AND ari.TASK_ID_ = ara.ID_
+                      AND (ara.assignee_ = '' or ara.assignee_ is null)
+                ))
+            </when>
+        </choose>
     </select>
 </mapper>

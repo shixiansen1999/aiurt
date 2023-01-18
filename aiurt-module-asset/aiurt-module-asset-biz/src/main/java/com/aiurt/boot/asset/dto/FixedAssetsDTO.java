@@ -1,5 +1,6 @@
 package com.aiurt.boot.asset.dto;
 
+import com.aiurt.boot.check.dto.FixedAssetsCheckRecordDTO;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -91,6 +92,7 @@ public class FixedAssetsDTO extends DictEntity  {
 	/**启用状态(0停用、1启用)*/
 	@Excel(name = "启用状态(0停用、1启用)", width = 15)
     @ApiModelProperty(value = "启用状态(0停用、1启用)")
+    @Dict(dicCode = "fixed_assets_status")
     private Integer status;
 	/**折旧年限*/
 	@Excel(name = "折旧年限", width = 15)
@@ -114,4 +116,16 @@ public class FixedAssetsDTO extends DictEntity  {
 	@Excel(name = "累计折旧", width = 15)
     @ApiModelProperty(value = "累计折旧")
     private java.math.BigDecimal accumulatedDepreciation;
+    /**房产证号*/
+    @Excel(name = "是否能编辑", width = 15)
+    @ApiModelProperty(value = "是否能编辑")
+    private Boolean isNotEdit;
+    /**折旧年限*/
+    @Excel(name = "固定资产盘点记录", width = 15)
+    @ApiModelProperty(value = "固定资产盘点记录")
+    private List<FixedAssetsCheckRecordDTO> recordDTOList;
+    /**树查询编码*/
+    @Excel(name = "树查询编码", width = 15)
+    @ApiModelProperty(value = "树查询编码")
+    private List<String> treeCode;
 }

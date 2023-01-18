@@ -44,12 +44,8 @@ public class FixedAssetsCheck extends DictEntity implements Serializable {
 	/**适用组织机构编码*/
 	@Excel(name = "适用组织机构编码", width = 15)
     @ApiModelProperty(value = "适用组织机构编码")
-    private java.lang.String orgCode;
-    /**适用组织机构编码*/
-    @Excel(name = "适用组织机构名称", width = 15)
-    @ApiModelProperty(value = "适用组织机构名称")
     @TableField(exist = false)
-    private java.lang.String orgName;
+    private java.lang.String orgCode;
     /**盘点状态*/
     @Excel(name = "盘点状态", width = 15)
     @ApiModelProperty(value = "盘点状态")
@@ -57,12 +53,9 @@ public class FixedAssetsCheck extends DictEntity implements Serializable {
     private java.lang.Integer status;
 	/**资产分类编码*/
 	@Excel(name = "资产分类编码", width = 15)
+    @TableField(exist = false)
     @ApiModelProperty(value = "资产分类编码")
     private java.lang.String categoryCode;
-    @Excel(name = "资产分类名称", width = 15)
-    @ApiModelProperty(value = "资产分类名称")
-    @TableField(exist = false)
-    private java.lang.String categoryName;
 	/**盘点数量*/
 	@Excel(name = "盘点数量", width = 15)
     @ApiModelProperty(value = "盘点数量")
@@ -77,6 +70,21 @@ public class FixedAssetsCheck extends DictEntity implements Serializable {
     @ApiModelProperty(value = "审核人ID")
     @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private java.lang.String auditId;
+	/**审核时间*/
+    @Excel(name = "审核时间", width = 15)
+    @ApiModelProperty(value = "审核时间")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private java.lang.String auditTime;
+    /**审核结果（0未通过，1已通过）*/
+    @Excel(name = "审核结果（0未通过，1已通过）", width = 15)
+    @ApiModelProperty(value = "审核结果（0未通过，1已通过）")
+    @Dict(dicCode = "fixed_audit_result")
+    private java.lang.Integer auditResult;
+    /**审核理由*/
+    @Excel(name = "审核理由", width = 15)
+    @ApiModelProperty(value = "审核理由")
+    private java.lang.String auditReason;
 	/**盘点计划起始日期*/
 	@Excel(name = "盘点计划起始日期", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
@@ -94,14 +102,14 @@ public class FixedAssetsCheck extends DictEntity implements Serializable {
     private String time;
 	/**实际开始时间*/
 	@Excel(name = "实际开始时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "实际开始时间")
     private java.util.Date actualStartTime;
 	/**实际结束时间*/
 	@Excel(name = "实际结束时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "实际结束时间")
     private java.util.Date actualEndTime;
 	/**盘点类型(1年盘、2半年盘、3季盘)*/

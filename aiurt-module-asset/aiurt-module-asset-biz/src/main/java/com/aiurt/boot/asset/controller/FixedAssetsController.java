@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.asset.dto.FixedAssetsDTO;
 import com.aiurt.boot.asset.entity.FixedAssets;
 import com.aiurt.boot.asset.service.IFixedAssetsService;
+import com.aiurt.boot.check.service.IFixedAssetsCheckService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -20,7 +21,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
- /**
+/**
  * @Description: fixed_assets
  * @Author: aiurt
  * @Date:   2023-01-11
@@ -33,6 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 public class FixedAssetsController extends BaseController<FixedAssets, IFixedAssetsService> {
 	@Autowired
 	private IFixedAssetsService fixedAssetsService;
+	 @Autowired
+	 private IFixedAssetsCheckService assetsCheckService;
 
 	/**
 	 * 分页列表查询
@@ -54,7 +57,18 @@ public class FixedAssetsController extends BaseController<FixedAssets, IFixedAss
 		Page<FixedAssetsDTO> list = fixedAssetsService.pageList(pageList, fixedAssetsDTO);
 		return Result.OK(list);
 	}
-
+	 /**
+	  *   添加
+	  *
+	  * @param assetCode
+	  * @return
+	  */
+	 @AutoLog(value = "固定资产-详情")
+	 @ApiOperation(value="固定资产-详情", notes="固定资产-详情")
+	 @GetMapping(value = "/detail")
+	 public Result<FixedAssetsDTO> detail(String assetCode) {
+		 return  fixedAssetsService.detail(assetCode);
+	 }
 	/**
 	 *   添加
 	 *
@@ -76,13 +90,22 @@ public class FixedAssetsController extends BaseController<FixedAssets, IFixedAss
 	  */
 	 @AutoLog(value = "固定资产-校验")
 	 @ApiOperation(value="固定资产-校验", notes="固定资产-校验")
-	 @PostMapping(value = "/check")
-	 public Result<String> check(String assetCode) {
-		 FixedAssets assets = fixedAssetsService.getOne(new LambdaQueryWrapper<FixedAssets>().eq(FixedAssets::getAssetCode, assetCode));
-		 if(ObjectUtil.isNotEmpty(assets)){
-			 Result.OK("资产编号已存在！");
+	 @GetMapping(value = "/check")
+	 public Result<String> check(String assetCode,@RequestParam(name="id",required=false) String id) {
+		 LambdaQueryWrapper<FixedAssets> queryWrapper = new LambdaQueryWrapper<FixedAssets>();
+		 queryWrapper.eq(FixedAssets::getAssetCode, assetCode);
+		 FixedAssets assets = fixedAssetsService.getOne(queryWrapper);
+		 if(ObjectUtil.isNotEmpty(id)){
+		 	if(id!=assets.getId()){
+				Result.error("资产编号已存在！");
+			}
 		 }
-		 return Result.OK("添加成功！");
+		 else {
+			 if(ObjectUtil.isNotEmpty(assets)){
+				 Result.error("资产编号已存在！");
+			 }
+		 }
+		 return Result.OK();
 	 }
 	/**
 	 *  编辑

@@ -1,15 +1,23 @@
 package com.aiurt.boot.check.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.asset.entity.FixedAssets;
 import com.aiurt.boot.asset.service.IFixedAssetsService;
 import com.aiurt.boot.category.entity.FixedAssetsCategory;
 import com.aiurt.boot.category.service.IFixedAssetsCategoryService;
 import com.aiurt.boot.check.dto.AssetsResultDTO;
+import com.aiurt.boot.check.dto.FixedAssetsCheckDTO;
 import com.aiurt.boot.check.entity.FixedAssetsCheck;
+import com.aiurt.boot.check.entity.FixedAssetsCheckCategory;
+import com.aiurt.boot.check.entity.FixedAssetsCheckDept;
+import com.aiurt.boot.check.mapper.FixedAssetsCheckCategoryMapper;
 import com.aiurt.boot.check.mapper.FixedAssetsCheckMapper;
+import com.aiurt.boot.check.service.IFixedAssetsCheckCategoryService;
+import com.aiurt.boot.check.service.IFixedAssetsCheckDeptService;
 import com.aiurt.boot.check.service.IFixedAssetsCheckService;
+import com.aiurt.boot.check.vo.FixedAssetsCheckVO;
 import com.aiurt.boot.constant.FixedAssetsConstant;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.boot.record.service.IFixedAssetsCheckRecordService;
@@ -18,10 +26,16 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,9 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -40,31 +52,43 @@ import java.util.stream.Collectors;
  * @Date: 2023-01-11
  * @Version: V1.0
  */
+@Slf4j
 @Service
 public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMapper, FixedAssetsCheck> implements IFixedAssetsCheckService, IFlowableBaseUpdateStatusService {
+
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
     @Autowired
     private IFixedAssetsCheckRecordService fixedAssetsCheckRecordService;
     @Autowired
     private IFixedAssetsService fixedAssetsService;
     @Autowired
     private IFixedAssetsCategoryService fixedAssetsCategoryService;
+    @Autowired
+    private IFixedAssetsCheckCategoryService fixedAssetsCheckCategoryService;
+    @Autowired
+    private IFixedAssetsCheckDeptService fixedAssetsCheckDeptService;
+    @Autowired
+    private FixedAssetsCheckCategoryMapper fixedAssetsCheckCategoryMapper;
+    @Autowired
+    private FixedAssetsCheckMapper fixedAssetsCheckMapper;
 
     @Override
     public IPage<FixedAssetsCheck> queryPageList(Page<FixedAssetsCheck> page, FixedAssetsCheck fixedAssetsCheck) {
         Page<FixedAssetsCheck> fixedAssetsCheckPage = baseMapper.selectPageList(page, fixedAssetsCheck);
-        fixedAssetsCheckPage.getRecords().forEach(f -> {
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-            f.setTime(format.format(f.getPlanStartDate()) + "至" + format.format(f.getPlanEndDate()));
-            List<String> orgName = baseMapper.selectOrgName(Arrays.asList(f.getOrgCode().split(",")));
-            f.setOrgName(String.join(",", orgName));
-            List<String> categoryName = baseMapper.selectCategoryName(Arrays.asList(f.getCategoryCode().split(",")));
-            f.setCategoryName(String.join(",", categoryName));
-            if (f.getStatus() > 2) {
-                List<FixedAssetsCheckRecord> list = fixedAssetsCheckRecordService.lambdaQuery().eq(FixedAssetsCheckRecord::getCheckId, f.getId())
-                        .eq(FixedAssetsCheckRecord::getDelFlag, 0).list();
-                f.setNumber(list.stream().map(e -> e.getActualNumber()).reduce(Integer::sum).get());
-            }
-        });
+//        fixedAssetsCheckPage.getRecords().forEach(f -> {
+//            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+//            f.setTime(format.format(f.getPlanStartDate()) + "至" + format.format(f.getPlanEndDate()));
+//            List<String> orgName = baseMapper.selectOrgName(Arrays.asList(f.getOrgCode().split(",")));
+//            f.setOrgName(String.join(",", orgName));
+//            List<String> categoryName = baseMapper.selectCategoryName(Arrays.asList(f.getCategoryCode().split(",")));
+//            f.setCategoryName(String.join(",", categoryName));
+//            if (f.getStatus() > 2) {
+//                List<FixedAssetsCheckRecord> list = fixedAssetsCheckRecordService.lambdaQuery().eq(FixedAssetsCheckRecord::getCheckId, f.getId())
+//                        .eq(FixedAssetsCheckRecord::getDelFlag, 0).list();
+//                f.setNumber(list.stream().map(e -> e.getActualNumber()).reduce(Integer::sum).get());
+//            }
+//        });
         return fixedAssetsCheckPage;
     }
 
@@ -160,39 +184,45 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         Assert.notNull(fixedAssetsCheck, "未找到对应数据！");
         // 更新为待执行状态
         if (ObjectUtils.isEmpty(fixedAssetsCheck.getStatus())
-                || FixedAssetsConstant.status_0.equals(fixedAssetsCheck.getStatus())) {
+                || !FixedAssetsConstant.status_0.equals(fixedAssetsCheck.getStatus())) {
             throw new AiurtBootException("请检查任务状态，待下发状态才允许下发！");
         }
         fixedAssetsCheck.setStatus(FixedAssetsConstant.status_1);
         this.updateById(fixedAssetsCheck);
 
         // 生成盘点结果
-        String orgCode = fixedAssetsCheck.getOrgCode();
-        String categoryCode = fixedAssetsCheck.getCategoryCode();
-        if (StrUtil.isNotBlank(orgCode) && StrUtil.isNotEmpty(categoryCode)) {
-            List<String> orgCodes = StrUtil.split(orgCode, ',');
-            List<FixedAssets> fixedAssets = fixedAssetsService.lambdaQuery()
-                    .eq(FixedAssets::getDelFlag, CommonConstant.DEL_FLAG_0)
-                    .eq(FixedAssets::getCategoryCode, categoryCode)
-                    .in(FixedAssets::getOrgCode, orgCodes)
-                    .list();
-            List<FixedAssetsCheckRecord> records = new ArrayList<>();
-            FixedAssetsCheckRecord checkRecord = null;
-            for (FixedAssets assets : fixedAssets) {
-                checkRecord = new FixedAssetsCheckRecord();
-                checkRecord.setCheckId(id);
-                checkRecord.setAssetCode(assets.getAssetCode());
-                checkRecord.setAssetName(assets.getAssetName());
-                checkRecord.setLocation(assets.getLocation());
-                checkRecord.setOrgCode(assets.getOrgCode());
-                checkRecord.setCategoryCode(assets.getCategoryCode());
-                checkRecord.setNumber(assets.getNumber());
-                records.add(checkRecord);
-            }
-            if (CollectionUtil.isNotEmpty(records)) {
-                fixedAssetsCheckRecordService.saveBatch(records);
-            }
+        List<FixedAssetsCheckCategory> categoryList = fixedAssetsCheckCategoryService.lambdaQuery()
+                .eq(FixedAssetsCheckCategory::getCheckId, id)
+                .list();
+        List<FixedAssetsCheckDept> deptList = fixedAssetsCheckDeptService.lambdaQuery()
+                .eq(FixedAssetsCheckDept::getCheckId, id).list();
+        List<String> categoryCodes = categoryList.stream().map(FixedAssetsCheckCategory::getCategoryCode).collect(Collectors.toList());
+        List<String> orgCodes = deptList.stream().map(FixedAssetsCheckDept::getOrgCode).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(categoryCodes) || CollectionUtil.isEmpty(orgCodes)) {
+            throw new AiurtBootException("所属的物资分类和组织机构中暂无需要盘点的数据！");
         }
+        List<FixedAssets> fixedAssets = fixedAssetsService.lambdaQuery()
+                .eq(FixedAssets::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .in(FixedAssets::getCategoryCode, categoryCodes)
+                .in(FixedAssets::getOrgCode, orgCodes)
+                .list();
+        List<FixedAssetsCheckRecord> records = new ArrayList<>();
+        FixedAssetsCheckRecord checkRecord = null;
+        for (FixedAssets assets : fixedAssets) {
+            checkRecord = new FixedAssetsCheckRecord();
+            checkRecord.setCheckId(id);
+            checkRecord.setAssetCode(assets.getAssetCode());
+            checkRecord.setAssetName(assets.getAssetName());
+            checkRecord.setLocation(assets.getLocation());
+            checkRecord.setOrgCode(assets.getOrgCode());
+            checkRecord.setCategoryCode(assets.getCategoryCode());
+            checkRecord.setNumber(assets.getNumber());
+            records.add(checkRecord);
+        }
+        if (CollectionUtil.isEmpty(records)) {
+            throw new AiurtBootException("所属的物资分类和组织机构中暂无需要盘点的数据！");
+        }
+        fixedAssetsCheckRecordService.saveBatch(records);
     }
 
     /**
@@ -204,6 +234,9 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String startProcess(AssetsResultDTO assetsResultDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
+
         String id = assetsResultDTO.getId();
         List<FixedAssetsCheckRecord> records = assetsResultDTO.getRecords();
         if (ObjectUtils.isEmpty(assetsResultDTO) || CollectionUtil.isEmpty(records)) {
@@ -212,14 +245,140 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         if (StrUtil.isEmpty(assetsResultDTO.getId())) {
             throw new AiurtBootException("盘点任务的记录主键为空！");
         }
+
         FixedAssetsCheck fixedAssetsCheck = this.getById(id);
         Assert.notNull(fixedAssetsCheck, "未找到ID为:" + id + "盘点任务数据！");
         fixedAssetsCheck.setActualStartTime(assetsResultDTO.getActualStartTime());
         fixedAssetsCheck.setActualEndTime(assetsResultDTO.getActualEndTime());
+        // 执行中
+        fixedAssetsCheck.setStatus(FixedAssetsConstant.status_1);
+        fixedAssetsCheck.setCheckId(loginUser.getId());
         this.updateById(fixedAssetsCheck);
 
         fixedAssetsCheckRecordService.updateBatchById(records);
         return id;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String saveCheckInfo(FixedAssetsCheck fixedAssetsCheck) {
+        this.save(fixedAssetsCheck);
+        this.saveOrgAndCategoryCode(fixedAssetsCheck);
+        return fixedAssetsCheck.getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String editCheckInfo(FixedAssetsCheck fixedAssetsCheck) {
+        String id = fixedAssetsCheck.getId();
+        Assert.notNull(id, "记录ID不能为空！");
+        FixedAssetsCheck check = this.getById(id);
+        Assert.notNull(check, "未找到对应数据！");
+        this.updateById(fixedAssetsCheck);
+
+        fixedAssetsCheckCategoryService.remove(new LambdaQueryWrapper<FixedAssetsCheckCategory>().eq(FixedAssetsCheckCategory::getCheckId, id));
+        fixedAssetsCheckDeptService.remove(new LambdaQueryWrapper<FixedAssetsCheckDept>().eq(FixedAssetsCheckDept::getCheckId, id));
+        this.saveOrgAndCategoryCode(fixedAssetsCheck);
+        return id;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteCheckInfo(String id) {
+        // TODO: 2023/1/17 限制哪种状态下不允许删除
+        this.removeById(id);
+        fixedAssetsCheckCategoryService.remove(new LambdaQueryWrapper<FixedAssetsCheckCategory>().eq(FixedAssetsCheckCategory::getCheckId, id));
+        fixedAssetsCheckDeptService.remove(new LambdaQueryWrapper<FixedAssetsCheckDept>().eq(FixedAssetsCheckDept::getCheckId, id));
+
+    }
+
+    @Override
+    public FixedAssetsCheckVO getCheckInfo(String id) {
+        FixedAssetsCheck fixedAssetsCheck = this.getById(id);
+        Assert.notNull(fixedAssetsCheck, "未找到对应数据！");
+        FixedAssetsCheckVO checkVO = new FixedAssetsCheckVO();
+        BeanUtils.copyProperties(fixedAssetsCheck, checkVO);
+
+        List<FixedAssetsCheckCategory> categorys = fixedAssetsCheckCategoryMapper.getCategoryList(id);
+        List<FixedAssetsCheckDept> depts = fixedAssetsCheckDeptService.lambdaQuery()
+                .eq(FixedAssetsCheckDept::getCheckId, id).list();
+        depts.forEach(dept -> {
+            if (StrUtil.isNotEmpty(dept.getOrgCode())) {
+                dept.setOrgName(sysBaseApi.getDepartNameByOrgCode(dept.getOrgCode()));
+            }
+        });
+
+        checkVO.setCategorys(categorys);
+        checkVO.setDepts(depts);
+        return checkVO;
+    }
+
+    @Override
+    public IPage<FixedAssetsCheckVO> pageList(Page<FixedAssetsCheckVO> page, FixedAssetsCheckDTO fixedAssetsCheckDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
+        fixedAssetsCheckDTO = Optional.ofNullable(fixedAssetsCheckDTO).orElseGet(FixedAssetsCheckDTO::new);
+        fixedAssetsCheckDTO.setAuditStatus(FixedAssetsConstant.status_2);
+        fixedAssetsCheckDTO.setUserName(loginUser.getUsername());
+        IPage<FixedAssetsCheckVO> pageList = fixedAssetsCheckMapper.pageList(page, fixedAssetsCheckDTO);
+        if (CollectionUtil.isNotEmpty(pageList.getRecords())) {
+            Map<String, String> orgMap = sysBaseApi.getAllSysDepart().stream()
+                    .collect(Collectors.toMap(k -> k.getOrgCode(), v -> v.getDepartName(), (a, b) -> a));
+            pageList.getRecords().forEach(l -> {
+                String id = l.getId();
+                List<FixedAssetsCheckCategory> categorys = fixedAssetsCheckCategoryMapper.getCategoryList(id);
+                List<FixedAssetsCheckDept> depts = fixedAssetsCheckDeptService.lambdaQuery()
+                        .eq(FixedAssetsCheckDept::getCheckId, id).list();
+                depts.forEach(dept -> {
+                    if (StrUtil.isNotEmpty(dept.getOrgCode())) {
+                        dept.setOrgName(orgMap.get(dept.getOrgCode()));
+                    }
+                });
+                l.setCategorys(categorys);
+                l.setDepts(depts);
+            });
+        }
+        return pageList;
+
+    }
+
+    /**
+     * 保存任务的组织机构编码和物资分类编码
+     *
+     * @param fixedAssetsCheck
+     */
+    private void saveOrgAndCategoryCode(FixedAssetsCheck fixedAssetsCheck) {
+        String id = fixedAssetsCheck.getId();
+        String categoryCode = fixedAssetsCheck.getCategoryCode();
+        String orgCode = fixedAssetsCheck.getOrgCode();
+        if (StrUtil.isNotEmpty(categoryCode)) {
+            List<String> codes = StrUtil.split(categoryCode, ',');
+            List<FixedAssetsCheckCategory> list = new ArrayList<>();
+            FixedAssetsCheckCategory category = null;
+            for (String code : codes) {
+                category = new FixedAssetsCheckCategory();
+                category.setCheckId(id);
+                category.setCategoryCode(code);
+                list.add(category);
+            }
+            if (CollectionUtil.isNotEmpty(list)) {
+                fixedAssetsCheckCategoryService.saveBatch(list);
+            }
+        }
+        if (StrUtil.isNotEmpty(orgCode)) {
+            List<String> codes = StrUtil.split(orgCode, ',');
+            List<FixedAssetsCheckDept> list = new ArrayList<>();
+            FixedAssetsCheckDept dept = null;
+            for (String code : codes) {
+                dept = new FixedAssetsCheckDept();
+                dept.setCheckId(id);
+                dept.setOrgCode(code);
+                list.add(dept);
+            }
+            if (CollectionUtil.isNotEmpty(list)) {
+                fixedAssetsCheckDeptService.saveBatch(list);
+            }
+        }
     }
 
     @Override
@@ -229,6 +388,32 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
 
     @Override
     public void updateState(UpdateStateEntity updateStateEntity) {
+        log.info("固定资产模块更新状态参数：{}", JSONObject.toJSONString(updateStateEntity));
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = loginUser.getId();
+        if (ObjectUtil.isEmpty(loginUser) || ObjectUtil.isEmpty(userId)) {
+            throw new AiurtBootException("检测到未登录，请登录后操作！");
+        }
+        String businessKey = updateStateEntity.getBusinessKey();
+        FixedAssetsCheck assetsCheck = this.getById(businessKey);
+        Assert.notNull(assetsCheck, "未找到对应数据！");
 
+        int states = updateStateEntity.getStates();
+        switch (states) {
+            case 2:
+                // 盘点结果审核
+                assetsCheck.setStatus(FixedAssetsConstant.status_2);
+                break;
+            case 3:
+                // 盘点结果驳回
+                assetsCheck.setStatus(FixedAssetsConstant.status_1);
+                break;
+            case 4:
+                // 审核通过
+                assetsCheck.setStatus(FixedAssetsConstant.status_3);
+                assetsCheck.setAuditId(userId);
+                // TODO: 2023/1/17 生成资产变更明细数据
+                break;
+        }
     }
 }

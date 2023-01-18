@@ -3,10 +3,8 @@ package com.aiurt.boot.category.controller;
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.asset.entity.FixedAssets;
 import com.aiurt.boot.asset.service.IFixedAssetsService;
-import com.aiurt.boot.category.constant.CategoryConstant;
 import com.aiurt.boot.category.dto.FixedAssetsCategoryDTO;
 import com.aiurt.boot.category.entity.FixedAssetsCategory;
 import com.aiurt.boot.category.service.IFixedAssetsCategoryService;
@@ -40,7 +38,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @Description: fixed_assets_category
@@ -103,13 +100,18 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
     @PostMapping(value = "/add")
     public Result<String> add(@RequestBody FixedAssetsCategory fixedAssetsCategory) {
         LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(FixedAssetsCategory::getCategoryCode,fixedAssetsCategory.getParentCode());
-        if("0".equals(fixedAssetsCategory.getParentCode())){
+        queryWrapper.eq(FixedAssetsCategory::getCategoryCode, fixedAssetsCategory.getParentCode());
+        if ("0".equals(fixedAssetsCategory.getParentCode())) {
             fixedAssetsCategory.setPid("0");
-        }
-        else {
+            fixedAssetsCategory.setLevel("1");
+        } else {
             FixedAssetsCategory assetsCategory = fixedAssetsCategoryService.getOne(queryWrapper);
             fixedAssetsCategory.setPid(assetsCategory.getId());
+            if(!"0".equals(assetsCategory.getPid())){
+                fixedAssetsCategory.setLevel("3");
+            }else {
+                fixedAssetsCategory.setLevel("2");
+            }
         }
         fixedAssetsCategoryService.save(fixedAssetsCategory);
         return Result.OK("添加成功！");
@@ -124,38 +126,8 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
     @AutoLog(value = "资产分类-校验")
     @ApiOperation(value = "资产分类-校验", notes = "资产分类-校验")
     @PostMapping(value = "/checkCodeName")
-    public Result<String> checkCodeName(@RequestBody FixedAssetsCategory fixedAssetsCategory) {
-        if (ObjectUtil.isNotEmpty(fixedAssetsCategory.getCategoryCode())) {
-            LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(FixedAssetsCategory::getCategoryCode, fixedAssetsCategory.getCategoryCode());
-            FixedAssetsCategory category = fixedAssetsCategoryService.getOne(queryWrapper);
-            if (ObjectUtil.isNotEmpty(category)) {
-                return Result.OK("分类编码已存在");
-            }
-        }
-        if (ObjectUtil.isNotEmpty(fixedAssetsCategory.getCategoryName())) {
-            //根节点之间，名称不能重复
-            LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(FixedAssetsCategory::getCategoryName, fixedAssetsCategory.getCategoryName());
-            if (fixedAssetsCategory.getPid() == CategoryConstant.PID) {
-                queryWrapper.eq(FixedAssetsCategory::getPid, CategoryConstant.PID);
-                FixedAssetsCategory category = fixedAssetsCategoryService.getOne(queryWrapper);
-                if (ObjectUtil.isNotEmpty(category)) {
-                    return Result.OK("一级分类名称不允许重复");
-                }
-            } else {
-                //同根下枝干或同根同枝同叶之间不能重复
-                queryWrapper.eq(FixedAssetsCategory::getPid, fixedAssetsCategory.getPid());
-                List<FixedAssetsCategory> categoryList = fixedAssetsCategoryService.list(queryWrapper);
-                if (CollUtil.isNotEmpty(categoryList)) {
-                    categoryList = categoryList.stream().filter(c -> c.getCategoryName().equals(fixedAssetsCategory.getCategoryName())).collect(Collectors.toList());
-                    if (CollUtil.isNotEmpty(categoryList)) {
-                        return Result.OK("同级下的分类名称不允许重复");
-                    }
-                }
-            }
-        }
-        return Result.OK("添加成功！");
+    public Result<String> checkCodeName(@RequestBody FixedAssetsCategoryDTO fixedAssetsCategory) {
+        return fixedAssetsCategoryService.checkCodeName(fixedAssetsCategory);
     }
 
     /**
@@ -182,12 +154,12 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
     @ApiOperation(value = "资产分类-删除", notes = "资产分类-删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id, @RequestParam(name = "code", required = true) String code) {
-        List<FixedAssets> list = fixedAssetsService.list(new LambdaQueryWrapper<FixedAssets>().eq(FixedAssets::getCategoryCode, code));
-        List<FixedAssetsCategory> categoryList = fixedAssetsCategoryService.list(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getId, id));
+        List<FixedAssets> list = fixedAssetsService.list(new LambdaQueryWrapper<FixedAssets>().eq(FixedAssets::getOrgCode, code));
+        List<FixedAssetsCategory> categoryList = fixedAssetsCategoryService.list(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid, id));
         if (CollUtil.isNotEmpty(list)) {
             return Result.error("分类下有固资不允许删除!");
         }
-        if(CollUtil.isNotEmpty(categoryList)){
+        if (CollUtil.isNotEmpty(categoryList)) {
             return Result.error("该分类下有子节点，请删除后再操作!");
         }
         fixedAssetsCategoryService.removeById(id);
@@ -253,6 +225,7 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
 //    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response)throws IOException {
 //        return fixedAssetsCategoryService.importExcel(request, response);
 //    }
+
     /**
      * 下载模板
      *
