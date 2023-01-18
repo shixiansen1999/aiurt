@@ -130,6 +130,8 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         if (ObjectUtils.isNotEmpty(faultAnalysisReport) && StringUtils.isNotEmpty(faultAnalysisReport.getFaultKnowledgeBaseId())) {
             FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseMapper.selectById(faultAnalysisReport.getFaultKnowledgeBaseId());
             faultDTO.setFaultKnowledgeBase(faultKnowledgeBase);
+            faultDTO.setDeviceTypeCode(faultKnowledgeBase.getDeviceTypeCode());
+            faultDTO.setMaterialCode(faultKnowledgeBase.getMaterialCode());
         }else {
             FaultKnowledgeBase faultKnowledgeBase1 = new FaultKnowledgeBase();
             faultKnowledgeBase1.setFaultPhenomenon(faultDTO.getFaultPhenomenon());
