@@ -193,7 +193,7 @@ public class FlowBaseApiImpl implements FlowBaseApi {
                 flowTaskComment.fillWith(task);
             }
             // 不需要保存中间业务数据了
-            flowApiService.completeTask(task, flowTaskComment, busData);
+            flowApiService.completeTask(task, flowTaskComment, null, variableData);
         }
     }
 

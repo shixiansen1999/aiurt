@@ -454,15 +454,14 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             faultKnowledgeBase.setSolution(faultKnowledgeBaseModel.getSolution());
         }
         //设置导入流程是工班长还是技术员
-        String roleNames = sysUser.getRoleNames();
-        List<String> roleList = StrUtil.splitTrim(roleNames, ",");
-        for (String roleName : roleList) {
-            if("工班长".equals(roleName)){
-                faultKnowledgeBase.setProcessInitiator(0);
-            }
-            if("技术员".equals(roleName)){
-                faultKnowledgeBase.setProcessInitiator(1);
-            }
+        String roleCodes = sysUser.getRoleCodes();
+        List<String> roleList = StrUtil.splitTrim(roleCodes, ",");
+        if (roleList.contains(RoleConstant.FOREMAN)) {
+            faultKnowledgeBase.setProcessInitiator(0);
+        }else if (roleList.contains(RoleConstant.TECHNICIAN)) {
+            faultKnowledgeBase.setProcessInitiator(1);
+        } else {
+            faultKnowledgeBase.setProcessInitiator(0);
         }
 
         faultKnowledgeBase.setFaultReason(faultKnowledgeBaseModel.getFaultReason());

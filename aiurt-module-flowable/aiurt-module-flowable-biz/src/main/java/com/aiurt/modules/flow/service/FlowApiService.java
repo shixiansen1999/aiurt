@@ -55,6 +55,15 @@ public interface FlowApiService {
     void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData);
 
     /**
+     * 完成任务
+     * @param task
+     * @param comment
+     * @param busData
+     * @param variableData
+     */
+    void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData, Map<String, Object> variableData);
+
+    /**
      * 判断当前登录用户是否为流程实例中的用户任务的指派人。或是候选人之一。
      *
      * @param task 流程实例中的用户任务。
