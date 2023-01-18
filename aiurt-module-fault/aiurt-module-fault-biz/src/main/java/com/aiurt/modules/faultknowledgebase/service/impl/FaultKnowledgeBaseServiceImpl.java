@@ -615,7 +615,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         return false;
     }
 
-    public Result<String> startProcess(FaultKnowledgeBase faultKnowledgeBase){
+    public String startProcess(FaultKnowledgeBase faultKnowledgeBase){
         String id = faultKnowledgeBase.getId();
         if (StrUtil.isEmpty(id)) {
             //list转string
@@ -628,11 +628,11 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             }
             faultKnowledgeBaseMapper.insert(faultKnowledgeBase);
             String newId = faultKnowledgeBase.getId();
-            return Result.ok(newId);
+            return newId;
         }else{
             getFaultCodeList(faultKnowledgeBase);
             faultKnowledgeBaseMapper.updateById(faultKnowledgeBase);
-            return Result.ok(id);
+            return id;
         }
 
     }
