@@ -67,18 +67,14 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         //获取权限查询的数据集合
         LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
         List<Fault> faults = faultMapper.selectList(queryWrapper);
-        List<String> codes = faults.stream().map(Fault::getCode).distinct().collect(Collectors.toList());
-        LambdaQueryWrapper<FaultAnalysisReport> reportLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        reportLambdaQueryWrapper.in(FaultAnalysisReport::getFaultCode, codes);
-        List<FaultAnalysisReport> reportList = this.getBaseMapper().selectList(reportLambdaQueryWrapper);
-
+        List<String> ids = faults.stream().map(Fault::getId).distinct().collect(Collectors.toList());
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         faultAnalysisReport.setCreateBy(sysUser.getUsername());
-        if (CollUtil.isEmpty(reportList)) {
+        if (CollUtil.isEmpty(ids)) {
             return page.setRecords(new ArrayList<>());
         }
-        //List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,ids,sysUser.getUsername());
-        List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll2(page, faultAnalysisReport,reportList,sysUser.getUsername());
+
+        List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,ids,sysUser.getUsername());
 
         //解决不是审核人去除审核按钮
         if(CollUtil.isNotEmpty(faultAnalysisReports)){
