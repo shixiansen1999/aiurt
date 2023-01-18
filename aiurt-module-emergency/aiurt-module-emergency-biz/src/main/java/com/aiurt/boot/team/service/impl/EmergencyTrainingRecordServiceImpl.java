@@ -2,7 +2,6 @@ package com.aiurt.boot.team.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
@@ -353,7 +352,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             }
 
             //校验通过，添加数据
-            EmergencyTrainingRecord emergencyTrainingRecord = new EmergencyTrainingRecord();
+          /*  EmergencyTrainingRecord emergencyTrainingRecord = new EmergencyTrainingRecord();
             emergencyTrainingRecord.setStatus(TeamConstant.To_BE_SUBMITTED);
             BeanUtil.copyProperties(recordModel, emergencyTrainingRecord);
             List<EmergencyTrainingProcessRecord> processRecordList = new ArrayList<>();
@@ -364,7 +363,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                 processRecordList.add(processRecord);
             }
             emergencyTrainingRecord.setProcessRecordList(processRecordList);
-            this.add(emergencyTrainingRecord);
+            this.add(emergencyTrainingRecord);*/
             return Result.ok("文件导入成功！");
         }
         return Result.ok("文件导入失败！");
@@ -377,8 +376,6 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             Map<String, Object> errorMap = new HashMap<String, Object>();
             List<Map<String, String>> mapList = new ArrayList<>();
             List<Map<String, String>> mistakeMapList = new ArrayList<>();
-            Map<String, String> map = new HashMap<>();
-            Map<String, String> mistakeMap = new HashMap<>();
             errorMap.put("trainingTime", recordModel.getTrainingTime());
             errorMap.put("position", recordModel.getPosition());
             errorMap.put("emergencyTeam", recordModel.getEmergencyTeam());
@@ -391,17 +388,16 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             List<ProcessRecordModel> processRecordModelList = recordModel.getProcessRecordModelList();
             if (CollUtil.isNotEmpty(processRecordModelList)) {
                 for (ProcessRecordModel processRecordModel : processRecordModelList) {
+                    Map<String, String> map = new HashMap<>();
                     map.put("sort", processRecordModel.getSort());
                     map.put("trainingTime", processRecordModel.getTrainingTime());
                     map.put("trainingContent", processRecordModel.getTrainingContent());
-                    mistakeMap.put("mistake", processRecordModel.getMistake());
+                    map.put("mistake", processRecordModel.getMistake());
+                    mapList.add(map);
                 }
-                mapList.add(map);
-                mistakeMapList.add(mistakeMap);
             }
 
             errorMap.put("maplist", mapList);
-            errorMap.put("mistakeMapList", mistakeMapList);
 
             Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
             sheetsMap.put(0, errorMap);
@@ -410,8 +406,14 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             int size = processRecordModelList.size();
             Sheet sheet = workbook.getSheetAt(0);
             CellRangeAddress region = new CellRangeAddress(6,6+size,1,1);
+            //左右空白边框合并
+            CellRangeAddress regionLeft = new CellRangeAddress(1,10+size,0,0);
+            CellRangeAddress regionRight = new CellRangeAddress(1,10+size,10,11);
+
             //合并
             sheet.addMergedRegion(region);
+            sheet.addMergedRegion(regionLeft);
+            sheet.addMergedRegion(regionRight);
             //合并后设置下边框
             RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
             RegionUtil.setBorderLeft(BorderStyle.THIN, region, sheet);
@@ -546,7 +548,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                         LoginUser userById = iSysBaseAPI.getUserById(emergencyCrew.getUserId());
                         map.put(userById.getRealname(), userById.getId());
                     }
-                    List<String> list = StrUtil.splitTrim(trainees, ",");
+                    List<String> list = StrUtil.splitTrim(trainees, "：");
                     List<EmergencyTrainingRecordCrew> emergencyTrainingRecordCrews = new ArrayList<>();
                     for (String s : list) {
                         String id = map.get(s);
