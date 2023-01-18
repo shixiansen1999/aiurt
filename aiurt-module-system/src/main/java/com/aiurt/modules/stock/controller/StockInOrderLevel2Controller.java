@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
@@ -191,5 +192,31 @@ public class StockInOrderLevel2Controller {
                                  HttpServletRequest request,
                                  HttpServletResponse response) {
         iStockInOrderLevel2Service.eqExport(ids, request, response);
+    }
+
+    /**
+     * 导出excel
+     *
+     */
+    @AutoLog(value = "二级库管理-二级库入库管理-导入模板下载", operateType =  6, operateTypeAlias = "二级库管理-二级库入库管理-导入模板下载", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
+    @ApiOperation(value="二级库管理-二级库入库管理-导入模板下载", notes="二级库管理-二级库入库管理-导入模板下载")
+    @RequestMapping(value = "/exportTemplateXls")
+    public void  exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        iStockInOrderLevel2Service.exportTemplateXls(response);
+    }
+
+
+    /**
+     * 通过excel导入数据
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    @AutoLog(value = "二级库管理-二级库入库管理-通过excel导入数据", operateType =  5, operateTypeAlias = "二级库管理-二级库入库管理-通过excel导入数据", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
+    @ApiOperation(value="二级库管理-二级库入库管理-通过excel导入数据", notes="二级库管理-二级库入库管理-通过excel导入数据")
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        return iStockInOrderLevel2Service.importExcel(request,response);
     }
 }

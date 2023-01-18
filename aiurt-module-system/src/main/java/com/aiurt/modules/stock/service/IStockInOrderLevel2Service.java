@@ -5,9 +5,11 @@ import com.aiurt.modules.stock.entity.StockSubmitMaterials;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.text.ParseException;
 
 /**
@@ -54,6 +56,21 @@ public interface IStockInOrderLevel2Service extends IService<StockInOrderLevel2>
      * @param response
      */
     void eqExport(String ids, HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 二级库入库导入模板下载
+     * @param response
+     * @throws IOException
+     */
+    void exportTemplateXls(HttpServletResponse response) throws IOException;
+
+    /**
+     * 通过excel导入数据
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 
     /**
      * 获取分页数据

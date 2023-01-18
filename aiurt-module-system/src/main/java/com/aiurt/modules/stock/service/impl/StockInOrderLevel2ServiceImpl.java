@@ -1,11 +1,24 @@
 package com.aiurt.modules.stock.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.afterturn.easypoi.util.PoiMergeCellUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.standard.dto.InspectionCodeImportDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsExport;
+import com.aiurt.common.util.XlsUtil;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
+import com.aiurt.modules.stock.dto.StockInOrderLevel2DTO;
+import com.aiurt.modules.stock.dto.StockIncomingMaterialsDTO;
 import com.aiurt.modules.stock.entity.*;
 import com.aiurt.modules.stock.entity.StockIncomingMaterials;
 import com.aiurt.modules.stock.mapper.StockInOrderLevel2Mapper;
@@ -15,26 +28,38 @@ import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description:
@@ -67,6 +92,12 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	private IStockLevel2InfoService iStockLevel2InfoService;
 	@Autowired
 	private ISysDepartService iSysDepartService;
+	@Autowired
+	private ISysBaseAPI  iSysBaseAPI;
+	@Autowired
+	private IMaterialBaseService iMaterialBaseService;
+	@Value("${jeecg.path.errorExcelUpload}")
+	private String errorExcelUpload;
 
 	@Override
 	public StockInOrderLevel2 getInOrderCode() throws ParseException {
@@ -306,6 +337,419 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		excel.exportXls(response);
 	}
 
+	@Override
+	public void exportTemplateXls(HttpServletResponse response) throws IOException {
+		//获取输入流，原始模板位置
+		org.springframework.core.io.Resource resource = new ClassPathResource("/templates/stockInOrderLevel2.xlsx");
+		InputStream resourceAsStream = resource.getInputStream();
+
+		//2.获取临时文件
+		File fileTemp= new File("/templates/stockInOrderLevel2.xlsx");
+		try {
+			//将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+			FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
+
+		String path = fileTemp.getAbsolutePath();
+		TemplateExportParams exportParams = new TemplateExportParams(path);
+		Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+		Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+
+		QueryWrapper<StockLevel2Info> queryWrapper = new QueryWrapper<>();
+		queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+		queryWrapper.eq("status", CommonConstant.STOCK_LEVEL2_STATUS_1);
+		queryWrapper.orderByDesc("create_time");
+		List<StockLevel2Info> stockLevel2Infos = iStockLevel2InfoService.list(queryWrapper);
+		selectList(workbook, "入库仓库", 0, 0, stockLevel2Infos);
+		String fileName = "二级库入库导入模板.xlsx";
+
+		try {
+			response.setHeader("Content-Disposition",
+					"attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+			response.setHeader("Content-Disposition", "attachment;filename="+"二级库入库导入模板.xlsx");
+			BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+			workbook.write(bufferedOutPut);
+			bufferedOutPut.flush();
+			bufferedOutPut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+		List<String> errorMessage = new ArrayList<>();
+		int successLines = 0;
+		String tipMessage = null;
+		String url = null;
+		int errorLines = 0;
+		for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+			// 获取上传文件对象
+			MultipartFile file = entity.getValue();
+			String type = FilenameUtils.getExtension(file.getOriginalFilename());
+			if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+				tipMessage = "导入失败，文件类型错误！";
+				return imporReturnRes(errorLines, successLines, tipMessage, false, null);
+			}
+			ImportParams params = new ImportParams();
+			params.setTitleRows(2);
+			params.setHeadRows(1);
+			params.setNeedSave(true);
+
+			try {
+				List<StockInOrderLevel2> stockInOrderLevel2List = new ArrayList<>();
+				List<StockIncomingMaterials> stockIncomingMaterialsList = new ArrayList<>();
+				List<StockInOrderLevel2DTO> stockInOrderLevel2DTOList = ExcelImportUtil.importExcel(file.getInputStream(), StockInOrderLevel2DTO.class, params);
+
+				Iterator<StockInOrderLevel2DTO> iterator = stockInOrderLevel2DTOList.iterator();
+				while (iterator.hasNext()) {
+					StockInOrderLevel2DTO model = iterator.next();
+					boolean b = XlsUtil.checkObjAllFieldsIsNull(model);
+					if (b) {
+						iterator.remove();
+					}
+				}
+				if (CollectionUtil.isEmpty(stockInOrderLevel2DTOList)) {
+					tipMessage = "导入失败，该文件为空。";
+					return imporReturnRes(errorLines, successLines, tipMessage, false, null);
+				}
+				//数据校验
+				for (StockInOrderLevel2DTO stockInOrderLevel2DTO : stockInOrderLevel2DTOList) {
+					if (ObjectUtil.isNotEmpty(stockInOrderLevel2DTO)) {
+						StockInOrderLevel2 stockInOrderLevel2 = new StockInOrderLevel2();
+						StockIncomingMaterials stockIncomingMaterials = new StockIncomingMaterials();
+
+						StringBuilder stringBuilder = new StringBuilder();
+						StringBuilder stringBuilder1 = new StringBuilder();
+
+						//校验二级库信息
+						examine(stockInOrderLevel2DTO, stockInOrderLevel2, stringBuilder);
+						//校验物资信息
+						StockIncomingMaterials(stockInOrderLevel2DTO,stockIncomingMaterials,stringBuilder1);
+						if (stringBuilder.length() > 0 || stringBuilder1.length()>0) {
+							// 截取字符
+							if (stringBuilder.length() > 0){
+								stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+								stockInOrderLevel2DTO.setStockInOrderLevelMistake(stringBuilder.toString());
+							} else{
+								stockInOrderLevel2List.add(stockInOrderLevel2);
+							}
+							List<StockIncomingMaterialsDTO> stockIncomingMaterialsDTOList = stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList();
+							for (StockIncomingMaterialsDTO stockIncomingMaterialsDTO : stockIncomingMaterialsDTOList) {
+								if (stringBuilder1.length() > 0) {
+									stringBuilder1 = stringBuilder1.deleteCharAt(stringBuilder1.length() - 1);
+									stockIncomingMaterialsDTO.setMaterialMistake(stringBuilder1.toString());
+								} else {
+									stockIncomingMaterialsList.add(stockIncomingMaterials);
+								}
+							}
+							errorLines++;
+						}
+					}
+				}
+				if (errorLines > 0) {
+					//错误报告下载
+					return getErrorExcel(errorLines, stockInOrderLevel2DTOList, errorMessage, successLines, type, url);
+				}else {
+					successLines = stockInOrderLevel2DTOList.size();
+					for (StockInOrderLevel2 stockInOrderLevel2 : stockInOrderLevel2List) {
+						 StockInOrderLevel2 inOrderCode = this.getInOrderCode();
+						 String orderCode = inOrderCode.getOrderCode();
+						 stockInOrderLevel2.setOrderCode(orderCode);
+						 stockInOrderLevel2.setDelFlag(0);
+						 stockInOrderLevel2.setEntryTime(new Date());
+						 stockInOrderLevel2.setStatus("1");
+						 this.save(stockInOrderLevel2);
+
+						for (StockIncomingMaterials stockIncomingMaterials : stockIncomingMaterialsList) {
+							 stockIncomingMaterials.setInOrderCode(stockInOrderLevel2.getOrderCode());
+							 stockIncomingMaterials.setDelFlag(0);
+							 stockIncomingMaterialsService.save(stockIncomingMaterials);
+						}
+					}
+					return imporReturnRes(errorLines, successLines, tipMessage, true, null);
+				}
+			}catch (Exception e) {
+				String msg = e.getMessage();
+				log.error(msg, e);
+				if (msg != null && msg.contains("Duplicate entry")) {
+					return Result.error("文件导入失败:有重复数据！");
+				} else {
+					return Result.error("文件导入失败:" + e.getMessage());
+				}
+			}finally {
+				try {
+					file.getInputStream().close();
+				} catch (IOException e) {
+					log.error(e.getMessage(), e);
+				}
+			}
+		}
+		return imporReturnRes(errorLines, successLines, tipMessage, true, null);
+	}
+
+	private Result<?> getErrorExcel(int errorLines, List<StockInOrderLevel2DTO> list, List<String> errorMessage, int successLines, String type, String url) throws IOException {
+		//创建导入失败错误报告,进行模板导出
+		org.springframework.core.io.Resource resource = new ClassPathResource("/templates/stockInOrderLevelError.xlsx");
+		InputStream resourceAsStream = resource.getInputStream();
+		//2.获取临时文件
+		File fileTemp = new File("/templates/stockInOrderLevelError.xlsx");
+		try {
+			//将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+			FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
+
+		String path = fileTemp.getAbsolutePath();
+		TemplateExportParams exportParams = new TemplateExportParams(path);
+		Map<String, Object> errorMap = new HashMap<String, Object>(16);
+		List<Map<String, String>> listMap = new ArrayList<>();
+		for (int i = 0; i < list.size(); i++) {
+			StockInOrderLevel2DTO stockInOrderLevel2DTO = list.get(i);
+			Map<String, String> map = new HashMap<>(16);
+			//二级库错误报告获取信息
+			map.put("warehouseName", stockInOrderLevel2DTO.getWarehouseName());
+			map.put("realName", stockInOrderLevel2DTO.getRealName());
+			map.put("workNo", stockInOrderLevel2DTO.getWorkNo());
+			map.put("note", stockInOrderLevel2DTO.getNote());
+			map.put("stockInOrderLevelMistake", stockInOrderLevel2DTO.getStockInOrderLevelMistake());
+
+			List<StockIncomingMaterialsDTO> stockIncomingMaterialsDTOList = stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList();
+			for (int j = 0; j < stockIncomingMaterialsDTOList.size(); j++){
+				StockIncomingMaterialsDTO stockIncomingMaterialsDTO = stockIncomingMaterialsDTOList.get(j);
+				//物资错误报告获取信息
+				map.put("materialCode", stockIncomingMaterialsDTO.getMaterialCode());
+				map.put("materialName", stockIncomingMaterialsDTO.getMaterialName());
+				map.put("num", Convert.toStr(stockIncomingMaterialsDTO.getNum()));
+				map.put("materialMistake",stockIncomingMaterialsDTO.getMaterialMistake());
+				listMap.add(map);
+			}
+			listMap.add(map);
+		}
+		errorMap.put("maplist", listMap);
+		Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(16);
+		sheetsMap.put(0, errorMap);
+		Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+		int size = 3;
+		for (StockInOrderLevel2DTO stockInOrderLevel2DTO : list) {
+			//合并单元格
+			PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0), size, size + stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList().size() - 1, 0, 0);
+
+			PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0), size, size + stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList().size() - 1, 1, 1);
+
+			PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0), size, size + stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList().size() - 1, 2, 2);
+
+			PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0), size, size + stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList().size() - 1, 3, 3);
+		}
+
+		try {
+			String fileName = "应急队伍导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
+			FileOutputStream out = new FileOutputStream(errorExcelUpload+ File.separator+fileName);
+			url = File.separator+"errorExcelFiles"+ File.separator+fileName;
+			workbook.write(out);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		String tipMessage = "导入失败，文件类型不对。";
+		return imporReturnRes(errorLines, successLines, tipMessage, true, url);
+	}
+
+
+	private void examine(StockInOrderLevel2DTO stockInOrderLevel2DTO,
+						 StockInOrderLevel2 stockInOrderLevel2,
+						 StringBuilder stringBuilder)
+	{
+            if (StrUtil.isBlank(stockInOrderLevel2DTO.getWarehouseName())){
+				stringBuilder.append("入库仓库必填，");
+			}else {
+				QueryWrapper<StockLevel2Info> infoQueryWrapper = new QueryWrapper<>();
+				infoQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+				infoQueryWrapper.eq("status", CommonConstant.STOCK_LEVEL2_STATUS_1);
+				infoQueryWrapper.eq("warehouse_name",stockInOrderLevel2DTO.getWarehouseName());
+				infoQueryWrapper.orderByDesc("create_time");
+				StockLevel2Info one = iStockLevel2InfoService.getOne(infoQueryWrapper);
+				if (ObjectUtil.isNotEmpty(one)){
+					stockInOrderLevel2.setWarehouseCode(one.getWarehouseCode());
+				}else {
+					stringBuilder.append("系统中不存在该入库仓库，");
+				}
+			}
+            if (StrUtil.isNotBlank(stockInOrderLevel2DTO.getRealName()) && StrUtil.isBlank(stockInOrderLevel2DTO.getWorkNo())){
+				List<LoginUser> userByRealName = iSysBaseAPI.getUserByRealName(stockInOrderLevel2DTO.getRealName(), null);
+				if (CollectionUtil.isNotEmpty(userByRealName) && userByRealName.size()==1){
+					List<String> collect = userByRealName.stream().map(LoginUser::getId).collect(Collectors.toList());
+					String join = CollectionUtil.join(collect, ",");
+					stockInOrderLevel2.setUserId(join);
+				}if (CollectionUtil.isNotEmpty(userByRealName) && userByRealName.size()>1){
+					stringBuilder.append("入库人存在同名，请填写工号，");
+				}
+				if (CollectionUtil.isEmpty(userByRealName)){
+					stringBuilder.append("系统中不存在该入库人，");
+				}
+			}
+		if (StrUtil.isNotBlank(stockInOrderLevel2DTO.getRealName()) && StrUtil.isNotBlank(stockInOrderLevel2DTO.getWorkNo())){
+			List<LoginUser> userByRealName = iSysBaseAPI.getUserByRealName(stockInOrderLevel2DTO.getRealName(), stockInOrderLevel2DTO.getWorkNo());
+			if (CollectionUtil.isNotEmpty(userByRealName)){
+				List<String> collect = userByRealName.stream().map(LoginUser::getId).collect(Collectors.toList());
+				String join = CollectionUtil.join(collect, ",");
+				stockInOrderLevel2.setUserId(join);
+			}
+			if (CollectionUtil.isEmpty(userByRealName)) {
+				stringBuilder.append("系统中不存在该入库人，");
+			}
+		}
+
+		 if (StrUtil.isBlank(stockInOrderLevel2DTO.getRealName()) && StrUtil.isBlank(stockInOrderLevel2DTO.getWorkNo())){
+			LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+			stockInOrderLevel2.setUserId(sysUser.getId());
+		   }
+
+		 if (StrUtil.isBlank(stockInOrderLevel2DTO.getRealName()) && StrUtil.isNotBlank(stockInOrderLevel2DTO.getWorkNo())){
+			LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+			stockInOrderLevel2.setUserId(sysUser.getId());
+		 }
+
+		 if (StrUtil.isNotBlank(stockInOrderLevel2DTO.getNote())){
+		 	stockInOrderLevel2.setNote(stockInOrderLevel2DTO.getNote());
+		 }
+	}
+
+
+	private void StockIncomingMaterials(StockInOrderLevel2DTO stockInOrderLevel2DTO,
+										StockIncomingMaterials stockIncomingMaterials,
+										StringBuilder stringBuilder1)
+	{
+		List<StockIncomingMaterialsDTO> stockIncomingMaterialsDTOList = stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList();
+		if (CollectionUtil.isNotEmpty(stockIncomingMaterialsDTOList)){
+			for (StockIncomingMaterialsDTO stockIncomingMaterialsDTO : stockIncomingMaterialsDTOList) {
+				if (StrUtil.isBlank(stockIncomingMaterialsDTO.getMaterialCode())){
+					stringBuilder1.append("物资编码必填，");
+				}
+				if (StrUtil.isBlank(stockIncomingMaterialsDTO.getMaterialName())){
+					stringBuilder1.append("物资名称必填，");
+				}
+				if (StrUtil.isNotBlank(stockIncomingMaterialsDTO.getMaterialCode())){
+					LambdaQueryWrapper<MaterialBase> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+					lambdaQueryWrapper.eq(MaterialBase::getCode,stockIncomingMaterialsDTO.getMaterialCode());
+					lambdaQueryWrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
+					MaterialBase one = iMaterialBaseService.getOne(lambdaQueryWrapper);
+					if (ObjectUtil.isNotEmpty(one)){
+						stockIncomingMaterials.setMaterialCode(one.getCode());
+					}else {
+						stringBuilder1.append("系统中不存在该物资编码，");
+					}
+				}
+				if (StrUtil.isNotBlank(stockIncomingMaterialsDTO.getMaterialName())){
+					LambdaQueryWrapper<MaterialBase> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+					lambdaQueryWrapper.eq(MaterialBase::getName,stockIncomingMaterialsDTO.getMaterialName());
+					lambdaQueryWrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
+					MaterialBase one = iMaterialBaseService.getOne(lambdaQueryWrapper);
+					if(ObjectUtil.isNull(one)) {
+						stringBuilder1.append("系统中不存在该物资名称，");
+					}
+				}
+				if (StrUtil.isNotBlank(stockIncomingMaterialsDTO.getMaterialCode()) && StrUtil.isNotBlank(stockIncomingMaterialsDTO.getMaterialName())){
+					LambdaQueryWrapper<MaterialBase> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+					lambdaQueryWrapper.eq(MaterialBase::getCode,stockIncomingMaterialsDTO.getMaterialCode());
+					lambdaQueryWrapper.eq(MaterialBase::getName,stockIncomingMaterialsDTO.getMaterialName());
+					lambdaQueryWrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
+					MaterialBase one = iMaterialBaseService.getOne(lambdaQueryWrapper);
+					if (ObjectUtil.isNotEmpty(one)){
+						stockIncomingMaterials.setMaterialCode(one.getCode());
+					}else {
+						stringBuilder1.append("物资编码和物资名称不匹配，");
+					}
+				}
+				if (stockIncomingMaterialsDTO.getNum()==null){
+					stringBuilder1.append("入库数量必填，");
+				}else {
+					stockIncomingMaterials.setNumber(stockIncomingMaterialsDTO.getNum());
+				}
+			}
+		}
+	}
+
+	//下拉框
+	private void selectList(Workbook workbook,String name,int firstCol, int lastCol,List<StockLevel2Info> modelList){
+		Sheet sheet = workbook.getSheetAt(0);
+		if (CollectionUtil.isNotEmpty(modelList)) {
+			//将新建的sheet页隐藏掉, 下拉值太多，需要创建隐藏页面
+			int sheetTotal = workbook.getNumberOfSheets();
+			String hiddenSheetName = name + "_hiddenSheet";
+			List<String> collect = modelList.stream().map(StockLevel2Info::getWarehouseName).collect(Collectors.toList());
+			Sheet hiddenSheet = workbook.getSheet(hiddenSheetName);
+			if (hiddenSheet == null) {
+				hiddenSheet = workbook.createSheet(hiddenSheetName);
+				//写入下拉数据到新的sheet页中
+				for (int i = 0; i < collect.size(); i++) {
+					Row hiddenRow = hiddenSheet.createRow(i);
+					Cell hiddenCell = hiddenRow.createCell(0);
+					hiddenCell.setCellValue(collect.get(i));
+				}
+				workbook.setSheetHidden(sheetTotal, true);
+			}
+
+			// 下拉数据
+			CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3, 65535, firstCol, lastCol);
+			//  生成下拉框内容名称
+			String strFormula = hiddenSheetName + "!$A$1:$A$65535";
+			// 根据隐藏页面创建下拉列表
+			XSSFDataValidationConstraint constraint = new XSSFDataValidationConstraint(DataValidationConstraint.ValidationType.LIST, strFormula);
+			XSSFDataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) hiddenSheet);
+			DataValidation validation = dvHelper.createValidation(constraint, cellRangeAddressList);
+			//  对sheet页生效
+			sheet.addValidationData(validation);
+		}
+
+	}
+	public static Result<?> imporReturnRes(int errorLines, int successLines, String tipMessage, boolean isType, String failReportUrl) throws IOException {
+		if (isType) {
+			if (errorLines != 0) {
+				JSONObject result = new JSONObject(5);
+				result.put("isSucceed", false);
+				result.put("errorCount", errorLines);
+				result.put("successCount", successLines);
+				int totalCount = successLines + errorLines;
+				result.put("totalCount", totalCount);
+				result.put("failReportUrl", failReportUrl);
+				Result res = Result.ok(result);
+				res.setMessage("文件失败，数据有错误。");
+				res.setCode(200);
+				return res;
+			} else {
+				//是否成功
+				JSONObject result = new JSONObject(5);
+				result.put("isSucceed", true);
+				result.put("errorCount", errorLines);
+				result.put("successCount", successLines);
+				int totalCount = successLines + errorLines;
+				result.put("totalCount", totalCount);
+				Result res = Result.ok(result);
+				res.setMessage("文件导入成功！");
+				res.setCode(200);
+				return res;
+			}
+		} else {
+			JSONObject result = new JSONObject(5);
+			result.put("isSucceed", false);
+			result.put("errorCount", errorLines);
+			result.put("successCount", successLines);
+			int totalCount = successLines + errorLines;
+			result.put("totalCount", totalCount);
+			Result res = Result.ok(result);
+			res.setMessage(tipMessage);
+			res.setCode(200);
+			return res;
+		}
+
+	}
 	@Override
 	public IPage<StockInOrderLevel2> pageList(Page<StockInOrderLevel2> page, StockInOrderLevel2 stockInOrderLevel2) {
 		List<StockInOrderLevel2> baseList = baseMapper.pageList(page, stockInOrderLevel2);
