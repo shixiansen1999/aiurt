@@ -7,29 +7,37 @@ public interface FixedAssetsConstant {
     /**
      * 盘点状态-待下发
      */
-    Integer status_0 = 0;
+    Integer STATUS_0 = 0;
     /**
      * 盘点状态-执行中
      */
-    Integer status_1 = 1;
+    Integer STATUS_1 = 1;
     /**
      * 盘点状态-待审核
      */
-    Integer status_2 = 2;
+    Integer STATUS_2 = 2;
     /**
      * 盘点状态-已完成
      */
-    Integer status_3 = 3;
+    Integer STATUS_3 = 3;
     /**
      * 盘点结果-盘平
      */
-    Integer check_result_0 = 0;
+    Integer CHECK_RESULT_0 = 0;
     /**
      * 盘点结果-盘盈
      */
-    Integer check_result_1 = 1;
+    Integer CHECK_RESULT_1 = 1;
     /**
      * 盘点结果-盘亏
      */
-    Integer check_result_2 = 2;
+    Integer CHECK_RESULT_2 = 2;
+    /**
+     * 审核结果-驳回
+     */
+    Integer AUDIT_RESULT_0 = 0;
+    /**
+     * 审核结果-通过
+     */
+    Integer AUDIT_RESULT_1 = 1;
 }

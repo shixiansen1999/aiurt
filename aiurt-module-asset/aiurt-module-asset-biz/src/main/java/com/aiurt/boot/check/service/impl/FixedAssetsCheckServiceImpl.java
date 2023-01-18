@@ -190,10 +190,10 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         Assert.notNull(fixedAssetsCheck, "未找到对应数据！");
         // 更新为待执行状态
         if (ObjectUtils.isEmpty(fixedAssetsCheck.getStatus())
-                || !FixedAssetsConstant.status_0.equals(fixedAssetsCheck.getStatus())) {
+                || !FixedAssetsConstant.STATUS_0.equals(fixedAssetsCheck.getStatus())) {
             throw new AiurtBootException("请检查任务状态，待下发状态才允许下发！");
         }
-        fixedAssetsCheck.setStatus(FixedAssetsConstant.status_1);
+        fixedAssetsCheck.setStatus(FixedAssetsConstant.STATUS_1);
         this.updateById(fixedAssetsCheck);
 
         // 生成盘点结果
@@ -271,7 +271,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
     public void deleteCheckInfo(String id) {
         FixedAssetsCheck fixedAssetsCheck = this.getById(id);
         Assert.notNull(fixedAssetsCheck, "未找到对应数据！");
-        if (!FixedAssetsConstant.status_0.equals(fixedAssetsCheck.getStatus())) {
+        if (!FixedAssetsConstant.STATUS_0.equals(fixedAssetsCheck.getStatus())) {
             throw new AiurtBootException("待下发状态的记录才允许删除！");
         }
         this.removeById(id);
@@ -306,7 +306,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
         fixedAssetsCheckDTO = Optional.ofNullable(fixedAssetsCheckDTO).orElseGet(FixedAssetsCheckDTO::new);
-        fixedAssetsCheckDTO.setAuditStatus(FixedAssetsConstant.status_2);
+        fixedAssetsCheckDTO.setAuditStatus(FixedAssetsConstant.STATUS_2);
         fixedAssetsCheckDTO.setUserName(loginUser.getUsername());
         IPage<FixedAssetsCheckVO> pageList = fixedAssetsCheckMapper.pageList(page, fixedAssetsCheckDTO);
         if (CollectionUtil.isNotEmpty(pageList.getRecords())) {
@@ -388,9 +388,6 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String startProcess(AssetsResultDTO assetsResultDTO) {
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
-
         String id = assetsResultDTO.getId();
         List<FixedAssetsCheckRecord> records = assetsResultDTO.getRecords();
         if (ObjectUtils.isEmpty(assetsResultDTO) || CollectionUtil.isEmpty(records)) {
@@ -405,10 +402,8 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         fixedAssetsCheck.setActualStartTime(assetsResultDTO.getActualStartTime());
         fixedAssetsCheck.setActualEndTime(assetsResultDTO.getActualEndTime());
         // 执行中
-        fixedAssetsCheck.setStatus(FixedAssetsConstant.status_1);
-        fixedAssetsCheck.setCheckId(loginUser.getId());
+        fixedAssetsCheck.setStatus(FixedAssetsConstant.STATUS_1);
         this.updateById(fixedAssetsCheck);
-
         fixedAssetsCheckRecordService.updateBatchById(records);
         return id;
     }
@@ -434,18 +429,20 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         switch (states) {
             case 2:
                 // 盘点结果审核
-                assetsCheck.setStatus(FixedAssetsConstant.status_2);
+                assetsCheck.setStatus(FixedAssetsConstant.STATUS_2);
                 break;
             case 3:
                 // 盘点结果驳回
-                assetsCheck.setStatus(FixedAssetsConstant.status_1);
+                assetsCheck.setStatus(FixedAssetsConstant.STATUS_1);
+                assetsCheck.setAuditResult(FixedAssetsConstant.AUDIT_RESULT_0);
                 break;
             case 4:
                 // 审核通过
-                assetsCheck.setStatus(FixedAssetsConstant.status_3);
+                assetsCheck.setStatus(FixedAssetsConstant.STATUS_3);
                 assetsCheck.setAuditTime(new Date());
                 assetsCheck.setAuditId(userId);
                 assetsCheck.setAuditReason(updateStateEntity.getReason());
+                assetsCheck.setAuditResult(FixedAssetsConstant.AUDIT_RESULT_1);
                 // TODO: 2023/1/17 生成资产变更明细数据
                 break;
         }

@@ -72,7 +72,7 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
         String checkId = fixedAssetsCheckRecordDTO.getCheckId();
         Page<FixedAssetsCheckRecordVO> pageList = null;
         FixedAssetsCheck fixedAssetsCheck = fixedAssetsCheckService.getById(checkId);
-        if (FixedAssetsConstant.status_0.equals(fixedAssetsCheck.getStatus())) {
+        if (FixedAssetsConstant.STATUS_0.equals(fixedAssetsCheck.getStatus())) {
             List<FixedAssetsCheckCategory> categoryList = fixedAssetsCheckCategoryService.lambdaQuery()
                     .eq(FixedAssetsCheckCategory::getCheckId, checkId).list();
             List<String> categoryCodes = categoryList.stream().map(FixedAssetsCheckCategory::getCategoryCode).collect(Collectors.toList());
@@ -89,11 +89,11 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getCheckId()).ifPresent(checkid -> wrapper.eq(FixedAssetsCheckRecord::getCheckId, checkid));
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getAssetName()).ifPresent(assetName -> wrapper.like(FixedAssetsCheckRecord::getAssetName, assetName));
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getResult()).ifPresent(result -> {
-                    if (FixedAssetsConstant.check_result_0.equals(result)) {
+                    if (FixedAssetsConstant.CHECK_RESULT_0.equals(result)) {
                         wrapper.eq(FixedAssetsCheckRecord::getProfitLoss, 0);
-                    } else if (FixedAssetsConstant.check_result_1.equals(result)) {
+                    } else if (FixedAssetsConstant.CHECK_RESULT_1.equals(result)) {
                         wrapper.gt(FixedAssetsCheckRecord::getProfitLoss, 0);
-                    } else if (FixedAssetsConstant.check_result_2.equals(result)) {
+                    } else if (FixedAssetsConstant.CHECK_RESULT_2.equals(result)) {
                         wrapper.lt(FixedAssetsCheckRecord::getProfitLoss, 0);
                     }
                 });
@@ -135,7 +135,7 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
         List<FixedAssetsCheckRecordVO> records = new ArrayList<>();
         FixedAssetsCheckRecordVO recordVO = null;
         FixedAssetsCheck fixedAssetsCheck = fixedAssetsCheckService.getById(checkId);
-        if (FixedAssetsConstant.status_0.equals(fixedAssetsCheck.getStatus())) {
+        if (FixedAssetsConstant.STATUS_0.equals(fixedAssetsCheck.getStatus())) {
             List<FixedAssetsCheckCategory> categoryList = fixedAssetsCheckCategoryService.lambdaQuery()
                     .eq(FixedAssetsCheckCategory::getCheckId, checkId).list();
             List<FixedAssetsCheckDept> deptList = fixedAssetsCheckDeptService.lambdaQuery()
@@ -176,11 +176,11 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getCategoryCode()).ifPresent(categoryCode -> wrapper.like(FixedAssetsCheckRecord::getCategoryCode, categoryCode));
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getAssetCode()).ifPresent(assetCode -> wrapper.like(FixedAssetsCheckRecord::getAssetCode, assetCode));
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getResult()).ifPresent(result -> {
-                    if (FixedAssetsConstant.check_result_0.equals(result)) {
+                    if (FixedAssetsConstant.CHECK_RESULT_0.equals(result)) {
                         wrapper.eq(FixedAssetsCheckRecord::getProfitLoss, 0);
-                    } else if (FixedAssetsConstant.check_result_1.equals(result)) {
+                    } else if (FixedAssetsConstant.CHECK_RESULT_1.equals(result)) {
                         wrapper.gt(FixedAssetsCheckRecord::getProfitLoss, 0);
-                    } else if (FixedAssetsConstant.check_result_2.equals(result)) {
+                    } else if (FixedAssetsConstant.CHECK_RESULT_2.equals(result)) {
                         wrapper.lt(FixedAssetsCheckRecord::getProfitLoss, 0);
                     }
                 });
@@ -224,7 +224,7 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
         FixedAssetsCheck fixedAssetsCheck = fixedAssetsCheckService.getById(id);
         Assert.notNull(fixedAssetsCheck, "不存在该盘点任务数据！");
         CheckResultTotalVO totalVO = new CheckResultTotalVO();
-        if (!FixedAssetsConstant.status_3.equals(fixedAssetsCheck.getStatus())) {
+        if (!FixedAssetsConstant.STATUS_3.equals(fixedAssetsCheck.getStatus())) {
             return totalVO;
         }
         Long profit = this.lambdaQuery().eq(FixedAssetsCheckRecord::getDelFlag, CommonConstant.DEL_FLAG_0)

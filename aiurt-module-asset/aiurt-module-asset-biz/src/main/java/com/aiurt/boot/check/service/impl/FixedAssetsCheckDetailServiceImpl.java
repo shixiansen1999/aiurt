@@ -50,7 +50,7 @@ public class FixedAssetsCheckDetailServiceImpl extends ServiceImpl<FixedAssetsCh
     public IPage<FixedAssetsCheckDetailVO> queryPageList(Page<FixedAssetsCheckDetailVO> page, String id) {
         FixedAssetsCheck fixedAssetsCheck = fixedAssetsCheckService.getById(id);
         Page<FixedAssetsCheckDetailVO> pageList = null;
-        if (FixedAssetsConstant.status_0.equals(fixedAssetsCheck.getStatus())) {
+        if (FixedAssetsConstant.STATUS_0.equals(fixedAssetsCheck.getStatus())) {
             List<FixedAssetsCheckCategory> categoryList = fixedAssetsCheckCategoryService.lambdaQuery()
                     .eq(FixedAssetsCheckCategory::getCheckId, id).list();
             List<FixedAssetsCheckDept> deptList = fixedAssetsCheckDeptService.lambdaQuery()

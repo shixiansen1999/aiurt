@@ -76,9 +76,9 @@ public class FixedAssetsCheck extends DictEntity implements Serializable {
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private java.util.Date auditTime;
-    /**审核结果（0未通过，1已通过）*/
-    @Excel(name = "审核结果（0未通过，1已通过）", width = 15)
-    @ApiModelProperty(value = "审核结果（0未通过，1已通过）")
+    /**审核结果(0驳回、1通过)*/
+    @Excel(name = "审核结果(0驳回、1通过)", width = 15)
+    @ApiModelProperty(value = "审核结果(0驳回、1通过)")
     @Dict(dicCode = "fixed_audit_result")
     private java.lang.Integer auditResult;
     /**审核理由*/
