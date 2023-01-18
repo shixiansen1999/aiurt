@@ -322,7 +322,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         this.updateById(analysisReport);
     }
 
-    public Result<String> startProcess(FaultDTO faultDTO){
+    public String startProcess(FaultDTO faultDTO){
         String id = faultDTO.getId();
         FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
         faultAnalysisReport.setStatus(FaultConstant.PENDING);
@@ -341,7 +341,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         }
         if (StrUtil.isEmpty(id)) {
             if (StrUtil.isEmpty(faultDTO.getCode())) {
-                return Result.error("故障编号不能为空");
+                throw new AiurtBootException("故障编号不能为空");
             }
             if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
                 faultKnowledgeBaseService.save(faultKnowledgeBase);
@@ -349,7 +349,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
             }
             this.save(faultAnalysisReport);
             String newId = faultAnalysisReport.getId();
-            return Result.OK(newId);
+            return newId;
         }else{
             if (ObjectUtil.isNotNull(faultKnowledgeBase.getId())) {
                 faultKnowledgeBaseService.updateById(faultKnowledgeBase);
@@ -359,7 +359,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
                 faultAnalysisReport.setFaultKnowledgeBaseId(faultKnowledgeBase.getId());
             }
             this.updateById(faultAnalysisReport);
-            return Result.OK(id);
+            return id;
         }
 
     }

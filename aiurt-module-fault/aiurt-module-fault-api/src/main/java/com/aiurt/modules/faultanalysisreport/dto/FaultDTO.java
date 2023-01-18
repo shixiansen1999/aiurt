@@ -114,11 +114,13 @@ public class FaultDTO extends DictEntity implements Serializable {
     /**设备类型*/
     @Excel(name = "设备类型", width = 15)
     @ApiModelProperty(value = "设备类型")
+    @Dict(dictTable ="device_Type",dicText = "name",dicCode = "code")
     private String deviceTypeCode;
 
     /**设备组件*/
     @Excel(name = "设备组件", width = 15)
     @ApiModelProperty(value = "设备组件")
+    @Dict(dictTable ="device_assembly",dicText = "material_name",dicCode = "material_code")
     private String materialCode;
 
     /**故障措施/解决方案*/
