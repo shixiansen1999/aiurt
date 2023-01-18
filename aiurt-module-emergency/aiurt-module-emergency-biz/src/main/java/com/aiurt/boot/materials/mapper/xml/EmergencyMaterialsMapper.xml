@@ -44,6 +44,9 @@
             </foreach>
             </if>
         </where>
+        <if test="condition.planFlag!=null">
+            group by t1.materials_code
+        </if>
         order by t1.create_time desc,t1.update_time desc
     </select>
 

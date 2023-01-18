@@ -144,5 +144,8 @@ public class MaterialAccountDTO {
     @ApiModelProperty(value = "子节点")
     private List<MaterialAccountDTO> children;
 
-
+    /**应急预案标识*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "应急预案标识")
+    private java.lang.String planFlag;
 }
