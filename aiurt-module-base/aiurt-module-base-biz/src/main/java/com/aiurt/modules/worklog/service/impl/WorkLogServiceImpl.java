@@ -922,16 +922,24 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         String pm = nowday+" " + nightTime;
         //昨天时间
         DateTime lastDay = DateUtil.offsetDay(date, -1);
-        String lastPM = DateUtil.format(lastDay, "yyyy-MM-dd")+ " 17:30:00";
+        String lastPM = DateUtil.format(lastDay, "yyyy-MM-dd")+ " 16:30:00";
+
+        //明天时间
+        DateTime nextDay = DateUtil.offsetDay(date, +1);
+        String nextAM = DateUtil.format(nextDay, "yyyy-MM-dd")+ " 08:29:59";
 
         if (date.after(DateUtil.parse(am)) && date.before(DateUtil.parse(pm))) {
             //白班
             startTime = DateUtil.parse(nowday+" 08:30:00");
             endTime = DateUtil.parse(nowday+" 16:29:59");
-        } else {
-            //晚班
+        } else if (date.before(DateUtil.parse(am))){
+            //昨天晚班
             startTime = DateUtil.parse(lastPM);
-            endTime = DateUtil.parse(am);
+            endTime = DateUtil.parse(nowday + " 08:29:59");
+        } else {
+            //今天晚班
+            startTime = DateUtil.parse(nowday+" 16:30:00");
+            endTime = DateUtil.parse(nextAM);
         }
 
         HashMap<String, String> map = new HashMap<>(16);

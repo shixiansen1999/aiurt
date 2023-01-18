@@ -270,7 +270,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
                 } else {
                     deviceType.setMajorCode(csMajor.getMajorCode());
                     //安全事项分类
-                    String systemName = deviceType.getSystemName() == null ? "" : deviceType.getSystemName();
+                    String systemName = deviceType.getSystemName() == null ?deviceType.getSystemName():"" ;
                     if (StrUtil.isNotEmpty(systemName)) {
                         String systemCode = deviceTypeMapper.selectSystemCode(systemName,csMajor.getMajorCode());
                         if (StrUtil.isNotEmpty(systemCode)){
@@ -435,7 +435,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
             Map<String, Object> errorMap = new HashMap<String, Object>();
             errorMap.put("maplist", mapList);
             Workbook workbook = ExcelExportUtil.exportExcel(exportParams,errorMap);
-            String fileName = "安全事项导入错误模板"+"_" + System.currentTimeMillis()+".xlsx";
+            String fileName = "设备分类导入错误模板"+"_" + System.currentTimeMillis()+".xlsx";
             FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
             String  url = fileName;
             workbook.write(out);
