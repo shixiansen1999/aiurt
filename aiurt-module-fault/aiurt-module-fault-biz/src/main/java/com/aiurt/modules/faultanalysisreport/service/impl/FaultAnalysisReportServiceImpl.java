@@ -300,7 +300,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
                 analysisReport.setStatus(FaultConstant.REJECTED);
                 analysisReport.setApprovedResult(FaultConstant.NO_PASS);
                 break;
-            case 1:
+            case 3:
                 //已审批
                 analysisReport.setStatus(FaultConstant.APPROVED);
                 analysisReport.setApprovedResult(FaultConstant.PASSED);
