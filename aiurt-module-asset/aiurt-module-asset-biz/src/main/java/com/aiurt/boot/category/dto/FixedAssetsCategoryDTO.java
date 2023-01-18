@@ -54,7 +54,7 @@ public class FixedAssetsCategoryDTO {
     /**分类编码*/
     @Excel(name = "层级", width = 15)
     @ApiModelProperty(value = "层级")
-    private java.lang.Integer level;
+    private java.lang.String level;
     /**备注*/
     @Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")

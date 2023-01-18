@@ -58,7 +58,9 @@ public class FixedAssetsDTO extends DictEntity  {
 	/**存放地点编码*/
     @ApiModelProperty(value = "线路及站点code")
     private List<String> lineStations;
-
+    /**存放位置是否是站点*/
+    @ApiModelProperty(value = "存放位置是否是站点")
+    private Boolean isLine;
 	/**责任人ID*/
     @ApiModelProperty(value = "责任人ID")
     private String responsibilityId;

@@ -8,6 +8,8 @@ import com.aiurt.boot.asset.service.IFixedAssetsService;
 import com.aiurt.boot.category.dto.FixedAssetsCategoryDTO;
 import com.aiurt.boot.category.entity.FixedAssetsCategory;
 import com.aiurt.boot.category.service.IFixedAssetsCategoryService;
+import com.aiurt.boot.check.entity.FixedAssetsCheckCategory;
+import com.aiurt.boot.check.service.IFixedAssetsCheckCategoryService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -54,6 +56,8 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
     private IFixedAssetsCategoryService fixedAssetsCategoryService;
     @Autowired
     private IFixedAssetsService fixedAssetsService;
+    @Autowired
+    private IFixedAssetsCheckCategoryService checkCategoryService;
 
     /**
      * 分页列表查询
@@ -154,13 +158,19 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
     @ApiOperation(value = "资产分类-删除", notes = "资产分类-删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id, @RequestParam(name = "code", required = true) String code) {
-        List<FixedAssets> list = fixedAssetsService.list(new LambdaQueryWrapper<FixedAssets>().eq(FixedAssets::getOrgCode, code));
+        List<FixedAssets> list = fixedAssetsService.list(new LambdaQueryWrapper<FixedAssets>().eq(FixedAssets::getCategoryCode, code));
+        //是否被资产引用
         List<FixedAssetsCategory> categoryList = fixedAssetsCategoryService.list(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid, id));
+        //是否被盘点任务引用
+        List<FixedAssetsCheckCategory> checkCategoryList = checkCategoryService.list(new LambdaQueryWrapper<FixedAssetsCheckCategory>().eq(FixedAssetsCheckCategory::getCategoryCode, code));
         if (CollUtil.isNotEmpty(list)) {
-            return Result.error("分类下有固资不允许删除!");
+            return Result.error("分类被引用不允许删除!");
         }
         if (CollUtil.isNotEmpty(categoryList)) {
             return Result.error("该分类下有子节点，请删除后再操作!");
+        }
+        if (CollUtil.isNotEmpty(checkCategoryList)) {
+            return Result.error("分类被引用不允许删除!");
         }
         fixedAssetsCategoryService.removeById(id);
         return Result.OK("删除成功!");

@@ -97,12 +97,12 @@ public class FixedAssetsController extends BaseController<FixedAssets, IFixedAss
 		 FixedAssets assets = fixedAssetsService.getOne(queryWrapper);
 		 if(ObjectUtil.isNotEmpty(id)){
 		 	if(id!=assets.getId()){
-				Result.error("资产编号已存在！");
+				return Result.error("资产编号已存在！");
 			}
 		 }
 		 else {
 			 if(ObjectUtil.isNotEmpty(assets)){
-				 Result.error("资产编号已存在！");
+				 return Result.error("资产编号已存在！");
 			 }
 		 }
 		 return Result.OK();

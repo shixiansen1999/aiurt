@@ -15,6 +15,7 @@ import com.aiurt.boot.check.entity.FixedAssetsCheckDept;
 import com.aiurt.boot.check.mapper.FixedAssetsCheckCategoryMapper;
 import com.aiurt.boot.check.mapper.FixedAssetsCheckDeptMapper;
 import com.aiurt.boot.check.mapper.FixedAssetsCheckMapper;
+import com.aiurt.boot.constant.FixedAssetsConstant;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.boot.record.mapper.FixedAssetsCheckRecordMapper;
 import com.aiurt.common.constant.CommonConstant;
@@ -64,9 +65,12 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         if (CollUtil.isNotEmpty(stationCodeByLineCode)) {
             stationCodeByLineCode.add(fixedAssetsDTO.getLocation());
             fixedAssetsDTO.setLineStations(stationCodeByLineCode);
+            fixedAssetsDTO.setIsLine(true);
+        } else {
+            fixedAssetsDTO.setIsLine(false);
         }
         //资产分类查询
-        if(ObjectUtil.isNotEmpty(fixedAssetsDTO.getCategoryCode())){
+        if (ObjectUtil.isNotEmpty(fixedAssetsDTO.getCategoryCode())) {
             //获取该节点下的所有字节点
             LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(FixedAssetsCategory::getDelFlag, CommonConstant.DEL_FLAG_0);
@@ -104,9 +108,9 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
             if (CollUtil.isNotEmpty(list)) {
                 for (FixedAssetsCheck check : assetsChecks) {
                     List<FixedAssetsCheckCategory> checkCategoryList = checkCategoryMapper.selectList(new LambdaQueryWrapper<FixedAssetsCheckCategory>().eq(FixedAssetsCheckCategory::getCheckId, check.getId()));
-                    List<String> categoryCodes =checkCategoryList.stream().map(FixedAssetsCheckCategory::getCategoryCode).collect(Collectors.toList());
+                    List<String> categoryCodes = checkCategoryList.stream().map(FixedAssetsCheckCategory::getCategoryCode).collect(Collectors.toList());
                     List<FixedAssetsCheckDept> checkDeptList = checkDeptMapper.selectList(new LambdaQueryWrapper<FixedAssetsCheckDept>().eq(FixedAssetsCheckDept::getCheckId, check.getId()));
-                    List<String> orgCodes =checkDeptList.stream().map(FixedAssetsCheckDept::getOrgCode).collect(Collectors.toList());
+                    List<String> orgCodes = checkDeptList.stream().map(FixedAssetsCheckDept::getOrgCode).collect(Collectors.toList());
                     boolean haveOrgCode = orgCodes.contains(dto.getOrgCode());
                     boolean haveCategoryCode = categoryCodes.contains(dto.getCategoryCode());
                     if (haveOrgCode && haveCategoryCode) {
@@ -119,6 +123,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         }
         return pageList.setRecords(list);
     }
+
     /**
      * 获取某个父节点下面的所有子节点
      *
@@ -139,6 +144,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         }
         return allChildren;
     }
+
     @Override
     public Result<FixedAssetsDTO> detail(String code) {
         FixedAssetsDTO dto = new FixedAssetsDTO();
@@ -166,8 +172,10 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         //查询该资产编码下的盘点记录
         List<FixedAssetsCheckRecordDTO> assetsCheckDTOS = new ArrayList<>();
         //1.获取已经完成的盘点任务
-        List<FixedAssetsCheck> fixedAssetsChecks = assetsCheckMapper.selectList(new LambdaQueryWrapper<FixedAssetsCheck>().eq(FixedAssetsCheck::getStatus, 4).eq(FixedAssetsCheck::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<FixedAssetsCheck> fixedAssetsChecks = assetsCheckMapper.selectList(new LambdaQueryWrapper<FixedAssetsCheck>().eq(FixedAssetsCheck::getStatus, FixedAssetsConstant.STATUS_3).eq(FixedAssetsCheck::getDelFlag, CommonConstant.DEL_FLAG_0));
         for (FixedAssetsCheck assetsCheck : fixedAssetsChecks) {
+            LoginUser checkName = sysBaseAPI.getUserById(assetsCheck.getCheckId());
+            LoginUser auditName = sysBaseAPI.getUserById(assetsCheck.getCheckId());
             FixedAssetsCheckRecordDTO assetsCheckDTO = new FixedAssetsCheckRecordDTO();
             BeanUtils.copyProperties(assetsCheck, assetsCheckDTO);
             //2.获取盘点任务下的资产编码一样的盘点记录
@@ -177,7 +185,10 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
             queryWrapper.last("limit 1");
             FixedAssetsCheckRecord record = recordMapper.selectOne(queryWrapper);
             if (ObjectUtil.isNotEmpty(record)) {
+                assetsCheckDTO.setCheckName(checkName.getRealname());
+                assetsCheckDTO.setAuditName(auditName.getRealname());
                 assetsCheckDTO.setNumber(record.getNumber());
+                assetsCheckDTO.setActualNumber(record.getActualNumber());
                 assetsCheckDTO.setActualSurplusLoss(record.getActualNumber() - record.getNumber());
                 assetsCheckDTO.setOneselfAssetNumber(record.getOneselfAssetNumber());
                 assetsCheckDTO.setOthersAssetNumber(record.getOthersAssetNumber());
@@ -185,6 +196,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
                 assetsCheckDTO.setLeisureAssetNumber(record.getLeisureAssetNumber());
                 assetsCheckDTO.setLeisureArea(record.getLeisureArea());
                 assetsCheckDTO.setHypothecate(record.getHypothecate());
+                assetsCheckDTO.setAuditIdTime(assetsCheck.getAuditTime());
                 assetsCheckDTO.setRemark(record.getRemark());
                 assetsCheckDTOS.add(assetsCheckDTO);
             }

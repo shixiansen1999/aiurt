@@ -82,8 +82,6 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
             }
             List<FixedAssetsCategoryDTO> parentList = list.stream().filter(c -> c.getPid().equals(CategoryConstant.PID)).collect(Collectors.toList());
             for (FixedAssetsCategoryDTO parentCategory : parentList) {
-                Integer level = 1;
-                parentCategory.setLevel(level);
                 FixedAssetsCategoryDTO categoryDTO = buildChildTree(list, parentCategory);
                 categoryTree.add(categoryDTO);
             }
@@ -158,8 +156,9 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
             }
         }
         if (ObjectUtil.isNotEmpty(fixedAssetsCategory.getCategoryName())) {
-            //第一级
-            if (fixedAssetsCategory.getParentCode().equals(CategoryConstant.PID)) {
+            //第一级(parentCode:添加传0，编辑传自己)
+            FixedAssetsCategory parentCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getCategoryCode, fixedAssetsCategory.getParentCode()));
+            if (ObjectUtil.isEmpty(parentCategory)||CategoryConstant.PID.equals(parentCategory.getPid())) {
                 //1.根节点之间不能重复
                 //添加-根节点之间，名称不能重复
                 if (ObjectUtil.isEmpty(fixedAssetsCategory.getId())) {
@@ -184,7 +183,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                     List<FixedAssetsCategory> allChildren = treeMenuList(list, myCategory, new ArrayList<FixedAssetsCategory>());
                     if (CollUtil.isNotEmpty(allChildren)) {
                         List<FixedAssetsCategory> collect = allChildren.stream().filter(a -> a.getCategoryName().equals(fixedAssetsCategory.getCategoryName())).collect(Collectors.toList());
-                        if(CollUtil.isNotEmpty(collect)){
+                        if (CollUtil.isNotEmpty(collect)) {
                             return Result.error("同根同枝同叶之间不能重复");
                         }
                     }
@@ -193,9 +192,11 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
             //不是第一级
             else {
                 //同根下限制
+                //查询上一级
                 LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
                 queryWrapper.eq(FixedAssetsCategory::getCategoryCode, fixedAssetsCategory.getParentCode());
                 FixedAssetsCategory category = categoryMapper.selectOne(queryWrapper);
+                //查询上一级的下一级所有的数据
                 List<FixedAssetsCategory> categoryList = categoryMapper.selectList(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid, category.getId()));
                 //2.同根下枝干之间不能重复(二三级之间)
                 //添加-校验是否有重名
@@ -219,10 +220,10 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                     if (fixedAssetsCategory.getCategoryName().equals(category.getCategoryName())) {
                         return Result.error("同根同枝同叶之间不能重复");
                     }
-                    if (fixedAssetsCategory.getPid() != CategoryConstant.PID) {
+                    if (CategoryConstant.PID.equals(category.getPid())) {
                         //自己与上上级是否同名
-                        FixedAssetsCategory parentCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getId, category.getPid()));
-                        if (ObjectUtil.isNotEmpty(parentCategory)) {
+                        FixedAssetsCategory firstCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getId, category.getPid()));
+                        if (ObjectUtil.isNotEmpty(firstCategory)) {
                             return Result.error("同根同枝同叶之间不能重复");
                         }
                     }
@@ -232,8 +233,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                     if (fixedAssetsCategory.getCategoryName().equals(category.getCategoryName()) && !fixedAssetsCategory.getId().equals(category.getId())) {
                         return Result.error("同根同枝同叶之间不能重复");
                     }
-
-                    if (fixedAssetsCategory.getPid() != CategoryConstant.PID) {
+                    if (CategoryConstant.PID.equals(category.getPid())) {
                         //二级编辑-自己与下级是否重名
                         List<FixedAssetsCategory> levelThreeList = categoryMapper.selectList(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid, fixedAssetsCategory.getId()));
                         if (CollUtil.isNotEmpty(levelThreeList)) {
@@ -242,10 +242,13 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                                 return Result.error("同根同枝同叶之间不能重复");
                             }
                         }
+                    } else {
                         //三级编辑-自己与上上级是否同名
-                        FixedAssetsCategory parentCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getId, category.getPid()).ne(FixedAssetsCategory::getId, fixedAssetsCategory.getId()));
-                        if (ObjectUtil.isNotEmpty(parentCategory)) {
-                            return Result.error("同根同枝同叶之间不能重复");
+                        FixedAssetsCategory firstCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getId, category.getPid()).ne(FixedAssetsCategory::getId, fixedAssetsCategory.getId()));
+                        if (ObjectUtil.isNotEmpty(firstCategory)) {
+                            if (fixedAssetsCategory.getCategoryName().equals(firstCategory.getCategoryName())) {
+                                return Result.error("同根同枝同叶之间不能重复");
+                            }
                         }
                     }
                 }

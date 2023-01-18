@@ -31,6 +31,10 @@ public class FixedAssetsCheckRecordDTO extends DictEntity {
     @ApiModelProperty(value = "盘点人ID")
     @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private String checkId;
+    /**盘点人*/
+    @Excel(name = "盘点人", width = 15)
+    @ApiModelProperty(value = "盘点人")
+    private String checkName;
     /**盘点任务单号*/
     @Excel(name = "盘点任务单号", width = 15)
     @ApiModelProperty(value = "盘点任务单号")
@@ -50,6 +54,10 @@ public class FixedAssetsCheckRecordDTO extends DictEntity {
     @ApiModelProperty(value = "审核人ID")
     @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private String auditId;
+    /**审核人*/
+    @Excel(name = "审核人", width = 15)
+    @ApiModelProperty(value = "审核人")
+    private String auditName;
     /**审核时间*/
     @Excel(name = "审核时间", width = 15, format = "yyyy-MM-dd")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")

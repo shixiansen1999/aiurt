@@ -14,13 +14,13 @@
           <if test="condition.orgCode != null and condition.orgCode != ''">
             and  org_code = #{condition.orgCode}
         </if>
-        <if test="condition.lineStations != null and condition.lineStations.size() != 0">
+        <if test="condition.lineStations != null and condition.lineStations.size() != 0 and condition.isLine ==true ">
             and location in
             <foreach collection="condition.lineStations" item="item" index="index" open="(" close=")" separator=",">
                 #{item}
             </foreach>
         </if>
-        <if test="condition.location != null and condition.location != ''and condition.lineStations.size() == 0">
+        <if test=" condition.isLine ==false and condition.location != null and condition.location != ''">
             and location = #{condition.location}
         </if>
         <if test="condition.status != null">
