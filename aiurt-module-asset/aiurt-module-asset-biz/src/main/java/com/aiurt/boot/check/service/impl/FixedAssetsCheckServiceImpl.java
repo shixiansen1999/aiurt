@@ -225,6 +225,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
             checkRecord.setOrgCode(assets.getOrgCode());
             checkRecord.setCategoryCode(assets.getCategoryCode());
             checkRecord.setNumber(assets.getNumber());
+            checkRecord.setAssetOriginal(assets.getAssetOriginal());
             records.add(checkRecord);
 
             detail = new FixedAssetsCheckDetail();
@@ -430,6 +431,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
             case 2:
                 // 盘点结果审核
                 assetsCheck.setStatus(FixedAssetsConstant.STATUS_2);
+                assetsCheck.setAuditResult(null);
                 break;
             case 3:
                 // 盘点结果驳回

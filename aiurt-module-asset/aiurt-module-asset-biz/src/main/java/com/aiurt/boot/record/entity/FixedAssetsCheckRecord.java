@@ -61,6 +61,10 @@ public class FixedAssetsCheckRecord implements Serializable {
 	@Excel(name = "账面数量", width = 15)
     @ApiModelProperty(value = "账面数量")
     private java.lang.Integer number;
+    /**账面原值*/
+    @Excel(name = "账面原值", width = 15)
+    @ApiModelProperty(value = "账面原值")
+    private java.math.BigDecimal assetOriginal;
 	/**实盘数量*/
 	@Excel(name = "实盘数量", width = 15)
     @ApiModelProperty(value = "实盘数量")

@@ -26,11 +26,6 @@ public class FixedAssetsCheckRecordVO extends FixedAssetsCheckRecord {
     @ApiModelProperty(value = "已使用年限")
     private java.lang.Integer usefulLife;
     /**
-     * 账面原值
-     */
-    @ApiModelProperty(value = "账面原值")
-    private java.math.BigDecimal assetOriginal;
-    /**
      * 资产分类名称
      */
     @Excel(name = "资产分类名称", width = 15)
