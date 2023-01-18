@@ -157,6 +157,8 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
         LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(FaultKnowledgeBaseType::getName,faultKnowledgeBaseType.getName());
         queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag,0);
+        queryWrapper.eq(FaultKnowledgeBaseType::getMajorCode,faultKnowledgeBaseType.getMajorCode());
+        queryWrapper.eq(FaultKnowledgeBaseType::getSystemCode,faultKnowledgeBaseType.getSystemCode());
         List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = this.baseMapper.selectList(queryWrapper);
         if (CollUtil.isNotEmpty(faultKnowledgeBaseTypes)) {
             return Result.error("已存在该知识库类别名称");
