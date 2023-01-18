@@ -113,22 +113,4 @@ public class FixedAssetsCheckRecord implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
-    /**
-     * 盘盈(+)/盘亏(-)
-     */
-    @ApiModelProperty(value = "盘盈(+)/盘亏(-)")
-    @TableField(exist = false)
-    private java.lang.String profitAndLoss;
-    /**
-     * 已使用年限
-     */
-    @ApiModelProperty(value = "已使用年限")
-    @TableField(exist = false)
-    private java.lang.Integer usefulLife;
-    /**
-     * 账面原值
-     */
-    @ApiModelProperty(value = "账面原值")
-    @TableField(exist = false)
-    private java.math.BigDecimal assetOriginal;
 }

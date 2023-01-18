@@ -1,6 +1,6 @@
 package com.aiurt.boot.record.controller;
 
-import com.aiurt.boot.record.FixedAssetsCheckRecordVO;
+import com.aiurt.boot.record.vo.FixedAssetsCheckRecordVO;
 import com.aiurt.boot.record.dto.FixedAssetsCheckRecordDTO;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.boot.record.service.IFixedAssetsCheckRecordService;
@@ -43,11 +43,11 @@ public class FixedAssetsCheckRecordController extends BaseController<FixedAssets
      */
     @ApiOperation(value = "固定资产盘点记录表-分页列表查询", notes = "固定资产盘点记录表-分页列表查询")
     @GetMapping(value = "/list")
-    public Result<IPage<FixedAssetsCheckRecord>> queryPageList(FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO,
+    public Result<IPage<FixedAssetsCheckRecordVO>> queryPageList(FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO,
                                                                @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                                @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
-        Page<FixedAssetsCheckRecord> page = new Page<FixedAssetsCheckRecord>(pageNo, pageSize);
-        IPage<FixedAssetsCheckRecord> pageList = fixedAssetsCheckRecordService.queryPageList(page, fixedAssetsCheckRecordDTO);
+        Page<FixedAssetsCheckRecordVO> page = new Page<FixedAssetsCheckRecordVO>(pageNo, pageSize);
+        IPage<FixedAssetsCheckRecordVO> pageList = fixedAssetsCheckRecordService.queryPageList(page, fixedAssetsCheckRecordDTO);
         return Result.OK(pageList);
     }
 

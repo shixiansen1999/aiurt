@@ -13,11 +13,11 @@ import com.aiurt.boot.check.service.IFixedAssetsCheckCategoryService;
 import com.aiurt.boot.check.service.IFixedAssetsCheckDeptService;
 import com.aiurt.boot.check.service.IFixedAssetsCheckService;
 import com.aiurt.boot.constant.FixedAssetsConstant;
-import com.aiurt.boot.record.FixedAssetsCheckRecordVO;
 import com.aiurt.boot.record.dto.FixedAssetsCheckRecordDTO;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.boot.record.mapper.FixedAssetsCheckRecordMapper;
 import com.aiurt.boot.record.service.IFixedAssetsCheckRecordService;
+import com.aiurt.boot.record.vo.FixedAssetsCheckRecordVO;
 import com.aiurt.common.constant.CommonConstant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -25,6 +25,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -63,18 +65,10 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
     private FixedAssetsCheckRecordMapper fixedAssetsCheckRecordMapper;
 
     @Override
-    public IPage<FixedAssetsCheckRecord> queryPageList(Page<FixedAssetsCheckRecord> page, FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO) {
-        LambdaQueryWrapper<FixedAssetsCheckRecord> wrapper = new LambdaQueryWrapper<>();
-        if (ObjectUtils.isNotEmpty(fixedAssetsCheckRecordDTO)) {
-            Optional.ofNullable(fixedAssetsCheckRecordDTO.getCheckId()).ifPresent(checkId -> wrapper.eq(FixedAssetsCheckRecord::getCheckId, checkId));
-            Optional.ofNullable(fixedAssetsCheckRecordDTO.getAssetName()).ifPresent(assetName -> wrapper.like(FixedAssetsCheckRecord::getAssetName, assetName));
-//            Optional.ofNullable(fixedAssetsCheckRecordDTO.getResult()).ifPresent(result -> wrapper.like(FixedAssetsCheckRecord::getre, assetCode));
-            Optional.ofNullable(fixedAssetsCheckRecordDTO.getCategoryCode()).ifPresent(categoryCode -> wrapper.like(FixedAssetsCheckRecord::getCategoryCode, categoryCode));
-            Optional.ofNullable(fixedAssetsCheckRecordDTO.getAssetCode()).ifPresent(assetCode -> wrapper.like(FixedAssetsCheckRecord::getAssetCode, assetCode));
-        }
+    public IPage<FixedAssetsCheckRecordVO> queryPageList(Page<FixedAssetsCheckRecordVO> page, FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO) {
 
         String checkId = fixedAssetsCheckRecordDTO.getCheckId();
-        Page<FixedAssetsCheckRecord> pageList = null;
+        Page<FixedAssetsCheckRecordVO> pageList = null;
         FixedAssetsCheck fixedAssetsCheck = fixedAssetsCheckService.getById(checkId);
         if (FixedAssetsConstant.status_0.equals(fixedAssetsCheck.getStatus())) {
             List<FixedAssetsCheckCategory> categoryList = fixedAssetsCheckCategoryService.lambdaQuery()
@@ -87,10 +81,40 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
                 return page;
             }
             pageList = fixedAssetsCheckRecordMapper.pageList(page, fixedAssetsCheckRecordDTO, categoryCodes, orgCodes);
-            return pageList;
+        } else {
+            LambdaQueryWrapper<FixedAssetsCheckRecord> wrapper = new LambdaQueryWrapper<>();
+            if (ObjectUtils.isNotEmpty(fixedAssetsCheckRecordDTO)) {
+                Optional.ofNullable(fixedAssetsCheckRecordDTO.getCheckId()).ifPresent(checkid -> wrapper.eq(FixedAssetsCheckRecord::getCheckId, checkid));
+                Optional.ofNullable(fixedAssetsCheckRecordDTO.getAssetName()).ifPresent(assetName -> wrapper.like(FixedAssetsCheckRecord::getAssetName, assetName));
+//            Optional.ofNullable(fixedAssetsCheckRecordDTO.getResult()).ifPresent(result -> wrapper.like(FixedAssetsCheckRecord::getre, assetCode));
+                Optional.ofNullable(fixedAssetsCheckRecordDTO.getCategoryCode()).ifPresent(categoryCode -> wrapper.like(FixedAssetsCheckRecord::getCategoryCode, categoryCode));
+                Optional.ofNullable(fixedAssetsCheckRecordDTO.getAssetCode()).ifPresent(assetCode -> wrapper.like(FixedAssetsCheckRecord::getAssetCode, assetCode));
+            }
+            Page<FixedAssetsCheckRecord> recordPage = this.page(new Page<>(page.getCurrent(), page.getCurrent()), wrapper);
+            List<FixedAssetsCheckRecord> records = recordPage.getRecords();
+            List<FixedAssetsCheckRecordVO> recordVOs = new ArrayList<>();
+            FixedAssetsCheckRecordVO checkRecordVO = null;
+            for (FixedAssetsCheckRecord record : records) {
+                checkRecordVO = new FixedAssetsCheckRecordVO();
+                BeanUtils.copyProperties(record, checkRecordVO);
+                recordVOs.add(checkRecordVO);
+            }
+            pageList = page.setRecords(recordVOs);
         }
-        pageList = this.page(page, wrapper);
-
+        List<SysDepartModel> deptList = sysBaseApi.getAllSysDepart();
+        Map<String, String> orgMap = deptList.stream()
+                .collect(Collectors.toMap((k -> k.getOrgCode()), (v -> v.getDepartName()), (a, b) -> a));
+        for (FixedAssetsCheckRecordVO record : pageList.getRecords()) {
+            String position = sysBaseApi.getPosition(record.getLocation());
+            FixedAssetsCategory category = fixedAssetsCategoryService.lambdaQuery()
+                    .eq(FixedAssetsCategory::getCategoryCode, record.getCategoryCode())
+                    .last("limit 1")
+                    .one();
+            String categoryName = Optional.ofNullable(category).orElseGet(FixedAssetsCategory::new).getCategoryName();
+            record.setCategoryName(categoryName);
+            record.setOrgName(orgMap.get(record.getOrgCode()));
+            record.setLocationName(position);
+        }
         return pageList;
     }
 
@@ -158,6 +182,20 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
                 }
                 records.add(recordVO);
             }
+        }
+        List<SysDepartModel> deptList = sysBaseApi.getAllSysDepart();
+        Map<String, String> orgMap = deptList.stream()
+                .collect(Collectors.toMap((k -> k.getOrgCode()), (v -> v.getDepartName()), (a, b) -> a));
+        for (FixedAssetsCheckRecordVO record : records) {
+            String position = sysBaseApi.getPosition(record.getLocation());
+            FixedAssetsCategory category = fixedAssetsCategoryService.lambdaQuery()
+                    .eq(FixedAssetsCategory::getCategoryCode, record.getCategoryCode())
+                    .last("limit 1")
+                    .one();
+            String categoryName = Optional.ofNullable(category).orElseGet(FixedAssetsCategory::new).getCategoryName();
+            record.setCategoryName(categoryName);
+            record.setOrgName(orgMap.get(record.getOrgCode()));
+            record.setLocationName(position);
         }
         return records;
     }

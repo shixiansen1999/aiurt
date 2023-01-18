@@ -1,6 +1,7 @@
 package com.aiurt.boot.check.service;
 
 import com.aiurt.boot.check.entity.FixedAssetsCheckDetail;
+import com.aiurt.boot.check.vo.FixedAssetsCheckDetailVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -19,5 +20,5 @@ public interface IFixedAssetsCheckDetailService extends IService<FixedAssetsChec
      * @param id
      * @return
      */
-    IPage<FixedAssetsCheckDetail> queryPageList(Page<FixedAssetsCheckDetail> page, String id);
+    IPage<FixedAssetsCheckDetailVO> queryPageList(Page<FixedAssetsCheckDetailVO> page, String id);
 }

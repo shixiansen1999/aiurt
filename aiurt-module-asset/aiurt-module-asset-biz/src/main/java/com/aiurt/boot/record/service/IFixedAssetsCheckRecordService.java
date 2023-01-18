@@ -1,6 +1,6 @@
 package com.aiurt.boot.record.service;
 
-import com.aiurt.boot.record.FixedAssetsCheckRecordVO;
+import com.aiurt.boot.record.vo.FixedAssetsCheckRecordVO;
 import com.aiurt.boot.record.dto.FixedAssetsCheckRecordDTO;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -23,7 +23,7 @@ public interface IFixedAssetsCheckRecordService extends IService<FixedAssetsChec
      * @param fixedAssetsCheckRecordDTO
      * @return
      */
-    IPage<FixedAssetsCheckRecord> queryPageList(Page<FixedAssetsCheckRecord> page, FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO);
+    IPage<FixedAssetsCheckRecordVO> queryPageList(Page<FixedAssetsCheckRecordVO> page, FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO);
 
     /**
      * 固定资产盘点记录-盘点结果记录不分页查询

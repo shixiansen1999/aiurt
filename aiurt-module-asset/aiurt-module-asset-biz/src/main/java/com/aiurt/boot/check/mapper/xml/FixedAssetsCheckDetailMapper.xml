@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.check.mapper.FixedAssetsCheckDetailMapper">
-    <select id="queryPageList" resultType="com.aiurt.boot.check.entity.FixedAssetsCheckDetail">
+    <select id="queryPageList" resultType="com.aiurt.boot.check.vo.FixedAssetsCheckDetailVO">
         select fa.asset_code,
                fa.asset_name,
                fa.location,
                fa.category_code,
-               fa.number
+               fa.number as beforeNumber
         from fixed_assets fa
         where fa.del_flag = 0
           and fa.category_code in

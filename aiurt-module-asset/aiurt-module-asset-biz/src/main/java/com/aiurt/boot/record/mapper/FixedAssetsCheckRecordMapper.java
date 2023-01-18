@@ -3,6 +3,7 @@ package com.aiurt.boot.record.mapper;
 import java.util.List;
 
 import com.aiurt.boot.record.dto.FixedAssetsCheckRecordDTO;
+import com.aiurt.boot.record.vo.FixedAssetsCheckRecordVO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
@@ -20,7 +21,7 @@ public interface FixedAssetsCheckRecordMapper extends BaseMapper<FixedAssetsChec
      *
      * @return
      */
-    Page<FixedAssetsCheckRecord> pageList(@Param("page") Page<FixedAssetsCheckRecord> page,
+    Page<FixedAssetsCheckRecordVO> pageList(@Param("page") Page<FixedAssetsCheckRecordVO> page,
                                           @Param("condition") FixedAssetsCheckRecordDTO fixedAssetsCheckRecordDTO,
                                           @Param("categoryCodes") List<String> categoryCodes,
                                           @Param("orgCodes") List<String> orgCodes);

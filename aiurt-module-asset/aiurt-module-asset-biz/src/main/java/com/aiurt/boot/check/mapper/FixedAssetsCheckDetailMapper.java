@@ -2,6 +2,7 @@ package com.aiurt.boot.check.mapper;
 
 import java.util.List;
 
+import com.aiurt.boot.check.vo.FixedAssetsCheckDetailVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -22,7 +23,7 @@ public interface FixedAssetsCheckDetailMapper extends BaseMapper<FixedAssetsChec
      * @param orgCodes
      * @return
      */
-    Page<FixedAssetsCheckDetail> queryPageList(@Param("page") Page<FixedAssetsCheckDetail> page,
-                                               @Param("categoryCodes") List<String> categoryCodes,
-                                               @Param("orgCodes") List<String> orgCodes);
+    Page<FixedAssetsCheckDetailVO> queryPageList(@Param("page") Page<FixedAssetsCheckDetailVO> page,
+                                                 @Param("categoryCodes") List<String> categoryCodes,
+                                                 @Param("orgCodes") List<String> orgCodes);
 }

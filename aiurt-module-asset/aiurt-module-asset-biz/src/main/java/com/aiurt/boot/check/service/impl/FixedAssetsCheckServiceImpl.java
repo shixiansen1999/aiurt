@@ -223,40 +223,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
             throw new AiurtBootException("所属的物资分类和组织机构中暂无需要盘点的数据！");
         }
         fixedAssetsCheckRecordService.saveBatch(records);
-    }
-
-    /**
-     * 固定资产盘点管理-更新盘点结果数据记录(保存/提交)
-     *
-     * @param assetsResultDTO
-     * @return
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public String startProcess(AssetsResultDTO assetsResultDTO) {
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
-
-        String id = assetsResultDTO.getId();
-        List<FixedAssetsCheckRecord> records = assetsResultDTO.getRecords();
-        if (ObjectUtils.isEmpty(assetsResultDTO) || CollectionUtil.isEmpty(records)) {
-            throw new AiurtBootException("盘点数据为空！");
-        }
-        if (StrUtil.isEmpty(assetsResultDTO.getId())) {
-            throw new AiurtBootException("盘点任务的记录主键为空！");
-        }
-
-        FixedAssetsCheck fixedAssetsCheck = this.getById(id);
-        Assert.notNull(fixedAssetsCheck, "未找到ID为:" + id + "盘点任务数据！");
-        fixedAssetsCheck.setActualStartTime(assetsResultDTO.getActualStartTime());
-        fixedAssetsCheck.setActualEndTime(assetsResultDTO.getActualEndTime());
-        // 执行中
-        fixedAssetsCheck.setStatus(FixedAssetsConstant.status_1);
-        fixedAssetsCheck.setCheckId(loginUser.getId());
-        this.updateById(fixedAssetsCheck);
-
-        fixedAssetsCheckRecordService.updateBatchById(records);
-        return id;
+        // TODO: 2023/1/18 保存变更明细数据
     }
 
     @Override
@@ -381,6 +348,40 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         }
     }
 
+    /**
+     * 固定资产盘点管理-更新盘点结果数据记录(保存/提交)
+     *
+     * @param assetsResultDTO
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String startProcess(AssetsResultDTO assetsResultDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
+
+        String id = assetsResultDTO.getId();
+        List<FixedAssetsCheckRecord> records = assetsResultDTO.getRecords();
+        if (ObjectUtils.isEmpty(assetsResultDTO) || CollectionUtil.isEmpty(records)) {
+            throw new AiurtBootException("盘点数据为空！");
+        }
+        if (StrUtil.isEmpty(assetsResultDTO.getId())) {
+            throw new AiurtBootException("盘点任务的记录主键为空！");
+        }
+
+        FixedAssetsCheck fixedAssetsCheck = this.getById(id);
+        Assert.notNull(fixedAssetsCheck, "未找到ID为:" + id + "盘点任务数据！");
+        fixedAssetsCheck.setActualStartTime(assetsResultDTO.getActualStartTime());
+        fixedAssetsCheck.setActualEndTime(assetsResultDTO.getActualEndTime());
+        // 执行中
+        fixedAssetsCheck.setStatus(FixedAssetsConstant.status_1);
+        fixedAssetsCheck.setCheckId(loginUser.getId());
+        this.updateById(fixedAssetsCheck);
+
+        fixedAssetsCheckRecordService.updateBatchById(records);
+        return id;
+    }
+
     @Override
     public void rejectFirstUserTaskEvent(RejectFirstUserTaskEntity entity) {
 
@@ -415,5 +416,6 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
                 // TODO: 2023/1/17 生成资产变更明细数据
                 break;
         }
+        this.updateById(assetsCheck);
     }
 }

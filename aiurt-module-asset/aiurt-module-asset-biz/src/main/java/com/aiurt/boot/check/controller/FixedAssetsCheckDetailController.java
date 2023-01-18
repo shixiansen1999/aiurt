@@ -1,42 +1,23 @@
 package com.aiurt.boot.check.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import io.swagger.annotations.ApiParam;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.boot.check.entity.FixedAssetsCheckDetail;
 import com.aiurt.boot.check.service.IFixedAssetsCheckDetailService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.aiurt.boot.check.vo.FixedAssetsCheckDetailVO;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
-
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-import com.aiurt.common.system.base.controller.BaseController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @Description: fixed_assets_check_detail
@@ -44,7 +25,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date: 2023-01-17
  * @Version: V1.0
  */
-@Api(tags = "fixed_assets_check_detail")
+@Api(tags = "固定资产盘点任务详情-变更明细")
 @RestController
 @RequestMapping("/check/fixedAssetsCheckDetail")
 @Slf4j
@@ -59,12 +40,12 @@ public class FixedAssetsCheckDetailController extends BaseController<FixedAssets
      */
     @ApiOperation(value = "固定资产盘点任务详情-变更明细分页列表查询", notes = "固定资产盘点任务详情-变更明细分页列表查询")
     @GetMapping(value = "/list")
-    public Result<IPage<FixedAssetsCheckDetail>> queryPageList(@RequestParam(name = "id") @ApiParam(value = "任务记录ID") String id,
-                                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                               HttpServletRequest req) {
-        Page<FixedAssetsCheckDetail> page = new Page<FixedAssetsCheckDetail>(pageNo, pageSize);
-        IPage<FixedAssetsCheckDetail> pageList = fixedAssetsCheckDetailService.queryPageList(page, id);
+    public Result<IPage<FixedAssetsCheckDetailVO>> queryPageList(@RequestParam(name = "id") @ApiParam(value = "任务记录ID") String id,
+                                                                 @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                 HttpServletRequest req) {
+        Page<FixedAssetsCheckDetailVO> page = new Page<FixedAssetsCheckDetailVO>(pageNo, pageSize);
+        IPage<FixedAssetsCheckDetailVO> pageList = fixedAssetsCheckDetailService.queryPageList(page, id);
         return Result.OK(pageList);
     }
 //

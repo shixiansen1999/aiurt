@@ -10,17 +10,19 @@ import com.aiurt.boot.check.service.IFixedAssetsCheckCategoryService;
 import com.aiurt.boot.check.service.IFixedAssetsCheckDeptService;
 import com.aiurt.boot.check.service.IFixedAssetsCheckDetailService;
 import com.aiurt.boot.check.service.IFixedAssetsCheckService;
+import com.aiurt.boot.check.vo.FixedAssetsCheckDetailVO;
 import com.aiurt.boot.constant.FixedAssetsConstant;
-import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.common.constant.CommonConstant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,8 @@ import java.util.stream.Collectors;
 public class FixedAssetsCheckDetailServiceImpl extends ServiceImpl<FixedAssetsCheckDetailMapper, FixedAssetsCheckDetail> implements IFixedAssetsCheckDetailService {
 
     @Autowired
+    private ISysBaseAPI sysBaseApi;
+    @Autowired
     private IFixedAssetsCheckService fixedAssetsCheckService;
     @Autowired
     private IFixedAssetsCheckCategoryService fixedAssetsCheckCategoryService;
@@ -43,9 +47,9 @@ public class FixedAssetsCheckDetailServiceImpl extends ServiceImpl<FixedAssetsCh
     private FixedAssetsCheckDetailMapper fixedAssetsCheckDetailMapper;
 
     @Override
-    public IPage<FixedAssetsCheckDetail> queryPageList(Page<FixedAssetsCheckDetail> page, String id) {
+    public IPage<FixedAssetsCheckDetailVO> queryPageList(Page<FixedAssetsCheckDetailVO> page, String id) {
         FixedAssetsCheck fixedAssetsCheck = fixedAssetsCheckService.getById(id);
-        Page<FixedAssetsCheckDetail> pageList = null;
+        Page<FixedAssetsCheckDetailVO> pageList = null;
         if (FixedAssetsConstant.status_0.equals(fixedAssetsCheck.getStatus())) {
             List<FixedAssetsCheckCategory> categoryList = fixedAssetsCheckCategoryService.lambdaQuery()
                     .eq(FixedAssetsCheckCategory::getCheckId, id).list();
@@ -61,7 +65,21 @@ public class FixedAssetsCheckDetailServiceImpl extends ServiceImpl<FixedAssetsCh
             LambdaQueryWrapper<FixedAssetsCheckDetail> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(FixedAssetsCheckDetail::getDelFlag, CommonConstant.DEL_FLAG_0)
                     .eq(FixedAssetsCheckDetail::getCheckId, id);
-            pageList = this.page(page, wrapper);
+            Page<FixedAssetsCheckDetail> detailPage = this.page(new Page<>(page.getCurrent(), page.getSize()), wrapper);
+            List<FixedAssetsCheckDetail> records = detailPage.getRecords();
+            FixedAssetsCheckDetailVO detailVO = null;
+            List<FixedAssetsCheckDetailVO> detailList = new ArrayList<>();
+            for (FixedAssetsCheckDetail record : records) {
+                detailVO = new FixedAssetsCheckDetailVO();
+                BeanUtils.copyProperties(record, detailVO);
+                detailList.add(detailVO);
+            }
+            page.setRecords(detailList);
+            pageList = page;
+        }
+        for (FixedAssetsCheckDetailVO record : pageList.getRecords()) {
+            String position = sysBaseApi.getPosition(record.getLocation());
+            record.setLocationName(position);
         }
         return pageList;
     }
