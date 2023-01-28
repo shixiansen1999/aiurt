@@ -225,7 +225,7 @@
 
     <select id="getDeviceAssemblyCode" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO">
         SELECT
-        da.code as materialCode
+        da.material_code as materialCode
         FROM
         device_assembly da
         where
