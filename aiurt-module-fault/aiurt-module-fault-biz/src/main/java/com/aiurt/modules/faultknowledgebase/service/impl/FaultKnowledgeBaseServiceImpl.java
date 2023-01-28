@@ -302,7 +302,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             ImportParams params = new ImportParams();
             params.setTitleRows(2);
             params.setHeadRows(1);
-            params.setNeedSave(true);
+
             try {
 
                 List<FaultKnowledgeBase> faultKnowledgeBaseList = new ArrayList<>();
