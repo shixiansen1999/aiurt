@@ -1159,8 +1159,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         String orgCode = loginUser.getOrgCode();
         //编制部门
         emergencyPlanRecordDTO.setOrgCode(orgCode);
-        //预案版本默认值
-        emergencyPlanRecordDTO.setEmergencyPlanVersion("1.0");
+
         // 应急预案类型转换
         HashMap<String, Integer> checkMap = CollUtil.newHashMap();
         checkMap.put("事件分类1", 1);
@@ -1192,13 +1191,21 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             errorMessage.append("应急预案名称必须填写，");
         }else{
             String emergencyPlanId = emergencyPlanRecordImportExcelDTO.getEmergencyPlanId();
+            String emergencyPlanImportVersion = emergencyPlanRecordImportExcelDTO.getEmergencyPlanVersion()+".0";
             List<EmergencyPlan> list = emergencyPlanService.lambdaQuery()
                     .eq(EmergencyPlan::getEmergencyPlanName, emergencyPlanId)
                     .eq(EmergencyPlan::getDelFlag, EmergencyPlanConstant.DEL_FLAG0).list();
             if(CollUtil.isNotEmpty(list)){
                 for (EmergencyPlan emergencyPlan : list) {
                     String id = emergencyPlan.getId();
-                    emergencyPlanRecordDTO.setEmergencyPlanId(id);
+                    String emergencyPlanVersion = emergencyPlan.getEmergencyPlanVersion();
+                    if(emergencyPlanImportVersion.equals(emergencyPlanVersion)){
+                        emergencyPlanRecordDTO.setEmergencyPlanId(id);
+                        emergencyPlanRecordDTO.setEmergencyPlanVersion(emergencyPlanVersion);
+                    }
+                }
+                if(StrUtil.isBlank(emergencyPlanRecordDTO.getEmergencyPlanId())){
+                    errorMessage.append("该应急预案没有这个版本！");
                 }
             }else{
                 errorMessage.append("不存在该应急预案！");
