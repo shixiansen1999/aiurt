@@ -1,23 +1,42 @@
 package com.aiurt.boot.category.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.category.constant.CategoryConstant;
 import com.aiurt.boot.category.dto.FixedAssetsCategoryDTO;
+import com.aiurt.boot.category.dto.FixedAssetsCategoryImport;
 import com.aiurt.boot.category.entity.FixedAssetsCategory;
 import com.aiurt.boot.category.mapper.FixedAssetsCategoryMapper;
 import com.aiurt.boot.category.service.IFixedAssetsCategoryService;
 import com.aiurt.common.constant.CommonConstant;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
+import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -30,6 +49,8 @@ import java.util.stream.Collectors;
 public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCategoryMapper, FixedAssetsCategory> implements IFixedAssetsCategoryService {
     @Autowired
     private FixedAssetsCategoryMapper categoryMapper;
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
 
     @Override
     public Page<FixedAssetsCategoryDTO> pageList(Page<FixedAssetsCategoryDTO> pageList, FixedAssetsCategoryDTO fixedAssetsCategory) {
@@ -158,7 +179,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
         if (ObjectUtil.isNotEmpty(fixedAssetsCategory.getCategoryName())) {
             //第一级(parentCode:添加传0，编辑传自己)
             FixedAssetsCategory parentCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getCategoryCode, fixedAssetsCategory.getParentCode()));
-            if (ObjectUtil.isEmpty(parentCategory)||CategoryConstant.PID.equals(parentCategory.getPid())) {
+            if (ObjectUtil.isEmpty(parentCategory) || CategoryConstant.PID.equals(parentCategory.getPid())) {
                 //1.根节点之间不能重复
                 //添加-根节点之间，名称不能重复
                 if (ObjectUtil.isEmpty(fixedAssetsCategory.getId())) {
@@ -256,4 +277,318 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
         }
         return Result.OK();
     }
+
+    @Override
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        List<String> errorMessage = new ArrayList<>();
+        int successLines = 0;
+        String tipMessage = null;
+        String url = null;
+        int errorLines = 0;
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            String type = FilenameUtils.getExtension(file.getOriginalFilename());
+            if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+                tipMessage = "导入失败，文件类型不对。";
+                return imporReturnRes(errorLines, successLines, tipMessage, false, null);
+            }
+            ImportParams params = new ImportParams();
+            params.setTitleRows(2);
+            params.setHeadRows(1);
+            params.setNeedSave(true);
+            try {
+                List<FixedAssetsCategory> categoryList = new ArrayList<>();
+                List<FixedAssetsCategoryImport> list = ExcelImportUtil.importExcel(file.getInputStream(), FixedAssetsCategoryImport.class, params);
+                list = list.stream().filter(l -> l.getPidName() != null || l.getCategoryCode() != null || l.getCategoryName() != null || l.getRemark() != null).collect(Collectors.toList());
+                if (CollUtil.isEmpty(list)) {
+                    tipMessage = "导入失败，该文件为空。";
+                    return imporReturnRes(errorLines, successLines, tipMessage, false, null);
+                }
+                for (FixedAssetsCategoryImport model : list) {
+                    if (ObjectUtil.isNotEmpty(model)) {
+                        FixedAssetsCategory category = new FixedAssetsCategory();
+                        StringBuilder stringBuilder = new StringBuilder();
+                        //校验信息
+                        examine(model, category, stringBuilder, list);
+                        if (stringBuilder.length() > 0) {
+                            errorLines++;
+                        }
+                        categoryList.add(category);
+                    }
+                }
+                if (errorLines > 0) {
+                    //错误报告下载
+                    return getErrorExcel(errorLines, list, errorMessage, successLines, type, url);
+                } else {
+                    return imporReturnRes(errorLines, successLines, tipMessage, true, null);
+                }
+
+            } catch (Exception e) {
+                String msg = e.getMessage();
+                log.error(msg, e);
+                if (msg != null && msg.contains("Duplicate entry")) {
+                    return Result.error("文件导入失败:有重复数据！");
+                } else {
+                    return Result.error("文件导入失败:" + e.getMessage());
+                }
+            } finally {
+                try {
+                    file.getInputStream().close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+        return imporReturnRes(errorLines, successLines, tipMessage, true, null);
+    }
+
+    private void examine(FixedAssetsCategoryImport model, FixedAssetsCategory category, StringBuilder stringBuilder, List<FixedAssetsCategoryImport> list) {
+        //导入：1.导入未存在的一、二、三级 2.导入已经存在的数据的二、三级
+        BeanUtils.copyProperties(model, category);
+        if (ObjectUtil.isNotEmpty(model.getPidName())) {
+            if (CategoryConstant.PARENT_NAME.equals(model.getPidName())) {
+                if (ObjectUtil.isNotEmpty(model.getCategoryName())) {
+                    //查询一级节点是否已经存在
+                    FixedAssetsCategory assetsCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid, CategoryConstant.PID).eq(FixedAssetsCategory::getCategoryName, model.getCategoryName()));
+                    if (ObjectUtil.isNotEmpty(assetsCategory)) {
+                        stringBuilder.append("一级分类名称不允许重复，");
+                    }
+                    //查询一级节点是否在导入文件中存在
+                    List<FixedAssetsCategoryImport> imports = list.stream().filter(l -> CategoryConstant.PARENT_NAME.equals(l.getPidName()) && !model.equals(l) && model.getCategoryName().equals(l.getCategoryName())).collect(Collectors.toList());
+                    if (CollUtil.isNotEmpty(imports)) {
+                        stringBuilder.append("文件中已有相同的一级名称，");
+                    }
+                    category.setPid("0");
+                    category.setLevel("1");
+                }
+            } else {
+                String[] split = model.getPidName().split("");
+                Integer count = 0;
+                for (String s : split) {
+                    if (s.equals("/")) {
+                        count++;
+                    }
+                }
+                if (count == 1 || count == 0) {
+                    if (count == 0) {
+                        List<FixedAssetsCategoryImport> imports = list.stream().filter(l -> CategoryConstant.PARENT_NAME.equals(l.getPidName()) && model.getCategoryName().equals(l.getCategoryName())).collect(Collectors.toList());
+                        FixedAssetsCategory assetsCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid, CategoryConstant.PID).eq(FixedAssetsCategory::getCategoryName, model.getCategoryName()));
+                        if (CollUtil.isEmpty(imports) && ObjectUtil.isEmpty(assetsCategory)) {
+                            stringBuilder.append("上级节点不存在，");
+                        } else {
+                            category.setLevel("2");
+                        }
+                    } else {
+                        List<String> depositPositionName = StrUtil.splitTrim(model.getPidName(), "/");
+                        String firstName = depositPositionName.get(0);
+                        String secondName = depositPositionName.get(1);
+                        //一级节点、二级节点是否存在
+                        FixedAssetsCategory firstCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getCategoryName, firstName));
+                        List<FixedAssetsCategoryImport> firstImports = list.stream().filter(l -> CategoryConstant.PARENT_NAME.equals(l.getPidName()) && firstName.equals(l.getCategoryName())).collect(Collectors.toList());
+                        FixedAssetsCategory secondCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid, firstCategory.getId()).eq(FixedAssetsCategory::getCategoryName, secondName));
+
+                        List<FixedAssetsCategoryImport> secondImports = list.stream().filter(l -> firstName.equals(l.getPidName()) && secondName.equals(l.getCategoryName())).collect(Collectors.toList());
+                        if (CollUtil.isEmpty(firstImports) && ObjectUtil.isEmpty(firstCategory)) {
+                            stringBuilder.append("一级节点不存在，");
+                        } else {
+                            //一级在文件存在，在数据库里不存在
+                            if (CollUtil.isNotEmpty(firstImports) && ObjectUtil.isEmpty(firstCategory)) {
+                                if (CollUtil.isEmpty(secondImports)) {
+                                    stringBuilder.append("二级节点不存在，");
+                                }
+                            }
+                            //一级在文件不存在，在数据库里存在
+                            if (CollUtil.isEmpty(firstImports) && ObjectUtil.isNotEmpty(firstCategory)) {
+                                if (ObjectUtil.isEmpty(secondCategory)) {
+                                    stringBuilder.append("二级节点不存在，");
+                                }
+                            }
+                        }
+                        category.setLevel("3");
+                    }
+                } else {
+                    stringBuilder.append("上级节点填写不规范，");
+                }
+            }
+        } else {
+            stringBuilder.append("上级节点填写不规范，");
+        }
+        if (ObjectUtil.isNotEmpty(model.getCategoryCode())) {
+            //编码
+            String regular = "^[0-9]*$";
+            Pattern pattern = Pattern.compile(regular);
+            Matcher matcher = pattern.matcher(model.getCategoryCode());
+            if (!matcher.find()) {
+                stringBuilder.append("分类编码必须是数字，");
+            } else {
+                FixedAssetsCategory assetsCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getCategoryCode, model.getCategoryCode()));
+                List<FixedAssetsCategoryImport> imports = list.stream().filter(l -> model.getCategoryCode().equals(l.getCategoryCode()) && !model.equals(l)).collect(Collectors.toList());
+
+                if (ObjectUtil.isNotEmpty(assetsCategory)) {
+                    stringBuilder.append("分类编码已经存在，");
+                }
+                if (CollUtil.isNotEmpty(imports)) {
+                    stringBuilder.append("文件中已存在相同的分类编码，");
+                }
+                if (CollUtil.isEmpty(imports) && ObjectUtil.isEmpty(assetsCategory)) {
+                    if (ObjectUtil.isNotEmpty(model.getPidName())) {
+                        if (CategoryConstant.PARENT_NAME.equals(model.getPidName())) {
+                            if (!"2".equals(model.getCategoryCode().length())) {
+                                stringBuilder.append("一级分类编码为两位数，");
+                            }
+                        } else {
+                            String[] split = model.getPidName().split("");
+                            Integer count = 0;
+                            for (String s : split) {
+                                if (s.equals("/")) {
+                                    count++;
+                                }
+                            }
+                            //验证编码填写是否规范
+                            //二级编码
+                            if (count == 0) {
+                                if ("5".equals(model.getCategoryCode().length())) {
+                                    String firstCategoryCode = model.getPidName().substring(0, 2);
+                                    List<FixedAssetsCategoryImport> firstImports = list.stream().filter(l -> model.getPidName().equals(l.getCategoryName()) && firstCategoryCode.equals(l.getCategoryCode())).collect(Collectors.toList());
+                                    FixedAssetsCategory firstCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid,CategoryConstant.PID)
+                                            .eq(FixedAssetsCategory::getCategoryName, model.getPidName()).eq(FixedAssetsCategory::getCategoryCode, firstCategoryCode));
+                                    if (CollUtil.isEmpty(firstImports)||ObjectUtil.isEmpty(firstCategory)){
+                                        stringBuilder.append("分类编码与上级节点的编码不一致，");
+                                    }if(ObjectUtil.isNotEmpty(firstCategory)) {
+                                        category.setPid(firstCategory.getId());
+                                    }
+                                } else {
+                                    stringBuilder.append("二级分类编码为五位数，");
+                                }
+                                //三级编码
+                            } if (count == 1) {
+                                if ("9".equals(model.getCategoryCode().length())) {
+                                    List<String> depositPositionName = StrUtil.splitTrim(model.getPidName(), "/");
+                                    String firstName = depositPositionName.get(0);
+                                    String secondName = depositPositionName.get(1);
+                                    String firstCategoryCode = model.getPidName().substring(0, 2);
+                                    String secondCategoryCode = model.getPidName().substring(0, 5);
+                                    List<FixedAssetsCategoryImport> firstImports = list.stream().filter(l -> model.getPidName().equals(l.getCategoryName()) && firstCategoryCode.equals(l.getCategoryCode())).collect(Collectors.toList());
+                                    FixedAssetsCategory firstCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid,CategoryConstant.PID)
+                                            .eq(FixedAssetsCategory::getCategoryName, model.getPidName()).eq(FixedAssetsCategory::getCategoryCode, firstCategoryCode));
+                                    FixedAssetsCategory secondCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid, firstCategory.getId())
+                                            .eq(FixedAssetsCategory::getCategoryName, secondName).eq(FixedAssetsCategory::getCategoryCode,secondCategoryCode));
+                                    List<FixedAssetsCategoryImport> secondImports = list.stream().filter(l -> firstName.equals(l.getPidName()) && secondName.equals(l.getCategoryName())).collect(Collectors.toList());
+
+                                    if (CollUtil.isEmpty(firstImports)&&ObjectUtil.isEmpty(firstCategory)||CollUtil.isEmpty(secondImports)||ObjectUtil.isNotEmpty(secondCategory)){
+                                        stringBuilder.append("分类编码与上级节点的编码不一致，");
+                                    }if(ObjectUtil.isNotEmpty(firstCategory)) {
+                                        category.setPid(firstCategory.getId());
+                                    }
+                                } else {
+                                    stringBuilder.append("三级分类编码为九位数，");
+                                }
+                            }
+
+
+                        }
+                    }
+                }
+            }
+
+        } else {
+            stringBuilder.append("分类编码不能为空，");
+        }
+        if (ObjectUtil.isNotEmpty(model.getCategoryName())) {
+
+        } else {
+            stringBuilder.append("分类名称不能为空，");
+        }
+    }
+
+    public static Result<?> imporReturnRes(int errorLines, int successLines, String tipMessage, boolean isType, String failReportUrl) throws IOException {
+        if (isType) {
+            if (errorLines != 0) {
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", false);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                result.put("failReportUrl", failReportUrl);
+                Result res = Result.ok(result);
+                res.setMessage("文件失败，数据有错误。");
+                res.setCode(200);
+                return res;
+            } else {
+                //是否成功
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", true);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                Result res = Result.ok(result);
+                res.setMessage("文件导入成功！");
+                res.setCode(200);
+                return res;
+            }
+        } else {
+            JSONObject result = new JSONObject(5);
+            result.put("isSucceed", false);
+            result.put("errorCount", errorLines);
+            result.put("successCount", successLines);
+            int totalCount = successLines + errorLines;
+            result.put("totalCount", totalCount);
+            Result res = Result.ok(result);
+            res.setMessage(tipMessage);
+            res.setCode(200);
+            return res;
+        }
+
+    }
+
+    private Result<?> getErrorExcel(int errorLines, List<FixedAssetsCategoryImport> list, List<String> errorMessage, int successLines, String type, String url) throws IOException {
+        //创建导入失败错误报告,进行模板导出
+        Resource resource = new ClassPathResource("/templates/emCategoryError.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+        //2.获取临时文件
+        File fileTemp = new File("/templates/emCategoryError.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<String, Object> errorMap = new HashMap<String, Object>(16);
+        List<Map<String, String>> listMap = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            FixedAssetsCategoryImport categoryModel = list.get(i);
+            Map<String, String> lm = new HashMap<>(16);
+            //错误报告获取信息
+            lm.put("fatherName", categoryModel.getPidName());
+            lm.put("categoryCode", categoryModel.getCategoryCode());
+            lm.put("categoryName", categoryModel.getCategoryName());
+            lm.put("wrongReason", categoryModel.getWrongReason());
+            listMap.add(lm);
+        }
+        errorMap.put("maplist", listMap);
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(16);
+        sheetsMap.put(0, errorMap);
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+        try {
+            String fileName = "应急分类信息导入错误清单" + "_" + System.currentTimeMillis() + "." + type;
+            FileOutputStream out = new FileOutputStream(upLoadPath + File.separator + fileName);
+            url = fileName;
+            workbook.write(out);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return imporReturnRes(errorLines, successLines, null, true, url);
+    }
+
 }

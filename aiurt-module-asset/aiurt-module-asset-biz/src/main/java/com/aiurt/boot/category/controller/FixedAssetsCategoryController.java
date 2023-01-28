@@ -224,17 +224,17 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
         return mv;
     }
 
-//    /**
-//     * 通过excel导入数据
-//     *
-//     * @param request
-//     * @param response
-//     * @return
-//     */
-//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response)throws IOException {
-//        return fixedAssetsCategoryService.importExcel(request, response);
-//    }
+    /**
+     * 通过excel导入数据
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response)throws IOException {
+        return fixedAssetsCategoryService.importExcel(request, response);
+    }
 
     /**
      * 下载模板

@@ -6,6 +6,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -47,4 +50,13 @@ public interface IFixedAssetsCategoryService extends IService<FixedAssetsCategor
      * @return
      */
     Result<String> checkCodeName(FixedAssetsCategoryDTO fixedAssetsCategory);
+
+    /**
+     * 资产分类-导入
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }
