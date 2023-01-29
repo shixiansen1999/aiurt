@@ -186,6 +186,5 @@ public class FaultAnalysisReport implements Serializable {
     private Boolean isCreateUser;
 
     @ApiModelProperty(value = "故障现象")
-    @TableField(exist = false)
     private String symptoms;
 }
