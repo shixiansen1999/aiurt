@@ -27,7 +27,7 @@ public class FaultKnowledgeBaseModel {
     /**知识库名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "知识库名称")
-    @Excel(name = "知识库类别", width = 15)
+    @Excel(name = "故障现象分类", width = 15)
     private java.lang.String knowledgeBaseTypeName;
 
     /**设备类型编码*/

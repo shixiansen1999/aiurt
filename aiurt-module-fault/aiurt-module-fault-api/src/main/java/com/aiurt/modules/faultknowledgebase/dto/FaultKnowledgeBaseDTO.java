@@ -20,8 +20,8 @@ public class FaultKnowledgeBaseDTO {
     @TableField(exist = false)
     private String knowledgeBaseTypeCode;
     /**知识库类别名称*/
-    @Excel(name = "知识库类别名称", width = 15)
-    @ApiModelProperty(value = "知识库类别名称")
+    @Excel(name = "故障现象分类", width = 15)
+    @ApiModelProperty(value = "故障现象分类")
     @TableField(exist = false)
     private String knowledgeBaseTypeName;
     /**设备类型编码*/
@@ -29,8 +29,8 @@ public class FaultKnowledgeBaseDTO {
     @TableField(exist = false)
     private String deviceTypeCode;
     /**设备类型名称*/
-    @Excel(name = "设备类型名称", width = 15)
-    @ApiModelProperty(value = "设备类型名称")
+    @Excel(name = "设备类型", width = 15)
+    @ApiModelProperty(value = "设备类型")
     @TableField(exist = false)
     private String deviceTypeName;
     /**设备组件编码*/
@@ -38,8 +38,8 @@ public class FaultKnowledgeBaseDTO {
     @TableField(exist = false)
     private String materialCode;
     /**设备组件名称*/
-    @Excel(name = "设备组件名称", width = 15)
-    @ApiModelProperty(value = "设备组件名称")
+    @Excel(name = "设备组件", width = 15)
+    @ApiModelProperty(value = "设备组件")
     @TableField(exist = false)
     private String materialName;
     /**故障现象*/
