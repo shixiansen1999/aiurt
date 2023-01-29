@@ -101,7 +101,7 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                     String stationName = sysBaseApi.getPosition(fault.getStationCode());
                     String lineName = sysBaseApi.getPosition(fault.getLineCode());
                     LoginUser userByName = sysBaseApi.getUserByName(record.getAppointUserName());
-                    content.append(lineName).append("-").append(stationName).append(" ").append(record.getFaultPhenomenon()).append(" 维修人:").append(userByName.getRealname()).append("-");
+                    content.append(lineName).append("-").append(stationName).append(" ").append(record.getSymptoms()).append(" 维修人:").append(userByName.getRealname()).append("-");
                     if (record.getSolveStatus() == 1) {
                         content.append("维修完成。");
                     } else {
