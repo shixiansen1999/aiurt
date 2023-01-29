@@ -13,6 +13,7 @@
         from fixed_assets fa
                  left join fixed_assets_category fac on fa.category_code = fac.category_code and fac.del_flag = 0
         where fa.del_flag = 0
+          and fa.status = 1
           and fa.category_code in
         <foreach collection="categoryCodes" item="item" open="(" separator="," close=")">
             #{item}
