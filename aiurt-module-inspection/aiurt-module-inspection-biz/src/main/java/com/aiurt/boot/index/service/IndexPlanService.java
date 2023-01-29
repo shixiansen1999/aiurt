@@ -96,17 +96,23 @@ public class IndexPlanService {
         // 将符合条件的检修计划查出
         LambdaQueryWrapper<RepairPool> queryWrapper = new LambdaQueryWrapper<>();
         doQuery(startDate, endDate, isAllData, queryWrapper);
+
         //查询关联表，获取部门code
         List<RepairPoolOrgRel> poolOrgRelList = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+
         //根据当前人，获取当前的专业code
         List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
-        if (CollUtil.isEmpty(repairPoolIds)) {
+        if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(poolOrgRelList)) {
             return result;
         }
+
         LambdaQueryWrapper<RepairPoolRel> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(RepairPoolRel::getRepairPoolStaId, repairPoolIds);
         List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(wrapper);
+        if (CollUtil.isEmpty(repairPoolRels)) {
+            return result;
+        }
 
         queryWrapper.in(RepairPool::getCode, poolOrgRelList.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList()));
         queryWrapper.in(RepairPool::getCode, repairPoolRels.stream().map(RepairPoolRel::getRepairPoolCode).collect(Collectors.toList()));
@@ -198,10 +204,10 @@ public class IndexPlanService {
         List<RepairPoolOrgRel> codeByOrgCode = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
-        if (CollUtil.isEmpty(repairPoolIds)) {
+        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, repairPoolIds));
+        if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(codeByOrgCode) || CollUtil.isEmpty(repairPoolRels)) {
             return result;
         }
-        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, repairPoolIds));
         boolean b = GlobalThreadLocal.setDataFilter(false);
         // 用于判断是否是一整月的查询
         // 如果是一整个月查询，那么返回的dayBegin是这个月的第一周的开始时间，dayEnd是这个月最后一周的结束时间
@@ -425,11 +431,10 @@ public class IndexPlanService {
         List<RepairPoolOrgRel> codeByOrgCode = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
-        if(CollUtil.isNotEmpty(repairPoolIds))
-        {
+        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, repairPoolIds));
+        if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(codeByOrgCode) || CollUtil.isEmpty(repairPoolRels)) {
             return new Page<>();
         }
-        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId,repairPoolIds));
         boolean b = GlobalThreadLocal.setDataFilter(false);
         // 用于判断是否是一整月的查询
         // 如果是一整个月查询，那么返回的dayBegin是这个月的第一周的开始时间，dayEnd是这个月最后一周的结束时间
