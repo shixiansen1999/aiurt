@@ -434,7 +434,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
 
         if (StrUtil.isBlank(faultKnowledgeBaseModel.getKnowledgeBaseTypeName())) {
-            stringBuilder.append("知识库类别必填，");
+            stringBuilder.append("故障现象分类必填，");
         }else {
             LambdaQueryWrapper<FaultKnowledgeBaseType> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(FaultKnowledgeBaseType::getName,faultKnowledgeBaseModel.getKnowledgeBaseTypeName())
@@ -447,7 +447,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     faultKnowledgeBase.setKnowledgeBaseTypeCode(s);
                 }
             }else {
-                stringBuilder.append("系统中不存在该知识库类别，");
+                stringBuilder.append("系统中不存在该故障现象分类，");
             }
         }
 
