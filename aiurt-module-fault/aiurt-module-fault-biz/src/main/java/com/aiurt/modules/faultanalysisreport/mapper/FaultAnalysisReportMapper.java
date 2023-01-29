@@ -1,12 +1,12 @@
 package com.aiurt.modules.faultanalysisreport.mapper;
 
+import java.util.List;
+
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
-
-import java.util.List;
 
 
 /**
@@ -26,6 +26,7 @@ public interface FaultAnalysisReportMapper extends BaseMapper<FaultAnalysisRepor
      * @return List<FaultAnalysisReport>
      * */
     List<FaultAnalysisReport> readAll(@Param("page")Page<FaultAnalysisReport> page, @Param("condition")FaultAnalysisReport condition,@Param("ids")List<String> ids,@Param("userName")String userName);
+
     /**
      * 查询已经被引用的故障
      * @return List<String>

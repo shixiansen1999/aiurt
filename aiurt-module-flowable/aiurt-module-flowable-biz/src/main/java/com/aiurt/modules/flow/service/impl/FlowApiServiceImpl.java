@@ -337,7 +337,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         completeTask(task, comment, busData, new HashMap<>(16));
     }
 
-    @Override
+
     public void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData, Map<String, Object> variableData) {
         String processInstanceId = task.getProcessInstanceId();
         String taskId = task.getId();
@@ -390,6 +390,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
         } else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE, FlowApprovalType.REFUSE)) {
             if (Objects.nonNull(busData)) {
+                //busData.put("operationType", approvalType);
                 flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
             // 完成任务
@@ -397,6 +398,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             // 驳回
         } else if (StrUtil.equalsIgnoreCase(FlowApprovalType.REJECT, approvalType)) {
             if (Objects.nonNull(busData)) {
+                // busData.put("operationType", approvalType);
                 flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
             // 完成任务

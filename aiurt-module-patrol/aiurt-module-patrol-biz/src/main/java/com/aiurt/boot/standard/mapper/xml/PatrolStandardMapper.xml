@@ -148,6 +148,7 @@
         <if test="patrolStandard.subsystemCode !=null ">
             and p.subsystem_code  = #{patrolStandard.subsystemCode}
         </if>
+        order by p.create_time desc
     </select>
     <select id="querySysDict" resultType="org.jeecg.common.system.vo.DictModel">
          SELECT sd.dict_name as text,sd.dict_code as value

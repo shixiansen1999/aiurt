@@ -401,9 +401,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             lambdaQueryWrapper.eq(FaultKnowledgeBaseType::getName,faultKnowledgeBaseModel.getKnowledgeBaseTypeName())
                               .eq(FaultKnowledgeBaseType::getDelFlag,0);
             List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(lambdaQueryWrapper);
-            if (CollUtil.isNotEmpty(faultKnowledgeBaseTypes)){
+            if (CollectionUtil.isNotEmpty(faultKnowledgeBaseTypes)){
                 List<String> collect = faultKnowledgeBaseTypes.stream().map(FaultKnowledgeBaseType::getCode).collect(Collectors.toList());
-                if (CollUtil.isNotEmpty(collect)){
+                if (CollectionUtil.isNotEmpty(collect)){
                     String s = collect.get(0);
                     faultKnowledgeBase.setKnowledgeBaseTypeCode(s);
                 }

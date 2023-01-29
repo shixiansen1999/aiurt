@@ -12,7 +12,10 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
-import com.aiurt.boot.standard.dto.*;
+import com.aiurt.boot.standard.dto.InspectionStandardDto;
+import com.aiurt.boot.standard.dto.PatrolStandardDto;
+import com.aiurt.boot.standard.dto.PatrolStandardErrorModel;
+import com.aiurt.boot.standard.dto.PatrolStandardModel;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
@@ -86,7 +89,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         // 以下包含的代码权限拦截局部过滤
         boolean filter = GlobalThreadLocal.setDataFilter(false);
         page1.forEach(a -> {
-           String username = baseMapper.selectUserName(a.getCreateBy());
+            String username = baseMapper.selectUserName(a.getCreateBy());
             a.setCreateByName(null == username ? a.getCreateBy() : username);
             a.setNumber(baseMapper.number(a.getCode()));
         });
