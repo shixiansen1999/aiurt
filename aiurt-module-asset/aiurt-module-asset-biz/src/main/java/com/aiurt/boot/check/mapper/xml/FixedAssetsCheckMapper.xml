@@ -110,6 +110,7 @@
                 ))
             </when>
         </choose>
+        ORDER BY fac.create_time DESC
     </select>
     <select id="checkUserInfo" resultType="com.aiurt.boot.check.vo.CheckUserVO">
         select distinct check_id

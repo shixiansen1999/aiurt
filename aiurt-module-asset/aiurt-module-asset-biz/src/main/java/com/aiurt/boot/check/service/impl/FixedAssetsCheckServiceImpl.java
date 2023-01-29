@@ -209,6 +209,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         }
         List<FixedAssets> fixedAssets = fixedAssetsService.lambdaQuery()
                 .eq(FixedAssets::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(FixedAssets::getStatus,FixedAssetsConstant.STATUS_1)
                 .in(FixedAssets::getCategoryCode, categoryCodes)
                 .in(FixedAssets::getOrgCode, orgCodes)
                 .list();

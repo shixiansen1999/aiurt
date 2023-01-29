@@ -127,8 +127,7 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
                     .eq(FixedAssets::getAssetCode,record.getAssetCode())
                     .eq(FixedAssets::getDelFlag,FixedAssetsConstant.STATUS_0).one();
             SimpleDateFormat format = new SimpleDateFormat("yyyy");
-            record.setUsefulLife(calendar.get(Calendar.YEAR)-
-                    (Integer.valueOf(format.format(fixedAssets.getStartDate()))==null?calendar.get(Calendar.YEAR):Integer.valueOf(format.format(fixedAssets.getStartDate()))));
+            record.setUsefulLife(calendar.get(Calendar.YEAR)- (fixedAssets.getStartDate()==null?calendar.get(Calendar.YEAR):Integer.valueOf(format.format(fixedAssets.getStartDate()))));
         }
         return pageList;
     }
