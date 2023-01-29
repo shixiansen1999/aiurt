@@ -105,6 +105,7 @@ public class FaultDTO extends DictEntity implements Serializable {
     @Excel(name = "故障现象", width = 15)
     @ApiModelProperty(value = "故障现象",  required = true)
     @Length(max = 255, message = "故障现象长度不能超过255")
+    @Dict(dictTable = "fault_knowledge_base_type", dicCode = "code", dicText = "name")
     private String faultPhenomenon;
 
     /**故障分析*/
