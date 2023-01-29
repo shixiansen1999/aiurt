@@ -132,9 +132,10 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
             faultDTO.setFaultKnowledgeBase(faultKnowledgeBase);
             faultDTO.setDeviceTypeCode(faultKnowledgeBase.getDeviceTypeCode());
             faultDTO.setMaterialCode(faultKnowledgeBase.getMaterialCode());
+            faultDTO.setFaultPhenomenon(faultKnowledgeBase.getKnowledgeBaseTypeCode());
         }else {
             FaultKnowledgeBase faultKnowledgeBase1 = new FaultKnowledgeBase();
-            faultKnowledgeBase1.setFaultPhenomenon(faultDTO.getFaultPhenomenon());
+            faultKnowledgeBase1.setFaultPhenomenon(faultDTO.getSymptoms());
             faultKnowledgeBase1.setSolution(faultDTO.getSolution());
             faultDTO.setFaultKnowledgeBase(faultKnowledgeBase1);
 

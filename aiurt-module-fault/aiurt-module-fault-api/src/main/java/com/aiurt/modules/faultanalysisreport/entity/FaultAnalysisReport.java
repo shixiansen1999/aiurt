@@ -103,9 +103,9 @@ public class FaultAnalysisReport implements Serializable {
     @ApiModelProperty(value = "状态(0:待审批,1:已审批,2:已驳回)")
     private Integer status;
 
-    /**故障现象*/
-    @Excel(name = "故障现象", width = 15)
-    @ApiModelProperty(value = "故障现象")
+    /**故障现象分类*/
+    @Excel(name = "故障现象分类", width = 15)
+    @ApiModelProperty(value = "故障现象分类")
     @TableField(exist = false)
     private String faultPhenomenon;
 
@@ -184,4 +184,8 @@ public class FaultAnalysisReport implements Serializable {
     @ApiModelProperty(value = "判断登录人是否是创建人")
     @TableField(exist = false)
     private Boolean isCreateUser;
+
+    @ApiModelProperty(value = "故障现象")
+    @TableField(exist = false)
+    private String symptoms;
 }
