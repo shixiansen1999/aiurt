@@ -125,10 +125,10 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
             Calendar calendar =  Calendar.getInstance();
             FixedAssets fixedAssets = fixedAssetsService.lambdaQuery()
                     .eq(FixedAssets::getAssetCode,record.getAssetCode())
-                    .eq(FixedAssets::getStatus,FixedAssetsConstant.STATUS_1)
                     .eq(FixedAssets::getDelFlag,FixedAssetsConstant.STATUS_0).one();
             SimpleDateFormat format = new SimpleDateFormat("yyyy");
-            record.setUsefulLife(calendar.get(Calendar.YEAR)- Integer.valueOf(format.format(fixedAssets.getStartDate())));
+            record.setUsefulLife(calendar.get(Calendar.YEAR)-
+                    (Integer.valueOf(format.format(fixedAssets.getStartDate()))==null?calendar.get(Calendar.YEAR):Integer.valueOf(format.format(fixedAssets.getStartDate()))));
         }
         return pageList;
     }
