@@ -814,7 +814,12 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
                 String materialsCode = planMaterial.getMaterialsCode();
                 Integer materialsNumber = planMaterial.getMaterialsNumber();
                 emergencyPlanMaterialsExportExcelVO.setMaterialsCode(materialsCode);
-                emergencyPlanMaterialsExportExcelVO.setMaterialsNumber(String.valueOf(materialsNumber));
+                //数量为空
+                if(ObjectUtil.isEmpty(materialsNumber)){
+                    emergencyPlanMaterialsExportExcelVO.setMaterialsNumber("-");
+                }else{
+                    emergencyPlanMaterialsExportExcelVO.setMaterialsNumber(String.valueOf(materialsNumber));
+                }
                 //根据物资code查询物资信息
                 List<EmergencyMaterials> materialsList = emergencyMaterialsService.lambdaQuery().eq(EmergencyMaterials::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
                         .eq(EmergencyMaterials::getMaterialsCode, materialsCode).list();

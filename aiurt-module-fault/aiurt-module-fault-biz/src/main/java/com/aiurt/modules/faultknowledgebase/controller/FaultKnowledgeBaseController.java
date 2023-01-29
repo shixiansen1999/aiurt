@@ -231,18 +231,14 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
     @RequestMapping(value = "/exportXls")
     public void exportXls(HttpServletRequest request,
 						  HttpServletResponse response,
-						  FaultKnowledgeBase faultKnowledgeBase,
-						  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-						  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
-		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(pageNo, pageSize);
-		IPage<FaultKnowledgeBase> faultKnowledgeBasePage = faultKnowledgeBaseService.readAll(page, faultKnowledgeBase);
-        //查询导出的数据
-		List<FaultKnowledgeBase> records = faultKnowledgeBasePage.getRecords();
+						  FaultKnowledgeBase faultKnowledgeBase) {
+		//查询导出的数据
+		List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseService.queryAll(faultKnowledgeBase);
 
 		List<FaultKnowledgeBaseDTO> faultKnowledgeBaseDTOList = new ArrayList<>();
 
-        if (CollUtil.isNotEmpty(records)){
-			records.forEach(e->{
+        if (CollUtil.isNotEmpty(faultKnowledgeBases)){
+			faultKnowledgeBases.forEach(e->{
 				FaultKnowledgeBaseDTO faultKnowledgeBaseDTO = new FaultKnowledgeBaseDTO();
 				BeanUtil.copyProperties(e,faultKnowledgeBaseDTO);
 				faultKnowledgeBaseDTOList.add(faultKnowledgeBaseDTO);

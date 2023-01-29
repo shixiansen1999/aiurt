@@ -156,6 +156,45 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     }
 
     @Override
+    public List<FaultKnowledgeBase> queryAll(FaultKnowledgeBase faultKnowledgeBase) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        LambdaQueryWrapper<FaultKnowledgeBase> queryWrapper = new LambdaQueryWrapper<>();
+        List<FaultKnowledgeBase> bases = faultKnowledgeBaseMapper.selectList(queryWrapper.eq(FaultKnowledgeBase::getDelFlag, "0"));
+        List<String> ids = bases.stream().map(FaultKnowledgeBase::getId).distinct().collect(Collectors.toList());
+        List<String> rolesByUsername = sysBaseApi.getRolesByUsername(sysUser.getUsername());
+
+        //下面禁用数据过滤
+        boolean b = GlobalThreadLocal.setDataFilter(false);
+        String id = faultKnowledgeBase.getId();
+        //根据id条件查询时，jeecg前端会传一个id结尾带逗号的id，所以先去掉结尾id
+        if (StringUtils.isNotBlank(id)) {
+            String substring = id.substring(0, id.length() - 1);
+            faultKnowledgeBase.setId(substring);
+        }
+
+        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.queryAll(faultKnowledgeBase,ids,sysUser.getUsername());
+
+        GlobalThreadLocal.setDataFilter(b);
+        faultKnowledgeBases.forEach(f->{
+            String faultCodes = f.getFaultCodes();
+            if (StrUtil.isNotBlank(faultCodes)) {
+                String[] split = faultCodes.split(",");
+                List<String> list = Arrays.asList(split);
+                f.setFaultCodeList(list);
+            }
+        });
+        //正序
+        String asc = "asc";
+        if (asc.equals(faultKnowledgeBase.getOrder())) {
+            List<FaultKnowledgeBase> reportList = faultKnowledgeBases.stream().sorted(Comparator.comparing(FaultKnowledgeBase::getCreateTime)).collect(Collectors.toList());
+            return reportList;
+        }
+
+        return faultKnowledgeBases;
+    }
+
+    @Override
     public IPage<FaultDTO> getFault(Page<FaultDTO> page, FaultDTO faultDTO) {
         List<FaultDTO> faults = faultMapper.getFault(page, faultDTO,null);
         if (CollUtil.isNotEmpty(faults)) {

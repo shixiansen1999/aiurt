@@ -165,6 +165,170 @@
         ORDER BY a.create_time DESC
     </select>
 
+    <select id="queryAll" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
+        select a.*
+        from
+        ((SELECT
+        ahp.PROC_INST_ID_ as process_instance_id,
+        ara.ID_           as task_id,
+        ara.NAME_         as task_name,
+        arp.KEY_          as model_key,
+        fkb.id,
+        fkb.device_type_code,
+        (SELECT name from device_type WHERE `code` = fkb.device_type_code) as deviceTypeName,
+        fkb.knowledge_base_type_code,
+        fkb.material_code,
+        (SELECT material_name from device_assembly WHERE material_code = fkb.material_code group by material_code) as materialName,
+        fkb.fault_codes,
+        fkb.fault_phenomenon,
+        fkb.create_by,
+        fkb.fault_reason,
+        fkb.method,
+        fkb.solution,
+        fkb.create_time,
+        fkb.major_code,
+        fkb.system_code,
+        fkb.file_path,
+        fkb.approved_remark,
+        fkb.status,
+        fkb.del_flag,
+        fkb.tools
+        FROM fault_knowledge_base fkb
+        left join sys_user su on su.username = fkb.create_by
+        Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fkb.id
+        LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
+        LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+        WHERE fkb.del_flag = 0
+        )
+
+        union
+
+        (SELECT
+        ahp.PROC_INST_ID_ as process_instance_id,
+        ara.ID_           as task_id,
+        ara.NAME_         as task_name,
+        arp.KEY_          as model_key,
+        fkb.id,
+        fkb.device_type_code,
+        (SELECT name from device_type WHERE `code` = fkb.device_type_code) as deviceTypeName,
+        fkb.knowledge_base_type_code,
+        fkb.material_code,
+        (SELECT material_name from device_assembly WHERE material_code = fkb.material_code group by material_code) as materialName,
+        fkb.fault_codes,
+        fkb.fault_phenomenon,
+        fkb.create_by,
+        fkb.fault_reason,
+        fkb.method,
+        fkb.solution,
+        fkb.create_time,
+        fkb.major_code,
+        fkb.system_code,
+        fkb.file_path,
+        fkb.approved_remark,
+        fkb.status,
+        fkb.del_flag,
+        fkb.tools
+        FROM fault_knowledge_base fkb
+        left join sys_user su on su.username = fkb.create_by
+        Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fkb.id
+        LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
+        LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+        WHERE fkb.del_flag = 0
+        and fkb.status = 0
+        <if test="condition.createBy!=null and condition.createBy!=''">
+            and fkb.create_by =#{condition.createBy}
+        </if>
+        )
+
+        union
+
+        (SELECT
+        ahp.PROC_INST_ID_ as process_instance_id,
+        ara.ID_           as task_id,
+        ara.NAME_         as task_name,
+        arp.KEY_          as model_key,
+        fkb.id,
+        fkb.device_type_code,
+        (SELECT name from device_type WHERE `code` = fkb.device_type_code) as deviceTypeName,
+        fkb.knowledge_base_type_code,
+        fkb.material_code,
+        (SELECT material_name from device_assembly WHERE material_code = fkb.material_code group by material_code) as materialName,
+        fkb.fault_codes,
+        fkb.fault_phenomenon,
+        fkb.create_by,
+        fkb.fault_reason,
+        fkb.method,
+        fkb.solution,
+        fkb.create_time,
+        fkb.major_code,
+        fkb.system_code,
+        fkb.file_path,
+        fkb.approved_remark,
+        fkb.status,
+        fkb.del_flag,
+        fkb.tools
+        FROM fault_knowledge_base fkb
+        left join sys_user su on su.username = fkb.create_by
+        Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fkb.id
+        LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
+        LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+        WHERE fkb.del_flag = 0
+        and fkb.status = 0
+        <if test="condition.createBy!=null and condition.createBy!=''">
+            and fkb.create_by =#{condition.createBy}
+        </if>
+        or (ara.ASSIGNEE_ = #{userName} OR ara.ID_ in (
+        SELECT TASK_ID_
+        FROM act_ru_identitylink ari
+        WHERE ari.TYPE_ = 'candidate'
+        AND ari.USER_ID_ = #{userName}
+        AND ari.TASK_ID_ = ara.ID_
+        AND (ara.assignee_ = '' or ara.assignee_ is null)
+        ))
+        )
+        ) a
+        where
+        a.del_flag = 0
+        <if test="condition.id!=null and condition.id!=''">
+            and a.id =#{condition.id}
+        </if>
+        <if test="condition.deviceTypeCode != null and condition.deviceTypeCode !='' ">
+            and a.device_type_code =#{condition.deviceTypeCode}
+        </if>
+        <if test="condition.materialCode != null and condition.materialCode !='' ">
+            and a.material_code =#{condition.materialCode}
+        </if>
+        <if test="condition.faultPhenomenon != null and condition.faultPhenomenon != ''">
+            and a.fault_phenomenon like concat('%',#{condition.faultPhenomenon},'%')
+        </if>
+        <if test="condition.faultReason != null and condition.faultReason != ''">
+            and a.fault_reason like concat('%',#{condition.faultReason},'%')
+        </if>
+        <if test="condition.solution != null and condition.solution != ''">
+            and a.solution like concat('%',#{condition.solution},'%')
+        </if>
+        <if test="condition.method != null and condition.method != ''">
+            and a.method like concat('%',#{condition.method},'%')
+        </if>
+        <if test="condition.matchName != null and  condition.matchName != ''">
+            AND (
+            ( a.fault_phenomenon LIKE CONCAT ('%', #{condition.matchName}, '%'))
+            or (a.deviceTypeName LIKE CONCAT  ('%', #{condition.matchName}, '%'))
+            or (a.materialName LIKE CONCAT ('%', #{condition.matchName}, '%'))
+            )
+        </if>
+        <if test="condition.majorCode != null and  condition.majorCode != ''">
+            and a.major_code= #{condition.majorCode}
+        </if>
+        <if test="condition.systemCode != null and  condition.systemCode != ''">
+            and a.system_code= #{condition.systemCode}
+        </if>
+        <if test="condition.knowledgeBaseTypeCode != null and  condition.knowledgeBaseTypeCode != ''">
+            and a.knowledge_base_type_code = #{condition.knowledgeBaseTypeCode}
+        </if>
+        ORDER BY a.create_time DESC
+    </select>
+
 <select id="readOne" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
     SELECT
             fkb.id,

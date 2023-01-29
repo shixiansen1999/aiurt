@@ -27,6 +27,15 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      */
     IPage<FaultKnowledgeBase> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase);
 
+
+    /**
+     * 故障知识库查询，不分页
+     * @param faultKnowledgeBase
+     * @return
+     */
+    List<FaultKnowledgeBase> queryAll(FaultKnowledgeBase faultKnowledgeBase);
+
+
     /**
      * 故障选择查询
      * @param page
