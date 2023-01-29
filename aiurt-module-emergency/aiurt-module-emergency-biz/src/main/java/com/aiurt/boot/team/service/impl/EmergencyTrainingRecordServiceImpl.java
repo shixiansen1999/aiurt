@@ -547,7 +547,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
                     HashMap<String, String> map = new HashMap<>(emergencyCrews.size());
                     for (EmergencyCrew emergencyCrew : emergencyCrews) {
                         LoginUser userById = iSysBaseAPI.getUserById(emergencyCrew.getUserId());
-                        map.put(userById.getRealname(), userById.getId());
+                        map.put(userById.getRealname(), emergencyCrew.getId());
                     }
                     List<String> list = StrUtil.splitTrim(trainees, "：");
                     List<EmergencyTrainingRecordCrew> emergencyTrainingRecordCrews = new ArrayList<>();

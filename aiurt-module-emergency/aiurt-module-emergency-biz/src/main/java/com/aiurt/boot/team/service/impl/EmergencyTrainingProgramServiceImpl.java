@@ -4,6 +4,7 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -437,6 +438,13 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             exportList = records;
         }
 
+        if (CollUtil.isNotEmpty(exportList)) {
+            int sort = 1;
+            for (EmergencyTrainingProgram record : exportList) {
+                record.setSort(Convert.toStr(sort));
+                sort++;
+            }
+        }
         String title ="应急队伍训练计划表";
         // Step.3 AutoPoi 导出Excel
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());

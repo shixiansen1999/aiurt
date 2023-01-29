@@ -43,6 +43,10 @@ public class EmergencyTrainingProgram implements Serializable {
      * 修改时的校验分组
      */
     public interface Update {}
+
+    @Excel(name = "序号", width = 15)
+    @TableField(exist = false)
+    private String sort;
 	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")

@@ -25,6 +25,10 @@ public class TeamModel {
     @Excel(name = "应急队伍名称", width = 15)
     @ApiModelProperty(value = "应急队伍名称")
     private String emergencyTeamname;
+    /**队伍数量*/
+    @Excel(name = "队伍数量", width = 15)
+    @ApiModelProperty(value = "队伍数量")
+    private Integer peopleNum;
     /**应急队伍编号*/
     @Excel(name = "应急队伍编号", width = 15)
     @ApiModelProperty(value = "应急队伍编号")
@@ -42,11 +46,13 @@ public class TeamModel {
     @ApiModelProperty(value = "联系电话")
     private String managerPhone;
     /**线路名称*/
-    @Excel(name = "线路", width = 15)
+    @Excel(name = "线路站点", width = 15)
+    @ApiModelProperty(value = "线路站点")
+    private String lineStation;
+    /**线路名称*/
     @ApiModelProperty(value = "线路名称")
     private String lineName;
     /**站点名称*/
-    @Excel(name = "站点", width = 15)
     @ApiModelProperty(value = "站点名称")
     private String stationName;
     /**驻扎地名称*/

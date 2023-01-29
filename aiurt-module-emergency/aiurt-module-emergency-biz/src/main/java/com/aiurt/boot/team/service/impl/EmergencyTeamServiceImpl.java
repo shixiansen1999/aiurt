@@ -659,6 +659,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
             for (EmergencyTeam record : exportList) {
                 TeamModel teamModel = new TeamModel();
                 BeanUtil.copyProperties(record,teamModel);
+                teamModel.setLineStation(record.getLineName()+"/"+record.getStationName());
                 teamModel.setSort(Convert.toStr(sort));
                 teamModel.setWorkAreaName(record.getWorkareaName());
                 teamModels.add(teamModel);
