@@ -19,7 +19,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -42,6 +46,8 @@ import java.util.List;
 public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck, IFixedAssetsCheckService> {
     @Autowired
     private IFixedAssetsCheckService fixedAssetsCheckService;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
 
     /**
      * 固定资产盘点任务信息表-分页列表查询
@@ -209,7 +215,19 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
         fixedAssetsCheckService.issued(id);
         return Result.OK("下发成功!");
     }
-
+    @ApiOperation(value = "盘点管理-查询登录人父级部门", notes = "盘点管理-查询登录人父级部门")
+    @GetMapping(value = "/queryOrgCodeByUserId")
+    public Result<String> queryOrgCodeByUserId() {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String orgCode = null;
+        SysDepartModel sysDepartModel = sysBaseApi.getDepartByOrgCode(sysUser.getOrgCode());
+        if (StrUtil.isNotEmpty(sysDepartModel.getParentId())){
+            orgCode = sysBaseApi.selectAllById(sysDepartModel.getParentId()).getOrgCode();
+        }else {
+            orgCode = sysUser.getOrgCode();
+        }
+        return Result.OK(orgCode);
+    }
     /**
      * 通过id查询
      *

@@ -66,7 +66,7 @@
                  left join sys_user s on fac.check_id = s.id
         where fac.del_flag = 0
         <if test="condition.inventoryList != null and condition.inventoryList != ''">
-            and fac.inventory_list = LIKE CONCAT('%', #{condition.inventoryList}, '%')
+            and fac.inventory_list  LIKE CONCAT('%', #{condition.inventoryList}, '%')
         </if>
         <if test="condition.checkId != null">
             and s.realname LIKE CONCAT('%', #{condition.checkId}, '%')
