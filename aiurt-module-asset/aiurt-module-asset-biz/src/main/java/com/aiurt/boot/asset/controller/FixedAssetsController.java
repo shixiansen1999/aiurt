@@ -186,7 +186,7 @@ public class FixedAssetsController extends BaseController<FixedAssets, IFixedAss
     */
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, FixedAssets.class);
+		return fixedAssetsService.importExcel(request, response);
     }
 
 }

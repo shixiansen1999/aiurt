@@ -2,7 +2,9 @@ package com.aiurt.boot.asset.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.asset.dto.FixedAssetsDTO;
+import com.aiurt.boot.asset.dto.FixedAssetsModel;
 import com.aiurt.boot.asset.entity.FixedAssets;
 import com.aiurt.boot.asset.mapper.FixedAssetsMapper;
 import com.aiurt.boot.asset.service.IFixedAssetsService;
@@ -19,19 +21,26 @@ import com.aiurt.boot.constant.FixedAssetsConstant;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.boot.record.mapper.FixedAssetsCheckRecordMapper;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.XlsUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FilenameUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -203,5 +212,81 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         }
         dto.setRecordDTOList(assetsCheckDTOS);
         return Result.OK(dto);
+    }
+
+    @Override
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            ImportParams params = new ImportParams();
+            params.setTitleRows(2);
+            params.setHeadRows(1);
+            params.setNeedSave(true);
+
+            List<String> errorMessage = new ArrayList<>();
+            int successLines = 0;
+            // 错误信息
+            int  errorLines = 0;
+
+            try {
+                String type = FilenameUtils.getExtension(file.getOriginalFilename());
+                if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+                    return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, false, null);
+                }
+
+                List<FixedAssetsModel> fixedAssetsModels = ExcelImportUtil.importExcel(file.getInputStream(), FixedAssetsModel.class, params);
+                Iterator<FixedAssetsModel> iterator = fixedAssetsModels.iterator();
+                while (iterator.hasNext()) {
+                    FixedAssetsModel model = iterator.next();
+                    boolean b = XlsUtil.checkObjAllFieldsIsNull(model);
+                    if (b) {
+                        iterator.remove();
+                    }
+                }
+                if (CollUtil.isEmpty(fixedAssetsModels)) {
+                    return Result.error("文件导入失败:文件内容不能为空！");
+                }
+                Map<String, String> data = new HashMap<>();
+                for (FixedAssetsModel fixedAssetsModel : fixedAssetsModels) {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    //数据重复性校验
+                   /* String s = data.get(trainingProgramModel.getTrainingProgramName());
+                    if (StrUtil.isNotEmpty(s)) {
+                        stringBuilder.append("该数据存在相同数据，");
+                    } else {
+                        data.put(trainingProgramModel.getTrainingProgramName(), trainingProgramModel.getTrainingTeam());
+                    }*/
+                    //数据校验
+                    //checkTrainingProgram(stringBuilder, trainingProgramModel);
+                    if (stringBuilder.length() > 0) {
+                        // 截取字符
+                        stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                        fixedAssetsModel.setMistake(stringBuilder.toString());
+                        errorLines++;
+                    }
+                }
+                if (errorLines > 0) {
+                    //存在错误，导出错误清单
+                    return getErrorExcel(errorLines, errorMessage, fixedAssetsModels, successLines, null, type);
+                }
+
+                //校验通过，添加数据
+                for (FixedAssetsModel fixedAssetsModel : fixedAssetsModels) {
+
+                }
+                return Result.ok("文件导入成功！");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return Result.ok("文件导入失败！");
+    }
+
+
+    private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, List<FixedAssetsModel> fixedAssetsModels, int successLines, Object o, String type) {
+        return null;
     }
 }

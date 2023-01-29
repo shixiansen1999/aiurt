@@ -6,6 +6,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * @Description: fixed_assets
  * @Author: aiurt
@@ -29,4 +32,6 @@ public interface IFixedAssetsService extends IService<FixedAssets> {
      * @return
      */
     Result<FixedAssetsDTO> detail(String code);
+
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
 }
