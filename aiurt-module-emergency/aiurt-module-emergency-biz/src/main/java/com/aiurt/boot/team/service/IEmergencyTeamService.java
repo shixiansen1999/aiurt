@@ -106,4 +106,6 @@ public interface IEmergencyTeamService extends IService<EmergencyTeam> {
      * @return
      */
     ModelAndView exportCrewXls(HttpServletRequest request, String id);
+
+    ModelAndView exportRecordXls(HttpServletRequest request, String id);
 }

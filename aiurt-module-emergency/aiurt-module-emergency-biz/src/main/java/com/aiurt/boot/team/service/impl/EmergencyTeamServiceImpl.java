@@ -716,4 +716,27 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         mv.addObject(NormalExcelConstants.DATA_LIST, crewModels);
         return mv;
     }
+
+    @Override
+    public ModelAndView exportRecordXls(HttpServletRequest request, String id) {
+        EmergencyTeam emergencyTeam = this.getById(id);
+        List<EmergencyTeamTrainingDTO> trainingRecord = emergencyTeamMapper.getTrainingRecord(id);
+        translate(emergencyTeam);
+        if (CollUtil.isNotEmpty(trainingRecord)) {
+            for (EmergencyTeamTrainingDTO emergencyTeamDTO : trainingRecord) {
+                emergencyTeamDTO.setManagerName(emergencyTeam.getManagerName());
+            }
+        }
+        String title = emergencyTeam.getEmergencyTeamname() + "训练记录清单";
+        // Step.3 AutoPoi 导出Excel
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        //此处设置的filename无效 ,前端会重更新设置一下
+        mv.addObject(NormalExcelConstants.FILE_NAME, title);
+        mv.addObject(NormalExcelConstants.CLASS, EmergencyTeamTrainingDTO.class);
+        ExportParams exportParams=new ExportParams(title, title);
+        exportParams.setImageBasePath(upLoadPath);
+        mv.addObject(NormalExcelConstants.PARAMS,exportParams);
+        mv.addObject(NormalExcelConstants.DATA_LIST, trainingRecord);
+        return mv;
+    }
 }

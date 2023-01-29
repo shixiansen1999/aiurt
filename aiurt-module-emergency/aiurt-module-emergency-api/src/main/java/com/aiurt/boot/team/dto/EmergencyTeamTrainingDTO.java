@@ -35,6 +35,7 @@ public class EmergencyTeamTrainingDTO {
     @ApiModelProperty(value = "训练时间")
     private java.util.Date trainingTime;
 
+    @Excel(name = "训练负责人", width = 15)
     @ApiModelProperty(value = "训练负责人姓名")
     @TableField(exist = false)
     private String managerName;

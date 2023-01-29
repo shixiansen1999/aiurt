@@ -196,6 +196,17 @@ public class EmergencyTeamController extends BaseController<EmergencyTeam, IEmer
 		return emergencyTeamService.exportCrewXls(request, id);
 	}
 
+	/**
+	 * 应急队伍训练记录导出excel
+	 *
+	 * @param request
+	 * @param id
+	 */
+	@ApiOperation(value="应急队伍训练记录导出excel", notes="应急队伍训练记录导出excel")
+	@RequestMapping(value = "/exportRecordXls",method = RequestMethod.GET)
+	public ModelAndView exportRecordXls(HttpServletRequest request, String id) {
+		return emergencyTeamService.exportRecordXls(request, id);
+	}
 
 	/**
 	 * 应急队伍模板下载
