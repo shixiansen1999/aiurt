@@ -182,7 +182,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
         {
             return result;
         }
-        if(isDirector&&CollUtil.isNotEmpty(majors))
+        if(!isDirector&&CollUtil.isEmpty(majors))
         {
             return result;
         }
