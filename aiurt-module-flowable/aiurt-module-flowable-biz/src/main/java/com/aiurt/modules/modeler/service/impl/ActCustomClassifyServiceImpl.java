@@ -48,11 +48,11 @@ public class ActCustomClassifyServiceImpl extends ServiceImpl<ActCustomClassifyM
 		if(entity==null) {
 			throw new AiurtBootException("未找到对应实体");
 		}
-		String old_pid = entity.getPid();
-		String new_pid = actCustomClassify.getPid();
-		if(!old_pid.equals(new_pid)) {
-			updateOldParentNode(old_pid);
-			if(oConvertUtils.isEmpty(new_pid)){
+		String oldPid = entity.getPid();
+		String newPid = actCustomClassify.getPid();
+		if(!oldPid.equals(newPid)) {
+			updateOldParentNode(oldPid);
+			if(oConvertUtils.isEmpty(newPid)){
 				actCustomClassify.setPid(IActCustomClassifyService.ROOT_PID_VALUE);
 			}
 			if(!IActCustomClassifyService.ROOT_PID_VALUE.equals(actCustomClassify.getPid())) {

@@ -126,10 +126,10 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
         wrapper.eq(ActCustomModelInfo::getModelId, modelId).last("limit 1");
         ActCustomModelInfo actCustomModelInfo = baseMapper.selectOne(wrapper);
         Model model = modelService.getModel(modelId);
-        byte[] bpmnXML = modelService.getBpmnXML(model);
+        byte[] bpmnXml = modelService.getBpmnXML(model);
         String streamStr = null;
         try {
-            streamStr = new String(bpmnXML, "UTF-8");
+            streamStr = new String(bpmnXml, "UTF-8");
         } catch (UnsupportedEncodingException e) {
            log.error(e.getMessage());
         }

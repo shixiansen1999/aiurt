@@ -1,4 +1,4 @@
-package com.aiurt.modules.flow.feginApi;
+package com.aiurt.modules.flow.feginapi;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;

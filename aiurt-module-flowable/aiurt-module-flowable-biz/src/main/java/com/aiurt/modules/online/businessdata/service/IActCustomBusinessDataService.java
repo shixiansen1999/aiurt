@@ -12,8 +12,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface IActCustomBusinessDataService extends IService<ActCustomBusinessData> {
 
     /**
-     *
-     * @param processInstanceId
+     * 根据任务id或者流程实例id查询保存的业务数据
+     * @param taskId 任务id
+     * @param processInstanceId 流程实例id
      * @return
      */
     ActCustomBusinessData queryByProcessInstanceId(String processInstanceId, String taskId);

@@ -13,7 +13,16 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface ActCustomTaskCommentMapper extends BaseMapper<ActCustomTaskComment> {
 
+    /**
+     * 更新工作票的状态
+     * @param id
+     */
     void updateWorkticketState(@Param("id") String id);
 
+
+    /**
+     * 施工
+     * @param id
+     */
     void updateConstructionWeekPlanCommand(@Param("id") String id);
 }

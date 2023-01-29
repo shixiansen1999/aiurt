@@ -115,10 +115,10 @@ public class ReflectionService {
                 object = getInstance(parameterType);
 
                 // 赋值
-                //BeanUtils.populate(object, paramMap);
-                // todo 需要转换，暂时不清楚原因
+                // 需要转换，暂时不清楚原因, 否则属性值无法注入
                 JSONObject jsonObject = new JSONObject(paramMap);
                 String s = JSONObject.toJSONString(jsonObject);
+                // 时间转换问题
                 ConverterRegistry.getInstance().putCustom(java.util.Date.class, new CustomDateConverter(java.util.Date.class, null));
                 BeanUtil.copyProperties(JSONObject.parseObject(s), object);
             }
@@ -140,7 +140,7 @@ public class ReflectionService {
             return  new ArrayList();
 
         }else if(parameterType.isAssignableFrom(Map.class)) {
-            return new HashMap();
+            return new HashMap(16);
         }else if(parameterType.isAssignableFrom(Set.class)) {
             return  new HashSet();
         }

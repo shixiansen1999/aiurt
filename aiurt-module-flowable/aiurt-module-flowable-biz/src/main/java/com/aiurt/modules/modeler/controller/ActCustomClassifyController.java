@@ -54,7 +54,7 @@ public class ActCustomClassifyController extends BaseController<ActCustomClassif
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		String hasQuery = req.getParameter("hasQuery");
-        if(hasQuery != null && "true".equals(hasQuery)){
+        if(hasQuery != null && StrUtil.equalsAnyIgnoreCase( "true",hasQuery)){
             QueryWrapper<ActCustomClassify> queryWrapper =  QueryGenerator.initQueryWrapper(actCustomClassify, req.getParameterMap());
             List<ActCustomClassify> list = actCustomClassifyService.queryTreeListNoPage(queryWrapper);
             IPage<ActCustomClassify> pageList = new Page<>(1, 10, list.size());
