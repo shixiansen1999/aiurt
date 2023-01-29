@@ -25,7 +25,7 @@
             and fa.category_code = #{condition.categoryCode}
         </if>
         <if test="condition.assetCode != null and condition.assetCode != ''">
-            and fa.asset_code = #{condition.assetCode}
+            and fa.asset_code LIKE CONCAT('%', #{condition.assetCode}, '%')
         </if>
         <if test="condition.assetName != null and condition.assetName != ''">
             and fa.asset_name like concat('%', #{condition.assetName}, '%')
