@@ -283,7 +283,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 
 
 		String title = "故障知识库";
-		cn.afterturn.easypoi.excel.entity.ExportParams exportParams=new ExportParams(title + "报表", null, ExcelType.XSSF);
+		cn.afterturn.easypoi.excel.entity.ExportParams exportParams=new ExportParams(title + "报表", "故障知识库导出模板", ExcelType.XSSF);
 		//调用ExcelExportUtil.exportExcel方法生成workbook
 		Workbook wb = ExcelExportUtil.exportExcel(exportParams, FaultKnowledgeBaseDTO.class,faultKnowledgeBaseDTOList);
 		String fileName = "故障知识库";
