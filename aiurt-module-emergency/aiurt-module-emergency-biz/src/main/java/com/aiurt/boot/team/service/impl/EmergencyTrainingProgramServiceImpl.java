@@ -319,6 +319,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
                     emergencyTrainingProgram.setStatus(TeamConstant.WAIT_PUBLISH);
                     LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                     emergencyTrainingProgram.setOrgCode(user.getOrgCode());
+                    emergencyTrainingProgram.setRemark(programModel.getRemark());
                     this.save(emergencyTrainingProgram);
 
                     List<String> trainingTeamId = programModel.getTrainingTeamId();
