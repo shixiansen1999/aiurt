@@ -46,6 +46,7 @@
             far.STATUS,
             f.`code` AS faultCode,
             f.fault_phenomenon,
+            f.symptoms,
             far.solution,
             ft.NAME,
             far.create_by,
