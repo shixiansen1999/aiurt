@@ -273,8 +273,9 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
                 .last("limit 1").one();
         String fixedAssetsCheckCode = "";
         if (ObjectUtil.isNotEmpty(fixedAssetsCheck)) {
-            String newStr = StrUtil.sub(fixedAssetsCheck.getInventoryList(), fixedAssetsCheck.getInventoryList().length() - 3, fixedAssetsCheck.getInventoryList().length());
-            fixedAssetsCheckCode = "ZP" + time + String.valueOf(Integer.valueOf(newStr) + 1);
+            String newStr = StrUtil.sub(fixedAssetsCheck.getInventoryList(), fixedAssetsCheck.getInventoryList().length() - 4, fixedAssetsCheck.getInventoryList().length());
+            Integer i = Integer.valueOf(newStr) + 1;
+            fixedAssetsCheckCode = "ZP" + time + StrUtil.sub(i.toString(),i.toString().length()-3, i.toString().length());
         } else {
             fixedAssetsCheckCode = "ZP" + time + "001";
         }

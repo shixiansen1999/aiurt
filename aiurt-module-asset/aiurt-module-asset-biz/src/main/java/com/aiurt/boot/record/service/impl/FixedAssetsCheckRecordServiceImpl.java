@@ -33,10 +33,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -124,6 +122,13 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
             record.setCategoryName(categoryName);
             record.setOrgName(orgMap.get(record.getOrgCode()));
             record.setLocationName(position);
+            Calendar calendar =  Calendar.getInstance();
+            FixedAssets fixedAssets = fixedAssetsService.lambdaQuery()
+                    .eq(FixedAssets::getAssetCode,record.getAssetCode())
+                    .eq(FixedAssets::getStatus,FixedAssetsConstant.STATUS_1)
+                    .eq(FixedAssets::getDelFlag,FixedAssetsConstant.STATUS_0).one();
+            SimpleDateFormat format = new SimpleDateFormat("yyyy");
+            record.setUsefulLife(calendar.get(Calendar.YEAR)- Integer.valueOf(format.format(fixedAssets.getStartDate())));
         }
         return pageList;
     }
@@ -144,6 +149,7 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
             List<String> orgCodes = deptList.stream().map(FixedAssetsCheckDept::getOrgCode).collect(Collectors.toList());
             List<FixedAssets> fixedAssets = fixedAssetsService.lambdaQuery()
                     .eq(FixedAssets::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .eq(FixedAssets::getStatus,FixedAssetsConstant.STATUS_1)
                     .eq(FixedAssets::getOrgCode, orgCodes)
                     .in(FixedAssets::getCategoryCode, categoryCodes)
                     .list();
