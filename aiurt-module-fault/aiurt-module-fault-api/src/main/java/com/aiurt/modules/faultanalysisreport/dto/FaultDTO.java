@@ -101,9 +101,9 @@ public class FaultDTO extends DictEntity implements Serializable {
     @ApiModelProperty(value = "故障发生时间yyyy-MM-dd HH:mm",  required = true)
     private Date happenTime;
 
-    /**故障现象*/
-    @Excel(name = "故障现象", width = 15)
-    @ApiModelProperty(value = "故障现象",  required = true)
+    /**故障现象分类*/
+    @Excel(name = "故障现象分类", width = 15)
+    @ApiModelProperty(value = "故障现象分类",  required = true)
     @Length(max = 255, message = "故障现象长度不能超过255")
     @Dict(dictTable = "fault_knowledge_base_type", dicCode = "code", dicText = "name")
     private String faultPhenomenon;
