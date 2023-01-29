@@ -114,7 +114,8 @@
     f.happen_time,
     frr.fault_analysis,
     f.appoint_user_name,
-    frr.maintenance_measures as solution
+    frr.maintenance_measures as solution,
+    frr.symptoms
     FROM
     fault f
     left join fault_repair_record frr on frr.fault_code =  f.`code`
