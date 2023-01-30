@@ -39,7 +39,6 @@ public class EmergencyTeamDTO {
     @ApiModelProperty(value = "应急队伍名称")
     private String emergencyTeamname;
     /**应急队伍编号*/
-    @Excel(name = "应急队伍编号", width = 15)
     @ApiModelProperty(value = "应急队伍编号")
     private String emergencyTeamcode;
     /**队伍人数*/
