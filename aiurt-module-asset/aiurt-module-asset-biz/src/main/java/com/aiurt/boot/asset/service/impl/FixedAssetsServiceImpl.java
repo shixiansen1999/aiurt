@@ -1,5 +1,7 @@
 package com.aiurt.boot.asset.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -30,8 +32,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -253,14 +253,16 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
                 for (FixedAssetsModel fixedAssetsModel : fixedAssetsModels) {
                     StringBuilder stringBuilder = new StringBuilder();
                     //数据重复性校验
-                   /* String s = data.get(trainingProgramModel.getTrainingProgramName());
+                    String s = data.get(fixedAssetsModel.getAssetCode());
                     if (StrUtil.isNotEmpty(s)) {
                         stringBuilder.append("该数据存在相同数据，");
                     } else {
-                        data.put(trainingProgramModel.getTrainingProgramName(), trainingProgramModel.getTrainingTeam());
-                    }*/
-                    //数据校验
-                    //checkTrainingProgram(stringBuilder, trainingProgramModel);
+                        data.put(fixedAssetsModel.getAssetCode(), fixedAssetsModel.getAssetName());
+                    }
+                    //必填数据校验
+                    checkRequired(stringBuilder, fixedAssetsModel);
+                    //非必填数据校验
+                    checkNotRequired(stringBuilder, fixedAssetsModel);
                     if (stringBuilder.length() > 0) {
                         // 截取字符
                         stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -285,6 +287,16 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         return Result.ok("文件导入失败！");
     }
 
+
+    /**必填数据校验*/
+    private void checkRequired(StringBuilder stringBuilder, FixedAssetsModel fixedAssetsModel) {
+
+    }
+
+    /**非必填数据校验*/
+    private void checkNotRequired(StringBuilder stringBuilder, FixedAssetsModel fixedAssetsModel) {
+
+    }
 
     private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, List<FixedAssetsModel> fixedAssetsModels, int successLines, Object o, String type) {
         return null;
