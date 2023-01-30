@@ -2111,7 +2111,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             wrapper.eq(SafetyRelatedForm::getDelFlag,0);
             List<SafetyRelatedForm> list = safetyRelatedFormMapper.selectList(wrapper);
             List<String> str = list.stream().map(l-> l.getSafetyAttentionId()).collect(Collectors.toList());
-            csSafetyAttentions = csSafetyAttentionMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>().in(CsSafetyAttention::getId,str));
+            if (CollUtil.isNotEmpty(str)) {
+                csSafetyAttentions = csSafetyAttentionMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>().in(CsSafetyAttention::getId,str));
+            }
         }else {
             //没有修改按照专业子系统查询
             LambdaQueryWrapper<CsSafetyAttention> wrapper1 = new LambdaQueryWrapper<CsSafetyAttention>();
