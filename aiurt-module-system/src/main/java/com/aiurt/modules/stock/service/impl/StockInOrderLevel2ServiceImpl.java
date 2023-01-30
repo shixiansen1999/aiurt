@@ -397,7 +397,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 			}
 			ImportParams params = new ImportParams();
 			params.setTitleRows(2);
-			params.setHeadRows(1);
+			params.setHeadRows(2);
 			params.setNeedSave(true);
 
 			try {
@@ -435,19 +435,20 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 							if (stringBuilder.length() > 0){
 								stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 								stockInOrderLevel2DTO.setStockInOrderLevelMistake(stringBuilder.toString());
-							} else{
-								stockInOrderLevel2List.add(stockInOrderLevel2);
 							}
 							List<StockIncomingMaterialsDTO> stockIncomingMaterialsDTOList = stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList();
+							if(CollectionUtil.isNotEmpty(stockIncomingMaterialsDTOList)){
 							for (StockIncomingMaterialsDTO stockIncomingMaterialsDTO : stockIncomingMaterialsDTOList) {
 								if (stringBuilder1.length() > 0) {
 									stringBuilder1 = stringBuilder1.deleteCharAt(stringBuilder1.length() - 1);
 									stockIncomingMaterialsDTO.setMaterialMistake(stringBuilder1.toString());
-								} else {
-									stockIncomingMaterialsList.add(stockIncomingMaterials);
 								}
+							 }
 							}
 							errorLines++;
+						}else {
+							stockInOrderLevel2List.add(stockInOrderLevel2);
+							stockIncomingMaterialsList.add(stockIncomingMaterials);
 						}
 					}
 				}
@@ -463,7 +464,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 						 stockInOrderLevel2.setDelFlag(0);
 						 stockInOrderLevel2.setEntryTime(new Date());
 						 stockInOrderLevel2.setStatus("1");
-						 this.save(stockInOrderLevel2);
+						 stockInOrderLevel2.setOrgCode(((LoginUser) SecurityUtils.getSubject().getPrincipal()).getOrgCode());
+						this.save(stockInOrderLevel2);
 
 						for (StockIncomingMaterials stockIncomingMaterials : stockIncomingMaterialsList) {
 							 stockIncomingMaterials.setInOrderCode(stockInOrderLevel2.getOrderCode());
@@ -511,25 +513,22 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		List<Map<String, String>> listMap = new ArrayList<>();
 		for (int i = 0; i < list.size(); i++) {
 			StockInOrderLevel2DTO stockInOrderLevel2DTO = list.get(i);
-			Map<String, String> map = new HashMap<>(16);
-			//二级库错误报告获取信息
-			map.put("warehouseName", stockInOrderLevel2DTO.getWarehouseName());
-			map.put("realName", stockInOrderLevel2DTO.getRealName());
-			map.put("workNo", stockInOrderLevel2DTO.getWorkNo());
-			map.put("note", stockInOrderLevel2DTO.getNote());
-			map.put("stockInOrderLevelMistake", stockInOrderLevel2DTO.getStockInOrderLevelMistake());
-
 			List<StockIncomingMaterialsDTO> stockIncomingMaterialsDTOList = stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList();
 			for (int j = 0; j < stockIncomingMaterialsDTOList.size(); j++){
 				StockIncomingMaterialsDTO stockIncomingMaterialsDTO = stockIncomingMaterialsDTOList.get(j);
 				//物资错误报告获取信息
+				Map<String, String> map = new HashMap<>(16);
+				map.put("warehouseName", stockInOrderLevel2DTO.getWarehouseName());
+				map.put("realName", stockInOrderLevel2DTO.getRealName());
+				map.put("workNo", stockInOrderLevel2DTO.getWorkNo());
+				map.put("note", stockInOrderLevel2DTO.getNote());
+				map.put("stockInOrderLevelMistake", stockInOrderLevel2DTO.getStockInOrderLevelMistake());
 				map.put("materialCode", stockIncomingMaterialsDTO.getMaterialCode());
 				map.put("materialName", stockIncomingMaterialsDTO.getMaterialName());
 				map.put("num", Convert.toStr(stockIncomingMaterialsDTO.getNum()));
 				map.put("materialMistake",stockIncomingMaterialsDTO.getMaterialMistake());
 				listMap.add(map);
 			}
-			listMap.add(map);
 		}
 		errorMap.put("maplist", listMap);
 		Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(16);
@@ -545,6 +544,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 			PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0), size, size + stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList().size() - 1, 2, 2);
 
 			PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0), size, size + stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList().size() - 1, 3, 3);
+
+			PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0), size, size + stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList().size() - 1, 7, 7);
 		}
 
 		try {
