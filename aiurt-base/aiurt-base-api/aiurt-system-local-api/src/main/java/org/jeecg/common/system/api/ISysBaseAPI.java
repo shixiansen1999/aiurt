@@ -7,7 +7,6 @@ import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.position.entity.CsStation;
-import com.aiurt.modules.position.entity.CsStationPosition;
 import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.vo.*;
@@ -753,6 +752,13 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     JSONObject getDepartByName(String departName);
+
+    /**
+     * 根据部门名称和父id获取部门信息
+     * @param departName
+     * @return
+     */
+    JSONObject getDepartByNameAndParentId(String departName,String parentId);
 
     /**
      * 根据线路名称获取线路信息

@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 
@@ -17,7 +18,7 @@ import java.util.List;
  * @desc
  */
 @Data
-public class StockInOrderLevel2DTO {
+public class StockInOrderLevel2DTO implements Serializable {
 
     /**主键id*/
     @TableField(exist = false)
