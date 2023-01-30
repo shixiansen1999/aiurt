@@ -30,7 +30,6 @@ public class TeamModel {
     @ApiModelProperty(value = "队伍数量")
     private Integer peopleNum;
     /**应急队伍编号*/
-    @Excel(name = "应急队伍编号", width = 15)
     @ApiModelProperty(value = "应急队伍编号")
     private String emergencyTeamcode;
 
