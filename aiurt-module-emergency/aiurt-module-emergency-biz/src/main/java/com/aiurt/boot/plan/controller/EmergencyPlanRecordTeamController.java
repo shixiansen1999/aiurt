@@ -45,7 +45,6 @@ public class EmergencyPlanRecordTeamController extends BaseController<EmergencyP
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_plan_record_team-分页列表查询")
 	@ApiOperation(value="emergency_plan_record_team-分页列表查询", notes="emergency_plan_record_team-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<EmergencyPlanRecordTeam>> queryPageList(EmergencyPlanRecordTeam emergencyPlanRecordTeam,
@@ -120,7 +119,6 @@ public class EmergencyPlanRecordTeamController extends BaseController<EmergencyP
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_plan_record_team-通过id查询")
 	@ApiOperation(value="emergency_plan_record_team-通过id查询", notes="emergency_plan_record_team-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<EmergencyPlanRecordTeam> queryById(@RequestParam(name="id",required=true) String id) {

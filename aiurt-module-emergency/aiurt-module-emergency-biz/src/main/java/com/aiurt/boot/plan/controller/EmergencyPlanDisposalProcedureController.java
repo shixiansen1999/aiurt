@@ -49,7 +49,6 @@ public class EmergencyPlanDisposalProcedureController extends BaseController<Eme
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_plan_disposal_procedure-分页列表查询")
 	@ApiOperation(value="预案处置程序-分页列表查询", notes="预案处置程序-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<EmergencyPlanDisposalProcedure>> queryPageList(EmergencyPlanDisposalProcedure emergencyPlanDisposalProcedure,

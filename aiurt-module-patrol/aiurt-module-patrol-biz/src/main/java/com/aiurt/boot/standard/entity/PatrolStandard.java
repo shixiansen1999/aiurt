@@ -52,6 +52,7 @@ public class PatrolStandard extends DictEntity implements Serializable {
     @Excel(name = "适用子系统", width = 15,needMerge = true)
     @ApiModelProperty(value = "适用系统code")
     @SystemFilterColumn
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private java.lang.String subsystemCode;
     /**与设备类型相关：0否 1 是*/
     @ApiModelProperty(value = "与设备类型相关：0否 1 是")

@@ -865,7 +865,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             if (CollUtil.isNotEmpty(planDisposalProcedureList)) {
                 for (int i = 0; i < planDisposalProcedureList.size(); i++) {
                     EmergencyPlanDisposalProcedure emergencyPlanDisposalProcedure = planDisposalProcedureList.get(i);
-                    Map<String, String> map = new HashMap<>();
+                    Map<String, String> map = new HashMap<>(32);
                     map.put("sort", Convert.toStr(i+1));
                     map.put("orgName", emergencyPlanDisposalProcedure.getOrgName());
                     map.put("roleName", emergencyPlanDisposalProcedure.getRoleName());
@@ -878,7 +878,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             if(CollUtil.isNotEmpty(planMaterialsList1)){
                 for (int i = 0; i < planMaterialsList.size(); i++) {
                     EmergencyPlanMaterialsExportExcelVO emergencyPlanMaterialsExportExcelVO = planMaterialsList1.get(i);
-                    Map<String, String> map2 = new HashMap<>();
+                    Map<String, String> map2 = new HashMap<>(32);
                     map2.put("sort", Convert.toStr(i+1));
                     map2.put("categoryName", emergencyPlanMaterialsExportExcelVO.getCategoryName());
                     map2.put("materialsCode", emergencyPlanMaterialsExportExcelVO.getMaterialsCode());
@@ -891,7 +891,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             errorMap.put("maplist", mapList);
             errorMap.put("maplist2", mapList2);
 
-            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(32);
             sheetsMap.put(0, errorMap);
             Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
             int size = procedureList.size();
@@ -1324,7 +1324,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             Map<String, Object> errorMap = handleData(emergencyPlanImportExcelDTO);
 
             // 将数据填入表格
-            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(32);
             sheetsMap.put(0, errorMap);
             Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
 
@@ -1359,7 +1359,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         if (CollUtil.isNotEmpty(planDisposalProcedureList)) {
             for (int i = 0; i < planDisposalProcedureList.size(); i++) {
                 EmergencyPlanDisposalProcedureImportExcelDTO emergencyPlanDisposalProcedureImportExcelDTO = planDisposalProcedureList.get(i);
-                Map<String, String> map = new HashMap<>();
+                Map<String, String> map = new HashMap<>(32);
                 map.put("sort", Convert.toStr(i+1));
                 map.put("orgName", emergencyPlanDisposalProcedureImportExcelDTO.getOrgName());
                 map.put("roleName", emergencyPlanDisposalProcedureImportExcelDTO.getRoleName());
@@ -1373,7 +1373,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         if(CollUtil.isNotEmpty(planMaterialsList)){
             for (int i = 0; i < planMaterialsList.size(); i++) {
                 EmergencyPlanMaterialsImportExcelDTO emergencyPlanMaterialsImportExcelDTO = planMaterialsList.get(i);
-                Map<String, String> map2 = new HashMap<>();
+                Map<String, String> map2 = new HashMap<>(32);
                 map2.put("sort", Convert.toStr(i+1));
                 map2.put("categoryName", emergencyPlanMaterialsImportExcelDTO.getCategoryName());
                 map2.put("materialsCode", emergencyPlanMaterialsImportExcelDTO.getMaterialsCode());

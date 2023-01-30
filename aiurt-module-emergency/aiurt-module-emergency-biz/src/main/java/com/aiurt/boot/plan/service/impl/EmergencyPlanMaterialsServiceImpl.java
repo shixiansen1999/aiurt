@@ -68,8 +68,8 @@ public class EmergencyPlanMaterialsServiceImpl extends ServiceImpl<EmergencyPlan
                         .eq(EmergencyMaterials::getMaterialsCode, materialsCode).list();
                 if(CollUtil.isNotEmpty(materialsList)){
                     for (EmergencyMaterials emergencyMaterials : materialsList) {
-                        String MaterialId = emergencyMaterials.getId();
-                        emergencyPlanMaterialsDto.setId(MaterialId);
+                        String materialId = emergencyMaterials.getId();
+                        emergencyPlanMaterialsDto.setId(materialId);
 
                         String categoryCode = emergencyMaterials.getCategoryCode();
                         //查询物资分类信息
