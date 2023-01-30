@@ -36,7 +36,7 @@ public class FixedAssetsModel {
     @ApiModelProperty(value = "规格型号")
     private java.lang.String specification;
     /**账面数量*/
-    @Excel(name = "账面数量", width = 15)
+    @Excel(name = "账面数量", width = 15,type = 4)
     @ApiModelProperty(value = "账面数量")
     private java.lang.Integer number;
     /**房产证号*/
@@ -50,19 +50,19 @@ public class FixedAssetsModel {
     @ApiModelProperty(value = "建成/购置时间")
     private java.util.Date buildBuyDate;
     /**建筑面积*/
-    @Excel(name = "建筑面积", width = 15)
+    @Excel(name = "建筑面积", width = 15,type = 4)
     @ApiModelProperty(value = "建筑面积")
     private java.math.BigDecimal coveredArea;
     /**计量单位(1个、2栋、3台)*/
-    @Excel(name = "计量单位(1个、2栋、3台)", width = 15)
+    @Excel(name = "计量单位", width = 15)
     @ApiModelProperty(value = "计量单位(1个、2栋、3台)")
-    private java.lang.Integer units;
+    private java.lang.String unitsName;
     /**累计折旧*/
-    @Excel(name = "累计折旧", width = 15)
+    @Excel(name = "累计折旧", width = 15,type = 4)
     @ApiModelProperty(value = "累计折旧")
     private java.math.BigDecimal accumulatedDepreciation;
     /**账面原值*/
-    @Excel(name = "账面原值", width = 15)
+    @Excel(name = "账面原值", width = 15,type = 4)
     @ApiModelProperty(value = "账面原值")
     private java.math.BigDecimal assetOriginal;
     /**责任人*/
@@ -72,7 +72,7 @@ public class FixedAssetsModel {
     /**启用状态(0停用、1启用)*/
     @Excel(name = "启用状态(0停用、1启用)", width = 15)
     @ApiModelProperty(value = "启用状态(0停用、1启用)")
-    private java.lang.Integer status;
+    private String statusName;
     /**折旧年限*/
     @Excel(name = "折旧年限", width = 15)
     @ApiModelProperty(value = "折旧年限")
@@ -91,5 +91,13 @@ public class FixedAssetsModel {
     /**错误原因*/
     @Excel(name = "错误原因", width = 15)
     @ApiModelProperty(value = "错误原因")
-    private java.lang.String mistake;
+    private String mistake;
+
+    private String orgCode;
+
+    private String location;
+
+    private Integer status;
+
+    private Integer units;
 }

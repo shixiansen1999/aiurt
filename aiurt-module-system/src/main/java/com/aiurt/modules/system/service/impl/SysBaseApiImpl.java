@@ -2269,6 +2269,20 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
+    public JSONObject getDepartByNameAndParentId(String departName,String parentId) {
+        LambdaQueryWrapper<SysDepart> wrapper = new LambdaQueryWrapper<>();
+        if (StrUtil.isNotBlank(parentId)) {
+            wrapper.eq(SysDepart::getParentId, parentId);
+        }
+        wrapper.eq(SysDepart::getDepartName, departName).eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        SysDepart sysDepart = departMapper.selectOne(wrapper);
+        if (Objects.isNull(sysDepart)) {
+            return null;
+        }
+        return JSONObject.parseObject(JSONObject.toJSONString(sysDepart));
+    }
+
+    @Override
     public JSONObject getLineByName(String lineName) {
         LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(CsLine::getLineName, lineName).eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");

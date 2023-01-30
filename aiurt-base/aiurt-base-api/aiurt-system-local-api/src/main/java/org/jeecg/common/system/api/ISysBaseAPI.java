@@ -761,6 +761,13 @@ public interface ISysBaseAPI extends CommonAPI {
     JSONObject getDepartByName(String departName);
 
     /**
+     * 根据部门名称和父id获取部门信息
+     * @param departName
+     * @return
+     */
+    JSONObject getDepartByNameAndParentId(String departName,String parentId);
+
+    /**
      * 根据线路名称获取线路信息
      * @param lineName
      * @return

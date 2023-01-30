@@ -1,8 +1,11 @@
 package com.aiurt.boot.asset.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.asset.dto.FixedAssetsDTO;
@@ -29,17 +32,24 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,7 +61,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, FixedAssets> implements IFixedAssetsService {
-
+    @Value("${jeecg.path.errorExcelUpload}")
+    private String errorExcelUpload;
     @Autowired
     private FixedAssetsMapper assetsMapper;
     @Autowired
@@ -277,7 +288,13 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
 
                 //校验通过，添加数据
                 for (FixedAssetsModel fixedAssetsModel : fixedAssetsModels) {
-
+                    FixedAssets fixedAssets = new FixedAssets();
+                    BeanUtils.copyProperties(fixedAssetsModel, fixedAssets);
+                    fixedAssets.setOrgCode(fixedAssetsModel.getOrgCode());
+                    fixedAssets.setLocation(fixedAssetsModel.getLocation());
+                    fixedAssets.setStatus(fixedAssetsModel.getStatus());
+                    fixedAssets.setUnits(fixedAssetsModel.getUnits());
+                    this.save(fixedAssets);
                 }
                 return Result.ok("文件导入成功！");
             } catch (Exception e) {
@@ -290,15 +307,165 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
 
     /**必填数据校验*/
     private void checkRequired(StringBuilder stringBuilder, FixedAssetsModel fixedAssetsModel) {
+        String assetName = fixedAssetsModel.getAssetName();
+        String categoryName = fixedAssetsModel.getCategoryName();
+        String assetCode = fixedAssetsModel.getAssetCode();
+        String orgName = fixedAssetsModel.getOrgName();
+        Integer number = fixedAssetsModel.getNumber();
+
+        if (StrUtil.isEmpty(assetName)) {
+            stringBuilder.append("资产名称不能为空，");
+        }
+
+        if (StrUtil.isNotEmpty(categoryName)) {
+
+        }else {
+            stringBuilder.append("资产分类不能为空，");
+        }
+
+        if (StrUtil.isNotEmpty(assetCode)) {
+            LambdaQueryWrapper<FixedAssets> queryWrapper = new LambdaQueryWrapper<FixedAssets>();
+            queryWrapper.eq(FixedAssets::getAssetCode, assetCode);
+            FixedAssets assets = this.getOne(queryWrapper);
+            if(ObjectUtil.isNotEmpty(assets)){
+                stringBuilder.append("资产编号已存在，");
+            }
+        }else {
+            stringBuilder.append("资产编号不能为空，");
+        }
+
+        if (StrUtil.isNotEmpty(orgName)) {
+            List<String> list = StrUtil.splitTrim(orgName, "/");
+            String id = null;
+            String orgCode = null;
+            for (String s : list) {
+                //根据部门名称和父id找部门
+                JSONObject depart = sysBaseAPI.getDepartByNameAndParentId(s, id);
+                if (ObjectUtil.isNotNull(depart)) {
+                    id = depart.getString("parentId");
+                    orgCode = depart.getString("orgCode");
+                }else {
+                    stringBuilder.append("系统不存在该组织机构，");
+                    break;
+                }
+            }
+            fixedAssetsModel.setOrgCode(orgCode);
+        }else {
+            stringBuilder.append("使用组织机构不能为空，");
+        }
+
+        if (number == null) {
+            stringBuilder.append("账面数量不能为空，");
+        }
 
     }
 
     /**非必填数据校验*/
     private void checkNotRequired(StringBuilder stringBuilder, FixedAssetsModel fixedAssetsModel) {
+        String locationName = fixedAssetsModel.getLocationName();
+        if (StrUtil.isNotBlank(locationName)) {
+            List<String> list = StrUtil.splitTrim(locationName, "/");
+            if (list.size() != 3) {
+                JSONObject lineByName = sysBaseAPI.getLineByName(list.get(0));
+                JSONObject stationByName = sysBaseAPI.getStationByName(list.get(1));
+                if (ObjectUtil.isNotEmpty(lineByName) && ObjectUtil.isNotEmpty(stationByName)) {
+                    JSONObject positionByName = sysBaseAPI.getPositionByName(list.get(2),lineByName.getString("lineCode"),stationByName.getString("stationCode"));
+                    if (ObjectUtil.isEmpty(positionByName)) {
+                        stringBuilder.append("存放地点不存在，");
+                    } else {
+                        fixedAssetsModel.setLocation(positionByName.getString("positionCode"));
+                    }
+                } else {
+                    stringBuilder.append("存放地点不存在，");
+                }
+            } else {
+                stringBuilder.append("存放地点格式错误，");
+            }
+        }
+
+        String statusName = fixedAssetsModel.getStatusName();
+        if (StrUtil.isNotEmpty(statusName)) {
+            List<DictModel> post = sysBaseAPI.queryDictItemsByCode("fixed_assets_status");
+            DictModel model = Optional.ofNullable(post).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(statusName)).findFirst().orElse(null);
+            if (model != null) {
+                fixedAssetsModel.setStatus(Convert.toInt(model.getValue()));
+            } else {
+                stringBuilder.append("系统不存在该启用状态，");
+            }
+        }
+
+        String unitsName = fixedAssetsModel.getUnitsName();
+        if (StrUtil.isNotEmpty(unitsName)) {
+            List<DictModel> post = sysBaseAPI.queryDictItemsByCode("materian_unit");
+            DictModel model = Optional.ofNullable(post).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(unitsName)).findFirst().orElse(null);
+            if (model != null) {
+                fixedAssetsModel.setUnits(Convert.toInt(model.getValue()));
+            } else {
+                stringBuilder.append("系统不存在该计量单位，");
+            }
+        }
+        BigDecimal zero = new BigDecimal(0);
+        Integer number = fixedAssetsModel.getNumber();
+        if (number < 0) {
+            stringBuilder.append("账面数量不能为负数，");
+        }
+        BigDecimal coveredArea = fixedAssetsModel.getCoveredArea();
+        if (coveredArea.compareTo(zero)<0) {
+            stringBuilder.append("建筑面积不能为负数，");
+        }
+        BigDecimal accumulatedDepreciation = fixedAssetsModel.getAccumulatedDepreciation();
+        if (accumulatedDepreciation.compareTo(zero)<0) {
+            stringBuilder.append("累计折旧不能为负数，");
+        }
+        BigDecimal assetOriginal = fixedAssetsModel.getAssetOriginal();
+        if (assetOriginal.compareTo(zero)<0) {
+            stringBuilder.append("账面原值不能为负数，");
+        }
 
     }
 
-    private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, List<FixedAssetsModel> fixedAssetsModels, int successLines, Object o, String type) {
-        return null;
+    private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, List<FixedAssetsModel> fixedAssetsModels, int successLines, String url, String type) {
+        try {
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTrainingProgramError.xlsx");
+            Map<String, Object> errorMap = new HashMap<String, Object>();
+            List<Map<String, Object>> mapList = new ArrayList<>();
+            Map<String, Object> map = new HashMap<>();
+            for (FixedAssetsModel fixedAssetsModel : fixedAssetsModels) {
+                map.put("assetName", fixedAssetsModel.getAssetName());
+                map.put("locationName", fixedAssetsModel.getLocationName());
+                map.put("categoryName", fixedAssetsModel.getCategoryName());
+                map.put("assetCode", fixedAssetsModel.getAssetCode());
+                map.put("orgName", fixedAssetsModel.getOrgName());
+                map.put("specification", fixedAssetsModel.getSpecification());
+                map.put("number", fixedAssetsModel.getNumber());
+                map.put("houseNumber", fixedAssetsModel.getHouseNumber());
+                map.put("buildBuyDate", fixedAssetsModel.getBuildBuyDate());
+                map.put("coveredArea", fixedAssetsModel.getCoveredArea());
+                map.put("unitsName", fixedAssetsModel.getUnitsName());
+                map.put("accumulatedDepreciation", fixedAssetsModel.getAccumulatedDepreciation());
+                map.put("assetOriginal", fixedAssetsModel.getAssetOriginal());
+                map.put("responsibilityName", fixedAssetsModel.getResponsibilityName());
+                map.put("statusName", fixedAssetsModel.getStatusName());
+                map.put("depreciableLife", fixedAssetsModel.getDepreciableLife());
+                map.put("durableYears", fixedAssetsModel.getDurableYears());
+                map.put("startDate", fixedAssetsModel.getStartDate());
+                map.put("mistake", fixedAssetsModel.getMistake());
+                mapList.add(map);
+            }
+            errorMap.put("maplist", mapList);
+
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            sheetsMap.put(0, errorMap);
+            Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+            String fileName = "固定资产导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
+            FileOutputStream out = new FileOutputStream(errorExcelUpload+ File.separator+fileName);
+            url = File.separator+"errorExcelFiles"+ File.separator+fileName;
+            workbook.write(out);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, true, url);
     }
 }
