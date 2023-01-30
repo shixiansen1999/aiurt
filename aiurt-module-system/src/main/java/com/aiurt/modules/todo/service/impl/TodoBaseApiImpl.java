@@ -9,6 +9,7 @@ import com.aiurt.modules.todo.dto.BpmnTodoDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.aiurt.modules.todo.entity.SysTodoList;
 import com.aiurt.modules.todo.service.ISysTodoListService;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -61,6 +62,7 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
         }
 
         if (update) {
+            log.info("推送消息：businessKey：{},businessType:{},username:{}", businessKey, businessType, username);
             webSocket.pushMessage("please update the to-do list");
         }
 
@@ -84,6 +86,7 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
 
         boolean update = sysTodoListService.update(updateWrapper);
         if (update) {
+            log.info("更新流程待办任务->推送消息：processInstanceId：{},taskId:{},username:{}", processInstanceId, taskId, username);
             webSocket.pushMessage("please update the to-do list");
         }
     }
@@ -108,6 +111,7 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
 
         // 通过webSocket推送消息给前端刷新列表
         if (save) {
+            log.info("新增代办->推送消息：businessKey：{}", JSONObject.toJSONString(sysTodoList));
             webSocket.pushMessage("please update the to-do list");
         }
 
