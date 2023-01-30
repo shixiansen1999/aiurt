@@ -467,11 +467,20 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     public Task getProcessInstanceActiveTask(String processInstanceId, String taskId) {
+        if (StrUtil.isBlank(processInstanceId)) {
+            log.error("流程实例Id不能为空");
+            return null;
+        }
         TaskQuery query = taskService.createTaskQuery().processInstanceId(processInstanceId);
         if (StrUtil.isNotBlank(taskId)) {
             query.taskId(taskId);
         }
-        return query.active().singleResult();
+        //
+        List<Task> list = query.active().list();
+        if (CollUtil.isEmpty(list)) {
+            return null;
+        }
+        return list.get(0);
     }
 
     /**
@@ -484,7 +493,12 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     public TaskInfoDTO viewRuntimeTaskInfo(String processDefinitionId, String processInstanceId, String taskId) {
+        log.info("获取流程运行时指定任务的信息请求参数：processInstanceId:{}, taskId:{}",processInstanceId, taskId);
         TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+        if (StrUtil.isBlank(processInstanceId)) {
+            log.info("流程实例请求参数为空！");
+            return taskInfoDTO;
+        }
 
         Task task = this.getProcessInstanceActiveTask(processInstanceId, taskId);
 
