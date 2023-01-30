@@ -934,6 +934,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 this.getHistoricActivityInstanceList(processInstanceId);
         List<String> activityInstanceTask = activityInstanceList.stream()
                 .filter(s -> !StrUtil.equals(s.getActivityType(), "sequenceFlow"))
+                .sorted((Comparator.comparing(HistoricActivityInstance::getStartTime)))
                 .map(HistoricActivityInstance::getActivityId).collect(Collectors.toList());
         Set<String> finishedTaskSequenceSet = new LinkedHashSet<>();
         for (int i = 0; i < activityInstanceTask.size(); i++) {
