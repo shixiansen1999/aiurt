@@ -1,5 +1,6 @@
 package com.aiurt.modules.faulttype.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -148,7 +150,10 @@ public class FaultTypeController extends BaseController<FaultType, IFaultTypeSer
 	 @ApiImplicitParams({
 			 @ApiImplicitParam(name = "majorCode", value = "专业编码", required = true, paramType = "query"),
 	 })
-	public Result<List<SelectTable>> queryFaultTypeByMajorCode(@RequestParam(value = "majorCode") String majorCode) {
+	public Result<List<SelectTable>> queryFaultTypeByMajorCode(@RequestParam(value = "majorCode", required = false) String majorCode) {
+	 	if (StrUtil.isBlank(majorCode)) {
+			 return Result.OK(Collections.emptyList());
+	 	}
 		LambdaQueryWrapper<FaultType> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(FaultType::getMajorCode, majorCode);
 		wrapper.eq(FaultType::getDelFlag, CommonConstant.DEL_FLAG_0);

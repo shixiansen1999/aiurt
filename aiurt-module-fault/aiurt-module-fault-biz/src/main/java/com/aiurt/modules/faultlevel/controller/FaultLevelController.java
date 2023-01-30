@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultlevel.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -146,7 +148,10 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 	 @ApiImplicitParams({
 			 @ApiImplicitParam(name = "majorCode", value = "专业编码", required = true, paramType = "query"),
 	 })
-	 public Result<List<SelectTable>> queryFaultLevelByMajorCode(@RequestParam(value = "majorCode") String majorCode) {
+	 public Result<List<SelectTable>> queryFaultLevelByMajorCode(@RequestParam(value = "majorCode", required = false) String majorCode) {
+	 	if (StrUtil.isBlank(majorCode)) {
+	 		return Result.OK(Collections.emptyList());
+		}
 		 LambdaQueryWrapper<FaultLevel> wrapper = new LambdaQueryWrapper<>();
 		 wrapper.eq(FaultLevel::getMajorCode, majorCode);
 		 wrapper.eq(FaultLevel::getDelFlag, CommonConstant.DEL_FLAG_0);
