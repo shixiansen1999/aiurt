@@ -106,7 +106,7 @@ public class TaskPool implements Job {
                 .collect(Collectors.toList());
 
         // 根据计划列表生成任务
-        planList.parallelStream().forEach(l -> {
+        planList.stream().forEach(l -> {
             PatrolTask task = new PatrolTask();
             String taskCode = PatrolCodeUtil.getTaskCode();    // 任务编号
             task.setCode(taskCode);
