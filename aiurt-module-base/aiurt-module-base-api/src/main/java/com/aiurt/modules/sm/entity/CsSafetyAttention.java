@@ -85,14 +85,14 @@ public class CsSafetyAttention implements Serializable {
     @ApiModelProperty(value = "安全事项分类")
     @TableField(exist = false)
     private java.lang.String attentionTypeName;
+    /**安全事项摘要*/
+    @Excel(name = "安全事项摘要", width = 15)
+    @ApiModelProperty(value = "安全事项摘要")
+    private java.lang.String attentionMeasures;
 	/**安全事项内容*/
 	@Excel(name = "安全事项内容和措施", width = 75)
     @ApiModelProperty(value = "安全事项内容和措施")
     private java.lang.String attentionContent;
-	/**安全事项摘要*/
-	@Excel(name = "安全事项摘要", width = 15)
-    @ApiModelProperty(value = "安全事项摘要")
-    private java.lang.String attentionMeasures;
 	/**事项状态（0，1启用）*/
 	@Excel(name = "事项状态", width = 15, dicCode = "event _status")
 	@Dict(dicCode = "event _status")

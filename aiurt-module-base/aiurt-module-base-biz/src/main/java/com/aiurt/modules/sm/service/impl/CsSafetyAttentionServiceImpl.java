@@ -112,7 +112,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
             //excel注解对象Class
             mv.addObject(NormalExcelConstants.CLASS, CsSafetyAttention.class);
             //自定义导出字段
-            String exportField = "majorCode,systemCode,attentionContent,state";
+            String exportField = "majorCode,systemCode,attentionMeasures,attentionContent,state";
             mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
             //自定义表格参数
             mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("安全事项管理", "安全事项管理"));
