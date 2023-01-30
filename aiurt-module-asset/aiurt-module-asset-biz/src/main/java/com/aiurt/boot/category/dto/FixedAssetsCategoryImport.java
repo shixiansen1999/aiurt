@@ -30,14 +30,19 @@ public class FixedAssetsCategoryImport {
     @Excel(name = "分类名称", width = 15)
     @ApiModelProperty(value = "分类名称")
     private java.lang.String categoryName;
-    /**分类编码*/
-    @Excel(name = "分类编码", width = 15)
+    /**导入后拼接的分类编码*/
     @ApiModelProperty(value = "分类编码")
     private java.lang.String categoryCode;
+    /**导入的分类编码*/
+    @Excel(name = "分类编码", width = 15)
+    @ApiModelProperty(value = "分类编码")
+    private java.lang.String splicingCode;
     /**分类编码*/
-    @Excel(name = "层级", width = 15)
     @ApiModelProperty(value = "层级")
-    private java.lang.Integer level;
+    private java.lang.String level;
+    /**是否已经导入上级节点*/
+    @ApiModelProperty(value = "是否已经导入上级节点")
+    private java.lang.Boolean isNotImportParentNode;
     /**备注*/
     @Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")
