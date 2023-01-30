@@ -5,6 +5,7 @@ import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -30,6 +31,11 @@ public class FaultDTO extends DictEntity implements Serializable {
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private String id;
+
+    /**故障主键id*/
+    @ApiModelProperty(value = "故障主键id")
+    @TableField(exist = false)
+    private String faultId;
 
     /**故障报修编码*/
     @Excel(name = "故障报修编码", width = 15)
