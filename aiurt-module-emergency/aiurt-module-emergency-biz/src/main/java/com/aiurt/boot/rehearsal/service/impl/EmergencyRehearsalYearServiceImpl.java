@@ -14,7 +14,6 @@ import com.aiurt.boot.rehearsal.mapper.EmergencyRehearsalYearMapper;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalMonthService;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalYearService;
 import com.aiurt.boot.rehearsal.service.strategy.AuditContext;
-import com.aiurt.boot.rehearsal.service.strategy.NodeAudit;
 import com.aiurt.boot.rehearsal.service.strategy.NodeFactory;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
@@ -33,9 +32,6 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.export.styler.ExcelExportStylerDefaultImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,7 +41,10 @@ import org.springframework.util.Assert;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.*;
+import java.net.URLEncoder;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.zip.Adler32;
 import java.util.zip.CheckedOutputStream;
 import java.util.zip.ZipEntry;
@@ -202,14 +201,19 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
             titles.add(title);
         }
         try {
+            String fileName = "应急演练计划";
+            String suffix = ".zip";
+            response.setContentType("application/octet-stream");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName + suffix, "UTF-8"));
+            OutputStream outputStream = response.getOutputStream();
             ByteArrayOutputStream byteArrayOutputStream = null;
             InputStream inputStream = null;
             // 创建临时文件
-            File zipTempFile = File.createTempFile("应急演练计划", ".zip");
-            FileOutputStream fileOutputStream = new FileOutputStream(zipTempFile);
-            CheckedOutputStream checkedOutputStream = new CheckedOutputStream(fileOutputStream, new Adler32());
+            File zipTempFile = File.createTempFile(fileName, suffix);
+//            FileOutputStream fileOutputStream = new FileOutputStream(zipTempFile);
+//            CheckedOutputStream checkedOutputStream = new CheckedOutputStream(fileOutputStream, new Adler32());
             // 压缩成zip格式
-            ZipOutputStream zipOutputStream = new ZipOutputStream(checkedOutputStream);
+            ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
 
             for (int i = 0; i < workbooks.size(); i++) {
                 Workbook workbook = workbooks.get(i);
@@ -228,9 +232,14 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
                     zipOutputStream.write(flag);
                 }
             }
-            zipOutputStream.close();
+            zipOutputStream.flush();
+            outputStream.flush();
+            zipOutputStream.closeEntry();
             inputStream.close();
+            zipOutputStream.close();
             byteArrayOutputStream.close();
+//            checkedOutputStream.close();
+//            fileOutputStream.close();
         } catch (Exception e) {
             log.error("年演练计划导出异常！", e.getMessage());
             e.printStackTrace();
