@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * @author zwl
  * @version 1.0
@@ -12,7 +14,7 @@ import lombok.Data;
  * @desc
  */
 @Data
-public class StockIncomingMaterialsDTO {
+public class StockIncomingMaterialsDTO implements Serializable {
 
     /**主键id*/
     @TableField(exist = false)
