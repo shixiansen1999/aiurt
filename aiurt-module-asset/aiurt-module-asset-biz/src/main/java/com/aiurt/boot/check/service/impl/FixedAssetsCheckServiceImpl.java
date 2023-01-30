@@ -446,7 +446,17 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
                 assetsCheck.setAuditId(userId);
                 assetsCheck.setAuditReason(updateStateEntity.getReason());
                 assetsCheck.setAuditResult(FixedAssetsConstant.AUDIT_RESULT_1);
-                // TODO: 2023/1/17 生成资产变更明细数据
+                List<FixedAssetsCheckRecord> fixedAssetsCheckRecord = fixedAssetsCheckRecordService.lambdaQuery()
+                        .eq(FixedAssetsCheckRecord::getDelFlag,FixedAssetsConstant.STATUS_0)
+                        .eq(FixedAssetsCheckRecord::getCheckId,businessKey).list();
+                List<FixedAssetsCheckDetail> fixedAssetsCheckDetail =fixedAssetsCheckDetailService.lambdaQuery()
+                        .eq(FixedAssetsCheckDetail::getDelFlag,FixedAssetsConstant.STATUS_0)
+                        .eq(FixedAssetsCheckDetail::getCheckId,businessKey).list();
+                fixedAssetsCheckDetail.forEach(f->{
+                    FixedAssetsCheckRecord fixedAssetsCheckRecordList = fixedAssetsCheckRecord.stream().filter(fix-> fix.getAssetCode().equals(f.getAssetCode())).findFirst().get();
+                    f.setAfterNumber(fixedAssetsCheckRecordList.getActualNumber());
+                });
+                fixedAssetsCheckDetailService.updateBatchById(fixedAssetsCheckDetail);
                 break;
         }
         this.updateById(assetsCheck);
