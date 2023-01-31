@@ -21,7 +21,10 @@ public class MaterialAccountDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "物资分类id")
     private java.lang.String categoryId;
-
+    @Excel(name="序号",width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "序号")
+    private java.lang.Integer orderNumber;
     /**物资编码*/
     @Excel(name="应急物资编号",width = 15)
     @TableField(exist = false)
