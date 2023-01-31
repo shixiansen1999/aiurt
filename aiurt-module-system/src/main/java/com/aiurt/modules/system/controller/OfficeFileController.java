@@ -1,16 +1,22 @@
 package com.aiurt.modules.system.controller;
 
 
+import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.util.CommonUtils;
 import com.aiurt.common.util.MinioUtil;
+import com.aiurt.common.util.UUIDGenerator;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.AntPathMatcher;
@@ -70,9 +76,13 @@ public class OfficeFileController {
         String key = jsonObj.getString("key");
         log.info("文档编辑key->{}", key);
 
-        SysAttachment attachment = sysAttachmentService.getById(key);
+        LambdaQueryWrapper<SysAttachment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.and(w->w.eq(SysAttachment::getId, key).or().eq(SysAttachment::getDocumentKey, key)).last("limit 1");
+
+        SysAttachment attachment = sysAttachmentService.getOne(wrapper);
 
         if (Objects.isNull(attachment)) {
+
             log.info("系统不存在该文件！id->{}", key);
             writer.write("{\"error\":1}");
             return;
@@ -114,6 +124,7 @@ public class OfficeFileController {
                 }
 
             }
+            attachment.setDocumentKey(UUIDGenerator.generate());
             connection.disconnect();
         } else if(jsonObj.getIntValue(STATUS) == 3|| jsonObj.getIntValue(STATUS) == 7) {
             writer.write("{\"error\":-1}");
@@ -123,6 +134,23 @@ public class OfficeFileController {
         }
         sysAttachmentService.updateById(attachment);
         writer.write("{\"error\":0}");
+    }
+
+
+    @RequestMapping("/getSysFileKey")
+    @ApiOperation("获取在线编辑key")
+    public Result<String> getSysFileKey( @ApiParam(name = "id", value = "文件Id")@RequestParam(value = "id", required = false) String id) {
+        if (StrUtil.isBlank(id)) {
+            return Result.OK(UUIDGenerator.generate());
+        }
+        SysAttachment sysAttachment = sysAttachmentService.getById(id);
+        String documentKey = sysAttachment.getDocumentKey();
+
+        if (StrUtil.isBlank(documentKey)) {
+            documentKey = sysAttachment.getId();
+        }
+
+        return Result.OK(documentKey);
     }
 
     private void uploadLocal(String fileName, SysAttachment attachment, InputStream stream) throws IOException {

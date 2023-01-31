@@ -91,4 +91,7 @@ public class SysAttachment implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "文件大小")
     private Long fileSize;
+
+    @ApiModelProperty("在线编辑key")
+    private String documentKey;
 }
