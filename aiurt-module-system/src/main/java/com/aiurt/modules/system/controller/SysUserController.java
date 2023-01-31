@@ -759,12 +759,7 @@ public class SysUserController {
                         break;
                     }
                     List<String> roleIds = sysUserService.getSysRole(importVO.getNames());
-                    if (oConvertUtils.isNotEmpty(roleIds)) {
-                        for (String roleId : roleIds) {
-                            SysUserRole userRole = new SysUserRole(sysUserExcel.getId(), roleId);
-                            sysUserRoleMapper.insert(userRole);
-                        }
-                    }else {
+                    if(CollectionUtil.isEmpty(roleIds)) {
                         errorMessage.add("角色不存在,忽略导入");
                         errorLines++;
                         importVO.setText("角色不存在,忽略导入");
@@ -772,6 +767,12 @@ public class SysUserController {
                         break;
                     }
                     sysUserService.save(sysUserExcel);
+                    if (oConvertUtils.isNotEmpty(roleIds)) {
+                        for (String roleId : roleIds) {
+                            SysUserRole userRole = new SysUserRole(sysUserExcel.getId(), roleId);
+                            sysUserRoleMapper.insert(userRole);
+                        }
+                    }
                     successLines++;
                     // 批量将部门和用户信息建立关联关系
                     String departIds = sysUserExcel.getDepartIds();
