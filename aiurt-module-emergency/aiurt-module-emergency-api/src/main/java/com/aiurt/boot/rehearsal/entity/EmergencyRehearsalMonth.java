@@ -61,11 +61,12 @@ public class EmergencyRehearsalMonth extends DictEntity implements Serializable 
     @NotNull(message = "演练科目不能为空！", groups = {EmergencyRehearsalYear.Save.class, EmergencyRehearsalYear.Update.class})
     private java.lang.String subject;
 	/**依托预案ID*/
-    @Excel(name = "依托预案", orderNum = "1", dictTable = "emergency_plan", dicCode = "id", dicText = "emergency_plan_name", width = 15)
+//    @Excel(name = "依托预案", orderNum = "1", dictTable = "emergency_plan", dicCode = "id", dicText = "emergency_plan_name", width = 15)
     @ApiModelProperty(value = "依托预案ID")
     @NotNull(message = "依托预案ID不能为空！", groups = {EmergencyRehearsalYear.Save.class, EmergencyRehearsalYear.Update.class})
     private java.lang.String schemeId;
 	/**依托预案名称*/
+    @Excel(name = "依托预案", orderNum = "1", width = 15)
     @ApiModelProperty(value = "依托预案名称")
     @TableField(exist = false)
     private java.lang.String schemeName;

@@ -51,4 +51,13 @@
         </if>
         order by erm.create_time desc
     </select>
+
+    <select id="exportMonthList" resultType="com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth">
+        select erm.*,
+               concat('', ep.emergency_plan_name, concat('V', ep.emergency_plan_version)) as schemeName
+        from emergency_rehearsal_month erm
+                 left join emergency_plan ep on erm.scheme_id = ep.id and ep.del_flag = 0
+        where erm.del_flag = 0
+          and erm.plan_id = #{planId}
+    </select>
 </mapper>

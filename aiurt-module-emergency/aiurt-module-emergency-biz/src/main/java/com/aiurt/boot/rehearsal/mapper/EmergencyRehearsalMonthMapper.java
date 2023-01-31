@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @Description: emergency_rehearsal_month
  * @Author: aiurt
@@ -23,4 +25,12 @@ public interface EmergencyRehearsalMonthMapper extends BaseMapper<EmergencyRehea
      * @return
      */
     IPage<EmergencyRehearsalMonthVO> queryPageList(@Param("page") Page<EmergencyRehearsalMonthVO> page, @Param("condition") EmergencyRehearsalMonthDTO emergencyRehearsalMonthDTO);
+
+    /**
+     * 月计划导出列表查询
+     *
+     * @param planId
+     * @return
+     */
+    List<EmergencyRehearsalMonth> exportMonthList(@Param("planId") String planId);
 }
