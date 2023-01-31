@@ -56,4 +56,11 @@ public interface FixedAssetsCheckMapper extends BaseMapper<FixedAssetsCheck> {
      * @return
      */
     List<CheckUserVO> checkUserInfo();
+
+    /**
+     * 查询分类下的子级
+     * @param categoryCode
+     * @return
+     */
+    List<String> selectCategoryCodeByPid(@Param("categoryCode") String categoryCode);
 }
