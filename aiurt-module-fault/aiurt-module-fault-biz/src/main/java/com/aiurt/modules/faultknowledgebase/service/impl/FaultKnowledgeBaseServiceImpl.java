@@ -385,15 +385,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     return getErrorExcel(errorLines, list, errorMessage, successLines, type, url);
                 } else {
                     successLines = list.size();
-                    ThreadPoolExecutor poolExecutor = ExecutorBuilder.create()
-                            .setCorePoolSize(faultKnowledgeBaseList.size()) // 初始线程
-                            .setMaxPoolSize(faultKnowledgeBaseList.size()) // 最大线程
-                            .setWorkQueue(new LinkedBlockingQueue<>(100)) // 线程池策略
-                            .build();
-                    CountDownLatch cdl = new CountDownLatch(faultKnowledgeBaseList.size());
                     for (FaultKnowledgeBase faultKnowledgeBase : faultKnowledgeBaseList) {
-                        poolExecutor.execute(
-                                () -> {
                                     faultKnowledgeBase.setDelFlag(0);
                                     faultKnowledgeBase.setApprovedResult(0);
                                     faultKnowledgeBase.setStatus(0);
@@ -416,13 +408,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                                     startBpmnImportDTO.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
                                     //导入数据走流程
                                     flowBaseApi.startBpmnWithImport(startBpmnImportDTO);
-                                    // 闭锁-1
-                                    cdl.countDown();
-                                });
                     }
-                    // 等待所有线程结束
-                    cdl.await();
-                    poolExecutor.shutdown();
                     return imporReturnRes(errorLines, successLines, tipMessage, true, null);
                 }
 
