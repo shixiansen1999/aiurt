@@ -38,6 +38,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtNoDataException;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.modules.todo.dto.TodoDTO;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -2097,17 +2098,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         List<String> userIds = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getId).collect(Collectors.toList());
         //获取当前班组用户的检修任务编号
         List<RepairTaskUser> taskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().in(RepairTaskUser::getUserId, userIds).eq(RepairTaskUser::getDelFlag, 0));
-        List<String> userTaskName = new ArrayList<>();
         if (CollUtil.isNotEmpty(taskUsers)) {
             //根据任务编号，获取检修任务信息
-            List<RepairTask> taskList = new ArrayList<>();
             List<RepairTaskDeviceRel> taskDeviceRelList = new ArrayList<>();
             List<RepairTaskDeviceRel> oldTaskDeviceRelList = new ArrayList<>();
-            for (RepairTaskUser user : taskUsers) {
-                RepairTask task = repairTaskMapper.selectOne(new LambdaQueryWrapper<RepairTask>().eq(RepairTask::getCode, user.getRepairTaskCode()));
-                taskList.add(task);
-            }
-            List<String> repairTaskIds = taskList.stream().map(RepairTask::getId).collect(Collectors.toList());
+            List<String> pairTaskCodes = taskUsers.stream().map(RepairTaskUser::getRepairTaskCode).distinct().collect(Collectors.toList());
+            List<RepairTask> taskList = repairTaskMapper.selectList(new LambdaQueryWrapper<RepairTask>().in(RepairTask::getCode, pairTaskCodes));
+
+            List<String> repairTaskIds = taskList.stream().map(RepairTask::getId).distinct().collect(Collectors.toList());
             for (String repairTaskId : repairTaskIds) {
                 //获取当前用户作为领取/指派人，当天，已提交的工单
                 List<RepairTaskDeviceRel> deviceRelList = repairTaskDeviceRelMapper.getTodaySubmit(startTime, endTime, repairTaskId, null);
@@ -2116,6 +2114,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
 
             }
+
             //获取当前用户作为同行人参与的单号
             List<RepairTaskPeerRel> relList = repairTaskPeerRelMapper.selectList(new LambdaQueryWrapper<RepairTaskPeerRel>().eq(RepairTaskPeerRel::getUserId, sysUser.getId()));
             //获取单号信息
@@ -2130,14 +2129,30 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
             taskDeviceRelList.addAll(oldTaskDeviceRelList);
 
-            StringBuilder content = new StringBuilder();
-            StringBuilder code = new StringBuilder();
-            if (CollUtil.isNotEmpty(taskDeviceRelList)) {  //去重
-                Set<RepairTaskDeviceRel> list = taskDeviceRelList.stream().collect(Collectors.toSet());
+
+            if (CollUtil.isNotEmpty(taskDeviceRelList)) {
+                //去重
+                Set<RepairTaskDeviceRel> list = new HashSet<>(taskDeviceRelList);
+                StringBuilder content = new StringBuilder();
+                StringBuilder code = new StringBuilder();
+
                 if (CollUtil.isNotEmpty(list)) {
+                    HashMap<String, Map<StringBuilder, StringBuilder>> hashMap = new HashMap<>();
+
                     for (RepairTaskDeviceRel deviceRel : list) {
+                        HashMap<StringBuilder, StringBuilder> map1 = new HashMap<>();
+                        StringBuilder lineStation = new StringBuilder();
+                        StringBuilder staffName = new StringBuilder();
+
                         String stationName = iSysBaseAPI.getPosition(deviceRel.getStationCode());
                         String lineName = iSysBaseAPI.getPosition(deviceRel.getLineCode());
+                        //如果工单中不存在线路站点，则从设备中拿
+                        if (StrUtil.isEmpty(stationName) && StrUtil.isEmpty(lineName)) {
+                            String deviceCode = deviceRel.getDeviceCode();
+                            JSONObject deviceByCode = iSysBaseAPI.getDeviceByCode(deviceCode);
+                            stationName = iSysBaseAPI.getPosition(deviceByCode.getString("lineCode"));
+                            lineName = iSysBaseAPI.getPosition(deviceByCode.getString("stationCode"));
+                        }
                         LoginUser userById = iSysBaseAPI.getUserById(deviceRel.getStaffId());
                         if (deviceRel.getWeeks() == null) {
                             Calendar c = Calendar.getInstance();
@@ -2147,22 +2162,50 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                             int i = c.get(Calendar.WEEK_OF_YEAR);
                             deviceRel.setWeeks(i);
                         }
-                        content.append(lineName).append("-").append(stationName).append(" ").append("第").append(deviceRel.getWeeks()).append("周检修任务").append(" ").append(" 检修人:").append(userById.getRealname()).append("。").append('\n');
-                        code.append(deviceRel.getTaskCode()).append(",");
+
+                        StringBuilder append1 = lineStation.append(lineName).append("-").append(stationName).append(" ").append("第").append(deviceRel.getWeeks()).append("周检修任务").append(" ").append(" 检修人:");
+                        StringBuilder append2 = staffName.append(userById.getRealname());
+                        //同检修任务下的，不同工单中的，同线路站点的不同检修人要合并起来
+                        Map<StringBuilder, StringBuilder> mapList = hashMap.get(deviceRel.getTaskCode());
+                        if (CollUtil.isNotEmpty(mapList)) {
+                            for (Map.Entry<StringBuilder, StringBuilder> n : mapList.entrySet()) {
+                                StringBuilder stringBuilder = n.getValue();
+                                if (ObjectUtil.isNotEmpty(stringBuilder)&&!stringBuilder.toString().contains(staffName)) {
+                                    n.setValue(append2.append(",").append(stringBuilder));
+                                } else {
+                                    map1.put(append1, append2);
+                                }
+
+                            }
+
+                        } else {
+                            append2.append("。").append('\n');
+                            map1.put(append1, append2);
+                            hashMap.put(deviceRel.getTaskCode(), map1);
+                        }
                     }
+
+                    for (Map.Entry<String, Map<StringBuilder, StringBuilder>> m : hashMap.entrySet()) {
+                        code.append(m.getKey()).append(",");
+                        Map<StringBuilder, StringBuilder> value = m.getValue();
+                        for (Map.Entry<StringBuilder, StringBuilder> n : value.entrySet()) {
+                            content.append(n.getKey()).append(n.getValue());
+                        }
+                    }
+
+                    if (content.length() > 1) {
+                        // 截取字符
+                        content = content.deleteCharAt(content.length() - 1);
+                        map.put("content", content.toString());
+                    }
+                    if (code.length() > 1) {
+                        // 截取字符
+                        code = code.deleteCharAt(code.length() - 1);
+                        map.put("code", code.toString());
+                    }
+
                 }
             }
-            if (content.length() > 1) {
-                // 截取字符
-                content = content.deleteCharAt(content.length() - 1);
-                map.put("content", content.toString());
-            }
-            if (code.length() > 1) {
-                // 截取字符
-                code = code.deleteCharAt(code.length() - 1);
-                map.put("code", code.toString());
-            }
-
         }
 
         return map;

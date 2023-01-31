@@ -7,7 +7,6 @@ import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.position.entity.CsStation;
-import com.aiurt.modules.position.entity.CsStationPosition;
 import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.vo.*;
@@ -652,6 +651,13 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     Map<String, String> getDeviceNameByCode(List<String> deviceCodes);
+
+    /**
+     * 根据设备code获取设备信息
+     * @param code
+     * @return
+     */
+    JSONObject getDeviceByCode(String code);
 
     /**
      * 根据线路Id获取线路编号

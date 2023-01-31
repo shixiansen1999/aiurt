@@ -2085,6 +2085,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
+    public JSONObject getDeviceByCode(String code) {
+        LambdaQueryWrapper<Device> wrapper = new LambdaQueryWrapper<>();
+        if (StrUtil.isNotEmpty(code)) {
+            wrapper.eq(Device::getCode, code);
+        }
+        Device device = deviceMapper.selectOne(wrapper);
+        if (Objects.isNull(device)) {
+            return null;
+        }
+        return JSONObject.parseObject(JSON.toJSONString(device));
+    }
+
+    @Override
     public String getLineCodeById(String lineId) {
         CsLine line = lineMapper.selectById(lineId);
         String lineCode = null;
