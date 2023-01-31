@@ -58,10 +58,18 @@ public class FixedAssetsCategory implements Serializable {
 	@Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")
     private java.lang.String remark;
-	/**删除状态： 0未删除 1已删除*/
-	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
+    /**上级节点*/
+    @Excel(name = "上级节点", width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "上级节点")
+    private java.lang.String pidName;
     private java.lang.Integer delFlag;
-	/**创建人*/
+    /**是否已经导入上级节点*/
+    @Excel(name = "是否已经导入上级节点", width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否已经导入上级节点")
+    private java.lang.Boolean isNotImportParentNode;
+    /**创建人*/
     private java.lang.String createBy;
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
