@@ -70,7 +70,7 @@ public class FixedAssetsModel {
     @ApiModelProperty(value = "责任人")
     private java.lang.String responsibilityName;
     /**启用状态(0停用、1启用)*/
-    @Excel(name = "启用状态(0停用、1启用)", width = 15)
+    @Excel(name = "启用状态", width = 15)
     @ApiModelProperty(value = "启用状态(0停用、1启用)")
     private String statusName;
     /**折旧年限*/
@@ -89,15 +89,17 @@ public class FixedAssetsModel {
     private java.util.Date startDate;
 
     /**错误原因*/
-    @Excel(name = "错误原因", width = 15)
     @ApiModelProperty(value = "错误原因")
     private String mistake;
 
+    @ApiModelProperty(value = "使用组织机构")
     private String orgCode;
-
+    @ApiModelProperty(value = "存放地点")
     private String location;
-
+    @ApiModelProperty(value = "启用状态(0停用、1启用)")
     private Integer status;
-
+    @ApiModelProperty(value = "计量单位(1个、2栋、3台)")
     private Integer units;
+    @ApiModelProperty(value = "资产分类")
+    private String categoryCode;
 }

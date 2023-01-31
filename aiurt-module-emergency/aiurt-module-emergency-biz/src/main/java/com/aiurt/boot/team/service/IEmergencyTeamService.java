@@ -111,6 +111,7 @@ public interface IEmergencyTeamService extends IService<EmergencyTeam> {
      *
      * @param request
      * @param id
+     * @return
      */
     ModelAndView exportRecordXls(HttpServletRequest request, String id);
 }

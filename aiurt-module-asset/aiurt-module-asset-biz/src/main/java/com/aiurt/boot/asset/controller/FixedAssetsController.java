@@ -7,6 +7,7 @@ import com.aiurt.boot.asset.service.IFixedAssetsService;
 import com.aiurt.boot.check.service.IFixedAssetsCheckService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.XlsUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -169,13 +170,24 @@ public class FixedAssetsController extends BaseController<FixedAssets, IFixedAss
     /**
     * 导出excel
     *
-    * @param request
-    * @param fixedAssets
+    * @param response
     */
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, FixedAssets fixedAssets) {
-        return super.exportXls(request, fixedAssets, FixedAssets.class, "fixed_assets");
+    public void exportXls(HttpServletResponse response) {
+		XlsUtil.getExcel(response, "templates/fixedAssets.xlsx", "固定资产导入模板.xlsx");
     }
+
+	/**
+	 * 导出数据
+	 *
+	 * @param request
+	 */
+	@RequestMapping(value = "/exportFixedAssetsXls")
+	public ModelAndView exportFixedAssetsXls(HttpServletRequest request, FixedAssetsDTO fixedAssetsDTO) {
+		return fixedAssetsService.exportFixedAssetsXls(request, fixedAssetsDTO);
+	}
+
+
 
     /**
       * 通过excel导入数据

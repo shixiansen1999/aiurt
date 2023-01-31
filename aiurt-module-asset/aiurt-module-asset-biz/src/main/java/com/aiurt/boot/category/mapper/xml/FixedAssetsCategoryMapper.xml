@@ -36,4 +36,12 @@
             and id = #{condition.id}
         </if>
     </select>
+
+    <select id="getAssetsCategory" resultType="com.aiurt.boot.category.entity.FixedAssetsCategory">
+        select id, pid, category_name, category_code, remark, create_time,level
+        from fixed_assets_category
+        where del_flag = 0
+        and category_name = #{categoryName}
+        and pid = #{pid}
+    </select>
 </mapper>
