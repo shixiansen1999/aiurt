@@ -386,6 +386,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		int successLines = 0;
 		String tipMessage = null;
 		String url = null;
+		boolean errorMark = false;
 		int errorLines = 0;
 		for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
 			// 获取上传文件对象
@@ -421,34 +422,24 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 				for (StockInOrderLevel2DTO stockInOrderLevel2DTO : stockInOrderLevel2DTOList) {
 					if (ObjectUtil.isNotEmpty(stockInOrderLevel2DTO)) {
 						StockInOrderLevel2 stockInOrderLevel2 = new StockInOrderLevel2();
-						StockIncomingMaterials stockIncomingMaterials = new StockIncomingMaterials();
+						List<StockIncomingMaterials> stockIncomingMaterials = new ArrayList<>();
 
 						StringBuilder stringBuilder = new StringBuilder();
-						StringBuilder stringBuilder1 = new StringBuilder();
 
 						//校验二级库信息
 						examine(stockInOrderLevel2DTO, stockInOrderLevel2, stringBuilder);
 						//校验物资信息
-						StockIncomingMaterials(stockInOrderLevel2DTO,stockIncomingMaterials,stringBuilder1);
-						if (stringBuilder.length() > 0 || stringBuilder1.length()>0) {
+						errorMark = this.StockIncomingMaterials(stockInOrderLevel2DTO,stockIncomingMaterials,errorMark);
+						if (stringBuilder.length() > 0 || errorMark) {
 							// 截取字符
 							if (stringBuilder.length() > 0){
 								stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 								stockInOrderLevel2DTO.setStockInOrderLevelMistake(stringBuilder.toString());
 							}
-							List<StockIncomingMaterialsDTO> stockIncomingMaterialsDTOList = stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList();
-							if(CollectionUtil.isNotEmpty(stockIncomingMaterialsDTOList)){
-							for (StockIncomingMaterialsDTO stockIncomingMaterialsDTO : stockIncomingMaterialsDTOList) {
-								if (stringBuilder1.length() > 0) {
-									stringBuilder1 = stringBuilder1.deleteCharAt(stringBuilder1.length() - 1);
-									stockIncomingMaterialsDTO.setMaterialMistake(stringBuilder1.toString());
-								}
-							 }
-							}
 							errorLines++;
 						}else {
 							stockInOrderLevel2List.add(stockInOrderLevel2);
-							stockIncomingMaterialsList.add(stockIncomingMaterials);
+							stockIncomingMaterialsList.addAll(stockIncomingMaterials);
 						}
 					}
 				}
@@ -623,13 +614,16 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	}
 
 
-	private void StockIncomingMaterials(StockInOrderLevel2DTO stockInOrderLevel2DTO,
-										StockIncomingMaterials stockIncomingMaterials,
-										StringBuilder stringBuilder1)
+	private boolean StockIncomingMaterials(StockInOrderLevel2DTO stockInOrderLevel2DTO,
+										List<StockIncomingMaterials> stockIncomingMaterials,
+										Boolean errorMark)
 	{
 		List<StockIncomingMaterialsDTO> stockIncomingMaterialsDTOList = stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList();
+		errorMark = false;
 		if (CollectionUtil.isNotEmpty(stockIncomingMaterialsDTOList)){
 			for (StockIncomingMaterialsDTO stockIncomingMaterialsDTO : stockIncomingMaterialsDTOList) {
+				StringBuilder stringBuilder1 = new StringBuilder();
+				StockIncomingMaterials stockIncomingMaterials1 = new StockIncomingMaterials();
 				if (StrUtil.isBlank(stockIncomingMaterialsDTO.getMaterialCode())){
 					stringBuilder1.append("物资编码必填，");
 				}
@@ -642,7 +636,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 					lambdaQueryWrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
 					MaterialBase one = iMaterialBaseService.getOne(lambdaQueryWrapper);
 					if (ObjectUtil.isNotEmpty(one)){
-						stockIncomingMaterials.setMaterialCode(one.getCode());
+						stockIncomingMaterials1.setMaterialCode(one.getCode());
 					}else {
 						stringBuilder1.append("系统中不存在该物资编码，");
 					}
@@ -663,7 +657,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 					lambdaQueryWrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
 					MaterialBase one = iMaterialBaseService.getOne(lambdaQueryWrapper);
 					if (ObjectUtil.isNotEmpty(one)){
-						stockIncomingMaterials.setMaterialCode(one.getCode());
+						stockIncomingMaterials1.setMaterialCode(one.getCode());
 					}else {
 						stringBuilder1.append("物资编码和物资名称不匹配，");
 					}
@@ -671,10 +665,17 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 				if (stockIncomingMaterialsDTO.getNum()==null){
 					stringBuilder1.append("入库数量必填，");
 				}else {
-					stockIncomingMaterials.setNumber(stockIncomingMaterialsDTO.getNum());
+					stockIncomingMaterials1.setNumber(stockIncomingMaterialsDTO.getNum());
 				}
+				if (stringBuilder1.length() > 0) {
+					stringBuilder1 = stringBuilder1.deleteCharAt(stringBuilder1.length() - 1);
+					stockIncomingMaterialsDTO.setMaterialMistake(stringBuilder1.toString());
+					errorMark = true;
+				}
+				stockIncomingMaterials.add(stockIncomingMaterials1);
 			}
 		}
+		return errorMark;
 	}
 
 	//下拉框

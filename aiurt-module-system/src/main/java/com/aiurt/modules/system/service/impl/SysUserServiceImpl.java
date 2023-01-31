@@ -681,7 +681,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         List<String> orgId = new ArrayList<>();
         if (orgCode != "" && orgCode != null) {
             String code = "/" + orgCode + "/";
-            List<SysDepart> sysDeparts = sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().like(SysDepart::getOrgCodeCc, code));
+            List<SysDepart> sysDeparts = sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag,0).like(SysDepart::getOrgCodeCc, code));
             sysDeparts.forEach(s -> orgId.add(s.getId()));
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();

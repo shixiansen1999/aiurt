@@ -30,4 +30,12 @@ public interface FixedAssetsCategoryMapper extends BaseMapper<FixedAssetsCategor
      * @return
      */
     List<FixedAssetsCategoryDTO> getList( @Param("condition") FixedAssetsCategoryDTO condition);
+    /**
+     * 通过名称和父id获取资产分类信息
+     *
+     * @param categoryName
+     * @param pid
+     * @return
+     */
+    FixedAssetsCategory getAssetsCategory(@Param("categoryName") String categoryName, @Param("pid") String pid);
 }

@@ -4,6 +4,7 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
@@ -27,6 +28,7 @@ import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.boot.record.mapper.FixedAssetsCheckRecordMapper;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsUtil;
+import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -37,12 +39,16 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -61,6 +67,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, FixedAssets> implements IFixedAssetsService {
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
     @Value("${jeecg.path.errorExcelUpload}")
     private String errorExcelUpload;
     @Autowired
@@ -290,10 +298,6 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
                 for (FixedAssetsModel fixedAssetsModel : fixedAssetsModels) {
                     FixedAssets fixedAssets = new FixedAssets();
                     BeanUtils.copyProperties(fixedAssetsModel, fixedAssets);
-                    fixedAssets.setOrgCode(fixedAssetsModel.getOrgCode());
-                    fixedAssets.setLocation(fixedAssetsModel.getLocation());
-                    fixedAssets.setStatus(fixedAssetsModel.getStatus());
-                    fixedAssets.setUnits(fixedAssetsModel.getUnits());
                     this.save(fixedAssets);
                 }
                 return Result.ok("文件导入成功！");
@@ -318,7 +322,20 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         }
 
         if (StrUtil.isNotEmpty(categoryName)) {
-
+            List<String> list = StrUtil.splitTrim(categoryName, "/");
+            String pid = null;
+            String categoryCode = null;
+            for (String s : list) {
+                FixedAssetsCategory assetsCategory = categoryMapper.getAssetsCategory(s, pid);
+                if (ObjectUtil.isNotNull(assetsCategory)) {
+                    pid = assetsCategory.getId();
+                    categoryCode = assetsCategory.getCategoryCode();
+                }else {
+                    stringBuilder.append("系统不存在该资产分类，");
+                    break;
+                }
+            }
+            fixedAssetsModel.setCategoryCode(categoryCode);
         }else {
             stringBuilder.append("资产分类不能为空，");
         }
@@ -426,7 +443,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
 
     private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, List<FixedAssetsModel> fixedAssetsModels, int successLines, String url, String type) {
         try {
-            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTrainingProgramError.xlsx");
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/fixedAssetsError.xlsx");
             Map<String, Object> errorMap = new HashMap<String, Object>();
             List<Map<String, Object>> mapList = new ArrayList<>();
             Map<String, Object> map = new HashMap<>();
@@ -468,4 +485,50 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
 
         return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, true, url);
     }
+
+
+    @Override
+    public ModelAndView exportFixedAssetsXls(HttpServletRequest request, FixedAssetsDTO fixedAssetsDTO) {
+        Page<FixedAssetsDTO> pageList = new Page<>(1, Integer.MAX_VALUE);
+        Page<FixedAssetsDTO> list = this.pageList(pageList, fixedAssetsDTO);
+        List<FixedAssetsDTO> records = list.getRecords();
+        List<FixedAssetsDTO> exportList = null;
+        // 过滤选中数据
+        String selections = request.getParameter("selections");
+        if (oConvertUtils.isNotEmpty(selections)) {
+            List<String> selectionList = Arrays.asList(selections.split(","));
+            exportList = records.stream().filter(item -> selectionList.contains(item.getId())).collect(Collectors.toList());
+        } else {
+            exportList = records;
+        }
+
+        List<FixedAssetsModel> models = new ArrayList<>();
+        if (CollUtil.isNotEmpty(exportList)) {
+            for (FixedAssetsDTO record : exportList) {
+                FixedAssetsModel fixedAssetsModel = new FixedAssetsModel();
+                BeanUtil.copyProperties(record,fixedAssetsModel);
+                String categoryName = sysBaseAPI.translateDictFromTable("fixed_assets_category", "category_name", "category_code", record.getCategoryCode());
+                String departName = sysBaseAPI.translateDictFromTable("sys_depart", "depart_name", "org_code", record.getOrgCode());
+                String unitsName = sysBaseAPI.translateDict("materian_unit", Convert.toStr(record.getUnits()));
+                String statusName = sysBaseAPI.translateDict("fixed_assets_status", Convert.toStr(record.getStatus()));
+                fixedAssetsModel.setCategoryName(categoryName);
+                fixedAssetsModel.setOrgName(departName);
+                fixedAssetsModel.setUnitsName(unitsName);
+                fixedAssetsModel.setStatusName(statusName);
+                models.add(fixedAssetsModel);
+            }
+        }
+        String title = "固定资产";
+        // Step.3 AutoPoi 导出Excel
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        //此处设置的filename无效 ,前端会重更新设置一下
+        mv.addObject(NormalExcelConstants.FILE_NAME, title);
+        mv.addObject(NormalExcelConstants.CLASS, FixedAssetsModel.class);
+        ExportParams exportParams=new ExportParams(title, title);
+        exportParams.setImageBasePath(upLoadPath);
+        mv.addObject(NormalExcelConstants.PARAMS,exportParams);
+        mv.addObject(NormalExcelConstants.DATA_LIST, models);
+        return mv;
+    }
+
 }

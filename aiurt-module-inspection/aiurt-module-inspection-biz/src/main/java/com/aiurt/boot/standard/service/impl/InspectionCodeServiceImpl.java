@@ -324,6 +324,8 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
         List<String> errorMessage = new ArrayList<>();
         int successLines = 0;
+        // 标记是否有错误信息
+        Boolean errorSign = false;
         String url = null;
         String tipMessage = null;
         int errorLines = 0;
@@ -378,24 +380,16 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 for (InspectionCodeImportDTO model : list) {
                     if (ObjectUtil.isNotEmpty(model)) {
                         StringBuilder stringBuilder = new StringBuilder();
-                        StringBuilder contentStringBuilder = new StringBuilder();
                         InspectionCode inspectionCode = new InspectionCode();
                         //信息数据校验
                         standard(model, inspectionCode, stringBuilder);
                         //配置项数据校验
-                        itemsModel(inspectionCode, errorLines,contentStringBuilder);
-                        if (stringBuilder.length() > 0 || contentStringBuilder.length()>0) {
+                        errorSign = this.itemsModel(inspectionCode, errorLines,errorSign);
+                        if (stringBuilder.length() > 0 || errorSign) {
                             // 截取字符
                             if(stringBuilder.length() > 0){
                                 stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
                                 model.setInspectionCodeErrorReason(stringBuilder.toString());
-                            }
-                            List<InspectionCodeContent> inspectionCodeContentList = model.getInspectionCodeContentList();
-                            for (InspectionCodeContent inspectionCodeContent : inspectionCodeContentList) {
-                                if(contentStringBuilder.length()>0){
-                                    contentStringBuilder = contentStringBuilder.deleteCharAt(contentStringBuilder.length() - 1);
-                                    inspectionCodeContent.setCodeContentErrorReason(contentStringBuilder.toString());
-                                }
                             }
                             errorLines++;
                         }
@@ -571,12 +565,14 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         }
 
     }
-    private void itemsModel(InspectionCode inspectionCode, int errorLines,StringBuilder stringBuilder) {
+    private Boolean itemsModel(InspectionCode inspectionCode, int errorLines,Boolean errorSign) {
         List<InspectionCodeContent> standardItems = inspectionCode.getInspectionCodeContentList();
+        errorSign = false;
         if (CollUtil.isNotEmpty(standardItems)) {
             int i = 0;
             Map<Object, Integer> duplicateData = new HashMap<>(16);
             for (InspectionCodeContent items : standardItems) {
+                StringBuilder contentStringBuilder = new StringBuilder();
                 boolean isNull = XlsUtil.checkObjAllFieldsIsNull(items);
                 if(isNull) {
                     items.setIsNUll(true);
@@ -615,26 +611,26 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 if (s == null) {
                     duplicateData.put(items.getCode(), i);
                 } else {
-                    stringBuilder.append("该数据存在相同数据，");
+                    contentStringBuilder.append("该数据存在相同数据，");
                 }
                 if (StrUtil.isNotEmpty(hierarchyTypeName) && StrUtil.isNotEmpty(itemsCode) && StrUtil.isNotEmpty(checkName) && StrUtil.isNotEmpty(content)) {
                     List<InspectionCodeContent> itemsList = new ArrayList<>();
                     if(!InspectionConstant.HAS_CHILD_1.equals(hierarchyTypeName) && !!InspectionConstant.TREE_ROOT_0.equals(hierarchyTypeName)){
-                        stringBuilder.append("层级类型填写不规范，");
+                        contentStringBuilder.append("层级类型填写不规范，");
                     } else {
                         items.setHasChild(InspectionConstant.TREE_ROOT_0.equals(hierarchyType) ? "0" : "1");
                         if (items.getHasChild() == "0") {
                             if (!items.getPid().equals("0")) {
-                                stringBuilder.append("层级为一级(父级填写无)，");
+                                contentStringBuilder.append("层级为一级(父级填写无)，");
                             }
                         } else {
                             if(ObjectUtil.isEmpty(items.getPid())) {
-                                stringBuilder.append("子级要有父级，");
+                                contentStringBuilder.append("子级要有父级，");
                             }
                             else {
                                 itemsList = standardItems.stream().filter(e -> e.getName()!=null&&e.getName().equals(items.getPid())&& !e.equals(items) && e.getHasChild().equals(InspectionConstant.TREE_ROOT_0)).collect(Collectors.toList());
                                 if (itemsList.size() == 0 && items.getHasChild().equals(InspectionConstant.HAS_CHILD_1)) {
-                                    stringBuilder.append("父级不存在，");
+                                    contentStringBuilder.append("父级不存在，");
                                 }
                             }
                         }
@@ -646,35 +642,35 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                         if (matcher.find()) {
                             items.setSortNo(Integer.valueOf(items.getIsSortNo()));
                         } else {
-                            stringBuilder.append("内容排序(填写必须是数字)，");
+                            contentStringBuilder.append("内容排序(填写必须是数字)，");
                         }
                     }else{
                         items.setSortNo(1);
                     }
                     if (!InspectionConstant.IS_APPOINT_DEVICE.equals(checkCode) && !InspectionConstant.NO_ISAPPOINT_DEVICE.equals(checkCode)) {
-                        stringBuilder.append("是否为检查项填写不规范，");
+                        contentStringBuilder.append("是否为检查项填写不规范，");
                     } else {
                         items.setType(InspectionConstant.IS_APPOINT_DEVICE.equals(checkCode) ? 1 : 0);
                     }
                     if (items.getType() == 0 && items.getHasChild() == "0") {
                         if (ObjectUtil.isNotEmpty(items.getDataCheck()) || ObjectUtil.isNotEmpty(items.getQualityStandard()) || ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getSStatusItem()) || ObjectUtil.isNotEmpty(items.getIsInspectionType())) {
-                            stringBuilder.append("质量标准、检查值类型、检查值是否必填、关联数据字典、数据校验表达式不用填写，");
+                            contentStringBuilder.append("质量标准、检查值类型、检查值是否必填、关联数据字典、数据校验表达式不用填写，");
                         }
                     }
                     if (items.getType() == 1 && items.getHasChild() == "0") {
                         List<InspectionCodeContent> sonList = standardItems.stream().filter(e -> e.getPid().equals(items.getName())).collect(Collectors.toList());
                         if(CollUtil.isNotEmpty(sonList)) {
-                            stringBuilder.append("不能有子级，");
+                            contentStringBuilder.append("不能有子级，");
                         }
                     }
                     if (items.getType() == 0 && items.getHasChild() == "1") {
-                        stringBuilder.append("是否为检查项(要选择为：是)，");
+                        contentStringBuilder.append("是否为检查项(要选择为：是)，");
                     }
                     if (items.getType() == 1 && items.getHasChild() == "1") {
                         if (ObjectUtil.isNotEmpty(items.getIsInspectionType())) {
                             Integer inspectionType = checkMap2.get(items.getIsInspectionType());
                             if (!InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionType) && !InspectionConstant.NO_ISAPPOINT_DEVICE.equals(inspectionType)) {
-                                stringBuilder.append("检查值是否必填选择不正确，");
+                                contentStringBuilder.append("检查值是否必填选择不正确，");
                             } else {
                                 items.setInspectionType(inspectionType.equals(InspectionConstant.IS_APPOINT_DEVICE) ? 1 : 0);
                             }
@@ -682,7 +678,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                         if (ObjectUtil.isNotEmpty(items.getSStatusItem())) {
                             Integer statusItem = checkMap3.get(items.getSStatusItem());
                             if(!InspectionConstant.NO_STATUS_ITEM.equals(statusItem) && !InspectionConstant.STATUS_ITEM_CHOICE.equals(statusItem) && !InspectionConstant.STATUS_ITEM_INPUT.equals(statusItem)){
-                                stringBuilder.append("检查值类型选择不正确，");
+                                contentStringBuilder.append("检查值类型选择不正确，");
                             } else {
                                 if (statusItem.equals(InspectionConstant.STATUS_ITEM_INPUT)) {
                                     items.setStatusItem(3);
@@ -692,33 +688,33 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                             }
                             if (items.getType() == 1) {
                                 if (ObjectUtil.isNotEmpty(items.getDictCode()) && ObjectUtil.isNotEmpty(items.getDataCheck())) {
-                                    stringBuilder.append("关联数据字典、数据校验表达式不用填写，");
+                                    contentStringBuilder.append("关联数据字典、数据校验表达式不用填写，");
                                 }
                             }
                             if (items.getType() == 2) {
                                 if (ObjectUtil.isNotEmpty(items.getDataCheck())) {
-                                    stringBuilder.append("数据校验表达式不用填写，");
+                                    contentStringBuilder.append("数据校验表达式不用填写，");
                                 } else {
                                     if (ObjectUtil.isNotEmpty(items.getDictCode())) {
                                         String dictCode = inspectionCodeContentMapper.getDictCode(items.getDictCode());
                                         if (ObjectUtil.isNotEmpty(dictCode)) {
                                             items.setDictCode(dictCode);
                                         } else {
-                                            stringBuilder.append("关联数据字典选择不正确，");
+                                            contentStringBuilder.append("关联数据字典选择不正确，");
                                         }
                                     }
                                 }
                             }
                             if (items.getType() == 3) {
                                 if (ObjectUtil.isNotEmpty(items.getDictCode())) {
-                                    stringBuilder.append("关联数据字典不用填写，");
+                                    contentStringBuilder.append("关联数据字典不用填写，");
                                 } else {
                                     if (ObjectUtil.isNotEmpty(items.getDataCheck())) {
                                         String dictCode = inspectionCodeContentMapper.getDictCode(items.getDataCheck());
                                         if (ObjectUtil.isNotEmpty(dictCode)) {
                                             items.setDataCheck(dictCode);
                                         } else {
-                                            stringBuilder.append("数据校验表达式选择不正确，");
+                                            contentStringBuilder.append("数据校验表达式选择不正确，");
                                         }
                                     }
                                 }
@@ -727,15 +723,21 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                         else
                         {
                             if(ObjectUtil.isNotEmpty(items.getDataCheck())||ObjectUtil.isNotEmpty(items.getDictCode())) {
-                                stringBuilder.append("关联数据字典、数据校验表达式不用填写，");
+                                contentStringBuilder.append("关联数据字典、数据校验表达式不用填写，");
                             }
                         }
                     }
                 } else {
-                    stringBuilder.append("层级类型、检修项内容、检修项编号、是否为检查项要必填，");
+                    contentStringBuilder.append("层级类型、检修项内容、检修项编号、是否为检查项要必填，");
+                }
+                if(contentStringBuilder.length()>0){
+                    contentStringBuilder = contentStringBuilder.deleteCharAt(contentStringBuilder.length() - 1);
+                    items.setCodeContentErrorReason(contentStringBuilder.toString());
+                    errorSign = true;
                 }
             }
         }
+        return errorSign;
     }
 
     private Result<?> getErrorExcel(int errorLines, List<InspectionCodeImportDTO> list, List<InspectionCodeErrorDTO> deviceAssemblyErrorModels, List<String> errorMessage, int successLines, String url, String type) throws IOException {
@@ -787,7 +789,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         sheetsMap.put(0, errorMap);
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
         int size = 4;
-        int length = 5;
+        int length = 7;
         for (InspectionCodeImportDTO deviceModel : list) {
             for (int i = 0; i <= length; i++) {
                 //合并单元格

@@ -91,6 +91,7 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
     /**
      * 应急演练管理-导出年演练计划excel
      */
+    @ApiOperation(value = "应急演练管理-导出年演练计划excel", notes = "应急演练管理-导出年演练计划excel")
     @RequestMapping(value = "/exportXls")
     public void exportXls(HttpServletRequest request, HttpServletResponse response, String ids) {
         emergencyRehearsalYearService.exportXls(request, response, ids);

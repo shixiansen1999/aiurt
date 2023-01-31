@@ -208,11 +208,13 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
 //	}
 
     /**
-     * 导出excel
+     * 资产分类-导出
      *
      * @param request
      * @param categoryDTO
      */
+    @AutoLog(value = "资产分类-导出")
+    @ApiOperation(value = "资产分类-导出", notes = "资产分类-导出")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, FixedAssetsCategoryDTO categoryDTO) {
         List<FixedAssetsCategoryDTO> list = fixedAssetsCategoryService.getCategoryList(categoryDTO);
@@ -225,12 +227,14 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
     }
 
     /**
-     * 通过excel导入数据
+     * 资产分类-导入数据
      *
      * @param request
      * @param response
      * @return
      */
+    @AutoLog(value = "资产分类-导入")
+    @ApiOperation(value = "资产分类-导入", notes = "资产分类-导入")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response)throws IOException {
         return fixedAssetsCategoryService.importExcel(request, response);
@@ -243,6 +247,8 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
      * @param response
      * @return
      */
+    @AutoLog(value = "资产分类-下载模板")
+    @ApiOperation(value = "资产分类-下载模板", notes = "资产分类-下载模板")
     @RequestMapping(value = "/downloadTemple", method = RequestMethod.GET)
     public void downloadTemple(HttpServletRequest request, HttpServletResponse response) throws IOException {
         //获取输入流，原始模板位置

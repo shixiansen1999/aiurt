@@ -10,6 +10,7 @@ import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearAddDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
+import com.aiurt.boot.rehearsal.mapper.EmergencyRehearsalMonthMapper;
 import com.aiurt.boot.rehearsal.mapper.EmergencyRehearsalYearMapper;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalMonthService;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalYearService;
@@ -45,8 +46,6 @@ import java.net.URLEncoder;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.zip.Adler32;
-import java.util.zip.CheckedOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -64,6 +63,8 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
     private ISysBaseAPI iSysBaseApi;
     @Autowired
     private IEmergencyRehearsalMonthService emergencyRehearsalMonthService;
+    @Autowired
+    private EmergencyRehearsalMonthMapper emergencyRehearsalMonthMapper;
     @Autowired
     private EmergencyRehearsalYearMapper emergencyRehearsalYearMapper;
 
@@ -184,12 +185,13 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
         List<Workbook> workbooks = new LinkedList<>();
         List<String> titles = new LinkedList<>();
         for (EmergencyRehearsalYear rehearsalYear : rehearsalYears) {
-            List<EmergencyRehearsalMonth> rehearsalMonthList = emergencyRehearsalMonthService.lambdaQuery()
-                    .eq(EmergencyRehearsalMonth::getDelFlag, CommonConstant.DEL_FLAG_0)
-                    .eq(EmergencyRehearsalMonth::getPlanId, rehearsalYear.getId())
-                    .list();
+//            List<EmergencyRehearsalMonth> rehearsalMonthList = emergencyRehearsalMonthService.lambdaQuery()
+//                    .eq(EmergencyRehearsalMonth::getDelFlag, CommonConstant.DEL_FLAG_0)
+//                    .eq(EmergencyRehearsalMonth::getPlanId, rehearsalYear.getId())
+//                    .list();
+            List<EmergencyRehearsalMonth> rehearsalMonthList = emergencyRehearsalMonthMapper.exportMonthList(rehearsalYear.getId());
             SysDepartModel dept = iSysBaseApi.getDepartByOrgCode(rehearsalYear.getOrgCode());
-            String title = ObjectUtil.isEmpty(dept) ? "" : dept.getDepartName() + rehearsalYear.getYear() + "年综合应急演练计划";
+            String title = ObjectUtil.isEmpty(dept) ? "" : dept.getDepartName() + rehearsalYear.getYear() + "年" + rehearsalYear.getName();
             // excel数据
             ExportParams exportParams = new ExportParams(title, null);
             // 添加索引

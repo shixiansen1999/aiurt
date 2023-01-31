@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 /**
  * @Description: cs_station_position
  * @Author: jeecg-boot
- * @Date:   2022-06-21
+ * @Date: 2022-06-21
  * @Version: V1.0
  */
 @Service
@@ -68,11 +68,12 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
 
     /**
      * 查询列表
+     *
      * @param page
      * @return
      */
     @Override
-    public List<CsStationPosition> readAll(Page<CsStationPosition> page, CsStationPosition csStationPosition){
+    public List<CsStationPosition> readAll(Page<CsStationPosition> page, CsStationPosition csStationPosition) {
         List<CsStationPosition> csStationPositions = csStationPositionMapper.queryCsStationPositionAll(page, csStationPosition);
         if (CollUtil.isNotEmpty(csStationPositions)) {
             for (CsStationPosition stationPosition : csStationPositions) {
@@ -84,6 +85,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         }
         return csStationPositions;
     }
+
     /**
      * 添加
      *
@@ -100,16 +102,17 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         }
         //根据Station_code查询所属线路code
         LambdaQueryWrapper<CsStation> stationWrapper = new LambdaQueryWrapper<>();
-        stationWrapper.eq(CsStation::getStationCode,csStationPosition.getStaionCode());
+        stationWrapper.eq(CsStation::getStationCode, csStationPosition.getStaionCode());
         stationWrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
         CsStation sta = csStationMapper.selectOne(stationWrapper);
         csStationPosition.setLineCode(sta.getLineCode());
         //拼接position_code_cc
-        csStationPosition.setPositionCodeCc("/"+sta.getLineCode()+"/"+csStationPosition.getStaionCode()+"/"+csStationPosition.getPositionCode());
+        csStationPosition.setPositionCodeCc("/" + sta.getLineCode() + "/" + csStationPosition.getStaionCode() + "/" + csStationPosition.getPositionCode());
         csStationPosition.setUpdateTime(new Date());
         csStationPositionMapper.insert(csStationPosition);
         return Result.OK("添加成功！");
     }
+
     /**
      * 修改
      *
@@ -131,8 +134,8 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
     @Override
     public Result<?> importExcelMaterial(MultipartFile file, ImportParams params) throws Exception {
         List<CsStationPosition> listMaterial = ExcelImportUtil.importExcel(file.getInputStream(), CsStationPosition.class, params);
-        listMaterial =  listMaterial.stream().filter(l-> l.getLevelName()!=null && l.getPositionTypeName()!=null && l.getPositionCode()!=null && l.getPositionName() !=null)
-                                             .collect(Collectors.toList());
+        listMaterial = listMaterial.stream().filter(l -> l.getLevelName() != null && l.getPositionTypeName() != null && l.getPositionCode() != null && l.getPositionName() != null)
+                .collect(Collectors.toList());
         List<String> errorStrs = new ArrayList<>();
         // 去掉 sql 中的重复数据
         Integer errorLines = 0;
@@ -296,7 +299,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
             Resource resource = new ClassPathResource("templates/csStationPositionError.xlsx");
             InputStream resourceAsStream = resource.getInputStream();
             //2.获取临时文件
-            File fileTemp= new File("templates/csStationPositionError.xlsx");
+            File fileTemp = new File("templates/csStationPositionError.xlsx");
             try {
                 //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
                 FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
@@ -306,33 +309,33 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
             String path = fileTemp.getAbsolutePath();
             TemplateExportParams exportParams = new TemplateExportParams(path);
             List<Map<String, Object>> mapList = new ArrayList<>();
-            list.forEach(l->{
+            list.forEach(l -> {
                 Map<String, Object> lm = new HashMap<String, Object>();
-                lm.put("levelName",l.getLevelName());
-                lm.put("positionName",l.getPositionName());
-                lm.put("pUrl",l.getPUrl());
-                lm.put("positionCode",l.getPositionCode());
-                lm.put("positionTypeName",l.getPositionTypeName());
-                lm.put("latitude",l.getLatitude());
-                lm.put("longitude",l.getLongitude());
-                lm.put("sort",l.getSort());
-                lm.put("text",l.getText());
+                lm.put("levelName", l.getLevelName());
+                lm.put("positionName", l.getPositionName());
+                lm.put("pUrl", l.getPUrl());
+                lm.put("positionCode", l.getPositionCode());
+                lm.put("positionTypeName", l.getPositionTypeName());
+                lm.put("latitude", l.getLatitude());
+                lm.put("longitude", l.getLongitude());
+                lm.put("sort", l.getSort());
+                lm.put("text", l.getText());
                 mapList.add(lm);
             });
             Map<String, Object> errorMap = new HashMap<String, Object>();
             errorMap.put("maplist", mapList);
-            Workbook workbook = ExcelExportUtil.exportExcel(exportParams,errorMap);
-            String fileName = "位置导入错误模板"+"_" + System.currentTimeMillis()+".xlsx";
-            FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
-            String  url = fileName;
+            Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
+            String fileName = "位置导入错误模板" + "_" + System.currentTimeMillis() + ".xlsx";
+            FileOutputStream out = new FileOutputStream(upLoadPath + File.separator + fileName);
+            String url = fileName;
             workbook.write(out);
-            errorLines+=errorStrs.size();
-            successLines+=(listMaterial.size()-errorLines);
-            return ImportExcelUtil.imporReturnRes(errorLines,successLines,errorStrs,url);
+            errorLines += errorStrs.size();
+            successLines += (listMaterial.size() - errorLines);
+            return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs, url);
         }
         errorLines += errorStrs.size();
         successLines += (listMaterial.size() - errorLines);
-        return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs,null);
+        return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs, null);
     }
 
 }
