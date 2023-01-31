@@ -386,9 +386,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 } else {
                     successLines = list.size();
                     ThreadPoolExecutor poolExecutor = ExecutorBuilder.create()
-                            .setCorePoolSize(faultKnowledgeBaseList.size()) // 初始线程
-                            .setMaxPoolSize(faultKnowledgeBaseList.size()) // 最大线程
-                            .setWorkQueue(new LinkedBlockingQueue<>(100)) // 线程池策略
+                            .setCorePoolSize(faultKnowledgeBaseList.size())
+                            .setMaxPoolSize(faultKnowledgeBaseList.size())
+                            .setWorkQueue(new LinkedBlockingQueue<>(100))
                             .build();
                     CountDownLatch cdl = new CountDownLatch(faultKnowledgeBaseList.size());
                     for (FaultKnowledgeBase faultKnowledgeBase : faultKnowledgeBaseList) {
