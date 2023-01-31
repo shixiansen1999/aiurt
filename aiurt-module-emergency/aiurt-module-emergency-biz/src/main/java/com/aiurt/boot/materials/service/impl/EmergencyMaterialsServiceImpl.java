@@ -61,6 +61,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -367,7 +368,9 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     public ModelAndView getMaterialPatrolList(MaterialAccountDTO condition) {
         List<MaterialAccountDTO> materialAccountList = emergencyMaterialsMapper.getMaterialPatrolList(condition);
         List<PatrolStandardItemsModel> patrolStandardItemsModels = iSysBaseAPI.patrolStandardList(condition.getPatrolStandardId());
+        AtomicReference<Integer> orderNumber = new AtomicReference<>(1);
         materialAccountList.forEach(e -> {
+            e.setOrderNumber(orderNumber.getAndSet(orderNumber.get() + 1));
             if (StrUtil.isNotBlank(e.getUserId())) {
                 //根据负责人id查询负责人名称
                 LoginUser userById = iSysBaseAPI.getUserById(e.getUserId());
