@@ -653,6 +653,13 @@ public interface ISysBaseAPI extends CommonAPI {
     Map<String, String> getDeviceNameByCode(List<String> deviceCodes);
 
     /**
+     * 根据设备code获取设备信息
+     * @param code
+     * @return
+     */
+    JSONObject getDeviceByCode(String code);
+
+    /**
      * 根据线路Id获取线路编号
      *
      * @param lineId
