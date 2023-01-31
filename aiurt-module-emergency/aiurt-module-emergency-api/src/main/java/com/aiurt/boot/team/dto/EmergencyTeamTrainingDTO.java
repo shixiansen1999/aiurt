@@ -24,7 +24,7 @@ public class EmergencyTeamTrainingDTO {
     private String id;
 
     /**训练项目名称*/
-    @Excel(name = "训练项目名称", width = 15)
+    @Excel(name = "训练项目", width = 15)
     @ApiModelProperty(value = "训练项目名称")
     private String trainingProgramName;
 
