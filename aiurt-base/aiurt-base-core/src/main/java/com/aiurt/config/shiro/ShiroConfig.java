@@ -147,6 +147,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/sys/webAuthorizationLogin/**", "anon");//JVxeTable无痕刷新示例
         filterChainDefinitionMap.put("/sys/autograph/**", "anon");//JVxeTable无痕刷新示例
         filterChainDefinitionMap.put("/sys/queryVersionInfo", "anon");//JVxeTable无痕刷新示例
+        filterChainDefinitionMap.put("/sys/common/getSysFileKey", "anon");//在线编辑获取key
 
         //wps
         filterChainDefinitionMap.put("/v1/**","anon");
