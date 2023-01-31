@@ -190,7 +190,7 @@ public class OverhaulStatisticsService{
                     e.setAbnormalNumber(0L);
                 }
                 //人员是否属于该班组
-                List<OverhaulStatisticsDTO> collect = distinct.stream().filter(y -> y.getOrgCode().equals(e.getOrgCode())).collect(Collectors.toList());
+                List<OverhaulStatisticsDTO> collect = distinct.stream().filter(p->StrUtil.isNotBlank(p.getOrgCode())).filter(y -> y.getOrgCode().equals(e.getOrgCode())).collect(Collectors.toList());
                 if (CollectionUtil.isNotEmpty(collect)){
                     e.setNameList(collect);
                 }
