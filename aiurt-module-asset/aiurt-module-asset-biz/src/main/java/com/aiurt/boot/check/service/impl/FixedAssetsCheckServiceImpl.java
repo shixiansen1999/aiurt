@@ -310,6 +310,9 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         fixedAssetsCheckDTO = Optional.ofNullable(fixedAssetsCheckDTO).orElseGet(FixedAssetsCheckDTO::new);
         fixedAssetsCheckDTO.setAuditStatus(FixedAssetsConstant.STATUS_2);
         fixedAssetsCheckDTO.setUserName(loginUser.getUsername());
+        if (StrUtil.isNotEmpty(fixedAssetsCheckDTO.getCategoryCode())){
+            fixedAssetsCheckDTO.setCategoryCodes(fixedAssetsCheckMapper.selectCategoryCodeByPid(fixedAssetsCheckDTO.getCategoryCode()));
+        }
         IPage<FixedAssetsCheckVO> pageList = fixedAssetsCheckMapper.pageList(page, fixedAssetsCheckDTO);
         if (CollectionUtil.isNotEmpty(pageList.getRecords())) {
             Map<String, String> orgMap = sysBaseApi.getAllSysDepart().stream()
