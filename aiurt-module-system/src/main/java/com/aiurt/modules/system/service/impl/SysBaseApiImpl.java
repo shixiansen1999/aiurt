@@ -1067,7 +1067,18 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         queryWrapper.in(SysDepart::getOrgCode, orgCodes.split(","));
         return JSON.parseArray(JSON.toJSONString(sysDepartService.list(queryWrapper))).toJavaList(JSONObject.class);
     }
-
+    /**
+     * 根据多个部门编码，查询返回多个部门名称
+     * @param orgCodes
+     * @return
+     */
+    @Override
+    public List<String> queryOrgNamesByOrgCodes(List<String> orgCodes) {
+        LambdaQueryWrapper<SysDepart> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(SysDepart::getOrgCode, orgCodes);
+        List<String> collect = sysDepartService.list(queryWrapper).stream().map(SysDepart::getDepartName).collect(Collectors.toList());
+        return collect ;
+    }
     @Override
     public List<JSONObject> queryDepartsByIds(String ids) {
         LambdaQueryWrapper<SysDepart> queryWrapper = new LambdaQueryWrapper<>();
@@ -1735,7 +1746,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return JSONObject.parseObject(JSONObject.toJSONString(csMajor));
     }
-
+    @Override
+    public List<String> getCsMajorNamesByCodes(List<String> majorCode) {
+        LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(CsMajor::getMajorCode, majorCode).eq(CsMajor::getDelFlag,0);
+        if (CollectionUtil.isEmpty(majorCode)){
+            return new ArrayList<>();
+        }
+        List<CsMajor> csMajor = majorService.getBaseMapper().selectList(wrapper);
+        if (Objects.isNull(csMajor)) {
+            return new ArrayList<>();
+        }
+        return  csMajor.stream().map(CsMajor::getMajorName).distinct().collect(Collectors.toList());
+    }
     @Override
     public JSONObject getCsMajorByName(String majorName) {
         LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
@@ -1756,6 +1779,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return null;
         }
         return JSONObject.parseObject(JSONObject.toJSONString(subsystem));
+    }
+    @Override
+    public List<String> getSystemNames(List<String> systemCodes) {
+        LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(CsSubsystem::getSystemCode, systemCodes).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
+        if (CollectionUtil.isEmpty(systemCodes)){
+            return new ArrayList<>();
+        }
+        List<CsSubsystem> subsystem = subsystemMapper.selectList(wrapper);
+        if (Objects.isNull(subsystem)) {
+            return new ArrayList<>();
+        }
+        return subsystem.stream().map(CsSubsystem::getSystemName).distinct().collect(Collectors.toList());
     }
 
     @Override
