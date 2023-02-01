@@ -2,8 +2,10 @@ package com.aiurt.boot.asset.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ExportParams;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
@@ -39,19 +41,16 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -488,7 +487,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
 
 
     @Override
-    public ModelAndView exportFixedAssetsXls(HttpServletRequest request, FixedAssetsDTO fixedAssetsDTO) {
+    public void exportFixedAssetsXls(HttpServletRequest request, HttpServletResponse response,FixedAssetsDTO fixedAssetsDTO) {
         Page<FixedAssetsDTO> pageList = new Page<>(1, Integer.MAX_VALUE);
         Page<FixedAssetsDTO> list = this.pageList(pageList, fixedAssetsDTO);
         List<FixedAssetsDTO> records = list.getRecords();
@@ -518,17 +517,19 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
                 models.add(fixedAssetsModel);
             }
         }
-        String title = "固定资产";
-        // Step.3 AutoPoi 导出Excel
-        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-        //此处设置的filename无效 ,前端会重更新设置一下
-        mv.addObject(NormalExcelConstants.FILE_NAME, title);
-        mv.addObject(NormalExcelConstants.CLASS, FixedAssetsModel.class);
-        ExportParams exportParams=new ExportParams(title, title);
-        exportParams.setImageBasePath(upLoadPath);
-        mv.addObject(NormalExcelConstants.PARAMS,exportParams);
-        mv.addObject(NormalExcelConstants.DATA_LIST, models);
-        return mv;
+        Workbook wb = ExcelExportUtil.exportExcel( new ExportParams("固定资产报表",null, ExcelType.XSSF),FixedAssetsModel.class,models);
+        String fileName = "固定资产";
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            wb.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
