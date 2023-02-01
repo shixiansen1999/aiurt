@@ -70,7 +70,7 @@
         <if test="condition.status != null">
             and fac.status = #{condition.status}
         </if>
-            <if test="condition.categoryCodes.size() > 0">
+            <if test="condition.categoryCodes != null and condition.categoryCodes.size() > 0">
             and fac.id in (
             select distinct check_id
             from fixed_assets_check_category
