@@ -253,6 +253,8 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
         queryWrapper.select(EmergencyTeam::getId,EmergencyTeam::getEmergencyTeamname, EmergencyTeam::getEmergencyTeamcode,EmergencyTeam::getManagerId);
         List<EmergencyTeam> emergencyTeams = this.getBaseMapper().selectList(queryWrapper);
         if (CollUtil.isNotEmpty(emergencyTeams)) {
+            //下面禁用数据过滤
+            boolean b = GlobalThreadLocal.setDataFilter(false);
             for (EmergencyTeam emergencyTeam : emergencyTeams) {
                 LambdaQueryWrapper<EmergencyCrew> wrapper = new LambdaQueryWrapper<>();
                 wrapper.eq(EmergencyCrew::getDelFlag, TeamConstant.DEL_FLAG0);
@@ -263,6 +265,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 LoginUser userById = iSysBaseAPI.getUserById(emergencyTeam.getManagerId());
                 emergencyTeam.setManagerName(userById.getRealname());
             }
+            GlobalThreadLocal.setDataFilter(b);
         }
 
         return Result.OK(emergencyTeams);
