@@ -65,9 +65,9 @@ public class FixedAssetsModel {
     @Excel(name = "账面原值", width = 15,type = 4)
     @ApiModelProperty(value = "账面原值")
     private java.math.BigDecimal assetOriginal;
-    /**责任人*/
-    @Excel(name = "责任人", width = 15)
-    @ApiModelProperty(value = "责任人")
+    /**负责人*/
+    @Excel(name = "负责人", width = 15)
+    @ApiModelProperty(value = "负责人")
     private java.lang.String responsibilityName;
     /**启用状态(0停用、1启用)*/
     @Excel(name = "启用状态", width = 15)
@@ -91,7 +91,8 @@ public class FixedAssetsModel {
     /**错误原因*/
     @ApiModelProperty(value = "错误原因")
     private String mistake;
-
+    @ApiModelProperty(value = "责任人")
+    private java.lang.String responsibilityId;
     @ApiModelProperty(value = "使用组织机构")
     private String orgCode;
     @ApiModelProperty(value = "存放地点")
