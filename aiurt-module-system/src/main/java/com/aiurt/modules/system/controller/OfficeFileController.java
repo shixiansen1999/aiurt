@@ -1,13 +1,13 @@
 package com.aiurt.modules.system.controller;
 
 
-import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.util.CommonUtils;
 import com.aiurt.common.util.MinioUtil;
 import com.aiurt.common.util.UUIDGenerator;
+import com.aiurt.config.https.HTTPSTrustManager;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
 import com.alibaba.fastjson.JSONObject;
@@ -20,10 +20,13 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerMapping;
 
-import javax.persistence.Id;
+import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -84,7 +87,7 @@ public class OfficeFileController {
         if (Objects.isNull(attachment)) {
 
             log.info("系统不存在该文件！id->{}", key);
-            writer.write("{\"error\":1}");
+            writer.write("{\"error\":0}");
             return;
         }
 
@@ -105,13 +108,34 @@ public class OfficeFileController {
             } else {
                 fileName = orgName + "_" + System.currentTimeMillis();
             }
-            URL url = new URL(downloadUri);
-            java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
-            InputStream stream = connection.getInputStream();
+            InputStream stream = null;
+            java.net.HttpURLConnection connection = null;
+            HttpsURLConnection conn = null;
+            // 判断是是否为https 请求，不需要证书cert, 否则会报异常unable to find valid certification path to requested target
+            if (StrUtil.startWithIgnoreCase(downloadUri, "https")) {
+                HTTPSTrustManager.retrieveResponseFromServer(downloadUri);
+                URL url = new URL(downloadUri);
+                //构造连接
+                conn = (HttpsURLConnection) url.openConnection();
+                //这个网站要模拟浏览器才行
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko");
+                //打开连接
+                conn.connect();
+                //打开这个网站的输入流
+                //打开这个网站的输入流
+                stream = conn.getInputStream();
+            }else {
+                URL url = new URL(downloadUri);
+                connection = (java.net.HttpURLConnection) url.openConnection();
+                //打开连接
+                connection.connect();
+                stream = connection.getInputStream();
+            }
+
+
             // 本地存储
             if (CommonConstant.UPLOAD_TYPE_LOCAL.equals(uploadType)) {
                 uploadLocal(fileName, attachment, stream);
-
                 // minio
             }else {
                 try {
@@ -125,7 +149,15 @@ public class OfficeFileController {
 
             }
             attachment.setDocumentKey(UUIDGenerator.generate());
-            connection.disconnect();
+            if (Objects.nonNull(connection)) {
+                connection.disconnect();
+            }
+            if (Objects.nonNull(conn)) {
+                conn.disconnect();
+            }
+            if (Objects.nonNull(stream)) {
+                stream.close();
+            }
         } else if(jsonObj.getIntValue(STATUS) == 3|| jsonObj.getIntValue(STATUS) == 7) {
             writer.write("{\"error\":-1}");
             // 正在编辑
