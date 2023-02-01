@@ -152,6 +152,17 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
 
     @Override
     public List<FixedAssetsCategoryDTO> getCategoryList(FixedAssetsCategoryDTO categoryDTO) {
+        if (ObjectUtil.isNotEmpty(categoryDTO.getPid())) {
+            LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(FixedAssetsCategory::getDelFlag, CommonConstant.DEL_FLAG_0);
+            List<FixedAssetsCategory> list = categoryMapper.selectList(queryWrapper);
+            FixedAssetsCategory category = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getCategoryCode, categoryDTO.getTreeCategoryCode()));
+            List<FixedAssetsCategory> categoryList = new ArrayList<>();
+            List<FixedAssetsCategory> allChildren = treeMenuList(list, category, categoryList);
+            allChildren.add(category);
+            List<String> allChildrenCode = allChildren.stream().map(FixedAssetsCategory::getCategoryCode).collect(Collectors.toList());
+            categoryDTO.setTreeCode(allChildrenCode);
+        }
         List<FixedAssetsCategoryDTO> list = categoryMapper.getList(categoryDTO);
         list = list.stream().sorted(Comparator.comparing(FixedAssetsCategoryDTO::getCreateTime).reversed()).collect(Collectors.toList());
         for (FixedAssetsCategoryDTO dto : list) {
