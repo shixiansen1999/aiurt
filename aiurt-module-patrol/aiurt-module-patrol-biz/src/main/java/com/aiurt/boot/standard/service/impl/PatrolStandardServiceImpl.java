@@ -24,6 +24,7 @@ import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.XlsUtil;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.alibaba.fastjson.JSONObject;
@@ -58,7 +59,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -143,7 +143,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     translate(null, parent);
                     for (PatrolStandardItems son : sonItem) {
                         allItem.add(son);
-                        translate(null,son);
+                        translate(null, son);
                         son.setParent(parent.getContent());
                     }
                 }
@@ -257,29 +257,48 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     tipMessage = "导入失败，该文件为空。";
                     return imporReturnRes(errorLines, successLines, tipMessage, false, null);
                 }
+                if (CollUtil.isNotEmpty(list)) {
+                    Iterator<PatrolStandardModel> iterator = list.iterator();
+                    if (CollUtil.isNotEmpty(iterator)) {
+                        while (iterator.hasNext()) {
+                            PatrolStandardModel model = iterator.next();
+                            boolean a = XlsUtil.checkObjAllFieldsIsNull(model);
+                            if (a) {
+                                iterator.remove();
+                            }
+                        }
+                    }
+                }
                 for (PatrolStandardModel model : list) {
                     if (ObjectUtil.isNotEmpty(model)) {
-                        StringBuilder stringBuilder = new StringBuilder();
+                        StringBuilder standMistake = new StringBuilder();
                         PatrolStandard patrolStandard = new PatrolStandard();
-                        //信息数据校验
-                        standard(model, patrolStandard, stringBuilder);
-                        //配置项数据校验
-                        itemsModel(patrolStandard, errorLines, stringBuilder);
-                        if (stringBuilder.length() > 0) {
-                            // 截取字符
-                            stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-                            model.setStandMistake(stringBuilder.toString());
-                            errorLines++;
-                        }
-                        if (errorLines > 0) {
-                            for (PatrolStandardItems patrolStandardItems : patrolStandard.getPatrolStandardItemsList()) {
-                                if (patrolStandardItems.getIsNUll() != true) {
-                                    PatrolStandardErrorModel errorModel = new PatrolStandardErrorModel();
-                                    BeanUtils.copyProperties(model, errorModel);
-                                    BeanUtils.copyProperties(patrolStandardItems, errorModel);
-                                    deviceAssemblyErrorModels.add(errorModel);
+                        List<PatrolStandardItems> patrolStandardItemsList = model.getPatrolStandardItemsList();
+                        if (CollUtil.isNotEmpty(patrolStandardItemsList)) {
+                            //判断配置项是否读取空数据
+                            Iterator<PatrolStandardItems> iterator = patrolStandardItemsList.iterator();
+                            if (CollUtil.isNotEmpty(iterator)) {
+                                while (iterator.hasNext()) {
+                                    PatrolStandardItems item = iterator.next();
+                                    boolean a = XlsUtil.checkObjAllFieldsIsNull(item);
+                                    if (a) {
+                                        iterator.remove();
+                                    }
                                 }
                             }
+                        }
+                        //信息数据校验
+                        standard(model, patrolStandard, standMistake);
+                        //配置项数据校验
+                        itemsModel(model,patrolStandard);
+                        if (standMistake.length() > 0 || model.getStandItemMistakeNumber()>0) {
+                            errorLines++;
+                        }
+                        for (PatrolStandardItems patrolStandardItems : patrolStandardItemsList) {
+                            PatrolStandardErrorModel errorModel = new PatrolStandardErrorModel();
+                            BeanUtils.copyProperties(model, errorModel);
+                            BeanUtils.copyProperties(patrolStandardItems, errorModel);
+                            deviceAssemblyErrorModels.add(errorModel);
                         }
                         standardList.add(patrolStandard);
                     }
@@ -315,7 +334,6 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     }
                     successLines = standardList.size();
                 }
-
             } catch (Exception e) {
                 String msg = e.getMessage();
                 log.error(msg, e);
@@ -518,12 +536,15 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     JSONObject systemName = sysBaseApi.getSystemName(major.getString("majorCode"), model.getSubsystemCode());
                     if (ObjectUtil.isNotEmpty(systemName)) {
                         patrolStandard.setSubsystemCode(systemName.getString("systemCode"));
-                        DeviceType d = sysBaseApi.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName);
-                        if (ObjectUtil.isNull(d)) {
-                            stringBuilder.append("系统不存在该专业的子系统的设备类型，");
-                        } else {
-                            patrolStandard.setDeviceTypeCode(d.getCode());
+                        if (ObjectUtil.isNotEmpty(deviceTypeName)) {
+                            DeviceType d = sysBaseApi.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName);
+                            if (ObjectUtil.isNull(d)) {
+                                stringBuilder.append("系统不存在该专业的子系统的设备类型，");
+                            } else {
+                                patrolStandard.setDeviceTypeCode(d.getCode());
+                            }
                         }
+
                     } else {
                         stringBuilder.append("系统不存在该专业下的子系统，");
                     }
@@ -568,37 +589,20 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         } else {
             stringBuilder.append("巡视标准表名称、适用专业、是否与设备类型相关、生效状态不能为空;");
         }
-    }
-
-    public boolean checkObjAllFieldsIsNull(Object object) {
-        if (null == object) {
-            return true;
+        if (stringBuilder.length() > 0) {
+            // 截取字符
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            model.setStandMistake(stringBuilder.toString());
         }
-        try {
-            for (Field f : object.getClass().getDeclaredFields()) {
-                f.setAccessible(true);
-                if (f.get(object) != null && (StrUtil.isNotEmpty(f.get(object).toString()) && !"1".equals(f.get(object).toString()))) {
-                    return false;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return true;
     }
-
-    private void itemsModel(PatrolStandard patrolStandard, int errorLines, StringBuilder stringBuilder) {
+    private void itemsModel(PatrolStandardModel model,PatrolStandard patrolStandard) {
         List<PatrolStandardItems> standardItems = patrolStandard.getPatrolStandardItemsList();
         if (CollUtil.isNotEmpty(standardItems)) {
             int i = 0;
+            Integer wrongNumber = 0;
             Map<Object, Integer> duplicateData = new HashMap<>(16);
             for (PatrolStandardItems items : standardItems) {
-                boolean isNull = checkObjAllFieldsIsNull(items);
-                if (isNull) {
-                    items.setIsNUll(true);
-                } else {
-                    items.setIsNUll(false);
-                }
+                StringBuilder stringBuilder = new StringBuilder();
                 String hierarchyTypeName = items.getHierarchyTypeName();
                 String itemsCode = items.getCode();
                 String checkName = items.getCheckName();
@@ -625,8 +629,12 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                 stringBuilder.append("子级要有父级,");
                             } else {
                                 itemsList = standardItems.stream().filter(e -> e.getContent() != null && e.getContent().equals(items.getParent()) && !e.equals(items) && e.getHierarchyTypeName().equals(PatrolConstant.ONE_LEVEL)).collect(Collectors.toList());
+                                List<PatrolStandardItems> parentItems = standardItems.stream().filter(e -> e.getContent() != null && e.getContent().equals(items.getParent()) && e.getHierarchyTypeName().equals(PatrolConstant.ONE_LEVEL)).collect(Collectors.toList());
                                 if (itemsList.size() == 0 && items.getHierarchyTypeName().equals(PatrolConstant.SON_LEVEL)) {
                                     stringBuilder.append("父级不存在,");
+                                }
+                                if(parentItems.size()!=1){
+                                    stringBuilder.append("存在相同的父级,");
                                 }
                             }
                         }
@@ -722,11 +730,12 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 }
                 if (stringBuilder.length() > 0) {
                     // 截取字符
+                    wrongNumber++;
                     stringBuilder.deleteCharAt(stringBuilder.length() - 1);
                     items.setItemParentMistake(stringBuilder.toString());
-                    errorLines++;
                 }
             }
+            model.setStandItemMistakeNumber(wrongNumber);
         }
     }
 
