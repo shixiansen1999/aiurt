@@ -67,17 +67,10 @@
         <if test="condition.inventoryList != null and condition.inventoryList != ''">
             and fac.inventory_list LIKE CONCAT('%', #{condition.inventoryList}, '%')
         </if>
-        <if test="condition.orgCode != null and condition.orgCode != ''">
-            and fac.id in (
-            select distinct check_id
-            from fixed_assets_check_dept
-            where org_code = #{condition.orgCode}
-            )
-        </if>
         <if test="condition.status != null">
             and fac.status = #{condition.status}
         </if>
-            <if test="condition.categoryCodes > 0">
+            <if test="condition.categoryCodes.size > 0">
             and fac.id in (
             select distinct check_id
             from fixed_assets_check_category
