@@ -56,4 +56,8 @@ public class PatrolStandardModel {
     @ApiModelProperty(value = "配置项")
     @TableField(exist = false)
     private List<PatrolStandardItems> patrolStandardItemsList;
+    /**错误原因*/
+    @ApiModelProperty(value = "子级错误数")
+    @TableField(exist = false)
+    private  Integer  standItemMistakeNumber;
 }
