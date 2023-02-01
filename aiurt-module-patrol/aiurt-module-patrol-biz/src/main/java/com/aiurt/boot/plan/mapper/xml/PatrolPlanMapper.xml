@@ -49,10 +49,10 @@
             AND pp.name LIKE CONCAT ('%', #{patrolPlan.name}, '%')
         </if>
         <if test="patrolPlan.professionCode !=null ">
-            AND pps.professionCode = #{patrolPlan.professionCode}
+            AND sp.profession_Code = #{patrolPlan.professionCode}
         </if>
         <if test="patrolPlan.subsystemCode !=null ">
-            AND pps.subsystemCode = #{patrolPlan.subsystemCode}
+            AND sp.subsystem_Code = #{patrolPlan.subsystemCode}
         </if>
         <if test="patrolPlan.code !=null ">
             AND pp.code LIKE CONCAT ('%', #{patrolPlan.code}, '%')
@@ -64,10 +64,10 @@
             AND ss.organization_code LIKE CONCAT ('%', #{patrolPlan.mechanismCode}, '%')
         </if>
         <if test="patrolPlan.siteCode!=null ">
-            AND pps.siteCode = #{patrolPlan.siteCode}
+            AND pps.station_code = #{patrolPlan.siteCode}
         </if>
         <if test="patrolPlan.majorCodes != null and patrolPlan.majorCodes.size() != 0">
-            and pps.professionCode in
+            and sp.profession_Code in
             <foreach collection="patrolPlan.majorCodes" open="(" close=")" separator="," item="item">
                 #{item}
             </foreach>
