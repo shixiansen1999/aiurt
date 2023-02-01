@@ -285,7 +285,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
                         DeviceType deviceType1 = deviceTypeService.getOne(new LambdaQueryWrapper<DeviceType>()
                                 .eq(DeviceType::getDelFlag,0).eq(DeviceType::getMajorCode,deviceType.getMajorCode())
                                 .eq(DeviceType::getName,deviceType.getPUrl()));
-                        if (ObjectUtil.isEmpty(deviceType1)){
+                        if (ObjectUtil.isNotEmpty(deviceType1)){
                             deviceType.setPid(deviceType1.getId());
                         }else {
                             errorStrs.add("第 " + i + " 行：输入的上级节点找不到！请核对后输出，忽略导入。");
