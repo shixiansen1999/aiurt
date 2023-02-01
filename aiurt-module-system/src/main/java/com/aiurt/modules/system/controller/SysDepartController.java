@@ -357,15 +357,7 @@ public class SysDepartController {
 	@ApiOperation(value = "部门管理-下载部门导入模板", notes = "部门管理-下载部门导入模板")
 	@RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
 	public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
-		ClassPathResource classPathResource = new ClassPathResource("templates/sysDepart.xls");
-		InputStream bis = classPathResource.getInputStream();
-		BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
-		int len = 0;
-		while ((len = bis.read()) != -1) {
-			out.write(len);
-			out.flush();
-		}
-		out.close();
+		sysDepartService.departmentEXls(response);
 	}
 
     /**
