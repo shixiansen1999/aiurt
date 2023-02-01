@@ -108,9 +108,13 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
             List<String> mechanismNames = sysBaseApi.queryOrgNamesByOrgCodes(baseMapper.selectMechanismNames(l.getCode()));
             l.setMechanismName(String.join(";",mechanismNames));
             List<String> professionName  = sysBaseApi.getCsMajorNamesByCodes(baseMapper.selectProfessionCodes(l.getId()));
-            l.setProfessionName(String.join(";",professionName));
-            List<String> subsystemNames = baseMapper.selectSubsystemCodes(l.getId());
-            l.setSubsystemName(String.join(";",subsystemNames));
+            if (CollectionUtil.isEmpty(professionName)){
+                l.setProfessionName(String.join(";",professionName));
+            }
+            List<String> subsystemNames = sysBaseApi.getSystemNames(baseMapper.selectSubsystemCodes(l.getId()));
+            if (CollectionUtil.isEmpty(subsystemNames)){
+                l.setSubsystemName(String.join(";",subsystemNames));
+            }
             List<String> strings = baseMapper.selectBySites(l.getCode());
             List<StationDTO> stationDtos = baseMapper.selectStations(strings);
             l.setSiteName(patrolManager.translateStation(stationDtos));

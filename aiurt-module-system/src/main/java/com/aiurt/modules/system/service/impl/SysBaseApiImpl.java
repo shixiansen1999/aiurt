@@ -1750,9 +1750,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public List<String> getCsMajorNamesByCodes(List<String> majorCode) {
         LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(CsMajor::getMajorCode, majorCode).eq(CsMajor::getDelFlag,0);
+        if (CollectionUtil.isEmpty(majorCode)){
+            return new ArrayList<>();
+        }
         List<CsMajor> csMajor = majorService.getBaseMapper().selectList(wrapper);
         if (Objects.isNull(csMajor)) {
-            return null;
+            return new ArrayList<>();
         }
         return  csMajor.stream().map(CsMajor::getMajorName).distinct().collect(Collectors.toList());
     }
@@ -1781,9 +1784,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public List<String> getSystemNames(List<String> systemCodes) {
         LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(CsSubsystem::getSystemCode, systemCodes).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
+        if (CollectionUtil.isEmpty(systemCodes)){
+            return new ArrayList<>();
+        }
         List<CsSubsystem> subsystem = subsystemMapper.selectList(wrapper);
         if (Objects.isNull(subsystem)) {
-            return null;
+            return new ArrayList<>();
         }
         return subsystem.stream().map(CsSubsystem::getSystemName).distinct().collect(Collectors.toList());
     }
