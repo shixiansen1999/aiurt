@@ -136,13 +136,13 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             }
 
             //是否有存在子级，有就查询出子级一起返回
-            if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0") && StrUtil.isNotBlank(condition.getCategoryCode())){
+            if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0") && StrUtil.isNotBlank(condition.getCategoryCode())) {
                 MaterialAccountDTO materialAccountDTO = new MaterialAccountDTO();
                 materialAccountDTO.setPid(e.getCategoryId());
                 materialAccountDTO.setMaterialsName(condition.getMaterialsName());
                 List<MaterialAccountDTO> materialAccountList1 = emergencyMaterialsMapper.getMaterialAccountList(pageList, materialAccountDTO);
-                if (CollUtil.isNotEmpty(materialAccountList1)){
-                    materialAccountList1.forEach(q->{
+                if (CollUtil.isNotEmpty(materialAccountList1)) {
+                    materialAccountList1.forEach(q -> {
                         if (StrUtil.isNotBlank(q.getUserId())) {
                             //根据负责人id查询负责人名称
                             LoginUser userById = iSysBaseAPI.getUserById(q.getUserId());
@@ -214,7 +214,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 //根据巡视人id查询巡视人名称
                 String[] split = e.getPatrolId().split(",");
                 List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(split);
-                if (CollUtil.isNotEmpty(loginUsers)){
+                if (CollUtil.isNotEmpty(loginUsers)) {
                     String collect = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                     e.setPatrolName(collect);
                 }
@@ -259,16 +259,16 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     @Override
     public MaterialPatrolDTO getStandingBook(String materialsCode,
                                              String categoryCode,
-                                             String  lineCode,
-                                             String  stationCode,
-                                             String  positionCode) {
+                                             String lineCode,
+                                             String stationCode,
+                                             String positionCode) {
         MaterialPatrolDTO materialPatrolDTO = new MaterialPatrolDTO();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         materialPatrolDTO.setPatrolName(sysUser.getRealname());
 
         //根据条件查询巡检表
-        List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getStandingBook(materialsCode,categoryCode,lineCode,stationCode,positionCode);
-        if (CollectionUtil.isNotEmpty(patrolStandardList)){
+        List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getStandingBook(materialsCode, categoryCode, lineCode, stationCode, positionCode);
+        if (CollectionUtil.isNotEmpty(patrolStandardList)) {
             List<String> collect = patrolStandardList.stream().map(PatrolStandardDTO::getStandardCode).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(collect)) {
                 List<PatrolStandardDTO> patrolStandardNameList = emergencyMaterialsMapper.getPatrolStandardNameList(collect);
@@ -296,21 +296,21 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
 
     @Override
     public Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList, String id) {
-        List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsMapper.getMaterialInspection(pageList, id,"0");
+        List<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsMapper.getMaterialInspection(pageList, id, "0");
         LambdaQueryWrapper<EmergencyMaterialsInvoices> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper1.eq(EmergencyMaterialsInvoices::getDelFlag,0);
-        if (StrUtil.isNotBlank(id)){
-            lambdaQueryWrapper1.eq(EmergencyMaterialsInvoices::getId,id);
+        lambdaQueryWrapper1.eq(EmergencyMaterialsInvoices::getDelFlag, 0);
+        if (StrUtil.isNotBlank(id)) {
+            lambdaQueryWrapper1.eq(EmergencyMaterialsInvoices::getId, id);
         }
         EmergencyMaterialsInvoices emergencyMaterialsInvoices = materialsInvoicesMapper.selectOne(lambdaQueryWrapper1);
         for (int i = 0; i < materialInspection.size(); i++) {
             EmergencyMaterialsInvoicesItem e = materialInspection.get(i);
-            if (StrUtil.isNotBlank(e.getCategoryCode())){
-                LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper= new LambdaQueryWrapper<>();
-                lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,0)
-                                  .eq(EmergencyMaterialsCategory::getCategoryCode,e.getCategoryCode());
+            if (StrUtil.isNotBlank(e.getCategoryCode())) {
+                LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag, 0)
+                        .eq(EmergencyMaterialsCategory::getCategoryCode, e.getCategoryCode());
                 EmergencyMaterialsCategory emergencyMaterialsCategory = emergencyMaterialsCategoryMapper.selectOne(lambdaQueryWrapper);
-                if (StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryName())){
+                if (StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryName())) {
                     e.setCategoryName(emergencyMaterialsCategory.getCategoryName());
                 }
             }
@@ -329,16 +329,16 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 String position = iSysBaseAPI.getPosition(emergencyMaterialsInvoices.getPositionCode());
                 e.setPositionName(position);
             }
-            if ("0".equals(e.getPid()) && StrUtil.isNotBlank(e.getId())){
+            if ("0".equals(e.getPid()) && StrUtil.isNotBlank(e.getId())) {
                 List<EmergencyMaterialsInvoicesItem> materialInspection1 = emergencyMaterialsMapper.getMaterialInspection(pageList, id, e.getId());
                 for (int j = 0; j < materialInspection1.size(); j++) {
                     EmergencyMaterialsInvoicesItem q = materialInspection1.get(j);
-                    if (StrUtil.isNotBlank(q.getCategoryCode())){
-                        LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper= new LambdaQueryWrapper<>();
-                        lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,0)
-                                          .eq(EmergencyMaterialsCategory::getCategoryCode,q.getCategoryCode());
+                    if (StrUtil.isNotBlank(q.getCategoryCode())) {
+                        LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                        lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag, 0)
+                                .eq(EmergencyMaterialsCategory::getCategoryCode, q.getCategoryCode());
                         EmergencyMaterialsCategory emergencyMaterialsCategory = emergencyMaterialsCategoryMapper.selectOne(lambdaQueryWrapper);
-                        if (StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryName())){
+                        if (StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryName())) {
                             q.setCategoryName(emergencyMaterialsCategory.getCategoryName());
                         }
                     }
@@ -528,9 +528,17 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         }
         return imporReturnRes(errorLines, successLines, tipMessage, true, null);
     }
+
     @Override
     public void getInspectionRecordExportExcel(EmergencyMaterialsInvoicesDTO condition, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        XSSFWorkbook wb = getInspectionRecordExportExcelTemplate(condition, request, response);
+        //将数据写进自定义模板中
+        List<String> selections = condition.getSelections();
+        String s = selections.stream().findFirst().get();
+        LambdaQueryWrapper<EmergencyMaterialsInvoices> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.eq(EmergencyMaterialsInvoices::getId, s);
+        EmergencyMaterialsInvoices invoice = materialsInvoicesMapper.selectOne(queryWrapper);
+        XSSFWorkbook wb = getInspectionRecordExportExcelTemplate(invoice, request, response);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         wb.write(bos);
         byte[] brray = bos.toByteArray();
@@ -546,13 +554,6 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         String path = fileTemp.getAbsolutePath();
         TemplateExportParams params = new TemplateExportParams(path);
         Map<String, Object> map = new HashMap<String, Object>();
-        //将数据写进自定义模板中
-        List<String> selections = condition.getSelections();
-        String s = selections.stream().findFirst().get();
-        LambdaQueryWrapper<EmergencyMaterialsInvoices> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
-        queryWrapper.eq(EmergencyMaterialsInvoices::getId, s);
-        EmergencyMaterialsInvoices invoice = materialsInvoicesMapper.selectOne(queryWrapper);
         EmergencyMaterialsInvoicesDTO e = new EmergencyMaterialsInvoicesDTO();
         BeanUtils.copyProperties(invoice, e);
         //为了拿到巡检位置|存放地点
@@ -661,21 +662,23 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
 
     @Override
     public void getInspectionRecordExportZip(EmergencyMaterialsInvoicesDTO condition, HttpServletRequest request, HttpServletResponse response) throws IOException {
-
         OutputStream outputStream = response.getOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
         List<String> selections = condition.getSelections();
         LambdaQueryWrapper<EmergencyMaterialsInvoices> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
-        queryWrapper.in(EmergencyMaterialsInvoices::getId, selections);
+        if (CollUtil.isNotEmpty(selections)) {
+            queryWrapper.in(EmergencyMaterialsInvoices::getId, selections);
+        }
         List<EmergencyMaterialsInvoices> invoices = materialsInvoicesMapper.selectList(queryWrapper);
         response.setContentType("application/zip");
         response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(DateUtil.format(new Date(), "yyyy-MM-dd") + "应急物资巡检记录导出模板.zip", "UTF-8"));
+        Integer c = 1;
         for (EmergencyMaterialsInvoices invoice : invoices) {
             List<String> invoiceId = new ArrayList<>();
-            invoiceId.add(invoice.getId()) ;
+            invoiceId.add(invoice.getId());
             condition.setSelections(invoiceId);
-            XSSFWorkbook wb = getInspectionRecordExportExcelTemplate(condition, request, response);
+            XSSFWorkbook wb = getInspectionRecordExportExcelTemplate(invoice, request, response);
             //wb转输入流
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             wb.write(bos);
@@ -750,7 +753,9 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                         .eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0)
                         .eq(EmergencyMaterialsCategory::getCategoryCode, item.getCategoryCode())
                 );
-                lm.put("categoryName", category.getCategoryName());
+                if (ObjectUtil.isNotEmpty(category)) {
+                    lm.put("categoryName", category.getCategoryName());
+                }
                 lm.put("materialsCode", item.getMaterialsCode());
                 lm.put("materialsName", item.getMaterialsName());
                 lm.put("specification", item.getSpecification());
@@ -778,8 +783,6 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             Workbook workbook = ExcelExportUtil.exportExcel(params, map);
             String fileName = "应急物资巡检记录.xlsx";
             try {
-                Random random = new Random();
-                int c = random.nextInt(10);
                 ZipEntry entry = new ZipEntry(c + " " + DateUtil.format(e.getPatrolDate(), "yyyy-MM-dd") + inspectionPosition + fileName);
                 zipOutputStream.putNextEntry(entry);
                 workbook.write(zipOutputStream);
@@ -788,6 +791,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 exception.printStackTrace();
             }
             fileTemp.delete();
+            c++;
         }
         zipOutputStream.close();
         outputStream.flush();
@@ -804,7 +808,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
      * @return
      * @throws IOException
      */
-    public XSSFWorkbook getInspectionRecordExportExcelTemplate(EmergencyMaterialsInvoicesDTO condition, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public XSSFWorkbook getInspectionRecordExportExcelTemplate(EmergencyMaterialsInvoices condition, HttpServletRequest request, HttpServletResponse response) throws IOException {
         //创建workbook,即创建一个excel
         XSSFWorkbook wb = new XSSFWorkbook();
         //创建excel里对应的sheet
@@ -821,13 +825,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         // 设置行高
         row0.setHeight((short) 800);
         String title = "应急物资巡检记录导出";
-        List<String> selections = condition.getSelections();
-        LambdaQueryWrapper<EmergencyMaterialsInvoices> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
-        queryWrapper.in(EmergencyMaterialsInvoices::getId, selections);
-        List<EmergencyMaterialsInvoices> invoices = materialsInvoicesMapper.selectList(queryWrapper);
         //创建表头
-        createHeadCell(wb, row0, title, invoices, titleStyle, contentStyle, sheet, rowNum, firstHeadCellStyle, secondHeaderStyle);
+        createHeadCell(wb, row0, title, condition, titleStyle, contentStyle, sheet, rowNum, firstHeadCellStyle, secondHeaderStyle);
         return wb;
     }
 
@@ -862,13 +861,13 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     /**
      * 创建表头
      */
-    public void createHeadCell(XSSFWorkbook wb, XSSFRow row0, String title, List<EmergencyMaterialsInvoices> invoices, XSSFCellStyle titleStyle, XSSFCellStyle contentStyle, XSSFSheet sheet, int rowNum, XSSFCellStyle firstHeaderStyle, XSSFCellStyle secondHeaderStyle) {
+    public void createHeadCell(XSSFWorkbook wb, XSSFRow row0, String title, EmergencyMaterialsInvoices invoice, XSSFCellStyle titleStyle, XSSFCellStyle contentStyle, XSSFSheet sheet, int rowNum, XSSFCellStyle firstHeaderStyle, XSSFCellStyle secondHeaderStyle) {
         XSSFCell c00 = row0.createCell(0);
         c00.setCellValue(title);
         c00.setCellStyle(titleStyle);
         // 第二行，设置一级表头名，cellRangeAddressList 合并表格集合
         List<CellRangeAddress> cellRangeAddressList = new ArrayList<>();
-        String[] rowSeconds = {"巡检位置：{{position}}", "", "巡检人：{{patrolName}}", "", "巡检部门：{{patrolTeamName}}", "", "巡检结果：{{patrolResult}}"};
+        String[] rowSeconds = {"巡检日期：{{patrolDate}}", "", "巡检位置：{{position}}", "", "巡检人：{{patrolName}}", "", "巡检部门：{{patrolTeamName}}", "", "巡检结果：{{patrolResult}}"};
         XSSFRow rowSecond = sheet.createRow(rowNum++);
         rowSecond.setHeight((short) 700);
         //将 rowSeconds 的名称，即一级表头名 ，写入单元格，每个空一格，然后合并
@@ -886,8 +885,11 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         List<EmergencyMaterialsInvoicesItemDTO> allList = new ArrayList<>();
         XSSFRow row1 = sheet.createRow(rowNum++);
         row1.setHeight((short) 350);
-        for (EmergencyMaterialsInvoices invoice : invoices) {
-            EmergencyMaterialsInvoicesItem emergencyMaterialsInvoicesItem = materialsInvoicesItemMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsInvoicesItem>().eq(EmergencyMaterialsInvoicesItem::getInvoicesId, invoice.getId()).last("limit 1"));
+
+        System.out.println("打印数据:"+invoice.getId());
+        EmergencyMaterialsInvoicesItem emergencyMaterialsInvoicesItem = materialsInvoicesItemMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsInvoicesItem>().eq(EmergencyMaterialsInvoicesItem::getInvoicesId, invoice.getId()).last("limit 1"));
+        //有问题
+        if(ObjectUtil.isNotEmpty(emergencyMaterialsInvoicesItem)){
             List<EmergencyMaterialsInvoicesItemDTO> items = emergencyMaterialsMapper.getMaterialInspectionList(emergencyMaterialsInvoicesItem.getMaterialsCode(), invoice.getId(), false);
             if (CollUtil.isNotEmpty(items)) {
                 allList.addAll(items);
@@ -1319,8 +1321,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 } else {
                     stringBuilder.append("站点不存在，");
                 }
-                if(ObjectUtil.isEmpty(positionCode)&&depositPositionName.size() > 2)
-                {
+                if (ObjectUtil.isEmpty(positionCode) && depositPositionName.size() > 2) {
                     stringBuilder.append("位置不存在，");
                 }
             }
