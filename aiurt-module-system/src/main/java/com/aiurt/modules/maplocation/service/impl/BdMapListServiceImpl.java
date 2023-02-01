@@ -112,7 +112,7 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                 for (CurrentTeamPosition teamPosition : currentTeamPositionList) {
                     if (ObjectUtil.isNotEmpty(teamPosition)) {
                         teamPosition.setCurrentStaffStatusName(userNameSet.contains(teamPosition.getUsername()) ? "在线" : "离线");
-                        teamPosition.setCurrentStaffStatusId(userNameSet.contains(teamPosition.getUsername()) ? "1" : "0");
+                        teamPosition.setCurrentStaffStatusId(userNameSet.contains(teamPosition.getUsername()) ? "0" : "1");
                     }
 
                     // 获取坐标系
