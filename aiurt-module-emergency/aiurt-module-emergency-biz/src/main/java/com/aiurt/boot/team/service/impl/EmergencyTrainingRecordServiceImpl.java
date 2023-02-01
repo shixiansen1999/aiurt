@@ -642,16 +642,13 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
         String positionCode = emergencyTrainingRecordVO.getPositionCode();
         String position = null;
         if (StrUtil.isNotEmpty(lineCode)) {
-            String lineName = iSysBaseAPI.getPosition(lineCode);
-            position = lineName;
+            position = iSysBaseAPI.getPosition(lineCode);
         }
         if (StrUtil.isNotEmpty(stationCode)) {
-            String stationName = iSysBaseAPI.getPosition(stationCode);
-            position = position + "/" + stationName;
+            position = iSysBaseAPI.getPosition(stationCode);
         }
         if (StrUtil.isNotEmpty(positionCode)) {
-            String positionName = iSysBaseAPI.getPosition(positionCode);
-            position = position + "/" + positionName;
+            position = iSysBaseAPI.getPosition(positionCode);
         }
 
         List<EmergencyCrewVO> trainingCrews = emergencyTrainingRecordMapper.getTrainingCrews(id);
@@ -701,7 +698,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             //处理合并单元格
             int size = processRecords.size();
             Sheet sheet = workbook.getSheetAt(0);
-            CellRangeAddress region = new CellRangeAddress(6,6+size,1,1);
+            CellRangeAddress region = new CellRangeAddress(5,5+size,1,1);
             //合并
             sheet.addMergedRegion(region);
             //合并后设置下边框
@@ -710,7 +707,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             RegionUtil.setBorderTop(BorderStyle.THIN, region, sheet);
             RegionUtil.setBorderRight(BorderStyle.THIN, region, sheet);
             for (int j = 0 ;j < size; j++) {
-                CellRangeAddress cellAddresses = new CellRangeAddress(7+j,7+j,4,9);
+                CellRangeAddress cellAddresses = new CellRangeAddress(6+j,6+j,4,9);
                 //合并
                 sheet.addMergedRegion(cellAddresses);
                 //合并后设置下边框
