@@ -15,6 +15,7 @@ import com.aiurt.modules.major.mapper.CsMajorMapper;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.mapper.MaterialBaseMapper;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -288,9 +289,14 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
                         if (ObjectUtil.isNotEmpty(deviceType1)){
                             deviceType.setPid(deviceType1.getId());
                         }else {
-                            errorStrs.add("第 " + i + " 行：输入的上级节点找不到！请核对后输出，忽略导入。");
-                            list.add(deviceType.setText("输入的上级节点找不到！请核对后输出，忽略导入"));
-                            continue;
+                            JSONObject systemCode = iSysBaseAPI.getSystemName(deviceType.getMajorCode(), deviceType.getPUrl());
+                            if (ObjectUtil.isNotEmpty(systemCode)) {
+                                deviceType.setPid("0");
+                            } else {
+                                errorStrs.add("第 " + i + " 行：输入的上级节点找不到！请核对后输出，忽略导入。");
+                                list.add(deviceType.setText("输入的上级节点找不到！请核对后输出，忽略导入"));
+                                continue;
+                            }
                         }
                     }else {
                         deviceType.setPid("0");
