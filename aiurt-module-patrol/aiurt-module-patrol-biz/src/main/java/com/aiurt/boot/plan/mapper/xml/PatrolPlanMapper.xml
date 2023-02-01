@@ -3,160 +3,82 @@
 <mapper namespace="com.aiurt.boot.plan.mapper.PatrolPlanMapper">
     <update id="updates" parameterType="java.lang.String">
         UPDATE (patrol_plan a
-            LEFT JOIN patrol_plan_standard b on b.plan_id =a.id
-            LEFT JOIN patrol_plan_organization c on c.plan_code=a.`code`
-            LEFT JOIN patrol_plan_device d on d.plan_id =a.id
+            LEFT JOIN patrol_plan_standard b on b.plan_id = a.id
+            LEFT JOIN patrol_plan_organization c on c.plan_code = a.`code`
+            LEFT JOIN patrol_plan_device d on d.plan_id = a.id
             LEFT JOIN patrol_plan_station e on e.plan_code = a.`code`
             LEFT JOIN patrol_plan_strategy f on f.plan_id = a.id
             )
-        SET a.del_flag = 1, b.del_flag=1, c.del_flag=1, d.del_flag=1, e.del_flag=1, f.del_flag=1
-        where a.id= #{id}
+        SET a.del_flag = 1,
+            b.del_flag=1,
+            c.del_flag=1,
+            d.del_flag=1,
+            e.del_flag=1,
+            f.del_flag=1
+        where a.id = #{id}
     </update>
 
     <delete id="deleteIdorCode">
 
         DELETE
-        a.*,b.*,c.*,d.*,e.*,f.*
-        from
-            patrol_plan  a
-                LEFT JOIN patrol_plan_device b on a.id=b.plan_id
-                LEFT JOIN patrol_plan_organization c on a.`code`=c.plan_code
-                LEFT JOIN patrol_plan_standard d ON a.id=d.plan_id
-                LEFT JOIN patrol_plan_station e ON a.`code`=e.plan_code
-                LEFT JOIN patrol_plan_strategy f on a.id =f.plan_id
-        WHERE
-            a.id= #{id,jdbcType=VARCHAR}
+            a.*,b.*,c.*,d.*,e.*,f.*
+        from patrol_plan a
+                 LEFT JOIN patrol_plan_device b on a.id = b.plan_id
+                 LEFT JOIN patrol_plan_organization c on a.`code` = c.plan_code
+                 LEFT JOIN patrol_plan_standard d ON a.id = d.plan_id
+                 LEFT JOIN patrol_plan_station e ON a.`code` = e.plan_code
+                 LEFT JOIN patrol_plan_strategy f on a.id = f.plan_id
+        WHERE a.id = #{id,jdbcType=VARCHAR}
 
 
     </delete>
 
     <select id="list" resultType="com.aiurt.boot.plan.dto.PatrolPlanDto">
-        SELECT * FROM
-        ( SELECT pp.*,
-        ( SELECT
-        GROUP_CONCAT(e.depart_name SEPARATOR ';')
-        FROM patrol_plan_organization PPO
-        LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code
-        WHERE
-        pp.`code` = PPO.plan_code
-        AND PPO.del_flag = 0) AS mechanismName,
-        (SELECT
-        GROUP_CONCAT(e.org_code SEPARATOR ';')
+        SELECT DISTINCT
+        pp.*
         FROM
-        patrol_plan_organization PPO
-        LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code
+        patrol_plan pp
+        LEFT JOIN patrol_plan_organization ss ON pp.`code` = ss.plan_code
+        AND ss.del_flag = 0
+        LEFT JOIN patrol_plan_standard sp ON sp.plan_id = pp.id
+        AND sp.del_flag = 0
+        LEFT JOIN patrol_plan_station pps on pp.`code` = pps.plan_code and pps.del_flag =0
         WHERE
-        pp.`code` = PPO.plan_code
-        AND PPO.del_flag = 0 ) AS mechanismCode,
-        (SELECT
-        GROUP_CONCAT(f.station_name SEPARATOR ';')
-        FROM
-        patrol_plan_station d
-        LEFT JOIN cs_station f ON d.station_code = f.station_code
-        WHERE
-        pp.`code` = d.plan_code
-        AND d.del_flag = 0) AS siteName,
-        (SELECT
-        GROUP_CONCAT(f.station_code SEPARATOR ';')
-        FROM
-        patrol_plan_station d
-        LEFT JOIN cs_station f ON d.station_code = f.station_code
-        WHERE
-        pp.`code` = d.plan_code
-        AND d.del_flag = 0 ) AS siteCode,
-        (SELECT
-        GROUP_CONCAT(DISTINCT c.profession_code SEPARATOR ';')
-        FROM
-        patrol_plan_standard c
-        LEFT JOIN cs_major csm ON c.profession_code = csm.major_code
-        WHERE
-        c.plan_id = pp.id
-        and c.del_flag=0
-        and csm.del_flag=0) AS professionCode,
-        ( SELECT
-        GROUP_CONCAT(DISTINCT csm.major_name SEPARATOR ';')
-        FROM
-        patrol_plan_standard c
-        LEFT JOIN cs_major csm ON c.profession_code = csm.major_code
-        WHERE
-        c.plan_id = pp.id
-        and c.del_flag=0
-        and csm.del_flag =0) AS professionName,
-        ( SELECT
-        GROUP_CONCAT(DISTINCT c.subsystem_code SEPARATOR ';')
-        FROM
-        patrol_plan_standard c
-        LEFT JOIN cs_subsystem css ON c.subsystem_code = css.system_code
-        WHERE
-        c.plan_id = pp.id
-        and c.del_flag=0
-        and css.del_flag=0) AS subsystemCode,
-        ( SELECT
-        GROUP_CONCAT(DISTINCT css.system_name SEPARATOR ';')
-        FROM
-        patrol_plan_standard c
-        LEFT JOIN cs_subsystem css ON c.subsystem_code = css.system_code
-        WHERE
-        c.plan_id = pp.id
-        and c.del_flag=0
-        and css.del_flag =0) AS subsystemName
-        FROM patrol_plan pp
-        LEFT JOIN patrol_plan_organization ss on pp.`code` =ss.plan_code and ss.del_flag =0
-        LEFT JOIN patrol_plan_standard sp on sp.plan_id = pp.id and sp.del_flag = 0
-        LEFT JOIN cs_major mm on sp.profession_code = mm.major_code and mm.del_flag = 0
-        LEFT JOIN  sys_depart cc on cc.org_code = ss.organization_code and cc.del_flag =0
-        WHERE pp.del_flag = 0
-        <if test="patrolPlan.orgCodes != null and patrolPlan.orgCodes.size() != 0">
-            and ss.organization_code in
-            <foreach collection="patrolPlan.orgCodes" open="(" close=")" separator="," item="item">
-                #{item}
-            </foreach>
-        </if>
-        <if test="patrolPlan.majorCodes != null and patrolPlan.majorCodes.size() != 0">
-            and mm.major_code  in
-            <foreach collection="patrolPlan.majorCodes" open="(" close=")" separator="," item="item">
-                #{item}
-            </foreach>
-        </if>
-
-        GROUP BY pp.id
-        ) AS abc
-        WHERE
-        1 = 1
+        pp.del_flag = 0
         <if test="patrolPlan.name !=null ">
-            AND name LIKE CONCAT ('%', #{patrolPlan.name}, '%')
+            AND pp.name LIKE CONCAT ('%', #{patrolPlan.name}, '%')
         </if>
         <if test="patrolPlan.professionCode !=null ">
-            AND professionCode LIKE CONCAT ('%', #{patrolPlan.professionCode}, '%')
+            AND pps.professionCode = #{patrolPlan.professionCode}
         </if>
         <if test="patrolPlan.subsystemCode !=null ">
-            AND subsystemCode LIKE CONCAT ('%', #{patrolPlan.subsystemCode}, '%')
+            AND pps.subsystemCode = #{patrolPlan.subsystemCode}
         </if>
         <if test="patrolPlan.code !=null ">
-            AND code LIKE CONCAT ('%', #{patrolPlan.code}, '%')
+            AND pp.code LIKE CONCAT ('%', #{patrolPlan.code}, '%')
         </if>
         <if test="patrolPlan.status !=null ">
-            AND status = #{patrolPlan.status}
+            AND pp.status = #{patrolPlan.status}
         </if>
         <if test="patrolPlan.mechanismCode !=null ">
-            AND mechanismCode LIKE CONCAT ('%', #{patrolPlan.mechanismCode}, '%')
+            AND ss.organization_code LIKE CONCAT ('%', #{patrolPlan.mechanismCode}, '%')
         </if>
         <if test="patrolPlan.siteCode!=null ">
-            AND siteCode REGEXP #{patrolPlan.siteCode}
+            AND pps.siteCode = #{patrolPlan.siteCode}
         </if>
         <if test="patrolPlan.majorCodes != null and patrolPlan.majorCodes.size() != 0">
-            and professionCode in
+            and pps.professionCode in
             <foreach collection="patrolPlan.majorCodes" open="(" close=")" separator="," item="item">
                 #{item}
             </foreach>
         </if>
         <if test="patrolPlan.planCodes != null and patrolPlan.planCodes.size() != 0">
-            and `code` in
+            and pp.`code` in
             <foreach collection="patrolPlan.planCodes" open="(" close=")" separator="," item="item">
                 #{item}
             </foreach>
         </if>
-        ORDER BY create_time DESC
+        ORDER BY pp.create_time DESC
     </select>
     <select id="getMajorInfoByPlanId" resultType="java.lang.String">
         SELECT
@@ -221,7 +143,8 @@
         FROM patrol_plan a
                  LEFT JOIN patrol_plan_strategy b on a.id = b.plan_id AND b.del_flag = 0
         WHERE a.del_flag = 0
-          and a.id = #{id} LIMIT 1
+          and a.id = #{id}
+        LIMIT 1
     </select>
     <select id="selectByCode" resultType="com.aiurt.boot.plan.entity.PatrolPlan">
         select *
@@ -319,7 +242,7 @@
         FROM
         patrol_standard t2
         LEFT JOIN patrol_plan_standard t3 ON t2.`code`=t3.standard_code
-        LEFT JOIN  patrol_plan t1 ON t1.id=t3.plan_id
+        LEFT JOIN patrol_plan t1 ON t1.id=t3.plan_id
         <where>
             t1.id = #{planId}
             <if test="majorCode!=null">
@@ -335,14 +258,14 @@
         FROM device a
         WHERE
         a.del_flag =0
-          <if test="siteCodes!=null">
-        <if test="siteCodes.size()>0">
-            AND a.station_code in
-            <foreach item="siteCodes" collection="siteCodes" separator="," open="(" close=")" index="">
-                #{siteCodes}
-            </foreach>
+        <if test="siteCodes!=null">
+            <if test="siteCodes.size()>0">
+                AND a.station_code in
+                <foreach item="siteCodes" collection="siteCodes" separator="," open="(" close=")" index="">
+                    #{siteCodes}
+                </foreach>
+            </if>
         </if>
-          </if>
         <if test="majorCode!=null">
             AND a.major_code = #{majorCode}
         </if>
@@ -361,40 +284,78 @@
     </select>
     <select id="selectStations" resultType="com.aiurt.boot.standard.dto.StationDTO">
         select *
-          from cs_station a
-           where a.del_flag =0
-   <if test="asList!=null">
-        <if test="asList.size()>0">
-            AND a.station_code in
-            <foreach item="asList" collection="asList" separator="," open="(" close=")" index="">
-                #{asList}
-            </foreach>
-        </if>
+        from cs_station a
+        where a.del_flag =0
+        <if test="asList!=null">
+            <if test="asList.size()>0">
+                AND a.station_code in
+                <foreach item="asList" collection="asList" separator="," open="(" close=")" index="">
+                    #{asList}
+                </foreach>
+            </if>
         </if>
     </select>
     <select id="selectBySite" resultType="java.lang.String">
-        select station_code from cs_station  where  line_code =#{siteCode}
+        select station_code
+        from cs_station
+        where line_code = #{siteCode}
     </select>
     <select id="systemCodeName" resultType="java.lang.String">
-        select system_name from cs_subsystem where  system_code =#{subsystemCode}
+        select system_name
+        from cs_subsystem
+        where system_code = #{subsystemCode}
     </select>
     <select id="deviceTypeCodeName" resultType="java.lang.String">
-        select  name from device_type where  code =#{deviceTypeCode}
+        select name
+        from device_type
+        where code = #{deviceTypeCode}
     </select>
     <select id="statusDesc" resultType="java.lang.String">
-        select item_text from sys_dict_item c left join sys_dict a on a.id =c.dict_id
-        where  a.del_flag=0 and a.dict_code = 'device_status' and c.item_value = #{status}
+        select item_text
+        from sys_dict_item c
+                 left join sys_dict a on a.id = c.dict_id
+        where a.del_flag = 0
+          and a.dict_code = 'device_status'
+          and c.item_value = #{status}
     </select>
     <select id="temporaryName" resultType="java.lang.String">
-        select item_text from sys_dict_item c left join sys_dict a on a.id =c.dict_id
-        where  a.del_flag=0 and a.dict_code = 'device_temporary' and c.item_value = #{temporary}
+        select item_text
+        from sys_dict_item c
+                 left join sys_dict a on a.id = c.dict_id
+        where a.del_flag = 0
+          and a.dict_code = 'device_temporary'
+          and c.item_value = #{temporary}
     </select>
     <select id="majorName" resultType="java.lang.String">
-        select
-            major_name as majorName
+        select major_name as majorName
         from cs_major
-        where
-            del_flag = 0
-          and major_code=#{majorCode}
+        where del_flag = 0
+          and major_code = #{majorCode}
+    </select>
+    <select id="selectMechanismNames" resultType="java.lang.String">
+        SELECT organization_code
+        FROM patrol_plan_organization
+        WHERE del_flag = 0
+          and plan_code = #{code}
+    </select>
+    <select id="selectProfessionCodes" resultType="java.lang.String">
+        SELECT c.profession_code
+        from patrol_plan_standard c
+        WHERE c.plan_id = #{id}
+          and c.del_flag = 0
+    </select>
+    <select id="selectSubsystemCodes" resultType="java.lang.String">
+        SELECT  c.subsystem_code
+        FROM    patrol_plan_standard c
+        WHERE   c.plan_id = #{id}  and c.del_flag=0
+    </select>
+    <select id="selectBySites" resultType="java.lang.String">
+        SELECT
+            d.station_code
+        FROM
+            patrol_plan_station d
+        WHERE
+           d.plan_code = #{code}
+          AND d.del_flag = 0
     </select>
 </mapper>

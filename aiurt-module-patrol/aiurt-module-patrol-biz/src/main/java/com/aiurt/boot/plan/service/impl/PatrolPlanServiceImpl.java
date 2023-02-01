@@ -105,7 +105,13 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         boolean filter = GlobalThreadLocal.setDataFilter(true);
         List<PatrolPlanDto> list1 = list.getRecords();
         list1.forEach(l -> {
-            List<String> strings = Arrays.asList(l.getSiteCode().split(";"));
+            List<String> mechanismNames = sysBaseApi.queryOrgNamesByOrgCodes(baseMapper.selectMechanismNames(l.getCode()));
+            l.setMechanismName(String.join(";",mechanismNames));
+            List<String> professionName  = sysBaseApi.getCsMajorNamesByCodes(baseMapper.selectProfessionCodes(l.getId()));
+            l.setProfessionName(String.join(";",professionName));
+            List<String> subsystemNames = baseMapper.selectSubsystemCodes(l.getId());
+            l.setSubsystemName(String.join(";",subsystemNames));
+            List<String> strings = baseMapper.selectBySites(l.getCode());
             List<StationDTO> stationDtos = baseMapper.selectStations(strings);
             l.setSiteName(patrolManager.translateStation(stationDtos));
         });
