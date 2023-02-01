@@ -465,7 +465,15 @@ public class SystemApiController {
     List<JSONObject> queryDepartsByOrgcodes(@RequestParam("orgCodes") String orgCodes){
         return this.sysBaseApi.queryDepartsByOrgcodes(orgCodes);
     }
-
+    /**
+     * 根据多个部门编码(逗号分隔)，查询返回多个部门名称
+     * @param orgCodes
+     * @return
+     */
+    @GetMapping("/queryOrgNamesByOrgCodes")
+    List<String> queryOrgNamesByOrgCodes(@RequestParam("orgCodes") List<String> orgCodes){
+        return this.sysBaseApi.queryOrgNamesByOrgCodes(orgCodes);
+    }
     /**
      * 39根据多个部门ID(逗号分隔)，查询返回多个部门信息
      * @param ids

@@ -325,6 +325,13 @@ public interface ISysBaseAPI extends CommonAPI {
     List<JSONObject> queryDepartsByOrgcodes(String orgCodes);
 
     /**
+     * 根据多个部门编码(集合)，查询返回多个部门名称
+     * @param orgCodes
+     * @return
+     */
+    List<String> queryOrgNamesByOrgCodes(List<String> orgCodes);
+
+    /**
      * 39根据多个部门id(逗号分隔)，查询返回多个部门信息
      *
      * @param ids
@@ -577,6 +584,12 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     JSONObject getCsMajorByCode(String majorCode);
     /**
+     * 根据多个编码获取专业名称
+     * @param majorCodes
+     * @return
+     */
+    List<String> getCsMajorNamesByCodes(List<String> majorCodes);
+    /**
      * 根据专业名称获取专业
      * @param majorName
      * @return
@@ -589,6 +602,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     JSONObject getSystemName(String majorCode,String systemName);
+    /**
+     * 根据子系统code，获取子系统名称
+     * @param systemCodes
+     * @return
+     */
+    List<String> getSystemNames(List<String> systemCodes);
 
     /**
      * 根据专业code、设备类型名称 ，查询设备类型信息
