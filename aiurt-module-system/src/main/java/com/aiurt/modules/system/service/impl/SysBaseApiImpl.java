@@ -1754,7 +1754,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return new ArrayList<>();
         }
         List<CsMajor> csMajor = majorService.getBaseMapper().selectList(wrapper);
-        if (Objects.isNull(csMajor)) {
+        if (CollectionUtil.isEmpty(csMajor)) {
             return new ArrayList<>();
         }
         return  csMajor.stream().map(CsMajor::getMajorName).distinct().collect(Collectors.toList());
@@ -1788,7 +1788,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return new ArrayList<>();
         }
         List<CsSubsystem> subsystem = subsystemMapper.selectList(wrapper);
-        if (Objects.isNull(subsystem)) {
+        if (CollectionUtil.isEmpty(subsystem)) {
             return new ArrayList<>();
         }
         return subsystem.stream().map(CsSubsystem::getSystemName).distinct().collect(Collectors.toList());
