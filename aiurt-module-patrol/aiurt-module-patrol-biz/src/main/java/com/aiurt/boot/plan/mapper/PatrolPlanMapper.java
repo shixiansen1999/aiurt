@@ -10,7 +10,6 @@ import com.aiurt.boot.task.dto.MajorDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
-import com.baomidou.mybatisplus.core.injector.methods.Update;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -209,4 +208,32 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
    * @return
    */
   String majorName(@Param("majorCode")String majorCode);
+
+  /**
+   * 查询部门
+   * @param code
+   * @return
+   */
+  List<String> selectMechanismNames(@Param("code") String code);
+
+  /**
+   * 查询专业codes
+   * @param id
+   * @return
+   */
+  List<String> selectProfessionCodes(@Param("id") String id);
+
+  /**
+   * 查询子系统codes
+   * @param id
+   * @return
+   */
+  List<String> selectSubsystemCodes(@Param("id") String id);
+
+  /**
+   * 查询关联站点codes
+   * @param code
+   * @return
+   */
+  List<String> selectBySites(@Param("code") String code);
 }

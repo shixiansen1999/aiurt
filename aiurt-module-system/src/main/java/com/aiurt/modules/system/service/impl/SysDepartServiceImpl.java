@@ -1,5 +1,7 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.CommonAPI;
@@ -9,6 +11,7 @@ import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.util.FillRuleUtil;
 import com.aiurt.common.util.YouBianCodeUtil;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.stock.entity.StockLevel2Info;
 import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.model.DepartIdModel;
@@ -21,15 +24,29 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.netty.util.internal.StringUtil;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -320,6 +337,84 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 		return null;
 	}
 
+	@Override
+	public void departmentEXls(HttpServletResponse response) throws IOException {
+		//获取输入流，原始模板位置
+		org.springframework.core.io.Resource resource = new ClassPathResource("/templates/department.xlsx");
+		InputStream resourceAsStream = resource.getInputStream();
+
+		//2.获取临时文件
+		File fileTemp= new File("/templates/department.xlsx");
+		try {
+			//将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+			FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
+
+		String path = fileTemp.getAbsolutePath();
+		TemplateExportParams exportParams = new TemplateExportParams(path);
+		Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+		Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+
+		CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+
+		//机构类型下拉列表
+		List<DictModel> org_category = bean.queryDictItemsByCode("org_category");
+		selectList(workbook, "机构类型", 2, 2, org_category);
+
+		//班组类型下拉列表
+		List<DictModel> team_type = bean.queryDictItemsByCode("team_type");
+		selectList(workbook, "班组类型", 3, 3, team_type);
+
+		String fileName = "组织机构导入模板.xlsx";
+
+		try {
+			response.setHeader("Content-Disposition",
+					"attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+			response.setHeader("Content-Disposition", "attachment;filename="+"组织机构导入模板.xlsx");
+			BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+			workbook.write(bufferedOutPut);
+			bufferedOutPut.flush();
+			bufferedOutPut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	//下拉框
+	private void selectList(Workbook workbook,String name,int firstCol, int lastCol,List<DictModel> modelList){
+		Sheet sheet = workbook.getSheetAt(0);
+		if (CollectionUtil.isNotEmpty(modelList)) {
+			//将新建的sheet页隐藏掉, 下拉值太多，需要创建隐藏页面
+			int sheetTotal = workbook.getNumberOfSheets();
+			String hiddenSheetName = name + "_hiddenSheet";
+			List<String> collect = modelList.stream().map(DictModel::getText).collect(Collectors.toList());
+			Sheet hiddenSheet = workbook.getSheet(hiddenSheetName);
+			if (hiddenSheet == null) {
+				hiddenSheet = workbook.createSheet(hiddenSheetName);
+				//写入下拉数据到新的sheet页中
+				for (int i = 0; i < collect.size(); i++) {
+					Row hiddenRow = hiddenSheet.createRow(i);
+					Cell hiddenCell = hiddenRow.createCell(0);
+					hiddenCell.setCellValue(collect.get(i));
+				}
+				workbook.setSheetHidden(sheetTotal, true);
+			}
+
+			// 下拉数据
+			CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3, 65535, firstCol, lastCol);
+			//  生成下拉框内容名称
+			String strFormula = hiddenSheetName + "!$A$1:$A$65535";
+			// 根据隐藏页面创建下拉列表
+			XSSFDataValidationConstraint constraint = new XSSFDataValidationConstraint(DataValidationConstraint.ValidationType.LIST, strFormula);
+			XSSFDataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) hiddenSheet);
+			DataValidation validation = dvHelper.createValidation(constraint, cellRangeAddressList);
+			//  对sheet页生效
+			sheet.addValidationData(validation);
+		}
+
+	}
 	/**
 	 * 根据部门id删除并且删除其可能存在的子级任何部门
 	 */

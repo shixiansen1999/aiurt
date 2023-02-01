@@ -6,6 +6,8 @@ import com.aiurt.modules.system.model.SysDepartTreeModel;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -83,6 +85,14 @@ public interface ISysDepartService extends IService<SysDepart>{
      * @return
      */
     List<SysDepartTreeModel> searchByKeyWord(String keyWord,String myDeptSearch,String departIds);
+
+
+    /**
+     * 组织机构导入模板下载
+     * @param response
+     * @throws IOException
+     */
+    void departmentEXls(HttpServletResponse response) throws IOException;
 
     /**
      * 根据部门id删除并删除其可能存在的子级部门
