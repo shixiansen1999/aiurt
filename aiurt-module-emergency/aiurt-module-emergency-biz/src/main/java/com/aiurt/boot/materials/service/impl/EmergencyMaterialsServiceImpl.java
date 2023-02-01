@@ -885,8 +885,6 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         List<EmergencyMaterialsInvoicesItemDTO> allList = new ArrayList<>();
         XSSFRow row1 = sheet.createRow(rowNum++);
         row1.setHeight((short) 350);
-
-        System.out.println("打印数据:"+invoice.getId());
         EmergencyMaterialsInvoicesItem emergencyMaterialsInvoicesItem = materialsInvoicesItemMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsInvoicesItem>().eq(EmergencyMaterialsInvoicesItem::getInvoicesId, invoice.getId()).last("limit 1"));
         //有问题
         if(ObjectUtil.isNotEmpty(emergencyMaterialsInvoicesItem)){
