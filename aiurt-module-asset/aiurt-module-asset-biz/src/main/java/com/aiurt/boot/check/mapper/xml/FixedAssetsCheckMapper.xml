@@ -75,7 +75,7 @@
             select distinct check_id
             from fixed_assets_check_category
             where  category_code in
-                <foreach item="categoryCodes" collection="categoryCodes" separator="," open="(" close=")" index="">
+                <foreach item="categoryCodes" collection="condition.categoryCodes" separator="," open="(" close=")">
                     #{categoryCodes}
                 </foreach>
             )
