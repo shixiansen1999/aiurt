@@ -32,6 +32,7 @@ import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -310,10 +311,13 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             //calendar的月份从0开始，1月是0
             start.setTime(startTime);
             Date end = DateUtil.endOfMonth(start.getTime());
+            LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             while (!start.getTime().after(end)) {
                 if (StrUtil.isNotEmpty(scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+2))) {
                     ScheduleItem scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
-                            .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+2)).eq(ScheduleItem::getDelFlag,0));
+                            .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime()) + 2))
+                            .eq(ScheduleItem::getCreateBy, user.getUsername())
+                            .eq(ScheduleItem::getDelFlag, 0));
                     if (ObjectUtil.isEmpty(scheduleItem)){
                         errorList.add(DateUtil.format(start.getTime(),"dd")+"号存在系统中未包含的班次名称");
                     }
