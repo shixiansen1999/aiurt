@@ -385,44 +385,13 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     return getErrorExcel(errorLines, list, errorMessage, successLines, type, url);
                 } else {
                     successLines = list.size();
-                    ThreadPoolExecutor poolExecutor = ExecutorBuilder.create()
-                            .setCorePoolSize(faultKnowledgeBaseList.size()) // 初始线程
-                            .setMaxPoolSize(faultKnowledgeBaseList.size()) // 最大线程
-                            .setWorkQueue(new LinkedBlockingQueue<>(100)) // 线程池策略
-                            .build();
-                    CountDownLatch cdl = new CountDownLatch(faultKnowledgeBaseList.size());
                     for (FaultKnowledgeBase faultKnowledgeBase : faultKnowledgeBaseList) {
-                        poolExecutor.execute(
-                                () -> {
-                                    faultKnowledgeBase.setDelFlag(0);
-                                    faultKnowledgeBase.setApprovedResult(0);
-                                    faultKnowledgeBase.setStatus(0);
-                                    //插入数据库，并获取故障知识库Id
-                                    String businessKey = this.startProcess(faultKnowledgeBase);
-
-                                    //获取登录人信息
-                                    LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-                                    String userName = loginUser.getUsername();
-                                    //导入实体转换成Map
-                                    Map<String, Object> busData = BeanUtil.beanToMap(faultKnowledgeBase);
-                                    //创建流程实体
-                                    StartBpmnImportDTO startBpmnImportDTO = new StartBpmnImportDTO();
-                                    startBpmnImportDTO.setModelKey("fault_knowledge_base");
-                                    startBpmnImportDTO.setUserName(userName);
-                                    startBpmnImportDTO.setBusData(busData);
-                                    startBpmnImportDTO.setBusinessKey(businessKey);
-                                    FlowTaskCompleteCommentDTO flowTaskCompleteCommentDTO = new FlowTaskCompleteCommentDTO();
-                                    flowTaskCompleteCommentDTO.setApprovalType("agree");
-                                    startBpmnImportDTO.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
-                                    //导入数据走流程
-                                    flowBaseApi.startBpmnWithImport(startBpmnImportDTO);
-                                    // 闭锁-1
-                                    cdl.countDown();
-                                });
+                        faultKnowledgeBase.setDelFlag(0);
+                        faultKnowledgeBase.setApprovedResult(1);
+                        faultKnowledgeBase.setStatus(1);
+                        //插入数据库，并获取故障知识库Id
+                        this.startProcess(faultKnowledgeBase);
                     }
-                    // 等待所有线程结束
-                    cdl.await();
-                    poolExecutor.shutdown();
                     return imporReturnRes(errorLines, successLines, tipMessage, true, null);
                 }
 
