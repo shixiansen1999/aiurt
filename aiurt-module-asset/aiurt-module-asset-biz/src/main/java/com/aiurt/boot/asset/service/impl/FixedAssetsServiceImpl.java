@@ -297,7 +297,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
                 for (FixedAssetsModel fixedAssetsModel : fixedAssetsModels) {
                     FixedAssets fixedAssets = new FixedAssets();
                     BeanUtils.copyProperties(fixedAssetsModel, fixedAssets);
-                    this.save(fixedAssets);
+                  /*  this.save(fixedAssets);*/
                 }
                 return Result.ok("文件导入成功！");
             } catch (Exception e) {
@@ -323,18 +323,20 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         if (StrUtil.isNotEmpty(categoryName)) {
             List<String> list = StrUtil.splitTrim(categoryName, "/");
             String pid = null;
-            String categoryCode = null;
-            for (String s : list) {
+            for (int i = 0; i < list.size(); i++) {
+                String s = list.get(i);
                 FixedAssetsCategory assetsCategory = categoryMapper.getAssetsCategory(s, pid);
                 if (ObjectUtil.isNotNull(assetsCategory)) {
                     pid = assetsCategory.getId();
-                    categoryCode = assetsCategory.getCategoryCode();
+                    if (i == list.size() - 1) {
+                        fixedAssetsModel.setCategoryCode(assetsCategory.getCategoryCode());
+                    }
                 }else {
                     stringBuilder.append("系统不存在该资产分类，");
                     break;
                 }
             }
-            fixedAssetsModel.setCategoryCode(categoryCode);
+
         }else {
             stringBuilder.append("资产分类不能为空，");
         }
@@ -353,19 +355,18 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         if (StrUtil.isNotEmpty(orgName)) {
             List<String> list = StrUtil.splitTrim(orgName, "/");
             String id = null;
-            String orgCode = null;
-            for (String s : list) {
+            for (int i = 0; i < list.size(); i++) {
+                String s = list.get(i);
                 //根据部门名称和父id找部门
                 JSONObject depart = sysBaseAPI.getDepartByNameAndParentId(s, id);
                 if (ObjectUtil.isNotNull(depart)) {
                     id = depart.getString("parentId");
-                    orgCode = depart.getString("orgCode");
+                    fixedAssetsModel.setOrgCode(depart.getString("orgCode"));
                 }else {
                     stringBuilder.append("系统不存在该组织机构，");
                     break;
                 }
             }
-            fixedAssetsModel.setOrgCode(orgCode);
         }else {
             stringBuilder.append("使用组织机构不能为空，");
         }
@@ -378,10 +379,35 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
 
     /**非必填数据校验*/
     private void checkNotRequired(StringBuilder stringBuilder, FixedAssetsModel fixedAssetsModel) {
+        String responsibilityName = fixedAssetsModel.getResponsibilityName();
+        if (StrUtil.isNotBlank(responsibilityName) && StrUtil.isNotBlank(fixedAssetsModel.getOrgCode())) {
+            List<String> list = StrUtil.splitTrim(responsibilityName, "，");
+            StringBuilder responsibilityId = new StringBuilder();
+            for (String s : list) {
+                List<String> list1 = StrUtil.splitTrim(s, "/");
+                if (list.size() != 2) {
+                    List<LoginUser> userByRealName = sysBaseAPI.getUserByRealName(list1.get(0), list1.get(1));
+                    LoginUser loginUser = userByRealName.get(0);
+                    responsibilityId.append(loginUser.getId()).append("，");
+                    if (!loginUser.getOrgCode().equals(fixedAssetsModel.getOrgCode())) {
+                        stringBuilder.append("组织机构不存在该责任人，");
+                    }
+                } else {
+                    stringBuilder.append("责任人填写格式错误，");
+                }
+
+            }
+            if (responsibilityId.length() > 0) {
+                // 截取字符
+                responsibilityId = responsibilityId.deleteCharAt(responsibilityId.length() - 1);
+                fixedAssetsModel.setResponsibilityId(responsibilityId.toString());
+            }
+        }
+
         String locationName = fixedAssetsModel.getLocationName();
         if (StrUtil.isNotBlank(locationName)) {
             List<String> list = StrUtil.splitTrim(locationName, "/");
-            if (list.size() != 3) {
+            if (list.size() == 3) {
                 JSONObject lineByName = sysBaseAPI.getLineByName(list.get(0));
                 JSONObject stationByName = sysBaseAPI.getStationByName(list.get(1));
                 if (ObjectUtil.isNotEmpty(lineByName) && ObjectUtil.isNotEmpty(stationByName)) {
@@ -400,7 +426,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         }
 
         String statusName = fixedAssetsModel.getStatusName();
-        if (StrUtil.isNotEmpty(statusName)) {
+        if (StrUtil.isNotBlank(statusName)) {
             List<DictModel> post = sysBaseAPI.queryDictItemsByCode("fixed_assets_status");
             DictModel model = Optional.ofNullable(post).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(statusName)).findFirst().orElse(null);
             if (model != null) {
@@ -411,7 +437,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         }
 
         String unitsName = fixedAssetsModel.getUnitsName();
-        if (StrUtil.isNotEmpty(unitsName)) {
+        if (StrUtil.isNotBlank(unitsName)) {
             List<DictModel> post = sysBaseAPI.queryDictItemsByCode("materian_unit");
             DictModel model = Optional.ofNullable(post).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(unitsName)).findFirst().orElse(null);
             if (model != null) {
