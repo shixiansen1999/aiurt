@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -167,15 +166,17 @@ public class FixedAssetsController extends BaseController<FixedAssets, IFixedAss
 //		return Result.OK(fixedAssets);
 //	}
 
-    /**
-    * 导出excel
-    *
-    * @param response
-    */
-    @RequestMapping(value = "/exportXls")
-    public void exportXls(HttpServletResponse response) {
+	/**
+	 * 模板下载
+	 *
+	 * @param response
+	 */
+	@AutoLog(value = "固定资产-模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "")
+	@ApiOperation(value="固定资产-模板下载", notes="固定资产-模板下载")
+	@RequestMapping(value = "/exportXls",method = RequestMethod.GET)
+	public void exportXls(HttpServletResponse response) {
 		XlsUtil.getExcel(response, "templates/fixedAssets.xlsx", "固定资产导入模板.xlsx");
-    }
+	}
 
 	/**
 	 * 导出数据
@@ -183,22 +184,22 @@ public class FixedAssetsController extends BaseController<FixedAssets, IFixedAss
 	 * @param request
 	 */
 	@RequestMapping(value = "/exportFixedAssetsXls")
-	public ModelAndView exportFixedAssetsXls(HttpServletRequest request, FixedAssetsDTO fixedAssetsDTO) {
-		return fixedAssetsService.exportFixedAssetsXls(request, fixedAssetsDTO);
+	public void exportFixedAssetsXls(HttpServletRequest request,HttpServletResponse response, FixedAssetsDTO fixedAssetsDTO) {
+		fixedAssetsService.exportFixedAssetsXls(request,response, fixedAssetsDTO);
 	}
 
 
-
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+	/**
+	 * 通过excel导入数据
+	 *
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ApiOperation(value="固定资产-通过excel导入数据", notes="固定资产-通过excel导入数据")
+	@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
 		return fixedAssetsService.importExcel(request, response);
-    }
+	}
 
 }

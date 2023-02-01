@@ -5,7 +5,6 @@ import com.aiurt.boot.asset.entity.FixedAssets;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -48,5 +47,5 @@ public interface IFixedAssetsService extends IService<FixedAssets> {
      * @param fixedAssetsDTO
      * @return
      */
-    ModelAndView exportFixedAssetsXls(HttpServletRequest request, FixedAssetsDTO fixedAssetsDTO);
+    void exportFixedAssetsXls(HttpServletRequest request, HttpServletResponse response,FixedAssetsDTO fixedAssetsDTO);
 }
