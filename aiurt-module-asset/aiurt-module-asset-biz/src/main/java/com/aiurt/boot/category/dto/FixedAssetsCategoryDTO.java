@@ -1,6 +1,7 @@
 package com.aiurt.boot.category.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -32,7 +33,6 @@ public class FixedAssetsCategoryDTO {
     @ApiModelProperty(value = "上级节点")
     private java.lang.String pidName;
     /**上级节点编码*/
-    @Excel(name = "上级节点编码", width = 15)
     @ApiModelProperty(value = "上级节点编码")
     private java.lang.String parentCode;
     /**分类名称*/
@@ -44,17 +44,16 @@ public class FixedAssetsCategoryDTO {
     @ApiModelProperty(value = "分类编码")
     private java.lang.String categoryCode;
     /**分类编码*/
-    @Excel(name = "分类编码", width = 15)
     @ApiModelProperty(value = "分类编码")
     private java.lang.String treeCategoryCode;
     /**树查询编码*/
-    @Excel(name = "树查询编码", width = 15)
     @ApiModelProperty(value = "树查询编码")
     private List<String> treeCode;
     /**分类编码*/
-    @Excel(name = "层级", width = 15)
     @ApiModelProperty(value = "层级")
     private java.lang.String level;
+    @TableField(exist = false)
+    private List<String> selections;
     /**备注*/
     @Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")
