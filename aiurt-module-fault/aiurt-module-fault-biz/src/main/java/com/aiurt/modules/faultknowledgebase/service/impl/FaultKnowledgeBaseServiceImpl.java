@@ -387,10 +387,10 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     successLines = list.size();
                     for (FaultKnowledgeBase faultKnowledgeBase : faultKnowledgeBaseList) {
                         faultKnowledgeBase.setDelFlag(0);
-                        faultKnowledgeBase.setApprovedResult(1);
-                        faultKnowledgeBase.setStatus(1);
-                        //插入数据库，并获取故障知识库Id
-                        this.startProcess(faultKnowledgeBase);
+                        faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
+                        faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
+                        //插入数据库
+                        faultKnowledgeBaseMapper.insert(faultKnowledgeBase);
                     }
                     return imporReturnRes(errorLines, successLines, tipMessage, true, null);
                 }
