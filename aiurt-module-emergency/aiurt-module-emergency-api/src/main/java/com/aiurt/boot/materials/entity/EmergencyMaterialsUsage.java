@@ -1,6 +1,7 @@
 package com.aiurt.boot.materials.entity;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
@@ -148,6 +149,11 @@ public class EmergencyMaterialsUsage extends DictEntity implements Serializable 
     @TableField(exist = false)
     @ApiModelProperty(value = "主管部门编码")
     private java.lang.String primaryOrg;
+
+    /**主管部门集合*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "主管部门集合")
+    private List<String> primaryCodeList;
 
     /**主管部门名称*/
     @TableField(exist = false)
