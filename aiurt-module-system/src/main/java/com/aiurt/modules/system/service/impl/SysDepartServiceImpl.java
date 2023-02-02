@@ -84,6 +84,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 	private SysUserMapper sysUserMapper;
 	@Autowired
 	private SysDepartMapper sysDepartMapper;
+	@Lazy
 	@Autowired
 	private ISysBaseAPI iSysBaseAPI;
 	@Lazy
