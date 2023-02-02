@@ -6,6 +6,7 @@ import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
 import com.aiurt.modules.schedule.dto.SysTotalTeamDTO;
 import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
+import com.aiurt.modules.schedule.entity.Schedule;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.model.ScheduleUser;
@@ -57,7 +58,7 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
     //大屏统计分析
     Integer getZhiBanNum(Map map);
 
-    List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(@Param("date") String date, @Param("userIds") List<String> userIds , @Param("orgId") String orgId,@Param("text")String text);
+    List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(@Param("date") String date, @Param("userIds") List<String> userIds , @Param("orgId") String orgId,@Param("text")String text,Page<Schedule> temp);
 
     /**
      * 查询
