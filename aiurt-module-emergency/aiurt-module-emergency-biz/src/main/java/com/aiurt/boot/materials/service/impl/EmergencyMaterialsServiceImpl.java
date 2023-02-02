@@ -201,6 +201,14 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
 
     @Override
     public Page<EmergencyMaterialsInvoicesItem> getInspectionRecord(Page<EmergencyMaterialsInvoicesItem> pageList, EmergencyMaterialsInvoicesItem condition) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
+        if(StrUtil.isBlank(condition.getPatrolTeamCode()) && CollectionUtil.isNotEmpty(departByUserId)){
+            List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect)){
+                condition.setPatrolTeamCodeList(collect);
+            }
+        }
         List<EmergencyMaterialsInvoicesItem> inspectionRecord = emergencyMaterialsMapper.getInspectionRecord(pageList, condition);
         inspectionRecord.forEach(e -> {
             if (StrUtil.isNotBlank(e.getLineCode())) {
