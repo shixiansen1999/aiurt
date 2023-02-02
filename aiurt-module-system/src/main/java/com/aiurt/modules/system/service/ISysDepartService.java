@@ -5,7 +5,9 @@ import com.aiurt.modules.system.model.DepartIdModel;
 import com.aiurt.modules.system.model.SysDepartTreeModel;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
@@ -93,6 +95,15 @@ public interface ISysDepartService extends IService<SysDepart>{
      * @throws IOException
      */
     void departmentEXls(HttpServletResponse response) throws IOException;
+
+
+    /**
+     * 通过excel导入数据
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 
     /**
      * 根据部门id删除并删除其可能存在的子级部门
