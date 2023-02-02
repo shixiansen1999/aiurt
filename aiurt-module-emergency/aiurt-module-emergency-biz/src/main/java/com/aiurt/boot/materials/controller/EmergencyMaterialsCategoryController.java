@@ -257,13 +257,13 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 			List<String> selections = category.getSelections();
 			queryWrapper.in(EmergencyMaterialsCategory::getId,selections);
 		}
-		if(ObjectUtil.isNotEmpty(category.getCategoryCode()))
+		if(ObjectUtil.isNotEmpty(category.getStatus()))
 		{
-			queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,category.getCategoryCode());
+			queryWrapper.eq(EmergencyMaterialsCategory::getStatus,category.getStatus());
 		}
 		if(ObjectUtil.isNotEmpty(category.getCategoryName()))
 		{
-			queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,category.getCategoryName());
+			queryWrapper.like(EmergencyMaterialsCategory::getCategoryName,category.getCategoryName());
 		}
 		List<EmergencyMaterialsCategory> list = emergencyMaterialsCategoryService.list(queryWrapper);
 		list.forEach(e->{
