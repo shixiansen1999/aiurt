@@ -961,7 +961,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             one.setEndTime(new Date());
 
             // 审核
-            sendTodo(faultCode, null, fault.getAssignUserName(), "故障维修结果审核", TodoBusinessTypeEnum.FAULT_RESULT.getType());
+            sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果审核", TodoBusinessTypeEnum.FAULT_RESULT.getType());
         }
 
         // 使用的解决方案
