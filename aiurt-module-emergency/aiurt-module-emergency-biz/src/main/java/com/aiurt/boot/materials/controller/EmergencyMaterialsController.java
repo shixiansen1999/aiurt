@@ -1,6 +1,7 @@
 package com.aiurt.boot.materials.controller;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.dto.*;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
@@ -374,7 +375,9 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		}if (StrUtil.isNotBlank(emergencyMaterials.getPrimaryOrg())){
 			//根据部门编码查询部门名称
 			SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(emergencyMaterials.getPrimaryOrg());
-			emergencyMaterials.setPrimaryName(departByOrgCode.getDepartName());
+			if(ObjectUtil.isNotEmpty(departByOrgCode)){
+				emergencyMaterials.setPrimaryName(departByOrgCode.getDepartName());
+			}
 		}if (StrUtil.isNotBlank(emergencyMaterials.getLineCode())){
 			//根据线路编码查询线路名称
 			String position = iSysBaseAPI.getPosition(emergencyMaterials.getLineCode());
