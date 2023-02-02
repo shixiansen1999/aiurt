@@ -91,6 +91,11 @@ public class StockIncomingMaterials extends DictEntity {
 	@ApiModelProperty(value = "分类编码层级")
 	@TableField(exist = false)
 	private  String  baseTypeCodeCc;
+	/**分类编码层级*/
+	@ApiModelProperty(value = "分类编码层级")
+	@TableField(exist = false)
+	@Dict(dictTable ="material_base_type",dicText = "base_type_name",dicCode = "base_type_code")
+	private  String  baseTypeCode;
 	/**分类编码层级名称*/
 	@ApiModelProperty(value = "分类编码层级名称")
 	@TableField(exist = false)

@@ -122,18 +122,29 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
     }
 
     /**
-     * 校验分类编码、分类名称
+     * 校验-分类编码
      *
      * @param fixedAssetsCategory
      * @return
      */
-    @AutoLog(value = "资产分类-校验")
-    @ApiOperation(value = "资产分类-校验", notes = "资产分类-校验")
-    @PostMapping(value = "/checkCodeName")
-    public Result<String> checkCodeName(@RequestBody FixedAssetsCategoryDTO fixedAssetsCategory) {
-        return fixedAssetsCategoryService.checkCodeName(fixedAssetsCategory);
+    @AutoLog(value = "资产分类-校验分类编码")
+    @ApiOperation(value = "资产分类-校验分类编码", notes = "资产分类-校验分类编码")
+    @PostMapping(value = "/checkCode")
+    public Result<String> checkCode(@RequestBody FixedAssetsCategoryDTO fixedAssetsCategory) {
+        return fixedAssetsCategoryService.checkCode(fixedAssetsCategory);
     }
-
+    /**
+     * 校验-分类名称
+     *
+     * @param fixedAssetsCategory
+     * @return
+     */
+    @AutoLog(value = "资产分类-校验分类名称")
+    @ApiOperation(value = "资产分类-校验分类名称", notes = "资产分类-校验分类名称")
+    @PostMapping(value = "/checkName")
+    public Result<String> checkName(@RequestBody FixedAssetsCategoryDTO fixedAssetsCategory) {
+        return fixedAssetsCategoryService.checkName(fixedAssetsCategory);
+    }
     /**
      * 编辑
      *

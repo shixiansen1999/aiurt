@@ -178,7 +178,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
     }
 
     @Override
-    public Result<String> checkCodeName(FixedAssetsCategoryDTO fixedAssetsCategory) {
+    public Result<String> checkCode(FixedAssetsCategoryDTO fixedAssetsCategory) {
         if (ObjectUtil.isNotEmpty(fixedAssetsCategory.getCategoryCode()) && ObjectUtil.isEmpty(fixedAssetsCategory.getId())) {
             LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(FixedAssetsCategory::getCategoryCode, fixedAssetsCategory.getCategoryCode());
@@ -187,23 +187,17 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                 return Result.error("分类编码已存在");
             }
         }
+        return Result.OK();
+    }
+
+    @Override
+    public Result<String> checkName(FixedAssetsCategoryDTO fixedAssetsCategory) {
         if (ObjectUtil.isNotEmpty(fixedAssetsCategory.getCategoryName())) {
-            //第一级(parentCode:添加传0，编辑传自己)
-            FixedAssetsCategory parentCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getCategoryCode, fixedAssetsCategory.getParentCode()));
-            if (ObjectUtil.isEmpty(parentCategory) || CategoryConstant.PID.equals(parentCategory.getPid())) {
-                //1.根节点之间不能重复
-                //添加-根节点之间，名称不能重复
-                if (ObjectUtil.isEmpty(fixedAssetsCategory.getId())) {
-                    LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
-                    queryWrapper.eq(FixedAssetsCategory::getCategoryName, fixedAssetsCategory.getCategoryName());
-                    queryWrapper.eq(FixedAssetsCategory::getPid, CategoryConstant.PID);
-                    FixedAssetsCategory category = categoryMapper.selectOne(queryWrapper);
-                    if (ObjectUtil.isNotEmpty(category)) {
-                        return Result.error("一级分类名称不允许重复");
-                    }
-                }
-                //编辑-根节点之间，名称不能重复(自己排查外)
-                else {
+            //编辑
+            if (ObjectUtil.isNotEmpty(fixedAssetsCategory.getId())) {
+                //根节点编辑
+                FixedAssetsCategory assetsCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getId, fixedAssetsCategory.getId()));
+                if(CategoryConstant.PID.equals(assetsCategory.getPid())){
                     FixedAssetsCategory category = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getCategoryName, fixedAssetsCategory.getCategoryName()).
                             ne(FixedAssetsCategory::getId, fixedAssetsCategory.getId()).eq(FixedAssetsCategory::getPid, CategoryConstant.PID));
                     if (ObjectUtil.isNotEmpty(category)) {
@@ -219,47 +213,18 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                             return Result.error("同根同枝同叶之间不能重复");
                         }
                     }
-                }
-            }
-            //不是第一级
-            else {
-                //同根下限制
-                //查询上一级
-                LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
-                queryWrapper.eq(FixedAssetsCategory::getCategoryCode, fixedAssetsCategory.getParentCode());
-                FixedAssetsCategory category = categoryMapper.selectOne(queryWrapper);
-                //查询上一级的下一级所有的数据
-                List<FixedAssetsCategory> categoryList = categoryMapper.selectList(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid, category.getId()));
-                //2.同根下枝干之间不能重复(二三级之间)
-                //添加-校验是否有重名
-                if (ObjectUtil.isEmpty(fixedAssetsCategory.getId())) {
-                    categoryList = categoryList.stream().filter(c -> c.getCategoryName().equals(fixedAssetsCategory.getCategoryName())).collect(Collectors.toList());
-                    if (CollUtil.isNotEmpty(categoryList)) {
-                        return Result.error("同根下枝干之间不能重复");
-                    }
-                }
-                //编辑-校验是否有重名，自己排除外
+                }//二三级编辑
                 else {
-                    categoryList = categoryList.stream().filter(c -> c.getCategoryName().equals(fixedAssetsCategory.getCategoryName()) && !c.getId().equals(fixedAssetsCategory.getId())).collect(Collectors.toList());
-                    if (CollUtil.isNotEmpty(categoryList)) {
-                        return Result.error("同根下枝干之间不能重复");
-                    }
-                }
-                //3.同根同枝同叶之间不能重复（A-A-A）
-                //添加
-                if (ObjectUtil.isEmpty(fixedAssetsCategory.getId())) {
-                    //查询自己及上一级是否同名
-                    if (fixedAssetsCategory.getCategoryName().equals(category.getCategoryName())) {
-                        return Result.error("同根同枝同叶之间不能重复");
-                    }
-                    if (CategoryConstant.PID.equals(category.getPid())) {
-                        //自己与上上级是否同名
-                        FixedAssetsCategory firstCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getId, category.getPid()));
-                        if (ObjectUtil.isNotEmpty(firstCategory)) {
-                            return Result.error("同根同枝同叶之间不能重复");
+                    LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
+                    queryWrapper.eq(FixedAssetsCategory::getCategoryCode, fixedAssetsCategory.getParentCode());
+                    FixedAssetsCategory category = categoryMapper.selectOne(queryWrapper);
+                    List<FixedAssetsCategory> categoryList = categoryMapper.selectList(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid, category.getId()));
+                    if(CollUtil.isNotEmpty(categoryList)){
+                        categoryList = categoryList.stream().filter(c -> c.getCategoryName().equals(fixedAssetsCategory.getCategoryName()) && !c.getId().equals(fixedAssetsCategory.getId())).collect(Collectors.toList());
+                        if (CollUtil.isNotEmpty(categoryList)) {
+                            return Result.error("同根下枝干之间不能重复");
                         }
                     }
-                } else {
                     //编辑
                     //二三级-自己与上一级是否同名
                     if (fixedAssetsCategory.getCategoryName().equals(category.getCategoryName()) && !fixedAssetsCategory.getId().equals(category.getId())) {
@@ -284,10 +249,56 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                         }
                     }
                 }
+
+            }
+            //添加
+            else {
+                //一级添加
+                if(CategoryConstant.PID.equals(fixedAssetsCategory.getParentCode())){
+                    LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
+                    queryWrapper.eq(FixedAssetsCategory::getCategoryName, fixedAssetsCategory.getCategoryName());
+                    queryWrapper.eq(FixedAssetsCategory::getPid, CategoryConstant.PID);
+                    FixedAssetsCategory category = categoryMapper.selectOne(queryWrapper);
+                    if (ObjectUtil.isNotEmpty(category)) {
+                        return Result.error("一级分类名称不允许重复");
+                    }
+                }
+                //二三级添加
+                else {
+                    //同根下限制
+                    //查询上一级
+                    LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
+                    queryWrapper.eq(FixedAssetsCategory::getCategoryCode, fixedAssetsCategory.getParentCode());
+                    FixedAssetsCategory category = categoryMapper.selectOne(queryWrapper);
+                    //查询上一级的下一级所有的数据
+                    List<FixedAssetsCategory> categoryList = categoryMapper.selectList(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid, category.getId()));
+                    //2.同根下枝干之间不能重复(二三级之间)
+                    //添加-校验是否有重名
+                    if (ObjectUtil.isEmpty(fixedAssetsCategory.getId())) {
+                        categoryList = categoryList.stream().filter(c -> c.getCategoryName().equals(fixedAssetsCategory.getCategoryName())).collect(Collectors.toList());
+                        if (CollUtil.isNotEmpty(categoryList)) {
+                            return Result.error("同根下枝干之间不能重复");
+                        }
+                    }
+                    //查询自己及上一级是否同名
+                    if (fixedAssetsCategory.getCategoryName().equals(category.getCategoryName())) {
+                        return Result.error("同根同枝同叶之间不能重复");
+                    }
+                    if (!CategoryConstant.PID.equals(category.getPid())) {
+                        //自己与上上级是否同名
+                        FixedAssetsCategory firstCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getId, category.getPid())
+                        .eq(FixedAssetsCategory::getCategoryName, fixedAssetsCategory.getCategoryName()));
+                        if (ObjectUtil.isNotEmpty(firstCategory)) {
+                            return Result.error("同根同枝同叶之间不能重复");
+                        }
+                    }
+                }
+
             }
         }
         return Result.OK();
     }
+
 
     @Override
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -339,11 +350,11 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                 } else {
                     //一颗树导入
                     List<FixedAssetsCategory> firstList = categoryList.stream().filter(c -> "1".equals(c.getLevel())).collect(Collectors.toList());
-                    if(CollUtil.isNotEmpty(fileMap)){
-                       this.saveBatch(firstList);
+                    if (CollUtil.isNotEmpty(fileMap)) {
+                        this.saveBatch(firstList);
                         for (FixedAssetsCategory firstCategory : firstList) {
-                            List<FixedAssetsCategory> secondList = categoryList.stream().filter(c -> "2".equals(c.getLevel())&&firstCategory.getCategoryName().equals(c.getPidName())).collect(Collectors.toList());
-                            if(CollUtil.isNotEmpty(secondList)){
+                            List<FixedAssetsCategory> secondList = categoryList.stream().filter(c -> "2".equals(c.getLevel()) && firstCategory.getCategoryName().equals(c.getPidName())).collect(Collectors.toList());
+                            if (CollUtil.isNotEmpty(secondList)) {
                                 for (FixedAssetsCategory secondCategory : secondList) {
                                     secondCategory.setPid(firstCategory.getId());
                                 }
@@ -351,12 +362,12 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                             }
                         }
                     }
-                    List<FixedAssetsCategory> secondList = categoryList.stream().filter(c -> "2".equals(c.getLevel())&&c.getPid()!=null&&!c.getPid().equals("0")&&c.getIsNotImportParentNode()==false).collect(Collectors.toList());
-                    if(CollUtil.isNotEmpty(secondList)){
+                    List<FixedAssetsCategory> secondList = categoryList.stream().filter(c -> "2".equals(c.getLevel()) && c.getPid() != null && !c.getPid().equals("0") && c.getIsNotImportParentNode() == false).collect(Collectors.toList());
+                    if (CollUtil.isNotEmpty(secondList)) {
                         for (FixedAssetsCategory secondCategory : secondList) {
-                            String pidName = secondCategory.getPidName()+"/"+secondCategory.getCategoryName();
-                            List<FixedAssetsCategory> thirdList =  categoryList.stream().filter(c -> "3".equals(c.getLevel())&&pidName.equals(c.getPidName())).collect(Collectors.toList());
-                            if(CollUtil.isNotEmpty(thirdList)){
+                            String pidName = secondCategory.getPidName() + "/" + secondCategory.getCategoryName();
+                            List<FixedAssetsCategory> thirdList = categoryList.stream().filter(c -> "3".equals(c.getLevel()) && pidName.equals(c.getPidName())).collect(Collectors.toList());
+                            if (CollUtil.isNotEmpty(thirdList)) {
                                 for (FixedAssetsCategory thirdCategory : thirdList) {
                                     thirdCategory.setPid(secondCategory.getId());
                                 }
@@ -366,14 +377,14 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                     }
                     //部分树导入
                     //导入二级
-                    List<FixedAssetsCategory> partSecondList = categoryList.stream().filter(c -> "2".equals(c.getLevel())&&c.getIsNotImportParentNode()==true).collect(Collectors.toList());
-                    if(CollUtil.isNotEmpty(partSecondList)){
+                    List<FixedAssetsCategory> partSecondList = categoryList.stream().filter(c -> "2".equals(c.getLevel()) && c.getIsNotImportParentNode() == true).collect(Collectors.toList());
+                    if (CollUtil.isNotEmpty(partSecondList)) {
                         this.saveBatch(partSecondList);
                         for (FixedAssetsCategory secondCategory : partSecondList) {
-                            String pidName = secondCategory.getPidName()+"/"+secondCategory.getCategoryName();
+                            String pidName = secondCategory.getPidName() + "/" + secondCategory.getCategoryName();
                             //导入三级
-                            List<FixedAssetsCategory> thirdList =  categoryList.stream().filter(c -> "3".equals(c.getLevel())&&pidName.equals(c.getPidName())).collect(Collectors.toList());
-                            if(CollUtil.isNotEmpty(thirdList)){
+                            List<FixedAssetsCategory> thirdList = categoryList.stream().filter(c -> "3".equals(c.getLevel()) && pidName.equals(c.getPidName())).collect(Collectors.toList());
+                            if (CollUtil.isNotEmpty(thirdList)) {
                                 for (FixedAssetsCategory thirdCategory : thirdList) {
                                     thirdCategory.setPid(secondCategory.getId());
                                 }
@@ -457,8 +468,8 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                         if (firstImports.size() == 1 && secondImports.size() == 1) {
                             FixedAssetsCategoryImport firstCategoryImport = firstImports.get(0);
                             FixedAssetsCategoryImport secondCategoryImport = secondImports.get(0);
-                            if(ObjectUtil.isNotEmpty(firstCategoryImport.getSplicingCode())&&ObjectUtil.isNotEmpty(secondCategoryImport.getSplicingCode())){
-                                String code = firstCategoryImport.getSplicingCode() + secondCategoryImport.getSplicingCode()+dto.getSplicingCode();
+                            if (ObjectUtil.isNotEmpty(firstCategoryImport.getSplicingCode()) && ObjectUtil.isNotEmpty(secondCategoryImport.getSplicingCode())) {
+                                String code = firstCategoryImport.getSplicingCode() + secondCategoryImport.getSplicingCode() + dto.getSplicingCode();
                                 dto.setCategoryCode(code);
                             }
 
@@ -476,7 +487,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
         if (ObjectUtil.isNotEmpty(model.getPidName())) {
             if (CategoryConstant.PARENT_NAME.equals(model.getPidName())) {
                 List<FixedAssetsCategoryImport> myselfImports = list.stream().filter(l -> model.equals(l)).collect(Collectors.toList());
-                if(myselfImports.size()!=1){
+                if (myselfImports.size() != 1) {
                     stringBuilder.append("文件存在相同的数据，");
                 }
                 if (ObjectUtil.isNotEmpty(model.getCategoryName())) {
@@ -497,7 +508,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                         //二级节点
                         if (count == 0) {
                             List<FixedAssetsCategoryImport> myselfImports = list.stream().filter(l -> model.equals(l)).collect(Collectors.toList());
-                            if(myselfImports.size()!=1){
+                            if (myselfImports.size() != 1) {
                                 stringBuilder.append("文件存在相同的数据，");
                             }
                             List<FixedAssetsCategoryImport> imports = list.stream().filter(l -> CategoryConstant.PARENT_NAME.equals(l.getPidName()) && model.getPidName().equals(l.getCategoryName())).collect(Collectors.toList());
@@ -516,7 +527,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                             //三级节点
                         } else {
                             List<FixedAssetsCategoryImport> myselfImports = list.stream().filter(l -> model.equals(l)).collect(Collectors.toList());
-                            if(myselfImports.size()!=1){
+                            if (myselfImports.size() != 1) {
                                 stringBuilder.append("文件存在相同的数据，");
                             }
                             List<String> depositPositionName = StrUtil.splitTrim(model.getPidName(), "/");
@@ -584,7 +595,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                         if (ObjectUtil.isEmpty(assetsCategory) && CollUtil.isNotEmpty(imports)) {
                             stringBuilder.append("文字中存在相同的分类编码，");
                         }
-                        if(model.getCategoryCode().length()!=2){
+                        if (model.getCategoryCode().length() != 2) {
                             stringBuilder.append("一级分类编码为两位数字，");
                         }
                     } else {
@@ -603,7 +614,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                                     List<FixedAssetsCategoryImport> secondImports = list.stream().filter(l -> model.getPidName().equals(l.getPidName()) && model.getPidName().equals(l.getCategoryName())).collect(Collectors.toList());
                                     if (secondImports.size() == 1) {
                                         List<FixedAssetsCategoryImport> imports = list.stream().filter(l -> model.getPidName().equals(l.getCategoryName()) && CategoryConstant.PARENT_NAME.equals(l.getPidName())).collect(Collectors.toList());
-                                        if(imports.size()==1){
+                                        if (imports.size() == 1) {
                                             //数据库是否存在
                                             FixedAssetsCategory assetsCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getCategoryCode, model.getCategoryCode()));
                                             if (ObjectUtil.isNotEmpty(assetsCategory) && CollUtil.isNotEmpty(imports)) {
@@ -628,7 +639,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                                     String firstName = depositPositionName.get(0);
                                     String secondName = depositPositionName.get(1);
                                     List<FixedAssetsCategoryImport> secondImports = list.stream().filter(l -> firstName.equals(l.getPidName()) && secondName.equals(l.getCategoryName())).collect(Collectors.toList());
-                                    if(secondImports.size()==1){
+                                    if (secondImports.size() == 1) {
                                         //文件里是否有重复
                                         List<FixedAssetsCategoryImport> imports = list.stream().filter(l -> model.getCategoryCode().equals(l.getCategoryCode()) && !model.equals(l)).collect(Collectors.toList());
                                         //数据库是否存在

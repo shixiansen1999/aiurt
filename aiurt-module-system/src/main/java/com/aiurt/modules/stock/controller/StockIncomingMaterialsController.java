@@ -71,6 +71,7 @@ public class StockIncomingMaterialsController {
                 MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code", materialCode));
                 materials.setMajorCode(materialBase.getMajorCode());
                 materials.setSystemCode(materialBase.getSystemCode());
+                materials.setBaseTypeCode(materialBase.getBaseTypeCode());
                 materials.setBaseTypeCodeCc(materialBase.getBaseTypeCodeCc());
                 materials.setName(materialBase.getName());
                 materials.setUnit(materialBase.getUnit());
