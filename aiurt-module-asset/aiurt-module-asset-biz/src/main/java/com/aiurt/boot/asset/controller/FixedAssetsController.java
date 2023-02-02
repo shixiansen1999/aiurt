@@ -185,7 +185,7 @@ public class FixedAssetsController extends BaseController<FixedAssets, IFixedAss
 	 */
 	@AutoLog(value = "固定资产-导出数据")
 	@ApiOperation(value="固定资产-导出数据", notes="固定资产-导出数据")
-	@RequestMapping(value = "/exportFixedAssetsXls")
+	@RequestMapping(value = "/exportFixedAssetsXls",method = RequestMethod.GET)
 	public void exportFixedAssetsXls(HttpServletRequest request,HttpServletResponse response, FixedAssetsDTO fixedAssetsDTO) {
 		fixedAssetsService.exportFixedAssetsXls(request,response, fixedAssetsDTO);
 	}
