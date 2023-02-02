@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -97,7 +98,7 @@ public class FaultTypeController extends BaseController<FaultType, IFaultTypeSer
 	@AutoLog(value = "fault_type-编辑")
 	@ApiOperation(value="fault_type-编辑", notes="fault_type-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<?> edit(@RequestBody FaultType faultType) {
+	public Result<?> edit(@Validated @RequestBody FaultType faultType) {
 		return faultTypeService.update(faultType);
 	}
 

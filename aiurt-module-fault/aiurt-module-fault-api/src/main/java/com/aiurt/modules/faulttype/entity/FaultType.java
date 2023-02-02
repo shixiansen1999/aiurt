@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import com.aiurt.common.aspect.annotation.Dict;
@@ -52,6 +53,7 @@ public class FaultType implements Serializable {
 	/**说明*/
 	@Excel(name = "说明", width = 15)
     @ApiModelProperty(value = "说明")
+    @Length(max = 255, message = "影响范围长度不能超过255")
     private String remarks;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
