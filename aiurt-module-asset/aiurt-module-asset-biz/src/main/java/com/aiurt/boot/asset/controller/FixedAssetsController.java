@@ -171,7 +171,7 @@ public class FixedAssetsController extends BaseController<FixedAssets, IFixedAss
 	 *
 	 * @param response
 	 */
-	@AutoLog(value = "固定资产-模板下载", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "")
+	@AutoLog(value = "固定资产-模板下载")
 	@ApiOperation(value="固定资产-模板下载", notes="固定资产-模板下载")
 	@RequestMapping(value = "/exportXls",method = RequestMethod.GET)
 	public void exportXls(HttpServletResponse response) {
@@ -183,6 +183,8 @@ public class FixedAssetsController extends BaseController<FixedAssets, IFixedAss
 	 *
 	 * @param request
 	 */
+	@AutoLog(value = "固定资产-导出数据")
+	@ApiOperation(value="固定资产-导出数据", notes="固定资产-导出数据")
 	@RequestMapping(value = "/exportFixedAssetsXls")
 	public void exportFixedAssetsXls(HttpServletRequest request,HttpServletResponse response, FixedAssetsDTO fixedAssetsDTO) {
 		fixedAssetsService.exportFixedAssetsXls(request,response, fixedAssetsDTO);
