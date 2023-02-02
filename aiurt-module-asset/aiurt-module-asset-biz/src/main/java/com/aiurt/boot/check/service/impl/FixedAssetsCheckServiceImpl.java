@@ -245,6 +245,19 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         }
         fixedAssetsCheckRecordService.saveBatch(records);
         fixedAssetsCheckDetailService.saveBatch(details);
+        // 发消息
+        BusMessageDTO messageDTO = new BusMessageDTO();
+        //设置消息属性
+        messageDTO.setStartTime(new Date());
+        messageDTO.setEndTime(new Date());
+        messageDTO.setTitle("固定资产消息通知");
+        messageDTO.setBusType(SysAnnmentTypeEnum.ASSET_CHECKER.getType());
+        messageDTO.setToAll(false);
+        LoginUser userById = sysBaseApi.getUserById(fixedAssetsCheck.getCheckId());
+        messageDTO.setContent(String.format("%s你好，您作为[%s]盘点任务的盘点人,尽快完成!", userById.getRealname(), fixedAssetsCheck.getInventoryList()));
+        //设置接收人
+        messageDTO.setToUser(userById.getUsername());
+        sysBaseApi.sendBusAnnouncement(messageDTO);
     }
 
     @Override
@@ -252,21 +265,6 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
     public String saveCheckInfo(FixedAssetsCheck fixedAssetsCheck) {
         this.save(fixedAssetsCheck);
         this.saveOrgAndCategoryCode(fixedAssetsCheck);
-        // 发消息
-        BusMessageDTO messageDTO = new BusMessageDTO();
-        //设置消息属性
-        messageDTO.setStartTime(new Date());
-        messageDTO.setEndTime(new Date());
-        messageDTO.setPriority("H");
-        messageDTO.setCategory("1");
-        messageDTO.setTitle("固定资产盘点人通知");
-        messageDTO.setBusType(SysAnnmentTypeEnum.ASSET_CHECKER.getType());
-        messageDTO.setToAll(false);
-        LoginUser userById = sysBaseApi.getUserById(fixedAssetsCheck.getCheckId());
-        messageDTO.setContent(String.format("%s你好，您作为%s盘点任务的盘点人,尽快完成!", userById.getRealname(), fixedAssetsCheck.getInventoryList()));
-        //设置接收人
-        messageDTO.setToUser(userById.getUsername());
-        sysBaseApi.sendBusAnnouncement(messageDTO);
         return fixedAssetsCheck.getId();
     }
 
