@@ -98,7 +98,8 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getCategoryCode()).ifPresent(categoryCode -> wrapper.like(FixedAssetsCheckRecord::getCategoryCode, categoryCode));
                 Optional.ofNullable(fixedAssetsCheckRecordDTO.getAssetCode()).ifPresent(assetCode -> wrapper.like(FixedAssetsCheckRecord::getAssetCode, assetCode));
             }
-            Page<FixedAssetsCheckRecord> recordPage = this.page(new Page<>(page.getCurrent(), page.getCurrent()), wrapper);
+            Page<FixedAssetsCheckRecord> recordPage = this.page(new Page<>(page.getCurrent(), page.getSize()), wrapper);
+            long total = this.count(wrapper);
             List<FixedAssetsCheckRecord> records = recordPage.getRecords();
             List<FixedAssetsCheckRecordVO> recordVOs = new ArrayList<>();
             FixedAssetsCheckRecordVO checkRecordVO = null;
@@ -108,6 +109,7 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
                 recordVOs.add(checkRecordVO);
             }
             pageList = page.setRecords(recordVOs);
+            pageList.setTotal(total);
         }
         List<SysDepartModel> deptList = sysBaseApi.getAllSysDepart();
         Map<String, String> orgMap = deptList.stream()

@@ -297,7 +297,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
                 for (FixedAssetsModel fixedAssetsModel : fixedAssetsModels) {
                     FixedAssets fixedAssets = new FixedAssets();
                     BeanUtils.copyProperties(fixedAssetsModel, fixedAssets);
-                  /*  this.save(fixedAssets);*/
+                    this.save(fixedAssets);
                 }
                 return Result.ok("文件导入成功！");
             } catch (Exception e) {
@@ -448,19 +448,19 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         }
         BigDecimal zero = new BigDecimal(0);
         Integer number = fixedAssetsModel.getNumber();
-        if (number < 0) {
+        if (ObjectUtil.isNotEmpty(number) && number < 0) {
             stringBuilder.append("账面数量不能为负数，");
         }
         BigDecimal coveredArea = fixedAssetsModel.getCoveredArea();
-        if (coveredArea.compareTo(zero)<0) {
+        if (ObjectUtil.isNotEmpty(coveredArea) && coveredArea.compareTo(zero) < 0) {
             stringBuilder.append("建筑面积不能为负数，");
         }
         BigDecimal accumulatedDepreciation = fixedAssetsModel.getAccumulatedDepreciation();
-        if (accumulatedDepreciation.compareTo(zero)<0) {
+        if (ObjectUtil.isNotEmpty(accumulatedDepreciation) && accumulatedDepreciation.compareTo(zero)<0) {
             stringBuilder.append("累计折旧不能为负数，");
         }
         BigDecimal assetOriginal = fixedAssetsModel.getAssetOriginal();
-        if (assetOriginal.compareTo(zero)<0) {
+        if (ObjectUtil.isNotEmpty(assetOriginal) && assetOriginal.compareTo(zero)<0) {
             stringBuilder.append("账面原值不能为负数，");
         }
 

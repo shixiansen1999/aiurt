@@ -6,10 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.schedule.dto.*;
-import com.aiurt.modules.schedule.entity.ScheduleItem;
-import com.aiurt.modules.schedule.entity.ScheduleLog;
-import com.aiurt.modules.schedule.entity.ScheduleRecord;
-import com.aiurt.modules.schedule.entity.ScheduleRuleItem;
+import com.aiurt.modules.schedule.entity.*;
 import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.model.ScheduleUser;
@@ -116,8 +113,8 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     }
 
     @Override
-    public List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, List<String> userIds , String orgId,String text) {
-        return this.baseMapper.getScheduleUserByDateAndOrgCodeAndOrgId(date, userIds, orgId,text);
+    public List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, List<String> userIds , String orgId,String text,Page<Schedule> temp) {
+        return this.baseMapper.getScheduleUserByDateAndOrgCodeAndOrgId(date, userIds, orgId,text,temp);
     }
 
     @Override

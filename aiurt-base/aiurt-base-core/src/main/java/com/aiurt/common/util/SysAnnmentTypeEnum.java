@@ -46,7 +46,11 @@ public enum SysAnnmentTypeEnum {
 
     BDOPERATEPLANDECLARATIONFORM("planFromSearch", "component", "prodManage/weekAuditing"),
 
-
+    /**
+     * 通知成为资产盘点人
+     */
+    ASSET_CHECKER("asset_checker", "component",""),
+    /**
     /**
      * 工作流跳转链接我的办公
      */

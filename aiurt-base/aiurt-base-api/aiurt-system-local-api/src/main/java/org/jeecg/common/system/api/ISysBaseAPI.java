@@ -316,6 +316,22 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     List<JSONObject> queryUsersByIds(String ids);
 
+
+    /**
+     * 手机号验证（验证成功返回true,验证失败返回false）
+     * @param string
+     * @return
+     */
+    boolean isMobile(String string);
+
+
+    /**
+     * 电话号码(座机)验证（验证成功返回true,验证失败返回false）
+     * @param string
+     * @return
+     */
+    boolean isPhone(String string);
+
     /**
      * 38根据多个部门编码(逗号分隔)，查询返回多个部门信息
      *
