@@ -49,6 +49,7 @@ import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -90,11 +91,19 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
 
+    @Lazy
+    @Autowired
+    private CommonAPI api;
+
     @Override
     public Page<MaterialAccountDTO> getMaterialAccountList(Page<MaterialAccountDTO> pageList, MaterialAccountDTO condition) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (StrUtil.isBlank(condition.getPrimaryOrg())){
-            condition.setPrimaryOrg(sysUser.getOrgCode());
+        List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
+        if(StrUtil.isBlank(condition.getPrimaryOrg()) && CollectionUtil.isNotEmpty(departByUserId)){
+            List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect)){
+                condition.setPrimaryCodeList(collect);
+            }
         }
         List<MaterialAccountDTO> materialAccountList = emergencyMaterialsMapper.getMaterialAccountList(pageList, condition);
         List<PatrolStandardItemsModel> patrolStandardItemsModels = iSysBaseAPI.patrolStandardList(condition.getPatrolStandardId());
