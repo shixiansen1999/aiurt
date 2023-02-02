@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -95,7 +96,7 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 	@AutoLog(value = "故障等级-编辑")
 	@ApiOperation(value="故障等级-编辑", notes="故障等级-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<?> edit(@RequestBody FaultLevel faultLevel) {
+	public Result<?> edit(@Validated @RequestBody FaultLevel faultLevel) {
 		return faultLevelService.update(faultLevel);
 	}
 
