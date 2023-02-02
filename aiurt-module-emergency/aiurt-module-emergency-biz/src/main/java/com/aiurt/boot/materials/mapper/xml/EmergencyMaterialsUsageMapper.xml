@@ -38,6 +38,12 @@
             <if test="condition.primaryOrg!=null">
                 and t1.primary_org = #{condition.primaryOrg}
             </if>
+            <if test="condition.primaryCodeList!=null ">
+                AND  t1.primary_org in
+                <foreach item="item" collection="condition.primaryCodeList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         order by t3.create_time desc,t3.update_time desc
     </select>
