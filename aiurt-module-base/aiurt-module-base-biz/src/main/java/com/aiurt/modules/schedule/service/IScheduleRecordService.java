@@ -2,6 +2,7 @@ package com.aiurt.modules.schedule.service;
 
 
 import com.aiurt.modules.schedule.dto.*;
+import com.aiurt.modules.schedule.entity.Schedule;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.model.ScheduleUser;
@@ -42,7 +43,7 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
 
     List<ScheduleUser> getScheduleUserByDateAndOrgCode(String date, String username, String orgCode);
 
-    List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, List<String> userIds , String orgId,String text);
+    List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, List<String> userIds , String orgId,String text,Page<Schedule> temp);
 
     /**
      * 统计分析

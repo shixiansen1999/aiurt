@@ -87,8 +87,6 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
     public IPage<Schedule> getList(Schedule schedule, Page<Schedule> temp) {
 
         List<Schedule> scheduleList = new ArrayList<>();
-        IPage page = new Page();
-        page = temp;
         //根据数据规则查出所属权限的人员，这个只有根据部门权限查部门的人
         List<LoginUser> allUsers = iSysBaseApi.getAllUsers();
         List<String> userIds = new ArrayList<>();
@@ -96,7 +94,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             List<String> collect = allUsers.stream().map(LoginUser::getId).collect(Collectors.toList());
             userIds.addAll(collect);
         }else {
-            return page.setRecords(new ArrayList<>());
+            return temp.setRecords(new ArrayList<>());
         }
 
         /**
@@ -117,7 +115,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         /**
          * 2、从record表中获取有多少人在时间范围类安排了工作,根据当前登录人班组权限查班组的人员，或者只查询当前登录人的数据
          */
-        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtil.format(date, "yyyy-MM"), userIds, schedule.getOrgId(),schedule.getText());
+        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtil.format(date, "yyyy-MM"), userIds, schedule.getOrgId(),schedule.getText(),temp);
         /**
          * 3、获取记录数据
          */
@@ -151,8 +149,8 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         }
         long end=System.currentTimeMillis();
         log.info("time:{}",end-start);
-        page.setRecords(scheduleList);
-        return page;
+        temp.setRecords(scheduleList);
+        return temp;
     }
 
 
