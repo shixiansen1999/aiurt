@@ -118,6 +118,9 @@ public class CsSubsystemController extends BaseController<CsSubsystem, ICsSubsys
 			 if( majorCode != null && !"".equals(majorCode) ){
 				 wrapper.eq(CsSubsystem::getSystemCode,majorCode);
 			 }
+			 if( systemName != null && !"".equals(systemName) ){
+				 wrapper.like(CsSubsystem::getSystemName,systemName);
+			 }
 			 wrapper.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
 			 wrapper.orderByDesc(CsSubsystem::getCreateTime);
 			 pageList = csSubsystemService.list(wrapper);
