@@ -155,6 +155,12 @@
             <if test="condition.patrolTeamCode != null">
                 and t2.department_code = #{condition.patrolTeamCode}
             </if>
+            <if test="condition.patrolTeamCodeList!=null ">
+                AND t2.department_code in
+                <foreach item="item" collection="condition.patrolTeamCodeList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         order by t2.create_time desc,t2.update_time desc
     </select>
