@@ -243,7 +243,7 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             }
         }
 
-        if (TeamConstant.SUBMITTED.equals(byId.getStatus())) {
+        if (TeamConstant.SUBMITTED.equals(emergencyTrainingRecord.getStatus())) {
             //如果是提交，判断是否所有内容填写完整
             if (CollUtil.isEmpty(emergencyTrainingRecord.getCrewList()) || CollUtil.isEmpty(emergencyTrainingRecord.getProcessRecordList()) ||CollUtil.isEmpty(emergencyTrainingRecord.getAttList())) {
                 return Result.error("信息未填写完整，无法提交");

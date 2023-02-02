@@ -191,6 +191,9 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             }
         }
         if (TeamConstant.PUBLISH.equals(emergencyTrainingProgram.getSaveFlag())) {
+            emergencyTrainingProgram.setStatus(TeamConstant.WAIT_COMPLETE);
+            this.updateById(emergencyTrainingProgram);
+            this.publish(emergencyTrainingProgram);
             return Result.OK("下发成功");
         }
         return Result.OK("编辑成功");
