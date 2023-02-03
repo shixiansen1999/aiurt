@@ -81,6 +81,11 @@ public class EmergencyMaterialsCategory extends DictEntity implements Serializab
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
 
+    /**树查询编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "树查询编码")
+    private List<String> treeCode;
+
     @TableField(exist = false)
     @ApiModelProperty(value = "子节点")
     private Boolean isExitParent;
