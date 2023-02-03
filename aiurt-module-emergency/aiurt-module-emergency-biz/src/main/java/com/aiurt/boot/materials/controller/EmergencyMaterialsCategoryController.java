@@ -1,6 +1,7 @@
 package com.aiurt.boot.materials.controller;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
@@ -88,7 +89,9 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 		if (emergencyMaterialsCategory.getStatus()!=null){
 			lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getStatus,emergencyMaterialsCategory.getStatus());
 		}
-		lambdaQueryWrapper.in(EmergencyMaterialsCategory::getCategoryCode,emergencyMaterialsCategory.getTreeCode());
+		if (CollectionUtil.isNotEmpty(emergencyMaterialsCategory.getTreeCode())){
+			lambdaQueryWrapper.in(EmergencyMaterialsCategory::getCategoryCode,emergencyMaterialsCategory.getTreeCode());
+		}
 		lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,CommonConstant.DEL_FLAG_0);
 
 		Page<EmergencyMaterialsCategory> page = new Page<EmergencyMaterialsCategory>(pageNo, pageSize);
