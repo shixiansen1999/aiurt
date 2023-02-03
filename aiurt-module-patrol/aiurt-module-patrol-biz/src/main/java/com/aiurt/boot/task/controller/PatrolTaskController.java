@@ -1,28 +1,32 @@
 package com.aiurt.boot.task.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
-import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.aiurt.boot.task.service.IPatrolTaskUserService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,6 +52,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     private IPatrolTaskService patrolTaskService;
     @Autowired
     private IPatrolTaskDeviceService patrolTaskDeviceService;
+    @Autowired
+    private IPatrolTaskUserService patrolTaskUserService;
 
 
     /**
@@ -413,7 +419,27 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         }
         return Result.OK("领取成功");
     }
-
+    /**
+     * app巡检任务检查校验
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "巡检任务表-app巡检任务检查校验", operateType = 3, operateTypeAlias = "", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
+    @ApiOperation(value = "巡检任务表-app巡检任务检查校验", notes = "巡检任务表-app巡检任务检查校验")
+    @GetMapping(value = "/patrolTaskCheck")
+    public Result<?> patrolTaskCheck(String id) {
+        PatrolTask task = patrolTaskService.getById(id);
+        List<PatrolTaskUser> userList = patrolTaskUserService.list(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, task.getCode()));
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if(CollUtil.isNotEmpty(userList)){
+            List<PatrolTaskUser> taskUsers = userList.stream().filter(u -> u.getUserId().equals(user.getId())).collect(Collectors.toList());
+            if(CollUtil.isEmpty(taskUsers)){
+                return Result.error("只有该任务的巡检人才可以检查");
+            }
+        }
+        return Result.OK();
+    }
     /**
      * app巡检任务提交
      *
