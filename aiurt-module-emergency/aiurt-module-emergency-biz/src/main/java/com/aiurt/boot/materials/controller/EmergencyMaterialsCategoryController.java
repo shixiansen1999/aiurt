@@ -84,7 +84,7 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 		}
 		LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 		if (StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryName())){
-			lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getCategoryName,emergencyMaterialsCategory.getCategoryName());
+			lambdaQueryWrapper.like(EmergencyMaterialsCategory::getCategoryName,emergencyMaterialsCategory.getCategoryName());
 		}
 		if (emergencyMaterialsCategory.getStatus()!=null){
 			lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getStatus,emergencyMaterialsCategory.getStatus());
