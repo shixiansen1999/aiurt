@@ -231,7 +231,7 @@ public class FixedAssetsCheckRecordServiceImpl extends ServiceImpl<FixedAssetsCh
         FixedAssetsCheck fixedAssetsCheck = fixedAssetsCheckService.getById(id);
         Assert.notNull(fixedAssetsCheck, "不存在该盘点任务数据！");
         CheckResultTotalVO totalVO = new CheckResultTotalVO();
-        if (!FixedAssetsConstant.STATUS_3.equals(fixedAssetsCheck.getStatus())) {
+        if (FixedAssetsConstant.STATUS_0.equals(fixedAssetsCheck.getStatus())) {
             return totalVO;
         }
         Long profit = this.lambdaQuery().eq(FixedAssetsCheckRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
