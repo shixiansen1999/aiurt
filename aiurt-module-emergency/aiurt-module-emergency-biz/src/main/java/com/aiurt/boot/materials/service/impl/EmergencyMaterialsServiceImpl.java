@@ -1,10 +1,6 @@
 package com.aiurt.boot.materials.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
-import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesItemMapper;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.RegionUtil;
-import org.apache.poi.xssf.usermodel.*;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
@@ -18,6 +14,7 @@ import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoices;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsCategoryMapper;
+import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesItemMapper;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesMapper;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
@@ -32,10 +29,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
-import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.ss.util.RegionUtil;
+import org.apache.poi.xssf.usermodel.*;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -525,9 +522,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                     return getErrorExcel(errorLines, list, errorMessage, successLines, type, url);
                 } else {
                     successLines = list.size();
-                    for (EmergencyMaterials material : materials) {
-                        emergencyMaterialsMapper.insert(material);
-                    }
+                    this.saveBatch(materials);
                     return imporReturnRes(errorLines, successLines, tipMessage, true, null);
                 }
 
@@ -1200,6 +1195,10 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
 
     private void examine(EmergencyMaterialsModel model, EmergencyMaterials em, StringBuilder stringBuilder, List<EmergencyMaterialsModel> list) {
         BeanUtils.copyProperties(model, em);
+        List<EmergencyMaterialsModel> collect = list.stream().filter(l -> model.equals(l)).collect(Collectors.toList());
+        if(collect.size()!=1){
+            stringBuilder.append("文件中有相同的数据，");
+        }
         if (ObjectUtil.isEmpty(em.getMaterialsCode())) {
             stringBuilder.append("应急物资编号必填，");
 
@@ -1266,19 +1265,20 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             EmergencyMaterialsCategory categoryFatherName = emergencyMaterialsCategoryMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getCategoryName, model.getCategoryName()).eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1"));
             if (ObjectUtil.isEmpty(categoryFatherName)) {
                 stringBuilder.append("应急物资分类不存在，");
-            }
-            if (categoryFatherName.getStatus() == 0) {
-                stringBuilder.append("该应急物资分类已被禁用，");
-            } else {
-                List<EmergencyMaterialsCategory> deptAll = emergencyMaterialsCategoryMapper.selectList(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0));
-                Set<EmergencyMaterialsCategory> deptUpList = getDeptUpList(deptAll, categoryFatherName);
-                List<EmergencyMaterialsCategory> disabledList = deptUpList.stream().filter(e -> e.getStatus() == 0).collect(Collectors.toList());
-                if (disabledList.size() > 0) {
+            }else {
+                if (categoryFatherName.getStatus() == 0) {
                     stringBuilder.append("该应急物资分类已被禁用，");
                 } else {
-                    em.setCategoryCode(categoryFatherName.getCategoryCode());
-                }
+                    List<EmergencyMaterialsCategory> deptAll = emergencyMaterialsCategoryMapper.selectList(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0));
+                    Set<EmergencyMaterialsCategory> deptUpList = getDeptUpList(deptAll, categoryFatherName);
+                    List<EmergencyMaterialsCategory> disabledList = deptUpList.stream().filter(e -> e.getStatus() == 0).collect(Collectors.toList());
+                    if (disabledList.size() > 0) {
+                        stringBuilder.append("该应急物资分类已被禁用，");
+                    } else {
+                        em.setCategoryCode(categoryFatherName.getCategoryCode());
+                    }
 
+                }
             }
         }
         if (ObjectUtil.isEmpty(model.getFloodProtection())) {
@@ -1325,7 +1325,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                         stringBuilder.append("该线路下的站点不存在，");
                     } else {
                         em.setStationCode(stationCode);
-                        if (ObjectUtil.isEmpty(positionCode)) {
+                        if (ObjectUtil.isEmpty(positionCode)&&count==3) {
                             stringBuilder.append("该线路下的站点的位置不存在，");
                         } else {
                             em.setPositionCode(positionCode);
