@@ -78,8 +78,8 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 
 			List<EmergencyMaterialsCategory> emergencyMaterialsCategoryList = new ArrayList<>();
 			List<EmergencyMaterialsCategory> emergencyMaterialsCategories = treeMenuList(list, one, emergencyMaterialsCategoryList);
+			emergencyMaterialsCategories.add(one);
 			List<String> stringList = emergencyMaterialsCategories.stream().map(EmergencyMaterialsCategory::getCategoryCode).collect(Collectors.toList());
-
 			emergencyMaterialsCategory.setTreeCode(stringList);
 		}
 		LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
