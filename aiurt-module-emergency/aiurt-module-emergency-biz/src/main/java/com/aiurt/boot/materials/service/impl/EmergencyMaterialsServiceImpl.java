@@ -384,6 +384,14 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
 
     @Override
     public ModelAndView getMaterialPatrolList(MaterialAccountDTO condition) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
+        if(StrUtil.isBlank(condition.getPrimaryOrg()) && CollectionUtil.isNotEmpty(departByUserId)){
+            List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect)){
+                condition.setPrimaryCodeList(collect);
+            }
+        }
         List<MaterialAccountDTO> materialAccountList = emergencyMaterialsMapper.getMaterialPatrolList(condition);
         List<PatrolStandardItemsModel> patrolStandardItemsModels = iSysBaseAPI.patrolStandardList(condition.getPatrolStandardId());
         AtomicReference<Integer> orderNumber = new AtomicReference<>(1);

@@ -223,6 +223,12 @@
             #{item}
             </foreach>
             </if>
+                <if test="condition.primaryCodeList!=null ">
+                AND  t1.primary_org in
+                <foreach item="item" collection="condition.primaryCodeList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         order by t1.create_time desc,t1.update_time desc
     </select>
