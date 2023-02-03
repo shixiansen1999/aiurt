@@ -111,4 +111,8 @@ public class RepairRecordDetailDTO implements Serializable {
     @ApiModelProperty(value = "工作票号")
     private String workTicketCode;
 
+    /**故障现象*/
+    @ApiModelProperty(value = "故障现象")
+    private String symptoms;
+
 }

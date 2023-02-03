@@ -1,5 +1,6 @@
 package com.aiurt.modules.fault.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -65,6 +66,7 @@ public class FaultRepairRecord implements Serializable {
 	/**故障现象*/
 	@Excel(name = "故障现象", width = 15)
     @ApiModelProperty(value = "故障现象")
+    @Dict(dictTable = "fault_knowledge_base_type", dicCode = "code", dicText = "name")
     private String faultPhenomenon;
 	/**故障分析*/
 	@Excel(name = "故障分析", width = 15)
