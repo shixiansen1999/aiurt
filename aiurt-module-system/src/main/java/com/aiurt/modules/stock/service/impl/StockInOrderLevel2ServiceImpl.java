@@ -2,14 +2,22 @@ package com.aiurt.modules.stock.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ExportParams;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.afterturn.easypoi.util.PoiMergeCellUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.standard.dto.InspectionCodeContentDTO;
+import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
 import com.aiurt.boot.standard.dto.InspectionCodeImportDTO;
+import com.aiurt.boot.team.entity.EmergencyTeam;
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsExport;
 import com.aiurt.common.util.XlsUtil;
@@ -18,10 +26,13 @@ import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.stock.dto.StockInOrderLevel2DTO;
+import com.aiurt.modules.stock.dto.StockInOrderLevel2ExportDTO;
 import com.aiurt.modules.stock.dto.StockIncomingMaterialsDTO;
+import com.aiurt.modules.stock.dto.StockIncomingMaterialsExportDTO;
 import com.aiurt.modules.stock.entity.*;
 import com.aiurt.modules.stock.entity.StockIncomingMaterials;
 import com.aiurt.modules.stock.mapper.StockInOrderLevel2Mapper;
+import com.aiurt.modules.stock.mapper.StockIncomingMaterialsMapper;
 import com.aiurt.modules.stock.service.*;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
@@ -34,6 +45,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -46,7 +58,10 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -335,6 +350,116 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 			}
 		}
 		excel.exportXls(response);
+	}
+
+	@Override
+	public void exportXls(HttpServletRequest request, HttpServletResponse response, StockInOrderLevel2ExportDTO stockInOrderLevel2ExportDTO) {
+		// 封装数据
+		List<StockInOrderLevel2ExportDTO> pageList = this.getStockIncomingMaterialsList(stockInOrderLevel2ExportDTO);
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		String title = "二级库入库导出数据";
+		cn.afterturn.easypoi.excel.entity.ExportParams exportParams = new ExportParams(title + "报表", "导出人:" + sysUser.getRealname(), ExcelType.XSSF);
+		//调用ExcelExportUtil.exportExcel方法生成workbook
+		Workbook wb = cn.afterturn.easypoi.excel.ExcelExportUtil.exportExcel(exportParams, StockInOrderLevel2ExportDTO.class, pageList);
+		String fileName = "二级库入库导出数据";
+		try {
+			response.setHeader("Content-Disposition",
+					"attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+			//xlsx格式设置
+			response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+			BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+			wb.write(bufferedOutPut);
+			bufferedOutPut.flush();
+			bufferedOutPut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 获取excel表格数据
+	 *
+	 * @param stockInOrderLevel2ExportDTO
+	 * @return
+	 */
+	private List<StockInOrderLevel2ExportDTO> getStockIncomingMaterialsList(StockInOrderLevel2ExportDTO stockInOrderLevel2ExportDTO) {
+		List<StockInOrderLevel2ExportDTO> StockInOrderLevel2List = stockInOrderLevel2Mapper.getList(stockInOrderLevel2ExportDTO);
+		for (StockInOrderLevel2ExportDTO dto : StockInOrderLevel2List) {
+			//启动日期转换
+			String entryTime = dto.getEntryTime();
+			entryTime = cn.hutool.core.date.DateUtil.format(DateUtil.parse(entryTime), "yyyy-MM-dd");
+			dto.setEntryTime(entryTime);
+			//入库单状态
+			List<DictModel> stockStatus = sysBaseApi.getDictItems("stock_in_order_level2_status");
+			stockStatus= stockStatus.stream().filter(f -> (String.valueOf(dto.getStatus())).equals(f.getValue())).collect(Collectors.toList());
+			String status = stockStatus.stream().map(DictModel::getText).collect(Collectors.joining());
+			dto.setStatus(status);
+			//入库仓库
+			QueryWrapper<StockLevel2Info> infoQueryWrapper = new QueryWrapper<>();
+			infoQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+			infoQueryWrapper.eq("status", CommonConstant.STOCK_LEVEL2_STATUS_1);
+			infoQueryWrapper.eq("warehouse_code",dto.getWarehouseCode());
+			infoQueryWrapper.orderByDesc("create_time");
+			StockLevel2Info one = iStockLevel2InfoService.getOne(infoQueryWrapper);
+			dto.setWarehouseName(one.getWarehouseName());
+			//入库人
+			LoginUser userById = iSysBaseAPI.getUserById(dto.getUserId());
+			if(ObjectUtil.isNotEmpty(userById)){
+				dto.setRealName(userById.getRealname());
+			}
+
+			if (CollUtil.isEmpty(StockInOrderLevel2List)) {
+				return StockInOrderLevel2List;
+			}
+			// 物资清单
+			if (ObjectUtil.isEmpty(dto)) {
+				continue;
+			}
+			List<StockIncomingMaterialsExportDTO> stockIncomingMaterialsExportDTOList = stockInOrderLevel2Mapper.selectByStockInOrderLevel2Id(dto.getOrderCode());
+			for (StockIncomingMaterialsExportDTO stockIncomingMaterialsExportDTO : stockIncomingMaterialsExportDTOList) {
+				if (StrUtil.isNotBlank(stockIncomingMaterialsExportDTO.getMaterialCode())){
+					String materialCode = stockIncomingMaterialsExportDTO.getMaterialCode();
+					MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code", materialCode));
+					if(ObjectUtil.isNotEmpty(materialBase)){
+						//物资类型
+						List<DictModel> materialType = sysBaseApi.getDictItems("material_type");
+						materialType= materialType.stream().filter(f -> (String.valueOf(materialBase.getType())).equals(f.getValue())).collect(Collectors.toList());
+						String type = materialType.stream().map(DictModel::getText).collect(Collectors.joining());
+						stockIncomingMaterialsExportDTO.setType(type);
+						//单位
+						List<DictModel> materialUnit = sysBaseApi.getDictItems("materian_unit");
+						materialUnit= materialUnit.stream().filter(f -> (String.valueOf(materialBase.getUnit())).equals(f.getValue())).collect(Collectors.toList());
+						String unit = materialUnit.stream().map(DictModel::getText).collect(Collectors.joining());
+						stockIncomingMaterialsExportDTO.setUnit(unit);
+						//专业
+						CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().eq("major_code",materialBase.getMajorCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
+						String majorName = csMajor==null?"":csMajor.getMajorName();
+						stockIncomingMaterialsExportDTO.setMajorCode(materialBase.getMajorCode());
+						stockIncomingMaterialsExportDTO.setMajorName(majorName);
+						//子系统
+						CsSubsystem csSubsystem = csSubsystemService.getOne(new QueryWrapper<CsSubsystem>().eq("system_code",materialBase.getSystemCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
+						String subSystemName = csSubsystem==null?"":csSubsystem.getSystemName();
+						stockIncomingMaterialsExportDTO.setSystemCode(materialBase.getSystemCode());
+						stockIncomingMaterialsExportDTO.setSystemName(subSystemName);
+						//物资分类
+						StockIncomingMaterials stockIncomingMaterials = new StockIncomingMaterials();
+						BeanUtils.copyProperties(materialBase,stockIncomingMaterials);
+						String baseTypeCodeCcName = stockIncomingMaterialsService.getCcName(stockIncomingMaterials);
+						stockIncomingMaterialsExportDTO.setBaseTypeCode(materialBase.getBaseTypeCode());
+						stockIncomingMaterialsExportDTO.setBaseTypeCodeCc(materialBase.getBaseTypeCodeCc());
+						stockIncomingMaterialsExportDTO.setBaseTypeCodeCcName(baseTypeCodeCcName);
+						//物资名称
+						stockIncomingMaterialsExportDTO.setMaterialName(materialBase.getName());
+					}
+
+				}
+			}
+			if (CollUtil.isEmpty(stockIncomingMaterialsExportDTOList)) {
+				continue;
+			}
+			dto.setStockIncomingMaterialsDTOList(stockIncomingMaterialsExportDTOList);
+		}
+		return StockInOrderLevel2List;
 	}
 
 	@Override
