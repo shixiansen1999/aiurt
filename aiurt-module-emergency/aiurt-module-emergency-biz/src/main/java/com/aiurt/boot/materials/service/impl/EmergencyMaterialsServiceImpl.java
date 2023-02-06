@@ -766,6 +766,20 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         if (CollUtil.isNotEmpty(selections)) {
             queryWrapper.in(EmergencyMaterialsInvoices::getId, selections);
         }
+        else {
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
+            if(StrUtil.isBlank(condition.getPrimaryOrg()) && CollectionUtil.isNotEmpty(departByUserId)){
+                List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+                if (CollectionUtil.isNotEmpty(collect)){
+                    queryWrapper.in(EmergencyMaterialsInvoices::getDepartmentCode,collect);
+                }
+            }
+        }
+        if(ObjectUtil.isNotEmpty(condition.getStartTime())){
+            queryWrapper.ge(EmergencyMaterialsInvoices::getPatrolDate, condition.getStartTime());
+            queryWrapper.le(EmergencyMaterialsInvoices::getPatrolDate, condition.getEndTime());
+        }
         List<EmergencyMaterialsInvoices> invoices = materialsInvoicesMapper.selectList(queryWrapper);
         response.setContentType("application/zip");
         response.setHeader("Content-disposition", "attachment;filename=" + java.net.URLEncoder.encode(DateUtil.format(new Date(), "yyyy-MM-dd") + "应急物资巡检记录导出模板.zip", "UTF-8"));
@@ -982,7 +996,6 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         XSSFRow row1 = sheet.createRow(rowNum++);
         row1.setHeight((short) 350);
         EmergencyMaterialsInvoicesItem emergencyMaterialsInvoicesItem = materialsInvoicesItemMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsInvoicesItem>().eq(EmergencyMaterialsInvoicesItem::getInvoicesId, invoice.getId()).last("limit 1"));
-        //有问题
         if(ObjectUtil.isNotEmpty(emergencyMaterialsInvoicesItem)){
             List<EmergencyMaterialsInvoicesItemDTO> items = emergencyMaterialsMapper.getMaterialInspectionList(emergencyMaterialsInvoicesItem.getMaterialsCode(), invoice.getId(), false);
             if (CollUtil.isNotEmpty(items)) {
