@@ -17,10 +17,12 @@ import com.aiurt.boot.standard.dto.InspectionCodeContentDTO;
 import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
 import com.aiurt.boot.standard.dto.InspectionCodeImportDTO;
 import com.aiurt.boot.team.entity.EmergencyTeam;
+import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsExport;
 import com.aiurt.common.util.XlsUtil;
+import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBase;
@@ -356,11 +358,20 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	public void exportXls(HttpServletRequest request, HttpServletResponse response, StockInOrderLevel2ExportDTO stockInOrderLevel2ExportDTO) {
 		// 封装数据
 		List<StockInOrderLevel2ExportDTO> pageList = this.getStockIncomingMaterialsList(stockInOrderLevel2ExportDTO);
+		List<StockInOrderLevel2ExportDTO> exportList = null;
+		// 过滤选中数据
+		String selections = request.getParameter("selections");
+		if (oConvertUtils.isNotEmpty(selections)) {
+			List<String> selectionList = Arrays.asList(selections.split(","));
+			exportList = pageList.stream().filter(item -> selectionList.contains(item.getId())).collect(Collectors.toList());
+		} else {
+			exportList = pageList;
+		}
 		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String title = "二级库入库导出数据";
 		cn.afterturn.easypoi.excel.entity.ExportParams exportParams = new ExportParams(title + "报表", "导出人:" + sysUser.getRealname(), ExcelType.XSSF);
 		//调用ExcelExportUtil.exportExcel方法生成workbook
-		Workbook wb = cn.afterturn.easypoi.excel.ExcelExportUtil.exportExcel(exportParams, StockInOrderLevel2ExportDTO.class, pageList);
+		Workbook wb = cn.afterturn.easypoi.excel.ExcelExportUtil.exportExcel(exportParams, StockInOrderLevel2ExportDTO.class, exportList);
 		String fileName = "二级库入库导出数据";
 		try {
 			response.setHeader("Content-Disposition",
