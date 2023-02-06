@@ -88,6 +88,12 @@
             between date_format(#{condition.planStartDate}, '%Y-%m-%d')
             and date_format(#{condition.planEndDate}, '%Y-%m-%d')
         </if>
+        <if test="condition.orgCode != null and condition.orgCode != null">
+            and fac.id in (
+            select distinct check_id
+            from fixed_assets_check_dept
+            where  org_code = #{condition.orgCode} )
+        </if>
         <choose>
             <when test="condition.flag != null and condition.flag">
                 and ahp.ID_ is not null
