@@ -1,6 +1,7 @@
 package com.aiurt.boot.materials.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsCategoryMapper;
@@ -14,12 +15,14 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,6 +56,39 @@ public class EmergencyMaterialsUsageServiceImpl extends ServiceImpl<EmergencyMat
             List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
             if (CollectionUtil.isNotEmpty(collect)){
                 condition.setPrimaryCodeList(collect);
+            }
+        }
+        if(StrUtil.isNotBlank(condition.getPrimaryOrg())){
+            //根据编码查询部门信息
+            SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(condition.getPrimaryOrg());
+            if (ObjectUtil.isNotEmpty(departByOrgCode)){
+                //查询子级信息
+                List<SysDepartModel> departByParentId = iSysBaseAPI.getDepartByParentId(departByOrgCode.getId());
+                if(CollectionUtil.isNotEmpty(departByUserId) && CollectionUtil.isNotEmpty(departByParentId)){
+
+                    List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+
+                    List<String> collect1 = departByParentId.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+                    if (collect1.size()>collect.size()){
+                        collect1.add(condition.getPrimaryOrg());
+                        collect1.retainAll(collect);
+                        condition.setPrimaryCodeList(collect1);
+                    }
+                    if (collect.size()>collect1.size()){
+                        collect1.add(condition.getPrimaryOrg());
+                        collect.retainAll(collect1);
+                        condition.setPrimaryCodeList(collect);
+                    }
+                }else {
+                    List<String> stringList = new ArrayList<>();
+                    stringList.add(condition.getPrimaryOrg());
+                    condition.setPrimaryCodeList(stringList);
+                }
+            }else {
+                List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+                if (CollectionUtil.isNotEmpty(collect)){
+                    condition.setPrimaryCodeList(collect);
+                }
             }
         }
         List<EmergencyMaterialsUsage> usageRecordList = emergencyMaterialsUsageMapper.getUsageRecordList(pageList, condition);

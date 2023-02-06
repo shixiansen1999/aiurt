@@ -22,9 +22,6 @@
             <if test="condition.materialsName!=null">
               AND t1.materials_name LIKE CONCAT ('%', #{condition.materialsName}, '%')
             </if>
-            <if test="condition.primaryOrg!=null">
-                AND t1.primary_org = #{condition.primaryOrg}
-            </if>
             <if test="condition.primaryCodeList!=null ">
                 AND  t1.primary_org in
                 <foreach item="item" collection="condition.primaryCodeList" separator="," open="(" close=")" index="">
@@ -151,9 +148,6 @@
             </if>
             <if test="condition.endTime != null">
                 and DATE_FORMAT(t2.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d')
-            </if>
-            <if test="condition.patrolTeamCode != null">
-                and t2.department_code = #{condition.patrolTeamCode}
             </if>
             <if test="condition.patrolTeamCodeList!=null ">
                 AND t2.department_code in
