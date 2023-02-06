@@ -1,6 +1,4 @@
 package com.aiurt.modules.fault.service.impl;
-import java.util.Date;
-
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUnit;
@@ -433,7 +431,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .assignTime(new Date())
                 .delFlag(CommonConstant.DEL_FLAG_0)
                 // 故障想象
-                .faultPhenomenon(fault.getPhenomenonTypeName())
+                .faultPhenomenon(fault.getFaultPhenomenon())
                 // 负责人
                 .appointUserName(assignDTO.getOperatorUserName())
                 // 附件
@@ -490,7 +488,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 // 负责人
                 .appointUserName(assignDTO.getOperatorUserName())
                 // 故障想象
-                .faultPhenomenon(fault.getPhenomenonTypeName())
+                .faultPhenomenon(fault.getFaultPhenomenon())
                 .delFlag(CommonConstant.DEL_FLAG_0)
                 // 领取时间
                 .receviceTime(new Date())

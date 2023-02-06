@@ -9,6 +9,7 @@ import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.asset.dto.FixedAssetsDTO;
@@ -322,7 +323,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
 
         if (StrUtil.isNotEmpty(categoryName)) {
             List<String> list = StrUtil.splitTrim(categoryName, "/");
-            String pid = null;
+            String pid = "0";
             for (int i = 0; i < list.size(); i++) {
                 String s = list.get(i);
                 FixedAssetsCategory assetsCategory = categoryMapper.getAssetsCategory(s, pid);
@@ -360,7 +361,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
                 //根据部门名称和父id找部门
                 JSONObject depart = sysBaseAPI.getDepartByNameAndParentId(s, id);
                 if (ObjectUtil.isNotNull(depart)) {
-                    id = depart.getString("parentId");
+                    id = depart.getString("id");
                     fixedAssetsModel.setOrgCode(depart.getString("orgCode"));
                 }else {
                     stringBuilder.append("系统不存在该组织机构，");
@@ -385,12 +386,16 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
             StringBuilder responsibilityId = new StringBuilder();
             for (String s : list) {
                 List<String> list1 = StrUtil.splitTrim(s, "/");
-                if (list.size() != 2) {
+                if (list1.size() == 2) {
                     List<LoginUser> userByRealName = sysBaseAPI.getUserByRealName(list1.get(0), list1.get(1));
-                    LoginUser loginUser = userByRealName.get(0);
-                    responsibilityId.append(loginUser.getId()).append("，");
-                    if (!loginUser.getOrgCode().equals(fixedAssetsModel.getOrgCode())) {
-                        stringBuilder.append("组织机构不存在该责任人，");
+                    if (CollUtil.isNotEmpty(userByRealName)) {
+                        LoginUser loginUser = userByRealName.get(0);
+                        responsibilityId.append(loginUser.getId()).append("，");
+                        if (!loginUser.getOrgCode().equals(fixedAssetsModel.getOrgCode())) {
+                            stringBuilder.append("组织机构不存在该责任人，");
+                        }
+                    }else {
+                        stringBuilder.append("责任人填写格式错误，");
                     }
                 } else {
                     stringBuilder.append("责任人填写格式错误，");
@@ -407,16 +412,13 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         String locationName = fixedAssetsModel.getLocationName();
         if (StrUtil.isNotBlank(locationName)) {
             List<String> list = StrUtil.splitTrim(locationName, "/");
-            if (list.size() == 3) {
+            if (list.size() == 2 || list.size() ==1) {
                 JSONObject lineByName = sysBaseAPI.getLineByName(list.get(0));
                 JSONObject stationByName = sysBaseAPI.getStationByName(list.get(1));
                 if (ObjectUtil.isNotEmpty(lineByName) && ObjectUtil.isNotEmpty(stationByName)) {
-                    JSONObject positionByName = sysBaseAPI.getPositionByName(list.get(2),lineByName.getString("lineCode"),stationByName.getString("stationCode"));
-                    if (ObjectUtil.isEmpty(positionByName)) {
-                        stringBuilder.append("存放地点不存在，");
-                    } else {
-                        fixedAssetsModel.setLocation(positionByName.getString("positionCode"));
-                    }
+                    fixedAssetsModel.setLocation(stationByName.getString("stationCode"));
+                }else if(ObjectUtil.isNotEmpty(lineByName) && ObjectUtil.isEmpty(stationByName)){
+                    fixedAssetsModel.setLocation(lineByName.getString("lineCode"));
                 } else {
                     stringBuilder.append("存放地点不存在，");
                 }
@@ -472,7 +474,13 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
             Map<String, Object> errorMap = new HashMap<String, Object>();
             List<Map<String, Object>> mapList = new ArrayList<>();
             Map<String, Object> map = new HashMap<>();
+
+
             for (FixedAssetsModel fixedAssetsModel : fixedAssetsModels) {
+
+                String buildBuyDate = fixedAssetsModel.getBuildBuyDate()!=null?DateUtil.format(fixedAssetsModel.getBuildBuyDate(), "yyyy-MM-dd"):"";
+                String startDate =fixedAssetsModel.getStartDate()!=null?DateUtil.format(fixedAssetsModel.getStartDate(), "yyyy-MM-dd"):"";
+
                 map.put("assetName", fixedAssetsModel.getAssetName());
                 map.put("locationName", fixedAssetsModel.getLocationName());
                 map.put("categoryName", fixedAssetsModel.getCategoryName());
@@ -481,7 +489,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
                 map.put("specification", fixedAssetsModel.getSpecification());
                 map.put("number", fixedAssetsModel.getNumber());
                 map.put("houseNumber", fixedAssetsModel.getHouseNumber());
-                map.put("buildBuyDate", fixedAssetsModel.getBuildBuyDate());
+                map.put("buildBuyDate", buildBuyDate);
                 map.put("coveredArea", fixedAssetsModel.getCoveredArea());
                 map.put("unitsName", fixedAssetsModel.getUnitsName());
                 map.put("accumulatedDepreciation", fixedAssetsModel.getAccumulatedDepreciation());
@@ -490,7 +498,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
                 map.put("statusName", fixedAssetsModel.getStatusName());
                 map.put("depreciableLife", fixedAssetsModel.getDepreciableLife());
                 map.put("durableYears", fixedAssetsModel.getDurableYears());
-                map.put("startDate", fixedAssetsModel.getStartDate());
+                map.put("startDate", startDate);
                 map.put("mistake", fixedAssetsModel.getMistake());
                 mapList.add(map);
             }

@@ -361,9 +361,6 @@ public class SysDepartController {
 	}
 
     /**
-     * 通过excel导入数据
-	 * 部门导入方案1: 通过机构编码来计算出部门的父级ID,维护上下级关系;
-	 * 部门导入方案2: 你也可以改造下程序,机构编码直接导入,先不设置父ID;全部导入后,写一个sql,补下父ID;
      *
      * @param request
      * @param response
@@ -373,104 +370,8 @@ public class SysDepartController {
 	@ApiOperation(value = "部门管理-导入", notes = "部门管理-导入")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
 	@CacheEvict(value= {CacheConstant.SYS_DEPARTS_CACHE,CacheConstant.SYS_DEPART_IDS_CACHE}, allEntries=true)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-		List<String> errorMessageList = new ArrayList<>();
-		List<SysDepart> listSysDeparts = null;
-        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
-        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
-            // 获取上传文件对象
-            MultipartFile file = entity.getValue();
-            ImportParams params = new ImportParams();
-            params.setTitleRows(2);
-            params.setHeadRows(1);
-            params.setNeedSave(true);
-            try {
-            	// orgCode编码长度
-            	int codeLength = YouBianCodeUtil.ZHANWEI_LENGTH;
-                listSysDeparts = ExcelImportUtil.importExcel(file.getInputStream(), SysDepart.class, params);
-                //按长度排序
-                Collections.sort(listSysDeparts, new Comparator<SysDepart>() {
-                    @Override
-					public int compare(SysDepart arg0, SysDepart arg1) {
-                    	return arg0.getOrgCode().length() - arg1.getOrgCode().length();
-                    }
-                });
-
-                int num = 0;
-                for (SysDepart sysDepart : listSysDeparts) {
-                	String orgCode = sysDepart.getOrgCode();
-                	if(orgCode.length() > codeLength) {
-                		String parentCode = orgCode.substring(0, orgCode.length()-codeLength);
-                		QueryWrapper<SysDepart> queryWrapper = new QueryWrapper<SysDepart>();
-                		queryWrapper.eq("org_code", parentCode);
-                		try {
-                		SysDepart parentDept = sysDepartService.getOne(queryWrapper);
-                		if(!parentDept.equals(null)) {
-							sysDepart.setParentId(parentDept.getId());
-						} else {
-							sysDepart.setParentId("");
-						}
-                		}catch (Exception e) {
-                			//没有查找到parentDept
-                		}
-                	}else{
-                		sysDepart.setParentId("");
-					}
-					if (StrUtil.isBlank(sysDepart.getParentId())) {
-						sysDepart.setOrgCodeCc("/"+sysDepart.getOrgCode()+"/");
-					}else {
-						// 查询上级的编码
-						SysDepart depart = sysDepartService.getById(sysDepart.getParentId());
-						if (Objects.nonNull(depart) && StrUtil.isNotBlank(depart.getOrgCodeCc())) {
-							sysDepart.setOrgCodeCc(depart.getOrgCodeCc()+""+sysDepart.getOrgCode()+"/");
-						}
-					}
-					String userName = iSysBaseAPI.getUserName(sysDepart.getContactId());
-					if (StrUtil.isNotBlank(userName)){
-						LoginUser loginUser = iSysBaseAPI.queryUser(userName);
-						sysDepart.setContactId(loginUser.getId());
-					}
-					String userName1 = iSysBaseAPI.getUserName(sysDepart.getManagerId());
-					if (StrUtil.isNotBlank(userName1)){
-						LoginUser loginUser = iSysBaseAPI.queryUser(userName1);
-						sysDepart.setManagerId(loginUser.getId());
-					}
-					String userName2 = iSysBaseAPI.getUserName(sysDepart.getTechnicalId());
-					if (StrUtil.isNotBlank(userName2)){
-						LoginUser loginUser = iSysBaseAPI.queryUser(userName2);
-						sysDepart.setTechnicalId(loginUser.getId());
-					}
-                    //update-begin---author:liusq   Date:20210223  for：批量导入部门以后，不能追加下一级部门 #2245------------
-					sysDepart.setOrgType(sysDepart.getOrgCode().length()/codeLength+"");
-                    //update-end---author:liusq   Date:20210223  for：批量导入部门以后，不能追加下一级部门 #2245------------
-					sysDepart.setDelFlag(CommonConstant.DEL_FLAG_0.toString());
-                    //update-begin---author:wangshuai ---date:20220105  for：[JTC-363]部门导入 机构类别没有时导入失败，赋默认值------------
-					if(oConvertUtils.isEmpty(sysDepart.getOrgCategory())){
-					    sysDepart.setOrgCategory("1");
-                    }
-                    //update-end---author:wangshuai ---date:20220105  for：[JTC-363]部门导入 机构类别没有时导入失败，赋默认值------------
-					ImportExcelUtil.importDateSaveOne(sysDepart, ISysDepartService.class, errorMessageList, num, CommonConstant.SQL_INDEX_UNIQ_DEPART_ORG_CODE);
-					num++;
-                }
-				//清空部门缓存
-				Set keys3 = redisTemplate.keys(CacheConstant.SYS_DEPARTS_CACHE + "*");
-				Set keys4 = redisTemplate.keys(CacheConstant.SYS_DEPART_IDS_CACHE + "*");
-				redisTemplate.delete(keys3);
-				redisTemplate.delete(keys4);
-				return ImportExcelUtil.imporReturnRes(errorMessageList.size(), listSysDeparts.size() - errorMessageList.size(), errorMessageList);
-            } catch (Exception e) {
-                log.error(e.getMessage(),e);
-                return Result.error("文件导入失败:"+e.getMessage());
-            } finally {
-                try {
-                    file.getInputStream().close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return Result.error("文件导入失败！");
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		return sysDepartService.importExcel(request,response);
     }
 
 

@@ -1,11 +1,14 @@
 package com.aiurt.modules.stock.controller;
 
+import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
+import com.aiurt.modules.stock.dto.StockInOrderLevel2ExportDTO;
 import com.aiurt.modules.stock.entity.*;
 import com.aiurt.modules.stock.service.IStockIncomingMaterialsService;
 import com.aiurt.modules.stock.service.IStockInOrderLevel2Service;
@@ -185,17 +188,16 @@ public class StockInOrderLevel2Controller {
         return result;
     }
 
-    @AutoLog(value = "二级库管理-二级库入库管理-导出", operateType = 6, operateTypeAlias = "导出", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
-    @ApiOperation(value = "二级库管理-二级库入库管理-导出", notes = "二级库管理-二级库入库管理-导出")
-    @GetMapping(value = "/export")
-    public void eqExport(@RequestParam(name = "ids", defaultValue = "") String ids,
-                                 HttpServletRequest request,
-                                 HttpServletResponse response) {
-        iStockInOrderLevel2Service.eqExport(ids, request, response);
+
+    @AutoLog(value = "二级库管理-二级库入库管理-导出excel",  operateType =  4, operateTypeAlias = "导出excel",  permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
+    @ApiOperation(value="二级库管理-二级库入库管理-导出excel", notes="二级库管理-二级库入库管理-导出excel")
+    @RequestMapping(value = "/export",method = RequestMethod.GET)
+    public void exportXls(HttpServletRequest request, HttpServletResponse response, StockInOrderLevel2ExportDTO stockInOrderLevel2ExportDTO) {
+        iStockInOrderLevel2Service.exportXls(request,response,stockInOrderLevel2ExportDTO);
     }
 
     /**
-     * 导出excel
+     * 下载导入模板
      *
      */
     @AutoLog(value = "二级库管理-二级库入库管理-导入模板下载", operateType =  6, operateTypeAlias = "二级库管理-二级库入库管理-导入模板下载", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")

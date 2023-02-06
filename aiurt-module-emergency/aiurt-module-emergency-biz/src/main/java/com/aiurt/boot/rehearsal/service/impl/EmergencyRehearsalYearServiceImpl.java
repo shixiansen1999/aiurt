@@ -74,6 +74,10 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("检测到未登录，请登录后操作！");
         }
+        if (ObjectUtil.isNotEmpty(emergencyRehearsalYearDTO) && ObjectUtil.isNotEmpty(emergencyRehearsalYearDTO.getOrgCode())) {
+            List<String> orgCodes = iSysBaseApi.getSublevelOrgCodes(emergencyRehearsalYearDTO.getOrgCode());
+            emergencyRehearsalYearDTO.setOrgCodes(orgCodes);
+        }
         Page<EmergencyRehearsalYear> pageList = emergencyRehearsalYearMapper.queryPageList(page, emergencyRehearsalYearDTO, new EmergencyPlanStatusDTO(), loginUser.getUsername());
         return pageList;
     }

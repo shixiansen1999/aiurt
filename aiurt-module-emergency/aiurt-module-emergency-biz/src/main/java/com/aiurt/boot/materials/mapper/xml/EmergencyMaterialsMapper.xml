@@ -22,8 +22,11 @@
             <if test="condition.materialsName!=null">
               AND t1.materials_name LIKE CONCAT ('%', #{condition.materialsName}, '%')
             </if>
-            <if test="condition.primaryOrg!=null">
-                AND t1.primary_org = #{condition.primaryOrg}
+            <if test="condition.primaryCodeList!=null ">
+                AND  t1.primary_org in
+                <foreach item="item" collection="condition.primaryCodeList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
             </if>
             <if test="condition.lineCode!=null">
                 AND t1.line_code = #{condition.lineCode}
@@ -146,8 +149,11 @@
             <if test="condition.endTime != null">
                 and DATE_FORMAT(t2.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d')
             </if>
-            <if test="condition.patrolTeamCode != null">
-                and t2.department_code = #{condition.patrolTeamCode}
+            <if test="condition.patrolTeamCodeList!=null ">
+                AND t2.department_code in
+                <foreach item="item" collection="condition.patrolTeamCodeList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
             </if>
         </where>
         order by t2.create_time desc,t2.update_time desc
@@ -210,6 +216,12 @@
            <foreach collection="condition.selections" item="item" open="(" close=")" separator=",">
             #{item}
             </foreach>
+            </if>
+                <if test="condition.primaryCodeList!=null ">
+                AND  t1.primary_org in
+                <foreach item="item" collection="condition.primaryCodeList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
             </if>
         </where>
         order by t1.create_time desc,t1.update_time desc

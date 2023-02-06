@@ -154,6 +154,11 @@ public class EmergencyMaterialsInvoicesItem extends DictEntity implements Serial
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
 
+    /**巡视班组集合*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "巡视班组集合")
+    private List<String> patrolTeamCodeList;
+
 
     /**巡视日期*/
     @TableField(exist = false)

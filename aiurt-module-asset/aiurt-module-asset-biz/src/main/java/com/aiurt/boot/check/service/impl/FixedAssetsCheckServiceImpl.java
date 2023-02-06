@@ -475,6 +475,17 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
                     f.setAfterNumber(fixedAssetsCheckRecordList.getActualNumber());
                 });
                 fixedAssetsCheckDetailService.updateBatchById(fixedAssetsCheckDetail);
+                List<FixedAssets> fixedAssetsArrayList = new ArrayList<>();
+                fixedAssetsCheckRecord.forEach(f->{
+                    if (ObjectUtils.isNotEmpty(f.getActualNumber())){
+                        FixedAssets fixedAssets = fixedAssetsService.lambdaQuery()
+                                .eq(FixedAssets::getDelFlag,FixedAssetsConstant.STATUS_0)
+                                .eq(FixedAssets::getAssetCode,f.getAssetCode()).one();
+                        fixedAssets.setNumber(f.getActualNumber());
+                        fixedAssetsArrayList.add(fixedAssets);
+                    }
+                });
+                fixedAssetsService.updateBatchById(fixedAssetsArrayList);
                 break;
         }
         this.updateById(assetsCheck);

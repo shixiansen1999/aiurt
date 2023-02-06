@@ -44,14 +44,6 @@ public interface IFixedAssetsCategoryService extends IService<FixedAssetsCategor
     List<FixedAssetsCategoryDTO> getCategoryList(FixedAssetsCategoryDTO categoryDTO);
 
     /**
-     * 校验分类编码、分类名称
-     *
-     * @param fixedAssetsCategory
-     * @return
-     */
-    Result<String> checkCodeName(FixedAssetsCategoryDTO fixedAssetsCategory);
-
-    /**
      * 资产分类-导入
      *
      * @param request
@@ -59,4 +51,20 @@ public interface IFixedAssetsCategoryService extends IService<FixedAssetsCategor
      * @return
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
+
+    /**
+     * 资产分类-校验分类编码
+     *
+     * @param fixedAssetsCategory
+     * @return
+     */
+    Result<String> checkCode(FixedAssetsCategoryDTO fixedAssetsCategory);
+
+    /**
+     * 资产分类-校验分类名称
+     *
+     * @param fixedAssetsCategory
+     * @return
+     */
+    Result<String> checkName(FixedAssetsCategoryDTO fixedAssetsCategory);
 }

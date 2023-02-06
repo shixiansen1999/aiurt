@@ -1,6 +1,7 @@
 package com.aiurt.boot.materials.controller;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
@@ -29,10 +30,12 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
- /**
+/**
  * @Description: emergency_materials_category
  * @Author: aiurt
  * @Date:   2022-11-29
@@ -62,38 +65,66 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		emergencyMaterialsCategory.setDelFlag(0);
-		QueryWrapper<EmergencyMaterialsCategory> queryWrapper = QueryGenerator.initQueryWrapper(emergencyMaterialsCategory, req.getParameterMap());
-		queryWrapper.eq(StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryCode()),"category_code",emergencyMaterialsCategory.getCategoryCode());
+
+		if (StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryCode())){
+			LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+			lambdaQueryWrapper1.eq(EmergencyMaterialsCategory::getDelFlag,CommonConstant.DEL_FLAG_0);
+			List<EmergencyMaterialsCategory> list = emergencyMaterialsCategoryService.list(lambdaQueryWrapper1);
+
+			LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+			lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,CommonConstant.DEL_FLAG_0);
+			lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,emergencyMaterialsCategory.getCategoryCode());
+			EmergencyMaterialsCategory one = emergencyMaterialsCategoryService.getOne(lambdaQueryWrapper);
+
+			List<EmergencyMaterialsCategory> emergencyMaterialsCategoryList = new ArrayList<>();
+			List<EmergencyMaterialsCategory> emergencyMaterialsCategories = treeMenuList(list, one, emergencyMaterialsCategoryList);
+			emergencyMaterialsCategories.add(one);
+			List<String> stringList = emergencyMaterialsCategories.stream().map(EmergencyMaterialsCategory::getCategoryCode).collect(Collectors.toList());
+			emergencyMaterialsCategory.setTreeCode(stringList);
+		}
+		LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+		if (StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryName())){
+			lambdaQueryWrapper.like(EmergencyMaterialsCategory::getCategoryName,emergencyMaterialsCategory.getCategoryName());
+		}
+		if (emergencyMaterialsCategory.getStatus()!=null){
+			lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getStatus,emergencyMaterialsCategory.getStatus());
+		}
+		if (CollectionUtil.isNotEmpty(emergencyMaterialsCategory.getTreeCode())){
+			lambdaQueryWrapper.in(EmergencyMaterialsCategory::getCategoryCode,emergencyMaterialsCategory.getTreeCode());
+		}
+		lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,CommonConstant.DEL_FLAG_0);
+
 		Page<EmergencyMaterialsCategory> page = new Page<EmergencyMaterialsCategory>(pageNo, pageSize);
-		IPage<EmergencyMaterialsCategory> pageList = emergencyMaterialsCategoryService.page(page, queryWrapper);
+		IPage<EmergencyMaterialsCategory> pageList = emergencyMaterialsCategoryService.page(page, lambdaQueryWrapper);
+
 		pageList.getRecords().forEach(e->{
 			if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0")==false){
 				EmergencyMaterialsCategory byId = emergencyMaterialsCategoryService.getById(e.getPid());
                 e.setFatherName(byId.getCategoryName());
 			}
-			//是否有存在子级，有就查询出子级一起返回
-			if (StrUtil.isNotBlank(e.getPid()) && e.getPid().equals("0")){
-				LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-				lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getPid, e.getId());
-				lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag, 0);
-				List<EmergencyMaterialsCategory> list = emergencyMaterialsCategoryService.list(lambdaQueryWrapper);
-				list.forEach(q->{
-					if (StrUtil.isNotBlank(q.getPid()) && q.getPid().equals("0")==false){
-						EmergencyMaterialsCategory byId = emergencyMaterialsCategoryService.getById(q.getPid());
-						q.setFatherName(byId.getCategoryName());
-						if (q.getStatus()!=null && q.getStatus()==1){
-                          q.setStatusName("启用");
-						}if (q.getStatus()!=null && q.getStatus()==0){
-							q.setStatusName("停用");
-						}
-					}
-				});
-				e.setChildren(list);
-			}
 		});
 		return Result.OK(pageList);
 	}
+
+	 /**
+	  * 获取某个父节点下面的所有子节点
+	  * @param list
+	  * @param emergencyMaterialsCategory
+	  * @param allChildren
+	  * @return
+	  */
+	 public static List<EmergencyMaterialsCategory> treeMenuList(List<EmergencyMaterialsCategory> list, EmergencyMaterialsCategory emergencyMaterialsCategory, List<EmergencyMaterialsCategory> allChildren) {
+
+		 for (EmergencyMaterialsCategory category : list) {
+			 //遍历出父id等于参数的id，add进子节点集合
+			 if (category.getPid().equals(emergencyMaterialsCategory.getId())) {
+				 //递归遍历下一级
+				 treeMenuList(list, category, allChildren);
+				 allChildren.add(category);
+			 }
+		 }
+		 return allChildren;
+	 }
 
 	 /**
 	  *
@@ -257,13 +288,13 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 			List<String> selections = category.getSelections();
 			queryWrapper.in(EmergencyMaterialsCategory::getId,selections);
 		}
-		if(ObjectUtil.isNotEmpty(category.getCategoryCode()))
+		if(ObjectUtil.isNotEmpty(category.getStatus()))
 		{
-			queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,category.getCategoryCode());
+			queryWrapper.eq(EmergencyMaterialsCategory::getStatus,category.getStatus());
 		}
 		if(ObjectUtil.isNotEmpty(category.getCategoryName()))
 		{
-			queryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,category.getCategoryName());
+			queryWrapper.like(EmergencyMaterialsCategory::getCategoryName,category.getCategoryName());
 		}
 		List<EmergencyMaterialsCategory> list = emergencyMaterialsCategoryService.list(queryWrapper);
 		list.forEach(e->{
