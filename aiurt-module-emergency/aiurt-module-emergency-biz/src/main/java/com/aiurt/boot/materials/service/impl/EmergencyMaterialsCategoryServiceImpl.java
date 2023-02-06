@@ -353,8 +353,8 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
                     } else {
                         List<EmergencyMaterialsCategory> deptAll = emergencyMaterialsCategoryMapper.selectList(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0));
                         Set<EmergencyMaterialsCategory> deptUpList = getDeptUpList(deptAll, categoryFatherName);
-                        List<EmergencyMaterialsCategory> disabledList = deptUpList.stream().filter(e -> e.getStatus() == 0).collect(Collectors.toList());
                         if(CollUtil.isNotEmpty(deptUpList)){
+                            List<EmergencyMaterialsCategory> disabledList = deptUpList.stream().filter(e -> e.getStatus() == 0).collect(Collectors.toList());
                             if (disabledList.size() > 0) {
                                 stringBuilder.append("该上级节点已被禁用，");
                             }
