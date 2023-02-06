@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -2356,6 +2357,31 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return JSONObject.parseObject(JSONObject.toJSONString(sysDepart));
     }
+
+    @Override
+    public List<SysDepartModel> getDepartByParentId(String parentId) {
+        LambdaQueryWrapper<SysDepart> wrapper = new LambdaQueryWrapper<>();
+        if (StrUtil.isNotBlank(parentId)) {
+            wrapper.eq(SysDepart::getParentId, parentId);
+        }
+        wrapper.eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<SysDepart> list = departMapper.selectList(wrapper);
+        if (CollectionUtil.isEmpty(list)) {
+            return null;
+        }
+        List<SysDepartModel> list1 = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(list)){
+            for (int i = 0; i < list.size(); i++) {
+                SysDepartModel sysDepartModel = new SysDepartModel();
+                BeanUtil.copyProperties(list.get(i),sysDepartModel);
+                list1.add(sysDepartModel);
+                getDepartByParentId(list.get(i).getId());
+            }
+        }
+        return list1 ;
+    }
+
+
 
     @Override
     public JSONObject getLineByName(String lineName) {

@@ -35,9 +35,6 @@
             <if test="condition.id!=null">
                 and t3.id = #{condition.id}
             </if>
-            <if test="condition.primaryOrg!=null">
-                and t1.primary_org = #{condition.primaryOrg}
-            </if>
             <if test="condition.primaryCodeList!=null ">
                 AND  t1.primary_org in
                 <foreach item="item" collection="condition.primaryCodeList" separator="," open="(" close=")" index="">
