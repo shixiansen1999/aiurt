@@ -1,6 +1,10 @@
 package com.aiurt.modules.stock.mapper;
 
+import com.aiurt.boot.standard.dto.InspectionCodeContentDTO;
+import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
+import com.aiurt.modules.stock.dto.StockInOrderLevel2ExportDTO;
+import com.aiurt.modules.stock.dto.StockIncomingMaterialsExportDTO;
 import com.aiurt.modules.stock.entity.StockInOrderLevel2;
 import com.aiurt.modules.stock.entity.StockSubmitMaterials;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -24,4 +28,19 @@ public interface StockInOrderLevel2Mapper extends BaseMapper<StockInOrderLevel2>
      * @return
      */
     List<StockInOrderLevel2> pageList(Page<StockInOrderLevel2> page, @Param("condition") StockInOrderLevel2 stockInOrderLevel2);
+
+    /**
+     * 查询二级库入库表
+     * @param stockInOrderLevel2ExportDTO
+     * @return
+     */
+    List<StockInOrderLevel2ExportDTO> getList(@Param("condition") StockInOrderLevel2ExportDTO stockInOrderLevel2ExportDTO);
+
+    /**
+     * 查询物资清单
+     * @param orderCode
+     * @return
+     */
+    List<StockIncomingMaterialsExportDTO> selectByStockInOrderLevel2Id(String orderCode);
+
 }
