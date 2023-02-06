@@ -188,18 +188,10 @@ public class StockInOrderLevel2Controller {
         return result;
     }
 
-    @AutoLog(value = "二级库管理-二级库入库管理-导出", operateType = 6, operateTypeAlias = "导出", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
-    @ApiOperation(value = "二级库管理-二级库入库管理-导出", notes = "二级库管理-二级库入库管理-导出")
-    @GetMapping(value = "/export")
-    public void eqExport(@RequestParam(name = "ids", defaultValue = "") String ids,
-                                 HttpServletRequest request,
-                                 HttpServletResponse response) {
-        iStockInOrderLevel2Service.eqExport(ids, request, response);
-    }
 
     @AutoLog(value = "二级库管理-二级库入库管理-导出excel",  operateType =  4, operateTypeAlias = "导出excel",  permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
     @ApiOperation(value="二级库管理-二级库入库管理-导出excel", notes="二级库管理-二级库入库管理-导出excel")
-    @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
+    @RequestMapping(value = "/export",method = RequestMethod.GET)
     public void exportXls(HttpServletRequest request, HttpServletResponse response, StockInOrderLevel2ExportDTO stockInOrderLevel2ExportDTO) {
         iStockInOrderLevel2Service.exportXls(request,response,stockInOrderLevel2ExportDTO);
     }
