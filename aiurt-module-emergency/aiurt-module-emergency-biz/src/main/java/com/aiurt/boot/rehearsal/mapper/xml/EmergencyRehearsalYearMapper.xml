@@ -22,8 +22,14 @@
         <if test="condition.status != null">
             and ery.`status` = #{condition.status}
         </if>
-        <if test="condition.orgCode != null and condition.orgCode != ''">
-            and ery.org_code = #{condition.orgCode}
+<!--        <if test="condition.orgCode != null and condition.orgCode != ''">-->
+<!--            and ery.org_code = #{condition.orgCode}-->
+<!--        </if>-->
+        <if test="condition.orgCodes != null and condition.orgCodes.size() > 0">
+            and ery.org_code in
+            <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
         <if test="condition.year != null and condition.year != ''">
             and ery.`year` like concat('%', #{condition.year}, '%')

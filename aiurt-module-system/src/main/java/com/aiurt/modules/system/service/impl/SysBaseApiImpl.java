@@ -1058,6 +1058,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     /**
      * 手机号验证
+     *
      * @param str
      * @return 验证通过返回true
      */
@@ -1074,6 +1075,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     /**
      * 电话号码验证
+     *
      * @param str
      * @return 验证通过返回true
      */
@@ -1106,8 +1108,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         queryWrapper.in(SysDepart::getOrgCode, orgCodes.split(","));
         return JSON.parseArray(JSON.toJSONString(sysDepartService.list(queryWrapper))).toJavaList(JSONObject.class);
     }
+
     /**
      * 根据多个部门编码，查询返回多个部门名称
+     *
      * @param orgCodes
      * @return
      */
@@ -1116,8 +1120,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         LambdaQueryWrapper<SysDepart> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(SysDepart::getOrgCode, orgCodes);
         List<String> collect = sysDepartService.list(queryWrapper).stream().map(SysDepart::getDepartName).collect(Collectors.toList());
-        return collect ;
+        return collect;
     }
+
     @Override
     public List<JSONObject> queryDepartsByIds(String ids) {
         LambdaQueryWrapper<SysDepart> queryWrapper = new LambdaQueryWrapper<>();
@@ -1679,7 +1684,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public CsStation getPositionCodeByStationCode(String stationCode) {
-         CsStation csStation1 = new CsStation();
+        CsStation csStation1 = new CsStation();
         if (StrUtil.isNotBlank(stationCode)) {
             LambdaQueryWrapper<CsStation> wrapper1 = new LambdaQueryWrapper<>();
             wrapper1.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0).eq(CsStation::getStationCode, stationCode);
@@ -1688,7 +1693,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0).eq(CsStationPosition::getStaionCode, stationCode);
             List<CsStationPosition> csStationPositions = csStationPositionMapper.selectList(wrapper);
-            if (CollectionUtil.isNotEmpty(csStationPositions)){
+            if (CollectionUtil.isNotEmpty(csStationPositions)) {
                 csStation.setCsStationPositionList(csStationPositions);
             }
             return csStation;
@@ -1785,19 +1790,21 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return JSONObject.parseObject(JSONObject.toJSONString(csMajor));
     }
+
     @Override
     public List<String> getCsMajorNamesByCodes(List<String> majorCode) {
         LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(CsMajor::getMajorCode, majorCode).eq(CsMajor::getDelFlag,0);
-        if (CollectionUtil.isEmpty(majorCode)){
+        wrapper.in(CsMajor::getMajorCode, majorCode).eq(CsMajor::getDelFlag, 0);
+        if (CollectionUtil.isEmpty(majorCode)) {
             return new ArrayList<>();
         }
         List<CsMajor> csMajor = majorService.getBaseMapper().selectList(wrapper);
         if (CollectionUtil.isEmpty(csMajor)) {
             return new ArrayList<>();
         }
-        return  csMajor.stream().map(CsMajor::getMajorName).distinct().collect(Collectors.toList());
+        return csMajor.stream().map(CsMajor::getMajorName).distinct().collect(Collectors.toList());
     }
+
     @Override
     public JSONObject getCsMajorByName(String majorName) {
         LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
@@ -1819,11 +1826,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return JSONObject.parseObject(JSONObject.toJSONString(subsystem));
     }
+
     @Override
     public List<String> getSystemNames(List<String> systemCodes) {
         LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(CsSubsystem::getSystemCode, systemCodes).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
-        if (CollectionUtil.isEmpty(systemCodes)){
+        if (CollectionUtil.isEmpty(systemCodes)) {
             return new ArrayList<>();
         }
         List<CsSubsystem> subsystem = subsystemMapper.selectList(wrapper);
@@ -1903,6 +1911,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public List<String> getUserLikeName(String realName) {
         return userMapper.getUserLikeName(realName);
     }
+
     /**
      * 根据站点id获取站点信息
      *
@@ -2183,34 +2192,34 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public boolean isNullSafetyPrecautions(String majorCode, String systemCode,String code, Integer status) {
+    public boolean isNullSafetyPrecautions(String majorCode, String systemCode, String code, Integer status) {
         List<CsSafetyAttention> csSafetyAttentions = new ArrayList<>();
         LambdaQueryWrapper<SafetyRelatedForm> wrapper = new LambdaQueryWrapper<>();
-        if(0==status){
-            wrapper.eq(SafetyRelatedForm::getPatrolStandardCode,code);
+        if (0 == status) {
+            wrapper.eq(SafetyRelatedForm::getPatrolStandardCode, code);
         }
-        if (1==status){
-            wrapper.eq(SafetyRelatedForm::getInspectionCode,code);
+        if (1 == status) {
+            wrapper.eq(SafetyRelatedForm::getInspectionCode, code);
         }
         List<SafetyRelatedForm> safetyRelatedForms = safetyRelatedFormMapper.selectList(wrapper);
         //判断是否修改过关联表
-        if (CollectionUtil.isNotEmpty(safetyRelatedForms)){
+        if (CollectionUtil.isNotEmpty(safetyRelatedForms)) {
             //如果修改 查询已经保存的数据
-            wrapper.eq(SafetyRelatedForm::getDelFlag,0);
+            wrapper.eq(SafetyRelatedForm::getDelFlag, 0);
             List<SafetyRelatedForm> list = safetyRelatedFormMapper.selectList(wrapper);
-            List<String> str = list.stream().map(l-> l.getSafetyAttentionId()).collect(Collectors.toList());
+            List<String> str = list.stream().map(l -> l.getSafetyAttentionId()).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(str)) {
-                csSafetyAttentions = csSafetyAttentionMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>().in(CsSafetyAttention::getId,str));
+                csSafetyAttentions = csSafetyAttentionMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>().in(CsSafetyAttention::getId, str));
             }
-        }else {
+        } else {
             //没有修改按照专业子系统查询
             LambdaQueryWrapper<CsSafetyAttention> wrapper1 = new LambdaQueryWrapper<CsSafetyAttention>();
-            wrapper1.eq(CsSafetyAttention::getMajorCode,majorCode);
-            if (StrUtil.isNotEmpty(systemCode)){
-                wrapper1.eq(CsSafetyAttention::getSystemCode,systemCode);
+            wrapper1.eq(CsSafetyAttention::getMajorCode, majorCode);
+            if (StrUtil.isNotEmpty(systemCode)) {
+                wrapper1.eq(CsSafetyAttention::getSystemCode, systemCode);
             }
             //需要查询启动和未删除
-            wrapper1.eq(CsSafetyAttention::getState,1).eq(CsSafetyAttention::getDelFlag,0);
+            wrapper1.eq(CsSafetyAttention::getState, 1).eq(CsSafetyAttention::getDelFlag, 0);
             csSafetyAttentions = csSafetyAttentionMapper.selectList(wrapper1);
         }
         if (CollUtil.isNotEmpty(csSafetyAttentions)) {
@@ -2232,7 +2241,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return "";
     }
-
 
 
     @Override
@@ -2344,7 +2352,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public JSONObject getDepartByNameAndParentId(String departName,String parentId) {
+    public JSONObject getDepartByNameAndParentId(String departName, String parentId) {
         LambdaQueryWrapper<SysDepart> wrapper = new LambdaQueryWrapper<>();
         if (StrUtil.isNotBlank(parentId)) {
             wrapper.eq(SysDepart::getParentId, parentId);
@@ -2433,10 +2441,35 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public JSONObject getCsStationByCode(String stationCode) {
-        CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode,stationCode));
+        CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, stationCode));
         if (Objects.isNull(csStation)) {
             return null;
         }
         return JSONObject.parseObject(JSON.toJSONString(csStation));
+    }
+
+    @Override
+    public List<String> getSublevelOrgCodes(String orgCode) {
+        SysDepart depart = sysDepartService.lambdaQuery().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(SysDepart::getOrgCode, orgCode).one();
+        if (ObjectUtil.isEmpty(depart)) {
+            return Collections.emptyList();
+        }
+        List<String> ids = new ArrayList<>(Arrays.asList(depart.getId()));
+        List<String> tempIds = new ArrayList<>();
+        tempIds.addAll(ids);
+        do {
+            List<SysDepart> departList = sysDepartService.lambdaQuery().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .in(SysDepart::getParentId, tempIds).list();
+            tempIds = departList.stream().filter(l -> StrUtil.isNotEmpty(l.getOrgCode())).map(SysDepart::getId).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(tempIds)) {
+                ids.addAll(tempIds);
+            }
+        } while (CollectionUtil.isNotEmpty(tempIds));
+        List<SysDepart> orgCodeList = sysDepartService.lambdaQuery().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .in(SysDepart::getId, ids)
+                .list();
+        List<String> orgCodes = orgCodeList.stream().map(SysDepart::getOrgCode).collect(Collectors.toList());
+        return orgCodes;
     }
 }

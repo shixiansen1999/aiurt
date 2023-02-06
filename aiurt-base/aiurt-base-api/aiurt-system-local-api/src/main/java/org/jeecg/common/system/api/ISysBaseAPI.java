@@ -906,5 +906,13 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     JSONObject getCsStationByCode(String stationCode);
+
+    /**
+     * 根据组织机构编码获取本级以及本级下所有子级的组织机构编码
+     *
+     * @param orgCode
+     * @return
+     */
+    List<String> getSublevelOrgCodes(String orgCode);
 }
 
