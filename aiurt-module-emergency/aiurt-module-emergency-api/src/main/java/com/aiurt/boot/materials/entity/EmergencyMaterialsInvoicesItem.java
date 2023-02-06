@@ -121,6 +121,10 @@ public class EmergencyMaterialsInvoicesItem extends DictEntity implements Serial
 	@Excel(name = "数据校验表达式", width = 15)
     @ApiModelProperty(value = "数据校验表达式")
     private java.lang.String regular;
+    /**数据校验表达式*/
+    @Excel(name = "存放地点", width = 15)
+    @ApiModelProperty(value = "存放地点")
+    private java.lang.String storageLocationCode;
 	/**检查值是否必填：0否、1是*/
 	@Excel(name = "检查值是否必填：0否、1是", width = 15)
     @ApiModelProperty(value = "检查值是否必填：0否、1是")
@@ -218,6 +222,11 @@ public class EmergencyMaterialsInvoicesItem extends DictEntity implements Serial
     @TableField(exist = false)
     @ApiModelProperty(value = "巡视位置名称")
     private java.lang.String positionName;
+
+    /**存放地点名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "存放地点名称")
+    private java.lang.String storageLocationName;
 
     /**巡视标准编码*/
     @TableField(exist = false)

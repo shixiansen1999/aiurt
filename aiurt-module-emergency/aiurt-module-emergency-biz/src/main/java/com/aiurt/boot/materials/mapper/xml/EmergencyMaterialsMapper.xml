@@ -162,6 +162,7 @@
     <select id="getMaterialInspection" resultType="com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem">
         select
          t3.materials_code as materialsCode,
+         t3.storage_location_code as storageLocationCode,
          t3.materials_name as materialsName,
          t3.category_code as categoryCode,
          t3.specification as specification,

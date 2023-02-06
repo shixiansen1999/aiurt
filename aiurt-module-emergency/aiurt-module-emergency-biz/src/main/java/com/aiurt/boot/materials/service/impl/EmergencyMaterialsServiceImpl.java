@@ -419,6 +419,11 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 String position = iSysBaseAPI.getPosition(emergencyMaterialsInvoices.getPositionCode());
                 e.setPositionName(position);
             }
+            if (StrUtil.isNotBlank(e.getStorageLocationCode())){
+                //查询存放地点
+                String position = iSysBaseAPI.getPosition(e.getStorageLocationCode());
+                e.setStorageLocationName(position);
+            }
             if ("0".equals(e.getPid()) && StrUtil.isNotBlank(e.getId())) {
                 List<EmergencyMaterialsInvoicesItem> materialInspection1 = emergencyMaterialsMapper.getMaterialInspection(pageList, id, e.getId());
                 for (int j = 0; j < materialInspection1.size(); j++) {
@@ -446,6 +451,11 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                         //根据位置编码查询位置名称
                         String position = iSysBaseAPI.getPosition(emergencyMaterialsInvoices.getPositionCode());
                         q.setPositionName(position);
+                    }
+                    if (StrUtil.isNotBlank(q.getStorageLocationCode())){
+                        //查询存放地点
+                        String position = iSysBaseAPI.getPosition(q.getStorageLocationCode());
+                        q.setStorageLocationName(position);
                     }
                 }
                 e.setSubLevel(materialInspection1);
