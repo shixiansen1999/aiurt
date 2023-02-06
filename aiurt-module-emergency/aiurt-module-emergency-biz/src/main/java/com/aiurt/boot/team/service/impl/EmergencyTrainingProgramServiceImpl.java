@@ -105,7 +105,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         if (CollUtil.isNotEmpty(records)) {
             for (EmergencyTrainingProgram record : records) {
                 SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(record.getOrgCode());
-                record.setOrgName(sysDepartModel.getDepartName());
+                record.setOrgName(ObjectUtil.isNotEmpty(sysDepartModel)?sysDepartModel.getDepartName():"");
                 List<EmergencyTrainingTeam> trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(record.getId());
                 record.setEmergencyTrainingTeamList(trainingTeam);
                 List<String> names = trainingTeam.stream().map(EmergencyTrainingTeam::getEmergencyTeamName).collect(Collectors.toList());
