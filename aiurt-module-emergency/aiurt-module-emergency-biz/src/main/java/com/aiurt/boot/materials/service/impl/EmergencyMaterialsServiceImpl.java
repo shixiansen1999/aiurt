@@ -117,7 +117,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
 
                     List<String> collect1 = departByParentId.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
 
-                    if (collect1.size()>collect.size()){
+                    if (collect1.size()>=collect.size()){
                         collect1.add(condition.getPrimaryOrg());
                         collect1.retainAll(collect);
                         condition.setPrimaryCodeList(collect1);
@@ -255,7 +255,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                     List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
 
                     List<String> collect1 = departByParentId.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-                    if (collect1.size()>collect.size()){
+                    if (collect1.size()>=collect.size()){
                         collect1.add(condition.getPatrolTeamCode());
                         collect1.retainAll(collect);
                         condition.setPatrolTeamCodeList(collect1);
