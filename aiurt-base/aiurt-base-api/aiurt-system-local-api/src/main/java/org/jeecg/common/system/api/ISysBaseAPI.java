@@ -803,6 +803,12 @@ public interface ISysBaseAPI extends CommonAPI {
     JSONObject getDepartByNameAndParentId(String departName,String parentId);
 
     /**
+     * 根据父id获取子部门信息
+     * @return
+     */
+    List<SysDepartModel> getDepartByParentId(String parentId);
+
+    /**
      * 根据线路名称获取线路信息
      * @param lineName
      * @return
