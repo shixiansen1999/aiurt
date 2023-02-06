@@ -2375,10 +2375,13 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 SysDepartModel sysDepartModel = new SysDepartModel();
                 BeanUtil.copyProperties(list.get(i),sysDepartModel);
                 list1.add(sysDepartModel);
-                getDepartByParentId(list.get(i).getId());
+                List<SysDepartModel> departByParentId = getDepartByParentId(list.get(i).getId());
+                if(CollectionUtil.isNotEmpty(departByParentId)){
+                    list1.addAll(departByParentId);
+                }
             }
         }
-        return list1 ;
+        return list1;
     }
 
 
