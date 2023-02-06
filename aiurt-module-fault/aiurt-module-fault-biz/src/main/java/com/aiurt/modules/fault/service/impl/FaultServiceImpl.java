@@ -23,6 +23,7 @@ import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.service.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeService;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
@@ -100,6 +101,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     @Autowired
     private IFaultKnowledgeBaseTypeService faultKnowledgeBaseTypeService;
+
+    @Autowired
+    private IFaultKnowledgeBaseService faultKnowledgeBaseService;
 
     @Autowired
     private ISTodoBaseAPI todoBaseApi;
@@ -867,6 +871,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 解决方案
         repairRecordDTO.setKnowledgeId(fault.getKnowledgeId());
+        String knowledgeId = fault.getKnowledgeId();
         String knowledgeBaseIds = fault.getKnowledgeBaseIds();
         List<String> split = StrUtil.split(knowledgeBaseIds, ',');
         if (CollectionUtil.isEmpty(split)) {
@@ -874,6 +879,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         } else {
             repairRecordDTO.setTotal((long) split.size());
         }
+
+        if (StrUtil.isNotBlank(knowledgeId)){
+            FaultKnowledgeBase base = faultKnowledgeBaseService.getById(repairRecordDTO.getKnowledgeId());
+
+            repairRecordDTO.setFaultAnalysis(base.getFaultReason());
+            repairRecordDTO.setMaintenanceMeasures(base.getSolution());
+        }
+
+//        one.setFaultAnalysis(repairRecordDTO.getFaultAnalysis());
+//        one.setMaintenanceMeasures(repairRecordDTO.getMaintenanceMeasures());
         return repairRecordDTO;
     }
 
