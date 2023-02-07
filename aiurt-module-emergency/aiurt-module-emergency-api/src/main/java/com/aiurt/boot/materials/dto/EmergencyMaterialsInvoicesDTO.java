@@ -51,8 +51,8 @@ public class EmergencyMaterialsInvoicesDTO {
     private java.util.Date patrolDate;
     /**主管部门编码*/
     @TableField(exist = false)
-    @ApiModelProperty(value = "主管部门编码")
-    private java.lang.String primaryOrg;
+    @ApiModelProperty(value = "查询主管部门编码")
+    private java.lang.String patrolTeamCode;
     /**线路编码*/
     @TableField(exist = false)
     @ApiModelProperty(value = "巡视线路编码")

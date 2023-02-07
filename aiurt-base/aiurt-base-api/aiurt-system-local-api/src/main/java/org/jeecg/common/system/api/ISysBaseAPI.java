@@ -809,6 +809,12 @@ public interface ISysBaseAPI extends CommonAPI {
     List<SysDepartModel> getDepartByParentId(String parentId);
 
     /**
+     * 根据部门code,获取该部门下所有子级的code和自己
+     * @param orgCode
+     * @return
+     */
+    List<String> sysDepartList(String orgCode);
+    /**
      * 根据线路名称获取线路信息
      * @param lineName
      * @return

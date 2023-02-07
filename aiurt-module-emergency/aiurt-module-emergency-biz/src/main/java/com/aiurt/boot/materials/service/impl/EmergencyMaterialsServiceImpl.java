@@ -96,43 +96,43 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     public Page<MaterialAccountDTO> getMaterialAccountList(Page<MaterialAccountDTO> pageList, MaterialAccountDTO condition) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
-        if(StrUtil.isBlank(condition.getPrimaryOrg()) && CollectionUtil.isNotEmpty(departByUserId)){
+        if (StrUtil.isBlank(condition.getPrimaryOrg()) && CollectionUtil.isNotEmpty(departByUserId)) {
             List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect)){
+            if (CollectionUtil.isNotEmpty(collect)) {
                 condition.setPrimaryCodeList(collect);
             }
         }
-        if(StrUtil.isNotBlank(condition.getPrimaryOrg())){
+        if (StrUtil.isNotBlank(condition.getPrimaryOrg())) {
             //根据编码查询部门信息
             SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(condition.getPrimaryOrg());
-            if (ObjectUtil.isNotEmpty(departByOrgCode)){
+            if (ObjectUtil.isNotEmpty(departByOrgCode)) {
                 //查询子级信息
                 List<SysDepartModel> departByParentId = iSysBaseAPI.getDepartByParentId(departByOrgCode.getId());
-                if(CollectionUtil.isNotEmpty(departByUserId) && CollectionUtil.isNotEmpty(departByParentId)){
+                if (CollectionUtil.isNotEmpty(departByUserId) && CollectionUtil.isNotEmpty(departByParentId)) {
 
                     List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
 
                     List<String> collect1 = departByParentId.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
 
-                    if (collect1.size()>=collect.size()){
+                    if (collect1.size() >= collect.size()) {
                         collect1.add(condition.getPrimaryOrg());
                         collect1.retainAll(collect);
                         condition.setPrimaryCodeList(collect1);
                     }
-                    if (collect.size()>collect1.size()){
+                    if (collect.size() > collect1.size()) {
                         collect1.add(condition.getPrimaryOrg());
                         collect.retainAll(collect1);
                         condition.setPrimaryCodeList(collect);
                     }
 
-                }else {
+                } else {
                     List<String> stringList = new ArrayList<>();
                     stringList.add(condition.getPrimaryOrg());
                     condition.setPrimaryCodeList(stringList);
                 }
-            }else {
+            } else {
                 List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-                if (CollectionUtil.isNotEmpty(collect)){
+                if (CollectionUtil.isNotEmpty(collect)) {
                     condition.setPrimaryCodeList(collect);
                 }
             }
@@ -235,47 +235,46 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     public Page<EmergencyMaterialsInvoicesItem> getInspectionRecord(Page<EmergencyMaterialsInvoicesItem> pageList, EmergencyMaterialsInvoicesItem condition) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
-        if(StrUtil.isBlank(condition.getPatrolTeamCode()) && CollectionUtil.isNotEmpty(departByUserId)){
+        if (StrUtil.isBlank(condition.getPatrolTeamCode()) && CollectionUtil.isNotEmpty(departByUserId)) {
             List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect)){
+            if (CollectionUtil.isNotEmpty(collect)) {
                 condition.setPatrolTeamCodeList(collect);
             }
         }
-        if(StrUtil.isNotBlank(condition.getPatrolTeamCode())){
+        if (StrUtil.isNotBlank(condition.getPatrolTeamCode())) {
             //根据编码查询部门信息
             SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(condition.getPatrolTeamCode());
-            if (ObjectUtil.isNotEmpty(departByOrgCode)){
+            if (ObjectUtil.isNotEmpty(departByOrgCode)) {
                 //查询子级信息
                 List<SysDepartModel> departByParentId = iSysBaseAPI.getDepartByParentId(departByOrgCode.getId());
-                if(CollectionUtil.isNotEmpty(departByUserId) && CollectionUtil.isNotEmpty(departByParentId)){
+                if (CollectionUtil.isNotEmpty(departByUserId) && CollectionUtil.isNotEmpty(departByParentId)) {
 
                     List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
 
                     List<String> collect1 = departByParentId.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-                    if (collect1.size()>=collect.size()){
+                    if (collect1.size() >= collect.size()) {
                         collect1.add(condition.getPatrolTeamCode());
                         collect1.retainAll(collect);
                         condition.setPatrolTeamCodeList(collect1);
                     }
-                    if (collect.size()>collect1.size()){
+                    if (collect.size() > collect1.size()) {
                         collect1.add(condition.getPatrolTeamCode());
                         collect.retainAll(collect1);
                         condition.setPatrolTeamCodeList(collect);
                     }
 
-                }else {
+                } else {
                     List<String> stringList = new ArrayList<>();
                     stringList.add(condition.getPatrolTeamCode());
                     condition.setPatrolTeamCodeList(stringList);
                 }
-             }else {
+            } else {
                 List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-                if (CollectionUtil.isNotEmpty(collect)){
+                if (CollectionUtil.isNotEmpty(collect)) {
                     condition.setPatrolTeamCodeList(collect);
                 }
             }
         }
-
 
 
         List<EmergencyMaterialsInvoicesItem> inspectionRecord = emergencyMaterialsMapper.getInspectionRecord(pageList, condition);
@@ -419,7 +418,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 String position = iSysBaseAPI.getPosition(emergencyMaterialsInvoices.getPositionCode());
                 e.setPositionName(position);
             }
-            if (StrUtil.isNotBlank(e.getStorageLocationCode())){
+            if (StrUtil.isNotBlank(e.getStorageLocationCode())) {
                 //查询存放地点
                 String position = iSysBaseAPI.getPosition(e.getStorageLocationCode());
                 e.setStorageLocationName(position);
@@ -452,7 +451,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                         String position = iSysBaseAPI.getPosition(emergencyMaterialsInvoices.getPositionCode());
                         q.setPositionName(position);
                     }
-                    if (StrUtil.isNotBlank(q.getStorageLocationCode())){
+                    if (StrUtil.isNotBlank(q.getStorageLocationCode())) {
                         //查询存放地点
                         String position = iSysBaseAPI.getPosition(q.getStorageLocationCode());
                         q.setStorageLocationName(position);
@@ -468,10 +467,22 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     public ModelAndView getMaterialPatrolList(MaterialAccountDTO condition) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
-        if(StrUtil.isBlank(condition.getPrimaryOrg()) && CollectionUtil.isNotEmpty(departByUserId)){
+        if (CollectionUtil.isNotEmpty(departByUserId)) {
             List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect)){
+            if (CollectionUtil.isNotEmpty(collect)) {
                 condition.setPrimaryCodeList(collect);
+            }
+        }
+        if (ObjectUtil.isNotEmpty(condition.getPrimaryOrg())) {
+            List<String> orgCodeList = iSysBaseAPI.sysDepartList(condition.getPrimaryOrg());
+            if (CollUtil.isNotEmpty(orgCodeList)) {
+                if (CollUtil.isNotEmpty(condition.getPrimaryCodeList())) {
+                    List<String> codeList = condition.getPrimaryCodeList();
+                    List<String> collect = orgCodeList.stream().filter(o -> codeList.contains(o)).collect(Collectors.toList());
+                    if (CollUtil.isNotEmpty(collect)) {
+                        condition.setOrgCodeList(collect);
+                    }
+                }
             }
         }
         List<MaterialAccountDTO> materialAccountList = emergencyMaterialsMapper.getMaterialPatrolList(condition);
@@ -775,18 +786,27 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
         if (CollUtil.isNotEmpty(selections)) {
             queryWrapper.in(EmergencyMaterialsInvoices::getId, selections);
-        }
-        else {
+        } else {
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
-            if(StrUtil.isBlank(condition.getPrimaryOrg()) && CollectionUtil.isNotEmpty(departByUserId)){
+            if (CollectionUtil.isNotEmpty(departByUserId)) {
                 List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-                if (CollectionUtil.isNotEmpty(collect)){
-                    queryWrapper.in(EmergencyMaterialsInvoices::getDepartmentCode,collect);
+                if (CollUtil.isNotEmpty(collect)) {
+                    if (ObjectUtil.isNotEmpty(condition.getPatrolTeamCode())) {
+                        List<String> orgCodeList = iSysBaseAPI.sysDepartList(condition.getPatrolTeamCode());
+                        if (CollUtil.isNotEmpty(orgCodeList)) {
+                            List<String> intersections = orgCodeList.stream().filter(o -> collect.contains(o)).collect(Collectors.toList());
+                            if (CollUtil.isNotEmpty(intersections)) {
+                                queryWrapper.in(EmergencyMaterialsInvoices::getDepartmentCode, intersections);
+                            }
+                        }
+                    } else {
+                        queryWrapper.in(EmergencyMaterialsInvoices::getDepartmentCode, collect);
+                    }
                 }
             }
         }
-        if(ObjectUtil.isNotEmpty(condition.getStartTime())){
+        if (ObjectUtil.isNotEmpty(condition.getStartTime())) {
             queryWrapper.ge(EmergencyMaterialsInvoices::getPatrolDate, condition.getStartTime());
             queryWrapper.le(EmergencyMaterialsInvoices::getPatrolDate, condition.getEndTime());
         }
@@ -1007,7 +1027,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         row1.setHeight((short) 350);
         EmergencyMaterialsInvoicesItem emergencyMaterialsInvoicesItem = materialsInvoicesItemMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsInvoicesItem>().eq(EmergencyMaterialsInvoicesItem::getInvoicesId, invoice.getId()).last("limit 1"));
         //有问题
-        if(ObjectUtil.isNotEmpty(emergencyMaterialsInvoicesItem)){
+        if (ObjectUtil.isNotEmpty(emergencyMaterialsInvoicesItem)) {
             List<EmergencyMaterialsInvoicesItemDTO> items = emergencyMaterialsMapper.getMaterialInspectionList(emergencyMaterialsInvoicesItem.getMaterialsCode(), invoice.getId(), false);
             if (CollUtil.isNotEmpty(items)) {
                 allList.addAll(items);
@@ -1300,7 +1320,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     private void examine(EmergencyMaterialsModel model, EmergencyMaterials em, StringBuilder stringBuilder, List<EmergencyMaterialsModel> list) {
         BeanUtils.copyProperties(model, em);
         List<EmergencyMaterialsModel> collect = list.stream().filter(l -> model.equals(l)).collect(Collectors.toList());
-        if(collect.size()!=1){
+        if (collect.size() != 1) {
             stringBuilder.append("文件中有相同的数据，");
         }
         if (ObjectUtil.isEmpty(em.getMaterialsCode())) {
@@ -1369,7 +1389,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             EmergencyMaterialsCategory categoryFatherName = emergencyMaterialsCategoryMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getCategoryName, model.getCategoryName()).eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1"));
             if (ObjectUtil.isEmpty(categoryFatherName)) {
                 stringBuilder.append("应急物资分类不存在，");
-            }else {
+            } else {
                 if (categoryFatherName.getStatus() == 0) {
                     stringBuilder.append("该应急物资分类已被禁用，");
                 } else {
@@ -1429,7 +1449,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                         stringBuilder.append("该线路下的站点不存在，");
                     } else {
                         em.setStationCode(stationCode);
-                        if (ObjectUtil.isEmpty(positionCode)&&count==3) {
+                        if (ObjectUtil.isEmpty(positionCode) && count == 3) {
                             stringBuilder.append("该线路下的站点的位置不存在，");
                         } else {
                             em.setPositionCode(positionCode);

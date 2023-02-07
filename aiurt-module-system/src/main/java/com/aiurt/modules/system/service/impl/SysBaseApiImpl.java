@@ -2392,8 +2392,48 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return list1;
     }
 
-
-
+    @Override
+    public  List<String> sysDepartList(String orgCode){
+        List<SysDepart> list = departMapper.selectList(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<SysDepartModel> modelList = new ArrayList<>();
+        for (SysDepart sysDepart : list) {
+            SysDepartModel model = new SysDepartModel();
+            BeanUtils.copyProperties(sysDepart,model);
+            modelList.add(model);
+        }
+        SysDepart sysDepart = departMapper.selectOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SysDepart::getOrgCode,orgCode));
+        SysDepartModel model = new SysDepartModel();
+        BeanUtils.copyProperties(sysDepart,model);
+        List<SysDepartModel> allChildren = new ArrayList<>();
+        if(ObjectUtil.isNotEmpty(model)&&CollUtil.isNotEmpty(modelList)){
+            List<SysDepartModel> sysDepartList = treeMenuList(modelList, model, allChildren);
+            if (CollectionUtil.isEmpty(sysDepartList)) {
+                return Collections.emptyList();
+            }
+            List<String> codeList = sysDepartList.stream().map(s -> s.getOrgCode()).collect(Collectors.toList());
+            codeList.add(model.getOrgCode());
+            return codeList;
+        }
+        return null;
+    }
+    /**
+     * 获取某个父节点下面的所有子节点
+     * @param list
+     * @param depart
+     * @param allChildren
+     * @return
+     */
+    public static List<SysDepartModel> treeMenuList(List<SysDepartModel> list, SysDepartModel depart, List<SysDepartModel> allChildren) {
+        for (SysDepartModel sysDepart : list) {
+            //遍历出父id等于参数的id，add进子节点集合
+            if (sysDepart.getParentId().equals(depart.getId())) {
+                //递归遍历下一级
+                treeMenuList(list, sysDepart, allChildren);
+                allChildren.add(sysDepart);
+            }
+        }
+        return allChildren;
+    }
     @Override
     public JSONObject getLineByName(String lineName) {
         LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
