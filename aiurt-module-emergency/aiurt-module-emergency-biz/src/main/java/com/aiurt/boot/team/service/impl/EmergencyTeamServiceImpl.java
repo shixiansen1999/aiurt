@@ -359,12 +359,12 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                     return getErrorExcel(errorLines, errorMessage, team, crewList, successLines, null, type);
                 }
                 //校验通过，添加数据
-              /*  emergencyTeam.setPeopleNum(emergencyCrews.size());
+                emergencyTeam.setPeopleNum(emergencyCrews.size());
                 save(emergencyTeam);
                 for (EmergencyCrew emergencyCrew : emergencyCrews) {
                     emergencyCrew.setEmergencyTeamId(emergencyTeam.getId());
                     emergencyCrewService.save(emergencyCrew);
-                }*/
+                }
                 return Result.ok("文件导入成功！");
             } catch (Exception e) {
                 return Result.error("文件导入失败:" + e.getMessage());
