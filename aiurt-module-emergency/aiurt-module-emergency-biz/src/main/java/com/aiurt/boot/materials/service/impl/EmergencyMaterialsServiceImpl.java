@@ -96,12 +96,12 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     public Page<MaterialAccountDTO> getMaterialAccountList(Page<MaterialAccountDTO> pageList, MaterialAccountDTO condition) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
-        if(StrUtil.isBlank(condition.getPrimaryOrg()) && CollectionUtil.isNotEmpty(departByUserId)){
+        /*if(StrUtil.isBlank(condition.getPrimaryOrg()) && CollectionUtil.isNotEmpty(departByUserId)){
             List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
             if (CollectionUtil.isNotEmpty(collect)){
                 condition.setPrimaryCodeList(collect);
             }
-        }
+        }*/
         List<MaterialAccountDTO> materialAccountList = emergencyMaterialsMapper.getMaterialAccountList(pageList, condition);
         List<PatrolStandardItemsModel> patrolStandardItemsModels = iSysBaseAPI.patrolStandardList(condition.getPatrolStandardId());
         materialAccountList.forEach(e -> {
@@ -200,12 +200,12 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     public Page<EmergencyMaterialsInvoicesItem> getInspectionRecord(Page<EmergencyMaterialsInvoicesItem> pageList, EmergencyMaterialsInvoicesItem condition) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
-        if(StrUtil.isBlank(condition.getPatrolTeamCode()) && CollectionUtil.isNotEmpty(departByUserId)){
+       /* if(StrUtil.isBlank(condition.getPatrolTeamCode()) && CollectionUtil.isNotEmpty(departByUserId)){
             List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
             if (CollectionUtil.isNotEmpty(collect)){
                 condition.setPatrolTeamCodeList(collect);
             }
-        }
+        }*/
         List<EmergencyMaterialsInvoicesItem> inspectionRecord = emergencyMaterialsMapper.getInspectionRecord(pageList, condition);
         inspectionRecord.forEach(e -> {
             if (StrUtil.isNotBlank(e.getLineCode())) {

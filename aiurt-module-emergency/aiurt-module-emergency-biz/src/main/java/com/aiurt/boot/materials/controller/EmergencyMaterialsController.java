@@ -14,6 +14,7 @@ import com.aiurt.boot.materials.service.IEmergencyMaterialsInvoicesService;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.system.base.entity.DynamicTableEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -170,6 +171,13 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 Page<EmergencyMaterialsInvoicesItem> pageList = new Page<>(pageNo, pageSize);
 		 Page<EmergencyMaterialsInvoicesItem> patrolRecord = iEmergencyMaterialsInvoicesItemService.getPatrolRecord(pageList, materialsCode, startTime, endTime,standardCode,lineCode,stationCode,positionCode);
 		 return  Result.OK(patrolRecord);
+	 }
+
+	@ApiOperation(value="物资信息-巡检记录信息查询", notes="物资信息-巡检记录信息查询")
+	@GetMapping(value = "/getPatrolRecordById")
+	 public Result<DynamicTableEntity> getPatrolRecord(PatrolRecordReqDTO recordReqDTO) {
+		 DynamicTableEntity dynamicTableEntity =  iEmergencyMaterialsInvoicesItemService.getPatrolRecord(recordReqDTO);
+		return Result.OK(dynamicTableEntity);
 	 }
 
 	 @AutoLog(value = "物资信息-应急物资检查记录列表查询")

@@ -1,6 +1,8 @@
 package com.aiurt.boot.materials.service;
 
+import com.aiurt.boot.materials.dto.PatrolRecordReqDTO;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
+import com.aiurt.common.system.base.entity.DynamicTableEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
@@ -20,4 +22,11 @@ public interface IEmergencyMaterialsInvoicesItemService extends IService<Emergen
                                                          String lineCode,
                                                          String stationCode,
                                                          String positionCode);
+
+    /**
+     * 查询物资的巡检记录
+     * @param recordReqDTO
+     * @return
+     */
+    DynamicTableEntity getPatrolRecord(PatrolRecordReqDTO recordReqDTO);
 }
