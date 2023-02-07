@@ -1,13 +1,13 @@
 package com.aiurt.common.system.api.fallback;
 
-import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
-import com.aiurt.modules.device.entity.DeviceType;
-import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
+import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
+import com.aiurt.common.system.api.ISysBaseAPI;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import com.aiurt.common.system.api.ISysBaseAPI;
+import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.vo.*;
 
 import java.util.List;
