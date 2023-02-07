@@ -880,7 +880,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<LoginUser> queryUserByNames(String[] userNames) {
         QueryWrapper<SysUser> queryWrapper = new QueryWrapper<SysUser>().eq("status", 1).eq("del_flag", 0);
-        queryWrapper.in("username", userNames);
+        queryWrapper.in("username", (Object) userNames);
         List<LoginUser> loginUsers = new ArrayList<>();
         List<SysUser> sysUsers = userMapper.selectList(queryWrapper);
         for (SysUser user : sysUsers) {
@@ -2450,6 +2450,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return list1;
     }
 
+    @Override
+    public List<String> sysDepartList(String orgCode) {
+        return null;
+    }
 
 
     @Override

@@ -149,8 +149,6 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
         }
         String materialsCode = emergencyMaterials.getMaterialsCode();
 
-        String categoryCode = emergencyMaterials.getCategoryCode();
-
         String lineCode = emergencyMaterials.getLineCode();
 
         String stationCode = emergencyMaterials.getStationCode();
@@ -161,12 +159,6 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
         recordReqDTO.setStandardCode(standardCode);
         recordReqDTO.setPositionCode(positionCode);
         recordReqDTO.setStationCode(stationCode);
-        //查询当前物资对应的最新的巡检标准
-        List<PatrolStandardDTO> standingBook = emergencyMaterialsMapper.getStandingBook(materialsCode, categoryCode, lineCode, stationCode, positionCode);
-        PatrolStandardDTO patrolStandardDTO = standingBook.get(0);
-        if (StrUtil.isBlank(recordReqDTO.getStandardCode())){
-            recordReqDTO.setStandardCode(patrolStandardDTO.getStandardCode());
-        }
         // 查询记录数据
         Page<EmergencyMaterialsInvoices> page = new Page<>(recordReqDTO.getPageNo(), recordReqDTO.getPageSize());
         List<EmergencyMaterialsInvoices> recordList = invoicesService.queryList(page, recordReqDTO);

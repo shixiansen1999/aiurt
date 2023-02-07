@@ -22,6 +22,7 @@ public class DynamicTableEntity<T extends DynamicTableDataEntity> implements Ser
     /**
      * 数据项
      */
+    private List<DynamicTableDataEntity> records;
 
     private long current;
 
