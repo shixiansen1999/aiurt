@@ -20,5 +20,11 @@
         <if test="condition.materialsCode != null and condition.materialsCode != ''">
             and id in (select  invoices_id  from emergency_materials_invoices_item where materials_code = #{condition.materialsCode})
         </if>
+        <if test="condition.startTime != null and condition.startTime != ''">
+            and DATE_FORMAT(patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d')
+        </if>
+        <if test="condition.endTime != null and condition.endTime != ''">
+            and DATE_FORMAT(patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d')
+        </if>
     </select>
 </mapper>

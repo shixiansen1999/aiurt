@@ -26,9 +26,9 @@ public class PatrolRecordReqDTO implements Serializable {
 
     private String  endTime;
 
-    private Integer pageNo;
+    private Integer pageNo=1;
 
-    private Integer pageSize;
+    private Integer pageSize=10;
 
 
 

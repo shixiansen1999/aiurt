@@ -141,6 +141,9 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
     public DynamicTableEntity getPatrolRecord(PatrolRecordReqDTO recordReqDTO) {
         DynamicTableEntity dynamicTableEntity = new DynamicTableEntity();
         String standardCode = recordReqDTO.getStandardCode();
+        if (StrUtil.isBlank(standardCode)) {
+            throw new AiurtBootException("请选择巡检表！");
+        }
         // 查询物资
         String id = recordReqDTO.getId();
         EmergencyMaterials emergencyMaterials = emergencyMaterialsService.getById(id);
