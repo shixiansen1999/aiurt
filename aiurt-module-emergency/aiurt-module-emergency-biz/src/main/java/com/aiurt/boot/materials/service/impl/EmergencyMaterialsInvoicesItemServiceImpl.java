@@ -1,5 +1,8 @@
 package com.aiurt.boot.materials.service.impl;
+import com.aiurt.boot.materials.dto.MaterialPatrolDTO;
 import com.aiurt.boot.materials.dto.PatrolRecordDetailDTO;
+import com.aiurt.boot.materials.dto.PatrolStandardDTO;
+import com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper;
 import com.aiurt.common.system.base.entity.DynamicTableDataEntity;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -56,6 +59,9 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
 
     @Autowired
     private IEmergencyMaterialsInvoicesService invoicesService;
+
+    @Autowired
+    private EmergencyMaterialsMapper emergencyMaterialsMapper;
 
 
     @Override
@@ -138,6 +144,8 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
         }
         String materialsCode = emergencyMaterials.getMaterialsCode();
 
+        String categoryCode = emergencyMaterials.getCategoryCode();
+
         String lineCode = emergencyMaterials.getLineCode();
 
         String stationCode = emergencyMaterials.getStationCode();
@@ -148,6 +156,12 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
         recordReqDTO.setStandardCode(standardCode);
         recordReqDTO.setPositionCode(positionCode);
         recordReqDTO.setStationCode(stationCode);
+        //查询当前物资对应的最新的巡检标准
+        List<PatrolStandardDTO> standingBook = emergencyMaterialsMapper.getStandingBook(materialsCode, categoryCode, lineCode, stationCode, positionCode);
+        PatrolStandardDTO patrolStandardDTO = standingBook.get(0);
+        if (StrUtil.isBlank(recordReqDTO.getStandardCode())){
+            recordReqDTO.setStandardCode(patrolStandardDTO.getStandardCode());
+        }
         // 查询记录数据
         Page<EmergencyMaterialsInvoices> page = new Page<>(recordReqDTO.getPageNo(), recordReqDTO.getPageSize());
         List<EmergencyMaterialsInvoices> recordList = invoicesService.queryList(page, recordReqDTO);
@@ -209,10 +223,10 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
 
             // 组装dataList,一记录一条数据
             PatrolRecordDetailDTO dataEntity = new PatrolRecordDetailDTO();
-            Integer inspectionResults = record.getInspectionResults();
-            if (Objects.nonNull(inspectionResults)) {
-                dataEntity.setAbnormalCondition(inspectionResults==0?"异常":"正常");
-            }
+//            Integer inspectionResults = record.getInspectionResults();
+//            if (Objects.nonNull(inspectionResults)) {
+//                dataEntity.setAbnormalCondition(inspectionResults==0?"异常":"正常");
+//            }
             dataEntity.setPatrolDate(record.getPatrolDate());
             if (StrUtil.isNotBlank(record.getUserId())) {
                 //根据巡视人id查询巡视人名称
@@ -233,8 +247,15 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
                 String itemId = item.getId();
                 // 检修项
                 if (1 == check) {
+                    String abnormalCondition = item.getAbnormalCondition();
                     Integer checkResult = item.getCheckResult();
                     String dictCode = item.getDictCode();
+                    if (StrUtil.isNotBlank(abnormalCondition)){
+                        dataEntity.setAbnormalCondition(abnormalCondition);
+                    }
+                    if (checkResult!=null){
+                        map.put(itemId, checkResult);
+                    }
                     if (StringUtils.isNotBlank(dictCode)) {
                         if (Objects.nonNull(item.getOptionValue())) {
                             String s = iSysBaseAPI.translateDict(dictCode, String.valueOf(item.getOptionValue()));

@@ -21,7 +21,9 @@ import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.system.base.entity.DynamicTableDataEntity;
 import com.aiurt.common.system.base.entity.DynamicTableEntity;
+import com.aiurt.common.system.base.entity.DynamicTableTitleEntity;
 import com.aiurt.common.util.XlsUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -467,14 +469,84 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
 
     @Override
     public DynamicTableEntity getMaterialInspectionById(EmergencyMaterialsInvoicesReqDTO emergencyMaterialsInvoicesReqDTO) {
-         DynamicTableEntity dynamicTableEntity = new DynamicTableEntity();
-         //根据巡检单的id查询巡检单信息
-         EmergencyMaterialsInvoices emergencyMaterialsInvoices = materialsInvoicesMapper.selectById(emergencyMaterialsInvoicesReqDTO.getInvoicesId());
-         if (Objects.isNull(emergencyMaterialsInvoices)) {
-             return dynamicTableEntity;
-         }
+        DynamicTableEntity dynamicTableEntity = new DynamicTableEntity();
+        String invoicesId = emergencyMaterialsInvoicesReqDTO.getInvoicesId();
+        LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(EmergencyMaterialsInvoicesItem::getDelFlag,CommonConstant.DEL_FLAG_0);
+        if (StrUtil.isNotBlank(invoicesId)){
+            lambdaQueryWrapper.eq(EmergencyMaterialsInvoicesItem::getInvoicesId,invoicesId);
+        }
 
-         return null;
+        Page<EmergencyMaterialsInvoicesItem> page = new Page<>(emergencyMaterialsInvoicesReqDTO.getPageNo(), emergencyMaterialsInvoicesReqDTO.getPageSize());
+        Page<EmergencyMaterialsInvoicesItem> emergencyMaterialsInvoicesItemPage = materialsInvoicesItemMapper.selectPage(page,lambdaQueryWrapper);
+        if (CollUtil.isEmpty(emergencyMaterialsInvoicesItemPage.getRecords())) {
+            return dynamicTableEntity;
+        }
+
+        dynamicTableEntity.setCurrent(page.getCurrent());
+        dynamicTableEntity.setTotal(page.getTotal());
+
+        AtomicReference<Boolean> flag = new AtomicReference<>(Boolean.TRUE);
+        List<DynamicTableDataEntity> records = new ArrayList<>();
+
+            if (flag.get()) {
+                flag.set(false);
+                // 组装title
+                List<DynamicTableTitleEntity> treeList = emergencyMaterialsInvoicesItemPage.getRecords().stream().map(item -> {
+                    DynamicTableTitleEntity title = new DynamicTableTitleEntity();
+                    title.setTitle(item.getContent());
+                    title.setDataIndex(item.getId());
+                    title.setId(item.getId());
+                    title.setPid(StrUtil.isBlank(item.getPid()) ? "-9999" : item.getPid());
+                    return title;
+                }).collect(Collectors.toList());
+
+                Map<String, DynamicTableTitleEntity> root = new LinkedHashMap<>();
+
+                for (DynamicTableTitleEntity titleEntity : treeList) {
+                    DynamicTableTitleEntity parent = root.get(titleEntity.getPid());
+                    if (Objects.isNull(parent)) {
+                        parent = new DynamicTableTitleEntity();
+                        root.put(titleEntity.getPid(), parent);
+                    }
+                    DynamicTableTitleEntity table = root.get(titleEntity.getId());
+                    if (Objects.nonNull(table)) {
+                        titleEntity.setChildren(table.getChildren());
+                    }
+                    root.put(titleEntity.getId(), titleEntity);
+                    parent.addChildren(titleEntity);
+                }
+
+                List<DynamicTableTitleEntity> resultList = new ArrayList<>();
+                List<DynamicTableTitleEntity> collect = root.values().stream().filter(entity -> StrUtil.isBlank(entity.getPid())).collect(Collectors.toList());
+                for (DynamicTableTitleEntity entity : collect) {
+                    resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
+                }
+                dynamicTableEntity.setTitleList(resultList);
+            }
+            // 组装dataList,一记录一条数据
+
+            emergencyMaterialsInvoicesItemPage.getRecords().forEach(q->{
+                PatrolRecordDetailDTO dataEntity = new PatrolRecordDetailDTO();
+
+                Integer check = q.getCheck();
+                String itemId = q.getId();
+                String categoryCode = q.getCategoryCode();
+                String materialsName = q.getMaterialsName();
+                String storageLocationCode = q.getStorageLocationCode();
+                String specification = q.getSpecification();
+                Integer number = q.getNumber();
+                Integer checkResult = q.getCheckResult();
+                String abnormalCondition = q.getAbnormalCondition();
+
+                if (StrUtil.isNotBlank(materialsName)){
+                    dataEntity.setMaterialsName(materialsName);
+                }
+
+
+
+            });
+            return null;
     }
 
     @Override

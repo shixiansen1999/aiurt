@@ -19,7 +19,7 @@ public class PatrolRecordReqDTO implements Serializable {
     @ApiModelProperty(value = "物资id", required = true)
     private String  id;
 
-    @ApiModelProperty(value = "巡视标准编码", required = true)
+    @ApiModelProperty(value = "巡视标准编码", required = false)
     private String  standardCode;
 
     private String  startTime;

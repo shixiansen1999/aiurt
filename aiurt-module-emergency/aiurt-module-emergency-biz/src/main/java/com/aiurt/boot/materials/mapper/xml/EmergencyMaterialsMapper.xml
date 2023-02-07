@@ -110,6 +110,7 @@
             </if>
         </where>
             GROUP BY t1.standard_code
+            order by t1.create_time desc,t1.update_time desc
     </select>
 
     <select id="getInspectionRecord" resultType="com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem">
