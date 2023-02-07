@@ -4,7 +4,6 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
@@ -54,6 +53,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -443,7 +443,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 					if (ObjectUtil.isNotEmpty(model)) {
 						StringBuilder stringBuilder = new StringBuilder();
 						List<SysDepartModel> collect = sysDepartModelList.stream().filter(e -> e.getDepartName().equals(model.getDepartName())).collect(Collectors.toList());
-						if (CollectionUtil.isNotEmpty(collect)){
+						if (collect.size() > 1) {
 							stringBuilder.append("存在重复数据！");
 						}
 						examine(model,stringBuilder,departMap);
@@ -499,12 +499,12 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 		List<String> stringList = Arrays.asList(split);
 		if (CollectionUtil.isNotEmpty(stringList)){
 			List<String> collect4 = stringList.stream().distinct().collect(Collectors.toList());
-			if (collect4.size()==stringList.size()){
+			if (collect4.size()!=stringList.size()){
 				stringBuilder.append("同根同枝叶之间不能重复！");
 			}
 			int size = stringList.size();
 			String s1 = stringList.get(size - 1);
-			String pid = null;
+			String pid = "";
 			StringBuilder stringBuilder1 = new StringBuilder();
 			//遍历表格之中的拆分之后的机构名称
 			for (int i = 0; i < stringList.size(); i++) {
