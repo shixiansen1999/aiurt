@@ -92,10 +92,17 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0));
 		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).orderByDesc(CsSubsystem::getCreateTime));
 		 List<DeviceType> deviceTypeList = deviceTypeService.selectList();
+		 //name赋值给title，code赋值给value
+		 for (DeviceType deviceType : deviceTypeList) {
+			 deviceType.setTitle(deviceType.getName());
+			 deviceType.setValue(deviceType.getCode());
+		 }
 		 List<DeviceType> deviceTypeTree = deviceTypeService.treeList(deviceTypeList,"0");
 		 List<DeviceType> newList = new ArrayList<>();
 		 majorList.forEach(one -> {
 			 DeviceType major = setEntity(one.getId(),"zy",one.getMajorCode(),one.getMajorName(),null,null,null,one.getMajorCode(),null,"-",null);
+			 major.setTitle(major.getName());
+			 major.setValue(major.getCode());
 			 List<CsSubsystem> sysList = systemList.stream().filter(system-> system.getMajorCode().equals(one.getMajorCode())).collect(Collectors.toList());
 			 List<DeviceType> majorDeviceType = deviceTypeTree.stream().filter(type-> one.getMajorCode().equals(type.getMajorCode()) && (null==type.getSystemCode() || "".equals(type.getSystemCode())) && ("0").equals(type.getPid())).collect(Collectors.toList());
 			 List<DeviceType> twoList = new ArrayList<>();
@@ -109,8 +116,16 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 				 if(level>LEVEL_2) {
 					 List<DeviceType> sysDeviceType = deviceTypeTree.stream().filter(type -> system.getMajorCode().equals(type.getMajorCode()) && (null != type.getSystemCode() && !"".equals(type.getSystemCode()) && system.getSystemCode().equals(type.getSystemCode()))).collect(Collectors.toList());
 					 List<DeviceType> collect = sysDeviceType.stream().distinct().collect(Collectors.toList());
+					 //name赋值给title，code赋值给value
+					 for (DeviceType deviceType : collect) {
+						 deviceType.setTitle(deviceType.getName());
+						 deviceType.setValue(deviceType.getCode());
+					 }
 					 system.setChildren(collect);
 				 }
+				 //name赋值给title，code赋值给value
+				 system.setValue(system.getCode());
+				 system.setTitle(system.getName());
 				 twoList.add(system);
 			 });
              if(!sysList.isEmpty()){
