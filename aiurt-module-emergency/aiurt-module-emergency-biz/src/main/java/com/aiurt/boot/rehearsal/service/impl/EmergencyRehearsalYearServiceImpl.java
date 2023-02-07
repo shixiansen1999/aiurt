@@ -21,6 +21,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -169,12 +170,19 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
     }
 
     @Override
-    public void exportXls(HttpServletRequest request, HttpServletResponse response, String ids) {
+    public void exportXls(HttpServletRequest request, HttpServletResponse response, String ids ,String orgCode) {
         List<EmergencyRehearsalYear> rehearsalYears;
+        List<String> orgCodes = null;
+        if (ObjectUtil.isNotEmpty(orgCode)) {
+           orgCodes = iSysBaseApi.getSublevelOrgCodes(orgCode);
+        }
         if (StrUtil.isEmpty(ids)) {
-            rehearsalYears = this.lambdaQuery()
-                    .eq(EmergencyRehearsalYear::getDelFlag, CommonConstant.DEL_FLAG_0)
-                    .list();
+            LambdaQueryWrapper<EmergencyRehearsalYear> wrapper = new LambdaQueryWrapper<>();
+            if (CollectionUtil.isNotEmpty(orgCodes)){
+                wrapper.in(EmergencyRehearsalYear::getOrgCode,orgCodes);
+            }
+            wrapper.eq(EmergencyRehearsalYear::getDelFlag, CommonConstant.DEL_FLAG_0);
+            rehearsalYears = this.list(wrapper);
         } else {
             List<String> split = StrUtil.split(ids, ',');
             rehearsalYears = this.lambdaQuery()
