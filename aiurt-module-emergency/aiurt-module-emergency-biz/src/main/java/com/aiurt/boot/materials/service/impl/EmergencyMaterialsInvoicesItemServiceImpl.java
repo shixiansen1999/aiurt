@@ -167,7 +167,8 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
 
             // 查询检修记录结果数据
             queryWrapper.eq(EmergencyMaterialsInvoicesItem::getInvoicesId, recordId)
-                    .eq(EmergencyMaterialsInvoicesItem::getMaterialsCode, materialsCode);
+                    .eq(EmergencyMaterialsInvoicesItem::getMaterialsCode, materialsCode)
+            .eq(EmergencyMaterialsInvoicesItem::getStorageLocationCode, positionCode);
             List<EmergencyMaterialsInvoicesItem> invoicesItemList = baseMapper.selectList(queryWrapper);
             if (flag.get()) {
                 flag.set(false);
