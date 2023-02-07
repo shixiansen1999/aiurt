@@ -466,6 +466,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 						String username = JwtUtil.getUserNameByToken(request);
 						SysDepart sysDepart = entry.getValue();
 						sysDepart.setCreateBy(username);
+						//当当前部门的父部门也是要添加的数据，此时没有父id，要先查询父部门的id
 						String key = entry.getKey();
 						List<String> strings = StrUtil.splitTrim(key, "/");
 						if (StrUtil.isBlank(sysDepart.getParentId()) && strings.size() > 1) {
