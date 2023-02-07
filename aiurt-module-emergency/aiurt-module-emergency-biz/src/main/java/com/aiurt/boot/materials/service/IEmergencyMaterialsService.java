@@ -1,10 +1,9 @@
 package com.aiurt.boot.materials.service;
 
-import com.aiurt.boot.materials.dto.EmergencyMaterialsInvoicesDTO;
-import com.aiurt.boot.materials.dto.MaterialAccountDTO;
-import com.aiurt.boot.materials.dto.MaterialPatrolDTO;
+import com.aiurt.boot.materials.dto.*;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
+import com.aiurt.common.system.base.entity.DynamicTableEntity;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.ibatis.annotations.Param;
@@ -65,6 +64,13 @@ public interface IEmergencyMaterialsService extends IService<EmergencyMaterials>
      * @return
      */
     Page<EmergencyMaterialsInvoicesItem> getMaterialInspection(Page<EmergencyMaterialsInvoicesItem> pageList,@Param("id") String id);
+
+    /**
+     * 应急物资检查记录查看
+     * @param emergencyMaterialsInvoicesReqDTO
+     * @return
+     */
+    DynamicTableEntity getMaterialInspectionById(EmergencyMaterialsInvoicesReqDTO emergencyMaterialsInvoicesReqDTO);
 
 
     /**

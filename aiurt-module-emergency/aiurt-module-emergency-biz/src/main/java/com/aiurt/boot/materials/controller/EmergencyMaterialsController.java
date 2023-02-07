@@ -206,6 +206,14 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 Page<EmergencyMaterialsInvoicesItem> materialInspection = emergencyMaterialsService.getMaterialInspection(pageList,invoicesId);
 		 return  Result.OK(materialInspection);
 	 }
+
+	@AutoLog(value = "物资信息-应急物资检查记录查看")
+	@ApiOperation(value="物资信息-应急物资检查记录查看", notes="物资信息-应急物资检查记录查看")
+	@GetMapping(value = "/getMaterialInspectionById")
+	public Result<?> getMaterialInspectionById(EmergencyMaterialsInvoicesReqDTO emergencyMaterialsInvoicesReqDTO){
+		DynamicTableEntity materialInspectionById = emergencyMaterialsService.getMaterialInspectionById(emergencyMaterialsInvoicesReqDTO);
+		return  Result.OK(materialInspectionById);
+	}
 	/**
 	 *   添加
 	 *

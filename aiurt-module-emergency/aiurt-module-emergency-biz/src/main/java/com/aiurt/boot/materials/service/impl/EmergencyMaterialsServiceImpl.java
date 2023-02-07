@@ -23,6 +23,8 @@ import com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.system.base.entity.DynamicTableEntity;
 import com.aiurt.common.util.XlsUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -465,6 +467,18 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             }
         }
         return pageList.setRecords(materialInspection);
+    }
+
+    @Override
+    public DynamicTableEntity getMaterialInspectionById(EmergencyMaterialsInvoicesReqDTO emergencyMaterialsInvoicesReqDTO) {
+         DynamicTableEntity dynamicTableEntity = new DynamicTableEntity();
+         //根据巡检单的id查询巡检单信息
+         EmergencyMaterialsInvoices emergencyMaterialsInvoices = materialsInvoicesMapper.selectById(emergencyMaterialsInvoicesReqDTO.getInvoicesId());
+         if (Objects.isNull(emergencyMaterialsInvoices)) {
+             return dynamicTableEntity;
+         }
+
+         return null;
     }
 
     @Override
