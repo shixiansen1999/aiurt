@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 /**
  * @Description: emergency_rehearsal_year
@@ -55,5 +54,5 @@ public interface IEmergencyRehearsalYearService extends IService<EmergencyRehear
      * @param ids
      * @return
      */
-    void exportXls(HttpServletRequest request, HttpServletResponse response, String ids);
+    void exportXls(HttpServletRequest request, HttpServletResponse response, String ids,String orgCode);
 }

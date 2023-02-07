@@ -1,6 +1,5 @@
 package com.aiurt.boot.rehearsal.controller;
 
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalYearService;
@@ -15,11 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 /**
  * @Description: emergency_rehearsal_year
@@ -93,8 +90,8 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
      */
     @ApiOperation(value = "应急演练管理-导出年演练计划excel", notes = "应急演练管理-导出年演练计划excel")
     @RequestMapping(value = "/exportXls")
-    public void exportXls(HttpServletRequest request, HttpServletResponse response, String ids) {
-        emergencyRehearsalYearService.exportXls(request, response, ids);
+    public void exportXls(HttpServletRequest request, HttpServletResponse response, String ids ,String orgCode) {
+        emergencyRehearsalYearService.exportXls(request, response, ids,orgCode);
 //        return super.exportXls(request, emergencyRehearsalYear, EmergencyRehearsalYear.class, "emergency_rehearsal_year");
     }
 //
