@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.dto.DeviceDTO;
+import com.aiurt.modules.common.entity.SelectDeviceType;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.common.service.ICommonService;
 import com.aiurt.modules.device.entity.Device;
@@ -441,5 +442,15 @@ public class CommonCtroller {
     public Result<List<CsUserDepartModel>> queryDepartTree() {
         List<CsUserDepartModel> list = csUserDepartService.queryDepartTree();
         return Result.OK(list);
+    }
+    /**
+     * pc设备分类查询-无子节点
+     * @return
+     */
+    @ApiOperation(value="设备分类查询-无子节点", notes="设备分类查询-无子节点")
+    @GetMapping(value = "/getDeviceTypeList")
+    public Result<List<SelectDeviceType>> getDeviceTypeList(@RequestParam(name="value",required = false) String value) {
+        List<SelectDeviceType> deviceTypes = sysBaseApi.selectDeviceTypeList(value);
+        return Result.OK(deviceTypes);
     }
 }

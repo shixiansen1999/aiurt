@@ -8,6 +8,8 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
+import java.util.List;
+
 /**
  * @Description: emergency_materials_invoices
  * @Author: aiurt
@@ -23,4 +25,5 @@ public interface IEmergencyMaterialsInvoicesService extends IService<EmergencyMa
      * @return
      */
     List<EmergencyMaterialsInvoices> queryList(Page<EmergencyMaterialsInvoices> pageList, PatrolRecordReqDTO reqDTO);
+
 }

@@ -755,7 +755,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                 .eq(EmergencyPlanRecordProblemMeasures::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
                 .eq(EmergencyPlanRecordProblemMeasures::getEmergencyPlanRecordId, id).list();
         this.questionTranslate(problemMeasuresList);
-        List<EmergencyPlanRecordProblemMeasuresExportExcelVO> PMeasuresList = new ArrayList<>();
+        List<EmergencyPlanRecordProblemMeasuresExportExcelVO> pMeasuresList = new ArrayList<>();
         //字段翻译
         for (EmergencyPlanRecordProblemMeasures emergencyPlanRecordProblemMeasures : problemMeasuresList) {
             //创建实体
@@ -781,9 +781,9 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             emergencyPlanRecordProblemMeasuresExportExcelVO.setManagerId(userName);
             emergencyPlanRecordProblemMeasuresExportExcelVO.setResolveTime(format);
 
-            PMeasuresList.add(emergencyPlanRecordProblemMeasuresExportExcelVO);
+            pMeasuresList.add(emergencyPlanRecordProblemMeasuresExportExcelVO);
         }
-        emergencyPlanRecordExportExcelVO.setProblemMeasuresList(PMeasuresList);
+        emergencyPlanRecordExportExcelVO.setProblemMeasuresList(pMeasuresList);
 
 
 
@@ -810,7 +810,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             if (CollUtil.isNotEmpty(planRecordDisposalProcedureList)) {
                 for (int i = 0; i < planRecordDisposalProcedureList.size(); i++) {
                     EmergencyPlanRecordDisposalProcedure emergencyPlanRecordDisposalProcedure = planRecordDisposalProcedureList.get(i);
-                    Map<String, String> map = new HashMap<>();
+                    Map<String, String> map = new HashMap<>(32);
                     map.put("sort", Convert.toStr(i+1));
                     map.put("orgName", emergencyPlanRecordDisposalProcedure.getOrgName());
                     map.put("roleName", emergencyPlanRecordDisposalProcedure.getRoleName());
@@ -824,7 +824,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             if(CollUtil.isNotEmpty(planRecordMaterialsList)){
                 for (int i = 0; i < planRecordMaterialsList.size(); i++) {
                     EmergencyPlanMaterialsExportExcelVO emergencyPlanMaterialsExportExcelVO = planRecordMaterialsList.get(i);
-                    Map<String, String> map2 = new HashMap<>();
+                    Map<String, String> map2 = new HashMap<>(32);
                     map2.put("sort", Convert.toStr(i+1));
                     map2.put("categoryName", emergencyPlanMaterialsExportExcelVO.getCategoryName());
                     map2.put("materialsCode", emergencyPlanMaterialsExportExcelVO.getMaterialsCode());
@@ -840,7 +840,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             if(CollUtil.isNotEmpty(proMeasuresList)){
                 for (int i = 0; i < proMeasuresList.size(); i++) {
                     EmergencyPlanRecordProblemMeasuresExportExcelVO recordProblemMeasuresExportExcelVO = proMeasuresList.get(i);
-                    Map<String, String> map3 = new HashMap<>();
+                    Map<String, String> map3 = new HashMap<>(32);
                     map3.put("sort", Convert.toStr(i+1));
                     map3.put("problemType", recordProblemMeasuresExportExcelVO.getProblemType());
                     map3.put("problemContent", recordProblemMeasuresExportExcelVO.getProblemContent());
@@ -856,7 +856,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             errorMap.put("maplist2", mapList2);
             errorMap.put("maplist3", mapList3);
 
-            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(32);
             sheetsMap.put(0, errorMap);
             Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
             int size = procedureList.size();
@@ -1534,7 +1534,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             Map<String, Object> errorMap = handleData(emergencyPlanRecordImportExcelDTO);
 
             // 将数据填入表格
-            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(32);
             sheetsMap.put(0, errorMap);
             Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
 
@@ -1574,7 +1574,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         if (CollUtil.isNotEmpty(planDisposalProcedureList)) {
             for (int i = 0; i < planDisposalProcedureList.size(); i++) {
                 EmergencyPlanRecordDisposalProcedureImportExcelDTO emergencyPlanRecordDisposalProcedureImportExcelDTO = planDisposalProcedureList.get(i);
-                Map<String, String> map = new HashMap<>();
+                Map<String, String> map = new HashMap<>(32);
                 map.put("sort", Convert.toStr(i+1));
                 map.put("orgName", emergencyPlanRecordDisposalProcedureImportExcelDTO.getOrgName());
                 map.put("roleName", emergencyPlanRecordDisposalProcedureImportExcelDTO.getRoleName());
@@ -1589,7 +1589,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         if(CollUtil.isNotEmpty(planMaterialsList)){
             for (int i = 0; i < planMaterialsList.size(); i++) {
                 EmergencyPlanRecordMaterialsImportExcelDTO emergencyPlanRecordMaterialsImportExcelDTO = planMaterialsList.get(i);
-                Map<String, String> map2 = new HashMap<>();
+                Map<String, String> map2 = new HashMap<>(32);
                 map2.put("sort", Convert.toStr(i+1));
                 map2.put("categoryName", emergencyPlanRecordMaterialsImportExcelDTO.getCategoryName());
                 map2.put("materialsCode", emergencyPlanRecordMaterialsImportExcelDTO.getMaterialsCode());
@@ -1605,7 +1605,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         if(CollUtil.isNotEmpty(problemMeasuresList)){
             for (int i = 0; i < problemMeasuresList.size(); i++) {
                 EmergencyPlanRecordProblemMeasuresImportExcelDTO emergencyPlanRecordProblemMeasuresImportExcelDTO = problemMeasuresList.get(i);
-                Map<String, String> map3 = new HashMap<>();
+                Map<String, String> map3 = new HashMap<>(32);
                 map3.put("sort", Convert.toStr(i+1));
                 map3.put("problemType", emergencyPlanRecordProblemMeasuresImportExcelDTO.getProblemType());
                 map3.put("problemContent", emergencyPlanRecordProblemMeasuresImportExcelDTO.getProblemContent());

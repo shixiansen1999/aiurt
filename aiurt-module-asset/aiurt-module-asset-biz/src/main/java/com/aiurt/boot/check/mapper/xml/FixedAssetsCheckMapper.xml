@@ -97,7 +97,7 @@
         <choose>
             <when test="condition.flag != null and condition.flag">
                 and ahp.ID_ is not null
-                and fac.status in (#{condition.auditStatus})
+                and fac.status in ( #{condition.auditStatus} )
                 and (ara.ASSIGNEE_ = #{condition.userName} OR ara.ID_ in (
                 SELECT TASK_ID_
                 FROM act_ru_identitylink ari

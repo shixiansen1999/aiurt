@@ -5,6 +5,7 @@ import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
+import com.aiurt.modules.common.entity.SelectDeviceType;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
@@ -493,6 +494,14 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode);
+
+    /**
+     * 数据过大 物资分类列表结构查询（无分页。用于左侧树）
+     *
+     * @param value
+     * @return
+     */
+    List<SelectDeviceType> selectDeviceTypeList(String value);
 
     /**
      * 根据用户账号 查询用户信息

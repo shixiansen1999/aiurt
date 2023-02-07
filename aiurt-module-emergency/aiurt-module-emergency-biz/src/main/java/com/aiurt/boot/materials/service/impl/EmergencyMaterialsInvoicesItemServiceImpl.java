@@ -7,6 +7,11 @@ import com.aiurt.common.system.base.entity.DynamicTableDataEntity;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.google.common.collect.Lists;
+import com.aiurt.boot.materials.dto.PatrolRecordDetailDTO;
+import com.aiurt.common.system.base.entity.DynamicTableDataEntity;
+import com.aiurt.modules.common.entity.SelectTable;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.google.common.collect.Lists;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;

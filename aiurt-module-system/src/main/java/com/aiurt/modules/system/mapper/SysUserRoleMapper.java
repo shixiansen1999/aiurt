@@ -59,6 +59,22 @@ public interface SysUserRoleMapper extends BaseMapper<SysUserRole> {
 	List<String> getRoleName(@Param("userId") String userId);
 
 	/**
+	 * 根据专业code获得id
+	 * @param code
+	 * @return
+	 */
+	@Select("select id from cs_major where del_flag = 0 and major_code = #{code}")
+	String getMajorId(@Param("code") String code);
+	/**
+	 * 根据子系统code获得id
+	 * @param code
+	 * @param subCode
+	 * @return
+	 */
+	@Select("select id from cs_subsystem where del_flag = 0 and major_code = #{code} and system_code = #{subCode}")
+	String getSubsystemId(@Param("code") String code,@Param("subCode") String subCode);
+
+	/**
 	 * 获取对应角色Id的所有用户
 	 * @param roleId
 	 * @return

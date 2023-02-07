@@ -1,6 +1,7 @@
 package com.aiurt.common.system.base.entity;
 
 import lombok.Data;
+import org.apache.poi.ss.formula.functions.T;
 
 import java.io.Serializable;
 import java.util.List;
@@ -21,7 +22,6 @@ public class DynamicTableEntity<T extends DynamicTableDataEntity> implements Ser
     /**
      * 数据项
      */
-    private List<T> records;
 
     private long current;
 

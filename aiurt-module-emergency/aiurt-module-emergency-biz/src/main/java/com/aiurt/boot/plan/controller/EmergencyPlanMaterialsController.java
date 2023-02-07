@@ -52,7 +52,6 @@ public class EmergencyPlanMaterialsController extends BaseController<EmergencyPl
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_plan_materials-分页列表查询")
 	@ApiOperation(value="emergency_plan_materials-分页列表查询", notes="emergency_plan_materials-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<EmergencyPlanMaterials>> queryPageList(EmergencyPlanMaterials emergencyPlanMaterials,

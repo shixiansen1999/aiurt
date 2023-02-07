@@ -21,7 +21,7 @@ public class ProvinceCityArea {
 
     public String getText(String code){
         this.initAreaList();
-        if(this.areaList!=null || this.areaList.size()>0){
+        if(this.areaList!=null && this.areaList.size()>0){
             List<String> ls = new ArrayList<String>();
             getAreaByCode(code,ls);
             return String.join("/",ls);

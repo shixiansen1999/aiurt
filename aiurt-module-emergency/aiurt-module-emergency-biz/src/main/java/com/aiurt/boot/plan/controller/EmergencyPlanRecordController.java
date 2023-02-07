@@ -64,7 +64,6 @@ public class EmergencyPlanRecordController extends BaseController<EmergencyPlanR
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_plan_record-分页列表查询")
 	@ApiOperation(value="应急启动记录-分页列表查询", notes="应急启动记录-分页列表查询")
 	@GetMapping(value = "/queryPageList")
 	public Result<IPage<EmergencyPlanRecordVO>> queryPageList(EmergencyPlanRecordQueryDTO emergencyPlanRecordQueryDto,
