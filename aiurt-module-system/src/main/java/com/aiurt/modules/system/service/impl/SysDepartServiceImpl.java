@@ -401,6 +401,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
@@ -463,9 +464,16 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 					//遍历map依次插入校验成功的数据
 					for(Map.Entry<String,SysDepart> entry : departMap.entrySet()){
 						String username = JwtUtil.getUserNameByToken(request);
-						SysDepart value = entry.getValue();
-						value.setCreateBy(username);
-						this.saveDepartData(value,username);
+						SysDepart sysDepart = entry.getValue();
+						sysDepart.setCreateBy(username);
+						String key = entry.getKey();
+						List<String> strings = StrUtil.splitTrim(key, "/");
+						if (StrUtil.isBlank(sysDepart.getParentId()) && strings.size() > 1) {
+							String substring = key.substring(0, key.length() - sysDepart.getDepartName().length() - 1);
+							SysDepart value = departMap.get(substring);
+							sysDepart.setParentId(value.getId());
+						}
+						this.saveDepartData(sysDepart,username);
 					}
 				}
 
@@ -647,7 +655,9 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 					}
 				}
 				if (ObjectUtil.isEmpty(sysDepart1)){
+					sysDepart.setParentId(pid);
 					departMap.put(stringBuilder1.toString(),sysDepart);
+					pid="";
 				}else {
 					pid=sysDepart1.getId();
 				}
