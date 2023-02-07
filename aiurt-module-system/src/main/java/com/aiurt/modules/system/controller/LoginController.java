@@ -2,6 +2,7 @@ package com.aiurt.modules.system.controller;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
@@ -550,7 +551,10 @@ public class LoginController {
 			String realKey = Md5Util.md5Encode(lowerCaseCode+key, "utf-8");
             log.info("获取验证码，Redis checkCode = {}，key = {}", code, key);
 			redisUtil.set(realKey, lowerCaseCode, 300);
-
+			log.info("获取过期时间");
+			long expire = redisUtil.getExpire(realKey);
+			//返回前端
+			res.setMessage(Convert.toStr(expire));
 			//返回前端
 			String base64 = RandImageUtil.generate(code);
 			res.setSuccess(true);

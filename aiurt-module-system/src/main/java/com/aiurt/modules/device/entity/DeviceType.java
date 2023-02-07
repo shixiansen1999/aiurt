@@ -66,10 +66,20 @@ public class DeviceType implements Serializable {
 	@Excel(name = "分类编号", width = 15)
     @ApiModelProperty(value = "分类编号")
     private String code;
+    /**分类数值*/
+    @Excel(name = "分类数值", width = 15)
+    @ApiModelProperty(value = "分类数值")
+    @TableField(exist = false)
+    private String value;
 	/**分类名称*/
 	@Excel(name = "分类名称", width = 15)
     @ApiModelProperty(value = "分类名称")
     private String name;
+    /**分类标题*/
+    @Excel(name = "分类标题", width = 15)
+    @ApiModelProperty(value = "分类标题")
+    @TableField(exist = false)
+    private String title;
 	/**状态 0-停用 1-正常*/
 	@Excel(name = "状态 0-停用 1-正常", width = 15,dicCode = "device_type_status")
     @ApiModelProperty(value = "状态 0-停用 1-正常")

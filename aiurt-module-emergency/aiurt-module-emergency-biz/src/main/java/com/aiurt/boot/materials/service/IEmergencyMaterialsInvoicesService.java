@@ -1,7 +1,11 @@
 package com.aiurt.boot.materials.service;
 
+import com.aiurt.boot.materials.dto.PatrolRecordReqDTO;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoices;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * @Description: emergency_materials_invoices
@@ -10,5 +14,13 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Version: V1.0
  */
 public interface IEmergencyMaterialsInvoicesService extends IService<EmergencyMaterialsInvoices> {
+
+    /**
+     * 查询
+     * @param pageList
+     * @param reqDTO
+     * @return
+     */
+    List<EmergencyMaterialsInvoices> queryList(Page<EmergencyMaterialsInvoices> pageList, PatrolRecordReqDTO reqDTO);
 
 }

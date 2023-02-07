@@ -770,8 +770,8 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             Date resolveTime = emergencyPlanRecordProblemMeasures.getResolveTime();
             String format = DateUtil.format(resolveTime, "yyyy-MM-dd");
             //字典翻译
-            String pType = changeMap.get(problemType);
-            String rStatus = changeMap2.get(status);
+            String pType = changeMap2.get(problemType);
+            String rStatus = changeMap.get(status);
             //赋值给新的实体
             emergencyPlanRecordProblemMeasuresExportExcelVO.setProblemType(pType);
             emergencyPlanRecordProblemMeasuresExportExcelVO.setStatus(rStatus);
@@ -861,6 +861,26 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
             int size = procedureList.size();
             Sheet sheet = workbook.getSheetAt(0);
+            for (int j = 0 ;j < size; j++) {
+                CellRangeAddress cellAddresses = new CellRangeAddress(12+j,12+j,5,6);
+                //合并
+                sheet.addMergedRegion(cellAddresses);
+                //合并后设置下边框
+                RegionUtil.setBorderBottom(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderLeft(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderTop(BorderStyle.THIN, cellAddresses, sheet);
+                RegionUtil.setBorderRight(BorderStyle.THIN, cellAddresses, sheet);
+            }
+
+            int size1 = planRecordMaterialsList.size();
+            int sum = size1+size+1;
+            CellRangeAddress cellAddresses = new CellRangeAddress(12, 12 + sum, 7, 8);
+            //合并
+            sheet.addMergedRegion(cellAddresses);
+            //合并后设置下边框
+            RegionUtil.setBorderLeft(BorderStyle.THIN, cellAddresses, sheet);
+            RegionUtil.setBorderRight(BorderStyle.THIN, cellAddresses, sheet);
+            RegionUtil.setBorderBottom(BorderStyle.THIN, cellAddresses, sheet);
 
             //打包成压缩包导出
             String fileName = "应急预案启动记录.zip";
