@@ -31,6 +31,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.Objects;
 
 
 /**
@@ -95,7 +96,7 @@ public class AutoLogAspect {
 
 
         //设置操作类型
-        if (CommonConstant.LOG_TYPE_2 == dto.getLogType()) {
+        if (CommonConstant.LOG_TYPE_2 == dto.getLogType() && Objects.nonNull(syslog)) {
             dto.setOperateType(getOperateType(methodName, syslog.operateType()));
         }
 

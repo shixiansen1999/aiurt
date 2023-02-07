@@ -18,6 +18,7 @@ import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
+import com.aiurt.modules.common.entity.SelectDeviceType;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceMapper;
@@ -44,6 +45,7 @@ import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.sm.mapper.SafetyRelatedFormMapper;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
+import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.service.*;
@@ -182,6 +184,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private ICsMajorService majorService;
     @Autowired
     private CsSubsystemMapper subsystemMapper;
+    @Autowired
+    @Lazy
+    private ICsSubsystemService csSubsystemService;
     @Autowired
     private CsLineMapper lineMapper;
     @Autowired
@@ -875,7 +880,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<LoginUser> queryUserByNames(String[] userNames) {
         QueryWrapper<SysUser> queryWrapper = new QueryWrapper<SysUser>().eq("status", 1).eq("del_flag", 0);
-        queryWrapper.in("username", userNames);
+        queryWrapper.in("username", (Object) userNames);
         List<LoginUser> loginUsers = new ArrayList<>();
         List<SysUser> sysUsers = userMapper.selectList(queryWrapper);
         for (SysUser user : sysUsers) {
@@ -1525,7 +1530,60 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<DeviceTypeTable> deviceTypeTree = getDeviceTypeTree(list, "0");
         return deviceTypeTree;
     }
-
+    @Override
+    public List<SelectDeviceType> selectDeviceTypeList(String value) {
+        List<SelectDeviceType> selectDeviceTypes = new ArrayList<>();
+        if (StrUtil.isEmpty(value)){
+            // 一级专业显示
+            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).list();
+            List<String> collect = deviceTypes.stream().map(DeviceType::getMajorCode).distinct().collect(Collectors.toList());
+            List<CsMajor> majors = majorService.lambdaQuery().eq(CsMajor::getDelFlag,CommonConstant.DEL_FLAG_0)
+                                                             .in(CsMajor::getMajorCode,collect).list();
+            majors.forEach(m->{
+                SelectDeviceType selectDeviceType = new SelectDeviceType(m.getId(),"0",m.getMajorCode(),m.getMajorName(),false,false);
+                selectDeviceTypes.add(selectDeviceType);
+            });
+        }else {
+            // 作为二级子系统显示
+            List<CsSubsystem> csSubsystems = csSubsystemService.lambdaQuery().eq(CsSubsystem::getDelFlag,CommonConstant.DEL_FLAG_0).eq(CsSubsystem::getMajorCode,value).list();
+            if (CollectionUtil.isNotEmpty(csSubsystems)){
+                csSubsystems.forEach(s->{
+                    List<DeviceType> deviceTypeList = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0)
+                            .eq(DeviceType::getMajorCode,s.getMajorCode()).eq(DeviceType::getSystemCode,s.getSystemCode()).list();
+                    String str = sysUserRoleMapper.getMajorId(s.getMajorCode());
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(s.getId(),str,s.getSystemCode(),s.getSystemName(),CollectionUtil.isEmpty(deviceTypeList),false);
+                    selectDeviceTypes.add(selectDeviceType);
+                });
+            }
+            // 二级分类显示
+            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0)
+                    .eq(DeviceType::getMajorCode,value).isNull(DeviceType::getSystemCode).list();
+            if (CollectionUtil.isNotEmpty(deviceTypes)){
+                deviceTypes.forEach(d->{
+                    String str = sysUserRoleMapper.getMajorId(d.getMajorCode());
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),str,d.getId(),d.getName(),d.getIsEnd()==1?true:false,true);
+                    selectDeviceTypes.add(selectDeviceType);
+                });
+            }
+            //在子系统下的三级分类
+            List<DeviceType> deviceTypes1 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getSystemCode,value).list();
+            if (CollectionUtil.isNotEmpty(deviceTypes1)){
+                deviceTypes1.forEach(d->{
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),sysUserRoleMapper.getSubsystemId(d.getMajorCode(),d.getSystemCode()),d.getId(),d.getName(),d.getIsEnd()==1?true:false,true);
+                    selectDeviceTypes.add(selectDeviceType);
+                });
+            }
+            //无限层级分类
+            List<DeviceType> deviceTypes2 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getPid,value).list();
+            if (CollectionUtil.isNotEmpty(deviceTypes2)){
+                deviceTypes2.forEach(d->{
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),d.getPid(),d.getId(),d.getName(),d.getIsEnd()==1?true:false,true);
+                    selectDeviceTypes.add(selectDeviceType);
+                });
+            }
+        }
+        return selectDeviceTypes;
+    }
     public List<DeviceTypeTable> getDeviceTypeTree(List<DeviceTypeTable> list, String pid) {
         List<DeviceTypeTable> children = list.stream().filter(deviceTypeTable -> deviceTypeTable.getPid().equals(pid)).collect(Collectors.toList());
         if (CollectionUtil.isNotEmpty(children)) {
@@ -2393,47 +2451,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public  List<String> sysDepartList(String orgCode){
-        List<SysDepart> list = departMapper.selectList(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0));
-        List<SysDepartModel> modelList = new ArrayList<>();
-        for (SysDepart sysDepart : list) {
-            SysDepartModel model = new SysDepartModel();
-            BeanUtils.copyProperties(sysDepart,model);
-            modelList.add(model);
-        }
-        SysDepart sysDepart = departMapper.selectOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SysDepart::getOrgCode,orgCode));
-        SysDepartModel model = new SysDepartModel();
-        BeanUtils.copyProperties(sysDepart,model);
-        List<SysDepartModel> allChildren = new ArrayList<>();
-        if(ObjectUtil.isNotEmpty(model)&&CollUtil.isNotEmpty(modelList)){
-            List<SysDepartModel> sysDepartList = treeMenuList(modelList, model, allChildren);
-            if (CollectionUtil.isEmpty(sysDepartList)) {
-                return Collections.emptyList();
-            }
-            List<String> codeList = sysDepartList.stream().map(s -> s.getOrgCode()).collect(Collectors.toList());
-            codeList.add(model.getOrgCode());
-            return codeList;
-        }
+    public List<String> sysDepartList(String orgCode) {
         return null;
     }
-    /**
-     * 获取某个父节点下面的所有子节点
-     * @param list
-     * @param depart
-     * @param allChildren
-     * @return
-     */
-    public static List<SysDepartModel> treeMenuList(List<SysDepartModel> list, SysDepartModel depart, List<SysDepartModel> allChildren) {
-        for (SysDepartModel sysDepart : list) {
-            //遍历出父id等于参数的id，add进子节点集合
-            if (sysDepart.getParentId().equals(depart.getId())) {
-                //递归遍历下一级
-                treeMenuList(list, sysDepart, allChildren);
-                allChildren.add(sysDepart);
-            }
-        }
-        return allChildren;
-    }
+
+
     @Override
     public JSONObject getLineByName(String lineName) {
         LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();

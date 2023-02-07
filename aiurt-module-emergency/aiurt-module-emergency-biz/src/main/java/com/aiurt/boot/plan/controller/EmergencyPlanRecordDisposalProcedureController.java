@@ -47,7 +47,6 @@ public class EmergencyPlanRecordDisposalProcedureController extends BaseControll
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_plan_record_disposal_procedure-分页列表查询")
 	@ApiOperation(value="emergency_plan_record_disposal_procedure-分页列表查询", notes="emergency_plan_record_disposal_procedure-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<EmergencyPlanRecordDisposalProcedure>> queryPageList(EmergencyPlanRecordDisposalProcedure emergencyPlanRecordDisposalProcedure,
@@ -122,7 +121,6 @@ public class EmergencyPlanRecordDisposalProcedureController extends BaseControll
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "emergency_plan_record_disposal_procedure-通过id查询")
 	@ApiOperation(value="应急预案启动记录处置程序-通过id查询", notes="应急预案启动记录处置程序-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<List<EmergencyPlanRecordDisposalProcedure>> queryById(@RequestParam(name="id",required=true) String id) {
