@@ -508,7 +508,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                     List<DynamicTableTitleEntity> treeList = list.stream().map(item -> {
                         DynamicTableTitleEntity title = new DynamicTableTitleEntity();
                         title.setTitle(item.getContent());
-                        title.setDataIndex(item.getId());
+                        title.setDataIndex(item.getCode());
                         title.setId(item.getId());
                         title.setPid(StrUtil.isBlank(item.getPid()) ? "-9999" : item.getPid());
                         return title;
@@ -544,7 +544,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 list.forEach(q->{
                     CheckResultDTO checkResultDTO = new CheckResultDTO();
                     Integer check = q.getCheck();
-                    String itemId = q.getId();
+                    String itemId = q.getCode();
                     String categoryCode = q.getCategoryCode();
                     String materialsName = q.getMaterialsName();
                     String storageLocationCode = q.getStorageLocationCode();
