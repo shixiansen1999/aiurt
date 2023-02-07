@@ -77,6 +77,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @Description:
@@ -430,7 +431,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 			for (StockIncomingMaterialsExportDTO stockIncomingMaterialsExportDTO : stockIncomingMaterialsExportDTOList) {
 				if (StrUtil.isNotBlank(stockIncomingMaterialsExportDTO.getMaterialCode())){
 					String materialCode = stockIncomingMaterialsExportDTO.getMaterialCode();
-					MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code", materialCode));
+
+					MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code", materialCode).eq("del_flag",0));
 					if(ObjectUtil.isNotEmpty(materialBase)){
 						//物资类型
 						List<DictModel> materialType = sysBaseApi.getDictItems("material_type");
