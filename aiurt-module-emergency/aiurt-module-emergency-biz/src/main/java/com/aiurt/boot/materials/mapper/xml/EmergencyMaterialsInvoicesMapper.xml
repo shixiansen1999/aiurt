@@ -26,5 +26,6 @@
         <if test="condition.endTime != null and condition.endTime != ''">
             and DATE_FORMAT(patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d')
         </if>
+        order by t1.create_time desc
     </select>
 </mapper>

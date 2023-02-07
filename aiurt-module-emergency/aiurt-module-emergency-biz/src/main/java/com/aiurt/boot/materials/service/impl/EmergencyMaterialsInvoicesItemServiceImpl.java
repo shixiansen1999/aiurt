@@ -181,8 +181,7 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
 
             // 查询检修记录结果数据
             queryWrapper.eq(EmergencyMaterialsInvoicesItem::getInvoicesId, recordId)
-                    .eq(EmergencyMaterialsInvoicesItem::getMaterialsCode, materialsCode)
-            .eq(EmergencyMaterialsInvoicesItem::getStorageLocationCode, positionCode);
+                    .eq(EmergencyMaterialsInvoicesItem::getMaterialsCode, materialsCode);
             List<EmergencyMaterialsInvoicesItem> invoicesItemList = baseMapper.selectList(queryWrapper);
             if (flag.get()) {
                 flag.set(false);
@@ -190,7 +189,7 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
                 List<DynamicTableTitleEntity> treeList = invoicesItemList.stream().map(item -> {
                     DynamicTableTitleEntity title = new DynamicTableTitleEntity();
                     title.setTitle(item.getContent());
-                    title.setDataIndex(item.getId());
+                    title.setDataIndex(item.getCode());
                     title.setId(item.getId());
                     title.setPid(StrUtil.isBlank(item.getPid()) ? "-9999" : item.getPid());
                     return title;
@@ -244,7 +243,7 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
             Map<String,Object> map = new HashMap<>(16);
             invoicesItemList.stream().forEach(item->{
                 Integer check = item.getCheck();
-                String itemId = item.getId();
+                String itemId = item.getCode();
                 // 检修项
                 if (1 == check) {
                     String abnormalCondition = item.getAbnormalCondition();
