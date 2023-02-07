@@ -19,7 +19,7 @@ public class EmergencyMaterialsInvoicesReqDTO implements Serializable {
     @ApiModelProperty(value = "应急物资巡检单Id", required = true)
     private String  invoicesId;
 
-    private Integer pageNo;
+    private Integer pageNo =1;
 
-    private Integer pageSize;
+    private Integer pageSize = 10;
 }

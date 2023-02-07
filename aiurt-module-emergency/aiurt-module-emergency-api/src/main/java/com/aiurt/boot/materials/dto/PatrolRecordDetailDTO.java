@@ -73,5 +73,5 @@ public class PatrolRecordDetailDTO extends DynamicTableDataEntity implements Ser
      * 数量
      */
     @ApiModelProperty(value = "数量")
-    private java.lang.String number;
+    private Integer number;
 }

@@ -1,7 +1,5 @@
 package com.aiurt.boot.materials.service.impl;
-import com.aiurt.boot.materials.dto.MaterialPatrolDTO;
-import com.aiurt.boot.materials.dto.PatrolRecordDetailDTO;
-import com.aiurt.boot.materials.dto.PatrolStandardDTO;
+import com.aiurt.boot.materials.dto.*;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper;
 import com.aiurt.common.system.base.entity.DynamicTableDataEntity;
 import com.aiurt.modules.common.entity.SelectTable;
@@ -17,7 +15,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.materials.dto.PatrolRecordReqDTO;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoices;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesItemMapper;
@@ -240,29 +237,39 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
                 String departNameByOrgCode = iSysBaseAPI.getDepartNameByOrgCode(record.getDepartmentCode());
                 dataEntity.setPatrolTeamName(departNameByOrgCode);
             }
+
+
             Map<String,Object> map = new HashMap<>(16);
             invoicesItemList.stream().forEach(item->{
+                CheckResultDTO checkResultDTO = new CheckResultDTO();
                 Integer check = item.getCheck();
                 String itemId = item.getCode();
                 // 检修项
                 if (1 == check) {
                     String abnormalCondition = item.getAbnormalCondition();
                     Integer checkResult = item.getCheckResult();
-                    String dictCode = item.getDictCode();
                     if (StrUtil.isNotBlank(abnormalCondition)){
                         dataEntity.setAbnormalCondition(abnormalCondition);
                     }
-                    if (checkResult!=null){
-                        map.put(itemId, checkResult);
+                    if (checkResult !=null){
+                        checkResultDTO.setCheckResult(checkResult);
+
                     }
-                    if (StringUtils.isNotBlank(dictCode)) {
-                        if (Objects.nonNull(item.getOptionValue())) {
-                            String s = iSysBaseAPI.translateDict(dictCode, String.valueOf(item.getOptionValue()));
-                            map.put(itemId, s);
+                    Integer inputType = item.getInputType();
+
+                    if (Objects.nonNull(inputType) && 1!=inputType){
+                        // 巡检的结果
+                        String dictCode = item.getDictCode();
+                        if (StringUtils.isNotBlank(dictCode)) {
+                            if (Objects.nonNull(item.getOptionValue())) {
+                                String s = iSysBaseAPI.translateDict(dictCode, String.valueOf(item.getOptionValue()));
+                                checkResultDTO.setWriteValue(s);
+                            }
+                        }else {
+                            checkResultDTO.setWriteValue(item.getWriteValue());
                         }
-                    }else {
-                        map.put(itemId, item.getWriteValue());
                     }
+                    map.put(itemId,checkResultDTO);
                 }
             });
             dataEntity.setDynamicData(map);

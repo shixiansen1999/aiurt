@@ -29,6 +29,7 @@ import com.aiurt.common.system.base.entity.DynamicTableTitleEntity;
 import com.aiurt.common.util.XlsUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
@@ -479,12 +480,13 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         if (StrUtil.isNotBlank(invoicesId)){
             lambdaQueryWrapper.eq(EmergencyMaterialsInvoicesItem::getInvoicesId,invoicesId);
         }
-
+        lambdaQueryWrapper.groupBy(EmergencyMaterialsInvoicesItem::getMaterialsCode);
         Page<EmergencyMaterialsInvoicesItem> page = new Page<>(emergencyMaterialsInvoicesReqDTO.getPageNo(), emergencyMaterialsInvoicesReqDTO.getPageSize());
         Page<EmergencyMaterialsInvoicesItem> emergencyMaterialsInvoicesItemPage = materialsInvoicesItemMapper.selectPage(page,lambdaQueryWrapper);
         if (CollUtil.isEmpty(emergencyMaterialsInvoicesItemPage.getRecords())) {
             return dynamicTableEntity;
         }
+
 
         dynamicTableEntity.setCurrent(page.getCurrent());
         dynamicTableEntity.setTotal(page.getTotal());
@@ -492,64 +494,118 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         AtomicReference<Boolean> flag = new AtomicReference<>(Boolean.TRUE);
         List<DynamicTableDataEntity> records = new ArrayList<>();
 
-            if (flag.get()) {
-                flag.set(false);
-                // 组装title
-                List<DynamicTableTitleEntity> treeList = emergencyMaterialsInvoicesItemPage.getRecords().stream().map(item -> {
-                    DynamicTableTitleEntity title = new DynamicTableTitleEntity();
-                    title.setTitle(item.getContent());
-                    title.setDataIndex(item.getId());
-                    title.setId(item.getId());
-                    title.setPid(StrUtil.isBlank(item.getPid()) ? "-9999" : item.getPid());
-                    return title;
-                }).collect(Collectors.toList());
+        if (CollectionUtil.isNotEmpty(emergencyMaterialsInvoicesItemPage.getRecords())){
+            emergencyMaterialsInvoicesItemPage.getRecords().forEach(e->{
+                LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getDelFlag,CommonConstant.DEL_FLAG_0);
+                lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getInvoicesId,invoicesId);
+                lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getMaterialsCode,e.getMaterialsCode());
+                List<EmergencyMaterialsInvoicesItem> list = materialsInvoicesItemMapper.selectList(lambdaQueryWrapper1);
 
-                Map<String, DynamicTableTitleEntity> root = new LinkedHashMap<>();
+                if (flag.get()) {
+                    flag.set(false);
+                    // 组装title
+                    List<DynamicTableTitleEntity> treeList = list.stream().map(item -> {
+                        DynamicTableTitleEntity title = new DynamicTableTitleEntity();
+                        title.setTitle(item.getContent());
+                        title.setDataIndex(item.getId());
+                        title.setId(item.getId());
+                        title.setPid(StrUtil.isBlank(item.getPid()) ? "-9999" : item.getPid());
+                        return title;
+                    }).collect(Collectors.toList());
 
-                for (DynamicTableTitleEntity titleEntity : treeList) {
-                    DynamicTableTitleEntity parent = root.get(titleEntity.getPid());
-                    if (Objects.isNull(parent)) {
-                        parent = new DynamicTableTitleEntity();
-                        root.put(titleEntity.getPid(), parent);
+                    Map<String, DynamicTableTitleEntity> root = new LinkedHashMap<>();
+
+                    for (DynamicTableTitleEntity titleEntity : treeList) {
+                        DynamicTableTitleEntity parent = root.get(titleEntity.getPid());
+                        if (Objects.isNull(parent)) {
+                            parent = new DynamicTableTitleEntity();
+                            root.put(titleEntity.getPid(), parent);
+                        }
+                        DynamicTableTitleEntity table = root.get(titleEntity.getId());
+                        if (Objects.nonNull(table)) {
+                            titleEntity.setChildren(table.getChildren());
+                        }
+                        root.put(titleEntity.getId(), titleEntity);
+                        parent.addChildren(titleEntity);
                     }
-                    DynamicTableTitleEntity table = root.get(titleEntity.getId());
-                    if (Objects.nonNull(table)) {
-                        titleEntity.setChildren(table.getChildren());
+
+                    List<DynamicTableTitleEntity> resultList = new ArrayList<>();
+                    List<DynamicTableTitleEntity> collect = root.values().stream().filter(entity -> StrUtil.isBlank(entity.getPid())).collect(Collectors.toList());
+                    for (DynamicTableTitleEntity entity : collect) {
+                        resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
                     }
-                    root.put(titleEntity.getId(), titleEntity);
-                    parent.addChildren(titleEntity);
+                    dynamicTableEntity.setTitleList(resultList);
                 }
 
-                List<DynamicTableTitleEntity> resultList = new ArrayList<>();
-                List<DynamicTableTitleEntity> collect = root.values().stream().filter(entity -> StrUtil.isBlank(entity.getPid())).collect(Collectors.toList());
-                for (DynamicTableTitleEntity entity : collect) {
-                    resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
-                }
-                dynamicTableEntity.setTitleList(resultList);
-            }
-            // 组装dataList,一记录一条数据
-
-            emergencyMaterialsInvoicesItemPage.getRecords().forEach(q->{
+                // 组装dataList,一记录一条数据
+                Map<String,Object> map = new HashMap<>(16);
                 PatrolRecordDetailDTO dataEntity = new PatrolRecordDetailDTO();
+                list.forEach(q->{
+                    CheckResultDTO checkResultDTO = new CheckResultDTO();
+                    Integer check = q.getCheck();
+                    String itemId = q.getId();
+                    String categoryCode = q.getCategoryCode();
+                    String materialsName = q.getMaterialsName();
+                    String storageLocationCode = q.getStorageLocationCode();
+                    String specification = q.getSpecification();
+                    Integer number = q.getNumber();
+                    if (StrUtil.isNotBlank(materialsName)){
+                        dataEntity.setMaterialsName(materialsName);
+                    }
+                    if (StrUtil.isNotBlank(categoryCode)){
+                        LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+                        lambdaQueryWrapper2.eq(EmergencyMaterialsCategory::getDelFlag,CommonConstant.DEL_FLAG_0);
+                        lambdaQueryWrapper2.eq(EmergencyMaterialsCategory::getCategoryCode,categoryCode);
+                        EmergencyMaterialsCategory emergencyMaterialsCategory = emergencyMaterialsCategoryMapper.selectOne(lambdaQueryWrapper2);
+                        if(ObjectUtil.isNotEmpty(emergencyMaterialsCategory)){
+                            dataEntity.setCategoryName(emergencyMaterialsCategory.getCategoryName());
+                        }
+                    }
+                    if (StrUtil.isNotBlank(storageLocationCode)){
+                        String position = iSysBaseAPI.getPosition(storageLocationCode);
+                        dataEntity.setStorageLocationName(position);
+                    }
+                    if (StrUtil.isNotBlank(specification)){
+                        dataEntity.setSpecification(specification);
+                    }
+                    if (number!=null){
+                        dataEntity.setNumber(number);
+                    }
+                    if (1 == check) {
+                        Integer checkResult = q.getCheckResult();
+                        String abnormalCondition = q.getAbnormalCondition();
 
-                Integer check = q.getCheck();
-                String itemId = q.getId();
-                String categoryCode = q.getCategoryCode();
-                String materialsName = q.getMaterialsName();
-                String storageLocationCode = q.getStorageLocationCode();
-                String specification = q.getSpecification();
-                Integer number = q.getNumber();
-                Integer checkResult = q.getCheckResult();
-                String abnormalCondition = q.getAbnormalCondition();
+                        if (StrUtil.isNotBlank(abnormalCondition)){
+                            dataEntity.setAbnormalCondition(abnormalCondition);
+                        }
+                        if (checkResult !=null){
+                            checkResultDTO.setCheckResult(checkResult);
 
-                if (StrUtil.isNotBlank(materialsName)){
-                    dataEntity.setMaterialsName(materialsName);
-                }
+                        }
+                        Integer inputType = q.getInputType();
+                        if (Objects.nonNull(inputType) && 1!=inputType){
+                            // 巡检的结果
+                            String dictCode = q.getDictCode();
+                            if (StringUtils.isNotBlank(dictCode)) {
+                                if (Objects.nonNull(q.getOptionValue())) {
+                                    String s = iSysBaseAPI.translateDict(dictCode, String.valueOf(q.getOptionValue()));
+                                    checkResultDTO.setWriteValue(s);
+                                }
+                            }else {
+                                checkResultDTO.setWriteValue(q.getWriteValue());
+                            }
+                        }
+                        map.put(itemId,checkResultDTO);
+                    }
+                });
+                dataEntity.setDynamicData(map);
+                records.add(dataEntity);
 
-
-
+                dynamicTableEntity.setRecords(records);
             });
-            return null;
+        }
+           return dynamicTableEntity;
     }
 
     @Override
