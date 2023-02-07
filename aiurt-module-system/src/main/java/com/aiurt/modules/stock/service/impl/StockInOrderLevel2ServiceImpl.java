@@ -370,7 +370,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		}
 		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String title = "二级库入库导出数据";
-		cn.afterturn.easypoi.excel.entity.ExportParams exportParams = new ExportParams(title + "报表", "导出人:" + sysUser.getRealname(), ExcelType.XSSF);
+		cn.afterturn.easypoi.excel.entity.ExportParams exportParams = new ExportParams(title , "二级库入库导出", ExcelType.XSSF);
 		//调用ExcelExportUtil.exportExcel方法生成workbook
 		Workbook wb = cn.afterturn.easypoi.excel.ExcelExportUtil.exportExcel(exportParams, StockInOrderLevel2ExportDTO.class, exportList);
 		String fileName = "二级库入库导出数据";
