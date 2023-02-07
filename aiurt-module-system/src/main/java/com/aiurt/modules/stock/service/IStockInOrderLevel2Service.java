@@ -1,5 +1,7 @@
 package com.aiurt.modules.stock.service;
 
+import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
+import com.aiurt.modules.stock.dto.StockInOrderLevel2ExportDTO;
 import com.aiurt.modules.stock.entity.StockInOrderLevel2;
 import com.aiurt.modules.stock.entity.StockSubmitMaterials;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -56,6 +58,15 @@ public interface IStockInOrderLevel2Service extends IService<StockInOrderLevel2>
      * @param response
      */
     void eqExport(String ids, HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 二级库导出
+     * @param request
+     * @param response
+     * @param stockInOrderLevel2ExportDTO
+     */
+    void exportXls(HttpServletRequest request, HttpServletResponse response, StockInOrderLevel2ExportDTO stockInOrderLevel2ExportDTO);
+
 
     /**
      * 二级库入库导入模板下载

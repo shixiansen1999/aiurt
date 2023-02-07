@@ -10,14 +10,12 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
@@ -283,6 +281,25 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
 		LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0);
+		if (StrUtil.isNotBlank(category.getCategoryCode())){
+			LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+			lambdaQueryWrapper1.eq(EmergencyMaterialsCategory::getDelFlag,CommonConstant.DEL_FLAG_0);
+			List<EmergencyMaterialsCategory> list = emergencyMaterialsCategoryService.list(lambdaQueryWrapper1);
+
+			LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+			lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,CommonConstant.DEL_FLAG_0);
+			lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,category.getCategoryCode());
+			EmergencyMaterialsCategory one = emergencyMaterialsCategoryService.getOne(lambdaQueryWrapper);
+
+			List<EmergencyMaterialsCategory> emergencyMaterialsCategoryList = new ArrayList<>();
+			List<EmergencyMaterialsCategory> emergencyMaterialsCategories = treeMenuList(list, one, emergencyMaterialsCategoryList);
+			emergencyMaterialsCategories.add(one);
+			List<String> stringList = emergencyMaterialsCategories.stream().map(EmergencyMaterialsCategory::getCategoryCode).collect(Collectors.toList());
+			category.setTreeCode(stringList);
+		}
+		if (CollectionUtil.isNotEmpty(category.getTreeCode())){
+			queryWrapper.in(EmergencyMaterialsCategory::getCategoryCode,category.getTreeCode());
+		}
 		if(CollUtil.isNotEmpty(category.getSelections()))
 		{
 			List<String> selections = category.getSelections();

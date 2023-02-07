@@ -24,4 +24,31 @@
         order by stock_in_order_level2.create_time desc
     </select>
 
+    <select id="getList" resultType="com.aiurt.modules.stock.dto.StockInOrderLevel2ExportDTO">
+        select siol2.*
+        from stock_in_order_level2 siol2
+        left join stock_level2_info sli on (siol2.warehouse_code = sli.warehouse_code and sli.del_flag = 0)
+        <where>
+            and siol2.del_flag = 0
+            <if test="condition.id != null and condition.id != ''">
+                and siol2.id = #{condition.id}
+            </if>
+            <if test="condition.warehouseName != null and condition.warehouseName != ''">
+                and sli.warehouse_name like concat(concat('%',#{condition.warehouseName}),'%')
+            </if>
+            <if test="condition.warehouseCode != null and condition.warehouseCode != ''">
+                and siol2.warehouse_code = #{condition.warehouseCode}
+            </if>
+        </where>
+        order by siol2.create_time desc
+    </select>
+
+    <select id="selectByStockInOrderLevel2Id" resultType="com.aiurt.modules.stock.dto.StockIncomingMaterialsExportDTO">
+        select a.* from stock_incoming_materials a
+        where a.del_flag =0
+        <if test="orderCode != null and orderCode != ''">
+            and a.in_order_code=#{orderCode}
+        </if>
+    </select>
+
 </mapper>

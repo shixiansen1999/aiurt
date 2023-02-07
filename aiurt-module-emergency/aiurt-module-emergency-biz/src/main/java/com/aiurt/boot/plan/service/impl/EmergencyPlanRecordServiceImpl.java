@@ -166,9 +166,9 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             List<EmergencyPlanRecordTeam> teamList = emergencyPlanRecordTeamService.lambdaQuery().eq(EmergencyPlanRecordTeam::getEmergencyPlanRecordId, l.getId()).list();
             List<EmergencyPlanTeamDTO> teams = new ArrayList<>();
             if(CollUtil.isNotEmpty(teamList)){
-                EmergencyPlanTeamDTO emergencyPlanTeamDTO = new EmergencyPlanTeamDTO();
-                teamList.forEach(t->{
-                    String emergencyTeamId = t.getEmergencyTeamId();
+                for (EmergencyPlanRecordTeam planRecordTeam : teamList) {
+                    EmergencyPlanTeamDTO emergencyPlanTeamDTO = new EmergencyPlanTeamDTO();
+                    String emergencyTeamId = planRecordTeam.getEmergencyTeamId();
                     String emergencyTeamName = null;
                     List<EmergencyTeam> list = emergencyTeamService.lambdaQuery().eq(EmergencyTeam::getId, emergencyTeamId).list();
                     if(CollUtil.isNotEmpty(list)){
@@ -179,7 +179,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                     emergencyPlanTeamDTO.setEmergencyTeamId(emergencyTeamId);
                     emergencyPlanTeamDTO.setEmergencyTeamName(emergencyTeamName);
                     teams.add(emergencyPlanTeamDTO);
-                });
+                }
             }
             l.setEmergencyPlanRecordTeamId(teams);
 
@@ -428,13 +428,13 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
                 .eq(EmergencyPlanRecordTeam::getDelFlag, EmergencyPlanConstant.DEL_FLAG0)
                 .eq(EmergencyPlanRecordTeam::getEmergencyPlanRecordId, id).list();
         List<String> teamName = new ArrayList<>();
+        List<EmergencyTeam> teamIds = new ArrayList<>();
         if(CollUtil.isNotEmpty(teamList)){
             for (EmergencyPlanRecordTeam planRecordTeam : teamList) {
                 List<EmergencyTeam> list = emergencyTeamService.lambdaQuery().eq(EmergencyTeam::getId, planRecordTeam.getEmergencyTeamId()).list();
                 if(CollUtil.isNotEmpty(list)){
                     for (EmergencyTeam emergencyTeam : list) {
-                        String emergencyTeamName = emergencyTeam.getEmergencyTeamname();
-                        teamName.add(emergencyTeamName);
+                        teamIds.add(emergencyTeam);
                     }
                 }
 
@@ -479,6 +479,7 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
         this.questionTranslate(problemMeasuresList);
 
         recordDto.setEmergencyPlanRecordTeamId(teamName);
+        recordDto.setEmergencyPlanRecordTeamIds(teamIds);
         recordDto.setEmergencyPlanRecordDisposalProcedureList(procedureList);
         recordDto.setEmergencyPlanRecordAttList(recordAttList);
         recordDto.setEmergencyPlanRecordAttList2(recordAttList2);

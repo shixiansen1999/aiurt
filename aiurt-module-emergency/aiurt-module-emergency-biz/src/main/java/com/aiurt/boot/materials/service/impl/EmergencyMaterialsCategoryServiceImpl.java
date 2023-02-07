@@ -352,12 +352,13 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
                         stringBuilder.append("该上级节点已被禁用，");
                     } else {
                         List<EmergencyMaterialsCategory> deptAll = emergencyMaterialsCategoryMapper.selectList(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0));
-                        Set<EmergencyMaterialsCategory> deptUpList = getDeptUpList(deptAll, category);
-                        List<EmergencyMaterialsCategory> disabledList = deptUpList.stream().filter(e -> e.getStatus() == 0).collect(Collectors.toList());
-                        if (disabledList.size() > 0) {
-                            stringBuilder.append("该上级节点已被禁用，");
+                        Set<EmergencyMaterialsCategory> deptUpList = getDeptUpList(deptAll, categoryFatherName);
+                        if(CollUtil.isNotEmpty(deptUpList)){
+                            List<EmergencyMaterialsCategory> disabledList = deptUpList.stream().filter(e -> e.getStatus() == 0).collect(Collectors.toList());
+                            if (disabledList.size() > 0) {
+                                stringBuilder.append("该上级节点已被禁用，");
+                            }
                         }
-
                     }
                     category.setPid(categoryFatherName.getId());
                     category.setIsExitParent(true);
@@ -382,6 +383,12 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
         }
     }
 
+    /**
+     * 查询此节点的所有上级节点
+     * @param deptAll
+     * @param categoryFatherName
+     * @return
+     */
     public static Set<EmergencyMaterialsCategory> getDeptUpList(List<EmergencyMaterialsCategory> deptAll, EmergencyMaterialsCategory categoryFatherName) {
         if (ObjectUtil.isNotEmpty(categoryFatherName)) {
             Set<EmergencyMaterialsCategory> set = new HashSet<>();

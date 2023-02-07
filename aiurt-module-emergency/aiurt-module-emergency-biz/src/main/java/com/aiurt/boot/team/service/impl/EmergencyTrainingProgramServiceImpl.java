@@ -105,7 +105,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         if (CollUtil.isNotEmpty(records)) {
             for (EmergencyTrainingProgram record : records) {
                 SysDepartModel sysDepartModel = iSysBaseAPI.getDepartByOrgCode(record.getOrgCode());
-                record.setOrgName(sysDepartModel.getDepartName());
+                record.setOrgName(ObjectUtil.isNotEmpty(sysDepartModel)?sysDepartModel.getDepartName():"");
                 List<EmergencyTrainingTeam> trainingTeam = emergencyTrainingProgramMapper.getTrainingTeam(record.getId());
                 record.setEmergencyTrainingTeamList(trainingTeam);
                 List<String> names = trainingTeam.stream().map(EmergencyTrainingTeam::getEmergencyTeamName).collect(Collectors.toList());
@@ -235,7 +235,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(strings);
             String userNameStr = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
             String content ="您有一条新的应急训练计划任务:演练计划编号："+program.getTrainingProgramCode()+"，训练项目名称："+program.getTrainingProgramName()+"，训练计划时间："+DateUtil.format(program.getTrainingPlanTime(), "yyyy-MM")+",请注意训练任务开始时间!";
-            iSysBaseAPI.sendSysAnnouncement(new MessageDTO(user.getRealname(), userNameStr, "应急训练计划任务", content, CommonConstant.MSG_CATEGORY_2));
+            iSysBaseAPI.sendSysAnnouncement(new MessageDTO(user.getUsername(), userNameStr, "应急训练计划任务", content, CommonConstant.MSG_CATEGORY_2));
         }
     }
 
