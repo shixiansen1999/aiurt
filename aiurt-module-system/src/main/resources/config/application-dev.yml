@@ -166,6 +166,10 @@ spring:
       shutdown-timeout: 100ms
     password: 1qaz@2wsx
     port: 6379
+  elasticsearch:
+    uris: http://localhost:9200
+    connection-timeout: 3s
+    socket-timeout: 5s
 #mybatis plus 设置
 mybatis-plus:
   mapper-locations: classpath*:org/jeecg/modules/**/xml/*Mapper.xml,classpath*:com/aiurt/**/xml/*Mapper.xml,classpath:/META-INF/modeler-mybatis-mappings/*.xml
