@@ -25,6 +25,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -97,6 +98,7 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void confirmOutOrder(SparePartApply sparePartApply, StockOutOrderLevel2 stockOutOrderLevel2) throws ParseException {
         String warehouseCode = stockOutOrderLevel2.getWarehouseCode();
         List<StockLevel2Check> stockLevel2CheckList = iStockLevel2CheckService.list(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0)
@@ -160,8 +162,8 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
                                 .eq("stock_check_code",stockCheckCode));
                         if(stockLevel2CheckDetail != null){
                             Integer num = stockLevel2CheckDetail.getActualNum();
-                            stockLevel2CheckDetail.setBookNumber(num - sparePartApplyMaterial.getActualNum());
-                            iStockLevel2CheckDetailService.updateById(stockLevel2CheckDetail);
+								stockLevel2CheckDetail.setBookNumber(num - sparePartApplyMaterial.getActualNum());
+								iStockLevel2CheckDetailService.updateById(stockLevel2CheckDetail);
                         }
                     }
                 }
