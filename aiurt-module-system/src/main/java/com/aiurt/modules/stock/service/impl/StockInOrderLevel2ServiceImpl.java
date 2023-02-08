@@ -218,8 +218,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 										.eq("material_code",materialCode).eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0)
 										.eq("stock_check_code",stockCheckCode));
 						if(stockLevel2CheckDetail != null){
-							Integer num = stockLevel2CheckDetail.getActualNum()==null?0:stockLevel2CheckDetail.getActualNum();
-							stockLevel2CheckDetail.setBookNumber(num + number);
+							Integer bookNumber = stockLevel2CheckDetail.getBookNumber();
+							stockLevel2CheckDetail.setBookNumber(bookNumber + number);
 							iStockLevel2CheckDetailService.updateById(stockLevel2CheckDetail);
 						}else{
 							MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",materialCode));
