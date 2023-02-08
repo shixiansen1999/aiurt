@@ -13,6 +13,7 @@ import com.aiurt.boot.materials.service.IEmergencyMaterialsInvoicesItemService;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsInvoicesService;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.system.base.entity.DynamicTableEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -287,6 +288,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 if (CollUtil.isNotEmpty(emergencyMaterialsInvoicesItemList)){
 		 emergencyMaterialsInvoicesItemList.forEach(e->{
 		 	e.setInvoicesId(emergencyMaterialsInvoices.getId());
+		 	e.setCheck(CommonConstant.DEL_FLAG_1);
 		 });
 
 			 List<EmergencyMaterialsInvoicesItem> collect = emergencyMaterialsInvoicesItemList.stream().filter(e -> "0".equals(e.getPid())).collect(Collectors.toList());
