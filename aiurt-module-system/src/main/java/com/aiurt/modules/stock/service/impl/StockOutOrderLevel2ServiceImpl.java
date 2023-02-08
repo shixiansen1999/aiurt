@@ -163,7 +163,7 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
                         if(stockLevel2CheckDetail != null){
 							Integer actualNum = sparePartApplyMaterial.getActualNum();
 							Integer bookNumber = stockLevel2CheckDetail.getBookNumber();
-							if (bookNumber > actualNum) {
+							if (bookNumber >= actualNum) {
 								stockLevel2CheckDetail.setBookNumber(bookNumber - actualNum);
 							}
                             iStockLevel2CheckDetailService.updateById(stockLevel2CheckDetail);
