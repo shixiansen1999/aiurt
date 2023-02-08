@@ -17,6 +17,8 @@ public class SelectTableDTO {
 
     private String label;
 
+    private String title;
+
     private String pid;
 
     private String systemCode;
