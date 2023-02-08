@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.controller;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.task.dto.PatrolAccompanyDTO;
 import com.aiurt.boot.task.dto.PatrolTaskAppointSaveDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
@@ -62,8 +63,12 @@ public class PatrolTaskUserController extends BaseController<PatrolTaskUser, IPa
 		 Date startTime = null;
 		 Date endTime = null;
 		 try {
-			 startTime = format.parse(patrolAccompanyList.getStartTime());
-			 endTime = format.parse(patrolAccompanyList.getEndTime());
+		 	if(ObjectUtil.isNotEmpty(patrolAccompanyList.getStartTime())){
+				 startTime = format.parse(patrolAccompanyList.getStartTime());
+			 }
+			 if(ObjectUtil.isNotEmpty(patrolAccompanyList.getEndTime())){
+				 endTime = format.parse(patrolAccompanyList.getEndTime());
+			 }
 		 } catch (ParseException e) {
 			 e.printStackTrace();
 		 }
@@ -73,9 +78,15 @@ public class PatrolTaskUserController extends BaseController<PatrolTaskUser, IPa
 			 patrolTaskUserService.removeBatchByIds(taskUserList);
 		 }
 		 LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-		 updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).set(PatrolTask::getStartTime, startTime)
-				 .set(PatrolTask::getEndTime, endTime).set(PatrolTask::getPlanCode, patrolAccompanyList.getPlanCode()).set(PatrolTask::getType, patrolAccompanyList.getType())
+		 updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1)
+				 .set(PatrolTask::getPlanCode, patrolAccompanyList.getPlanCode()).set(PatrolTask::getType, patrolAccompanyList.getType())
 				 .set(PatrolTask::getPlanOrderCodeUrl, patrolAccompanyList.getPlanOrderCodeUrl()).eq(PatrolTask::getCode, patrolAccompanyList.getCode());
+		 if(ObjectUtil.isNotEmpty(patrolAccompanyList.getStartTime())){
+			 updateWrapper.set(PatrolTask::getStartTime, startTime);
+		 }
+		 if(ObjectUtil.isNotEmpty(patrolAccompanyList.getEndTime())){
+			 updateWrapper.set(PatrolTask::getEndTime, endTime);
+		 }
 		 // 添加指派人
 		 updateWrapper.set(PatrolTask::getAssignId, loginUser.getId());
 		 patrolTaskService.update(updateWrapper);

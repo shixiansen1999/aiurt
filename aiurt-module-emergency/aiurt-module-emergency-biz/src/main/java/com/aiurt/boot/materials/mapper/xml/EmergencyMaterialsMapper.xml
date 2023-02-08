@@ -110,6 +110,7 @@
             </if>
         </where>
             GROUP BY t1.standard_code
+            order by t1.create_time desc,t1.update_time desc
     </select>
 
     <select id="getInspectionRecord" resultType="com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem">
@@ -200,9 +201,6 @@
             <if test="condition.materialsName!=null">
               AND t1.materials_name LIKE CONCAT ('%', #{condition.materialsName}, '%')
             </if>
-            <if test="condition.primaryOrg!=null">
-                AND t1.primary_org = #{condition.primaryOrg}
-            </if>
             <if test="condition.lineCode!=null">
                 AND t1.line_code = #{condition.lineCode}
             </if>
@@ -217,6 +215,18 @@
            <foreach collection="condition.selections" item="item" open="(" close=")" separator=",">
             #{item}
             </foreach>
+            </if>
+                <if test="condition.primaryCodeList!=null and condition.primaryCodeList.size() != 0 and condition.orgCodeList.size() == 0">
+                AND  t1.primary_org in
+                <foreach item="item" collection="condition.primaryCodeList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+                  <if test="condition.orgCodeList!=null and condition.orgCodeList.size() != 0">
+                AND  t1.primary_org in
+                <foreach item="item" collection="condition.orgCodeList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
             </if>
         </where>
         order by t1.create_time desc,t1.update_time desc

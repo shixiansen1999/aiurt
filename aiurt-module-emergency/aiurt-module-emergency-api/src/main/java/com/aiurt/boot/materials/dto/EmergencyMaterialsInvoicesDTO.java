@@ -49,6 +49,10 @@ public class EmergencyMaterialsInvoicesDTO {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "巡视日期")
     private java.util.Date patrolDate;
+    /**主管部门编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "查询主管部门编码")
+    private java.lang.String patrolTeamCode;
     /**线路编码*/
     @TableField(exist = false)
     @ApiModelProperty(value = "巡视线路编码")
@@ -77,7 +81,10 @@ public class EmergencyMaterialsInvoicesDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "巡视位置名称")
     private java.lang.String positionName;
-
+    /**主管部门集合*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "主管部门集合")
+    private List<String> primaryCodeList;
 
     /**检查结果：0异常、1正常*/
     @Excel(name = "检查结果：0异常、1正常", width = 15)
@@ -87,7 +94,6 @@ public class EmergencyMaterialsInvoicesDTO {
     /**检查结果：0异常、1正常*/
     @Excel(name = "检查结果：0异常、1正常", width = 15)
     @ApiModelProperty(value = "检查结果：0异常、1正常")
-
     private String result;
 	/**巡视人ID*/
 	@Excel(name = "巡视人ID", width = 15)
@@ -112,5 +118,14 @@ public class EmergencyMaterialsInvoicesDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "巡视班组名称")
     private java.lang.String patrolTeamName;
+    /**巡视日期*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "开始时间")
+    private String startTime;
 
+
+    /**巡视日期*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "结束时间")
+    private String endTime;
 }

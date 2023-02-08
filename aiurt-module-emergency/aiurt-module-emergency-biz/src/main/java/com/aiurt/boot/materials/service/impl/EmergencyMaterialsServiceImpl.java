@@ -1,10 +1,6 @@
 package com.aiurt.boot.materials.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
-import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesItemMapper;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.RegionUtil;
-import org.apache.poi.xssf.usermodel.*;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
@@ -18,6 +14,7 @@ import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoices;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoicesItem;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsCategoryMapper;
+import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesItemMapper;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesMapper;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
@@ -25,19 +22,24 @@ import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.entity.DynamicTableEntity;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.system.base.entity.DynamicTableDataEntity;
+import com.aiurt.common.system.base.entity.DynamicTableEntity;
+import com.aiurt.common.system.base.entity.DynamicTableTitleEntity;
 import com.aiurt.common.util.XlsUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
-import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.ss.util.RegionUtil;
+import org.apache.poi.xssf.usermodel.*;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -471,18 +473,163 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
 
     @Override
     public DynamicTableEntity getMaterialInspectionById(EmergencyMaterialsInvoicesReqDTO emergencyMaterialsInvoicesReqDTO) {
-         DynamicTableEntity dynamicTableEntity = new DynamicTableEntity();
-         //根据巡检单的id查询巡检单信息
-         EmergencyMaterialsInvoices emergencyMaterialsInvoices = materialsInvoicesMapper.selectById(emergencyMaterialsInvoicesReqDTO.getInvoicesId());
-         if (Objects.isNull(emergencyMaterialsInvoices)) {
-             return dynamicTableEntity;
-         }
+        DynamicTableEntity dynamicTableEntity = new DynamicTableEntity();
+        String invoicesId = emergencyMaterialsInvoicesReqDTO.getInvoicesId();
+        LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(EmergencyMaterialsInvoicesItem::getDelFlag,CommonConstant.DEL_FLAG_0);
+        if (StrUtil.isNotBlank(invoicesId)){
+            lambdaQueryWrapper.eq(EmergencyMaterialsInvoicesItem::getInvoicesId,invoicesId);
+        }
+        lambdaQueryWrapper.groupBy(EmergencyMaterialsInvoicesItem::getMaterialsCode);
+        Page<EmergencyMaterialsInvoicesItem> page = new Page<>(emergencyMaterialsInvoicesReqDTO.getPageNo(), emergencyMaterialsInvoicesReqDTO.getPageSize());
+        Page<EmergencyMaterialsInvoicesItem> emergencyMaterialsInvoicesItemPage = materialsInvoicesItemMapper.selectPage(page,lambdaQueryWrapper);
+        if (CollUtil.isEmpty(emergencyMaterialsInvoicesItemPage.getRecords())) {
+            return dynamicTableEntity;
+        }
 
-         return null;
+
+        dynamicTableEntity.setCurrent(page.getCurrent());
+        dynamicTableEntity.setTotal(page.getTotal());
+
+        AtomicReference<Boolean> flag = new AtomicReference<>(Boolean.TRUE);
+        List<DynamicTableDataEntity> records = new ArrayList<>();
+
+        if (CollectionUtil.isNotEmpty(emergencyMaterialsInvoicesItemPage.getRecords())){
+            emergencyMaterialsInvoicesItemPage.getRecords().forEach(e->{
+                LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getDelFlag,CommonConstant.DEL_FLAG_0);
+                lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getInvoicesId,invoicesId);
+                lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getMaterialsCode,e.getMaterialsCode());
+                List<EmergencyMaterialsInvoicesItem> list = materialsInvoicesItemMapper.selectList(lambdaQueryWrapper1);
+
+                if (flag.get()) {
+                    flag.set(false);
+                    // 组装title
+                    List<DynamicTableTitleEntity> treeList = list.stream().map(item -> {
+                        DynamicTableTitleEntity title = new DynamicTableTitleEntity();
+                        title.setTitle(item.getContent());
+                        title.setDataIndex(item.getCode());
+                        title.setId(item.getId());
+                        title.setPid(StrUtil.isBlank(item.getPid()) ? "-9999" : item.getPid());
+                        return title;
+                    }).collect(Collectors.toList());
+
+                    Map<String, DynamicTableTitleEntity> root = new LinkedHashMap<>();
+
+                    for (DynamicTableTitleEntity titleEntity : treeList) {
+                        DynamicTableTitleEntity parent = root.get(titleEntity.getPid());
+                        if (Objects.isNull(parent)) {
+                            parent = new DynamicTableTitleEntity();
+                            root.put(titleEntity.getPid(), parent);
+                        }
+                        DynamicTableTitleEntity table = root.get(titleEntity.getId());
+                        if (Objects.nonNull(table)) {
+                            titleEntity.setChildren(table.getChildren());
+                        }
+                        root.put(titleEntity.getId(), titleEntity);
+                        parent.addChildren(titleEntity);
+                    }
+
+                    List<DynamicTableTitleEntity> resultList = new ArrayList<>();
+                    List<DynamicTableTitleEntity> collect = root.values().stream().filter(entity -> StrUtil.isBlank(entity.getPid())).collect(Collectors.toList());
+                    for (DynamicTableTitleEntity entity : collect) {
+                        resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
+                    }
+                    dynamicTableEntity.setTitleList(resultList);
+                }
+
+                // 组装dataList,一记录一条数据
+                Map<String,Object> map = new HashMap<>(16);
+                PatrolRecordDetailDTO dataEntity = new PatrolRecordDetailDTO();
+                list.forEach(q->{
+                    CheckResultDTO checkResultDTO = new CheckResultDTO();
+                    Integer check = q.getCheck();
+                    String itemId = q.getCode();
+                    String categoryCode = q.getCategoryCode();
+                    String materialsName = q.getMaterialsName();
+                    String storageLocationCode = q.getStorageLocationCode();
+                    String specification = q.getSpecification();
+                    Integer number = q.getNumber();
+                    if (StrUtil.isNotBlank(materialsName)){
+                        dataEntity.setMaterialsName(materialsName);
+                    }
+                    if (StrUtil.isNotBlank(categoryCode)){
+                        LambdaQueryWrapper<EmergencyMaterialsCategory> lambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+                        lambdaQueryWrapper2.eq(EmergencyMaterialsCategory::getDelFlag,CommonConstant.DEL_FLAG_0);
+                        lambdaQueryWrapper2.eq(EmergencyMaterialsCategory::getCategoryCode,categoryCode);
+                        EmergencyMaterialsCategory emergencyMaterialsCategory = emergencyMaterialsCategoryMapper.selectOne(lambdaQueryWrapper2);
+                        if(ObjectUtil.isNotEmpty(emergencyMaterialsCategory)){
+                            dataEntity.setCategoryName(emergencyMaterialsCategory.getCategoryName());
+                        }
+                    }
+                    if (StrUtil.isNotBlank(storageLocationCode)){
+                        String position = iSysBaseAPI.getPosition(storageLocationCode);
+                        dataEntity.setStorageLocationName(position);
+                    }
+                    if (StrUtil.isNotBlank(specification)){
+                        dataEntity.setSpecification(specification);
+                    }
+                    if (number!=null){
+                        dataEntity.setNumber(number);
+                    }
+                    if (1 == check) {
+                        Integer checkResult = q.getCheckResult();
+                        String abnormalCondition = q.getAbnormalCondition();
+
+                        if (StrUtil.isNotBlank(abnormalCondition)){
+                            dataEntity.setAbnormalCondition(abnormalCondition);
+                        }
+                        if (checkResult !=null){
+                            checkResultDTO.setCheckResult(checkResult);
+
+                        }
+                        Integer inputType = q.getInputType();
+                        if (Objects.nonNull(inputType) && 1!=inputType){
+                            // 巡检的结果
+                            String dictCode = q.getDictCode();
+                            if (StringUtils.isNotBlank(dictCode)) {
+                                if (Objects.nonNull(q.getOptionValue())) {
+                                    String s = iSysBaseAPI.translateDict(dictCode, String.valueOf(q.getOptionValue()));
+                                    checkResultDTO.setWriteValue(s);
+                                }
+                            }else {
+                                checkResultDTO.setWriteValue(q.getWriteValue());
+                            }
+                        }
+                        map.put(itemId,checkResultDTO);
+                    }
+                });
+                dataEntity.setDynamicData(map);
+                records.add(dataEntity);
+
+                dynamicTableEntity.setRecords(records);
+            });
+        }
+           return dynamicTableEntity;
     }
 
     @Override
     public ModelAndView getMaterialPatrolList(MaterialAccountDTO condition) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
+        if (CollectionUtil.isNotEmpty(departByUserId)) {
+            List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect)) {
+                condition.setPrimaryCodeList(collect);
+            }
+        }
+        if (ObjectUtil.isNotEmpty(condition.getPrimaryOrg())) {
+            List<String> orgCodeList = iSysBaseAPI.sysDepartList(condition.getPrimaryOrg());
+            if (CollUtil.isNotEmpty(orgCodeList)) {
+                if (CollUtil.isNotEmpty(condition.getPrimaryCodeList())) {
+                    List<String> codeList = condition.getPrimaryCodeList();
+                    List<String> collect = orgCodeList.stream().filter(o -> codeList.contains(o)).collect(Collectors.toList());
+                    if (CollUtil.isNotEmpty(collect)) {
+                        condition.setOrgCodeList(collect);
+                    }
+                }
+            }
+        }
         List<MaterialAccountDTO> materialAccountList = emergencyMaterialsMapper.getMaterialPatrolList(condition);
         List<PatrolStandardItemsModel> patrolStandardItemsModels = iSysBaseAPI.patrolStandardList(condition.getPatrolStandardId());
         AtomicReference<Integer> orderNumber = new AtomicReference<>(1);
@@ -621,9 +768,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                     return getErrorExcel(errorLines, list, errorMessage, successLines, type, url);
                 } else {
                     successLines = list.size();
-                    for (EmergencyMaterials material : materials) {
-                        emergencyMaterialsMapper.insert(material);
-                    }
+                    this.saveBatch(materials);
                     return imporReturnRes(errorLines, successLines, tipMessage, true, null);
                 }
 
@@ -786,6 +931,29 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
         if (CollUtil.isNotEmpty(selections)) {
             queryWrapper.in(EmergencyMaterialsInvoices::getId, selections);
+        } else {
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
+            if (CollectionUtil.isNotEmpty(departByUserId)) {
+                List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+                if (CollUtil.isNotEmpty(collect)) {
+                    if (ObjectUtil.isNotEmpty(condition.getPatrolTeamCode())) {
+                        List<String> orgCodeList = iSysBaseAPI.sysDepartList(condition.getPatrolTeamCode());
+                        if (CollUtil.isNotEmpty(orgCodeList)) {
+                            List<String> intersections = orgCodeList.stream().filter(o -> collect.contains(o)).collect(Collectors.toList());
+                            if (CollUtil.isNotEmpty(intersections)) {
+                                queryWrapper.in(EmergencyMaterialsInvoices::getDepartmentCode, intersections);
+                            }
+                        }
+                    } else {
+                        queryWrapper.in(EmergencyMaterialsInvoices::getDepartmentCode, collect);
+                    }
+                }
+            }
+        }
+        if (ObjectUtil.isNotEmpty(condition.getStartTime())) {
+            queryWrapper.ge(EmergencyMaterialsInvoices::getPatrolDate, condition.getStartTime());
+            queryWrapper.le(EmergencyMaterialsInvoices::getPatrolDate, condition.getEndTime());
         }
         List<EmergencyMaterialsInvoices> invoices = materialsInvoicesMapper.selectList(queryWrapper);
         response.setContentType("application/zip");
@@ -1296,6 +1464,10 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
 
     private void examine(EmergencyMaterialsModel model, EmergencyMaterials em, StringBuilder stringBuilder, List<EmergencyMaterialsModel> list) {
         BeanUtils.copyProperties(model, em);
+        List<EmergencyMaterialsModel> collect = list.stream().filter(l -> model.equals(l)).collect(Collectors.toList());
+        if (collect.size() != 1) {
+            stringBuilder.append("文件中有相同的数据，");
+        }
         if (ObjectUtil.isEmpty(em.getMaterialsCode())) {
             stringBuilder.append("应急物资编号必填，");
 
@@ -1362,19 +1534,20 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             EmergencyMaterialsCategory categoryFatherName = emergencyMaterialsCategoryMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getCategoryName, model.getCategoryName()).eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1"));
             if (ObjectUtil.isEmpty(categoryFatherName)) {
                 stringBuilder.append("应急物资分类不存在，");
-            }
-            if (categoryFatherName.getStatus() == 0) {
-                stringBuilder.append("该应急物资分类已被禁用，");
             } else {
-                List<EmergencyMaterialsCategory> deptAll = emergencyMaterialsCategoryMapper.selectList(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0));
-                Set<EmergencyMaterialsCategory> deptUpList = getDeptUpList(deptAll, categoryFatherName);
-                List<EmergencyMaterialsCategory> disabledList = deptUpList.stream().filter(e -> e.getStatus() == 0).collect(Collectors.toList());
-                if (disabledList.size() > 0) {
+                if (categoryFatherName.getStatus() == 0) {
                     stringBuilder.append("该应急物资分类已被禁用，");
                 } else {
-                    em.setCategoryCode(categoryFatherName.getCategoryCode());
-                }
+                    List<EmergencyMaterialsCategory> deptAll = emergencyMaterialsCategoryMapper.selectList(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0));
+                    Set<EmergencyMaterialsCategory> deptUpList = getDeptUpList(deptAll, categoryFatherName);
+                    List<EmergencyMaterialsCategory> disabledList = deptUpList.stream().filter(e -> e.getStatus() == 0).collect(Collectors.toList());
+                    if (disabledList.size() > 0) {
+                        stringBuilder.append("该应急物资分类已被禁用，");
+                    } else {
+                        em.setCategoryCode(categoryFatherName.getCategoryCode());
+                    }
 
+                }
             }
         }
         if (ObjectUtil.isEmpty(model.getFloodProtection())) {
@@ -1421,7 +1594,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                         stringBuilder.append("该线路下的站点不存在，");
                     } else {
                         em.setStationCode(stationCode);
-                        if (ObjectUtil.isEmpty(positionCode)) {
+                        if (ObjectUtil.isEmpty(positionCode) && count == 3) {
                             stringBuilder.append("该线路下的站点的位置不存在，");
                         } else {
                             em.setPositionCode(positionCode);

@@ -21,8 +21,6 @@ import com.aiurt.boot.category.entity.FixedAssetsCategory;
 import com.aiurt.boot.category.mapper.FixedAssetsCategoryMapper;
 import com.aiurt.boot.check.dto.FixedAssetsCheckRecordDTO;
 import com.aiurt.boot.check.entity.FixedAssetsCheck;
-import com.aiurt.boot.check.entity.FixedAssetsCheckCategory;
-import com.aiurt.boot.check.entity.FixedAssetsCheckDept;
 import com.aiurt.boot.check.mapper.FixedAssetsCheckCategoryMapper;
 import com.aiurt.boot.check.mapper.FixedAssetsCheckDeptMapper;
 import com.aiurt.boot.check.mapper.FixedAssetsCheckMapper;
@@ -89,13 +87,15 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
     @Override
     public Page<FixedAssetsDTO> pageList(Page<FixedAssetsDTO> pageList, FixedAssetsDTO fixedAssetsDTO) {
         //线路查询
-        List<String> stationCodeByLineCode = sysBaseAPI.getStationCodeByLineCode(fixedAssetsDTO.getLocation());
-        if (CollUtil.isNotEmpty(stationCodeByLineCode)) {
-            stationCodeByLineCode.add(fixedAssetsDTO.getLocation());
-            fixedAssetsDTO.setLineStations(stationCodeByLineCode);
-            fixedAssetsDTO.setIsLine(true);
-        } else {
-            fixedAssetsDTO.setIsLine(false);
+        if(ObjectUtil.isNotEmpty(fixedAssetsDTO.getLocation())){
+            List<String> stationCodeByLineCode = sysBaseAPI.getStationCodeByLineCode(fixedAssetsDTO.getLocation());
+            if (CollUtil.isNotEmpty(stationCodeByLineCode)) {
+                stationCodeByLineCode.add(fixedAssetsDTO.getLocation());
+                fixedAssetsDTO.setLineStations(stationCodeByLineCode);
+                fixedAssetsDTO.setIsLine(true);
+            } else {
+                fixedAssetsDTO.setIsLine(false);
+            }
         }
         //资产分类查询
         if (ObjectUtil.isNotEmpty(fixedAssetsDTO.getCategoryCode())) {
@@ -130,23 +130,6 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
                 List<LoginUser> loginUsers = sysBaseAPI.queryAllUserByIds(userIds);
                 String userName = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                 dto.setResponsibilityName(userName);
-            }
-            String[] status = {"1", "2", "3"};
-            List<FixedAssetsCheck> assetsChecks = assetsCheckMapper.selectList(new LambdaQueryWrapper<FixedAssetsCheck>().in(FixedAssetsCheck::getStatus, status).eq(FixedAssetsCheck::getDelFlag, CommonConstant.DEL_FLAG_0));
-            if (CollUtil.isNotEmpty(list)) {
-                for (FixedAssetsCheck check : assetsChecks) {
-                    List<FixedAssetsCheckCategory> checkCategoryList = checkCategoryMapper.selectList(new LambdaQueryWrapper<FixedAssetsCheckCategory>().eq(FixedAssetsCheckCategory::getCheckId, check.getId()));
-                    List<String> categoryCodes = checkCategoryList.stream().map(FixedAssetsCheckCategory::getCategoryCode).collect(Collectors.toList());
-                    List<FixedAssetsCheckDept> checkDeptList = checkDeptMapper.selectList(new LambdaQueryWrapper<FixedAssetsCheckDept>().eq(FixedAssetsCheckDept::getCheckId, check.getId()));
-                    List<String> orgCodes = checkDeptList.stream().map(FixedAssetsCheckDept::getOrgCode).collect(Collectors.toList());
-                    boolean haveOrgCode = orgCodes.contains(dto.getOrgCode());
-                    boolean haveCategoryCode = categoryCodes.contains(dto.getCategoryCode());
-                    if (haveOrgCode && haveCategoryCode) {
-                        dto.setIsNotEdit(false);
-                    } else {
-                        dto.setIsNotEdit(true);
-                    }
-                }
             }
         }
         return pageList.setRecords(list);

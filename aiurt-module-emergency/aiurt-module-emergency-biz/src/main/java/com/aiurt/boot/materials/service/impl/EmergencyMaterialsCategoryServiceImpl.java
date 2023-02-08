@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
 /**
  * @Description: emergency_materials_category
  * @Author: aiurt
- * @Date:   2022-11-29
+ * @Date: 2022-11-29
  * @Version: V1.0
  */
 @Service
@@ -105,7 +105,7 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
     @Override
     public List<EmergencyMaterialsCategory> selectTreeList() {
         LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,0);
+        queryWrapper.eq(EmergencyMaterialsCategory::getDelFlag, 0);
         queryWrapper.orderByDesc(EmergencyMaterialsCategory::getSort);
         queryWrapper.orderByDesc(EmergencyMaterialsCategory::getCreateTime);
         List<EmergencyMaterialsCategory> emergencyMaterialsCategories = emergencyMaterialsCategoryMapper.selectList(queryWrapper);
@@ -168,41 +168,42 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
             params.setHeadRows(1);
             params.setNeedSave(true);
             try {
-                List<EmergencyMaterialsCategory>categoryList = new ArrayList<>();
+                List<EmergencyMaterialsCategory> categoryList = new ArrayList<>();
                 List<EmergencyMaterialsCategoryModel> list = ExcelImportUtil.importExcel(file.getInputStream(), EmergencyMaterialsCategoryModel.class, params);
-                list = list.stream().filter(l->l.getFatherName()!=null||l.getCategoryCode()!=null||l.getCategoryName()!=null).collect(Collectors.toList());
+                list = list.stream().filter(l -> l.getFatherName() != null || l.getCategoryCode() != null || l.getCategoryName() != null).collect(Collectors.toList());
                 if (CollUtil.isEmpty(list)) {
                     tipMessage = "导入失败，该文件为空。";
                     return imporReturnRes(errorLines, successLines, tipMessage, false, null);
                 }
-                    for (EmergencyMaterialsCategoryModel model : list) {
-                        if(ObjectUtil.isNotEmpty(model))
-                        {
-                            EmergencyMaterialsCategory category = new EmergencyMaterialsCategory();
-                            StringBuilder stringBuilder = new StringBuilder();
-                            //校验信息
-                            examine(model,category,stringBuilder,list);
-                            if (stringBuilder.length() > 0) {
-                                // 截取字符
-                                stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-                                model.setWrongReason(stringBuilder.toString());
-                                errorLines++;
-                            }
-                            categoryList.add(category);
+                Integer i = 1;
+                for (EmergencyMaterialsCategoryModel model : list) {
+                    if (ObjectUtil.isNotEmpty(model)) {
+                        EmergencyMaterialsCategory category = new EmergencyMaterialsCategory();
+                        StringBuilder stringBuilder = new StringBuilder();
+                        //校验信息
+                        examine(model, category, stringBuilder, list);
+                        if (stringBuilder.length() > 0) {
+                            // 截取字符
+                            stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                            model.setWrongReason(stringBuilder.toString());
+                            errorLines++;
                         }
+                        category.setSort(i);
+                        i++;
+                        categoryList.add(category);
                     }
+                }
                 if (errorLines > 0) {
                     //错误报告下载
-                    return getErrorExcel(errorLines, list, errorMessage, successLines, type,url);
-                }
-                else
-                {
-                    Integer i= 1;
-                    for (EmergencyMaterialsCategory category : categoryList) {
-                        category.setSort(i);
-                        emergencyMaterialsCategoryMapper.insert(category);
-                        i++;
+                    return getErrorExcel(errorLines, list, errorMessage, successLines, type, url);
+                } else {
+                    List<EmergencyMaterialsCategory> collect = categoryList.stream().filter(c -> c.getIsExitParent() == true).collect(Collectors.toList());
+                    if(CollUtil.isNotEmpty(collect)){
+                        this.saveBatch(collect);
                     }
+                    List<EmergencyMaterialsCategory> materialsCategoryList = categoryList.stream().filter(c -> c.getIsExitParent() == false).collect(Collectors.toList());
+                    List<EmergencyMaterialsCategory> materialsCategoryTree = materialsCategoryTree(materialsCategoryList);
+                    saveTree(null,materialsCategoryTree);
                     successLines = list.size();
                     return imporReturnRes(errorLines, successLines, tipMessage, true, null);
                 }
@@ -226,7 +227,44 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
         return imporReturnRes(errorLines, successLines, tipMessage, true, null);
     }
 
-    private Result<?> getErrorExcel(int errorLines, List<EmergencyMaterialsCategoryModel> list, List<String> errorMessage, int successLines, String type,String url) throws IOException {
+    private void saveTree(String id, List<EmergencyMaterialsCategory> materialsCategoryTree) {
+        for (EmergencyMaterialsCategory menu : materialsCategoryTree) {
+            menu.setPid(id==null?"0":id);
+            emergencyMaterialsCategoryMapper.insert(menu);
+            if(CollUtil.isNotEmpty(menu.getChildren())){
+                saveTree(menu.getId(),menu.getChildren());
+            }
+        }
+    }
+
+    private List<EmergencyMaterialsCategory> materialsCategoryTree(List<EmergencyMaterialsCategory> materialsCategoryList) {
+
+        List<EmergencyMaterialsCategory> firstTree = materialsCategoryList.stream().filter(m -> m.getFatherName()==null).collect(Collectors.toList());
+        List<EmergencyMaterialsCategory> menuTree = new ArrayList<>();
+        for(EmergencyMaterialsCategory menuSample:firstTree)
+        {
+
+            EmergencyMaterialsCategory tree = buildChildTree(materialsCategoryList, menuSample);
+            menuTree.add(tree);
+        }
+        return menuTree;
+
+    }
+    private  EmergencyMaterialsCategory buildChildTree(List<EmergencyMaterialsCategory> menuList, EmergencyMaterialsCategory menuSample) {
+        List<EmergencyMaterialsCategory> childMenu = new ArrayList<>();
+        for (EmergencyMaterialsCategory menu :menuList)
+        {
+            if(menuSample.getCategoryName().equals(menu.getFatherName()))
+            {
+                childMenu.add(menu);
+                buildChildTree(menuList,menu);
+            }
+        }
+        menuSample.setChildren(childMenu);
+        return menuSample;
+    }
+
+    private Result<?> getErrorExcel(int errorLines, List<EmergencyMaterialsCategoryModel> list, List<String> errorMessage, int successLines, String type, String url) throws IOException {
         //创建导入失败错误报告,进行模板导出
         Resource resource = new ClassPathResource("/templates/emCategoryError.xlsx");
         InputStream resourceAsStream = resource.getInputStream();
@@ -271,10 +309,9 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
         return imporReturnRes(errorLines, successLines, null, true, url);
     }
 
-    private void examine(EmergencyMaterialsCategoryModel model, EmergencyMaterialsCategory category, StringBuilder stringBuilder,List<EmergencyMaterialsCategoryModel> list) {
-        BeanUtils.copyProperties(model,category);
-        if(ObjectUtil.isNotEmpty(model.getCategoryCode())&&ObjectUtil.isNotEmpty(model.getCategoryName()))
-        {
+    private void examine(EmergencyMaterialsCategoryModel model, EmergencyMaterialsCategory category, StringBuilder stringBuilder, List<EmergencyMaterialsCategoryModel> list) {
+        BeanUtils.copyProperties(model, category);
+        if (ObjectUtil.isNotEmpty(model.getCategoryCode()) && ObjectUtil.isNotEmpty(model.getCategoryName())) {
             String regular = "^\\w+$";
             Pattern pattern = Pattern.compile(regular);
             Matcher matcher = pattern.matcher(model.getCategoryCode());
@@ -282,68 +319,60 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
                 stringBuilder.append("编码未按要求填写，");
             }
             List<EmergencyMaterialsCategory> categoryCodeList = emergencyMaterialsCategoryMapper.selectList(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getCategoryCode, model.getCategoryCode()).eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0));
-            if(categoryCodeList.size()>0)
-            {
+            if (categoryCodeList.size() > 0) {
                 stringBuilder.append("已添加相同的编码，");
             }
-            List<EmergencyMaterialsCategoryModel> modeCodeList = list.stream().filter(l -> l.getCategoryCode()!=null&&!l.equals(model)&&l.getCategoryCode().equals(model.getCategoryCode())).collect(Collectors.toList());
-            if(modeCodeList.size()>0)
-            {
+            List<EmergencyMaterialsCategoryModel> modeCodeList = list.stream().filter(l -> l.getCategoryCode() != null && !l.equals(model) && l.getCategoryCode().equals(model.getCategoryCode())).collect(Collectors.toList());
+            if (modeCodeList.size() > 0) {
                 stringBuilder.append("文件里有相同的编码，");
             }
             List<EmergencyMaterialsCategory> categoryNameList = emergencyMaterialsCategoryMapper.selectList(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getCategoryName, model.getCategoryName()).eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0));
-            if(categoryNameList.size()>0)
-            {
+            if (categoryNameList.size() > 0) {
                 stringBuilder.append("已添加相同的名称，");
             }
-            List<EmergencyMaterialsCategoryModel> modeNameList = list.stream().filter(l -> l.getCategoryName()!=null&&!     l.equals(model)&&l.getCategoryName().equals(model.getCategoryName())).collect(Collectors.toList());
-            if(modeNameList.size()>0)
-            {
+            List<EmergencyMaterialsCategoryModel> modeNameList = list.stream().filter(l -> l.getCategoryName() != null && !l.equals(model) && l.getCategoryName().equals(model.getCategoryName())).collect(Collectors.toList());
+            if (modeNameList.size() > 0) {
                 stringBuilder.append("文件里有相同的名称，");
             }
-            if(ObjectUtil.isNotEmpty(model.getFatherName()))
-            {
-               EmergencyMaterialsCategory categoryFatherName = emergencyMaterialsCategoryMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getCategoryName, model.getFatherName()).eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1"));
-                if(ObjectUtil.isEmpty(categoryFatherName))
-                {
-                    stringBuilder.append("上级节点不存在，");
-                }
-                else
-                {
-                    category.setPid(categoryFatherName.getId());
-                }
-                if(categoryFatherName.getStatus()==0)
-                {
-                    stringBuilder.append("该上级节点已被禁用，");
-                }
-                else
-                {
-                    List<EmergencyMaterialsCategory> deptAll = emergencyMaterialsCategoryMapper.selectList(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0));
-                    Set<EmergencyMaterialsCategory> deptUpList = getDeptUpList(deptAll, category);
-                    List<EmergencyMaterialsCategory> disabledList = deptUpList.stream().filter(e -> e.getStatus() == 0).collect(Collectors.toList());
-                    if(disabledList.size()>0)
-                    {
-                        stringBuilder.append("该上级节点已被禁用，");
-                    }
-
-                }
-
-
+            List<EmergencyMaterialsCategoryModel> myselfList = list.stream().filter(l -> l.equals(model)).collect(Collectors.toList());
+            if (myselfList.size() != 1) {
+                stringBuilder.append("文件里有相同的数据，");
             }
-            else
-            {
+            if (ObjectUtil.isNotEmpty(model.getFatherName())) {
+                EmergencyMaterialsCategory categoryFatherName = emergencyMaterialsCategoryMapper.selectOne(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getCategoryName, model.getFatherName()).eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1"));
+                List<EmergencyMaterialsCategoryModel> collect = list.stream().filter(l -> model.getFatherName().equals(l.getCategoryName())).collect(Collectors.toList());
+                if (ObjectUtil.isEmpty(categoryFatherName)) {
+                    if (collect.size() == 0) {
+                        stringBuilder.append("上级节点不存在，");
+                    }else {
+                        category.setIsExitParent(false);
+                    }
+                } else {
+                    if (categoryFatherName.getStatus() == 0) {
+                        stringBuilder.append("该上级节点已被禁用，");
+                    } else {
+                        List<EmergencyMaterialsCategory> deptAll = emergencyMaterialsCategoryMapper.selectList(new LambdaQueryWrapper<EmergencyMaterialsCategory>().eq(EmergencyMaterialsCategory::getDelFlag, CommonConstant.DEL_FLAG_0));
+                        Set<EmergencyMaterialsCategory> deptUpList = getDeptUpList(deptAll, categoryFatherName);
+                        if(CollUtil.isNotEmpty(deptUpList)){
+                            List<EmergencyMaterialsCategory> disabledList = deptUpList.stream().filter(e -> e.getStatus() == 0).collect(Collectors.toList());
+                            if (disabledList.size() > 0) {
+                                stringBuilder.append("该上级节点已被禁用，");
+                            }
+                        }
+                    }
+                    category.setPid(categoryFatherName.getId());
+                    category.setIsExitParent(true);
+                }
+            } else {
                 category.setPid("0");
+                category.setIsExitParent(false);
             }
             category.setStatus(1);
-        }
-        else
-        {
-            if(ObjectUtil.isEmpty(model.getCategoryCode()))
-            {
+        } else {
+            if (ObjectUtil.isEmpty(model.getCategoryCode())) {
                 stringBuilder.append("分类编码必填");
             }
-            if(ObjectUtil.isEmpty(model.getCategoryName()))
-            {
+            if (ObjectUtil.isEmpty(model.getCategoryName())) {
                 stringBuilder.append("分类名称必填");
             }
         }
@@ -353,24 +382,31 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
             model.setWrongReason(stringBuilder.toString());
         }
     }
-    public static Set<EmergencyMaterialsCategory> getDeptUpList(List<EmergencyMaterialsCategory> deptAll, EmergencyMaterialsCategory categoryFatherName)
-    {
-        if(ObjectUtil.isNotEmpty(categoryFatherName)){
+
+    /**
+     * 查询此节点的所有上级节点
+     * @param deptAll
+     * @param categoryFatherName
+     * @return
+     */
+    public static Set<EmergencyMaterialsCategory> getDeptUpList(List<EmergencyMaterialsCategory> deptAll, EmergencyMaterialsCategory categoryFatherName) {
+        if (ObjectUtil.isNotEmpty(categoryFatherName)) {
             Set<EmergencyMaterialsCategory> set = new HashSet<>();
             String parentId = categoryFatherName.getPid();
             List<EmergencyMaterialsCategory> parentDepts = deptAll.stream().filter(item -> item.getId().equals(parentId)).collect(Collectors.toList());
-            if(CollectionUtil.isNotEmpty(parentDepts)){
+            if (CollectionUtil.isNotEmpty(parentDepts)) {
                 EmergencyMaterialsCategory parentDept = parentDepts.get(0);
                 set.add(parentDept);
                 Set<EmergencyMaterialsCategory> deptUpTree = getDeptUpList(deptAll, parentDept);
-                if(deptUpTree!=null){
+                if (deptUpTree != null) {
                     set.addAll(deptUpTree);
                 }
                 return set;
             }
         }
-        return  null;
+        return null;
     }
+
     public static Result<?> imporReturnRes(int errorLines, int successLines, String tipMessage, boolean isType, String failReportUrl) throws IOException {
         if (isType) {
             if (errorLines != 0) {
@@ -412,6 +448,7 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
         }
 
     }
+
     public static final class ExcelSelectListUtil {
         /**
          * firstRow 開始行號 根据此项目，默认为3(下标0开始)
