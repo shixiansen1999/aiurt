@@ -365,9 +365,10 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
             }
             emergencyTrainingRecord.setProcessRecordList(processRecordList);
             this.add(emergencyTrainingRecord);
-            return Result.ok("文件导入成功！");
+            return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,null);
         }
-        return Result.ok("文件导入失败！");
+        errorMessage.add("文件导入失败");
+        return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,null);
     }
 
 

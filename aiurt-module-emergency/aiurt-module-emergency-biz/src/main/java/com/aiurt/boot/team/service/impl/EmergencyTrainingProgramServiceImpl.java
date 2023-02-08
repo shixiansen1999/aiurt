@@ -255,6 +255,11 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+
+        List<String> errorMessage = new ArrayList<>();
+        int successLines = 0;
+        // 错误信息
+        int  errorLines = 0;
         for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
             // 获取上传文件对象
             MultipartFile file = entity.getValue();
@@ -262,12 +267,6 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             params.setTitleRows(2);
             params.setHeadRows(1);
             params.setNeedSave(true);
-
-            List<String> errorMessage = new ArrayList<>();
-            int successLines = 0;
-            // 错误信息
-            int  errorLines = 0;
-
             try {
                 String type = FilenameUtils.getExtension(file.getOriginalFilename());
                 if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
@@ -334,12 +333,13 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
                         emergencyTrainingTeamService.save(emergencyTrainingTeam);
                     }
                 }
-                return Result.ok("文件导入成功！");
+                return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,null);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return Result.ok("文件导入失败！");
+        errorMessage.add("文件导入失败");
+        return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,null);
     }
 
     private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, List<TrainingProgramModel> trainingProgramModels, int successLines, String url, String type) {
@@ -401,7 +401,9 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
                     stringBuilder.append("系统不存在" + team + "该队伍，");
                 }else {
                     teamIds.add(one.getId());
-                    num = num + one.getPeopleNum();
+                    if (one.getPeopleNum() != null) {
+                        num = num + one.getPeopleNum();
+                    }
                 }
 
             }

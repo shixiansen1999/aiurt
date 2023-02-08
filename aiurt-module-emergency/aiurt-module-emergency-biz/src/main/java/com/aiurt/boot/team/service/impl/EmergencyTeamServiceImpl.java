@@ -365,9 +365,10 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                     emergencyCrew.setEmergencyTeamId(emergencyTeam.getId());
                     emergencyCrewService.save(emergencyCrew);
                 }
-                return Result.ok("文件导入成功！");
+                return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,null);
             } catch (Exception e) {
-                return Result.error("文件导入失败:" + e.getMessage());
+                errorMessage.add(e.getMessage());
+                return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,null);
             } finally {
                 try {
                     file.getInputStream().close();
@@ -376,7 +377,8 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 }
             }
         }
-        return Result.ok("文件导入失败！");
+        errorMessage.add("文件导入失败");
+        return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,null);
     }
 
     /**队伍人员信息数据校验*/
