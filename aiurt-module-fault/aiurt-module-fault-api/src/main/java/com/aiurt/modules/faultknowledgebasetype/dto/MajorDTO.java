@@ -29,6 +29,8 @@ public class MajorDTO {
     private String value;
     @TableField(exist = false)
     private String label;
+    @TableField(exist = false)
+    private String title;
 
     List<SelectTableDTO> children;
 
