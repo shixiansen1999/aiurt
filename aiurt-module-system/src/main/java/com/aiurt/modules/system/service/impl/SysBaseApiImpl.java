@@ -1598,7 +1598,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public List<CsUserDepartModel> getDepartByUserId(String id) {
         return iCsUserDepartService.getDepartByUserId(id);
     }
-
     @Override
     public List<CsUserMajorModel> getMajorByUserId(String id) {
         return iCsUserMajorService.getMajorByUserId(id);
@@ -1613,6 +1612,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public List<CsUserSubsystemModel> getSubsystemByUserId(String id) {
         return csUserSubsystemMapper.getSubsystemByUserId(id);
     }
+
 
     public List<SysUser> getOrgUsersByOrgid(String orgId) {
         return userMapper.selectList(new QueryWrapper<SysUser>().eq("org_id", orgId));
