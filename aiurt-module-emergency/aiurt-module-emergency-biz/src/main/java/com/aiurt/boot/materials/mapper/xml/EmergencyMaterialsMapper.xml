@@ -99,9 +99,6 @@
             <if test="stationCode != null">
                 AND t1.station_code =#{stationCode}
             </if>
-            <if test="positionCode != null">
-                AND t1.position_code =#{positionCode}
-            </if>
             <if test="categoryCode != null">
                 AND t2.category_code =#{categoryCode}
             </if>
