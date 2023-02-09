@@ -271,9 +271,8 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
                 } else {
                     deviceType.setMajorCode(csMajor.getMajorCode());
                     //安全事项分类
-                    String systemName = deviceType.getSystemName() == null ?deviceType.getSystemName():"" ;
-                    if (StrUtil.isNotEmpty(systemName)) {
-                        String systemCode = deviceTypeMapper.selectSystemCode(systemName,csMajor.getMajorCode());
+                    if (StrUtil.isNotEmpty(deviceType.getSystemName())) {
+                        String systemCode = deviceTypeMapper.selectSystemCode(deviceType.getSystemName(),csMajor.getMajorCode());
                         if (StrUtil.isNotEmpty(systemCode)){
                             deviceType.setSystemCode(systemCode);
                         }else {

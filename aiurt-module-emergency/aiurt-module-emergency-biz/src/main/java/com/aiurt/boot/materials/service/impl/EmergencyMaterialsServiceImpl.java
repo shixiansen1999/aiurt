@@ -477,13 +477,12 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         if (StrUtil.isNotBlank(invoicesId)){
             lambdaQueryWrapper.eq(EmergencyMaterialsInvoicesItem::getInvoicesId,invoicesId);
         }
-        lambdaQueryWrapper.groupBy(EmergencyMaterialsInvoicesItem::getMaterialsCode);
+        lambdaQueryWrapper.groupBy(EmergencyMaterialsInvoicesItem::getMaterialsId);
         Page<EmergencyMaterialsInvoicesItem> page = new Page<>(emergencyMaterialsInvoicesReqDTO.getPageNo(), emergencyMaterialsInvoicesReqDTO.getPageSize());
         Page<EmergencyMaterialsInvoicesItem> emergencyMaterialsInvoicesItemPage = materialsInvoicesItemMapper.selectPage(page,lambdaQueryWrapper);
         if (CollUtil.isEmpty(emergencyMaterialsInvoicesItemPage.getRecords())) {
             return dynamicTableEntity;
         }
-
 
         dynamicTableEntity.setCurrent(page.getCurrent());
         dynamicTableEntity.setTotal(page.getTotal());
@@ -496,7 +495,9 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
                 lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getDelFlag,CommonConstant.DEL_FLAG_0);
                 lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getInvoicesId,invoicesId);
-                lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getMaterialsCode,e.getMaterialsCode());
+                if(StrUtil.isNotBlank(e.getMaterialsId())){
+                    lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getMaterialsId,e.getMaterialsId());
+                }
                 List<EmergencyMaterialsInvoicesItem> list = materialsInvoicesItemMapper.selectList(lambdaQueryWrapper1);
 
                 if (flag.get()) {
