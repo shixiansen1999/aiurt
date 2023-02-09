@@ -1,7 +1,6 @@
 package com.aiurt.config.datafilter.interceptor;
 
 import com.aiurt.config.datafilter.handler.PlusDataPermissionHandler;
-import com.baomidou.mybatisplus.core.plugins.InterceptorIgnoreHelper;
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
 import com.baomidou.mybatisplus.extension.parser.JsqlParserSupport;
 import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
@@ -11,14 +10,11 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import org.apache.ibatis.executor.Executor;
-import org.apache.ibatis.executor.statement.StatementHandler;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
-import java.sql.Connection;
 import java.util.List;
 
 /**
@@ -37,19 +33,19 @@ public class PlusDataPermissionInterceptor extends JsqlParserSupport implements 
         mpBs.sql(parserSingle(mpBs.sql(), ms.getId()));
     }
 
-    @Override
-    public void beforePrepare(StatementHandler sh, Connection connection, Integer transactionTimeout) {
-        PluginUtils.MPStatementHandler mpSh = PluginUtils.mpStatementHandler(sh);
-        MappedStatement ms = mpSh.mappedStatement();
-        SqlCommandType sct = ms.getSqlCommandType();
-        if (sct == SqlCommandType.UPDATE || sct == SqlCommandType.DELETE) {
-            if (InterceptorIgnoreHelper.willIgnoreDataPermission(ms.getId())) {
-                return;
-            }
-            PluginUtils.MPBoundSql mpBs = mpSh.mPBoundSql();
-            mpBs.sql(parserMulti(mpBs.sql(), ms.getId()));
-        }
-    }
+//    @Override
+//    public void beforePrepare(StatementHandler sh, Connection connection, Integer transactionTimeout) {
+//        PluginUtils.MPStatementHandler mpSh = PluginUtils.mpStatementHandler(sh);
+//        MappedStatement ms = mpSh.mappedStatement();
+//        SqlCommandType sct = ms.getSqlCommandType();
+//        if (sct == SqlCommandType.UPDATE || sct == SqlCommandType.DELETE) {
+//            if (InterceptorIgnoreHelper.willIgnoreDataPermission(ms.getId())) {
+//                return;
+//            }
+//            PluginUtils.MPBoundSql mpBs = mpSh.mPBoundSql();
+//            mpBs.sql(parserMulti(mpBs.sql(), ms.getId()));
+//        }
+//    }
 
     @Override
     protected void processSelect(Select select, int index, String sql, Object obj) {
