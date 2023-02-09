@@ -16,7 +16,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
-import org.jeecgframework.poi.excel.annotation.ExcelCollection;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.List;
@@ -198,4 +197,10 @@ public class MaterialBaseType extends DictEntity {
 	@ApiModelProperty(value = "错误原因")
 	@TableField(exist = false)
 	private String text;
+
+	@TableField(exist = false)
+	private  String  title;
+
+	@TableField(exist = false)
+	private  String  value;
 }

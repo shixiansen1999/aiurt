@@ -94,4 +94,10 @@ public class CsMajor implements Serializable {
     @ApiModelProperty(value = "设备类型子集")
     @TableField(exist = false)
     private List<DeviceType> deviceTypeChildren;
+
+    @TableField(exist = false)
+    private  String  title;
+
+    @TableField(exist = false)
+    private  String  value;
 }

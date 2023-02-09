@@ -5,7 +5,6 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBase;
@@ -14,7 +13,6 @@ import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
-import com.aiurt.modules.system.entity.SysUser;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -24,7 +22,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -182,12 +179,16 @@ public class MaterialBaseTypeController {
         systemList.forEach(csSubsystem -> {
             List sysList = materialBaseTypeListres.stream().filter(materialBaseType-> csSubsystem.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
             csSubsystem.setMaterialBaseTypeList(sysList);
+            csSubsystem.setTitle(csSubsystem.getSystemName());
+            csSubsystem.setValue(csSubsystem.getSystemCode());
         });
         majorList.forEach(major -> {
             List sysList = systemList.stream().filter(system-> system.getMajorCode().equals(major.getMajorCode())).collect(Collectors.toList());
             major.setChildren(sysList);
             List sysListType = materialBaseTypeListres.stream().filter(materialBaseType-> major.getMajorCode().equals(materialBaseType.getMajorCode())&&(materialBaseType.getSystemCode()==null || "".equals(materialBaseType.getSystemCode()))).collect(Collectors.toList());
             major.setMaterialBaseTypeList(sysListType);
+            major.setTitle(major.getMajorName());
+            major.setValue(major.getMajorCode());
         });
         return Result.OK(majorList);
     }

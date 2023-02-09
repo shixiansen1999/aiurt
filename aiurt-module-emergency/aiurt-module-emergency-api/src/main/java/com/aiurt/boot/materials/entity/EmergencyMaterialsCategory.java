@@ -102,4 +102,10 @@ public class EmergencyMaterialsCategory extends DictEntity implements Serializab
 
     @TableField(exist = false)
     private List<String> selections;
+
+    @TableField(exist = false)
+    private  String  title;
+
+    @TableField(exist = false)
+    private  String  value;
 }

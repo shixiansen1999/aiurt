@@ -126,6 +126,8 @@ public class CsStationPositionController  {
 		 position.setCodeCc(codeCc);
 		 position.setPositionType(positionType);
 		 position.setLength(length);
+		 position.setTitle(positionName);
+		 position.setValue(codeCc);
          return position;
 	 }
 	/**
