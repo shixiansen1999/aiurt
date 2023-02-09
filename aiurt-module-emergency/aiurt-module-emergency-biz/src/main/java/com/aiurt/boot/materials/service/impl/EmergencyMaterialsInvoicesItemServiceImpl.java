@@ -154,25 +154,25 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
 
         recordReqDTO.setStandardCode(standardCode);
 
-        if(StrUtil.isBlank(standardCode)){
-            LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(EmergencyMaterialsInvoicesItem::getMaterialsId,id);
-            lambdaQueryWrapper.eq(EmergencyMaterialsInvoicesItem::getDelFlag, CommonConstant.DEL_FLAG_0);
-            List<EmergencyMaterialsInvoicesItem> list = emergencyMaterialsInvoicesItemMapper.selectList(lambdaQueryWrapper);
-
-            if (CollectionUtil.isNotEmpty(list)){
-                List<String> collect = list.stream().map(EmergencyMaterialsInvoicesItem::getInvoicesId).collect(Collectors.toList());
-                LambdaQueryWrapper<EmergencyMaterialsInvoices> queryWrapper = new LambdaQueryWrapper<>();
-                queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
-                queryWrapper.in(EmergencyMaterialsInvoices::getId,collect);
-                queryWrapper.orderByDesc(EmergencyMaterialsInvoices::getCreateTime);
-                List<EmergencyMaterialsInvoices> emergencyMaterialsInvoices = emergencyMaterialsInvoicesMapper.selectList(queryWrapper);
-                if(CollectionUtil.isNotEmpty(emergencyMaterialsInvoices)){
-                    EmergencyMaterialsInvoices emergencyMaterialsInvoices1 = emergencyMaterialsInvoices.get(0);
-                    recordReqDTO.setStandardCode(emergencyMaterialsInvoices1.getStandardCode());
-                }
-            }
-        }
+//        if(StrUtil.isBlank(standardCode)){
+//            LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+//            lambdaQueryWrapper.eq(EmergencyMaterialsInvoicesItem::getMaterialsId,id);
+//            lambdaQueryWrapper.eq(EmergencyMaterialsInvoicesItem::getDelFlag, CommonConstant.DEL_FLAG_0);
+//            List<EmergencyMaterialsInvoicesItem> list = emergencyMaterialsInvoicesItemMapper.selectList(lambdaQueryWrapper);
+//
+//            if (CollectionUtil.isNotEmpty(list)){
+//                List<String> collect = list.stream().map(EmergencyMaterialsInvoicesItem::getInvoicesId).collect(Collectors.toList());
+//                LambdaQueryWrapper<EmergencyMaterialsInvoices> queryWrapper = new LambdaQueryWrapper<>();
+//                queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
+//                queryWrapper.in(EmergencyMaterialsInvoices::getId,collect);
+//                queryWrapper.orderByDesc(EmergencyMaterialsInvoices::getCreateTime);
+//                List<EmergencyMaterialsInvoices> emergencyMaterialsInvoices = emergencyMaterialsInvoicesMapper.selectList(queryWrapper);
+//                if(CollectionUtil.isNotEmpty(emergencyMaterialsInvoices)){
+//                    EmergencyMaterialsInvoices emergencyMaterialsInvoices1 = emergencyMaterialsInvoices.get(0);
+//                    recordReqDTO.setStandardCode(emergencyMaterialsInvoices1.getStandardCode());
+//                }
+//            }
+//        }
 
         // 查询记录数据
         Page<EmergencyMaterialsInvoices> page = new Page<>(recordReqDTO.getPageNo(), recordReqDTO.getPageSize());
