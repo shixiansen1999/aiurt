@@ -16,19 +16,21 @@ import java.net.URLEncoder;
  * DateTime: 2021/9/25 19:05
  */
 public class FileUtils {
-    public static void download(HttpServletResponse response, String filePath, String fileName){
-
+    public static void download(HttpServletResponse response, String filePath, String fileName) throws IOException {
+        InputStream is = null;
         try {
             response.setHeader("content-type", "application/octet-stream");
             response.setContentType("application/octet-stream");
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName,"UTF-8"));
             File file = new File(filePath);
-            InputStream is = new BufferedInputStream(new FileInputStream(file));
+            is= new BufferedInputStream(new FileInputStream(file));
 
             writeBytes(is, response.getOutputStream());
         }catch (Exception e) {
             throw new AiurtBootException("文件下载错误");
 
+        }finally {
+            is.close();
         }
     }
 
