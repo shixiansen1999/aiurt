@@ -1569,7 +1569,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             List<DeviceType> deviceTypes1 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getSystemCode,value).list();
             if (CollectionUtil.isNotEmpty(deviceTypes1)){
                 deviceTypes1.forEach(d->{
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),sysUserRoleMapper.getSubsystemId(d.getMajorCode(),d.getSystemCode()),d.getId(),d.getName(),d.getIsEnd()==1?true:false,true);
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),sysUserRoleMapper.getSubsystemId(d.getMajorCode(),d.getSystemCode()),d.getCode(),d.getName(),d.getIsEnd()==1?true:false,true);
                     selectDeviceTypes.add(selectDeviceType);
                 });
             }
@@ -1577,7 +1577,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             List<DeviceType> deviceTypes2 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getPid,value).list();
             if (CollectionUtil.isNotEmpty(deviceTypes2)){
                 deviceTypes2.forEach(d->{
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),d.getPid(),d.getId(),d.getName(),d.getIsEnd()==1?true:false,true);
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),d.getPid(),d.getCode(),d.getName(),d.getIsEnd()==1?true:false,true);
                     selectDeviceTypes.add(selectDeviceType);
                 });
             }

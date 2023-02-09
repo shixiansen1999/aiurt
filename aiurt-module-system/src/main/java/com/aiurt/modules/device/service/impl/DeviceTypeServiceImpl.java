@@ -246,6 +246,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<?> importExcelMaterial(MultipartFile file, ImportParams params) throws Exception {
         List<DeviceType> listMaterial = ExcelImportUtil.importExcel(file.getInputStream(), DeviceType.class, params);
         List<String> errorStrs = new ArrayList<>();
@@ -282,11 +283,29 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
                         }
                     }
                     if(StrUtil.isNotEmpty(deviceType.getPUrl())){
-                        DeviceType deviceType1 = deviceTypeService.getOne(new LambdaQueryWrapper<DeviceType>()
-                                .eq(DeviceType::getDelFlag,0).eq(DeviceType::getMajorCode,deviceType.getMajorCode())
-                                .eq(DeviceType::getName,deviceType.getPUrl()));
-                        if (ObjectUtil.isNotEmpty(deviceType1)){
-                            deviceType.setPid(deviceType1.getId());
+                       // AtomicReference<String> pid =new AtomicReference<>();
+                        String pid =null;
+                        String id =null;
+                        List<String> strings = Arrays.asList(deviceType.getPUrl().split("-"));
+                        for (int j = 0; j < strings.size() ; j++) {
+                            String s = strings.get(j);
+                            LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
+                            if (ObjectUtil.isNotEmpty(pid)){
+                               wrapper.eq(DeviceType::getPid,pid);
+                            }
+                             wrapper.eq(DeviceType::getName,s)
+                                    .eq(DeviceType::getDelFlag,0)
+                                    .eq(DeviceType::getMajorCode,deviceType.getMajorCode());
+                            DeviceType deviceType2 = deviceTypeService.getOne(wrapper);
+                            if (ObjectUtil.isNotEmpty(deviceType2)){
+                                pid=deviceType2.getId();
+                            }
+                            if (strings.size()== (j+1)){
+                                id = deviceType2.getId();
+                            }
+                        }
+                        if (StrUtil.isNotEmpty(id)){
+                            deviceType.setPid(id);
                         }else {
                             JSONObject systemCode = iSysBaseAPI.getSystemName(deviceType.getMajorCode(), deviceType.getPUrl());
                             if (ObjectUtil.isNotEmpty(systemCode)) {
@@ -317,11 +336,31 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
                         DeviceType deviceType1 = deviceTypeService.getOne(new LambdaQueryWrapper<DeviceType>()
                                 .eq(DeviceType::getDelFlag,0).eq(DeviceType::getName,deviceType.getName())
                                 .eq(DeviceType::getMajorCode,deviceType.getMajorCode())
-                                .eq(DeviceType::getSystemCode,deviceType.getSystemCode()));
+                                .eq(DeviceType::getSystemCode,deviceType.getSystemCode())
+                                .eq(DeviceType::getPid,0));
                         if (ObjectUtil.isNotEmpty(deviceType1)){
                             errorStrs.add("第 " + i + " 行：输入的分类名称已经存在！请重新输入，忽略导入。");
                             list.add(deviceType.setText("输入的分类名称已经存在！请重新输入，忽略导入"));
                             continue;
+                        }
+                        List<DeviceType> deviceTypes = deviceTypeService.list(new LambdaQueryWrapper<DeviceType>()
+                                .eq(DeviceType::getDelFlag,0).eq(DeviceType::getName,deviceType.getName())
+                                .eq(DeviceType::getMajorCode,deviceType.getMajorCode())
+                                .eq(DeviceType::getSystemCode,deviceType.getSystemCode())
+                                .not(wrapper->wrapper.eq(DeviceType::getPid,"0")));
+                        if (CollectionUtil.isNotEmpty(deviceTypes)){
+                            List<DeviceType> collect = deviceTypes.stream().filter(d -> d.getPid().equals(deviceType.getPid())).collect(Collectors.toList());
+                            if (CollectionUtil.isNotEmpty(collect)){
+                               errorStrs.add("第 " + i + " 行：输入的分类名称已经存在！请重新输入，忽略导入。");
+                               list.add(deviceType.setText("输入的分类名称已经存在！请重新输入，忽略导入"));
+                               continue;
+                           }
+                            List<DeviceType> collect1 = deviceTypes.stream().filter(d -> d.getId().equals(deviceType.getPid())).collect(Collectors.toList());
+                            if (CollectionUtil.isNotEmpty(collect1)){
+                                errorStrs.add("第 " + i + " 行：输入的分类名称已经存在！请重新输入，忽略导入。");
+                                list.add(deviceType.setText("输入的分类名称已经存在！请重新输入，忽略导入"));
+                                continue;
+                            }
                         }
                     }else {
                         errorStrs.add("第 " + i + " 行：分类名称未输入！忽略导入。");
