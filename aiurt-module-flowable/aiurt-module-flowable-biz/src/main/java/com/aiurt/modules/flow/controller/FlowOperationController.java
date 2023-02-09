@@ -264,8 +264,8 @@ public class FlowOperationController {
      */
     @DeleteMapping("/deleteProcessInstance")
     @ApiOperation(value = "删除流程",notes = "删除流程")
-    public Result<?> deleteProcessInstance(@RequestParam(value = "processInstanceId") String processInstanceId) {
-        flowApiService.deleteProcessInstance(processInstanceId);
+    public Result<?> deleteProcessInstance(@RequestParam(value = "processInstanceId") String processInstanceId, @RequestParam(value = "delReason", required = false) String delReason) {
+        flowApiService.deleteProcessInstance(processInstanceId, delReason);
         return Result.OK("终止流程成功");
     }
 

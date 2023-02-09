@@ -34,4 +34,12 @@ public interface FlowBaseApi {
      * @param startBpmnImportDTO
      */
     void startBpmnWithImport(StartBpmnImportDTO startBpmnImportDTO);
+
+    /**
+     * 删除业务数据，终止流程
+     * @param userName
+     * @param businessKey
+     * @param delReason
+     */
+    void delProcess(String userName, String businessKey, String delReason);
 }
