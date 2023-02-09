@@ -175,7 +175,8 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
         Set<String> idSet = recordList.stream().map(EmergencyMaterialsInvoices::getId).collect(Collectors.toSet());
         // 查询检修记录结果数据
         queryWrapper.in(EmergencyMaterialsInvoicesItem::getInvoicesId, idSet)
-                .eq(EmergencyMaterialsInvoicesItem::getMaterialsCode, materialsCode);
+                .eq(EmergencyMaterialsInvoicesItem::getMaterialsCode, materialsCode)
+                .orderByDesc(EmergencyMaterialsInvoicesItem::getCreateTime);
         List<EmergencyMaterialsInvoicesItem> maxInvoicesItemList = baseMapper.selectList(queryWrapper);
 
         Map<String, List<EmergencyMaterialsInvoicesItem>> itemMap = maxInvoicesItemList.stream().collect(Collectors.groupingBy(EmergencyMaterialsInvoicesItem::getInvoicesId));

@@ -48,6 +48,10 @@ public class EmergencyMaterialsInvoicesItem extends DictEntity implements Serial
     @TableField(exist = false)
     @ApiModelProperty(value = "应急物资分类名称")
     private java.lang.String categoryName;
+    /**应急物资Id*/
+    @Excel(name = "应急物资Id", width = 15)
+    @ApiModelProperty(value = "应急物资Id")
+    private java.lang.String materialsId;
 	/**应急物资编码*/
 	@Excel(name = "应急物资编码", width = 15)
     @ApiModelProperty(value = "应急物资编码")

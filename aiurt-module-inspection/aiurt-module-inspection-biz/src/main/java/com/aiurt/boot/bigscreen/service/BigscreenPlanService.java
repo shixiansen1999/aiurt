@@ -454,6 +454,7 @@ public class BigscreenPlanService {
                     List<String> position = workAreaById.stream().map(TeamPortraitDTO::getPosition).collect(Collectors.toList());
                     List<String> siteName = workAreaById.stream().map(TeamPortraitDTO::getSiteName).collect(Collectors.toList());
                     int num = 0;
+                    int stationNum = 0;
                     StringBuilder jurisdiction = new StringBuilder();
                     for (TeamPortraitDTO portraitDTO : workAreaById) {
                         num = num + portraitDTO.getStationNum();
@@ -461,23 +462,25 @@ public class BigscreenPlanService {
                         //获取工区管辖范围
                         List<TeamWorkAreaDTO> stationDetails = bigScreenPlanMapper.getStationDetails(portraitDTO.getWorkAreaCode());
                         if (CollUtil.isNotEmpty(stationDetails)) {
-                            List<String> line = stationDetails.stream().map(TeamWorkAreaDTO::getLineCode).collect(Collectors.toList());
+                            List<String> line = stationDetails.stream().map(TeamWorkAreaDTO::getLineCode).distinct().collect(Collectors.toList());
                             if (CollUtil.isNotEmpty(line)) {
                                 for (String s : line) {
                                     List<TeamWorkAreaDTO> collect = stationDetails.stream().filter(t -> t.getLineCode().equals(s)).collect(Collectors.toList());
                                     jurisdiction.append(collect.get(0).getLineName())
                                             .append(collect.get(0).getStationName())
+                                            .append("到")
                                             .append(collect.get(collect.size() - 1).getStationName())
                                             .append(collect.size()).append("站，");
                                 }
-                                if (jurisdiction.length() > 0) {
-                                    // 截取字符，去调最后一个，
-                                    jurisdiction.deleteCharAt(jurisdiction.length() - 1);
-                                }
                             }
                         }
-                        jurisdiction.append("共").append(stationDetails.size()).append("站；");
+                        stationNum = stationNum + stationDetails.size();
                     }
+                    if (jurisdiction.length() > 0) {
+                        // 截取字符，去掉最后一个，
+                        jurisdiction.deleteCharAt(jurisdiction.length() - 1);
+                    }
+                    jurisdiction.append("共").append(stationNum).append("站；");
                     if (jurisdiction.length() > 0) {
                         // 截取字符,去掉最后一个；
                         jurisdiction.deleteCharAt(jurisdiction.length() - 1);

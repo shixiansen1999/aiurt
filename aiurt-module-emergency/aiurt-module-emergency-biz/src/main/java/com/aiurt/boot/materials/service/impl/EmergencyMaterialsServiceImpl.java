@@ -20,9 +20,6 @@ import com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsService;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.system.base.entity.DynamicTableEntity;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.entity.DynamicTableDataEntity;
 import com.aiurt.common.system.base.entity.DynamicTableEntity;
 import com.aiurt.common.system.base.entity.DynamicTableTitleEntity;
@@ -818,9 +815,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         Map<String, Object> map = new HashMap<String, Object>();
         EmergencyMaterialsInvoicesDTO e = new EmergencyMaterialsInvoicesDTO();
         BeanUtils.copyProperties(invoice, e);
-        //为了拿到巡检位置|存放地点
+        //巡检位置
         String inspectionPosition = null;
-        String storageLocation = null;
         if (StrUtil.isNotBlank(e.getLineCode())) {
             //根据线路编码查询线路名称
             String position = iSysBaseAPI.getPosition(e.getLineCode());
@@ -832,10 +828,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             String position = iSysBaseAPI.getPosition(e.getStationCode());
             if (ObjectUtil.isNotEmpty(inspectionPosition)) {
                 inspectionPosition = inspectionPosition + position;
-                storageLocation = position;
             } else {
                 inspectionPosition = position;
-                storageLocation = position;
             }
             e.setStationName(position);
         }
@@ -845,10 +839,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             e.setPositionName(position);
             if (ObjectUtil.isNotEmpty(inspectionPosition)) {
                 inspectionPosition = inspectionPosition + position;
-                storageLocation = position;
             } else {
                 inspectionPosition = position;
-                storageLocation = position;
             }
         }
         if (StrUtil.isNotBlank(e.getDepartmentCode())) {
@@ -872,6 +864,10 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         map.put("patrolResult", e.getInspectionResults() == 0 ? "异常" : "正常");
         //内容存放数据
         for (EmergencyMaterialsInvoicesItemDTO item : items) {
+            String storageLocation = "";
+            if (ObjectUtil.isNotEmpty(item.getStorageLocationCode())){
+                storageLocation= iSysBaseAPI.getPosition(item.getStorageLocationCode());
+            }
             List<EmergencyMaterialsInvoicesItemDTO> materialInspectionList = emergencyMaterialsMapper.getMaterialInspectionList(item.getMaterialsCode(), invoice.getId(), false);
             Map<String, String> lm = new HashMap<String, String>();
             lm.put("serialNumber", String.valueOf(serialNumber));
@@ -894,11 +890,37 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 List<EmergencyMaterialsInvoicesItemDTO> sons = materialInspectionList.stream().filter(m -> m.getPid().equals(dto.getId())).collect(Collectors.toList());
                 if (CollUtil.isNotEmpty(sons)) {
                     for (EmergencyMaterialsInvoicesItemDTO son : sons) {
-                        lm.put(String.valueOf(t), son.getCheckResult() == 1 ? "√" : "×");
+                        String checkValue =son.getCheckResult() == 1 ? "√" : "×";
+                        Integer inputType = son.getInputType();
+                        if (Objects.nonNull(inputType) && 1!=inputType){
+                            // 巡检的结果
+                            String dictCode = son.getDictCode();
+                            if (StringUtils.isNotBlank(dictCode)) {
+                                if (Objects.nonNull(son.getOptionValue())) {
+                                    checkValue = checkValue+iSysBaseAPI.translateDict(dictCode, String.valueOf(son.getOptionValue()));
+                                }
+                            }else {
+                                checkValue=checkValue+son.getWriteValue();
+                            }
+                        }
+                        lm.put(String.valueOf(t),checkValue);
                         t++;
                     }
                 } else {
-                    lm.put(String.valueOf(t), dto.getCheckResult() == 1 ? "√" : "×");
+                    String checkValue =dto.getCheckResult() == 1 ? "√" : "×";
+                    Integer inputType = dto.getInputType();
+                    if (Objects.nonNull(inputType) && 1!=inputType){
+                        // 巡检的结果
+                        String dictCode = dto.getDictCode();
+                        if (StringUtils.isNotBlank(dictCode)) {
+                            if (Objects.nonNull(dto.getOptionValue())) {
+                                checkValue = checkValue+iSysBaseAPI.translateDict(dictCode, String.valueOf(dto.getOptionValue()));
+                            }
+                        }else {
+                            checkValue=checkValue+dto.getWriteValue();
+                        }
+                    }
+                    lm.put(String.valueOf(t),checkValue);
                     t++;
                 }
             }
@@ -982,7 +1004,6 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             EmergencyMaterialsInvoicesDTO e = new EmergencyMaterialsInvoicesDTO();
             BeanUtils.copyProperties(invoice, e);
             String inspectionPosition = null;
-            String storageLocation = null;
             if (StrUtil.isNotBlank(e.getLineCode())) {
                 //根据线路编码查询线路名称
                 String position = iSysBaseAPI.getPosition(e.getLineCode());
@@ -994,10 +1015,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 String position = iSysBaseAPI.getPosition(e.getStationCode());
                 if (ObjectUtil.isNotEmpty(inspectionPosition)) {
                     inspectionPosition = inspectionPosition + position;
-                    storageLocation = position;
                 } else {
                     inspectionPosition = position;
-                    storageLocation = position;
                 }
                 e.setStationName(position);
             }
@@ -1007,10 +1026,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 e.setPositionName(position);
                 if (ObjectUtil.isNotEmpty(inspectionPosition)) {
                     inspectionPosition = inspectionPosition + position;
-                    storageLocation = position;
                 } else {
                     inspectionPosition = position;
-                    storageLocation = position;
                 }
             }
             if (StrUtil.isNotBlank(e.getDepartmentCode())) {
@@ -1031,6 +1048,10 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             map.put("patrolTeamName", e.getPatrolTeamName());
             map.put("patrolResult", e.getInspectionResults() == 0 ? "异常" : "正常");
             for (EmergencyMaterialsInvoicesItemDTO item : items) {
+                String storageLocation = "";
+                if (ObjectUtil.isNotEmpty(item.getStorageLocationCode())){
+                    storageLocation= iSysBaseAPI.getPosition(item.getStorageLocationCode());
+                }
                 List<EmergencyMaterialsInvoicesItemDTO> materialInspectionList = emergencyMaterialsMapper.getMaterialInspectionList(item.getMaterialsCode(), invoice.getId(), false);
                 Map<String, String> lm = new HashMap<String, String>();
                 lm.put("serialNumber", String.valueOf(a));
@@ -1054,11 +1075,37 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                     List<EmergencyMaterialsInvoicesItemDTO> sons = materialInspectionList.stream().filter(m -> m.getPid().equals(dto.getId())).collect(Collectors.toList());
                     if (CollUtil.isNotEmpty(sons)) {
                         for (EmergencyMaterialsInvoicesItemDTO son : sons) {
-                            lm.put(String.valueOf(t), son.getCheckResult() == 1 ? "√" : "×");
+                            String checkValue =son.getCheckResult() == 1 ? "√" : "×";
+                            Integer inputType = son.getInputType();
+                            if (Objects.nonNull(inputType) && 1!=inputType){
+                                // 巡检的结果
+                                String dictCode = son.getDictCode();
+                                if (StringUtils.isNotBlank(dictCode)) {
+                                    if (Objects.nonNull(son.getOptionValue())) {
+                                        checkValue = checkValue+iSysBaseAPI.translateDict(dictCode, String.valueOf(son.getOptionValue()));
+                                    }
+                                }else {
+                                    checkValue=checkValue+son.getWriteValue();
+                                }
+                            }
+                            lm.put(String.valueOf(t),checkValue);
                             t++;
                         }
                     } else {
-                        lm.put(String.valueOf(t), dto.getCheckResult() == 1 ? "√" : "×");
+                        String checkValue =dto.getCheckResult() == 1 ? "√" : "×";
+                        Integer inputType = dto.getInputType();
+                        if (Objects.nonNull(inputType) && 1!=inputType){
+                            // 巡检的结果
+                            String dictCode = dto.getDictCode();
+                            if (StringUtils.isNotBlank(dictCode)) {
+                                if (Objects.nonNull(dto.getOptionValue())) {
+                                    checkValue = checkValue+iSysBaseAPI.translateDict(dictCode, String.valueOf(dto.getOptionValue()));
+                                }
+                            }else {
+                                checkValue=checkValue+dto.getWriteValue();
+                            }
+                        }
+                        lm.put(String.valueOf(t),checkValue);
                         t++;
                     }
                 }
