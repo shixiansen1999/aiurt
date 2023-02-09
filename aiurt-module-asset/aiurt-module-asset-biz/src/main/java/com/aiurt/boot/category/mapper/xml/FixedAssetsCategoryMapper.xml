@@ -23,7 +23,8 @@
         order by create_time desc
     </select>
     <select id="getList" resultType="com.aiurt.boot.category.dto.FixedAssetsCategoryDTO">
-        select id, pid, category_name, category_code, remark, create_time, level
+        select id, pid, category_name, category_code, remark, create_time, level,category_code AS `key`,
+	category_name AS title
         from fixed_assets_category
                 where del_flag = 0
         <if test="condition.categoryCode != null and condition.categoryCode != ''">
