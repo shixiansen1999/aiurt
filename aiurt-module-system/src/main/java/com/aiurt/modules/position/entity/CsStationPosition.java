@@ -150,4 +150,10 @@ public class CsStationPosition implements Serializable {
     private String length;
     @TableField(exist = false)
     String text;
+
+    @TableField(exist = false)
+    private String title;
+
+    @TableField(exist = false)
+    private String value;
 }

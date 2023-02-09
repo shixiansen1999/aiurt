@@ -5,17 +5,12 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
-import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.material.dto.MaterialBaseTypeDTO;
-import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.entity.MaterialBaseType;
-import com.aiurt.modules.material.mapper.MaterialBaseMapper;
 import com.aiurt.modules.material.mapper.MaterialBaseTypeMapper;
-import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
-import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -23,7 +18,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
@@ -38,7 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -241,6 +234,8 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
         List<MaterialBaseType> childList = materialBaseTypeList.stream().filter(materialBaseType -> pid.equals(materialBaseType.getPid())).collect(Collectors.toList());
         if(childList != null && childList.size()>0){
             for (MaterialBaseType materialBaseType : childList) {
+                materialBaseType.setTitle(materialBaseType.getBaseTypeName());
+                materialBaseType.setValue(materialBaseType.getBaseTypeCode());
                 if(!CommonConstant.SYSTEM_SPLIT_PID.equals(pid)){
                     MaterialBaseType materialBaseTypeFather = materialBaseTypeList.stream().filter(m -> pid.equals(m.getId())).collect(Collectors.toList())==null?new MaterialBaseType():materialBaseTypeList.stream().filter(m -> pid.equals(m.getId())).collect(Collectors.toList()).get(0);
                     if(CommonConstant.MATERIAL_BASE_TYPE_STATUS_0.toString().equals(materialBaseTypeFather.getPStatus()) || CommonConstant.MATERIAL_BASE_TYPE_STATUS_0.toString().equals(materialBaseTypeFather.getStatus())){

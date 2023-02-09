@@ -86,6 +86,8 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
     private static List<EmergencyMaterialsCategory> addChildren(List<EmergencyMaterialsCategory> list, Map<String, EmergencyMaterialsCategory> map) {
         List<EmergencyMaterialsCategory> rootNodes = new ArrayList<>();
         for (EmergencyMaterialsCategory treeNode : list) {
+            treeNode.setTitle(treeNode.getCategoryName());
+            treeNode.setValue(treeNode.getCategoryCode());
             EmergencyMaterialsCategory parentHave = map.get(treeNode.getPid());
             if (ObjectUtil.isEmpty(parentHave)) {
                 rootNodes.add(treeNode);

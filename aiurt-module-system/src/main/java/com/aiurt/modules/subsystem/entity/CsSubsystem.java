@@ -53,6 +53,8 @@ public class CsSubsystem implements Serializable {
     private String label;
     @TableField(exist = false)
     private String value;
+    @TableField(exist = false)
+    private  String  title;
 	/**编号*/
 	@Excel(name = "编号", width = 15)
     @ApiModelProperty(value = "编号")
