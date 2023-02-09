@@ -86,7 +86,7 @@ public class oConvertUtils {
 	}
 
 	public static int getInt(String s, int defval) {
-		if (s == null || s == "") {
+		if (s == null || s.equals("")) {
 			return (defval);
 		}
 		try {
@@ -97,7 +97,7 @@ public class oConvertUtils {
 	}
 
 	public static int getInt(String s) {
-		if (s == null || s == "") {
+		if (s == null || s.equals("")) {
 			return 0;
 		}
 		try {
@@ -108,7 +108,7 @@ public class oConvertUtils {
 	}
 
 	public static int getInt(String s, Integer df) {
-		if (s == null || s == "") {
+		if (s == null || s.equals("")) {
 			return df;
 		}
 		try {
@@ -120,9 +120,6 @@ public class oConvertUtils {
 
 	public static Integer[] getInts(String[] s) {
 		Integer[] integer = new Integer[s.length];
-		if (s == null) {
-			return null;
-		}
 		for (int i = 0; i < s.length; i++) {
 			integer[i] = Integer.parseInt(s[i]);
 		}
@@ -131,7 +128,7 @@ public class oConvertUtils {
 	}
 
 	public static double getDouble(String s, double defval) {
-		if (s == null || s == "") {
+		if (s == null || s.equals("")) {
 			return (defval);
 		}
 		try {
@@ -204,7 +201,7 @@ public class oConvertUtils {
 
 	/**
 	 * 转义成Unicode编码
-	 * @param s
+	 * @param object
 	 * @return
 	 */
 	/*public static String escapeJava(Object s) {
@@ -380,7 +377,7 @@ public class oConvertUtils {
 	/**
 	 * SET转换MAP
 	 *
-	 * @param str
+	 * @param setobj
 	 * @return
 	 */
 	public static Map<Object, Object> setToMap(Set<Object> setobj) {
@@ -472,7 +469,7 @@ public class oConvertUtils {
 	 * 如果转换前的下划线大写方式命名的字符串为空，则返回空字符串。</br>
 	 * 例如：hello_world,test_id->helloWorld,testId
 	 *
-	 * @param name
+	 * @param names
 	 *            转换前的下划线大写方式命名的字符串
 	 * @return 转换后的驼峰式命名的字符串
 	 */

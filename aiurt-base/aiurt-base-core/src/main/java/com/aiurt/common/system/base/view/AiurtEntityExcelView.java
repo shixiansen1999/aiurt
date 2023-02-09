@@ -238,5 +238,6 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
         ServletOutputStream out = response.getOutputStream();
         workbook.write(out);
         out.flush();
+        workbook.close();
     }
 }

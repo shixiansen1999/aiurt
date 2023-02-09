@@ -1,23 +1,20 @@
 package com.aiurt.config.sign.interceptor;
 
 
-import java.io.PrintWriter;
-import java.util.SortedMap;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.jeecg.common.api.vo.Result;
-import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.DateUtils;
 import com.aiurt.config.sign.util.BodyReaderHttpServletRequestWrapper;
 import com.aiurt.config.sign.util.HttpUtils;
 import com.aiurt.config.sign.util.SignUtil;
+import com.alibaba.fastjson.JSON;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.alibaba.fastjson.JSON;
-
-import lombok.extern.slf4j.Slf4j;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
+import java.util.SortedMap;
 
 /**
  * 签名拦截器
@@ -28,7 +25,7 @@ public class SignAuthInterceptor implements HandlerInterceptor {
     /**
      * 5分钟有效期
      */
-    private final static long MAX_EXPIRE = 5 * 60;
+    private final static long MAX_EXPIRE = 5 * 60L;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
