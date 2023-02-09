@@ -1,6 +1,7 @@
 package com.aiurt.modules.sysfile.controller;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.sysfile.constant.PatrolConstant;
 import com.aiurt.modules.sysfile.entity.SysFile;
@@ -514,16 +515,53 @@ public class SysFileController {
 	                                              @RequestParam(value = "typeId",required = false) Long typeId) {
 		List<TypeNameVO> voList = new ArrayList<>();
 
-		List<SysFile> files = this.sysFileService.query()
-				.select(" distinct ".concat(SysFile.TYPE))
-				.eq(SysFile.DEL_FLAG, CommonConstant.DEL_FLAG_0)
-				.eq(typeId != null,SysFile.TYPE_ID, typeId)
-				.list();
+		List<Long> longList = new ArrayList<>();
+		if (typeId!=null){
+		LambdaQueryWrapper<SysFileType> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+		lambdaQueryWrapper1.eq(SysFileType::getDelFlag,CommonConstant.DEL_FLAG_0);
+		lambdaQueryWrapper1.eq(SysFileType::getId,typeId);
+		SysFileType one = sysFileTypeService.getOne(lambdaQueryWrapper1);
+		List<Long> list = new ArrayList<>();
+
+		if (ObjectUtil.isNotEmpty(one)){
+			List<Long> longs = Arrays.asList(one.getId());
+			longList = typeList(longs, list);
+			longList.addAll(longs);
+		}
+		}
+
+		LambdaQueryWrapper<SysFile> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+		lambdaQueryWrapper.eq(SysFile::getDelFlag,CommonConstant.DEL_FLAG_0);
+		if (CollectionUtil.isNotEmpty(longList)){
+			lambdaQueryWrapper.in(SysFile::getTypeId,longList);
+		}
+		lambdaQueryWrapper.groupBy(SysFile::getType);
+		List<SysFile> files = sysFileService.list(lambdaQueryWrapper);
+
 		if (CollectionUtils.isNotEmpty(files)) {
 			for (SysFile file : files) {
 				voList.add(new TypeNameVO().setName(file.getType()));
 			}
 		}
 		return Result.ok(voList);
+	}
+
+	/**
+	 * 递归查询当前文档的子级的文件格式
+	 * @param id
+	 * @param list
+	 * @return
+	 */
+	public List<Long> typeList(List<Long> id, List<Long> list){
+		LambdaQueryWrapper<SysFileType> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+		lambdaQueryWrapper1.eq(SysFileType::getDelFlag,CommonConstant.DEL_FLAG_0);
+		lambdaQueryWrapper1.in(SysFileType::getParentId,id);
+		List<SysFileType> list1 = sysFileTypeService.list(lambdaQueryWrapper1);
+		if (CollectionUtil.isNotEmpty(list1)){
+			List<Long> collect = list1.stream().map(SysFileType::getId).collect(Collectors.toList());
+			list.addAll(collect);
+			typeList(collect,list);
+		}
+		return list ;
 	}
 }
