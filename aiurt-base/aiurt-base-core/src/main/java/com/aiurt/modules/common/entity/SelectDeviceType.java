@@ -31,7 +31,7 @@ public class SelectDeviceType {
 
     private String title;
     @JsonProperty(value = "isLeaf")
-    private boolean Leaf;
+    private boolean leaf;
 
     private boolean selectable;
 }

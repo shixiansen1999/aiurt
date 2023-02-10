@@ -1561,7 +1561,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             if (CollectionUtil.isNotEmpty(deviceTypes)){
                 deviceTypes.forEach(d->{
                     String str = sysUserRoleMapper.getMajorId(d.getMajorCode());
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),str,d.getId(),d.getName(),d.getIsEnd()==1?true:false,true);
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),str,d.getCode(),d.getName(),d.getIsEnd()==1?true:false,true);
                     selectDeviceTypes.add(selectDeviceType);
                 });
             }
@@ -1574,14 +1574,18 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 });
             }
             //无限层级分类
-            List<DeviceType> deviceTypes2 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getPid,value).list();
-            if (CollectionUtil.isNotEmpty(deviceTypes2)){
-                deviceTypes2.forEach(d->{
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),d.getPid(),d.getCode(),d.getName(),d.getIsEnd()==1?true:false,true);
-                    selectDeviceTypes.add(selectDeviceType);
-                });
+            DeviceType deviceType = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getCode,value).one();
+            if (ObjectUtil.isNotEmpty(deviceType)){
+                List<DeviceType> deviceTypes2 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getPid,deviceType.getId()).list();
+                if (CollectionUtil.isNotEmpty(deviceTypes2)){
+                    deviceTypes2.forEach(d->{
+                        SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),d.getPid(),d.getCode(),d.getName(),d.getIsEnd()==1?true:false,true);
+                        selectDeviceTypes.add(selectDeviceType);
+                    });
+                }
             }
         }
+
         return selectDeviceTypes;
     }
     public List<DeviceTypeTable> getDeviceTypeTree(List<DeviceTypeTable> list, String pid) {
