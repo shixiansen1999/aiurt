@@ -175,9 +175,12 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
 //        }
 
         // 查询记录数据
+        List<EmergencyMaterialsInvoices> list1 = new ArrayList<>();
         Page<EmergencyMaterialsInvoices> page = new Page<>(recordReqDTO.getPageNo(), recordReqDTO.getPageSize());
-        List<EmergencyMaterialsInvoices> recordList = invoicesService.queryList(page, recordReqDTO);
-        if (CollUtil.isEmpty(recordList)) {
+        if(StrUtil.isNotBlank(standardCode)){
+            list1 = invoicesService.queryList(page, recordReqDTO);
+        }
+        if (CollUtil.isEmpty(list1)) {
             return dynamicTableEntity;
         }
 
@@ -186,7 +189,7 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
         dynamicTableEntity.setTotal(page.getTotal());
         // 只需要构建一次title即可,list集合最大组装title
         LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> queryWrapper = new LambdaQueryWrapper<>();
-        Set<String> idSet = recordList.stream().map(EmergencyMaterialsInvoices::getId).collect(Collectors.toSet());
+        Set<String> idSet = list1.stream().map(EmergencyMaterialsInvoices::getId).collect(Collectors.toSet());
         // 查询检修记录结果数据
         queryWrapper.in(EmergencyMaterialsInvoicesItem::getInvoicesId, idSet)
                 .eq(EmergencyMaterialsInvoicesItem::getMaterialsCode, materialsCode)
@@ -240,7 +243,7 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
 
 
         List<DynamicTableDataEntity> records = new ArrayList<>();
-        recordList.stream().forEach(record->{
+        list1.stream().forEach(record->{
             String recordId = record.getId();
             LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> wrapper = new LambdaQueryWrapper<>();
 

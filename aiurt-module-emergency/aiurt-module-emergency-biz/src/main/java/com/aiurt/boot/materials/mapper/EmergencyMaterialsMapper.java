@@ -33,7 +33,9 @@ public interface EmergencyMaterialsMapper extends BaseMapper<EmergencyMaterials>
                                             @Param("categoryCode") String categoryCode,
                                             @Param("lineCode") String lineCode,
                                             @Param("stationCode") String stationCode,
-                                            @Param("positionCode") String positionCode);
+                                            @Param("positionCode") String positionCode,
+                                            @Param("startTime") String startTime,
+                                            @Param("endTime") String endTime);
 
    List<EmergencyMaterialsInvoicesItem> getMaterialInspection(@Param("pageList") Page<EmergencyMaterialsInvoicesItem> pageList,@Param("id") String id,@Param("pid") String pid);
 

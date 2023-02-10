@@ -355,13 +355,15 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                                              String categoryCode,
                                              String lineCode,
                                              String stationCode,
-                                             String positionCode) {
+                                             String positionCode,
+                                             String startTime,
+                                             String endTime) {
         MaterialPatrolDTO materialPatrolDTO = new MaterialPatrolDTO();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         materialPatrolDTO.setPatrolName(sysUser.getRealname());
 
         //根据条件查询巡检表
-        List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getStandingBook(materialsCode, categoryCode, lineCode, stationCode, positionCode);
+        List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getStandingBook(materialsCode, categoryCode, lineCode, stationCode, positionCode,startTime,endTime);
         if (CollectionUtil.isNotEmpty(patrolStandardList)) {
             List<String> collect = patrolStandardList.stream().map(PatrolStandardDTO::getStandardCode).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(collect)) {

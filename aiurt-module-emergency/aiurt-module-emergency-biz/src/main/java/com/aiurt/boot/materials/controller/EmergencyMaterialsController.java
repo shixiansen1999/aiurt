@@ -132,8 +132,10 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 									 @RequestParam(name = "categoryCode",required=true) String categoryCode,
 			                         @RequestParam(name = "lineCode",required=false) String  lineCode,
 									 @RequestParam(name = "stationCode",required=false) String  stationCode,
-									 @RequestParam(name = "positionCode",required=false) String  positionCode){
-		MaterialPatrolDTO materialPatrol = emergencyMaterialsService.getStandingBook(materialsCode,categoryCode,lineCode,stationCode,positionCode);
+									 @RequestParam(name = "positionCode",required=false) String  positionCode,
+	                                 @RequestParam(name = "startTime",required=false) String  startTime,
+									 @RequestParam(name = "endTime",required=false) String  endTime){
+		MaterialPatrolDTO materialPatrol = emergencyMaterialsService.getStandingBook(materialsCode,categoryCode,lineCode,stationCode,positionCode,startTime,endTime);
 		return Result.OK(materialPatrol);
 	}
 

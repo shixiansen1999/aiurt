@@ -55,7 +55,9 @@ public interface IEmergencyMaterialsService extends IService<EmergencyMaterials>
                                       String categoryCode,
                                       String lineCode,
                                       String stationCode,
-                                      String positionCode);
+                                      String positionCode,
+                                      String startTime,
+                                      String endTime);
 
 
     /**

@@ -105,6 +105,12 @@
             <if test="materialsCode != null">
                 AND t2.materials_code =#{materialsCode}
             </if>
+            <if test="startTime != null">
+                and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+            </if>
+            <if test="endTime != null">
+                and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+            </if>
         </where>
             GROUP BY t1.standard_code
             order by t1.create_time desc,t1.update_time desc
