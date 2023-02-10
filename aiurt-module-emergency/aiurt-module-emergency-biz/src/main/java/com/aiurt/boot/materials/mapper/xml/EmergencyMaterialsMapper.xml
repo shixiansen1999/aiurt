@@ -93,17 +93,11 @@
         <where>
             	t1.del_flag = 0
             	AND t2.del_flag = 0
-            <if test="lineCode != null">
-                AND t1.line_code =#{lineCode}
-            </if>
-            <if test="stationCode != null">
-                AND t1.station_code =#{stationCode}
-            </if>
             <if test="categoryCode != null">
                 AND t2.category_code =#{categoryCode}
             </if>
-            <if test="materialsCode != null">
-                AND t2.materials_code =#{materialsCode}
+            <if test="materialsId != null">
+                AND t2.materials_Id=#{materialsId}
             </if>
             <if test="startTime != null">
                 and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime}, '%Y-%m-%d')

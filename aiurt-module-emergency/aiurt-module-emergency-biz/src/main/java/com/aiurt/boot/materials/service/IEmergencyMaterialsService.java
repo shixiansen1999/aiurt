@@ -53,9 +53,6 @@ public interface IEmergencyMaterialsService extends IService<EmergencyMaterials>
      */
     MaterialPatrolDTO getStandingBook(String materialsCode,
                                       String categoryCode,
-                                      String lineCode,
-                                      String stationCode,
-                                      String positionCode,
                                       String startTime,
                                       String endTime);
 

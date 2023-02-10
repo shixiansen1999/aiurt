@@ -351,11 +351,8 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     }
 
     @Override
-    public MaterialPatrolDTO getStandingBook(String materialsCode,
+    public MaterialPatrolDTO getStandingBook(String materialsId,
                                              String categoryCode,
-                                             String lineCode,
-                                             String stationCode,
-                                             String positionCode,
                                              String startTime,
                                              String endTime) {
         MaterialPatrolDTO materialPatrolDTO = new MaterialPatrolDTO();
@@ -363,7 +360,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         materialPatrolDTO.setPatrolName(sysUser.getRealname());
 
         //根据条件查询巡检表
-        List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getStandingBook(materialsCode, categoryCode, lineCode, stationCode, positionCode,startTime,endTime);
+        List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getStandingBook(materialsId, categoryCode,startTime,endTime);
         if (CollectionUtil.isNotEmpty(patrolStandardList)) {
             List<String> collect = patrolStandardList.stream().map(PatrolStandardDTO::getStandardCode).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(collect)) {
