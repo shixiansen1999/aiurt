@@ -423,7 +423,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 									  @RequestParam(name="materialsCode",required=false) String materialsCode){
 		 LambdaQueryWrapper<EmergencyMaterials> queryWrapper = new LambdaQueryWrapper<>();
 		 if (StrUtil.isNotBlank(lineCode)){
-			 queryWrapper.eq(EmergencyMaterials::getStationCode,lineCode);
+			 queryWrapper.eq(EmergencyMaterials::getLineCode,lineCode);
 		 }
 		 if (StrUtil.isNotBlank(stationCode)){
 			 queryWrapper.eq(EmergencyMaterials::getStationCode,stationCode);
