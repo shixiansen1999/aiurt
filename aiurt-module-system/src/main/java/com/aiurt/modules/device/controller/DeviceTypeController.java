@@ -211,7 +211,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 				major.setPIsHaveSystem(0);
 			}
 			major.setChildren(twoList);
-			major.setTitle(major.getMajorName());
+			major.setTitle(major.getName());
 			major.setValue(major.getMajorCode());
 			newList.add(major);
 		});
