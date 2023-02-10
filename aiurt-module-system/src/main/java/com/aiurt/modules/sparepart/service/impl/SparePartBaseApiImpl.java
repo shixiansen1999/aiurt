@@ -116,7 +116,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 }
                 String deviceCode = deviceChange.getDeviceCode();
                 LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
-                queryWrapper.eq(Device::getCode, deviceCode).last("limit 1");
+                queryWrapper.eq(Device::getCode, deviceCode).eq(Device::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
                 Device device = deviceService.getBaseMapper().selectOne(queryWrapper);
                 if (Objects.isNull(device)) {
                     return;
@@ -125,7 +125,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 String oldSparePartCode = deviceChange.getOldSparePartCode();
                 String newSparePartCode = deviceChange.getNewSparePartCode();
                 LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(MaterialBase::getCode, newSparePartCode).last("limit 1");
+                wrapper.eq(MaterialBase::getCode, newSparePartCode).eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
                 MaterialBase materialBase = materialBaseService.getBaseMapper().selectOne(wrapper);
                 if (Objects.isNull(materialBase)) {
                     return;
@@ -148,7 +148,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                    deviceAssembly.setManufactorCode(materialBase.getManufactorCode());
                    deviceAssembly.setDeviceCode(deviceCode);
                    deviceAssembly.setMaterialName(materialBase.getName());
-                   deviceAssembly.setMaterialCode(key);
+                   deviceAssembly.setMaterialCode(materialBase.getCode());
                    deviceAssembly.setSpecifications(materialBase.getSpecifications());
                    deviceAssembly.setDelFlag(0);
                    deviceAssembly.setStartDate(new Date());
