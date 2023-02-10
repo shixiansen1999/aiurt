@@ -215,7 +215,7 @@ public class MinioUtil {
                 .contentType("application/octet-stream")
                 .stream(stream,stream.available(),-1).build();
         minioClient.putObject(objectArgs);
-        stream.close();
+        //stream.close();
         return minioUrl+bucketName+"/"+relativePath;
     }
 

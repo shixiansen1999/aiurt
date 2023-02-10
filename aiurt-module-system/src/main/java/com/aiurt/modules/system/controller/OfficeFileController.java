@@ -152,12 +152,12 @@ public class OfficeFileController {
             if (Objects.nonNull(connection)) {
                 connection.disconnect();
             }
-            if (Objects.nonNull(conn)) {
+            /*if (Objects.nonNull(conn)) {
                 conn.disconnect();
-            }
-            if (Objects.nonNull(stream)) {
+            }*/
+           /* if (Objects.nonNull(stream)) {
                 stream.close();
-            }
+            }*/
         } else if(jsonObj.getIntValue(STATUS) == 3|| jsonObj.getIntValue(STATUS) == 7) {
             writer.write("{\"error\":-1}");
             // 正在编辑
