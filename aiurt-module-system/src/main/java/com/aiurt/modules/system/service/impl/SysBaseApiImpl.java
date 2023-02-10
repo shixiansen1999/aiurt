@@ -1533,59 +1533,58 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<SelectDeviceType> selectDeviceTypeList(String value) {
         List<SelectDeviceType> selectDeviceTypes = new ArrayList<>();
-        if (StrUtil.isEmpty(value)){
+        if (StrUtil.isEmpty(value)) {
             // 一级专业显示
-            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).list();
+            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).list();
             List<String> collect = deviceTypes.stream().map(DeviceType::getMajorCode).distinct().collect(Collectors.toList());
-            List<CsMajor> majors = majorService.lambdaQuery().eq(CsMajor::getDelFlag,CommonConstant.DEL_FLAG_0)
-                                                             .in(CsMajor::getMajorCode,collect).list();
-            majors.forEach(m->{
-                SelectDeviceType selectDeviceType = new SelectDeviceType(m.getId(),"0",m.getMajorCode(),m.getMajorName(),false,false);
+            List<CsMajor> majors = majorService.lambdaQuery().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0).list();
+            majors.forEach(m -> {
+                List<String> list = collect.stream().filter(c -> c.equals(m.getMajorCode())).collect(Collectors.toList());
+                SelectDeviceType selectDeviceType = new SelectDeviceType(m.getId(), "0", m.getMajorCode(), m.getMajorName(), CollectionUtil.isEmpty(list), false);
                 selectDeviceTypes.add(selectDeviceType);
             });
-        }else {
+        } else {
             // 作为二级子系统显示
-            List<CsSubsystem> csSubsystems = csSubsystemService.lambdaQuery().eq(CsSubsystem::getDelFlag,CommonConstant.DEL_FLAG_0).eq(CsSubsystem::getMajorCode,value).list();
-            if (CollectionUtil.isNotEmpty(csSubsystems)){
-                csSubsystems.forEach(s->{
-                    List<DeviceType> deviceTypeList = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0)
-                            .eq(DeviceType::getMajorCode,s.getMajorCode()).eq(DeviceType::getSystemCode,s.getSystemCode()).list();
+            List<CsSubsystem> csSubsystems = csSubsystemService.lambdaQuery().eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).eq(CsSubsystem::getMajorCode, value).list();
+            if (CollectionUtil.isNotEmpty(csSubsystems)) {
+                csSubsystems.forEach(s -> {
+                    List<DeviceType> deviceTypeList = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                            .eq(DeviceType::getMajorCode, s.getMajorCode()).eq(DeviceType::getSystemCode, s.getSystemCode()).list();
                     String str = sysUserRoleMapper.getMajorId(s.getMajorCode());
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(s.getId(),str,s.getSystemCode(),s.getSystemName(),CollectionUtil.isEmpty(deviceTypeList),false);
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(s.getId(), str, s.getSystemCode(), s.getSystemName(), CollectionUtil.isEmpty(deviceTypeList), false);
                     selectDeviceTypes.add(selectDeviceType);
                 });
             }
             // 二级分类显示
-            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0)
-                    .eq(DeviceType::getMajorCode,value).isNull(DeviceType::getSystemCode).list();
-            if (CollectionUtil.isNotEmpty(deviceTypes)){
-                deviceTypes.forEach(d->{
+            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .eq(DeviceType::getMajorCode, value).isNull(DeviceType::getSystemCode).list();
+            if (CollectionUtil.isNotEmpty(deviceTypes)) {
+                deviceTypes.forEach(d -> {
                     String str = sysUserRoleMapper.getMajorId(d.getMajorCode());
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),str,d.getCode(),d.getName(),d.getIsEnd()==1?true:false,true);
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(), str, d.getCode(), d.getName(), d.getIsEnd() == 1 ? true : false, true);
                     selectDeviceTypes.add(selectDeviceType);
                 });
             }
             //在子系统下的三级分类
-            List<DeviceType> deviceTypes1 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getSystemCode,value).list();
-            if (CollectionUtil.isNotEmpty(deviceTypes1)){
-                deviceTypes1.forEach(d->{
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),sysUserRoleMapper.getSubsystemId(d.getMajorCode(),d.getSystemCode()),d.getCode(),d.getName(),d.getIsEnd()==1?true:false,true);
+            List<DeviceType> deviceTypes1 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).eq(DeviceType::getSystemCode, value).list();
+            if (CollectionUtil.isNotEmpty(deviceTypes1)) {
+                deviceTypes1.forEach(d -> {
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(), sysUserRoleMapper.getSubsystemId(d.getMajorCode(), d.getSystemCode()), d.getCode(), d.getName(), d.getIsEnd() == 1 ? true : false, true);
                     selectDeviceTypes.add(selectDeviceType);
                 });
             }
             //无限层级分类
-            DeviceType deviceType = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getCode,value).one();
-            if (ObjectUtil.isNotEmpty(deviceType)){
-                List<DeviceType> deviceTypes2 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getPid,deviceType.getId()).list();
-                if (CollectionUtil.isNotEmpty(deviceTypes2)){
-                    deviceTypes2.forEach(d->{
-                        SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),d.getPid(),d.getCode(),d.getName(),d.getIsEnd()==1?true:false,true);
+            DeviceType deviceType = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).eq(DeviceType::getCode, value).one();
+            if (ObjectUtil.isNotEmpty(deviceType)) {
+                List<DeviceType> deviceTypes2 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).eq(DeviceType::getPid, deviceType.getId()).list();
+                if (CollectionUtil.isNotEmpty(deviceTypes2)) {
+                    deviceTypes2.forEach(d -> {
+                        SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(), d.getPid(), d.getCode(), d.getName(), d.getIsEnd() == 1 ? true : false, true);
                         selectDeviceTypes.add(selectDeviceType);
                     });
                 }
             }
         }
-
         return selectDeviceTypes;
     }
     public List<DeviceTypeTable> getDeviceTypeTree(List<DeviceTypeTable> list, String pid) {
