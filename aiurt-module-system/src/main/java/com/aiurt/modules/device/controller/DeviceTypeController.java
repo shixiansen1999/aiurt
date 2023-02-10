@@ -201,6 +201,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 					List<DeviceType> collect = sysDeviceType.stream().distinct().collect(Collectors.toList());
 					system.setChildren(collect);
 				}
+				system.setTitle(system.getName());
+				system.setValue(system.getCode());
 				twoList.add(system);
 			});
 			if(!sysList.isEmpty()){
@@ -209,6 +211,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 				major.setPIsHaveSystem(0);
 			}
 			major.setChildren(twoList);
+			major.setTitle(major.getMajorName());
+			major.setValue(major.getMajorCode());
 			newList.add(major);
 		});
 		return Result.OK(newList);
