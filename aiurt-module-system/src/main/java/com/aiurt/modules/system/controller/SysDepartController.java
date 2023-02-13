@@ -126,7 +126,7 @@ public class SysDepartController {
 					if (next.getDepartName().contains(name)) {
 						next.setColor("#FF5B05");
 					}
-					if (!next.getMatching() && StrUtil.isEmpty(next.getColor())) {
+					if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
 						iterator.remove();
 					}
 				}
