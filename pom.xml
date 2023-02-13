@@ -77,7 +77,8 @@
         <module>aiurt-module-emergency</module>
         <module>aiurt-module-asset</module>
 		<module>aiurt-module-es</module>
-	</modules>
+        <module>easy-es</module>
+    </modules>
 
 	<distributionManagement>
 	  	<repository>

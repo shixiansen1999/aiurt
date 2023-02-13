@@ -165,7 +165,7 @@ public class ElasticsearchClientUtil {
     public void createBulkDocument(String index, List<?> data) {
         BulkRequest request = new BulkRequest();
         for (Object obj : data) {
-            request.add(new IndexRequest(index).source(JSON.toJSONString(obj)));
+            request.add(new IndexRequest(index).source(JSON.toJSONString(obj), XContentType.JSON));
         }
         try {
             BulkResponse response = client.bulk(request, RequestOptions.DEFAULT);

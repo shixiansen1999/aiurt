@@ -140,10 +140,11 @@ spring:
         connectionProperties: druid.stat.mergeSql\=true;druid.stat.slowSqlMillis\=5000
       datasource:
         master:
+
 #          url: jdbc:mysql://8.134.200.31:3306/aiurt-platform?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
 #          username: root
 #          password: Tomcat6626#
-          url: jdbc:mysql://192.168.1.29:3306/aiurt-platform-test?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+          url: jdbc:mysql://192.168.1.29:3306/aiurt-platform?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
           username: root
           password: 1qaz@2wsx
           driver-class-name: com.mysql.cj.jdbc.Driver
@@ -167,9 +168,9 @@ spring:
     password: 1qaz@2wsx
     port: 6379
   elasticsearch:
-    uris: http://localhost:9200
-    connection-timeout: 3s
-    socket-timeout: 5s
+    uris: http://127.0.0.1:9200
+    connection-timeout: 3000
+    socket-timeout: 5000
 #mybatis plus 设置
 mybatis-plus:
   mapper-locations: classpath*:org/jeecg/modules/**/xml/*Mapper.xml,classpath*:com/aiurt/**/xml/*Mapper.xml,classpath:/META-INF/modeler-mybatis-mappings/*.xml
@@ -282,6 +283,11 @@ jeecg:
     password: 1qaz@2wsx
     type: STANDALONE
     enabled: true
+
+#easy-es:
+#  enable: true # 是否开启EE自动配置
+#  address : 127.0.0.1:9200 # es连接地址+端口 格式必须为ip:port,如果是集群则可用逗号隔开
+#  schema: http # 默认为http
 #cas单点登录
 cas:
   prefixUrl: http://cas.example.org:8443/cas
