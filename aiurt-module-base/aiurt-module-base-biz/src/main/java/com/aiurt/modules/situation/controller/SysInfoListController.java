@@ -85,6 +85,9 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
         }
         QueryWrapper<SysAnnouncement> queryWrapper = new QueryWrapper<>();
         Page<SysAnnouncement> page = new Page<SysAnnouncement>(pageNo, pageSize);
+        if (StrUtil.isNotEmpty(sysAnnouncement.getLevel())) {
+            queryWrapper.lambda().eq(SysAnnouncement::getLevel, sysAnnouncement.getLevel());
+        }
         if (StrUtil.isNotEmpty(sTime)) {
             queryWrapper.lambda().ge(SysAnnouncement::getSendTime, sTime);
         }
