@@ -1,5 +1,8 @@
 package com.aiurt.modules.system.controller;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonSendStatus;
 import com.aiurt.common.constant.WebsocketConst;
@@ -94,6 +97,7 @@ public class SysAnnouncementController {
      * @param req
      * @return
      */
+    @ApiOperation(value = "系统通告")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public Result<IPage<SysAnnouncement>> queryPageList(SysAnnouncement sysAnnouncement,
                                                         @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -101,8 +105,23 @@ public class SysAnnouncementController {
                                                         HttpServletRequest req) {
         Result<IPage<SysAnnouncement>> result = new Result<IPage<SysAnnouncement>>();
         sysAnnouncement.setDelFlag(CommonConstant.DEL_FLAG_0.toString());
+        String sTime = null;
+        String eTime = null;
+        if (StrUtil.isNotBlank(sysAnnouncement.getSTime()) || StrUtil.isNotBlank(sysAnnouncement.getETime())) {
+            sTime = sysAnnouncement.getSTime();
+            eTime = sysAnnouncement.getETime();
+            eTime = eTime + " 23:59:59";
+            sysAnnouncement.setSTime(null);
+            sysAnnouncement.setETime(null);
+        }
         QueryWrapper<SysAnnouncement> queryWrapper = QueryGenerator.initQueryWrapper(sysAnnouncement, req.getParameterMap());
         Page<SysAnnouncement> page = new Page<SysAnnouncement>(pageNo, pageSize);
+        if (StrUtil.isNotEmpty(sTime)) {
+            queryWrapper.lambda().ge(SysAnnouncement::getSendTime, sTime);
+        }
+        if (StrUtil.isNotEmpty(eTime)) {
+            queryWrapper.lambda().le(SysAnnouncement::getSendTime, eTime);
+        }
 
         //排序逻辑 处理
         IPage<SysAnnouncement> pageList = sysAnnouncementService.page(page, queryWrapper);
