@@ -97,7 +97,9 @@ public class SysDepartTreeModel implements Serializable{
 
     private List<SysDepartTreeModel> children = new ArrayList<>();
 
+    private String color;
 
+    private Boolean matching;
     /**
      * 将SysDepart对象转换成SysDepartTreeModel对象
      * @param sysDepart
