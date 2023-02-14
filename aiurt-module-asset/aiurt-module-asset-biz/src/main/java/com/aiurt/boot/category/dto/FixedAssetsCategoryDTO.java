@@ -66,4 +66,9 @@ public class FixedAssetsCategoryDTO {
     private java.lang.String remark;
     private java.util.Date createTime;
     private List<FixedAssetsCategoryDTO> children;
+
+    @TableField(exist = false)
+    private java.lang.String colour;
+
+    private Boolean matching;
 }
