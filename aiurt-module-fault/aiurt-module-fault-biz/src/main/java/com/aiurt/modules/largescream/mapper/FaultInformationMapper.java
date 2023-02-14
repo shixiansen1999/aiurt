@@ -168,7 +168,7 @@ public interface FaultInformationMapper {
      * @param majors
      * @return
      */
-    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level,@Param("startDate") Date startDate, @Param("endDate") Date endDate ,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level,@Param("startDate") Date startDate, @Param("endDate") Date endDate ,@Param("lineCode") String lineCode,@Param("majors") List<String> majors,@Param("lv1hours") Integer lv1hours,@Param("lv2hours") Integer lv2hours,@Param("lv3hours") Integer lv3hours);
 
 
     /**
