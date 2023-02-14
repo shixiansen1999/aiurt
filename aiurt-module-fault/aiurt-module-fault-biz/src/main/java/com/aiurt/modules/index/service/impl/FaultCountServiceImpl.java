@@ -20,6 +20,7 @@ import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -44,6 +45,15 @@ public class FaultCountServiceImpl implements IFaultCountService {
    private IFaultDeviceService faultDeviceService;
     @Resource
     private ISysBaseAPI sysBaseApi;
+
+    @Value("${fault.lv1}")
+    private Integer lv1Hours;
+
+    @Value("${fault.lv2}")
+    private Integer lv2Hours;
+
+    @Value("${fault.lv3}")
+    private Integer lv3Hours;
 
     /**
      * 首页统计故障概况
@@ -113,18 +123,18 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 //计算故障发生时间到当前时间时间差
                 long result=DateUtil.between(fault.getHappenTime(),new Date(), DateUnit.HOUR);
 
-                //三级故障超时(12-24小时)
-                if(result>=12 && result<24 & !FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
+                //三级故障超时(24-48小时)
+                if(result>=lv3Hours && result<lv2Hours & !FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
                     number1++;
                     faultIndexDTO.setLevelThreeNumber(number1);
                 }
-                //二级故障超时(24-48小时)
-                else if(result>=24 && result<48 & !FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
+                //二级故障超时(48-72小时)
+                else if(result>=lv2Hours && result<lv1Hours & !FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
                     number2++;
                     faultIndexDTO.setLevelTwoNumber(number2);
                 }
-                //一级故障超时(大于48小时)
-                else if(result>=48 && !FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
+                //一级故障超时(大于72小时)
+                else if(result>=lv1Hours && !FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
                     number3++;
                     faultIndexDTO.setLevelOneNumber(number3);
                 }
@@ -324,19 +334,19 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 if (faultTimeoutLevelReq.getLevel() == 1) {
                     faultDatum.setTimeoutDuration(time);
                     faultDatum.setAppTimeoutDuration(appTime);
-                    if (hour >= 48 && !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
+                    if (hour >= lv1Hours && !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("一级超时");
                     }
                 } else if (faultTimeoutLevelReq.getLevel() == 2) {
                     faultDatum.setTimeoutDuration(time);
                     faultDatum.setAppTimeoutDuration(appTime);
-                    if (hour >= 24 && hour < 48 & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
+                    if (hour >= lv2Hours && hour < lv1Hours & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("二级超时");
                     }
                 } else if (faultTimeoutLevelReq.getLevel() == 3) {
                     faultDatum.setTimeoutDuration(time);
                     faultDatum.setAppTimeoutDuration(appTime);
-                    if (hour >= 12 && hour < 24 & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
+                    if (hour >= lv3Hours && hour < lv2Hours & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("三级超时");
                     }
                 }

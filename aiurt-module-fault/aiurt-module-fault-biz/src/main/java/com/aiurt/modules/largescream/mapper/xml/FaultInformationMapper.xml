@@ -407,17 +407,17 @@
         <where>
             <if test="level == 1">
                 AND status &lt;&gt; 12
-                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=48
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=72
             </if>
             <if test="level == 2">
                 AND status &lt;&gt; 12
-                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=24
-                and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; 48
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=48
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; 72
             </if>
             <if test="level == 3">
                 AND status &lt;&gt; 12
-                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=12
-                and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; 24
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=24
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; 48
             </if>
             <if test="lineCode != null and lineCode != ''">
                 and line_code  = #{lineCode}
