@@ -104,7 +104,7 @@ public class CommonCtroller {
      */
     @GetMapping("/major/queryMajorByAuth")
     @ApiOperation("查询当前人员所管辖的专业")
-    public Result<List<SelectTable>> queryMajorByAuth() {
+    public Result<List<SelectTable>> queryMajorByAuth( @RequestParam(value ="name",required = false) String name) {
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
@@ -128,7 +128,10 @@ public class CommonCtroller {
             table.setValue(csMajor.getMajorCode());
             return table;
         }).collect(Collectors.toList());
-
+        //树形搜索匹配
+        if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(list)) {
+            sysBaseApi.processingTreeList(name,list);
+        }
         return Result.OK(list);
     }
 
@@ -186,7 +189,7 @@ public class CommonCtroller {
 
         //树形搜索匹配
         if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(list)) {
-            processingTreeList(name,list);
+            sysBaseApi.processingTreeList(name,list);
         }
         return Result.OK(list);
     }
@@ -281,29 +284,10 @@ public class CommonCtroller {
         });
         //树形搜索匹配
         if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(list)) {
-            processingTreeList(name,list);
+            sysBaseApi.processingTreeList(name,list);
         }
 
         return Result.OK(list);
-    }
-
-    public void processingTreeList(String name,List<SelectTable> list) {
-        Iterator<SelectTable> iterator = list.iterator();
-        while (iterator.hasNext()) {
-            SelectTable next = iterator.next();
-            if (next.getLabel().contains(name)) {
-                //名称匹配则赋值颜色
-                next.setColor("#FF5B05");
-            }
-            List<SelectTable> children = next.getChildren();
-            if (CollUtil.isNotEmpty(children)) {
-                processingTreeList(name, children);
-            }
-            //如果没有子级，并且当前不匹配，则去除
-            if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
-                iterator.remove();
-            }
-        }
     }
         /**
          * 根据个人权限获取位置树
@@ -352,7 +336,7 @@ public class CommonCtroller {
 
     @GetMapping("/system/queryMajorAndSystemTree")
     @ApiOperation("查询专业系统树")
-    public Result<List<SelectTable>> queryMajorAndSystemTree() {
+    public Result<List<SelectTable>> queryMajorAndSystemTree( @RequestParam(value ="name",required = false) String name) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
         String userId = loginUser.getId();
@@ -389,6 +373,11 @@ public class CommonCtroller {
             table.setChildren(list);
             return table;
         }).collect(Collectors.toList());
+
+        //树形搜索匹配
+        if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(tableList)) {
+            sysBaseApi.processingTreeList(name,tableList);
+        }
         return Result.OK(tableList);
     }
 

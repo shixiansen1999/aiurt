@@ -74,4 +74,15 @@ public class SelectTable {
         }
         children.add(child);
     }
+
+    private String title;
+
+    private String pid;
+
+    private String systemCode;
+
+    private String majorCode;
+
+    /**是否是知识库类别*/
+    private Boolean isBaseType;
 }

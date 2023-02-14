@@ -19,6 +19,7 @@ import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.common.entity.SelectDeviceType;
+import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceMapper;
@@ -2565,5 +2566,25 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 .list();
         List<String> orgCodes = orgCodeList.stream().map(SysDepart::getOrgCode).collect(Collectors.toList());
         return orgCodes;
+    }
+
+    @Override
+    public void processingTreeList(String name, List<SelectTable> list) {
+        Iterator<SelectTable> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            SelectTable next = iterator.next();
+            if (StrUtil.containsAnyIgnoreCase(next.getLabel(),name)) {
+                //名称匹配则赋值颜色
+                next.setColor("#FF5B05");
+            }
+            List<SelectTable> children = next.getChildren();
+            if (CollUtil.isNotEmpty(children)) {
+                processingTreeList(name, children);
+            }
+            //如果没有子级，并且当前不匹配，则去除
+            if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+                iterator.remove();
+            }
+        }
     }
 }

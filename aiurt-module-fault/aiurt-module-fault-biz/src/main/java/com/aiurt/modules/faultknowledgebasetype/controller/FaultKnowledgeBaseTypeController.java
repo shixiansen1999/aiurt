@@ -1,5 +1,7 @@
 package com.aiurt.modules.faultknowledgebasetype.controller;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -28,6 +30,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
  /**
@@ -228,8 +231,33 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 			 @ApiResponse(code = 200, message = "OK", response = MajorDTO.class)
 	 })
 	 @PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
-	 public Result<List<SelectTableDTO>> knowledgeBaseTypeTreeList(@RequestParam(name="majorCode",required=false)String majorCode,@RequestParam(name="systemCode",required=false)String systemCode) {
+	 public Result<List<SelectTableDTO>> knowledgeBaseTypeTreeList(@RequestParam(name="majorCode",required=false)String majorCode,
+																   @RequestParam(name="systemCode",required=false)String systemCode,
+																   @RequestParam(name = "name", required = false) String name) {
 		 List<SelectTableDTO> list = faultKnowledgeBaseTypeService.knowledgeBaseTypeTreeList(majorCode,systemCode);
+		 //树形搜索匹配
+		 if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(list)) {
+			 processingTreeList(name,list);
+		 }
 		 return Result.OK(list);
+	 }
+
+	 public void processingTreeList(String name, List<SelectTableDTO> list) {
+		 Iterator<SelectTableDTO> iterator = list.iterator();
+		 while (iterator.hasNext()) {
+			 SelectTableDTO next = iterator.next();
+			 if (StrUtil.containsAnyIgnoreCase(next.getLabel(),name)) {
+				 //名称匹配则赋值颜色
+				 next.setColor("#FF5B05");
+			 }
+			 List<SelectTableDTO> children = next.getChildren();
+			 if (CollUtil.isNotEmpty(children)) {
+				 processingTreeList(name, children);
+			 }
+			 //如果没有子级，并且当前不匹配，则去除
+			 if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+				 iterator.remove();
+			 }
+		 }
 	 }
 }

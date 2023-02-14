@@ -1205,7 +1205,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 		Iterator<SysDepartTreeModel> iterator = list.iterator();
 		while (iterator.hasNext()) {
 			SysDepartTreeModel next = iterator.next();
-			if (next.getDepartName().contains(name)) {
+			if (StrUtil.containsAnyIgnoreCase(next.getDepartName(),name)) {
 				//名称匹配则赋值颜色
 				next.setColor("#FF5B05");
 			}

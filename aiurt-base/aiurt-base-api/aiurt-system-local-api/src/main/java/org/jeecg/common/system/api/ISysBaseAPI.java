@@ -6,6 +6,7 @@ import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.common.entity.SelectDeviceType;
+import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
@@ -935,5 +936,15 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<String> getSublevelOrgCodes(String orgCode);
+
+
+    /**
+     * 树形搜索匹配
+     *
+     * @param name
+     * @param list
+     * @return
+     */
+    void processingTreeList(String name, List<SelectTable> list);
 }
 
