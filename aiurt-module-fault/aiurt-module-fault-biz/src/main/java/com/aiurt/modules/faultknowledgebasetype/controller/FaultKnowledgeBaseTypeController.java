@@ -214,8 +214,29 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 			 @ApiResponse(code = 200, message = "OK", response = MajorDTO.class)
 	 })
 	 @PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
-	 public Result<List<MajorDTO>> faultKnowledgeBaseTypeTreeList(@RequestParam(name="majorCode",required=false)String majorCode,@RequestParam(name="systemCode",required=false)String systemCode) {
+	 public Result<List<MajorDTO>> faultKnowledgeBaseTypeTreeList(@RequestParam(name="majorCode",required=false)String majorCode,
+																  @RequestParam(name="systemCode",required=false)String systemCode,
+																  @RequestParam(name = "name", required = false) String name) {
 		 List<MajorDTO> list = faultKnowledgeBaseTypeService.faultKnowledgeBaseTypeTreeList(majorCode,systemCode);
+		 //树形搜索匹配
+		 if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(list)) {
+			 Iterator<MajorDTO> iterator = list.iterator();
+			 while (iterator.hasNext()) {
+				 MajorDTO next = iterator.next();
+				 if (StrUtil.containsAnyIgnoreCase(next.getLabel(),name)) {
+					 //名称匹配则赋值颜色
+					 next.setColor("#FF5B05");
+				 }
+				 List<SelectTableDTO> children = next.getChildren();
+				 if (CollUtil.isNotEmpty(children)) {
+					 processingTreeList(name,children);
+				 }
+				 //如果没有子级，并且当前不匹配，则去除
+				 if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+					 iterator.remove();
+				 }
+			 }
+		 }
 		 return Result.OK(list);
 	 }
 
