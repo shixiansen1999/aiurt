@@ -19,11 +19,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -66,6 +72,9 @@ public class OfficeFileController {
     @Autowired
     private ISysAttachmentService sysAttachmentService;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
 
 
     @RequestMapping(value = "/callback/**", method = {RequestMethod.GET, RequestMethod.POST})
@@ -74,7 +83,7 @@ public class OfficeFileController {
         Scanner scanner = new Scanner(request.getInputStream()).useDelimiter("\\A");
         String body = scanner.hasNext() ? scanner.next() : "";
         log.info("在线文档回调参数->{}", body);
-        JSONObject jsonObj = JSONObject.parseObject(body);
+        JSONObject jsonObj = JSONObject.parseObject("{\"key\":\"1625309941336133634\",\"status\":2,\"url\":\"http://192.168.1.27:90/cache/files/1625309941336133634_3437/output.xlsx/output.xlsx?md5=v45Gn-gnE2HX6SAa4pSslg&expires=1676340293&filename=output.xlsx\",\"changesurl\":\"http://192.168.1.27:90/cache/files/1625309941336133634_3437/changes.zip/changes.zip?md5=fomVmHBsCW4QnHs5X-f9WA&expires=1676340293&filename=changes.zip\",\"history\":{\"serverVersion\":\"6.4.2\",\"changes\":[{\"created\":\"2023-02-14 01:49:42\",\"user\":{\"id\":\"e9ca23d68d884d4ebb19d07889727dae\",\"name\":\"管理员\"}}]},\"users\":[\"e9ca23d68d884d4ebb19d07889727dae\"],\"actions\":[{\"type\":0,\"userid\":\"e9ca23d68d884d4ebb19d07889727dae\"}],\"lastsave\":\"2023-02-14T01:49:42.000Z\",\"notmodified\":false}");
         String fileName = request.getParameter("fileName");
         String key = jsonObj.getString("key");
         log.info("文档编辑key->{}", key);
@@ -109,27 +118,22 @@ public class OfficeFileController {
                 fileName = orgName + "_" + System.currentTimeMillis();
             }
             InputStream stream = null;
-            java.net.HttpURLConnection connection = null;
-            HttpsURLConnection conn = null;
             // 判断是是否为https 请求，不需要证书cert, 否则会报异常unable to find valid certification path to requested target
             if (StrUtil.startWithIgnoreCase(downloadUri, "https")) {
                 HTTPSTrustManager.retrieveResponseFromServer(downloadUri);
-                URL url = new URL(downloadUri);
-                //构造连接
-                conn = (HttpsURLConnection) url.openConnection();
-                //这个网站要模拟浏览器才行
-                conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko");
-                //打开连接
-                conn.connect();
-                //打开这个网站的输入流
-                //打开这个网站的输入流
-                stream = conn.getInputStream();
+                HttpHeaders headers = new HttpHeaders();
+
+                HttpEntity<Resource> httpEntity = new HttpEntity<>(headers);
+
+                ResponseEntity<byte[]> fileResponse = restTemplate.exchange(downloadUri, HttpMethod.GET,httpEntity, byte[].class);
+                stream = new ByteArrayInputStream(fileResponse.getBody());
             }else {
-                URL url = new URL(downloadUri);
-                connection = (java.net.HttpURLConnection) url.openConnection();
-                //打开连接
-                connection.connect();
-                stream = connection.getInputStream();
+                HttpHeaders headers = new HttpHeaders();
+
+                HttpEntity<Resource> httpEntity = new HttpEntity<>(headers);
+
+                ResponseEntity<byte[]> fileResponse = restTemplate.exchange(downloadUri, HttpMethod.GET,httpEntity, byte[].class);
+                stream = new ByteArrayInputStream(fileResponse.getBody());
             }
 
 
@@ -142,6 +146,7 @@ public class OfficeFileController {
                     MinioUtil.upload(stream, fileName);
                     attachment.setFilePath(fileName);
                 } catch (Exception e) {
+                    log.error(e.getMessage());
                    // 上传本地
                     uploadLocal(fileName, attachment, stream);
                     attachment.setType("local");
@@ -149,15 +154,9 @@ public class OfficeFileController {
 
             }
             attachment.setDocumentKey(UUIDGenerator.generate());
-            if (Objects.nonNull(connection)) {
-                connection.disconnect();
-            }
-            /*if (Objects.nonNull(conn)) {
-                conn.disconnect();
-            }*/
-           /* if (Objects.nonNull(stream)) {
+            if (Objects.nonNull(stream)) {
                 stream.close();
-            }*/
+            }
         } else if(jsonObj.getIntValue(STATUS) == 3|| jsonObj.getIntValue(STATUS) == 7) {
             writer.write("{\"error\":-1}");
             // 正在编辑
