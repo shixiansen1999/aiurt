@@ -132,7 +132,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
             if(CollectionUtil.isNotEmpty(children)){
                 for (FixedAssetsCategoryDTO categoryDTO : children) {
                     if (categoryDTO.getCategoryName().contains(name)){
-                        categoryDTO.setColor("FF5B05");
+                        categoryDTO.setColor("#FF5B05");
                         fixedAssetsCategoryDTO.setMatching(true);
                     }
                 }

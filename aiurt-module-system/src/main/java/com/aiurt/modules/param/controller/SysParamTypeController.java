@@ -100,7 +100,7 @@ public class SysParamTypeController extends BaseController<SysParamType, ISysPar
 			if(CollectionUtil.isNotEmpty(children)){
 				for (ParamTypeTreeDTO typeTreeDTO : children) {
 					if (typeTreeDTO.getTitle().contains(name)){
-						typeTreeDTO.setColor("FF5B05");
+						typeTreeDTO.setColor("#FF5B05");
 						paramTypeTreeDTO.setMatching(true);
 					}
 				}
