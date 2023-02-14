@@ -455,8 +455,8 @@ public class CommonCtroller {
 
     @GetMapping("/system/queryDepartTree")
     @ApiOperation("查询用户拥有部门权限树")
-    public Result<List<CsUserDepartModel>> queryDepartTree() {
-        List<CsUserDepartModel> list = csUserDepartService.queryDepartTree();
+    public Result<List<CsUserDepartModel>> queryDepartTree(String name) {
+        List<CsUserDepartModel> list = csUserDepartService.queryDepartTree(name);
         return Result.OK(list);
     }
     /**
