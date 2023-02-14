@@ -83,7 +83,7 @@ public class OfficeFileController {
         Scanner scanner = new Scanner(request.getInputStream()).useDelimiter("\\A");
         String body = scanner.hasNext() ? scanner.next() : "";
         log.info("在线文档回调参数->{}", body);
-        JSONObject jsonObj = JSONObject.parseObject("{\"key\":\"1625309941336133634\",\"status\":2,\"url\":\"http://192.168.1.27:90/cache/files/1625309941336133634_3437/output.xlsx/output.xlsx?md5=v45Gn-gnE2HX6SAa4pSslg&expires=1676340293&filename=output.xlsx\",\"changesurl\":\"http://192.168.1.27:90/cache/files/1625309941336133634_3437/changes.zip/changes.zip?md5=fomVmHBsCW4QnHs5X-f9WA&expires=1676340293&filename=changes.zip\",\"history\":{\"serverVersion\":\"6.4.2\",\"changes\":[{\"created\":\"2023-02-14 01:49:42\",\"user\":{\"id\":\"e9ca23d68d884d4ebb19d07889727dae\",\"name\":\"管理员\"}}]},\"users\":[\"e9ca23d68d884d4ebb19d07889727dae\"],\"actions\":[{\"type\":0,\"userid\":\"e9ca23d68d884d4ebb19d07889727dae\"}],\"lastsave\":\"2023-02-14T01:49:42.000Z\",\"notmodified\":false}");
+        JSONObject jsonObj = JSONObject.parseObject(body);
         String fileName = request.getParameter("fileName");
         String key = jsonObj.getString("key");
         log.info("文档编辑key->{}", key);
