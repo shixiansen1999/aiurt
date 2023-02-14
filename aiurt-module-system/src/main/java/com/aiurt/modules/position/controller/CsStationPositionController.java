@@ -1,8 +1,11 @@
 package com.aiurt.modules.position.controller;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
@@ -31,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -67,7 +71,7 @@ public class CsStationPositionController  {
 	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询位置管理树",permissionUrl = "/position/list")
 	 @ApiOperation(value="位置管理树", notes="位置管理树")
 	 @GetMapping(value = "/treeList")
-	 public Result<?> queryTreeList() {
+	 public Result<?> queryTreeList(@RequestParam(name="name",required = false) String name) {
 	 	 //查询所有一级
 		 List<CsLine> lineList = csLineService.list(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(CsLine::getSort).orderByDesc(CsLine::getUpdateTime));
 		 //查询所有二级
@@ -100,7 +104,30 @@ public class CsStationPositionController  {
 			 onePosition.setChildren(twoList);
 			 newList.add(onePosition);
 		 });
+		 //做树形搜索处理
+		 if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(newList)){
+			 this.assetTreeList(newList,name);
+		 }
 		 return Result.OK(newList);
+	 }
+
+	 private void assetTreeList(List<CsStationPosition> deviceTypeTree, String name){
+		 Iterator<CsStationPosition> iterator = deviceTypeTree.iterator();
+		 while (iterator.hasNext()) {
+			 CsStationPosition next = iterator.next();
+			 if (StrUtil.containsAnyIgnoreCase(next.getPositionName(), name)) {
+				 //名称匹配则赋值颜色
+				 next.setColor("#FF5B05");
+			 }
+			 List<CsStationPosition> children = next.getChildren();
+			 if (CollUtil.isNotEmpty(children)) {
+				 assetTreeList(children,name);
+			 }
+			 //如果没有子级，并且当前不匹配，则去除
+			 if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+				 iterator.remove();
+			 }
+		 }
 	 }
 
 	 /**
