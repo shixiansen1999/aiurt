@@ -99,7 +99,6 @@ public class SysDepartTreeModel implements Serializable{
 
     private String color;
 
-    private Boolean matching;
     /**
      * 将SysDepart对象转换成SysDepartTreeModel对象
      * @param sysDepart

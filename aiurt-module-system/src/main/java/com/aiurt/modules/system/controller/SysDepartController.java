@@ -120,17 +120,6 @@ public class SysDepartController {
 			//做树形搜索处理
 			if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(result.getResult())) {
 				sysDepartService.processingTreeList(name, result.getResult());
-				Iterator<SysDepartTreeModel> iterator = result.getResult().iterator();
-				while (iterator.hasNext()) {
-					SysDepartTreeModel next = iterator.next();
-					if (next.getDepartName().contains(name)) {
-						next.setColor("#FF5B05");
-					}
-					if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
-						iterator.remove();
-					}
-				}
-
 			}
 			result.setSuccess(true);
 		} catch (Exception e) {

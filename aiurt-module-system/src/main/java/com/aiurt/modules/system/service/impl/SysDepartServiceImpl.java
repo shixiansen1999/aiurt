@@ -1202,21 +1202,20 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 
 	@Override
 	public void processingTreeList(String name,List<SysDepartTreeModel> list) {
-		for (SysDepartTreeModel sysDepartTreeModel : list) {
-			sysDepartTreeModel.setMatching(false);
-			List<SysDepartTreeModel> children = sysDepartTreeModel.getChildren();
+		Iterator<SysDepartTreeModel> iterator = list.iterator();
+		while (iterator.hasNext()) {
+			SysDepartTreeModel next = iterator.next();
+			if (next.getDepartName().contains(name)) {
+				//名称匹配则赋值颜色
+				next.setColor("#FF5B05");
+			}
+			List<SysDepartTreeModel> children = next.getChildren();
 			if (CollUtil.isNotEmpty(children)) {
-				for (SysDepartTreeModel child : children) {
-					if (child.getDepartName().contains(name)) {
-						//名称匹配则赋值颜色，并且父级标记有子级匹配成功
-						child.setColor("#FF5B05");
-						sysDepartTreeModel.setMatching(true);
-					}
-				}
 				processingTreeList(name, children);
-				//如果子级的子级匹配不成功，并且当前子级不匹配，则去除
-				children.removeIf(next -> !next.getMatching() && StrUtil.isEmpty(next.getColor()));
-				sysDepartTreeModel.setChildren(children);
+			}
+			//如果没有子级，并且当前不匹配，则去除
+			if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+				iterator.remove();
 			}
 		}
 	}

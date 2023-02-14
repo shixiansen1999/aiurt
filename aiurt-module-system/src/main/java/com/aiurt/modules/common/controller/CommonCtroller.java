@@ -1,5 +1,6 @@
 package com.aiurt.modules.common.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
@@ -38,10 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -147,7 +145,8 @@ public class CommonCtroller {
             @ApiImplicitParam(name = "majorIds", value = "专业编码", required = false, paramType = "query"),
     })
     public Result<List<SelectTable>> querySubSystemByAuth(@RequestParam(value = "majorCode", required = false) String majorCode,
-                                                          @RequestParam(value ="majorIds",required = false) List<String> majorIds) {
+                                                          @RequestParam(value ="majorIds",required = false) List<String> majorIds,
+                                                          @RequestParam(value ="name",required = false) String name) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String userId = loginUser.getId();
         String roleCodes = loginUser.getRoleCodes();
@@ -184,8 +183,14 @@ public class CommonCtroller {
                 return table;
             }).collect(Collectors.toList());
         }
+
+        //树形搜索匹配
+        if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(list)) {
+            processingTreeList(name,list);
+        }
         return Result.OK(list);
     }
+
 
     /**
      * 查询设备
@@ -207,7 +212,7 @@ public class CommonCtroller {
      */
     @GetMapping("/position/queryTreeByAuth")
     @ApiOperation("根据个人权限获取位置树")
-    public Result<List<SelectTable>> queryPositionTree() {
+    public Result<List<SelectTable>> queryPositionTree(@RequestParam(name = "name", required = false) String name) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String userId = loginUser.getId();
         String roleCodes = loginUser.getRoleCodes();
@@ -274,15 +279,37 @@ public class CommonCtroller {
             table.setChildren(lv2List);
             list.add(table);
         });
+        //树形搜索匹配
+        if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(list)) {
+            processingTreeList(name,list);
+        }
+
         return Result.OK(list);
     }
 
-
-    /**
-     * 根据个人权限获取位置树
-     *
-     * @return
-     */
+    public void processingTreeList(String name,List<SelectTable> list) {
+        Iterator<SelectTable> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            SelectTable next = iterator.next();
+            if (next.getLabel().contains(name)) {
+                //名称匹配则赋值颜色
+                next.setColor("#FF5B05");
+            }
+            List<SelectTable> children = next.getChildren();
+            if (CollUtil.isNotEmpty(children)) {
+                processingTreeList(name, children);
+            }
+            //如果没有子级，并且当前不匹配，则去除
+            if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+                iterator.remove();
+            }
+        }
+    }
+        /**
+         * 根据个人权限获取位置树
+         *
+         * @return
+         */
     @GetMapping("/position/queryStationTree")
     @ApiOperation("根据个人权限获取站点树")
     public Result<List<SelectTable>> queryStationTree() {

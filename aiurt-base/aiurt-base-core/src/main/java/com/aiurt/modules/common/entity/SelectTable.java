@@ -53,6 +53,9 @@ public class SelectTable {
      */
     private String parentValue;
 
+
+    private String color;
+
     /**
      *
      */
