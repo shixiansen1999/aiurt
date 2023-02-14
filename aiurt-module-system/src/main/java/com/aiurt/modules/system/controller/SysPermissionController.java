@@ -1,7 +1,10 @@
 package com.aiurt.modules.system.controller;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.category.dto.FixedAssetsCategoryDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
@@ -14,6 +17,7 @@ import com.aiurt.modules.system.entity.SysDepartPermission;
 import com.aiurt.modules.system.entity.SysPermission;
 import com.aiurt.modules.system.entity.SysPermissionDataRule;
 import com.aiurt.modules.system.entity.SysRolePermission;
+import com.aiurt.modules.system.model.SysDepartTreeModel;
 import com.aiurt.modules.system.model.SysPermissionTree;
 import com.aiurt.modules.system.model.TreeModel;
 import com.aiurt.modules.system.service.*;
@@ -86,7 +90,8 @@ public class SysPermissionController {
     @ApiImplicitParam(name = "isApp", value = "是否为移动端（1是，0否）", required = false, dataTypeClass = Integer.class)
     @ApiOperation(value = "加载所有菜单数据节点", notes = "加载所有菜单数据节点")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public Result<List<SysPermissionTree>> list(@RequestParam(name = "isApp", required = false, defaultValue = "0") Integer isApp) {
+    public Result<List<SysPermissionTree>> list(@RequestParam(name = "isApp", required = false, defaultValue = "0") Integer isApp,
+                                                @RequestParam(name = "name", required = false, defaultValue = "0") String name) {
         long start = System.currentTimeMillis();
         Result<List<SysPermissionTree>> result = new Result<>();
         try {
@@ -97,12 +102,35 @@ public class SysPermissionController {
             List<SysPermissionTree> treeList = new ArrayList<>();
             getTreeList(treeList, list, null);
             result.setResult(treeList);
+            if(StrUtil.isNotBlank(name) && CollectionUtil.isNotEmpty(result.getResult()) && isApp.equals(CommonConstant.MENU_TYPE_0)){
+                this.menuTree(name,result.getResult());
+            }
             result.setSuccess(true);
             log.info("======获取全部菜单数据=====耗时:" + (System.currentTimeMillis() - start) + "毫秒");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
         return result;
+    }
+
+    private void menuTree(String name,List<SysPermissionTree> sysPermissionTreeList){
+        Iterator<SysPermissionTree> iterator = sysPermissionTreeList.iterator();
+        while (iterator.hasNext()) {
+            SysPermissionTree next = iterator.next();
+            if (StrUtil.containsAnyIgnoreCase(next.getName(),name)) {
+                //名称匹配则赋值颜色
+                next.setColor("#FF5B05");
+            }
+            List<SysPermissionTree> children = next.getChildren();
+            if (CollUtil.isNotEmpty(children)) {
+                menuTree(name, children);
+            }
+            //如果没有子级，并且当前不匹配，则去除
+            if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+                iterator.remove();
+            }
+
+        }
     }
 
     /*update_begin author:wuxianquan date:20190908 for:先查询一级菜单，当用户点击展开菜单时加载子菜单 */
