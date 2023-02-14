@@ -118,6 +118,10 @@ public class CsSubsystem implements Serializable {
     @ApiModelProperty(value = "备用字段")
     @TableField(exist = false)
     private String byType = "zxt";
+    @TableField(exist = false)
+    private String color;
+    @TableField(exist = false)
+    private Boolean isRemove;
     /**与专业关联的子系统*/
     @ApiModelProperty(value = "与专业关联的子系统")
     @TableField(exist = false)

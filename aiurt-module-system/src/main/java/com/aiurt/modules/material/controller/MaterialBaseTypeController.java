@@ -1,5 +1,8 @@
 package com.aiurt.modules.material.controller;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -39,9 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -171,28 +172,97 @@ public class MaterialBaseTypeController {
     @GetMapping(value = "/treeLeft")
     @PermissionData(pageComponent = "manage/MaterialClassification")
     public Result<?> treeLeft(
-            HttpServletRequest req) {
+            HttpServletRequest req,String name) {
         List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0));
         List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag,0));
         List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(new LambdaQueryWrapper<MaterialBaseType>().eq(MaterialBaseType::getDelFlag,0));
+        Set<MaterialBaseType> set = new HashSet<>();
+        if(ObjectUtil.isNotEmpty(name)){
+            List<MaterialBaseType> list = materialBaseTypeList;
+            materialBaseTypeList = materialBaseTypeList.stream().filter(m->m.getBaseTypeName().contains(name)).collect(Collectors.toList());
+            for (MaterialBaseType baseType : materialBaseTypeList) {
+                baseType.setColor("#FF5B05");
+                Set<MaterialBaseType> deptUpList = getDeptUpList(list, baseType);
+                if(CollUtil.isNotEmpty(deptUpList)){
+                    deptUpList.add(baseType);
+                    set.addAll(deptUpList);
+                }
+            }
+            if(CollUtil.isNotEmpty(set)){
+                materialBaseTypeList= set.stream().collect(Collectors.toList());
+            }
+        }
         List<MaterialBaseType> materialBaseTypeListres = iMaterialBaseTypeService.treeList(materialBaseTypeList,"0");
         systemList.forEach(csSubsystem -> {
+
             List sysList = materialBaseTypeListres.stream().filter(materialBaseType-> csSubsystem.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
+            if(ObjectUtil.isNotEmpty(name)){
+                if(csSubsystem.getSystemName().contains(name)){
+                    csSubsystem.setColor("#FF5B05");
+                }
+                if(!csSubsystem.getSystemName().contains(name)&& CollUtil.isEmpty(sysList)){
+                    csSubsystem.setIsRemove(true);
+                }
+                else {
+                    csSubsystem.setIsRemove(false);
+                }
+            }
             csSubsystem.setMaterialBaseTypeList(sysList);
             csSubsystem.setTitle(csSubsystem.getSystemName());
             csSubsystem.setValue(csSubsystem.getSystemCode());
         });
+        if(ObjectUtil.isNotEmpty(name)){
+
+            systemList =  systemList.stream().filter(s->s.getIsRemove()==false).collect(Collectors.toList());
+
+        }
+        List<CsSubsystem> finalSystemList = systemList;
         majorList.forEach(major -> {
-            List sysList = systemList.stream().filter(system-> system.getMajorCode().equals(major.getMajorCode())).collect(Collectors.toList());
-            major.setChildren(sysList);
+            List sysList = finalSystemList.stream().filter(system-> system.getMajorCode().equals(major.getMajorCode())).collect(Collectors.toList());
             List sysListType = materialBaseTypeListres.stream().filter(materialBaseType-> major.getMajorCode().equals(materialBaseType.getMajorCode())&&(materialBaseType.getSystemCode()==null || "".equals(materialBaseType.getSystemCode()))).collect(Collectors.toList());
+            if(ObjectUtil.isNotEmpty(name)){
+                if(major.getMajorName().contains(name)){
+                    major.setColor("#FF5B05");
+                }
+                if(!major.getMajorName().contains(name)&& CollUtil.isEmpty(sysList)&&CollUtil.isEmpty(sysListType)){
+                    major.setIsRemove(true);
+                }else {
+                    major.setIsRemove(false);
+                }
+            }
+            major.setChildren(sysList);
             major.setMaterialBaseTypeList(sysListType);
             major.setTitle(major.getMajorName());
             major.setValue(major.getMajorCode());
         });
+        if(ObjectUtil.isNotEmpty(name)){
+            majorList = majorList.stream().filter(m->m.getIsRemove()==false).collect(Collectors.toList());
+        }
         return Result.OK(majorList);
     }
-
+    /**
+     * 查询此节点的所有上级节点
+     * @param deptAll
+     * @param categoryFatherName
+     * @return
+     */
+    public static Set<MaterialBaseType> getDeptUpList(List<MaterialBaseType> deptAll, MaterialBaseType categoryFatherName) {
+        if (ObjectUtil.isNotEmpty(categoryFatherName)) {
+            Set<MaterialBaseType> set = new HashSet<>();
+            String parentId = categoryFatherName.getPid();
+            List<MaterialBaseType> parentDepts = deptAll.stream().filter(item -> item.getId().equals(parentId)).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(parentDepts)) {
+                MaterialBaseType parentDept = parentDepts.get(0);
+                set.add(parentDept);
+                Set<MaterialBaseType> deptUpTree = getDeptUpList(deptAll, parentDept);
+                if (deptUpTree != null) {
+                    set.addAll(deptUpTree);
+                }
+                return set;
+            }
+        }
+        return null;
+    }
     /**
      * 物资分类树结构查询
      * @param majorCode

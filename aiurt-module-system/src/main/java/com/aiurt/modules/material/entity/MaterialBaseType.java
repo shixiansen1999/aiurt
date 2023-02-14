@@ -203,4 +203,6 @@ public class MaterialBaseType extends DictEntity {
 
 	@TableField(exist = false)
 	private  String  value;
+	@TableField(exist = false)
+	private String color;
 }

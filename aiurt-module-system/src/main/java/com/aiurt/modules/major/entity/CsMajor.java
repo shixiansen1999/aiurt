@@ -100,4 +100,9 @@ public class CsMajor implements Serializable {
 
     @TableField(exist = false)
     private  String  value;
+    @TableField(exist = false)
+    private String color;
+
+    @TableField(exist = false)
+    private Boolean isRemove;
 }
