@@ -410,3 +410,10 @@ aiurt:
 robot:
   wsdl:
     address: http://172.16.4.253:11456?wsdl
+
+#故障超时等级
+fault:
+  lv1: 72
+  lv2: 48
+  lv3: 24
+
