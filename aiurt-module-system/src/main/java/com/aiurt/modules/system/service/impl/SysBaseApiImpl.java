@@ -1534,35 +1534,25 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<DeviceTypeTable> deviceTypeTree = getDeviceTypeTree(list, "0");
         if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(deviceTypeTree)){
             this.assetTreeList(name, deviceTypeTree);
-            Iterator<DeviceTypeTable> iterator = deviceTypeTree.iterator();
-            while (iterator.hasNext()) {
-                DeviceTypeTable next = iterator.next();
-                if (next.getName().contains(name)) {
-                    next.setColor("#FF5B05");
-                }
-                if (!next.getFlag() && StrUtil.isEmpty(next.getColor())) {
-                    iterator.remove();
-                }
-            }
         }
         return deviceTypeTree;
     }
 
     private void assetTreeList(String name,List<DeviceTypeTable> deviceTypeTree){
-        for (DeviceTypeTable deviceTypeTable : deviceTypeTree) {
-            deviceTypeTable.setFlag(false);
-            List<DeviceTypeTable> children = deviceTypeTable.getChildren();
-            if(CollectionUtil.isNotEmpty(children)){
-                for (DeviceTypeTable deviceTypeTable1 : children) {
-                    if (deviceTypeTable1.getName().contains(name)){
-                        deviceTypeTable1.setColor("FF5B05");
-                        deviceTypeTable.setFlag(true);
-                    }
-                }
-                assetTreeList(name,children);
-                //如果子级的子级匹配不成功，并且当前子级不匹配，则去除
-                children.removeIf(next -> !next.getFlag() && StrUtil.isEmpty(next.getColor()));
-                deviceTypeTable.setChildren(children);
+        Iterator<DeviceTypeTable> iterator = deviceTypeTree.iterator();
+        while (iterator.hasNext()) {
+            DeviceTypeTable next = iterator.next();
+            if (StrUtil.containsAnyIgnoreCase(next.getName(), name)) {
+                //名称匹配则赋值颜色
+                next.setColor("#FF5B05");
+            }
+            List<DeviceTypeTable> children = next.getChildren();
+            if (CollUtil.isNotEmpty(children)) {
+                assetTreeList(name, children);
+            }
+            //如果没有子级，并且当前不匹配，则去除
+            if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+                iterator.remove();
             }
         }
     }

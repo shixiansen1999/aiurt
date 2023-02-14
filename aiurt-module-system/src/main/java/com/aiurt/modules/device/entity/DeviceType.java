@@ -167,4 +167,9 @@ public class DeviceType implements Serializable {
     String deviceComposeCode;
     @TableField(exist = false)
     String text;
+
+    @ApiModelProperty(value = "搜索颜色")
+    @TableField(exist = false)
+    private String color;
+
 }

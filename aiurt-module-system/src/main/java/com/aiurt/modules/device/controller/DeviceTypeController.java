@@ -1,11 +1,14 @@
 package com.aiurt.modules.device.controller;
 
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -43,10 +46,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -88,7 +88,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 @ApiOperation(value = "设备类型左侧树")
 	 @GetMapping(value = "/treeList")
 	 @PermissionData(pageComponent = "manage/MajorList")
-	 public Result<?> treeList(Integer level) {
+	 public Result<?> treeList(Integer level,@RequestParam(name="name",required = false) String name) {
 		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0));
 		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).orderByDesc(CsSubsystem::getCreateTime));
 		 List<DeviceType> deviceTypeList = deviceTypeService.selectList();
@@ -136,6 +136,10 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			 major.setChildren(twoList);
 			 newList.add(major);
 		 });
+		 //做树形搜索处理
+		 if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(newList)){
+			 this.assetTreeList(newList,name);
+		 }
 		 return Result.OK(newList);
 	 }
 
@@ -148,7 +152,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	@ApiOperation(value = "权限过滤子系统设备类型左侧树")
 	@GetMapping(value = "/powerTreeList")
 	@PermissionData(pageComponent = "manage/MajorList")
-	public Result<?> powerTreeList(Integer level) {
+	public Result<?> powerTreeList(Integer level,@RequestParam(name="name",required = false) String name) {
 		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		//专业权限
 		List<CsUserMajorModel> list = sysBaseAPI.getMajorByUserId(sysUser.getId());
@@ -215,8 +219,32 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			major.setValue(major.getMajorCode());
 			newList.add(major);
 		});
+		//做树形搜索处理
+		if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(newList)){
+			this.assetTreeList(newList,name);
+		}
 		return Result.OK(newList);
 	}
+
+	private void assetTreeList(List<DeviceType> deviceTypeTree,String name){
+		Iterator<DeviceType> iterator = deviceTypeTree.iterator();
+		while (iterator.hasNext()) {
+			DeviceType next = iterator.next();
+			if (StrUtil.containsAnyIgnoreCase(next.getName(), name)) {
+				//名称匹配则赋值颜色
+				next.setColor("#FF5B05");
+			}
+			List<DeviceType> children = next.getChildren();
+			if (CollUtil.isNotEmpty(children)) {
+				assetTreeList(children,name);
+			}
+			//如果没有子级，并且当前不匹配，则去除
+			if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+				iterator.remove();
+			}
+		}
+	}
+
 	/**
 	 * 物资分类列表结构查询（无分页。用于左侧树）
 	 * @param majorCode
