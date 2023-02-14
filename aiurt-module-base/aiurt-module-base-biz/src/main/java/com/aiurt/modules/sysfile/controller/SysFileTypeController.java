@@ -1,6 +1,8 @@
 package com.aiurt.modules.sysfile.controller;
 
 
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
@@ -10,12 +12,9 @@ import com.aiurt.modules.sysfile.service.ISysFileService;
 import com.aiurt.modules.sysfile.service.ISysFileTypeService;
 import com.aiurt.modules.sysfile.vo.SysFileTypeDetailVO;
 import com.aiurt.modules.sysfile.vo.SysFileTypeTreeVO;
-import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.exception.AiurtBootException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
@@ -57,10 +56,10 @@ public class SysFileTypeController {
 	@AutoLog(value = "文档类型表-树状分类查询")
 	@ApiOperation(value = "文档类型表-树状分类查询", notes = "文档类型表-树状分类查询")
 	@GetMapping(value = "/tree")
-	public Result<List<SysFileTypeTreeVO>> queryTreeList(HttpServletRequest req) {
+	public Result<List<SysFileTypeTreeVO>> queryTreeList(HttpServletRequest req,String name) {
 		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String userId = loginUser.getId();
-		return sysFileTypeService.tree(userId);
+		return sysFileTypeService.tree(userId,name);
 	}
 
 
