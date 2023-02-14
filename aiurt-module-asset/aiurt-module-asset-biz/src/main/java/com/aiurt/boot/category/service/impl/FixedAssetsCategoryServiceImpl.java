@@ -115,9 +115,9 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
             while (iterator.hasNext()) {
                 FixedAssetsCategoryDTO next = iterator.next();
                 if (next.getCategoryName().contains(name)){
-                    next.setColour("#FF5B05");
+                    next.setColor("#FF5B05");
                 }
-                if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColour())) {
+                if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
                     iterator.remove();
                 }
             }
@@ -132,13 +132,13 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
             if(CollectionUtil.isNotEmpty(children)){
                 for (FixedAssetsCategoryDTO categoryDTO : children) {
                     if (categoryDTO.getCategoryName().contains(name)){
-                        categoryDTO.setColour("FF5B05");
+                        categoryDTO.setColor("FF5B05");
                         fixedAssetsCategoryDTO.setMatching(true);
                     }
                 }
                 assetTree(name,children);
                 //如果子级的子级匹配不成功，并且当前子级不匹配，则去除
-                children.removeIf(next -> !next.getMatching() && StrUtil.isEmpty(next.getColour()));
+                children.removeIf(next -> !next.getMatching() && StrUtil.isEmpty(next.getColor()));
                 fixedAssetsCategoryDTO.setChildren(children);
             }
         }

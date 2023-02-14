@@ -82,9 +82,9 @@ public class SysParamTypeController extends BaseController<SysParamType, ISysPar
 			while (iterator.hasNext()) {
 				ParamTypeTreeDTO next = iterator.next();
 				if (next.getTitle().contains(name)){
-					next.setColour("#FF5B05");
+					next.setColor("#FF5B05");
 				}
-				if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColour())) {
+				if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
 					iterator.remove();
 				}
 
@@ -100,13 +100,13 @@ public class SysParamTypeController extends BaseController<SysParamType, ISysPar
 			if(CollectionUtil.isNotEmpty(children)){
 				for (ParamTypeTreeDTO typeTreeDTO : children) {
 					if (typeTreeDTO.getTitle().contains(name)){
-						typeTreeDTO.setColour("FF5B05");
+						typeTreeDTO.setColor("FF5B05");
 						paramTypeTreeDTO.setMatching(true);
 					}
 				}
 				assetTree(name,children);
 				//如果子级的子级匹配不成功，并且当前子级不匹配，则去除
-				children.removeIf(next -> !next.getMatching() && StrUtil.isEmpty(next.getColour()));
+				children.removeIf(next -> !next.getMatching() && StrUtil.isEmpty(next.getColor()));
 				paramTypeTreeDTO.setChildren(children);
 			}
 		}

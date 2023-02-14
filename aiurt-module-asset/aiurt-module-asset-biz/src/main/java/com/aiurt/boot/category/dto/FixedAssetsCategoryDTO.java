@@ -68,7 +68,7 @@ public class FixedAssetsCategoryDTO {
     private List<FixedAssetsCategoryDTO> children;
 
     @TableField(exist = false)
-    private java.lang.String colour;
+    private java.lang.String color;
 
     private Boolean matching;
 }
