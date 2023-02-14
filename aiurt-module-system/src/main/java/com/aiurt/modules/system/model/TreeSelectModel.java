@@ -25,6 +25,16 @@ public class TreeSelectModel implements Serializable {
 
 	private String code;
 
+	private String color;
+
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
+	}
+
 	public String getValue() {
 		return value;
 	}
