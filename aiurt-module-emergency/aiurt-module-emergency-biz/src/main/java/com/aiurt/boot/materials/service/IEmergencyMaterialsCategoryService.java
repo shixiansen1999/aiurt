@@ -18,7 +18,7 @@ import java.util.List;
  */
 public interface IEmergencyMaterialsCategoryService extends IService<EmergencyMaterialsCategory> {
 
-    List<EmergencyMaterialsCategory> selectTreeList();
+    List<EmergencyMaterialsCategory> selectTreeList(String name);
 
     /**
      * 应急物资分类模板下载
