@@ -43,8 +43,8 @@ public class BdQuestionCategoryController extends BaseController<BdQuestionCateg
 	 @AutoLog(value = "查询习题类别树")
 	 @ApiOperation(value = "查询习题类别树", notes = "查询习题类别树")
 	 @GetMapping(value = "/rootList")
-	 public Result<?> queryPageList() {
-		 return Result.OK( bdQuestionCategoryService.queryPageList());
+	 public Result<?> queryPageList(String name) {
+		 return Result.OK( bdQuestionCategoryService.queryPageList(name));
 	 }
 
 	 /**
