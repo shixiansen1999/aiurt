@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.category.dto.FixedAssetsCategoryDTO;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.service.impl.PatrolStandardItemsServiceImpl;
 import com.aiurt.common.api.dto.message.*;
@@ -49,6 +50,7 @@ import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.*;
+import com.aiurt.modules.system.model.SysDepartTreeModel;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.util.SecurityUtil;
 import com.aiurt.modules.workarea.entity.WorkArea;
@@ -1492,7 +1494,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode) {
+    public List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode,String name) {
 
         QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
         deviceTypeQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
@@ -1528,8 +1530,41 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             deviceTypeTable.setLabel(deviceType.getName());
             list.add(deviceTypeTable);
         });
+        //做树形搜索处理
         List<DeviceTypeTable> deviceTypeTree = getDeviceTypeTree(list, "0");
+        if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(deviceTypeTree)){
+            this.assetTreeList(name, deviceTypeTree);
+            Iterator<DeviceTypeTable> iterator = deviceTypeTree.iterator();
+            while (iterator.hasNext()) {
+                DeviceTypeTable next = iterator.next();
+                if (next.getName().contains(name)) {
+                    next.setColor("#FF5B05");
+                }
+                if (!next.getFlag() && StrUtil.isEmpty(next.getColor())) {
+                    iterator.remove();
+                }
+            }
+        }
         return deviceTypeTree;
+    }
+
+    private void assetTreeList(String name,List<DeviceTypeTable> deviceTypeTree){
+        for (DeviceTypeTable deviceTypeTable : deviceTypeTree) {
+            deviceTypeTable.setFlag(false);
+            List<DeviceTypeTable> children = deviceTypeTable.getChildren();
+            if(CollectionUtil.isNotEmpty(children)){
+                for (DeviceTypeTable deviceTypeTable1 : children) {
+                    if (deviceTypeTable1.getName().contains(name)){
+                        deviceTypeTable1.setColor("FF5B05");
+                        deviceTypeTable.setFlag(true);
+                    }
+                }
+                assetTreeList(name,children);
+                //如果子级的子级匹配不成功，并且当前子级不匹配，则去除
+                children.removeIf(next -> !next.getFlag() && StrUtil.isEmpty(next.getColor()));
+                deviceTypeTable.setChildren(children);
+            }
+        }
     }
     @Override
     public List<SelectDeviceType> selectDeviceTypeList(String value) {

@@ -348,8 +348,9 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 })
 	 public Result<List<DeviceTypeTable>> getDeviceType(@RequestParam(name="majorCode",required = false) String majorCode,
 													  @RequestParam(name="systemCode",required = false) String systemCode,
-														@RequestParam(name="deviceCode",required = false) String deviceCode) {
-		 List<DeviceTypeTable> deviceTypes = iSysBaseAPI.selectList(majorCode, systemCode,deviceCode);
+														@RequestParam(name="deviceCode",required = false) String deviceCode,
+														@RequestParam(name="name",required = false) String name) {
+		 List<DeviceTypeTable> deviceTypes = iSysBaseAPI.selectList(majorCode, systemCode,deviceCode,name);
 		 return Result.OK(deviceTypes);
 	 }
 
@@ -372,7 +373,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 		 } else {
 		 	//如果没有传入具体设备分类，则查该专业子系统下的所有设备分类的设备组件
 			 if (StrUtil.isNotEmpty(majorCode)&&StrUtil.isNotEmpty(systemCode)) {
-				 List<DeviceTypeTable> deviceTypes = iSysBaseAPI.selectList(majorCode, systemCode, null);
+				 List<DeviceTypeTable> deviceTypes = iSysBaseAPI.selectList(majorCode, systemCode, null,null);
 				 if (CollUtil.isNotEmpty(deviceTypes)) {
 					 List<String> collect = deviceTypes.stream().map(DeviceTypeTable::getCode).collect(Collectors.toList());
 					 List<DeviceAssemblyDTO> deviceAssembly = faultKnowledgeBaseMapper.getAllDeviceAssembly(collect);

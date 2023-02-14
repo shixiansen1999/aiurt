@@ -494,7 +494,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @param deviceCode
      * @return
      */
-    List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode);
+    List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode,String name);
 
     /**
      * 数据过大 物资分类列表结构查询（无分页。用于左侧树）
