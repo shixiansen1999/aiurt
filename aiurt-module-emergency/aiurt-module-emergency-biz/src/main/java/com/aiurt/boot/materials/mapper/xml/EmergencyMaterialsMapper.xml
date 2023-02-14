@@ -216,7 +216,7 @@
             #{item}
             </foreach>
             </if>
-                <if test="condition.primaryCodeList!=null and condition.primaryCodeList.size() != 0 and condition.orgCodeList.size() == 0">
+                <if test="condition.primaryCodeList!=null and condition.primaryCodeList.size() != 0 and condition.orgCodeList==null">
                 AND  t1.primary_org in
                 <foreach item="item" collection="condition.primaryCodeList" separator="," open="(" close=")" index="">
                     #{item}
