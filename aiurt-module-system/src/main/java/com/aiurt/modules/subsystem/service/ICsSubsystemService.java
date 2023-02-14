@@ -50,7 +50,7 @@ public interface ICsSubsystemService extends IService<CsSubsystem> {
      * 统计报表-子系统分析-年次数数据
      * @return
      */
-    List<YearFaultDTO> yearFault();
+    List<YearFaultDTO> yearFault(String name);
 
     /**
      * 下拉框
@@ -63,7 +63,7 @@ public interface ICsSubsystemService extends IService<CsSubsystem> {
      * 统计报表-子系统分析-年分钟
      * @return
      */
-    List<YearFaultDTO> yearMinuteFault();
+    List<YearFaultDTO> yearMinuteFault(String name);
 
     /**
      * 导出

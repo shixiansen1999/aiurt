@@ -309,8 +309,8 @@ public class CsSubsystemController extends BaseController<CsSubsystem, ICsSubsys
 	 */
 	@ApiOperation(value="统计报表-子系统分析-年次数据图", notes="统计报表-子系统分析-年次数据图")
 	@GetMapping(value = "/yearNumFault")
-	public Result<List<YearFaultDTO>> yearFault() {
-		List<YearFaultDTO> pages = csSubsystemService.yearFault();
+	public Result<List<YearFaultDTO>> yearFault(@RequestParam(name = "name",required = false) String name) {
+		List<YearFaultDTO> pages = csSubsystemService.yearFault(name);
 		return Result.ok(pages);
 	}
 	/**
@@ -320,8 +320,8 @@ public class CsSubsystemController extends BaseController<CsSubsystem, ICsSubsys
 	 */
 	@ApiOperation(value="统计报表-子系统分析-年分钟数据图", notes="统计报表-子系统分析-年分钟数据图")
 	@GetMapping(value = "/yearMinuteFault")
-	public Result<List<YearFaultDTO>> yearMinuteFault() {
-		List<YearFaultDTO> pages = csSubsystemService.yearMinuteFault();
+	public Result<List<YearFaultDTO>> yearMinuteFault(@RequestParam(name = "name",required = false) String name) {
+		List<YearFaultDTO> pages = csSubsystemService.yearMinuteFault(name);
 		return Result.ok(pages);
 	}
 	/**
