@@ -23,6 +23,7 @@ import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -47,6 +48,15 @@ public class FaultInformationService {
 
     @Autowired
     private ISysBaseAPI sysBaseApi;
+
+    @Value("${fault.lv1}")
+    private Integer lv1Hours;
+
+    @Value("${fault.lv2}")
+    private Integer lv2Hours;
+
+    @Value("${fault.lv3}")
+    private Integer lv3Hours;
 
 
     /**
@@ -645,7 +655,7 @@ public class FaultInformationService {
             else if(level ==3){
                 faultLevelDTO.setLevel("三级");
             }
-            List<FaultTimeoutLevelDTO> faultData = faultInformationMapper.getFaultData(level,startDate, endDate,lineCode,majors);
+            List<FaultTimeoutLevelDTO> faultData = faultInformationMapper.getFaultData(level,startDate, endDate,lineCode,majors,lv1Hours,lv2Hours,lv3Hours);
             //计算i级故障数量
             faultLevelDTO.setFaultNumber(faultData.size());
 
