@@ -1,5 +1,6 @@
 package com.aiurt.modules.param.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -39,7 +40,8 @@ public class SysParamTypeController extends BaseController<SysParamType, ISysPar
 	 */
 	@ApiOperation(value="系统参数分类树", notes="系统参数分类树")
 	@GetMapping(value = "/queryParamTypeTree")
-	public Result<List<ParamTypeTreeDTO>> queryParamTypeTree(SysParamType sysParamType) {
+	public Result<List<ParamTypeTreeDTO>> queryParamTypeTree(SysParamType sysParamType,
+	                                                        @RequestParam(name="name",required=false) String name) {
 		List<SysParamType> list = sysParamTypeService.list();
 
 		List<ParamTypeTreeDTO> treeList = list.stream().map(entity -> {
@@ -74,7 +76,40 @@ public class SysParamTypeController extends BaseController<SysParamType, ISysPar
 		for (ParamTypeTreeDTO entity : collect) {
 			resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
 		}
+		if (StrUtil.isNotBlank(name) && CollectionUtil.isNotEmpty(resultList)){
+			this.assetTree(name,resultList);
+			Iterator<ParamTypeTreeDTO> iterator = resultList.iterator();
+			while (iterator.hasNext()) {
+				ParamTypeTreeDTO next = iterator.next();
+				if (next.getTitle().contains(name)){
+					next.setColour("#FF5B05");
+				}
+				if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColour())) {
+					iterator.remove();
+				}
+
+			}
+		}
 		return Result.OK(resultList);
+	}
+
+	private void assetTree(String name, List<ParamTypeTreeDTO> paramTypeTreeDTOList){
+		for (ParamTypeTreeDTO paramTypeTreeDTO : paramTypeTreeDTOList) {
+			paramTypeTreeDTO.setMatching(false);
+			List<ParamTypeTreeDTO> children = paramTypeTreeDTO.getChildren();
+			if(CollectionUtil.isNotEmpty(children)){
+				for (ParamTypeTreeDTO typeTreeDTO : children) {
+					if (typeTreeDTO.getTitle().contains(name)){
+						typeTreeDTO.setColour("FF5B05");
+						paramTypeTreeDTO.setMatching(true);
+					}
+				}
+				assetTree(name,children);
+				//如果子级的子级匹配不成功，并且当前子级不匹配，则去除
+				children.removeIf(next -> !next.getMatching() && StrUtil.isEmpty(next.getColour()));
+				paramTypeTreeDTO.setChildren(children);
+			}
+		}
 	}
 
 
