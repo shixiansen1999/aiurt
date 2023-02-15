@@ -1,0 +1,57 @@
+
+{
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "text"
+      },
+      "knowledgeBaseTypeCode":{
+        "type": "text"
+      },
+      "deviceTypeCode":{
+        "type": "text"
+      },
+      "materialCode":{
+        "type": "text"
+      },
+      "faultCodes":{
+        "type": "text",
+        "index": false
+      },
+      "faultPhenomenon":{
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_max_word"
+      },
+      "faultReason":{
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_max_word"
+      },
+      "solution":{
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_max_word"
+      },
+      "method":{
+        "type": "text"
+      },
+      "tools":{
+        "type": "text"
+      },
+      "status":{
+        "type": "integer"
+      },
+      "filePath":{
+        "type": "integer",
+        "index": false,
+        "doc_values": false
+      },
+      "createTime":{
+        "type": "date",
+        "index": false,
+        "doc_values": false
+      }
+    }
+  }
+}
