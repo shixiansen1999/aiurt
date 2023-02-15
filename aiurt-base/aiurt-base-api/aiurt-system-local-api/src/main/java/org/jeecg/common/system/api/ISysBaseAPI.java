@@ -946,5 +946,13 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     void processingTreeList(String name, List<SelectTable> list);
+
+    /**
+     * 根据数据库名和表名验证该数据库中是存在这张表
+     * @param dbName
+     * @param tableName
+     * @return
+     */
+    boolean selectTableName(String dbName, String tableName);
 }
 

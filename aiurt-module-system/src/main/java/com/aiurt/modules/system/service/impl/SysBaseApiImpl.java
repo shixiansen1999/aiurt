@@ -2613,4 +2613,14 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             }
         }
     }
+
+    @Override
+    public boolean selectTableName(String dbName, String tableName) {
+        String string = userMapper.selectTableName(dbName, tableName);
+        if (StrUtil.isNotBlank(string)){
+            return true;
+        }else {
+            return false;
+        }
+    }
 }
