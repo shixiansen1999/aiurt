@@ -519,8 +519,8 @@ public class EmergencyPlanRecordServiceImpl extends ServiceImpl<EmergencyPlanRec
             if(EmergencyPlanConstant.IS_SUBMIT1.equals(emergencyPlanRecordDto.getStatus())){
                 throw new AiurtBootException("该启动预案已经提交，无需重复提交！");
             }else{
-                emergencyPlanRecord.setStatus(EmergencyPlanConstant.IS_SUBMIT1);
-                this.updateById(emergencyPlanRecord);
+                emergencyPlanRecordDto.setStatus(EmergencyPlanConstant.IS_SUBMIT1);
+                edit(emergencyPlanRecordDto);
             }
 
         }
