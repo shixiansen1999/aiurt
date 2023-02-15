@@ -116,9 +116,15 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         //同一专业下、同一子系统、同一设备类型，分类名称不能重复
         LambdaQueryWrapper<DeviceType> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(DeviceType::getMajorCode, deviceType.getMajorCode());
-        nameWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
+        if (StrUtil.isNotEmpty(deviceType.getSystemCode())) {
+            nameWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
+        }
         nameWrapper.eq(DeviceType::getName, deviceType.getName());
-        nameWrapper.eq(DeviceType::getPid, deviceType.getPid());
+        if (deviceType.getPid().equals("0")) {
+            nameWrapper.eq(DeviceType::getPid, deviceType.getPid());
+        }else {
+            nameWrapper .not(wrapper->wrapper.eq(DeviceType::getPid,"0"));
+        }
         nameWrapper.eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<DeviceType> nameList = deviceTypeMapper.selectList(nameWrapper);
         if (!nameList.isEmpty()) {
@@ -163,9 +169,15 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         //同一专业下、同一子系统、同一设备类型，分类名称不能重复
         LambdaQueryWrapper<DeviceType> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(DeviceType::getMajorCode, deviceType.getMajorCode());
-        nameWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
+        if (StrUtil.isNotEmpty(deviceType.getSystemCode())) {
+            nameWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
+        }
         nameWrapper.eq(DeviceType::getName, deviceType.getName());
-        nameWrapper.eq(DeviceType::getPid, deviceType.getPid());
+        if (deviceType.getPid().equals("0")) {
+            nameWrapper.eq(DeviceType::getPid, deviceType.getPid());
+        }else {
+            nameWrapper .not(wrapper->wrapper.eq(DeviceType::getPid,"0"));
+        }
         nameWrapper.eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<DeviceType> nameList = deviceTypeMapper.selectList(nameWrapper);
         if (!nameList.isEmpty() && !nameList.get(0).getId().equals(deviceType.getId())) {
