@@ -140,6 +140,13 @@ public class SysAnnouncement implements Serializable {
      **/
     @ApiModelProperty("指定用户")
     private java.lang.String userIds;
+
+    /**
+     * 指定范围（组织机构）
+     **/
+    @ApiModelProperty("指定范围（组织机构）")
+    private java.lang.String orgIds;
+
     /**
      * 业务类型(email:邮件 bpm:流程)
      */

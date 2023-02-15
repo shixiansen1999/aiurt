@@ -55,6 +55,11 @@ public class MessageDTO implements Serializable {
     protected String priority;
 
     /**
+     * 指定范围（组织机构）
+     */
+    protected String orgIds;
+
+    /**
      * 开始时间
      */
     protected java.util.Date startTime;

@@ -5,7 +5,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.category.dto.FixedAssetsCategoryDTO;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.service.impl.PatrolStandardItemsServiceImpl;
 import com.aiurt.common.api.dto.message.*;
@@ -50,7 +49,6 @@ import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.*;
-import com.aiurt.modules.system.model.SysDepartTreeModel;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.util.SecurityUtil;
 import com.aiurt.modules.workarea.entity.WorkArea;
@@ -437,7 +435,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public void sendBusAnnouncement(BusMessageDTO message) {
-        sendBusAnnouncement(message.getFromUser(),
+        sendBusAnnouncement(
+                message.getOrgIds(),
+                message.getFromUser(),
                 message.getToUser(),
                 message.getTitle(),
                 message.getContent(),
@@ -1197,8 +1197,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
      * @param busType
      * @param busId
      */
-    private void sendBusAnnouncement(String fromUser, String toUser, String title, String msgContent, String setMsgCategory, String busType, String busId, String level, Date startTime, Date endTime, String priority) {
+    private void sendBusAnnouncement(String orgIds,String fromUser, String toUser, String title, String msgContent, String setMsgCategory, String busType, String busId, String level, Date startTime, Date endTime, String priority) {
         SysAnnouncement announcement = new SysAnnouncement();
+        announcement.setOrgIds(orgIds);
         announcement.setTitile(title);
         announcement.setMsgContent(msgContent);
         announcement.setSender(fromUser);

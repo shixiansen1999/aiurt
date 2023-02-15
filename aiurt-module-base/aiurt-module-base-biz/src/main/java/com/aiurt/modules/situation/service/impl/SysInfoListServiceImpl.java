@@ -13,6 +13,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -68,7 +69,7 @@ public class SysInfoListServiceImpl extends ServiceImpl<SysInfoListMapper, SysAn
                 LoginUser userByName = iSysBaseAPI.getUserByName(s.getSender());
                 if (ObjectUtil.isNotNull(userByName)) {
                     s.setSender(userByName.getRealname());
-                    getUserNames(s);
+                    getOrgNames(s);
                 }
             }
         });
@@ -100,21 +101,22 @@ public class SysInfoListServiceImpl extends ServiceImpl<SysInfoListMapper, SysAn
         }
     }
 
-    private void getUserNames(@RequestBody SysAnnouncement sysAnnouncement) {
-        if (StrUtil.isNotBlank(sysAnnouncement.getUserIds())) {
-            String[] split = sysAnnouncement.getUserIds().split(",");
+    @Override
+    public void getOrgNames(@RequestBody SysAnnouncement sysAnnouncement) {
+        if (StrUtil.isNotBlank(sysAnnouncement.getOrgIds())) {
+            String[] split = sysAnnouncement.getOrgIds().split(",");
             if (split.length > 0) {
                 StringBuilder str = new StringBuilder();
                 for (String s : split) {
                     if (!Objects.isNull(s)) {
-                        LoginUser userById = iSysBaseAPI.getUserByName(s);
-                        if (!ObjectUtils.isEmpty(userById)) {
-                            str.append(userById.getRealname()).append(",");
+                        SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(s);
+                        if (!ObjectUtils.isEmpty(sysDepartModel)) {
+                            str.append(sysDepartModel.getDepartName()).append(",");
                         }
                     }
                 }
                 if (StrUtil.isNotBlank(str)) {
-                    sysAnnouncement.setUserNames(str.deleteCharAt(str.length() - 1).toString());
+                    sysAnnouncement.setOrgNames(str.deleteCharAt(str.length() - 1).toString());
                 }
             }
         }
