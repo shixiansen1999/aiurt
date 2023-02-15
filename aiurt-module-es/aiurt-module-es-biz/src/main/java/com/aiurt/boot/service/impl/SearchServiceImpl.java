@@ -106,7 +106,7 @@ public class SearchServiceImpl implements ISearchService {
 
         // suggestField为指定在哪个字段搜索，searchKey为输入内容，TEN为10，代表输出显示最大条数
         CompletionSuggestionBuilder suggestionBuilderDistrict = SuggestBuilders
-                .completionSuggestion(EsConstant.FAULT_PHENOMENON)
+                .completionSuggestion(EsConstant.FAULT_PHENOMENON+".suggest")
                 .size(EsConstant.TEN)
                 .skipDuplicates(true);
 
@@ -147,24 +147,19 @@ public class SearchServiceImpl implements ISearchService {
                 HighlightField highlightFaultReason = highlightFields.get(EsConstant.FAULT_REASON);
                 if (ObjectUtil.isNotEmpty(highlightFaultReason)) {
                     String replaceFaultReason = highlightFaultReason.getFragments()[0].string();
-                    ;
                     searchResponseDto.setFaultReason(replaceFaultReason);
                 }
 
                 HighlightField highlightSolution = highlightFields.get(EsConstant.SOLUTION);
                 if (ObjectUtil.isNotEmpty(highlightSolution)) {
                     String replaceSolution = highlightSolution.getFragments()[0].string();
-                    ;
                     searchResponseDto.setSolution(replaceSolution);
-
                 }
 
                 HighlightField highlightMethod = highlightFields.get(EsConstant.METHOD);
                 if (ObjectUtil.isNotEmpty(highlightMethod)) {
                     String replaceMethod = highlightMethod.getFragments()[0].string();
-                    ;
                     searchResponseDto.setMethod(replaceMethod);
-
                 }
                 searchResponsList.add(searchResponseDto);
             }

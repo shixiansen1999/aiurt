@@ -1,53 +1,62 @@
-
 {
   "mappings": {
     "properties": {
       "id": {
         "type": "text"
       },
-      "knowledgeBaseTypeCode":{
+      "knowledge_base_type_code": {
         "type": "text"
       },
-      "deviceTypeCode":{
+      "device_type_code": {
         "type": "text"
       },
-      "materialCode":{
+      "material_code": {
         "type": "text"
       },
-      "faultCodes":{
+      "fault_codes": {
         "type": "text",
         "index": false
       },
-      "faultPhenomenon":{
+      "fault_phenomenon": {
         "type": "text",
         "analyzer": "ik_max_word",
-        "search_analyzer": "ik_max_word"
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_max_word"
+          }
+        }
       },
-      "faultReason":{
+      "fault_reason": {
         "type": "text",
         "analyzer": "ik_max_word",
-        "search_analyzer": "ik_max_word"
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_max_word"
+          }
+        }
       },
-      "solution":{
+      "solution": {
         "type": "text",
-        "analyzer": "ik_max_word",
-        "search_analyzer": "ik_max_word"
+        "analyzer": "ik_max_word"
       },
-      "method":{
+      "method": {
+        "type": "text",
+        "analyzer": "ik_max_word"
+      },
+      "tools": {
         "type": "text"
       },
-      "tools":{
-        "type": "text"
-      },
-      "status":{
+      "status": {
         "type": "integer"
       },
-      "filePath":{
+      "file_path": {
         "type": "integer",
         "index": false,
         "doc_values": false
       },
-      "createTime":{
+      "create_time": {
         "type": "date",
         "index": false,
         "doc_values": false
@@ -55,3 +64,4 @@
     }
   }
 }
+
