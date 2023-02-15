@@ -171,10 +171,10 @@
                 AND t1.id = #{taskId}
             </if>
             <if test="stationCode !=null ">
-                AND t2.station_code = #{stationCode}
+                AND t4.station_code = #{stationCode}
             </if>
         </where>
-        group by t2.id
+        group by t2.task_standard_rel_id
         order by t2.update_time desc,t2.create_time desc
     </select>
 
