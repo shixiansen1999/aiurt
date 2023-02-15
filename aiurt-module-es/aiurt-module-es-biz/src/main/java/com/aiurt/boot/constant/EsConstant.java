@@ -56,5 +56,8 @@ public class EsConstant {
 
     public static final Integer FAULT_KNOWLEDGE_PAGE_NO_1 = 1;
 
-
+    /**
+     * 文件数据索引
+     */
+    public static final String FILE_DATA_INDEX = "file_data";
 }
