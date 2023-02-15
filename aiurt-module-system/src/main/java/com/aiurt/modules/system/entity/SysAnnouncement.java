@@ -64,12 +64,14 @@ public class SysAnnouncement implements Serializable {
      */
     @Excel(name = "发布人", width = 15)
     @ApiModelProperty("发布人")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
     private java.lang.String sender;
     /**
      * 优先级（L低，M中，H高）
      */
     @Excel(name = "优先级（L低，M中，H高,）", width = 15, dicCode = "priority")
     @ApiModelProperty("优先级（L低，M中，H高,）")
+    @Dict(dicCode = "priority")
     private java.lang.String priority;
 
     /**

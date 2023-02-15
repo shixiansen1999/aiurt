@@ -44,6 +44,7 @@ import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -125,9 +126,33 @@ public class SysAnnouncementController {
 
         //排序逻辑 处理
         IPage<SysAnnouncement> pageList = sysAnnouncementService.page(page, queryWrapper);
+        List<SysAnnouncement> records = pageList.getRecords();
+        for (SysAnnouncement record : records) {
+            getUserNames(record);
+        }
         result.setSuccess(true);
         result.setResult(pageList);
         return result;
+    }
+
+    private void getUserNames(@RequestBody SysAnnouncement sysAnnouncement) {
+        if (StrUtil.isNotBlank(sysAnnouncement.getUserIds())) {
+            String[] split = sysAnnouncement.getUserIds().split(",");
+            if (split.length > 0) {
+                StringBuilder str = new StringBuilder();
+                for (String s : split) {
+                    if (!Objects.isNull(s)) {
+                        LoginUser userById = sysBaseApi.getUserByName(s);
+                        if (!ObjectUtils.isEmpty(userById)) {
+                            str.append(userById.getRealname()).append(",");
+                        }
+                    }
+                }
+                if (StrUtil.isNotBlank(str)) {
+                    sysAnnouncement.setUserNames(str.deleteCharAt(str.length() - 1).toString());
+                }
+            }
+        }
     }
 
     /**
