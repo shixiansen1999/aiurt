@@ -102,9 +102,9 @@ public class SysPermissionController {
             List<SysPermissionTree> treeList = new ArrayList<>();
             getTreeList(treeList, list, null);
             result.setResult(treeList);
-            if(StrUtil.isNotBlank(name) && CollectionUtil.isNotEmpty(result.getResult()) && isApp.equals(CommonConstant.MENU_TYPE_0)){
-                this.menuTree(name,result.getResult());
-            }
+//            if(StrUtil.isNotBlank(name) && CollectionUtil.isNotEmpty(result.getResult()) && isApp.equals(CommonConstant.MENU_TYPE_0)){
+//                this.menuTree(name,result.getResult());
+//            }
             result.setSuccess(true);
             log.info("======获取全部菜单数据=====耗时:" + (System.currentTimeMillis() - start) + "毫秒");
         } catch (Exception e) {
