@@ -309,7 +309,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
         }
          List<String> ordCode = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
         faultTimeoutLevelReq.setOrgList(ordCode);
-        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq,majors,isDirector);
+        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq,majors,isDirector,lv1Hours,lv2Hours,lv3Hours);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultTimeoutLevelDTO faultDatum : faultData) {
                 //查找设备编码
