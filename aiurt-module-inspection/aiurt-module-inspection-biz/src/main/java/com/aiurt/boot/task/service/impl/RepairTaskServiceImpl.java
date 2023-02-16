@@ -371,7 +371,20 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
     @Override
     public List<RepairTaskDTO> selectTaskList(String taskId, String stationCode) {
+        //无设备
         List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskList(taskId, stationCode);
+        //有设备
+        List<RepairTaskDTO> repairDeviceTask = repairTaskMapper.selectDeviceTaskList(taskId);
+        for (RepairTaskDTO repairTaskDTO : repairDeviceTask) {
+            String equipmentCode = repairTaskDTO.getEquipmentCode();
+            if(StrUtil.isNotBlank(equipmentCode)){
+                JSONObject deviceByCode = iSysBaseAPI.getDeviceByCode(equipmentCode);
+                String station_code = deviceByCode.getString("stationCode");
+                if((stationCode).equals(station_code)){
+                    repairTasks.add(repairTaskDTO);
+                }
+            }
+        }
         repairTasks.forEach(e -> {
             //查询同行人
             List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
