@@ -514,4 +514,13 @@ public interface CommonConstant {
   */
  public static final String TODO_TYPE_0 = "0";
  public static final String TODO_TYPE_2 = "2";
+
+ /**
+  * 下划线分隔符
+  */
+ public static final String UNDER_LINE_SEPARATOR = "_";
+ /**
+  * 逗号分隔符
+  */
+ public static final Character COMMA_SEPARATOR = ',';
 }

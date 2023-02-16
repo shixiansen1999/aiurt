@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.EsConstant;
 import com.aiurt.boot.service.ISearchService;
 import com.aiurt.boot.utils.ElasticsearchClientUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.search.dto.DocumentManageRequestDTO;
 import com.aiurt.modules.search.dto.SearchRequestDTO;
 import com.aiurt.modules.search.dto.SearchResponseDTO;
@@ -47,6 +48,12 @@ public class SearchServiceImpl implements ISearchService {
     @Autowired
     private ElasticsearchClientUtil esUtil;
 
+    /**
+     * 分页查询故障知识库
+     *
+     * @param searchRequest
+     * @return
+     */
     @Override
     public IPage<SearchResponseDTO> faultKnowledgeList(SearchRequestDTO searchRequest) {
         // 构建DSL语句
@@ -58,12 +65,15 @@ public class SearchServiceImpl implements ISearchService {
         return result;
     }
 
+    /**
+     * 故障知识库词语补全提示
+     *
+     * @param searchKey
+     * @return
+     */
     @Override
     public List<TermResponseDTO> suggest(String searchKey) {
-        String esIndex = EsConstant.FAULT_KNOWLEDGE_INDEX;
-        String suggestField = EsConstant.FAULT_PHENOMENON;
-        String suggestIden = EsConstant.FAULT_KNOWLEDGE_SUGGEST;
-        return doSuggest(searchKey, esIndex, suggestField, suggestIden);
+        return doSuggest(searchKey, EsConstant.FAULT_KNOWLEDGE_INDEX, EsConstant.FAULT_PHENOMENON, EsConstant.FAULT_KNOWLEDGE_SUGGEST);
     }
 
     /**
@@ -74,10 +84,7 @@ public class SearchServiceImpl implements ISearchService {
      */
     @Override
     public List<TermResponseDTO> documentManageSuggest(String searchKey) {
-        String esIndex = EsConstant.FILE_DATA_INDEX;
-        String suggestField = EsConstant.ATTACHMENT_NAME;
-        String suggestIden = EsConstant.DOCUMENT_MANAGE_SUGGEST;
-        return doSuggest(searchKey, esIndex, suggestField, suggestIden);
+        return doSuggest(searchKey, EsConstant.FILE_DATA_INDEX, EsConstant.ATTACHMENT_NAME, EsConstant.DOCUMENT_MANAGE_SUGGEST);
     }
 
     /**
@@ -102,7 +109,7 @@ public class SearchServiceImpl implements ISearchService {
         // 解析结果,处理高亮字段替换
         SearchHits hits = searchResponse.getHits();
         List<FileAnalysisData> searchResponsList = CollUtil.newArrayList();
-        if (null != hits.getHits() && hits.getHits().length > 0) {
+        if (ObjectUtil.isNotEmpty(hits.getHits())) {
             for (SearchHit hit : hits.getHits()) {
                 // 处理高亮字段
                 buildHighlight(hit, FileAnalysisData.class);
@@ -120,6 +127,14 @@ public class SearchServiceImpl implements ISearchService {
         return result;
     }
 
+    /**
+     * 高亮字段替换内容
+     *
+     * @param hit
+     * @param clazz
+     * @param <T>
+     * @return
+     */
     private <T> T buildHighlight(SearchHit hit, Class<T> clazz) {
         Map<String, HighlightField> highlightFields = hit.getHighlightFields();
         T value = JSON.parseObject(hit.getSourceAsString(), clazz);
@@ -129,16 +144,13 @@ public class SearchServiceImpl implements ISearchService {
         for (Field field : fields) {
             field.setAccessible(true);
 
-            // 处理驼峰,es中的字段全部使用下拉线的形式
-            String name =StrUtil.toUnderlineCase(field.getName());
+            // 驼峰转换
+            String name = StrUtil.toUnderlineCase(field.getName());
 
             if (highlightFields.containsKey(name)) {
-                // 根据map集合的key获取值（即匹配的高亮信息）
                 HighlightField highlightField = highlightFields.get(name);
-                // 默认选取分片后第一片的信息并转换为字符串
                 String replaceValue = highlightField.fragments()[0].toString();
                 try {
-                    // 为查询结果赋新值
                     field.set(value, replaceValue);
                 } catch (IllegalAccessException e) {
                     log.error("buildHighlight IllegalAccessException：{}", e);
@@ -148,6 +160,12 @@ public class SearchServiceImpl implements ISearchService {
         return (T) value;
     }
 
+    /**
+     * 构建规范知识库查询器
+     *
+     * @param documentManageRequest
+     * @return
+     */
     private SearchSourceBuilder buildDocumentManageSourceBuilder(DocumentManageRequestDTO documentManageRequest) {
         SearchSourceBuilder builder = new SearchSourceBuilder();
 
@@ -186,13 +204,22 @@ public class SearchServiceImpl implements ISearchService {
         return builder;
     }
 
+    /**
+     * 词语补全建议
+     *
+     * @param searchKey
+     * @param esIndex      es索引
+     * @param suggestField 建议字段
+     * @param suggestIden  es存储标识
+     * @return
+     */
     private List<TermResponseDTO> doSuggest(String searchKey, String esIndex, String suggestField, String suggestIden) {
         // 构建DSL语句
         SearchSourceBuilder builder = buildSuggestSearchSourceBuilder(searchKey, suggestField, suggestIden);
         // 查询es
         SearchResponse searchResponse = esUtil.queryDocument(esIndex, builder);
         // 构建返回结果
-        List<TermResponseDTO> result = buildSuggestResponse(searchResponse,suggestIden);
+        List<TermResponseDTO> result = buildSuggestResponse(searchResponse, suggestIden);
         return result;
     }
 
@@ -203,7 +230,7 @@ public class SearchServiceImpl implements ISearchService {
      * @param searchResponse
      * @return
      */
-    private List<TermResponseDTO> buildSuggestResponse(SearchResponse searchResponse,String suggestIden) {
+    private List<TermResponseDTO> buildSuggestResponse(SearchResponse searchResponse, String suggestIden) {
         List<TermResponseDTO> result = CollUtil.newArrayList();
 
         Suggest suggest = searchResponse.getSuggest();
@@ -226,7 +253,7 @@ public class SearchServiceImpl implements ISearchService {
     }
 
     /**
-     * 构建
+     * 构建词语建议查询器
      *
      * @param searchKey
      * @return
@@ -334,8 +361,8 @@ public class SearchServiceImpl implements ISearchService {
     private void setHighLight(String keyword, SearchSourceBuilder builder, String... fieldNames) {
         if (StrUtil.isNotEmpty(keyword) && null != fieldNames) {
             HighlightBuilder highlightBuilder = new HighlightBuilder();
-            highlightBuilder.preTags("<b style='color:red'>");
-            highlightBuilder.postTags("</b>");
+            highlightBuilder.preTags(EsConstant.HIGH_LIGHT_PRE_TAGS);
+            highlightBuilder.postTags(EsConstant.HIGH_LIGHT_POST_TAGS);
             for (String field : fieldNames) {
                 highlightBuilder.field(new HighlightBuilder.Field(field));
                 builder.highlighter(highlightBuilder);
@@ -343,13 +370,21 @@ public class SearchServiceImpl implements ISearchService {
         }
     }
 
+
     /**
-     * 分页：es索引从0开始
-     * pageNo:1 from:0 pageSize:10 [0,1,2,3,4,5,6,7,8,9]
-     * pageNo:2 from:1 pageSize:10
-     * from = (pageNum-1) * size
+     * 设置分页
+     *
+     * @param pageNo
+     * @param pageSize
+     * @param builder
      */
     private void setPage(Integer pageNo, Integer pageSize, SearchSourceBuilder builder) {
+        /**
+         * 分页：es索引从0开始
+         * pageNo:1 from:0 pageSize:10 [0,1,2,3,4,5,6,7,8,9]
+         * pageNo:2 from:1 pageSize:10
+         * from = (pageNum-1) * size
+         */
         Integer pageNoTemp = ObjectUtil.isEmpty(pageNo) || pageNo < 1 ? EsConstant.FAULT_KNOWLEDGE_PAGE_NO_1 : pageNo;
         Integer pageSizeTemp = ObjectUtil.isEmpty(pageSize) ? EsConstant.FAULT_KNOWLEDGE_PAGE_SIZE_10 : pageSize;
         builder.from((pageNoTemp - 1) * pageSizeTemp);
@@ -365,10 +400,10 @@ public class SearchServiceImpl implements ISearchService {
     private void setSort(String sort, SearchSourceBuilder builder) {
         if (StrUtil.isNotEmpty(sort)) {
             // sort=createTime_asc,updateTime_desc
-            List<String> sortList = StrUtil.split(sort, ',');
+            List<String> sortList = StrUtil.split(sort, CommonConstant.COMMA_SEPARATOR);
             for (String sortStr : sortList) {
-                String[] s = sortStr.split("_");
-                SortOrder order = s[1].equalsIgnoreCase("asc") ? SortOrder.ASC : SortOrder.DESC;
+                String[] s = sortStr.split(CommonConstant.UNDER_LINE_SEPARATOR);
+                SortOrder order = s[1].equalsIgnoreCase(EsConstant.SORT_ORDER_ASC) ? SortOrder.ASC : SortOrder.DESC;
                 builder.sort(s[0], order);
             }
         }

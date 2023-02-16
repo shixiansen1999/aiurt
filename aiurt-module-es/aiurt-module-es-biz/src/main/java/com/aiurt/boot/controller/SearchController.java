@@ -41,7 +41,7 @@ public class SearchController {
     }
 
     @ApiOperation(value = "故障知识库词语补全提示", notes = "故障知识库词语补全提示")
-    @GetMapping(value = "/suggest")
+    @GetMapping(value = "/faultKnowledgeSuggest")
     public Result<List<TermResponseDTO>> faultKnowledgeSuggest(String searchKey) {
         List<TermResponseDTO> result = searchService.suggest(searchKey);
         return Result.OK(result);

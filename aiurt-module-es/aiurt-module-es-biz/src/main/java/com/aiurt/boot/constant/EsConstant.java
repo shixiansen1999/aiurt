@@ -86,6 +86,18 @@ public class EsConstant {
      * 词语补全后缀
      */
     public static final String SUGGEST_SUFFIX = ".suggest";
+    /**
+     * 高亮词语前缀
+     */
+    public static final String HIGH_LIGHT_PRE_TAGS = "<b style='color:red'>";
+    /**
+     * 高亮词语前缀
+     */
+    public static final String HIGH_LIGHT_POST_TAGS = "</b>";
+    /**
+     * 高亮词语前缀
+     */
+    public static final String SORT_ORDER_ASC = "asc";
 
 
     public static final Integer FAULT_KNOWLEDGE_PAGE_SIZE_10 = 10;

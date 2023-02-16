@@ -43,7 +43,7 @@ public class IFileAnalysisServiceImpl implements IFileAnalysisService {
 
             analysisData.setId(id);
             analysisData.setName(fileName);
-            analysisData.setType(suffix);
+            analysisData.setFormat(suffix);
             analysisData.setContent(base64);
             analysisData.setAddress(path);
 
