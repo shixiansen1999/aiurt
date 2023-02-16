@@ -4,6 +4,8 @@ import com.aiurt.modules.usageconfig.entity.UsageConfig;
 import com.aiurt.modules.usageconfig.mapper.UsageConfigMapper;
 import com.aiurt.modules.usageconfig.service.UsageConfigService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -14,5 +16,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig> implements UsageConfigService {
+
+    @Autowired
+    private UsageConfigMapper usageConfigMapper;
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
+
 
 }
