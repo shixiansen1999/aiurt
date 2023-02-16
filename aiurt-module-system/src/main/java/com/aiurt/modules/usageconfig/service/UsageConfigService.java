@@ -1,7 +1,11 @@
 package com.aiurt.modules.usageconfig.service;
 
+import com.aiurt.modules.usageconfig.dto.UsageConfigDTO;
 import com.aiurt.modules.usageconfig.entity.UsageConfig;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * @Description: 待办池列表
@@ -11,4 +15,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface UsageConfigService extends IService<UsageConfig> {
 
+    Page<UsageConfigDTO> pageList(Page<UsageConfigDTO> pageList, UsageConfigDTO usageConfigDTO);
+
+    List<UsageConfigDTO> tree(String name);
 }
