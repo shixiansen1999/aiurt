@@ -115,6 +115,10 @@ public class FreemarkerParseFactory {
      */
     public static String parseTemplateContent(String tplContent,
                                               Map<String, Object> paras) {
+        return parseTemplateContent(tplContent, paras, false);
+    }
+
+    public static String parseTemplateContent(String tplContent, Map<String, Object> paras, boolean keepSpace) {
         try {
             String sqlUnderline="sql_";
             StringWriter swriter = new StringWriter();
@@ -127,12 +131,14 @@ public class FreemarkerParseFactory {
             }
             paras.put(MINI_DAO_FORMAT, new SimpleFormat());
             mytpl.process(paras, swriter);
-            String sql = getSqlText(swriter.toString());
+            String sql = getSqlText(swriter.toString(), keepSpace);
             paras.remove(MINI_DAO_FORMAT);
             return sql;
         } catch (Exception e) {
             log.error(e.getMessage(), e.fillInStackTrace());
             log.error("发送一次的模板key:{ " + tplContent + " }");
+            //System.err.println(e.getMessage());
+            //System.err.println("模板内容:{ "+ tplContent +" }");
             throw new RuntimeException("解析SQL模板异常");
         }
     }
@@ -141,10 +147,16 @@ public class FreemarkerParseFactory {
      * 除去无效字段，去掉注释 不然批量处理可能报错 去除无效的等于
      */
     private static String getSqlText(String sql) {
+        return getSqlText(sql, false);
+    }
+
+    private static String getSqlText(String sql, boolean keepSpace) {
         // 将注释替换成""
         sql = NOTES_PATTERN.matcher(sql).replaceAll("");
-        sql = sql.replaceAll("\\n", " ").replaceAll("\\t", " ")
-                .replaceAll("\\s{1,}", " ").trim();
+        if (!keepSpace) {
+            sql = sql.replaceAll("\\n", " ").replaceAll("\\t", " ")
+                    .replaceAll("\\s{1,}", " ").trim();
+        }
         // 去掉 最后是 where这样的问题
         //where空格 "where "
         String whereSpace = DataBaseConstant.SQL_WHERE+" ";

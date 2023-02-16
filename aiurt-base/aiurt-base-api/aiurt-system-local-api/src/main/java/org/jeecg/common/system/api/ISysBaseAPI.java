@@ -62,6 +62,20 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     String parseTemplateByCode(TemplateDTO templateDTO);
 
+    //update-begin---author:taoyan ---date:20220705  for：支持自定义推送类型，邮件、钉钉、企业微信、系统消息-----------
+    /**
+     * 发送模板消息【新，支持自定义推送类型】
+     * @param message
+     */
+    void sendTemplateMessage(MessageDTO message);
+
+    /**
+     * 根据模板编码获取模板内容【新，支持自定义推送类型】
+     * @param templateCode
+     * @return
+     */
+    String getTemplateContent(String templateCode);
+    //update-begin---author:taoyan ---date:20220705  for：支持自定义推送类型，邮件、钉钉、企业微信、系统消息-----------
 
     /**
      * 6根据用户id查询用户信息

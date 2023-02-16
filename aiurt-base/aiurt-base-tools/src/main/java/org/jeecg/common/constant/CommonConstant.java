@@ -258,4 +258,8 @@ public interface CommonConstant {
 	 */
 	public static final String PREFIX_USER_SYSTEM_CODES = "prefix_user_system_codes";
 
+	/**
+	 * 邮箱消息中地址登录时地址后携带的token,需要替换成真实的token值
+	 */
+	String LOGIN_TOKEN = "{LOGIN_TOKEN}";
 }

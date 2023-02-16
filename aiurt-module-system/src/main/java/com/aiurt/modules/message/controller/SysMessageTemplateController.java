@@ -7,13 +7,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.modules.message.entity.MsgParams;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.message.service.ISysMessageTemplateService;
 import com.aiurt.modules.message.util.PushMsgUtil;
+import org.jeecg.common.util.oConvertUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,8 +48,10 @@ import lombok.extern.slf4j.Slf4j;
 public class SysMessageTemplateController extends BaseController<SysMessageTemplate, ISysMessageTemplateService> {
 	@Autowired
 	private ISysMessageTemplateService sysMessageTemplateService;
+
+
 	@Autowired
-	private PushMsgUtil pushMsgUtil;
+	private ISysBaseAPI sysBaseApi;
 
 	/**
 	 * 分页列表查询
@@ -153,19 +159,23 @@ public class SysMessageTemplateController extends BaseController<SysMessageTempl
 	@PostMapping(value = "/sendMsg")
 	public Result<SysMessageTemplate> sendMessage(@RequestBody MsgParams msgParams) {
 		Result<SysMessageTemplate> result = new Result<SysMessageTemplate>();
-		Map<String, String> map = null;
 		try {
-			map = (Map<String, String>) JSON.parse(msgParams.getTestData());
+			MessageDTO md = new MessageDTO();
+			md.setToAll(false);
+			md.setTitle("消息发送测试");
+			md.setTemplateCode(msgParams.getTemplateCode());
+			md.setToUser(msgParams.getReceiver());
+			md.setType(msgParams.getMsgType());
+			String testData = msgParams.getTestData();
+			if(StrUtil.isNotBlank(testData)){
+				Map<String, Object> data = JSON.parseObject(testData, Map.class);
+				md.setData(data);
+			}
+			sysBaseApi.sendTemplateMessage(md);
+			return result.success("消息发送成功！");
 		} catch (Exception e) {
-			result.error500("解析Json出错！");
-			return result;
+			log.error("发送消息出错", e.getMessage());
+			return result.error500("发送消息出错！");
 		}
-		boolean isSendSuccess = pushMsgUtil.sendMessage(msgParams.getMsgType(), msgParams.getTemplateCode(), map, msgParams.getReceiver());
-		if (isSendSuccess) {
-			result.success("发送消息任务添加成功！");
-		} else {
-			result.error500("发送消息任务添加失败！");
-		}
-		return result;
 	}
 }

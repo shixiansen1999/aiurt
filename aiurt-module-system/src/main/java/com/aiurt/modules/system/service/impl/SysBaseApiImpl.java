@@ -11,9 +11,12 @@ import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.aspect.UrlMatchEnum;
 import com.aiurt.common.constant.*;
+import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.HTMLUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.YouBianCodeUtil;
+import com.aiurt.common.util.dynamic.db.FreemarkerParseFactory;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
@@ -29,7 +32,10 @@ import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
+import com.aiurt.modules.message.handle.impl.DdSendMsgHandle;
 import com.aiurt.modules.message.handle.impl.EmailSendMsgHandle;
+import com.aiurt.modules.message.handle.impl.QywxSendMsgHandle;
+import com.aiurt.modules.message.handle.impl.SystemSendMsgHandle;
 import com.aiurt.modules.message.service.ISysMessageTemplateService;
 import com.aiurt.modules.message.websocket.WebSocket;
 import com.aiurt.modules.position.entity.CsLine;
@@ -67,6 +73,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
+import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
@@ -435,9 +442,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public void sendBusAnnouncement(BusMessageDTO message) {
-        sendBusAnnouncement(
-                message.getOrgIds(),
-                message.getFromUser(),
+        sendBusAnnouncement(message.getFromUser(),
                 message.getToUser(),
                 message.getTitle(),
                 message.getContent(),
@@ -1197,9 +1202,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
      * @param busType
      * @param busId
      */
-    private void sendBusAnnouncement(String orgIds,String fromUser, String toUser, String title, String msgContent, String setMsgCategory, String busType, String busId, String level, Date startTime, Date endTime, String priority) {
+    private void sendBusAnnouncement(String fromUser, String toUser, String title, String msgContent, String setMsgCategory, String busType, String busId, String level, Date startTime, Date endTime, String priority) {
         SysAnnouncement announcement = new SysAnnouncement();
-        announcement.setOrgIds(orgIds);
         announcement.setTitile(title);
         announcement.setMsgContent(msgContent);
         announcement.setSender(fromUser);
@@ -2622,5 +2626,86 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }else {
             return false;
         }
+    }
+
+
+    //-------------------------------------流程节点发送模板消息-----------------------------------------------
+    @Autowired
+    private QywxSendMsgHandle qywxSendMsgHandle;
+
+    @Autowired
+    private SystemSendMsgHandle systemSendMsgHandle;
+
+    @Autowired
+    private EmailSendMsgHandle emailSendMsgHandle;
+
+    @Autowired
+    private DdSendMsgHandle ddSendMsgHandle;
+
+    @Override
+    public void sendTemplateMessage(MessageDTO message) {
+        String messageType = message.getType();
+        //update-begin-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
+        String templateCode = message.getTemplateCode();
+        if(StrUtil.isNotBlank(templateCode)){
+            SysMessageTemplate templateEntity = getTemplateEntity(templateCode);
+            boolean isMarkdown =CommonConstant.MSG_TEMPLATE_TYPE_MD.equals(templateEntity.getTemplateType());
+            String content = templateEntity.getTemplateContent();
+            if(StrUtil.isNotBlank(content) && null!=message.getData()){
+                content = FreemarkerParseFactory.parseTemplateContent(content, message.getData(), isMarkdown);
+            }
+            message.setIsMarkdown(isMarkdown);
+            message.setContent(content);
+        }
+        if(StrUtil.isBlank(message.getContent())){
+            throw new AiurtBootException("发送消息失败,消息内容为空！");
+        }
+        //update-end-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
+        if(MessageTypeEnum.XT.getType().equals(messageType)){
+            if (message.isMarkdown()) {
+                // 系统消息要解析Markdown
+                message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
+            }
+            systemSendMsgHandle.sendMessage(message);
+        }else if(MessageTypeEnum.YJ.getType().equals(messageType)){
+            if (message.isMarkdown()) {
+                // 邮件消息要解析Markdown
+                message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
+            }
+            emailSendMsgHandle.sendMessage(message);
+        }else if(MessageTypeEnum.DD.getType().equals(messageType)){
+            ddSendMsgHandle.sendMessage(message);
+        }else if(MessageTypeEnum.QYWX.getType().equals(messageType)){
+            qywxSendMsgHandle.sendMessage(message);
+        }
+    }
+
+    /**
+     * 根据模板编码获取模板内容【新，支持自定义推送类型】
+     *
+     * @param templateCode
+     * @return
+     */
+    @Override
+    public String getTemplateContent(String templateCode) {
+        List<SysMessageTemplate> list = sysMessageTemplateService.selectByCode(templateCode);
+        if(list==null || list.size()==0){
+            return null;
+        }
+        return list.get(0).getTemplateContent();
+    }
+
+    /**
+     * 获取模板内容，解析markdown
+     *
+     * @param code
+     * @return
+     */
+    public SysMessageTemplate getTemplateEntity(String code) {
+        List<SysMessageTemplate> list = sysMessageTemplateService.selectByCode(code);
+        if (list == null || list.size() == 0) {
+            return null;
+        }
+        return list.get(0);
     }
 }

@@ -6,12 +6,14 @@ import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.message.handle.ISendMsgHandle;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.util.SpringContextUtils;
+import org.springframework.stereotype.Component;
 
 /**
 * @Description: 发送系统消息
 * @Author: wangshuai
 * @Date: 2022年3月22日 18:48:20
 */
+@Component("systemSendMsgHandle")
 public class SystemSendMsgHandle implements ISendMsgHandle {
 
     public static final String FROM_USER="system";

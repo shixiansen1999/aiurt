@@ -514,4 +514,8 @@ public interface CommonConstant {
   */
  public static final String TODO_TYPE_0 = "0";
  public static final String TODO_TYPE_2 = "2";
+
+
+ /** 消息模板：markdown */
+ String MSG_TEMPLATE_TYPE_MD = "5";
 }
