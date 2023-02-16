@@ -20,7 +20,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Base64;
-
+/**
+ * @author cgkj
+ * @Title:
+ * @Description:
+ * @date 2023/2/159:11
+ */
 @Slf4j
 @Service
 public class IFileAnalysisServiceImpl implements IFileAnalysisService {

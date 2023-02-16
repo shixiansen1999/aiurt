@@ -8,7 +8,10 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
 /**
- * 文件数据对象
+ * @author cgkj
+ * @Title:
+ * @Description: 文件数据对象
+ * @date 2023/2/159:11
  */
 @Data
 @ApiModel(value = "文件数据对象", description = "文件数据对象")
@@ -51,5 +54,5 @@ public class FileAnalysisData  {
     @Field(type = FieldType.Text)
     @ApiModelProperty(value = "文件存储地址")
     private String address;
-    
+
 }

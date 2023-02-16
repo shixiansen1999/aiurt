@@ -32,10 +32,14 @@ public class ElasticsearchClientConfig {
     @Value("${spring.elasticsearch.socket-timeout}")
     private int socketTimeoutMillis;
 
-    //    @Value("${spring.elasticsearch.username}")
+    /**
+     * @Value("${spring.elasticsearch.username}")
+     */
     private String username;
 
-    //    @Value("${spring.elasticsearch.password}")
+    /**
+     * @Value("${spring.elasticsearch.password}")
+     */
     private String password;
 
     @Scope("singleton")

@@ -27,6 +27,9 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * @author cgkj0
+ */
 @Slf4j
 @Component
 public class ElasticsearchClientUtil {
@@ -82,7 +85,6 @@ public class ElasticsearchClientUtil {
             return client.indices().exists(request, RequestOptions.DEFAULT);
         } catch (Exception e) {
             log.error("索引【{}】不存在！", index, e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }
@@ -99,7 +101,6 @@ public class ElasticsearchClientUtil {
             return response;
         } catch (Exception e) {
             log.error("删除索引【{}】失败！", index, e.getMessage());
-            e.printStackTrace();
             return new AcknowledgedResponse(false);
         }
     }
@@ -118,7 +119,6 @@ public class ElasticsearchClientUtil {
             client.index(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
             log.error("创建文档失败！", e);
-            e.printStackTrace();
         }
     }
 
@@ -136,7 +136,6 @@ public class ElasticsearchClientUtil {
             client.update(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
             log.error("修改文档失败！", e);
-            e.printStackTrace();
         }
     }
 
@@ -152,7 +151,6 @@ public class ElasticsearchClientUtil {
             client.delete(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
             log.error("删除文档失败！", e);
-            e.printStackTrace();
         }
     }
 
@@ -171,7 +169,6 @@ public class ElasticsearchClientUtil {
             BulkResponse response = client.bulk(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
             log.error("批量插入文档存在异常！", e);
-            e.printStackTrace();
         }
     }
 
@@ -185,7 +182,6 @@ public class ElasticsearchClientUtil {
             BulkResponse response = client.bulk(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
             log.error("批量更新文档存在异常！", e);
-            e.printStackTrace();
         }
     }
 

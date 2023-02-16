@@ -68,11 +68,6 @@ public class EsConstant {
     public static final String ATTACHMENT_NAME = "name";
 
     /**
-     * 词语提示输出显示最大条数
-     */
-    public static final Integer TEN = 8;
-
-    /**
      * fault_knowledge_suggest是一个存储标识
      */
     public static final String FAULT_KNOWLEDGE_SUGGEST = "fault_knowledge_suggest";
@@ -98,7 +93,10 @@ public class EsConstant {
      * 高亮词语前缀
      */
     public static final String SORT_ORDER_ASC = "asc";
-
+    /**
+     * 词语提示输出显示最大条数
+     */
+    public static final Integer TEN = 8;
 
     public static final Integer FAULT_KNOWLEDGE_PAGE_SIZE_10 = 10;
 

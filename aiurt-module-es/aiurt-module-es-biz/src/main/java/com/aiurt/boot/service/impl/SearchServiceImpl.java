@@ -106,14 +106,21 @@ public class SearchServiceImpl implements ISearchService {
 
     private IPage<FileAnalysisData> buildDocumentManageResponse(DocumentManageRequestDTO documentManageRequest, SearchResponse searchResponse) {
         Page<FileAnalysisData> result = new Page<>();
+        List<FileAnalysisData> searchResponsList = null;
+
+        if (ObjectUtil.isEmpty(searchResponse)) {
+            return result;
+        }
+
         // 解析结果,处理高亮字段替换
         SearchHits hits = searchResponse.getHits();
-        List<FileAnalysisData> searchResponsList = CollUtil.newArrayList();
-        if (ObjectUtil.isNotEmpty(hits.getHits())) {
-            for (SearchHit hit : hits.getHits()) {
-                // 处理高亮字段
-                buildHighlight(hit, FileAnalysisData.class);
-            }
+        if (ObjectUtil.isEmpty(hits.getHits())) {
+            return result;
+        }
+        searchResponsList = CollUtil.newArrayList();
+        for (SearchHit hit : hits.getHits()) {
+            // 处理高亮字段
+            buildHighlight(hit, FileAnalysisData.class);
         }
 
         // 结果记录
@@ -282,26 +289,32 @@ public class SearchServiceImpl implements ISearchService {
      * @return
      */
     private IPage<SearchResponseDTO> buildSearchResponse(SearchRequestDTO searchRequest, SearchResponse searchResponse) {
-        Page<SearchResponseDTO> searchResponseDTOPage = new Page<>();
+        Page<SearchResponseDTO> result = new Page<>();
+        List<SearchResponseDTO> searchResponsList = null;
+
+        if (ObjectUtil.isEmpty(searchResponse)) {
+            return result;
+        }
 
         // 解析结果,处理高亮字段替换
         SearchHits hits = searchResponse.getHits();
-        List<SearchResponseDTO> searchResponsList = CollUtil.newArrayList();
-        if (null != hits.getHits() && hits.getHits().length > 0) {
-            for (SearchHit hit : hits.getHits()) {
-                searchResponsList.add(buildHighlight(hit, SearchResponseDTO.class));
-            }
+        if (ObjectUtil.isEmpty(hits.getHits())) {
+            return result;
+        }
+        searchResponsList = CollUtil.newArrayList();
+        for (SearchHit hit : hits.getHits()) {
+            searchResponsList.add(buildHighlight(hit, SearchResponseDTO.class));
         }
 
         // 结果记录
-        searchResponseDTOPage.setRecords(searchResponsList);
+        result.setRecords(searchResponsList);
         // 分页信息 - 当前页
-        searchResponseDTOPage.setCurrent(searchRequest.getPageNo());
+        result.setCurrent(searchRequest.getPageNo());
         // 分页信息 - 每页显示条数
-        searchResponseDTOPage.setSize(searchRequest.getPageSize());
+        result.setSize(searchRequest.getPageSize());
         // 分页信息 - 总记录数
-        searchResponseDTOPage.setTotal(hits.getTotalHits().value);
-        return searchResponseDTOPage;
+        result.setTotal(hits.getTotalHits().value);
+        return result;
     }
 
     /**
@@ -359,7 +372,7 @@ public class SearchServiceImpl implements ISearchService {
      * @param fieldNames 高亮字段
      */
     private void setHighLight(String keyword, SearchSourceBuilder builder, String... fieldNames) {
-        if (StrUtil.isNotEmpty(keyword) && null != fieldNames) {
+        if (StrUtil.isNotEmpty(keyword) && ObjectUtil.isNotEmpty(fieldNames)) {
             HighlightBuilder highlightBuilder = new HighlightBuilder();
             highlightBuilder.preTags(EsConstant.HIGH_LIGHT_PRE_TAGS);
             highlightBuilder.postTags(EsConstant.HIGH_LIGHT_POST_TAGS);
@@ -402,9 +415,9 @@ public class SearchServiceImpl implements ISearchService {
             // sort=createTime_asc,updateTime_desc
             List<String> sortList = StrUtil.split(sort, CommonConstant.COMMA_SEPARATOR);
             for (String sortStr : sortList) {
-                String[] s = sortStr.split(CommonConstant.UNDER_LINE_SEPARATOR);
-                SortOrder order = s[1].equalsIgnoreCase(EsConstant.SORT_ORDER_ASC) ? SortOrder.ASC : SortOrder.DESC;
-                builder.sort(s[0], order);
+                String[] sortStrs = sortStr.split(CommonConstant.UNDER_LINE_SEPARATOR);
+                SortOrder order = EsConstant.SORT_ORDER_ASC.equalsIgnoreCase(sortStrs[1]) ? SortOrder.ASC : SortOrder.DESC;
+                builder.sort(sortStrs[0], order);
             }
         }
     }
