@@ -138,8 +138,8 @@
             </if>
             <if test="level == 3">
                 AND status &lt;&gt; 12
-                    and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;={lv3Hours}
-                    and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; {lv2Hours}
+                    and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=#{lv3Hours}
+                    and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; #{lv2Hours}
             </if>
             <if test="faultTimeoutLevelReq.startDate!=null and faultTimeoutLevelReq.endDate!=null">
                 and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{faultTimeoutLevelReq.startDate},'%Y-%m-%d')
