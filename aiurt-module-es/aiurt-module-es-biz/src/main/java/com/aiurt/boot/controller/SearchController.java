@@ -1,9 +1,12 @@
 package com.aiurt.boot.controller;
 
+
 import com.aiurt.boot.service.ISearchService;
+import com.aiurt.modules.search.dto.DocumentManageRequestDTO;
 import com.aiurt.modules.search.dto.SearchRequestDTO;
 import com.aiurt.modules.search.dto.SearchResponseDTO;
 import com.aiurt.modules.search.dto.TermResponseDTO;
+import com.aiurt.modules.search.entity.FileAnalysisData;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -37,10 +40,24 @@ public class SearchController {
         return Result.OK(result);
     }
 
-    @ApiOperation(value = "词语补全提示", notes = "词语补全提示")
+    @ApiOperation(value = "故障知识库词语补全提示", notes = "故障知识库词语补全提示")
     @GetMapping(value = "/suggest")
-    public Result<List<TermResponseDTO>> suggest(String searchKey) {
+    public Result<List<TermResponseDTO>> faultKnowledgeSuggest(String searchKey) {
         List<TermResponseDTO> result = searchService.suggest(searchKey);
+        return Result.OK(result);
+    }
+
+    @ApiOperation(value = "分页查询规程规范与知识库", notes = "分页查询规程规范与知识库")
+    @GetMapping(value = "/documentManageList")
+    public Result<IPage<FileAnalysisData>> documentManageList(DocumentManageRequestDTO documentManageRequest) {
+        IPage<FileAnalysisData> result = searchService.documentManageList(documentManageRequest);
+        return Result.OK(result);
+    }
+
+    @ApiOperation(value = "规程规范与知识库词语补全提示", notes = "规程规范与知识库词语补全提示")
+    @GetMapping(value = "/documentManageSuggest")
+    public Result<List<TermResponseDTO>> documentManageSuggest(String searchKey) {
+        List<TermResponseDTO> result = searchService.documentManageSuggest(searchKey);
         return Result.OK(result);
     }
 

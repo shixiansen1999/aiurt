@@ -12,6 +12,10 @@ public class EsConstant {
      */
     public static final String FAULT_KNOWLEDGE_INDEX = "fault_knowledge_base";
     /**
+     * 文件数据索引
+     */
+    public static final String FILE_DATA_INDEX = "file_data";
+    /**
      * 故障现象字段S
      */
     public static final String FAULT_PHENOMENON = "fault_phenomenon";
@@ -42,6 +46,28 @@ public class EsConstant {
     public static final String MATERIAL_CODE = "material_code";
 
     /**
+     * 规范知识库内容
+     */
+    public static final String CONTENT = "content";
+    /**
+     * 规范知识库文档格式
+     */
+    public static final String FORMAT = "format";
+    /**
+     * 规范知识库文档类型id
+     */
+    public static final String TYPE_ID = "type_id";
+    /**
+     * 规范知识库文档名称
+     */
+    public static final String NAME = "name";
+
+    /**
+     * 规程规范与知识库文档名称
+     */
+    public static final String ATTACHMENT_NAME = "name";
+
+    /**
      * 词语提示输出显示最大条数
      */
     public static final Integer TEN = 8;
@@ -51,13 +77,20 @@ public class EsConstant {
      */
     public static final String FAULT_KNOWLEDGE_SUGGEST = "fault_knowledge_suggest";
 
+    /**
+     * document_manage_suggest是一个存储标识
+     */
+    public static final String DOCUMENT_MANAGE_SUGGEST = "document_manage_suggest";
+
+    /**
+     * 词语补全后缀
+     */
+    public static final String SUGGEST_SUFFIX = ".suggest";
+
 
     public static final Integer FAULT_KNOWLEDGE_PAGE_SIZE_10 = 10;
 
     public static final Integer FAULT_KNOWLEDGE_PAGE_NO_1 = 1;
 
-    /**
-     * 文件数据索引
-     */
-    public static final String FILE_DATA_INDEX = "file_data";
+
 }

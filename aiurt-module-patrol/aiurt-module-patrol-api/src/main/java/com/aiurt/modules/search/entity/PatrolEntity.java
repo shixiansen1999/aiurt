@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity;
+package com.aiurt.modules.search.entity;
 
 /**
  * @author cgkj0

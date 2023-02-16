@@ -4,7 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
 import com.aiurt.boot.constant.EsConstant;
-import com.aiurt.boot.entity.FileAnalysisData;
+import com.aiurt.modules.search.entity.FileAnalysisData;
 import com.aiurt.boot.service.IFileAnalysisService;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;

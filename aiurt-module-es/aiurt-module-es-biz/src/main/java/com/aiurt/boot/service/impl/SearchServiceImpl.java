@@ -6,9 +6,11 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.EsConstant;
 import com.aiurt.boot.service.ISearchService;
 import com.aiurt.boot.utils.ElasticsearchClientUtil;
+import com.aiurt.modules.search.dto.DocumentManageRequestDTO;
 import com.aiurt.modules.search.dto.SearchRequestDTO;
 import com.aiurt.modules.search.dto.SearchResponseDTO;
 import com.aiurt.modules.search.dto.TermResponseDTO;
+import com.aiurt.modules.search.entity.FileAnalysisData;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -29,6 +31,7 @@ import org.elasticsearch.search.suggest.completion.CompletionSuggestionBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -57,12 +60,139 @@ public class SearchServiceImpl implements ISearchService {
 
     @Override
     public List<TermResponseDTO> suggest(String searchKey) {
+        String esIndex = EsConstant.FAULT_KNOWLEDGE_INDEX;
+        String suggestField = EsConstant.FAULT_PHENOMENON;
+        String suggestIden = EsConstant.FAULT_KNOWLEDGE_SUGGEST;
+        return doSuggest(searchKey, esIndex, suggestField, suggestIden);
+    }
+
+    /**
+     * 规程规范与知识库词语补全提示
+     *
+     * @param searchKey
+     * @return
+     */
+    @Override
+    public List<TermResponseDTO> documentManageSuggest(String searchKey) {
+        String esIndex = EsConstant.FILE_DATA_INDEX;
+        String suggestField = EsConstant.ATTACHMENT_NAME;
+        String suggestIden = EsConstant.DOCUMENT_MANAGE_SUGGEST;
+        return doSuggest(searchKey, esIndex, suggestField, suggestIden);
+    }
+
+    /**
+     * 分页查询规程规范与知识库
+     *
+     * @param documentManageRequest
+     * @return
+     */
+    @Override
+    public IPage<FileAnalysisData> documentManageList(DocumentManageRequestDTO documentManageRequest) {
         // 构建DSL语句
-        SearchSourceBuilder builder = buildSuggestSearchSourceBuilder(searchKey);
+        SearchSourceBuilder builder = buildDocumentManageSourceBuilder(documentManageRequest);
         // 查询es
-        SearchResponse searchResponse = esUtil.queryDocument(EsConstant.FAULT_KNOWLEDGE_INDEX, builder);
+        SearchResponse searchResponse = esUtil.queryDocument(EsConstant.FILE_DATA_INDEX, builder);
         // 构建返回结果
-        List<TermResponseDTO> result = buildSuggestResponse(searchResponse);
+        IPage<FileAnalysisData> result = buildDocumentManageResponse(documentManageRequest, searchResponse);
+        return result;
+    }
+
+    private IPage<FileAnalysisData> buildDocumentManageResponse(DocumentManageRequestDTO documentManageRequest, SearchResponse searchResponse) {
+        Page<FileAnalysisData> result = new Page<>();
+        // 解析结果,处理高亮字段替换
+        SearchHits hits = searchResponse.getHits();
+        List<FileAnalysisData> searchResponsList = CollUtil.newArrayList();
+        if (null != hits.getHits() && hits.getHits().length > 0) {
+            for (SearchHit hit : hits.getHits()) {
+                // 处理高亮字段
+                buildHighlight(hit, FileAnalysisData.class);
+            }
+        }
+
+        // 结果记录
+        result.setRecords(searchResponsList);
+        // 分页信息 - 当前页
+        result.setCurrent(documentManageRequest.getPageNo());
+        // 分页信息 - 每页显示条数
+        result.setSize(documentManageRequest.getPageSize());
+        // 分页信息 - 总记录数
+        result.setTotal(hits.getTotalHits().value);
+        return result;
+    }
+
+    private <T> T buildHighlight(SearchHit hit, Class<T> clazz) {
+        Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+        T value = JSON.parseObject(hit.getSourceAsString(), clazz);
+        Field[] fields = clazz.getDeclaredFields();
+
+        // 遍历所有字段属性
+        for (Field field : fields) {
+            field.setAccessible(true);
+
+            // 处理驼峰,es中的字段全部使用下拉线的形式
+            String name =StrUtil.toUnderlineCase(field.getName());
+
+            if (highlightFields.containsKey(name)) {
+                // 根据map集合的key获取值（即匹配的高亮信息）
+                HighlightField highlightField = highlightFields.get(name);
+                // 默认选取分片后第一片的信息并转换为字符串
+                String replaceValue = highlightField.fragments()[0].toString();
+                try {
+                    // 为查询结果赋新值
+                    field.set(value, replaceValue);
+                } catch (IllegalAccessException e) {
+                    log.error("buildHighlight IllegalAccessException：{}", e);
+                }
+            }
+        }
+        return (T) value;
+    }
+
+    private SearchSourceBuilder buildDocumentManageSourceBuilder(DocumentManageRequestDTO documentManageRequest) {
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+
+        /**
+         * 查询：
+         * 模糊匹配[故障现象，故障原因，解决方案，方法]
+         * 过滤[故障现象分类，设备分类，设备组件]
+         * 排序[创建时间]
+         */
+        // 构建bool - query
+        BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+        if (StrUtil.isNotEmpty(documentManageRequest.getKeyword())) {
+            boolQuery.must(QueryBuilders.multiMatchQuery(documentManageRequest.getKeyword(), EsConstant.NAME, EsConstant.CONTENT));
+        }
+        // filter - 按照文档格式进行查询
+        if (StrUtil.isNotEmpty(documentManageRequest.getFormat())) {
+            boolQuery.filter(QueryBuilders.termQuery(EsConstant.FORMAT, documentManageRequest.getFormat()));
+        }
+
+        // filter - 按照文档类型进行查询
+        if (StrUtil.isNotEmpty(documentManageRequest.getTypeId())) {
+            boolQuery.filter(QueryBuilders.termQuery(EsConstant.TYPE_ID, documentManageRequest.getTypeId()));
+        }
+
+        // 封装查询条件
+        builder.query(boolQuery);
+
+        // 排序
+        setSort(documentManageRequest.getSort(), builder);
+
+        // 分页
+        setPage(documentManageRequest.getPageNo(), documentManageRequest.getPageSize(), builder);
+
+        // 高亮
+        setHighLight(documentManageRequest.getKeyword(), builder, EsConstant.NAME, EsConstant.CONTENT);
+        return builder;
+    }
+
+    private List<TermResponseDTO> doSuggest(String searchKey, String esIndex, String suggestField, String suggestIden) {
+        // 构建DSL语句
+        SearchSourceBuilder builder = buildSuggestSearchSourceBuilder(searchKey, suggestField, suggestIden);
+        // 查询es
+        SearchResponse searchResponse = esUtil.queryDocument(esIndex, builder);
+        // 构建返回结果
+        List<TermResponseDTO> result = buildSuggestResponse(searchResponse,suggestIden);
         return result;
     }
 
@@ -73,12 +203,12 @@ public class SearchServiceImpl implements ISearchService {
      * @param searchResponse
      * @return
      */
-    private List<TermResponseDTO> buildSuggestResponse(SearchResponse searchResponse) {
+    private List<TermResponseDTO> buildSuggestResponse(SearchResponse searchResponse,String suggestIden) {
         List<TermResponseDTO> result = CollUtil.newArrayList();
 
         Suggest suggest = searchResponse.getSuggest();
         List<? extends Suggest.Suggestion.Entry<? extends Suggest.Suggestion.Entry.Option>> entries =
-                suggest.getSuggestion(EsConstant.FAULT_KNOWLEDGE_SUGGEST).getEntries();
+                suggest.getSuggestion(suggestIden).getEntries();
 
         for (Suggest.Suggestion.Entry<? extends Suggest.Suggestion.Entry.Option> entry : entries) {
             for (Suggest.Suggestion.Entry.Option option : entry.getOptions()) {
@@ -101,20 +231,19 @@ public class SearchServiceImpl implements ISearchService {
      * @param searchKey
      * @return
      */
-    private SearchSourceBuilder buildSuggestSearchSourceBuilder(String searchKey) {
+    private SearchSourceBuilder buildSuggestSearchSourceBuilder(String searchKey, String suggestField, String suggestIden) {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
         // suggestField为指定在哪个字段搜索，searchKey为输入内容，TEN为10，代表输出显示最大条数
         CompletionSuggestionBuilder suggestionBuilderDistrict = SuggestBuilders
-                .completionSuggestion(EsConstant.FAULT_PHENOMENON+".suggest")
+                .completionSuggestion(suggestField + EsConstant.SUGGEST_SUFFIX)
                 .size(EsConstant.TEN)
                 .skipDuplicates(true);
 
         SuggestBuilder suggestBuilder = new SuggestBuilder();
-        // fault_knowledge_suggest是一个存储标识，下文调用的时候保持一致即可
-        suggestBuilder.addSuggestion(EsConstant.FAULT_KNOWLEDGE_SUGGEST, suggestionBuilderDistrict).setGlobalText(searchKey);
+        // suggestIden是一个存储标识，下文调用的时候保持一致即可
+        suggestBuilder.addSuggestion(suggestIden, suggestionBuilderDistrict).setGlobalText(searchKey);
         searchSourceBuilder.suggest(suggestBuilder);
-
         return searchSourceBuilder;
     }
 
@@ -128,40 +257,12 @@ public class SearchServiceImpl implements ISearchService {
     private IPage<SearchResponseDTO> buildSearchResponse(SearchRequestDTO searchRequest, SearchResponse searchResponse) {
         Page<SearchResponseDTO> searchResponseDTOPage = new Page<>();
 
-        // 解析结果
+        // 解析结果,处理高亮字段替换
         SearchHits hits = searchResponse.getHits();
         List<SearchResponseDTO> searchResponsList = CollUtil.newArrayList();
         if (null != hits.getHits() && hits.getHits().length > 0) {
             for (SearchHit hit : hits.getHits()) {
-                String sourceAsString = hit.getSourceAsString();
-                SearchResponseDTO searchResponseDto = JSON.parseObject(sourceAsString, SearchResponseDTO.class);
-
-                // 处理高亮字段
-                Map<String, HighlightField> highlightFields = hit.getHighlightFields();
-                HighlightField highlightFaultPhenomenon = highlightFields.get(EsConstant.FAULT_PHENOMENON);
-                if (ObjectUtil.isNotEmpty(highlightFaultPhenomenon)) {
-                    String replaceFaultPhenomenon = highlightFaultPhenomenon.getFragments()[0].string();
-                    searchResponseDto.setFaultPhenomenon(replaceFaultPhenomenon);
-                }
-
-                HighlightField highlightFaultReason = highlightFields.get(EsConstant.FAULT_REASON);
-                if (ObjectUtil.isNotEmpty(highlightFaultReason)) {
-                    String replaceFaultReason = highlightFaultReason.getFragments()[0].string();
-                    searchResponseDto.setFaultReason(replaceFaultReason);
-                }
-
-                HighlightField highlightSolution = highlightFields.get(EsConstant.SOLUTION);
-                if (ObjectUtil.isNotEmpty(highlightSolution)) {
-                    String replaceSolution = highlightSolution.getFragments()[0].string();
-                    searchResponseDto.setSolution(replaceSolution);
-                }
-
-                HighlightField highlightMethod = highlightFields.get(EsConstant.METHOD);
-                if (ObjectUtil.isNotEmpty(highlightMethod)) {
-                    String replaceMethod = highlightMethod.getFragments()[0].string();
-                    searchResponseDto.setMethod(replaceMethod);
-                }
-                searchResponsList.add(searchResponseDto);
+                searchResponsList.add(buildHighlight(hit, SearchResponseDTO.class));
             }
         }
 
@@ -213,9 +314,57 @@ public class SearchServiceImpl implements ISearchService {
         builder.query(boolQuery);
 
         // 排序
-        if (StrUtil.isNotEmpty(searchRequestDto.getSort())) {
+        setSort(searchRequestDto.getSort(), builder);
+
+        // 分页
+        setPage(searchRequestDto.getPageNo(), searchRequestDto.getPageSize(), builder);
+
+        // 高亮 - 字段：method,faultPhenomenon，faultReason，solution
+        setHighLight(searchRequestDto.getKeyword(), builder, EsConstant.METHOD, EsConstant.FAULT_PHENOMENON, EsConstant.FAULT_REASON, EsConstant.SOLUTION);
+        return builder;
+    }
+
+    /**
+     * 关键词高亮显示
+     *
+     * @param keyword    关键词
+     * @param builder    查询构造器
+     * @param fieldNames 高亮字段
+     */
+    private void setHighLight(String keyword, SearchSourceBuilder builder, String... fieldNames) {
+        if (StrUtil.isNotEmpty(keyword) && null != fieldNames) {
+            HighlightBuilder highlightBuilder = new HighlightBuilder();
+            highlightBuilder.preTags("<b style='color:red'>");
+            highlightBuilder.postTags("</b>");
+            for (String field : fieldNames) {
+                highlightBuilder.field(new HighlightBuilder.Field(field));
+                builder.highlighter(highlightBuilder);
+            }
+        }
+    }
+
+    /**
+     * 分页：es索引从0开始
+     * pageNo:1 from:0 pageSize:10 [0,1,2,3,4,5,6,7,8,9]
+     * pageNo:2 from:1 pageSize:10
+     * from = (pageNum-1) * size
+     */
+    private void setPage(Integer pageNo, Integer pageSize, SearchSourceBuilder builder) {
+        Integer pageNoTemp = ObjectUtil.isEmpty(pageNo) || pageNo < 1 ? EsConstant.FAULT_KNOWLEDGE_PAGE_NO_1 : pageNo;
+        Integer pageSizeTemp = ObjectUtil.isEmpty(pageSize) ? EsConstant.FAULT_KNOWLEDGE_PAGE_SIZE_10 : pageSize;
+        builder.from((pageNoTemp - 1) * pageSizeTemp);
+        builder.size(pageSizeTemp);
+    }
+
+    /**
+     * 条件排序
+     *
+     * @param sort
+     * @param builder
+     */
+    private void setSort(String sort, SearchSourceBuilder builder) {
+        if (StrUtil.isNotEmpty(sort)) {
             // sort=createTime_asc,updateTime_desc
-            String sort = searchRequestDto.getSort();
             List<String> sortList = StrUtil.split(sort, ',');
             for (String sortStr : sortList) {
                 String[] s = sortStr.split("_");
@@ -223,28 +372,5 @@ public class SearchServiceImpl implements ISearchService {
                 builder.sort(s[0], order);
             }
         }
-        /**
-         * 分页：es索引从0开始
-         * pageNo:1 from:0 pageSize:10 [0,1,2,3,4,5,6,7,8,9]
-         * pageNo:2 from:1 pageSize:10
-         * from = (pageNum-1) * size
-         */
-        Integer pageNo = ObjectUtil.isEmpty(searchRequestDto.getPageNo()) || searchRequestDto.getPageNo() < 1 ? EsConstant.FAULT_KNOWLEDGE_PAGE_NO_1 : searchRequestDto.getPageNo();
-        Integer pageSize = ObjectUtil.isEmpty(searchRequestDto.getPageSize()) ? EsConstant.FAULT_KNOWLEDGE_PAGE_SIZE_10 : searchRequestDto.getPageSize();
-        builder.from((pageNo - 1) * pageSize);
-        builder.size(pageSize);
-
-        // 高亮 - 字段：method,faultPhenomenon，faultReason，solution
-        if (StrUtil.isNotEmpty(searchRequestDto.getKeyword())) {
-            HighlightBuilder highlightBuilder = new HighlightBuilder();
-            highlightBuilder.field(new HighlightBuilder.Field(EsConstant.METHOD));
-            highlightBuilder.field(new HighlightBuilder.Field(EsConstant.FAULT_PHENOMENON));
-            highlightBuilder.field(new HighlightBuilder.Field(EsConstant.FAULT_REASON));
-            highlightBuilder.field(new HighlightBuilder.Field(EsConstant.SOLUTION));
-            highlightBuilder.preTags("<b style='color:red'>");
-            highlightBuilder.postTags("</b>");
-            builder.highlighter(highlightBuilder);
-        }
-        return builder;
     }
 }

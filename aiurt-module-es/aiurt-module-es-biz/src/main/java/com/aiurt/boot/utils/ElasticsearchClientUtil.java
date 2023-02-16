@@ -202,7 +202,7 @@ public class ElasticsearchClientUtil {
             SearchResponse response = client.search(request, RequestOptions.DEFAULT);
             return response;
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("queryDocument fail,IOException:{}",e);
             return null;
         }
     }

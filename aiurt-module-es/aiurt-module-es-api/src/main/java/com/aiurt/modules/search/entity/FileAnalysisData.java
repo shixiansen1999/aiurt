@@ -1,5 +1,6 @@
-package com.aiurt.boot.entity;
+package com.aiurt.modules.search.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -11,7 +12,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
  */
 @Data
 @ApiModel(value = "文件数据对象", description = "文件数据对象")
-public class FileAnalysisData {
+public class FileAnalysisData  {
 
     /**
      * 记录ID
@@ -26,11 +27,18 @@ public class FileAnalysisData {
     @ApiModelProperty(value = "文件对象名称")
     private String name;
     /**
+     * 文件格式
+     */
+    @Field(type = FieldType.Text)
+    @ApiModelProperty(value = "文件类型")
+    private String format;
+    /**
      * 文件类型
      */
     @Field(type = FieldType.Text)
     @ApiModelProperty(value = "文件类型")
-    private String type;
+    @Dict(dictTable = "sys_file_type", dicText = "name", dicCode = "id")
+    private String typeId;
     /**
      * 64位编码的文件内容
      */
@@ -43,22 +51,5 @@ public class FileAnalysisData {
     @Field(type = FieldType.Text)
     @ApiModelProperty(value = "文件存储地址")
     private String address;
-
-//    /**
-//     * 文件类型常量
-//     */
-//    public interface TypeConstant {
-//        /**
-//         * pdf
-//         */
-//        String PDF = "pdf";
-//        /**
-//         * word
-//         */
-//        String word = "word";
-//        /**
-//         * txt
-//         */
-//        String txt = "txt";
-//    }
+    
 }

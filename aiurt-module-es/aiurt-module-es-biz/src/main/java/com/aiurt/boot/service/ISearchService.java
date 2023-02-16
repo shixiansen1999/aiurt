@@ -1,5 +1,7 @@
 package com.aiurt.boot.service;
 
+import com.aiurt.modules.search.entity.FileAnalysisData;
+import com.aiurt.modules.search.dto.DocumentManageRequestDTO;
 import com.aiurt.modules.search.dto.SearchRequestDTO;
 import com.aiurt.modules.search.dto.SearchResponseDTO;
 import com.aiurt.modules.search.dto.TermResponseDTO;
@@ -23,9 +25,24 @@ public interface ISearchService {
     IPage<SearchResponseDTO> faultKnowledgeList(SearchRequestDTO searchRequest);
 
     /**
-     * 词语补全提示
+     * 故障知识库词语补全提示
      * @param searchKey
      * @return
      */
     List<TermResponseDTO> suggest(String searchKey);
+
+    /**
+     * 规程规范与知识库词语补全提示
+     * @param searchKey
+     * @return
+     */
+    List<TermResponseDTO> documentManageSuggest(String searchKey);
+
+    /**
+     * 分页查询规程规范与知识库
+     * @param documentManageRequest
+     * @return
+     */
+    IPage<FileAnalysisData> documentManageList(DocumentManageRequestDTO documentManageRequest);
+
 }
