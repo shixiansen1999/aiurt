@@ -116,7 +116,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
         IPage<PatrolTaskParam> taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam, taskCode);
         // 禁用数据权限过滤-start
-        boolean filter = GlobalThreadLocal.setDataFilter(true);
+        boolean filter = GlobalThreadLocal.setDataFilter(false);
         taskPage.getRecords().stream().forEach(l -> {
             // 组织机构信息
             l.setDepartInfo(patrolTaskOrganizationMapper.selectOrgByTaskCode(l.getCode()));

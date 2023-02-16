@@ -102,7 +102,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
 
         IPage<PatrolPlanDto> list = baseMapper.list(page, patrolPlan);
         // 局部禁用数据权限-begin
-        boolean filter = GlobalThreadLocal.setDataFilter(true);
+        boolean filter = GlobalThreadLocal.setDataFilter(false);
         List<PatrolPlanDto> list1 = list.getRecords();
         list1.forEach(l -> {
             List<String> mechanismNames = sysBaseApi.queryOrgNamesByOrgCodes(baseMapper.selectMechanismNames(l.getCode()));
@@ -133,7 +133,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     private List<String> planDataPermissionFilter() throws AiurtBootException {
         List<String> planCodeByOrg = patrolPlanOrganizationMapper.getPlanCodeByUserOrg();
         // 局部禁用数据权限-begin
-        boolean filter = GlobalThreadLocal.setDataFilter(true);
+        boolean filter = GlobalThreadLocal.setDataFilter(false);
         List<String> planCodeByMajorSystemIsNull = patrolPlanStandardMapper.getPlanCodeByMajorSystemIsNull();
         // 局部禁用数据权限-end
         GlobalThreadLocal.setDataFilter(filter);
