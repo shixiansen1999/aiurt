@@ -142,7 +142,7 @@
             AND tactics = #{inspectionStrategyDTO.tactics}
         </if>
         <if test="inspectionStrategyDTO.mechanismCode !=null ">
-            AND mechanismCode LIKE CONCAT ('%', #{inspectionStrategyDTO.mechanismCode}, '%')
+            AND mechanismCode =  #{inspectionStrategyDTO.mechanismCode}
         </if>
         <if test="inspectionStrategyDTO.siteCode!=null ">
             and siteCode REGEXP #{inspectionStrategyDTO.siteCode}
