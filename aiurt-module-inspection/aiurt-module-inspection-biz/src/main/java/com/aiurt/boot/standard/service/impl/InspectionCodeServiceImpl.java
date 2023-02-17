@@ -24,8 +24,10 @@ import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
 import com.aiurt.boot.standard.mapper.InspectionCodeMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
+import com.aiurt.boot.strategy.entity.InspectionCoOrgRel;
 import com.aiurt.boot.strategy.entity.InspectionStrDeviceRel;
 import com.aiurt.boot.strategy.entity.InspectionStrRel;
+import com.aiurt.boot.strategy.mapper.InspectionCoOrgRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrDeviceRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
@@ -95,6 +97,8 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
     private CommonAPI commonApi;
     @Autowired
     private InspectionCodeContentMapper inspectionCodeContentMapper;
+    @Resource
+    private InspectionCoOrgRelMapper inspectionCoOrgRelMapper;
 
     @Override
     public IPage<InspectionCodeDTO> pageList(Page<InspectionCodeDTO> page, InspectionCodeDTO inspectionCodeDTO) {
@@ -102,6 +106,14 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         GlobalThreadLocal.setDataFilter(false);
         inspectionCodeDTOS.forEach(i->{
             i.setNumber(baseMapper.number(i.getCode()));
+            List<InspectionCoOrgRel> orgRelList = inspectionCoOrgRelMapper.selectList(new LambdaQueryWrapper<InspectionCoOrgRel>().eq(InspectionCoOrgRel::getInspectionCoCode, i.getCode()));
+            if(CollUtil.isNotEmpty(orgRelList)){
+                List<String> orgCodeList = orgRelList.stream().map(InspectionCoOrgRel::getOrgCode).collect(Collectors.toList());
+                List<String> list = sysBaseApi.queryOrgNamesByOrgCodes(orgCodeList);
+                i.setOrgCodeList(orgCodeList);
+                String orgNames = list.stream().collect(Collectors.joining(";"));
+                i.setOrgName(orgNames);
+            }
         });
         if (ObjectUtils.isNotEmpty(inspectionCodeDTO.getInspectionStrCode())) {
             for (InspectionCodeDTO il : inspectionCodeDTOS) {
