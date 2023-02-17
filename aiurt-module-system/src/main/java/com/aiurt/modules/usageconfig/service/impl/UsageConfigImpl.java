@@ -1,11 +1,16 @@
 package com.aiurt.modules.usageconfig.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.usageconfig.dto.BusinessDataStatisticsDTO;
 import com.aiurt.modules.usageconfig.dto.UsageConfigDTO;
+import com.aiurt.modules.usageconfig.dto.UsageConfigParamDTO;
 import com.aiurt.modules.usageconfig.entity.UsageConfig;
 import com.aiurt.modules.usageconfig.mapper.UsageConfigMapper;
 import com.aiurt.modules.usageconfig.service.UsageConfigService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +19,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @Description: 待办池列表
@@ -34,6 +42,13 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
         return usageConfigMapper.getList(pageList,usageConfigDTO);
     }
 
+    @Override
+    public List<BusinessDataStatisticsDTO> getBusinessDataStatistics() {
+        List<BusinessDataStatisticsDTO> businessDataStatisticsDTOList = new ArrayList<>();
+
+
+        return businessDataStatisticsDTOList;
+    }
     @Override
     public List<UsageConfigDTO> tree(String name) {
         List<UsageConfigDTO> usageConfigDTOList =  usageConfigMapper.getAllList();

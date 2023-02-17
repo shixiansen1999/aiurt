@@ -356,7 +356,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 							stringBuilder.append("该数据存在相同数据,");
 						}
 
-						QueryWrapper<Device> queryWrapper = this.getQueryWrapper(null,null,null,device.getMajorCode(),device.getSystemCode(),device.getDeviceTypeCode(),deviceModel.getCode(),deviceModel.getName(), String.valueOf(device.getStatus()));
+						QueryWrapper<Device> queryWrapper = this.getQueryWrapper(null,null,null,null,null,null,deviceModel.getCode(),null, null);
 						Device one = this.getOne(queryWrapper);
 						if (ObjectUtil.isNotEmpty(one)) {
 							stringBuilder.append("数据库已存在该数据,");

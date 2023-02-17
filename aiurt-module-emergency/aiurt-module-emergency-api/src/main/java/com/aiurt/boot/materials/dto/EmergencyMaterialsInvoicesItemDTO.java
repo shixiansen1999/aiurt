@@ -147,7 +147,10 @@ public class EmergencyMaterialsInvoicesItemDTO{
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
-
+	/**存放地点*/
+    @Excel(name = "存放地点", width = 15)
+    @ApiModelProperty(value = "存放地点")
+    private java.lang.String storageLocationCode;
 
     /**巡视日期*/
     @TableField(exist = false)
