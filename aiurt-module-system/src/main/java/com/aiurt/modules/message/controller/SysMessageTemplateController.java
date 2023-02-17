@@ -1,40 +1,28 @@
 package com.aiurt.modules.message.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.message.MessageDTO;
-import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.system.base.controller.BaseController;
-import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.modules.message.entity.MsgParams;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.message.service.ISysMessageTemplateService;
-import com.aiurt.modules.message.util.PushMsgUtil;
-import org.jeecg.common.util.oConvertUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
-
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.Map;
 
 /**
  * @Description: 消息模板
@@ -157,6 +145,7 @@ public class SysMessageTemplateController extends BaseController<SysMessageTempl
 	 * 发送消息
 	 */
 	@PostMapping(value = "/sendMsg")
+	@ApiOperation(value="消息发送测试", notes="消息发送测试")
 	public Result<SysMessageTemplate> sendMessage(@RequestBody MsgParams msgParams) {
 		Result<SysMessageTemplate> result = new Result<SysMessageTemplate>();
 		try {
