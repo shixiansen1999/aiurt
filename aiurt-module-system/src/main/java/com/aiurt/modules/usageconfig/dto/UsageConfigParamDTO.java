@@ -20,4 +20,6 @@ public class UsageConfigParamDTO {
     private String startTime;
 
     private String endTime;
+
+    private Integer sign;
 }

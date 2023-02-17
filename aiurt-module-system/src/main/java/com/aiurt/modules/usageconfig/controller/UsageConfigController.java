@@ -3,6 +3,7 @@ package com.aiurt.modules.usageconfig.controller;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.usageconfig.dto.UsageConfigDTO;
+import com.aiurt.modules.usageconfig.dto.UsageConfigParamDTO;
 import com.aiurt.modules.usageconfig.entity.UsageConfig;
 import com.aiurt.modules.usageconfig.service.UsageConfigService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -111,5 +112,13 @@ public class UsageConfigController extends BaseController<UsageConfig, UsageConf
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
         usageConfigService.removeById(id);
         return Result.OK("删除成功！");
+    }
+
+
+    @AutoLog(value = "系统使用-统计")
+    @ApiOperation(value = "系统使用-统计", notes = "系统使用分类-统计")
+    @GetMapping(value = "/getBusinessDataStatistics")
+    public UsageConfig getBusinessDataStatistics(UsageConfigParamDTO usageConfigParamDTO){
+        return usageConfigService.getBusinessDataStatistics(usageConfigParamDTO);
     }
 }

@@ -27,8 +27,7 @@ public interface UsageConfigMapper extends BaseMapper<UsageConfig> {
      * @param tableName
      * @return
      */
-    @Select("select count(*) from ${tableName}")
-    Integer getTotal(@Param("tableName") String tableName);
+    Integer getTotal(@Param("tableName") String tableName,@Param("staCondition") String staCondition);
 
 
     /**
@@ -38,7 +37,6 @@ public interface UsageConfigMapper extends BaseMapper<UsageConfig> {
      * @param endTime
      * @return
      */
-    @Select("select count(*) from ${tableName} where DATE_FORMAT(create_time, '%Y-%m-%d %H-%I-%S') &gt;= DATE_FORMAT(#{startTime}, '%Y-%m-%d %H-%I-%S') and DATE_FORMAT(create_time, '%Y-%m-%d %H-%I-%S') &lt;= DATE_FORMAT(#{endTime}, '%Y-%m-%d %H-%I-%S')")
-    Integer getNewNumber(@Param("tableName") String tableName,@Param("startTime") String startTime,@Param("endTime") String endTime);
+    Integer getNewNumber(@Param("tableName") String tableName,@Param("startTime") String startTime,@Param("endTime") String endTime,@Param("staCondition") String staCondition);
 
 }
