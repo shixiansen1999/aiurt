@@ -6,6 +6,8 @@ import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
+import com.aiurt.boot.strategy.entity.InspectionCoOrgRel;
+import com.aiurt.boot.strategy.service.IInspectionCoOrgRelService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
@@ -38,6 +40,8 @@ import java.util.List;
 public class InspectionCodeController extends BaseController<InspectionCode, IInspectionCodeService> {
     @Autowired
     private IInspectionCodeService inspectionCodeService;
+    @Autowired
+    private IInspectionCoOrgRelService orgRelService;
 
     /**
      * 分页列表查询检修标准
@@ -93,6 +97,13 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     @ApiOperation(value = "检修标准表-添加", notes = "检修标准表-添加")
     @PostMapping(value = "/add")
     public Result<String> add(@RequestBody InspectionCode inspectionCode) {
+        List<String> orgCodeList = inspectionCode.getOrgCodeList();
+        for (String s : orgCodeList) {
+            InspectionCoOrgRel inspectionCoOrgRel = new InspectionCoOrgRel();
+            inspectionCoOrgRel.setOrgCode(s);
+            inspectionCoOrgRel.setInspectionCoCode(inspectionCode.getCode());
+            orgRelService.save(inspectionCoOrgRel);
+        }
         inspectionCodeService.save(inspectionCode);
         return Result.OK("添加成功！");
     }
