@@ -1458,8 +1458,36 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if(CollUtil.isNotEmpty(repairTaskUsers)){
             String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
             List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+
             if (CollUtil.isNotEmpty(loginUsers)) {
-                sysBaseApi.sendSysAnnouncement(new MessageDTO(manager.checkLogin().getUsername(), loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(",")), "检修任务驳回", "你执行的检修单号为:"+repairTask1.getCode()+"的检修任务被驳回,请查收"));
+                //发送通知
+                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(",")), "检修任务-审核驳回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
+                //构建消息模板
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("code",repairTask1.getCode());
+                map.put("repairTaskName",repairTask1.getType()+repairTask1.getCode());
+                List<String> codes = repairTaskMapper.getRepairTaskStation(repairTask1.getId());
+                Map<String, String> stationNameByCode = iSysBaseAPI.getStationNameByCode(codes);
+                StringBuilder stringBuilder = new StringBuilder();
+                for (Map.Entry<String, String> entry : stationNameByCode.entrySet()) {
+                    stringBuilder.append(entry.getValue());
+                    stringBuilder.append(",");
+                }
+                if (stringBuilder.length() > 0) {
+                    stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                }
+                map.put("repairStation",stringBuilder.toString());
+                map.put("repairTaskTime",repairTask1.getStartTime().toString()+repairTask1.getEndTime().toString());
+                map.put("repairName",loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(",")));
+                map.put("errorContent",repairTask1.getErrorContent());
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTask1.getId());
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.INSPECTION.getType());
+                messageDTO.setData(map);
+                messageDTO.setType(MessageTypeEnum.XT.getType());
+                messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_REJECT);
+                messageDTO.setMsgAbstract("检修任务审核驳回");
+                messageDTO.setPublishingContent("检修任务审核驳回，请重新处理");
+                iSysBaseAPI.sendTemplateMessage(messageDTO);
             }
         }
     }
