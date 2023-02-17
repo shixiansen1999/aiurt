@@ -272,4 +272,9 @@ public interface CommonConstant {
 	 * 发消息 会传递一个业务ID到map
 	 */
 	String NOTICE_MSG_BUS_ID = "NOTICE_MSG_BUS_ID";
+
+	/**
+	 * 发消息 会传递一个业务type到map
+	 */
+	String NOTICE_MSG_BUS_TYPE = "NOTICE_MSG_BUS_TYPE";
 }
