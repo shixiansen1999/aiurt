@@ -1,6 +1,7 @@
 package com.aiurt.modules.usageconfig.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -14,6 +15,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: work_area
@@ -76,4 +78,16 @@ public class UsageConfig implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")
     private Date updateTime;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "总数")
+    private Integer total;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "新增数")
+    private Integer newlyAdded;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "子级")
+    private List<UsageConfig> children;
 }

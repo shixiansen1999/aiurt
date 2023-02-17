@@ -172,6 +172,12 @@ public class SysAnnouncement implements Serializable {
      */
     @ApiModelProperty("摘要")
     private java.lang.String msgAbstract;
+
+    /**
+     * 发布内容
+     */
+    @ApiModelProperty("发布内容")
+    protected String publishingContent;
     /**
      * 钉钉task_id，用于撤回消息
      */

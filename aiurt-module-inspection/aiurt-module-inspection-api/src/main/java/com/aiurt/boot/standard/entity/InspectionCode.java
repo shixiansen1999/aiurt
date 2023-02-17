@@ -139,4 +139,17 @@ public class InspectionCode extends DictEntity implements Serializable {
     @TableField(exist = false)
     private List<InspectionCodeContent> inspectionCodeContentList;
 
+    /**
+     * 组织机构
+     */
+    @ApiModelProperty(value = "组织机构")
+    @TableField(exist = false)
+    private List<String> orgCodeList;
+    /**
+     * 组织机构名称
+     */
+    @ApiModelProperty(value = "组织机构名称")
+    @TableField(exist = false)
+    private java.lang.String orgName;
+
 }

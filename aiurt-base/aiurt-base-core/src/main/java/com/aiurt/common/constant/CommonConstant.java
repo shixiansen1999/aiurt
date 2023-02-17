@@ -518,4 +518,7 @@ public interface CommonConstant {
 
  /** 消息模板：markdown */
  String MSG_TEMPLATE_TYPE_MD = "5";
+
+ /** 消息模板：应急管理业务 */
+ public static final String EMERGENCY_MANAGEMENT_SERVICE = "emergency_management_service";
 }

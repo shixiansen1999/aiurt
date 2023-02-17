@@ -1,9 +1,9 @@
 package com.aiurt.modules.usageconfig.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.modules.usageconfig.dto.BusinessDataStatisticsDTO;
 import com.aiurt.modules.usageconfig.dto.UsageConfigDTO;
 import com.aiurt.modules.usageconfig.dto.UsageConfigParamDTO;
 import com.aiurt.modules.usageconfig.entity.UsageConfig;
@@ -19,9 +19,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @Description: 待办池列表
@@ -39,16 +36,103 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
 
     @Override
     public Page<UsageConfigDTO> pageList(Page<UsageConfigDTO> pageList, UsageConfigDTO usageConfigDTO) {
-        return usageConfigMapper.getList(pageList,usageConfigDTO);
+        return usageConfigMapper.getList(pageList, usageConfigDTO);
     }
 
     @Override
-    public List<BusinessDataStatisticsDTO> getBusinessDataStatistics() {
-        List<BusinessDataStatisticsDTO> businessDataStatisticsDTOList = new ArrayList<>();
+    public UsageConfig getBusinessDataStatistics(UsageConfigParamDTO usageConfigParamDTO) {
+        UsageConfig usageConfig = new UsageConfig();
 
+        //基础数据
+        if (usageConfigParamDTO.getSign() == 0) {
+            LambdaQueryWrapper<UsageConfig> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(UsageConfig::getState, 1);
+            lambdaQueryWrapper.eq(UsageConfig::getPid, 0);
+            lambdaQueryWrapper.eq(UsageConfig::getHasChild, 1);
+            lambdaQueryWrapper.like(UsageConfig::getName, "基础");
 
-        return businessDataStatisticsDTOList;
+            usageConfig = usageConfigMapper.selectOne(lambdaQueryWrapper);
+            List<UsageConfig> children = new ArrayList<>();
+            this.getBasicData(usageConfig.getId(), usageConfigParamDTO.getStartTime(), usageConfigParamDTO.getEndTime(), children);
+            usageConfig.setChildren(children);
+        }
+        //业务数据
+        else {
+            LambdaQueryWrapper<UsageConfig> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(UsageConfig::getState, 1);
+            lambdaQueryWrapper.eq(UsageConfig::getPid, 0);
+            lambdaQueryWrapper.eq(UsageConfig::getHasChild, 1);
+            lambdaQueryWrapper.like(UsageConfig::getName, "业务");
+
+            usageConfig = usageConfigMapper.selectOne(lambdaQueryWrapper);
+            List<UsageConfig> children = new ArrayList<>();
+            this.getBusinessData(usageConfig.getId(), usageConfigParamDTO.getStartTime(), usageConfigParamDTO.getEndTime(), children);
+            usageConfig.setChildren(children);
+        }
+
+        return usageConfig;
     }
+
+
+
+    /**
+     * 递归统计所有的基础数据
+     */
+    private void getBasicData(String id, String startTime, String endTime, List<UsageConfig> children) {
+        LambdaQueryWrapper<UsageConfig> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UsageConfig::getPid, id);
+        List<UsageConfig> usageConfigs = usageConfigMapper.selectList(lambdaQueryWrapper);
+        if (CollectionUtil.isNotEmpty(usageConfigs)) {
+            for (UsageConfig e : usageConfigs) {
+                if (StrUtil.isNotBlank(e.getTableName()) && e.getHasChild() == 1) {
+                    Integer total = usageConfigMapper.getTotal(e.getTableName(), e.getStaCondition());
+                    e.setTotal(total);
+                    Integer newNumber = usageConfigMapper.getNewNumber(e.getTableName(), startTime, endTime, e.getStaCondition());
+                    e.setNewlyAdded(newNumber);
+                }
+                children.add(e);
+                List<UsageConfig> children1 = new ArrayList<>();
+                this.getBasicData(e.getId(), startTime, endTime, children1);
+                e.setChildren(children1);
+            }
+        }
+    }
+
+    /**
+     * 统计每个层级的总数和新增数量
+     * @param usageConfigs
+     */
+    private void setNumber(List<UsageConfig> usageConfigs){
+        if (CollectionUtil.isNotEmpty(usageConfigs)){
+            int count = 0;
+            usageConfigs.stream().filter(e -> e.getHasChild() == 0).map(UsageConfig::getId).collect(Collectors.toList());
+
+
+        }
+    }
+
+    /**
+     * 递归统计所有的业务数据
+     * @param id
+     * @param startTime
+     * @param endTime
+     * @param children
+     */
+    private void getBusinessData(String id, String startTime, String endTime, List<UsageConfig> children){
+        LambdaQueryWrapper<UsageConfig> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UsageConfig::getPid, id);
+        List<UsageConfig> usageConfigs = usageConfigMapper.selectList(lambdaQueryWrapper);
+        if (CollectionUtil.isNotEmpty(usageConfigs)) {
+            for (UsageConfig e : usageConfigs) {
+                children.add(e);
+                List<UsageConfig> children1 = new ArrayList<>();
+                this.getBasicData(e.getId(), startTime, endTime, children1);
+                e.setChildren(children1);
+            }
+        }
+    }
+
+
     @Override
     public List<UsageConfigDTO> tree(String name) {
         List<UsageConfigDTO> usageConfigDTOList =  usageConfigMapper.getAllList();

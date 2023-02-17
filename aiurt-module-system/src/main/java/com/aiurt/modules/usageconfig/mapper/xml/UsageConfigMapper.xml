@@ -9,4 +9,32 @@
         select *
         from sys_usage_config
     </select>
+    <select id="getTotal" resultType="java.lang.Integer">
+        select
+        count(*)
+        from
+        ${tableName}
+        <where>
+            <if test="staCondition != null">
+                ${staCondition}
+            </if>
+        </where>
+    </select>
+    <select id="getNewNumber" resultType="java.lang.Integer">
+        select
+        count(*)
+        from
+        ${tableName}
+        <where>
+            <if test="staCondition != null">
+                ${staCondition}
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and DATE_FORMAT(create_time, '%Y-%m-%d %H-%I-%S') &gt;= DATE_FORMAT(#{startTime}, '%Y-%m-%d %H-%I-%S')
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and DATE_FORMAT(create_time, '%Y-%m-%d %H-%I-%S') &lt;= DATE_FORMAT(#{endTime}, '%Y-%m-%d %H-%I-%S')
+            </if>
+        </where>
+    </select>
 </mapper>

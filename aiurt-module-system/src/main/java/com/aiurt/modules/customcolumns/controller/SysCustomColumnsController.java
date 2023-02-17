@@ -68,12 +68,17 @@ public class SysCustomColumnsController extends BaseController<SysCustomColumns,
 		if (ObjectUtil.isEmpty(sysCustomColumns)){
 			return Result.error("数据为空,添加失败");
 		}
-		sysCustomColumnsService.getBaseMapper().delete(new LambdaQueryWrapper<SysCustomColumns>()
-				.eq(SysCustomColumns::getModuleKey,sysCustomColumns.getModuleKey())
-				.eq(SysCustomColumns::getUserName,sysCustomColumns.getUserName()));
 		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		sysCustomColumns.setUserName(sysUser.getUsername());
-		sysCustomColumnsService.save(sysCustomColumns);
+	    SysCustomColumns columns = sysCustomColumnsService.getOne(new LambdaQueryWrapper<SysCustomColumns>()
+				.eq(SysCustomColumns::getModuleKey,sysCustomColumns.getModuleKey())
+				.eq(SysCustomColumns::getUserName,sysCustomColumns.getUserName()));
+		if (ObjectUtil.isNotEmpty(columns)){
+			sysCustomColumns.setId(columns.getId());
+			sysCustomColumnsService.updateById(sysCustomColumns);
+		}else {
+			sysCustomColumnsService.save(sysCustomColumns);
+		}
 		return Result.OK("添加成功！");
 	}
 
