@@ -886,41 +886,65 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             serialNumber++;
             //动态表头的表达式，与创建表头导入公式对应
             Integer t = 7;
+            List<EmergencyMaterialsInvoicesItemDTO> parents = materialInspectionList.stream().filter(m -> "0".equals(m.getPid())).collect(Collectors.toList());
             for (EmergencyMaterialsInvoicesItemDTO dto : materialInspectionList) {
                 List<EmergencyMaterialsInvoicesItemDTO> sons = materialInspectionList.stream().filter(m -> m.getPid().equals(dto.getId())).collect(Collectors.toList());
+                XSSFSheet sheet = wb.getSheetAt(0);
+               XSSFRow row = sheet.getRow(2);
                 if (CollUtil.isNotEmpty(sons)) {
                     for (EmergencyMaterialsInvoicesItemDTO son : sons) {
-                        String checkValue =son.getCheckResult() == 1 ? "√" : "×";
-                        Integer inputType = son.getInputType();
+                        XSSFRow xssfRow = sheet.getRow(3);
+                        XSSFCell cell = xssfRow.getCell(t);
+                        String stringCellValue = cell.getStringCellValue();
+                        List<EmergencyMaterialsInvoicesItemDTO> collect = sons.stream().filter(f -> f.getContent().equals(stringCellValue)).collect(Collectors.toList());
+                        EmergencyMaterialsInvoicesItemDTO dto1 = collect.get(0);
+                        String checkValue =dto1.getCheckResult() == 1 ? "√" : "×";
+                        Integer inputType = dto1.getInputType();
                         if (Objects.nonNull(inputType) && 1!=inputType){
                             // 巡检的结果
-                            String dictCode = son.getDictCode();
+                            String dictCode = dto1.getDictCode();
                             if (StringUtils.isNotBlank(dictCode)) {
-                                if (Objects.nonNull(son.getOptionValue())) {
-                                    checkValue = checkValue+iSysBaseAPI.translateDict(dictCode, String.valueOf(son.getOptionValue()));
+                                if (Objects.nonNull(dto1.getOptionValue())) {
+                                    checkValue = checkValue+iSysBaseAPI.translateDict(dictCode, String.valueOf(dto1.getOptionValue()));
                                 }
                             }else {
-                                checkValue=checkValue+son.getWriteValue();
+                                checkValue=checkValue+dto1.getWriteValue();
                             }
                         }
                         lm.put(String.valueOf(t),checkValue);
                         t++;
                     }
                 } else {
-                    String checkValue =dto.getCheckResult() == 1 ? "√" : "×";
-                    Integer inputType = dto.getInputType();
-                    if (Objects.nonNull(inputType) && 1!=inputType){
-                        // 巡检的结果
-                        String dictCode = dto.getDictCode();
-                        if (StringUtils.isNotBlank(dictCode)) {
-                            if (Objects.nonNull(dto.getOptionValue())) {
-                                checkValue = checkValue+iSysBaseAPI.translateDict(dictCode, String.valueOf(dto.getOptionValue()));
+                    XSSFCell cell = row.getCell(t);
+                    String stringCellValue = cell.getStringCellValue();
+                    List<EmergencyMaterialsInvoicesItemDTO> collect = parents.stream().filter(f -> f.getContent().equals(stringCellValue)).collect(Collectors.toList());
+                    EmergencyMaterialsInvoicesItemDTO parent = new EmergencyMaterialsInvoicesItemDTO();
+                    if(CollUtil.isNotEmpty(collect)){
+                         parent = collect.get(0);
+                         if(collect.size()>1){
+                             Iterator<EmergencyMaterialsInvoicesItemDTO> iterator = parents.iterator();
+                             while (iterator.hasNext()) {
+                                 EmergencyMaterialsInvoicesItemDTO next = iterator.next();
+                                 if(next.getId().equals(parent.getId())){
+                                     iterator.remove();
+                                 }
+                             }
+                         }
+                        String checkValue =parent.getCheckResult() == 1 ? "√" : "×";
+                        Integer inputType = parent.getInputType();
+                        if (Objects.nonNull(inputType) && 1!=inputType){
+                            // 巡检的结果
+                            String dictCode = parent.getDictCode();
+                            if (StringUtils.isNotBlank(dictCode)) {
+                                if (Objects.nonNull(parent.getOptionValue())) {
+                                    checkValue = checkValue+iSysBaseAPI.translateDict(dictCode, String.valueOf(parent.getOptionValue()));
+                                }
+                            }else {
+                                checkValue=checkValue+parent.getWriteValue();
                             }
-                        }else {
-                            checkValue=checkValue+dto.getWriteValue();
                         }
+                        lm.put(String.valueOf(t),checkValue);
                     }
-                    lm.put(String.valueOf(t),checkValue);
                     t++;
                 }
             }
@@ -1071,41 +1095,65 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 listMap.add(lm);
                 a++;
                 Integer t = 7;
+                List<EmergencyMaterialsInvoicesItemDTO> parents = materialInspectionList.stream().filter(m -> "0".equals(m.getPid())).collect(Collectors.toList());
                 for (EmergencyMaterialsInvoicesItemDTO dto : materialInspectionList) {
                     List<EmergencyMaterialsInvoicesItemDTO> sons = materialInspectionList.stream().filter(m -> m.getPid().equals(dto.getId())).collect(Collectors.toList());
+                    XSSFSheet sheet = wb.getSheetAt(0);
+                    XSSFRow row = sheet.getRow(2);
                     if (CollUtil.isNotEmpty(sons)) {
                         for (EmergencyMaterialsInvoicesItemDTO son : sons) {
-                            String checkValue =son.getCheckResult() == 1 ? "√" : "×";
-                            Integer inputType = son.getInputType();
+                            XSSFRow xssfRow = sheet.getRow(3);
+                            XSSFCell cell = xssfRow.getCell(t);
+                            String stringCellValue = cell.getStringCellValue();
+                            List<EmergencyMaterialsInvoicesItemDTO> collect = sons.stream().filter(f -> f.getContent().equals(stringCellValue)).collect(Collectors.toList());
+                            EmergencyMaterialsInvoicesItemDTO dto1 = collect.get(0);
+                            String checkValue =dto1.getCheckResult() == 1 ? "√" : "×";
+                            Integer inputType = dto1.getInputType();
                             if (Objects.nonNull(inputType) && 1!=inputType){
                                 // 巡检的结果
-                                String dictCode = son.getDictCode();
+                                String dictCode = dto1.getDictCode();
                                 if (StringUtils.isNotBlank(dictCode)) {
-                                    if (Objects.nonNull(son.getOptionValue())) {
-                                        checkValue = checkValue+iSysBaseAPI.translateDict(dictCode, String.valueOf(son.getOptionValue()));
+                                    if (Objects.nonNull(dto1.getOptionValue())) {
+                                        checkValue = checkValue+iSysBaseAPI.translateDict(dictCode, String.valueOf(dto1.getOptionValue()));
                                     }
                                 }else {
-                                    checkValue=checkValue+son.getWriteValue();
+                                    checkValue=checkValue+dto1.getWriteValue();
                                 }
                             }
                             lm.put(String.valueOf(t),checkValue);
                             t++;
                         }
                     } else {
-                        String checkValue =dto.getCheckResult() == 1 ? "√" : "×";
-                        Integer inputType = dto.getInputType();
-                        if (Objects.nonNull(inputType) && 1!=inputType){
-                            // 巡检的结果
-                            String dictCode = dto.getDictCode();
-                            if (StringUtils.isNotBlank(dictCode)) {
-                                if (Objects.nonNull(dto.getOptionValue())) {
-                                    checkValue = checkValue+iSysBaseAPI.translateDict(dictCode, String.valueOf(dto.getOptionValue()));
+                        XSSFCell cell = row.getCell(t);
+                        String stringCellValue = cell.getStringCellValue();
+                        List<EmergencyMaterialsInvoicesItemDTO> collect = parents.stream().filter(f -> f.getContent().equals(stringCellValue)).collect(Collectors.toList());
+                        EmergencyMaterialsInvoicesItemDTO parent = new EmergencyMaterialsInvoicesItemDTO();
+                        if(CollUtil.isNotEmpty(collect)){
+                            parent = collect.get(0);
+                            if(collect.size()>1){
+                                Iterator<EmergencyMaterialsInvoicesItemDTO> iterator = parents.iterator();
+                                while (iterator.hasNext()) {
+                                    EmergencyMaterialsInvoicesItemDTO next = iterator.next();
+                                    if(next.getId().equals(parent.getId())){
+                                        iterator.remove();
+                                    }
                                 }
-                            }else {
-                                checkValue=checkValue+dto.getWriteValue();
                             }
+                            String checkValue =parent.getCheckResult() == 1 ? "√" : "×";
+                            Integer inputType = parent.getInputType();
+                            if (Objects.nonNull(inputType) && 1!=inputType){
+                                // 巡检的结果
+                                String dictCode = parent.getDictCode();
+                                if (StringUtils.isNotBlank(dictCode)) {
+                                    if (Objects.nonNull(parent.getOptionValue())) {
+                                        checkValue = checkValue+iSysBaseAPI.translateDict(dictCode, String.valueOf(parent.getOptionValue()));
+                                    }
+                                }else {
+                                    checkValue=checkValue+parent.getWriteValue();
+                                }
+                            }
+                            lm.put(String.valueOf(t),checkValue);
                         }
-                        lm.put(String.valueOf(t),checkValue);
                         t++;
                     }
                 }
