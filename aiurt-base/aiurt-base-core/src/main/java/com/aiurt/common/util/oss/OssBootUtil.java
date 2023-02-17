@@ -111,7 +111,7 @@ public class OssBootUtil {
             }
             // 获取文件名
             String orgName = file.getOriginalFilename();
-            if("" == orgName){
+            if("".equals(orgName)){
               orgName=file.getName();
             }
             //update-begin-author:liusq date:20210809 for: 过滤上传文件类型

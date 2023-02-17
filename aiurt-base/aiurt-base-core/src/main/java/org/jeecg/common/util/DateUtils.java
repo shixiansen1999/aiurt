@@ -79,10 +79,10 @@ public class DateUtils extends PropertyEditorSupport {
     /**
      * 以毫秒表示的时间
      */
-    private static final long DAY_IN_MILLIS = 24 * 3600 * 1000;
-    private static final long HOUR_IN_MILLIS = 3600 * 1000;
-    private static final long MINUTE_IN_MILLIS = 60 * 1000;
-    private static final long SECOND_IN_MILLIS = 1000;
+    private static final long DAY_IN_MILLIS = 24 * 3600 * 1000L;
+    private static final long HOUR_IN_MILLIS = 3600 * 1000L;
+    private static final long MINUTE_IN_MILLIS = 60 * 1000L;
+    private static final long SECOND_IN_MILLIS = 1000L;
 
     /**
      * 指定模式的时间格式
