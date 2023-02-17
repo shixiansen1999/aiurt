@@ -1,8 +1,7 @@
 package com.aiurt.modules.system.controller;
 
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonSendStatus;
 import com.aiurt.common.constant.WebsocketConst;
@@ -12,6 +11,8 @@ import com.aiurt.common.util.TokenUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.message.websocket.WebSocket;
 import com.aiurt.modules.system.dto.SysAnnouncementDTO;
+import com.aiurt.modules.system.dto.SysMessageInfoDTO;
+import com.aiurt.modules.system.dto.SysMessageTypeDTO;
 import com.aiurt.modules.system.entity.SysAnnouncement;
 import com.aiurt.modules.system.entity.SysAnnouncementSend;
 import com.aiurt.modules.system.service.ISysAnnouncementSendService;
@@ -30,6 +31,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jeecg.dingtalk.api.core.response.Response;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -563,5 +565,27 @@ public class SysAnnouncementController {
         modelAndView.setStatus(HttpStatus.NOT_FOUND);
         return modelAndView;
     }
+
+    @AutoLog(value = "消息中心-消息类型")
+    @ApiOperation(value="消息中心-消息类型", notes="消息中心-消息类型")
+    @GetMapping(value = "/queryAnnouncementCount")
+    public Result<List<SysMessageTypeDTO>> queryMessageType(){
+        List<SysMessageTypeDTO> list = sysAnnouncementService.queryMessageType();
+        return Result.ok(list);
+    }
+
+    @AutoLog(value = "消息中心-业务消息类型-详情")
+    @ApiOperation(value="消息中心-业务消息类型-详情", notes="消息中心-业务消息类型-详情")
+    @GetMapping(value = "/queryAnnouncementInfo")
+    public Result<List<SysMessageInfoDTO>> queryAnnouncementInfo(@ApiParam(name = "messageFlag", value = "1:业务、2:流程 、0:通知公告，系统消息，特情消息")@RequestParam(name="messageFlag",required=true) String  messageFlag,
+                                                                 @ApiParam(name = "todoType", value = "0：待办、1：已办、2：待阅、3：已阅")@RequestParam(name="todoType",required=false) String  todoType,
+                                                                 @ApiParam(name = "keyword", value = "关键字")@RequestParam(name="keyword",required=false) String  keyword,
+                                                                 @ApiParam(name = "busType", value = "fault:故障、situation:特情 、trainplan，trainrecheck:培训、worklog:工作日志、inspection_assign:检修、patrol_assign，patrol_audit:巡视、inspection:检修流程、patrol:巡视流程、fault:故障流程")@RequestParam(name="keyword",required=false) String  busType
+    ){
+        List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementService.queryMessageInfo(messageFlag, todoType, keyword,busType);
+        return Result.ok(sysMessageInfoDTOS);
+    }
+
+
 
 }

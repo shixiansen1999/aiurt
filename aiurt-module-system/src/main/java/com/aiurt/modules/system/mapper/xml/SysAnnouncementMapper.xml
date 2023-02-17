@@ -42,4 +42,73 @@
 	   order by create_time DESC
 	</select>
 
+	<select id="queryAnnouncement" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysAnnouncementSendDTO">
+      select sa.*
+      from sys_announcement sa
+      left join sys_announcement_send sas on sas.annt_id = sa.id
+      <where>
+           sas.read_flag = 0
+           and sa.del_flag = 0
+		  <if test="userId!=null and userId!=''">
+                and sas.user_id = #{userId}
+		  </if>
+	  </where>
+	</select>
+
+	<select id="queryAnnouncementByNull" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysAnnouncementSendDTO">
+		select sa.* from sys_announcement sa
+		left join sys_announcement_send sas on sas.annt_id = sa.id
+		<where>
+			sas.read_flag = 0
+			and sa.del_flag = 0
+			<if test="userId!=null and userId!=''">
+				and sas.user_id = #{userId}
+			</if>
+            and sa.bus_type = null
+		</where>
+	</select>
+
+	<select id="queryAnnouncementInfo" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysMessageInfoDTO">
+		select sa.titile as title,
+		       sa.msg_content as msgContent,
+		       sa.create_time as intervalTime,
+		       sa.msg_category as msgCategory,
+		       sa.msg_abstract as msgAbstract,
+		       sa.publishing_content as publishingContent
+		sas.read_flag as readFlag
+		from sys_announcement sa
+		left join sys_announcement_send sas on sas.annt_id = sa.id
+		<where>
+			 sa.del_flag = 0
+			<if test="userId!=null and userId!=''">
+				and sas.user_id = #{userId}
+			</if>
+			<if test="keyWord!=null and keyWord!=''">
+				and sa.msg_content LIKE concat(concat('%',#{keyWord}),'%')
+			</if>
+			<if test="busType!=null and busType!=''">
+				and sa.bus_type =#{busType}
+			</if>
+		</where>
+	</select>
+
+	<select id="queryTodoListInfo" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysMessageInfoDTO">
+		select stl.msg_content as msgContent ,
+		       stl.task_name as title,
+		       stl.create_time as intervalTime
+		from sys_todo_list stl
+		<where>
+			<if test="userName!=null and userName!=''">
+				and stl.current_user_name = #{userName}
+			</if>
+			<if test="keyWord!=null and keyWord!=''">
+				and stl.msg_content LIKE concat(concat('%',#{keyWord}),'%')
+			</if>
+			<if test="todoType!=null and todoType!=''">
+				and stl.todo_type = #{todoType}
+			</if>
+		</where>
+	</select>
+
+
 </mapper>

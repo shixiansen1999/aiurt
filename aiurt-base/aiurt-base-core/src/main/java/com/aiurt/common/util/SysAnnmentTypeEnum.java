@@ -8,12 +8,12 @@ public enum SysAnnmentTypeEnum {
     /**
      * 邮件跳转组件
      */
-    EMAIL("email", "component", "modules/eoa/email/modals/EoaEmailInForm"),
+    EMAIL("email", "component", "modules/eoa/email/modals/EoaEmailInForm",""),
 
     /**
      * 故障
      */
-    FAULT("fault", "component",""),
+    FAULT("fault", "component","","故障业务消息"),
     /**
      * 应急
      */
@@ -22,43 +22,43 @@ public enum SysAnnmentTypeEnum {
     /**
      * 特情
      */
-    SITUATION("situation", "component",""),
+    SITUATION("situation", "component","","特情"),
     /**
      * 培训年计划
      */
-    TRAINPLAN("trainplan", "component",""),
+    TRAINPLAN("trainplan", "component","","培训业务消息"),
     /**
      * 培训复核
      */
-    TRAINRECHECK("trainrecheck", "component",""),
+    TRAINRECHECK("trainrecheck", "component","","培训业务消息"),
     /**
      * 工作日志
      */
-    WORKLOG("worklog", "component",""),
+    WORKLOG("worklog", "component","","工作日志消息"),
     /**
      * 检修指派
      */
-    INSPECTION_ASSIGN("inspection_assign", "component",""),
+    INSPECTION_ASSIGN("inspection_assign", "component","","检修业务消息"),
     /**
      * 巡视指派
      */
-    PATROL_ASSIGN("patrol_assign", "component",""),
+    PATROL_ASSIGN("patrol_assign", "component","","巡视业务消息"),
     /**
      * 巡视审核
      */
-    PATROL_AUDIT("patrol_audit", "component",""),
+    PATROL_AUDIT("patrol_audit", "component","","巡视业务消息"),
 
-    BDOPERATEPLANDECLARATIONFORM("planFromSearch", "component", "prodManage/weekAuditing"),
+    BDOPERATEPLANDECLARATIONFORM("planFromSearch", "component", "prodManage/weekAuditing",""),
 
     /**
      * 通知成为资产盘点人
      */
-    ASSET_CHECKER("asset_checker", "component",""),
+    ASSET_CHECKER("asset_checker", "component","",""),
     /**
     /**
      * 工作流跳转链接我的办公
      */
-    BPM("bpm", "url", "/bpm/task/MyTaskList");
+    BPM("bpm", "url", "/bpm/task/MyTaskList","");
 
     /**
      * 业务类型(email:邮件 bpm:流程)
@@ -72,11 +72,16 @@ public enum SysAnnmentTypeEnum {
      * 组件/路由 地址
      */
     private String openPage;
+    /**
+     * 消息模块
+     */
+    private String module;
 
-    SysAnnmentTypeEnum(String type, String openType, String openPage) {
+    SysAnnmentTypeEnum(String type, String openType, String openPage,String module) {
         this.type = type;
         this.openType = openType;
         this.openPage = openPage;
+        this.module = module;
     }
 
     public String getType() {
@@ -113,5 +118,13 @@ public enum SysAnnmentTypeEnum {
             }
         }
         return null;
+    }
+
+    public String getModule() {
+        return module;
+    }
+
+    public void setModule(String module) {
+        this.module = module;
     }
 }
