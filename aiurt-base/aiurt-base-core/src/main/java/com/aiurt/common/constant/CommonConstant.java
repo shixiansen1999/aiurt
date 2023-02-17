@@ -521,4 +521,6 @@ public interface CommonConstant {
 
  /** 消息模板：应急管理业务 */
  public static final String EMERGENCY_MANAGEMENT_SERVICE = "emergency_management_service";
+ /** 消息模板：检修业务通知 */
+ public static final String REPAIR_SERVICE_NOTICE = "repair_service_notice";
 }

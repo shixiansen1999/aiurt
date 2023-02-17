@@ -17,7 +17,7 @@ public enum SysAnnmentTypeEnum {
     /**
      * 应急
      */
-    EMERGENCY("emergency", "component",""),
+    EMERGENCY("emergency", "component","","应急业务消息"),
 
     /**
      * 特情
@@ -35,6 +35,10 @@ public enum SysAnnmentTypeEnum {
      * 工作日志
      */
     WORKLOG("worklog", "component","","工作日志消息"),
+    /**
+     * 检修
+     */
+    INSPECTION("inspection", "component","","检修业务消息"),
     /**
      * 检修指派
      */

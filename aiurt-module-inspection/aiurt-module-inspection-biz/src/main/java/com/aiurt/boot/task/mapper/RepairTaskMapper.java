@@ -10,7 +10,6 @@ import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.boot.task.entity.RepairTaskResult;
-import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -276,4 +275,12 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     List<OverhaulStatisticsDTOS> getUserOrgCategory(@Param("id") String id);
+
+    /**
+     * 查询检修站点
+     * @param id
+     * @return
+     */
+    List<String> getRepairTaskStation(String id);
+
 }
