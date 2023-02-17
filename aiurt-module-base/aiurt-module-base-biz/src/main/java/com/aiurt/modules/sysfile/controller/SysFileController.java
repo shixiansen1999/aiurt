@@ -2,6 +2,9 @@ package com.aiurt.modules.sysfile.controller;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.EsFileAPI;
+import com.aiurt.common.api.CommonAPI;
+import com.aiurt.modules.search.dto.FileDataDTO;
 import com.aiurt.modules.sysfile.constant.PatrolConstant;
 import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
@@ -27,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.elasticsearch.action.index.IndexResponse;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -38,6 +42,7 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -45,6 +50,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
@@ -71,6 +77,11 @@ public class SysFileController {
 	private ISysFileTypeService sysFileTypeService;
 	@Autowired
 	private ISysBaseAPI iSysBaseAPI;
+	@Autowired
+	private EsFileAPI esFileAPI;
+
+	@Value("${jeecg.path.upload}")
+	private String uploadPath;
 
 	/**
 	 * 分页列表查询
@@ -290,6 +301,10 @@ public class SysFileController {
 		try {
 			sysFileService.save(sysFile);
 			sysFileService.add(req,sysFile);
+
+			// ES更新规范规程知识库的文件数据
+            this.saveEsDate(sysFile);
+
 			result.success("添加成功！");
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -298,7 +313,20 @@ public class SysFileController {
 		return result;
 	}
 
-	/**
+    private void saveEsDate(SysFile sysFile) {
+
+        FileDataDTO fileDataDTO = new FileDataDTO();
+        fileDataDTO.setId(String.valueOf(sysFile.getId()));
+        fileDataDTO.setName(sysFile.getName());
+        fileDataDTO.setTyepId(String.valueOf(sysFile.getTypeId()));
+        fileDataDTO.setFormat(sysFile.getType());
+        fileDataDTO.setAddress(sysFile.getUrl());
+		File file = new File(sysFile.getUrl());
+//		fileDataDTO.setFileBytes();
+        IndexResponse response = esFileAPI.saveFileData(new FileDataDTO());
+    }
+
+    /**
 	 * 编辑
 	 *
 	 * @param sysFile

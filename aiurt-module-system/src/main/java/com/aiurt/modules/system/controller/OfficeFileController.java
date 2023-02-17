@@ -1,25 +1,34 @@
 package com.aiurt.modules.system.controller;
 
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.EsFileAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.CommonUtils;
 import com.aiurt.common.util.MinioUtil;
 import com.aiurt.common.util.UUIDGenerator;
 import com.aiurt.config.https.HTTPSTrustManager;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
+import com.aiurt.modules.search.dto.FileDataDTO;
+import com.aiurt.modules.sysfile.entity.SysFile;
+import com.aiurt.modules.sysfile.service.ISysFileService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URL;
+import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -66,6 +76,11 @@ public class OfficeFileController {
     @Autowired
     private ISysAttachmentService sysAttachmentService;
 
+    @Autowired
+    private ISysFileService fileService;
+
+    @Autowired
+    private EsFileAPI esFileAPI;
 
 
     @RequestMapping(value = "/callback/**", method = {RequestMethod.GET, RequestMethod.POST})
@@ -80,7 +95,7 @@ public class OfficeFileController {
         log.info("文档编辑key->{}", key);
 
         LambdaQueryWrapper<SysAttachment> wrapper = new LambdaQueryWrapper<>();
-        wrapper.and(w->w.eq(SysAttachment::getId, key).or().eq(SysAttachment::getDocumentKey, key)).last("limit 1");
+        wrapper.and(w -> w.eq(SysAttachment::getId, key).or().eq(SysAttachment::getDocumentKey, key)).last("limit 1");
 
         SysAttachment attachment = sysAttachmentService.getOne(wrapper);
 
@@ -90,8 +105,8 @@ public class OfficeFileController {
             writer.write("{\"error\":0}");
             return;
         }
-
-        if(jsonObj.getIntValue(STATUS) == CLOSE_STATUS|| jsonObj.getIntValue(STATUS) == FORCE_SAVE_STATUS) {
+        byte[] bytes = null;
+        if (jsonObj.getIntValue(STATUS) == CLOSE_STATUS || jsonObj.getIntValue(STATUS) == FORCE_SAVE_STATUS) {
             String downloadUri = jsonObj.getString(URL);
 
             if (StrUtil.isBlank(fileName)) {
@@ -99,7 +114,7 @@ public class OfficeFileController {
             }
 
             if (StrUtil.isBlank(fileName)) {
-                fileName = downloadUri.substring(downloadUri.lastIndexOf('/')+1);
+                fileName = downloadUri.substring(downloadUri.lastIndexOf('/') + 1);
             }
 
             String orgName = CommonUtils.getFileName(fileName);
@@ -124,7 +139,7 @@ public class OfficeFileController {
                 //打开这个网站的输入流
                 //打开这个网站的输入流
                 stream = conn.getInputStream();
-            }else {
+            } else {
                 URL url = new URL(downloadUri);
                 connection = (java.net.HttpURLConnection) url.openConnection();
                 //打开连接
@@ -137,17 +152,18 @@ public class OfficeFileController {
             if (CommonConstant.UPLOAD_TYPE_LOCAL.equals(uploadType)) {
                 uploadLocal(fileName, attachment, stream);
                 // minio
-            }else {
+            } else {
                 try {
                     MinioUtil.upload(stream, fileName);
                     attachment.setFilePath(fileName);
                 } catch (Exception e) {
-                   // 上传本地
+                    // 上传本地
                     uploadLocal(fileName, attachment, stream);
                     attachment.setType("local");
                 }
 
             }
+            bytes = StreamUtils.copyToByteArray(stream);
             attachment.setDocumentKey(UUIDGenerator.generate());
             if (Objects.nonNull(connection)) {
                 connection.disconnect();
@@ -158,20 +174,50 @@ public class OfficeFileController {
             if (Objects.nonNull(stream)) {
                 stream.close();
             }
-        } else if(jsonObj.getIntValue(STATUS) == 3|| jsonObj.getIntValue(STATUS) == 7) {
+        } else if (jsonObj.getIntValue(STATUS) == 3 || jsonObj.getIntValue(STATUS) == 7) {
             writer.write("{\"error\":-1}");
             // 正在编辑
-        } else if (jsonObj.getIntValue(STATUS) == 1 ) {
+        } else if (jsonObj.getIntValue(STATUS) == 1) {
 
         }
         sysAttachmentService.updateById(attachment);
         writer.write("{\"error\":0}");
+
+        // 更新ES文档内容
+        this.updateEsData(attachment, bytes);
+    }
+
+    /**
+     * 同步更新ES的记录信息
+     *
+     * @param attachment
+     */
+    private UpdateResponse updateEsData(SysAttachment attachment, byte[] bytes) {
+        List<SysFile> fileList = fileService.lambdaQuery()
+                .eq(SysFile::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .likeRight(SysFile::getUrl, attachment.getId())
+                .list();
+        if (ObjectUtil.isEmpty(bytes) || CollectionUtil.isEmpty(fileList)) {
+            return null;
+        }
+        if (1 < fileList.size()) {
+            throw new AiurtBootException("文件数据同步到ES异常！文件有多条规范规程关联数据！");
+        }
+        SysFile file = fileList.stream().findFirst().get();
+        FileDataDTO fileDataDTO = new FileDataDTO();
+        fileDataDTO.setId(String.valueOf(file.getId()));
+        fileDataDTO.setFileBytes(bytes);
+        fileDataDTO.setAddress(file.getUrl());
+        fileDataDTO.setName(file.getName());
+        fileDataDTO.setFormat(file.getType());
+        UpdateResponse response = esFileAPI.updateFileData(fileDataDTO);
+        return response;
     }
 
 
     @RequestMapping("/getSysFileKey")
     @ApiOperation("获取在线编辑key")
-    public Result<String> getSysFileKey( @ApiParam(name = "id", value = "文件Id")@RequestParam(value = "id", required = false) String id) {
+    public Result<String> getSysFileKey(@ApiParam(name = "id", value = "文件Id") @RequestParam(value = "id", required = false) String id) {
         if (StrUtil.isBlank(id)) {
             return Result.OK(UUIDGenerator.generate());
         }
@@ -214,7 +260,7 @@ public class OfficeFileController {
      */
     private static String extractPathFromPattern(final HttpServletRequest request) {
         String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-        log.info("path->{}",path);
+        log.info("path->{}", path);
         String bestMatchPattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
         return new AntPathMatcher().extractPathWithinPattern(bestMatchPattern, path);
     }

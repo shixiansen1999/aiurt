@@ -16,5 +16,5 @@ public interface IFileAnalysisService {
      * @param path
      * @return
      */
-    String upload(MultipartFile file, String path);
+    String upload(MultipartFile file, String path, String typeId);
 }

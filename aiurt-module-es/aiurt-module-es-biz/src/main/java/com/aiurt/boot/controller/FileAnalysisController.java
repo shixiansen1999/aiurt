@@ -13,14 +13,15 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+
 /**
  * @author cgkj
  * @Title:
  * @Description:
  * @date 2023/2/159:11
  */
-@RestController
 @Api(tags = "文件数据解析保存")
+@RestController
 @RequestMapping("/file")
 public class FileAnalysisController {
 
@@ -30,8 +31,9 @@ public class FileAnalysisController {
     @ApiOperation(value = "解析并保存上传文件数据", notes = "解析并保存上传文件数据")
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public Result<?> upload(@RequestParam @ApiParam(name = "file", value = "文件") MultipartFile file,
-                            @ApiParam(name = "path", value = "文件存储地址") String path) throws IOException {
-        String id = fileAnalysisService.upload(file, path);
+                            @ApiParam(name = "path", value = "文件存储地址") String path,
+                            @ApiParam(name = "typeId", value = "文件类型ID") String typeId) throws IOException {
+        String id = fileAnalysisService.upload(file, path, typeId);
         return Result.OK("保存成功！", id);
     }
 
