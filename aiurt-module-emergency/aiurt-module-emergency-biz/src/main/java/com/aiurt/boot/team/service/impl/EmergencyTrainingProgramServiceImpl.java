@@ -19,6 +19,8 @@ import com.aiurt.boot.team.model.TrainingProgramModel;
 import com.aiurt.boot.team.service.IEmergencyTrainingProgramService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.MessageTypeEnum;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.TimeUtil;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.common.util.oConvertUtils;
@@ -234,8 +236,21 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             String[] strings = userIds.toArray(new String[userIds.size()]);
             List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(strings);
             String userNameStr = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
-            String content ="您有一条新的应急训练计划任务:演练计划编号："+program.getTrainingProgramCode()+"，训练项目名称："+program.getTrainingProgramName()+"，训练计划时间："+DateUtil.format(program.getTrainingPlanTime(), "yyyy-MM")+",请注意训练任务开始时间!";
-            iSysBaseAPI.sendSysAnnouncement(new MessageDTO(user.getUsername(), userNameStr, "应急训练计划任务", content, CommonConstant.MSG_CATEGORY_2));
+            //发送通知
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(), userNameStr, "应急训练计划"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("trainingProgramCode",program.getTrainingProgramCode() );
+            map.put("trainingProgramName",program.getTrainingProgramName() );
+            map.put("trainingPlanTime",DateUtil.format(program.getTrainingPlanTime(), "yyyy-MM") );
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, program.getId());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.EMERGENCY.getType());
+            messageDTO.setData(map);
+            messageDTO.setType(MessageTypeEnum.XT.getType());
+            messageDTO.setTemplateCode(CommonConstant.EMERGENCY_MANAGEMENT_SERVICE);
+            messageDTO.setMsgAbstract("有新的应急训练计划");
+            messageDTO.setPublishingContent("有新的应急训练计划,请注意训练任务开始时间!");
+            iSysBaseAPI.sendTemplateMessage(messageDTO);
         }
     }
 

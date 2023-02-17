@@ -68,6 +68,14 @@ public class MessageDTO implements Serializable {
      * 结束时间
      */
     protected java.util.Date endTime;
+    /**
+     * 摘要
+     */
+    private java.lang.String msgAbstract;
+    /**
+     * 发布内容
+     */
+    protected String publishingContent;
 
     //-----------------------------------------------------------------------
     //update-begin---author:taoyan ---date:20220705  for：支持自定义推送类型，邮件、钉钉、企业微信、系统消息-----------

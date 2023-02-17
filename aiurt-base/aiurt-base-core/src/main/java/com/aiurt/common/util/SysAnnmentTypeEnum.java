@@ -14,6 +14,10 @@ public enum SysAnnmentTypeEnum {
      * 故障
      */
     FAULT("fault", "component",""),
+    /**
+     * 应急
+     */
+    EMERGENCY("emergency", "component",""),
 
     /**
      * 特情
