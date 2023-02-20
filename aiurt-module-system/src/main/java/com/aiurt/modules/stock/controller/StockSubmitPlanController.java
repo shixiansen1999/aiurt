@@ -215,10 +215,11 @@ public class StockSubmitPlanController {
     @AutoLog(value = "二级库管理-提报计划-导出", operateType = 6, operateTypeAlias = "导出", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
     @ApiOperation(value = "导出", notes = "导出")
     @GetMapping(value = "/export")
-    public void eqFaultAnaExport(@RequestParam(name = "ids", defaultValue = "") String ids,
+    public void eqFaultAnaExport(StockSubmitPlan stockSubmitPlan,
+                                 @RequestParam(name = "ids",required =  false) String ids,
                                          HttpServletRequest request,
                                          HttpServletResponse response) {
-        iStockSubmitPlanService.eqExport(ids, request, response);
+        iStockSubmitPlanService.eqExport(ids,stockSubmitPlan, request, response);
     }
 
     /**

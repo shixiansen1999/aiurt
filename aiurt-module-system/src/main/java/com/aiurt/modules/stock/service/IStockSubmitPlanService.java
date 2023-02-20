@@ -5,13 +5,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Description:
@@ -46,7 +44,7 @@ public interface IStockSubmitPlanService extends IService<StockSubmitPlan> {
      * @param request
      * @param response
      */
-    void eqExport (String ids, HttpServletRequest request, HttpServletResponse response);
+    void eqExport (String ids,StockSubmitPlan stockSubmitPlan, HttpServletRequest request, HttpServletResponse response);
 
     /**
      * 提报计划导入

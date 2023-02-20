@@ -13,12 +13,6 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.standard.dto.InspectionCodeContentDTO;
-import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
-import com.aiurt.boot.standard.dto.InspectionCodeImportDTO;
-import com.aiurt.boot.team.entity.EmergencyTeam;
-import com.aiurt.boot.team.entity.EmergencyTrainingProgram;
-import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsExport;
 import com.aiurt.common.util.XlsUtil;
@@ -32,9 +26,7 @@ import com.aiurt.modules.stock.dto.StockInOrderLevel2ExportDTO;
 import com.aiurt.modules.stock.dto.StockIncomingMaterialsDTO;
 import com.aiurt.modules.stock.dto.StockIncomingMaterialsExportDTO;
 import com.aiurt.modules.stock.entity.*;
-import com.aiurt.modules.stock.entity.StockIncomingMaterials;
 import com.aiurt.modules.stock.mapper.StockInOrderLevel2Mapper;
-import com.aiurt.modules.stock.mapper.StockIncomingMaterialsMapper;
 import com.aiurt.modules.stock.service.*;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
@@ -47,7 +39,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -62,7 +53,6 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,6 +60,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -77,7 +68,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @Description:
@@ -361,7 +351,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		List<StockInOrderLevel2ExportDTO> pageList = this.getStockIncomingMaterialsList(stockInOrderLevel2ExportDTO);
 		List<StockInOrderLevel2ExportDTO> exportList = null;
 		// 过滤选中数据
-		String selections = request.getParameter("selections");
+		String selections = request.getParameter("ids");
 		if (oConvertUtils.isNotEmpty(selections)) {
 			List<String> selectionList = Arrays.asList(selections.split(","));
 			exportList = pageList.stream().filter(item -> selectionList.contains(item.getId())).collect(Collectors.toList());

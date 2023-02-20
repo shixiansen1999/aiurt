@@ -1,30 +1,22 @@
 package com.aiurt.modules.stock.service.impl;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.mapper.MaterialBaseTypeMapper;
-import com.aiurt.modules.stock.entity.StockSubmitMaterials;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.mapper.StockLevel2Mapper;
-import com.aiurt.modules.stock.service.IStockSubmitMaterialsService;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
-import com.aiurt.modules.stock.service.IStockSubmitPlanService;
-import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.ansj.domain.Result;
-import org.ansj.domain.Term;
-import org.ansj.splitWord.analysis.ToAnalysis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Description:
@@ -62,14 +54,17 @@ public class StockLevel2ServiceImpl extends ServiceImpl<StockLevel2Mapper, Stock
     }
 
     @Override
-    public List<StockLevel2> exportXls(String ids) {
-        String[] split = ids.split(",");
-        List<String> strings = Arrays.asList(split);
-        List<StockLevel2> stockLevel2s = stockLevel2Mapper.exportXls(strings);
+    public List<StockLevel2> exportXls(StockLevel2 stockLevel2,String ids) {
+        List<String> strings = new ArrayList<>();
+        if (StrUtil.isNotEmpty(ids)) {
+            String[] split = ids.split(",");
+           strings = Arrays.asList(split);
+        }
+        List<StockLevel2> stockLevel2s = stockLevel2Mapper.exportXls(stockLevel2,strings);
         if(stockLevel2s != null && stockLevel2s.size()>0){
-            for(StockLevel2 stockLevel2 : stockLevel2s){
-                String baseTypeCodeCcName = getCcName(stockLevel2);
-                stockLevel2.setBaseTypeCodeName(baseTypeCodeCcName);
+            for(StockLevel2 stockLevel21 : stockLevel2s){
+                String baseTypeCodeCcName = getCcName(stockLevel21);
+                stockLevel21.setBaseTypeCodeName(baseTypeCodeCcName);
             }
         }
         return stockLevel2s;
