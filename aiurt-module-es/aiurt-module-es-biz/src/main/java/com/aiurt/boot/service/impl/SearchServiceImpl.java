@@ -7,16 +7,14 @@ import com.aiurt.boot.constant.EsConstant;
 import com.aiurt.boot.service.ISearchService;
 import com.aiurt.boot.utils.ElasticsearchClientUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.modules.search.dto.DocumentManageRequestDTO;
-import com.aiurt.modules.search.dto.SearchRequestDTO;
-import com.aiurt.modules.search.dto.SearchResponseDTO;
-import com.aiurt.modules.search.dto.TermResponseDTO;
-import com.aiurt.modules.search.entity.FileAnalysisData;
+import com.aiurt.modules.search.dto.*;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -68,23 +66,29 @@ public class SearchServiceImpl implements ISearchService {
     /**
      * 故障知识库词语补全提示
      *
-     * @param searchKey
+     * @param keyword
      * @return
      */
     @Override
-    public List<TermResponseDTO> suggest(String searchKey) {
-        return doSuggest(searchKey, EsConstant.FAULT_KNOWLEDGE_INDEX, EsConstant.FAULT_PHENOMENON, EsConstant.FAULT_KNOWLEDGE_SUGGEST);
+    public List<String> faultKnowledgeSuggest(String keyword) {
+        if(StrUtil.isEmpty(keyword)){
+            return CollUtil.newArrayList();
+        }
+        return doSuggest(keyword, EsConstant.FAULT_KNOWLEDGE_INDEX, EsConstant.FAULT_PHENOMENON, EsConstant.FAULT_KNOWLEDGE_SUGGEST);
     }
 
     /**
      * 规程规范与知识库词语补全提示
      *
-     * @param searchKey
+     * @param keyword
      * @return
      */
     @Override
-    public List<TermResponseDTO> documentManageSuggest(String searchKey) {
-        return doSuggest(searchKey, EsConstant.FILE_DATA_INDEX, EsConstant.ATTACHMENT_NAME, EsConstant.DOCUMENT_MANAGE_SUGGEST);
+    public List<String> documentManageSuggest(String keyword) {
+        if(StrUtil.isEmpty(keyword)){
+            return CollUtil.newArrayList();
+        }
+        return doSuggest(keyword, EsConstant.FILE_DATA_INDEX, EsConstant.ATTACHMENT_NAME, EsConstant.DOCUMENT_MANAGE_SUGGEST);
     }
 
     /**
@@ -94,19 +98,19 @@ public class SearchServiceImpl implements ISearchService {
      * @return
      */
     @Override
-    public IPage<FileAnalysisData> documentManageList(DocumentManageRequestDTO documentManageRequest) {
+    public IPage<DocumentManageResponseDTO> documentManageList(DocumentManageRequestDTO documentManageRequest) {
         // 构建DSL语句
         SearchSourceBuilder builder = buildDocumentManageSourceBuilder(documentManageRequest);
         // 查询es
         SearchResponse searchResponse = esUtil.queryDocument(EsConstant.FILE_DATA_INDEX, builder);
         // 构建返回结果
-        IPage<FileAnalysisData> result = buildDocumentManageResponse(documentManageRequest, searchResponse);
+        IPage<DocumentManageResponseDTO> result = buildDocumentManageResponse(documentManageRequest, searchResponse);
         return result;
     }
 
-    private IPage<FileAnalysisData> buildDocumentManageResponse(DocumentManageRequestDTO documentManageRequest, SearchResponse searchResponse) {
-        Page<FileAnalysisData> result = new Page<>();
-        List<FileAnalysisData> searchResponsList = null;
+    private IPage<DocumentManageResponseDTO> buildDocumentManageResponse(DocumentManageRequestDTO documentManageRequest, SearchResponse searchResponse) {
+        Page<DocumentManageResponseDTO> result = new Page<>();
+        List<DocumentManageResponseDTO> searchResponsList = null;
 
         if (ObjectUtil.isEmpty(searchResponse)) {
             return result;
@@ -120,7 +124,26 @@ public class SearchServiceImpl implements ISearchService {
         searchResponsList = CollUtil.newArrayList();
         for (SearchHit hit : hits.getHits()) {
             // 处理高亮字段
-            buildHighlight(hit, FileAnalysisData.class);
+            Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+            DocumentManageResponseDTO documentManageResponseDTO = buildHighlight(hit, DocumentManageResponseDTO.class);
+            if (MapUtils.isNotEmpty(highlightFields) && highlightFields.containsKey(EsConstant.ATTACHMENT_CONTENT)) {
+                HighlightField highlightField = highlightFields.get(EsConstant.ATTACHMENT_CONTENT);
+                if (ObjectUtil.isNotEmpty(highlightField)) {
+                    Text[] fragments = highlightField.getFragments();
+                    StringBuilder replaceValue = new StringBuilder();
+                    for (Text fragment : fragments) {
+                        if(ObjectUtil.isNotEmpty(fragment)){
+                            replaceValue.append(fragment.toString());
+                        }
+                    }
+
+                    if (ObjectUtil.isNotEmpty(replaceValue)) {
+                        documentManageResponseDTO.getAttachment().setContent(replaceValue.toString());
+                    }
+                }
+
+            }
+            searchResponsList.add(documentManageResponseDTO);
         }
 
         // 结果记录
@@ -145,20 +168,42 @@ public class SearchServiceImpl implements ISearchService {
     private <T> T buildHighlight(SearchHit hit, Class<T> clazz) {
         Map<String, HighlightField> highlightFields = hit.getHighlightFields();
         T value = JSON.parseObject(hit.getSourceAsString(), clazz);
-        Field[] fields = clazz.getDeclaredFields();
+        if (MapUtils.isEmpty(highlightFields)) {
+            return value;
+        }
 
         // 遍历所有字段属性
+        Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
 
             // 驼峰转换
             String name = StrUtil.toUnderlineCase(field.getName());
 
+            // set id value
+            if(EsConstant.ID.equals(name)){
+                try {
+                    field.set(value, hit.getId());
+                } catch (IllegalAccessException e) {
+                    log.error("buildHighlight IllegalAccessException：{}", e);
+                }
+            }
+
+            // 高亮词语替换
             if (highlightFields.containsKey(name)) {
                 HighlightField highlightField = highlightFields.get(name);
-                String replaceValue = highlightField.fragments()[0].toString();
+                Text[] fragments = highlightField.getFragments();
+                StringBuilder replaceValue = new StringBuilder();
+                for (Text fragment : fragments) {
+                    if(ObjectUtil.isNotEmpty(fragment)){
+                        replaceValue.append(fragment.toString());
+                    }
+                }
+
                 try {
-                    field.set(value, replaceValue);
+                    if (ObjectUtil.isNotEmpty(replaceValue)) {
+                        field.set(value, replaceValue.toString());
+                    }
                 } catch (IllegalAccessException e) {
                     log.error("buildHighlight IllegalAccessException：{}", e);
                 }
@@ -185,7 +230,7 @@ public class SearchServiceImpl implements ISearchService {
         // 构建bool - query
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         if (StrUtil.isNotEmpty(documentManageRequest.getKeyword())) {
-            boolQuery.must(QueryBuilders.multiMatchQuery(documentManageRequest.getKeyword(), EsConstant.NAME, EsConstant.CONTENT));
+            boolQuery.must(QueryBuilders.multiMatchQuery(documentManageRequest.getKeyword(), EsConstant.NAME, EsConstant.ATTACHMENT_CONTENT));
         }
         // filter - 按照文档格式进行查询
         if (StrUtil.isNotEmpty(documentManageRequest.getFormat())) {
@@ -207,26 +252,27 @@ public class SearchServiceImpl implements ISearchService {
         setPage(documentManageRequest.getPageNo(), documentManageRequest.getPageSize(), builder);
 
         // 高亮
-        setHighLight(documentManageRequest.getKeyword(), builder, EsConstant.NAME, EsConstant.CONTENT);
+        setHighLight(documentManageRequest.getKeyword(), builder, EsConstant.NAME, EsConstant.ATTACHMENT_CONTENT);
+
         return builder;
     }
 
     /**
      * 词语补全建议
      *
-     * @param searchKey
+     * @param keyword
      * @param esIndex      es索引
      * @param suggestField 建议字段
      * @param suggestIden  es存储标识
      * @return
      */
-    private List<TermResponseDTO> doSuggest(String searchKey, String esIndex, String suggestField, String suggestIden) {
+    private List<String> doSuggest(String keyword, String esIndex, String suggestField, String suggestIden) {
         // 构建DSL语句
-        SearchSourceBuilder builder = buildSuggestSearchSourceBuilder(searchKey, suggestField, suggestIden);
+        SearchSourceBuilder builder = buildSuggestSearchSourceBuilder(keyword, suggestField, suggestIden);
         // 查询es
         SearchResponse searchResponse = esUtil.queryDocument(esIndex, builder);
         // 构建返回结果
-        List<TermResponseDTO> result = buildSuggestResponse(searchResponse, suggestIden);
+        List<String> result = buildSuggestResponse(searchResponse, suggestIden);
         return result;
     }
 
@@ -237,8 +283,8 @@ public class SearchServiceImpl implements ISearchService {
      * @param searchResponse
      * @return
      */
-    private List<TermResponseDTO> buildSuggestResponse(SearchResponse searchResponse, String suggestIden) {
-        List<TermResponseDTO> result = CollUtil.newArrayList();
+    private List<String> buildSuggestResponse(SearchResponse searchResponse, String suggestIden) {
+        List<String> result = CollUtil.newArrayList();
 
         Suggest suggest = searchResponse.getSuggest();
         List<? extends Suggest.Suggestion.Entry<? extends Suggest.Suggestion.Entry.Option>> entries =
@@ -251,7 +297,7 @@ public class SearchServiceImpl implements ISearchService {
                     if (result.contains(keyword)) {
                         continue;
                     }
-                    result.add(new TermResponseDTO(keyword));
+                    result.add(keyword);
                 }
             }
         }
@@ -262,10 +308,10 @@ public class SearchServiceImpl implements ISearchService {
     /**
      * 构建词语建议查询器
      *
-     * @param searchKey
+     * @param keyword
      * @return
      */
-    private SearchSourceBuilder buildSuggestSearchSourceBuilder(String searchKey, String suggestField, String suggestIden) {
+    private SearchSourceBuilder buildSuggestSearchSourceBuilder(String keyword, String suggestField, String suggestIden) {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
 
         // suggestField为指定在哪个字段搜索，searchKey为输入内容，TEN为10，代表输出显示最大条数
@@ -276,7 +322,7 @@ public class SearchServiceImpl implements ISearchService {
 
         SuggestBuilder suggestBuilder = new SuggestBuilder();
         // suggestIden是一个存储标识，下文调用的时候保持一致即可
-        suggestBuilder.addSuggestion(suggestIden, suggestionBuilderDistrict).setGlobalText(searchKey);
+        suggestBuilder.addSuggestion(suggestIden, suggestionBuilderDistrict).setGlobalText(keyword);
         searchSourceBuilder.suggest(suggestBuilder);
         return searchSourceBuilder;
     }

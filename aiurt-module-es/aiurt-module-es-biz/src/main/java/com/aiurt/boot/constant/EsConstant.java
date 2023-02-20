@@ -48,7 +48,7 @@ public class EsConstant {
     /**
      * 规范知识库内容
      */
-    public static final String CONTENT = "content";
+    public static final String ATTACHMENT_CONTENT = "attachment.content";
     /**
      * 规范知识库文档格式
      */
@@ -97,6 +97,14 @@ public class EsConstant {
      * 词语提示输出显示最大条数
      */
     public static final Integer TEN = 8;
+    /**
+     * 动态词库对应的字典code
+     */
+    public static final String IK_DICT_CODE = "ik_dict_code";
+    /**
+     * id字段名称
+     */
+    public static final String ID = "id";
 
     public static final Integer FAULT_KNOWLEDGE_PAGE_SIZE_10 = 10;
 

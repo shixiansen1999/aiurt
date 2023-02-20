@@ -17,12 +17,12 @@ public class CommonRequestDTO {
      * sort=createTime_desc
      * sort=createTime_asc,updateTime_desc
      */
-    @ApiModelProperty("排序条件,多列排序使用,隔开")
+    @ApiModelProperty(value = "排序条件,多列排序使用,隔开",example = "createTime_asc,updateTime_desc")
     private String sort;
 
     @ApiModelProperty(value = "当前页")
-    private Integer pageNo;
+    private Integer pageNo = 1;
 
     @ApiModelProperty(value = "每页数量")
-    private Integer pageSize;
+    private Integer pageSize = 10;
 }

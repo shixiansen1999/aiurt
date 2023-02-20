@@ -48,6 +48,7 @@ public class FileAnalysisData  {
     @Field(type = FieldType.Text, searchAnalyzer = "ik_max_word", analyzer = "ik_smart")
     @ApiModelProperty(value = "64位编码的文件内容")
     private String content;
+
     /**
      * 文件存储地址
      */

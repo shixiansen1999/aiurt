@@ -2,19 +2,19 @@
   "mappings": {
     "properties": {
       "id": {
-        "type": "text"
+        "type": "keyword"
       },
       "knowledge_base_type_code": {
-        "type": "text"
+        "type": "keyword"
       },
       "device_type_code": {
-        "type": "text"
+        "type": "keyword"
       },
       "material_code": {
-        "type": "text"
+        "type": "keyword"
       },
       "fault_codes": {
-        "type": "text",
+        "type": "keyword",
         "index": false
       },
       "fault_phenomenon": {
@@ -25,7 +25,8 @@
             "type": "completion",
             "analyzer": "ik_max_word"
           }
-        }
+        },
+        "search_analyzer": "ik_smart"
       },
       "fault_reason": {
         "type": "text",
@@ -35,15 +36,18 @@
             "type": "completion",
             "analyzer": "ik_max_word"
           }
-        }
+        },
+        "search_analyzer": "ik_smart"
       },
       "solution": {
         "type": "text",
-        "analyzer": "ik_max_word"
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
       },
       "method": {
         "type": "text",
-        "analyzer": "ik_max_word"
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
       },
       "tools": {
         "type": "text"

@@ -1,10 +1,6 @@
 package com.aiurt.boot.service;
 
-import com.aiurt.modules.search.entity.FileAnalysisData;
-import com.aiurt.modules.search.dto.DocumentManageRequestDTO;
-import com.aiurt.modules.search.dto.SearchRequestDTO;
-import com.aiurt.modules.search.dto.SearchResponseDTO;
-import com.aiurt.modules.search.dto.TermResponseDTO;
+import com.aiurt.modules.search.dto.*;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import java.util.List;
@@ -26,23 +22,23 @@ public interface ISearchService {
 
     /**
      * 故障知识库词语补全提示
-     * @param searchKey
+     * @param keyword
      * @return
      */
-    List<TermResponseDTO> suggest(String searchKey);
+    List<String> faultKnowledgeSuggest(String keyword);
 
     /**
      * 规程规范与知识库词语补全提示
-     * @param searchKey
+     * @param keyword
      * @return
      */
-    List<TermResponseDTO> documentManageSuggest(String searchKey);
+    List<String> documentManageSuggest(String keyword);
 
     /**
      * 分页查询规程规范与知识库
      * @param documentManageRequest
      * @return
      */
-    IPage<FileAnalysisData> documentManageList(DocumentManageRequestDTO documentManageRequest);
+    IPage<DocumentManageResponseDTO> documentManageList(DocumentManageRequestDTO documentManageRequest);
 
 }

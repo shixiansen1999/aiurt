@@ -2,11 +2,7 @@ package com.aiurt.boot.controller;
 
 
 import com.aiurt.boot.service.ISearchService;
-import com.aiurt.modules.search.dto.DocumentManageRequestDTO;
-import com.aiurt.modules.search.dto.SearchRequestDTO;
-import com.aiurt.modules.search.dto.SearchResponseDTO;
-import com.aiurt.modules.search.dto.TermResponseDTO;
-import com.aiurt.modules.search.entity.FileAnalysisData;
+import com.aiurt.modules.search.dto.*;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -42,22 +38,22 @@ public class SearchController {
 
     @ApiOperation(value = "故障知识库词语补全提示", notes = "故障知识库词语补全提示")
     @GetMapping(value = "/faultKnowledgeSuggest")
-    public Result<List<TermResponseDTO>> faultKnowledgeSuggest(String searchKey) {
-        List<TermResponseDTO> result = searchService.suggest(searchKey);
+    public Result<List<String>> faultKnowledgeSuggest(String keyword) {
+        List<String> result = searchService.faultKnowledgeSuggest(keyword);
         return Result.OK(result);
     }
 
     @ApiOperation(value = "分页查询规程规范与知识库", notes = "分页查询规程规范与知识库")
     @GetMapping(value = "/documentManageList")
-    public Result<IPage<FileAnalysisData>> documentManageList(DocumentManageRequestDTO documentManageRequest) {
-        IPage<FileAnalysisData> result = searchService.documentManageList(documentManageRequest);
+    public Result<IPage<DocumentManageResponseDTO>> documentManageList(DocumentManageRequestDTO documentManageRequest) {
+        IPage<DocumentManageResponseDTO> result = searchService.documentManageList(documentManageRequest);
         return Result.OK(result);
     }
 
     @ApiOperation(value = "规程规范与知识库词语补全提示", notes = "规程规范与知识库词语补全提示")
     @GetMapping(value = "/documentManageSuggest")
-    public Result<List<TermResponseDTO>> documentManageSuggest(String searchKey) {
-        List<TermResponseDTO> result = searchService.documentManageSuggest(searchKey);
+    public Result<List<String>> documentManageSuggest(String keyword) {
+        List<String> result = searchService.documentManageSuggest(keyword);
         return Result.OK(result);
     }
 

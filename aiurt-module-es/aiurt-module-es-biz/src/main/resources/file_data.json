@@ -12,14 +12,14 @@
             "type": "completion",
             "analyzer": "ik_max_word"
           }
-        }
+        },
+        "search_analyzer": "ik_smart"
       },
       "format":{
         "type": "keyword"
       },
       "type_id":{
-        "type": "text",
-        "index": false
+        "type": "keyword"
       },
       "address":{
         "type": "text",
@@ -29,7 +29,8 @@
         "properties": {
           "content":{
             "type": "text",
-            "analyzer": "ik_max_word"
+            "analyzer": "ik_max_word",
+            "search_analyzer": "ik_smart"
           }
         }
       }
