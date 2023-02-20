@@ -195,35 +195,40 @@ public class PaperlessInspectController {
 	@ApiOperation(value="安全检查记录-导出", notes="导出")
     @GetMapping(value = "/exportXlsx")
     public void exportXls(HttpServletRequest request, String id,HttpServletResponse response) throws Exception {
-		String path="templates/paperless.xlsx";
+//		String path="templates/paperless.xlsx";
+		String path="aiurt-module-system/src/main/resources/templates/paperless.xlsx";
 		TemplateExportParams params = new TemplateExportParams(path,true);
 		PaperlessInspect paperlessInspect = paperlessInspectService.getById(id);
-		System.out.println(params);
+//		System.out.println(params);
 		Map<String, Object> map = new HashMap<String, Object>();
 		String company="□";
 		String department="□";
 		String team="□";
-		if (paperlessInspect.getPaperlessTeam()!=null){
-			switch (paperlessInspect.getPaperlessTeam()){
-				case 0:company="√";
-					break;
-				case 1:department="√";
-					break;
-				case 2:team="√";
+		if (paperlessInspect!=null){
+			if (paperlessInspect.getPaperlessTeam()!=null){
+				switch (paperlessInspect.getPaperlessTeam()){
+					case 0:company="√";
+						break;
+					case 1:department="√";
+						break;
+					case 2:team="√";
+				}
 			}
+			map.put("paperlessName",paperlessInspect.getPaperlessName());
+			map.put("paperlessTime",DateUtil.format(paperlessInspect.getPaperlessTime(), "YYYY-MM-dd HH:mm:ss"));
+			map.put("paperlessInspect",paperlessInspect.getPaperlessInspect());
+			map.put("paperlessRectification",paperlessInspect.getPaperlessRectification());
+			map.put("paperlessOpinion",paperlessInspect.getPaperlessOpinion());
+			map.put("paperlessInspector",paperlessInspect.getPaperlessInspector());
+			map.put("paperlessLiable",paperlessInspect.getPaperlessLiable());
 		}
-		 map.put("paperlessName",paperlessInspect.getPaperlessName());
-		 map.put("paperlessTime",DateUtil.format(paperlessInspect.getPaperlessTime(), "YYYY-MM-dd HH:mm:ss"));
-		 map.put("paperlessInspect",paperlessInspect.getPaperlessInspect());
-		 map.put("paperlessRectification",paperlessInspect.getPaperlessRectification());
+
 //		 map.put("paperlessTeam",paperlessInspect.getPaperlessTeam());
 		map.put("company",company);
 		map.put("department",department);
 		map.put("team",team);
 		 map.put("paperlessTeam","√");
-		 map.put("paperlessOpinion",paperlessInspect.getPaperlessOpinion());
-		 map.put("paperlessInspector",paperlessInspect.getPaperlessInspector());
-		 map.put("paperlessLiable",paperlessInspect.getPaperlessLiable());
+
 		List<Map<String, String>> listMap = new ArrayList<Map<String, String>>();
 		List<PaperlessInspectEntry> paperlessInspectEntryList = paperlessInspectEntryService.selectByMainId(paperlessInspect.getId());
 
@@ -251,10 +256,8 @@ public class PaperlessInspectController {
 			//xlsx格式设置
 			response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 			BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
-			workbook.write(bufferedOutPut);
-			System.out.println(workbook);
-			bufferedOutPut.flush();
-			bufferedOutPut.close();
+//			workbook.write(bufferedOutPut);
+			workbook.write(response.getOutputStream());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}finally {
