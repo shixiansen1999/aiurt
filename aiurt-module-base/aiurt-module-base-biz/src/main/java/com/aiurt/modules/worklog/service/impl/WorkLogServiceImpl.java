@@ -82,7 +82,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
 
-    private String schedule = "1.落实防疫规定，2.工区进行消毒，3.人员测温，4.对工区及材料库进行卫生清洁，5.对各站设备进行检修" ;
+    private String schedule = "1.对工区及材料库进行卫生清洁，2.对各站设备进行检修" ;
     /**
      * 新增工作日志
      * @param dto
@@ -279,17 +279,17 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             }
             //防疫相关工作
             StringBuffer stringBuffer = new StringBuffer();
-            if (WorkLogConstans.IS.equals(record.getIsDisinfect())) {
-                stringBuffer.append("完成工区消毒；");
-            }else {stringBuffer.append("未完成工区消毒；");}
+//            if (WorkLogConstans.IS.equals(record.getIsDisinfect())) {
+//                stringBuffer.append("完成工区消毒；");
+//            }else {stringBuffer.append("未完成工区消毒；");}
 
             if (WorkLogConstans.IS.equals(record.getIsClean())) {
                 stringBuffer.append("完成工区卫生打扫；");
             }else { stringBuffer.append("未完成工区卫生打扫；");}
 
-            if (WorkLogConstans.NORMAL.equals(record.getIsAbnormal())) {
-                stringBuffer.append("班组上岗人员体温正常。");
-            }else { stringBuffer.append("班组上岗人员体温异常。");}
+//            if (WorkLogConstans.NORMAL.equals(record.getIsAbnormal())) {
+//                stringBuffer.append("班组上岗人员体温正常。");
+//            }else { stringBuffer.append("班组上岗人员体温异常。");}
 
             record.setAntiepidemicWork(stringBuffer.toString());
 
@@ -471,6 +471,16 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 record.setHandoverName(realNames);
 
             }
+            //接班人名称
+            String succeedIds = record.getSucceedId();
+            if (StrUtil.isNotEmpty(succeedIds)) {
+                List<JSONObject> jsonObjects = iSysBaseAPI.queryUsersByIds(succeedIds);
+                String realNames = jsonObjects.stream().map(js -> js.getString("realname")).collect(Collectors.joining("；"));
+                record.setSucceedName(realNames);
+
+            }
+            //获取参与人员
+            record.setUserList(record.getHandoverName()+","+record.getSucceedName());
             //防疫相关工作
             StringBuffer stringBuffer = new StringBuffer();
             if (WorkLogConstans.IS.equals(record.getIsDisinfect())) {
@@ -610,6 +620,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             List<JSONObject> jsonObjects = iSysBaseAPI.queryUsersByIds(handoverIds);
             String realNames = jsonObjects.stream().map(js -> js.getString("realname")).collect(Collectors.joining("；"));
             workLogDTO.setHandoverName(realNames);
+
+        }
+        //接班人名称
+        String succeedIds = workLog.getSucceedId();
+        if (StrUtil.isNotEmpty(succeedIds)) {
+            List<JSONObject> jsonObjects = iSysBaseAPI.queryUsersByIds(succeedIds);
+            String realNames = jsonObjects.stream().map(js -> js.getString("realname")).collect(Collectors.joining("；"));
+            workLog.setSucceedName(realNames);
 
         }
         return workLogDTO;
@@ -1005,22 +1023,31 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             String realNames = jsonObjects.stream().map(js -> js.getString("realname")).collect(Collectors.joining("；"));
             workLog.setHandoverName(realNames);
         }
+        //接班人名称
+        String succeedIds = workLog.getSucceedId();
+        if (StrUtil.isNotEmpty(succeedIds)) {
+            List<JSONObject> jsonObjects = iSysBaseAPI.queryUsersByIds(succeedIds);
+            String realNames = jsonObjects.stream().map(js -> js.getString("realname")).collect(Collectors.joining("；"));
+            workLog.setSucceedName(realNames);
 
+        }
+        //获取参与人员
+        workLog.setUserList(workLog.getHandoverName()+","+workLog.getSucceedName());
         //防疫相关工作
         StringBuffer stringBuffer = new StringBuffer();
-        if (WorkLogConstans.IS.equals(workLog.getIsDisinfect())) {
-            stringBuffer.append("完成工区消毒；");
-        }else {stringBuffer.append("未完成工区消毒；");}
+//        if (WorkLogConstans.IS.equals(workLog.getIsDisinfect())) {
+//            stringBuffer.append("完成工区消毒；");
+//        }else {stringBuffer.append("未完成工区消毒；");}
 
         if (WorkLogConstans.IS.equals(workLog.getIsClean())) {
             stringBuffer.append("完成工区卫生打扫；");
         }else { stringBuffer.append("未完成工区卫生打扫；");}
 
-        if (WorkLogConstans.NORMAL.equals(workLog.getIsAbnormal())) {
-            stringBuffer.append("班组上岗人员体温正常。");
-        }else {
-            stringBuffer.append("班组上岗人员体温异常。");
-        }
+//        if (WorkLogConstans.NORMAL.equals(workLog.getIsAbnormal())) {
+//            stringBuffer.append("班组上岗人员体温正常。");
+//        }else {
+//            stringBuffer.append("班组上岗人员体温异常。");
+//        }
         String faultContent = workLog.getFaultContent();
         if (StrUtil.isBlank(faultContent)) {
             workLog.setFaultContent("无");
