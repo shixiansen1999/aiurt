@@ -28,7 +28,7 @@ public class SysMessageInfoDTO extends DictEntity {
     @ApiModelProperty("创建时间")
     private String intervalTime;
 
-    @ApiModelProperty("已读未读标识")
+    @ApiModelProperty("已读未读标识（0未读，1已读）")
     @Dict(dicCode = "read_flag")
     private String readFlag;
 
@@ -40,6 +40,10 @@ public class SysMessageInfoDTO extends DictEntity {
 
     @ApiModelProperty("发布内容")
     private String publishingContent;
+
+    @ApiModelProperty(value = "任务类型（待办池类型：0：待办、1：已办、2：待阅、3：已阅）")
+    @Dict(dicCode = "todo_task_state")
+    private String todoType;
 
 
 

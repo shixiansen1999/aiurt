@@ -166,13 +166,11 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			List<SysAnnouncementSendDTO> value = entry.getValue();
 			int size = value.size();
 			sysMessageTypeDTO.setCount(size);
-			//对list进行比较，相同名称，则数量相加
-			for (SysMessageTypeDTO messageTypeDTO : list) {
-				if(messageTypeDTO.getTitle().equals(module)){
-					sysMessageTypeDTO.setTitle(messageTypeDTO.getTitle());
-					sysMessageTypeDTO.setCount(messageTypeDTO.getCount()+size);
-				}
-			}
+			//给内容赋值
+			value=value.stream().sorted(Comparator.comparing(SysAnnouncementSendDTO::getCreateTime).reversed()).collect(Collectors.toList());
+			String msgContent = value.get(0).getMsgContent();
+			sysMessageTypeDTO.setTitleContent(msgContent);
+
 			//获取时间，在对list进行排序
 			Collections.sort(value,((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime())));
 			if(CollUtil.isNotEmpty(value)){
@@ -201,6 +199,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			List<SysAnnouncementSendDTO> value = entry.getValue();
 			int size = value.size();
 			sysMessageTypeDTO.setCount(size);
+			//给内容赋值
+			value=value.stream().sorted(Comparator.comparing(SysAnnouncementSendDTO::getCreateTime).reversed()).collect(Collectors.toList());
+			String msgContent = value.get(0).getMsgContent();
+			sysMessageTypeDTO.setTitleContent(msgContent);
 			//获取时间，在对list进行排序
 			Collections.sort(value,((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime())));
 			if(CollUtil.isNotEmpty(value)) {
@@ -223,13 +225,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			List<SysTodoList> value = entry.getValue();
 			int size = value.size();
 			sysMessageTypeDTO.setCount(size);
-			//对list进行比较，相同名称，则数量相加
-			for (SysMessageTypeDTO messageTypeDTO : list) {
-				if(messageTypeDTO.getTitle().equals(module)){
-					sysMessageTypeDTO.setTitle(messageTypeDTO.getTitle());
-					sysMessageTypeDTO.setCount(messageTypeDTO.getCount()+size);
-				}
-			}
+			//给内容赋值
+			value=value.stream().sorted(Comparator.comparing(SysTodoList::getCreateTime).reversed()).collect(Collectors.toList());
+			String msgContent = value.get(0).getTaskName();
+			sysMessageTypeDTO.setTitleContent(msgContent);
 			//获取时间，在对list进行排序
 			Collections.sort(value,((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime())));
 			if(CollUtil.isNotEmpty(value)) {
@@ -239,6 +238,21 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			sysMessageTypeDTO.setMessageFlag("2");
 			list.add(sysMessageTypeDTO);
 		}
+		//list去重，数量相加
+		Map<String, SysMessageTypeDTO> productMap = new HashMap<String, SysMessageTypeDTO>(32);
+		for (SysMessageTypeDTO product : list)
+		{
+			if (productMap.containsKey(product.getTitle()))
+			{
+				product.setCount(product.getCount() + productMap.get(product.getTitle()).getCount());
+			}
+			productMap.put(product.getTitle(), product);
+		}
+		list.clear();// 清空栈内存
+		for (Map.Entry<String, SysMessageTypeDTO> entry : productMap.entrySet()) {
+			list.add(entry.getValue());
+		}
+		//list根据创建时间排序
 		list = list.stream().sorted(Comparator.comparing(SysMessageTypeDTO::getIntervalTime).reversed()).collect(Collectors.toList());
 
 		return list;
