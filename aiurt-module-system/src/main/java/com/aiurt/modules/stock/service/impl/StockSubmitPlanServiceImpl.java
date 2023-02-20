@@ -1,45 +1,34 @@
 package com.aiurt.modules.stock.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.common.util.XlsExport;
-import com.aiurt.modules.major.entity.CsMajor;
-import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBase;
-import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseService;
-import com.aiurt.modules.material.service.IMaterialBaseTypeService;
-import com.aiurt.modules.stock.entity.StockIncomingMaterials;
 import com.aiurt.modules.stock.entity.StockSubmitMaterials;
 import com.aiurt.modules.stock.entity.StockSubmitPlan;
 import com.aiurt.modules.stock.mapper.StockSubmitPlanMapper;
 import com.aiurt.modules.stock.service.IStockSubmitMaterialsService;
 import com.aiurt.modules.stock.service.IStockSubmitPlanService;
-import com.aiurt.modules.subsystem.entity.CsSubsystem;
-import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import liquibase.pro.packaged.S;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,7 +36,10 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -127,11 +119,21 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 	}
 
 	@Override
-	public void eqExport(String ids, HttpServletRequest request, HttpServletResponse response) {
-		String[] split = ids.split(",");
-		List<String> strings = Arrays.asList(split);
+	public void eqExport(String ids, StockSubmitPlan submitPlan, HttpServletRequest request, HttpServletResponse response) {
+
 		// 过滤选中数据
-		List<StockSubmitPlan> list = this.list(new QueryWrapper<StockSubmitPlan>().in("id", strings).orderByDesc("create_time"));
+		QueryWrapper<StockSubmitPlan> wrapper = QueryGenerator.initQueryWrapper(submitPlan, request.getParameterMap());
+		if(ObjectUtil.isNotEmpty(submitPlan)&& StrUtil.isNotBlank(submitPlan.getOrgCode())) {
+			wrapper.lambda().eq(StockSubmitPlan::getOrgCode, submitPlan.getOrgCode());
+		}
+		if (StrUtil.isNotEmpty(ids)) {
+			String[] split = ids.split(",");
+			List<String> strings = Arrays.asList(split);
+			wrapper.lambda().in(StockSubmitPlan::getId, strings);
+		}
+		wrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+		wrapper.orderByDesc("create_time");
+		List<StockSubmitPlan> list = this.list(wrapper);
 		//设置相应头
 		response.setContentType("Application/excel");
 		try {
@@ -216,6 +218,9 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 						String wzcode = stockSubmitMaterials.getMaterialsCode()==null?"":stockSubmitMaterials.getMaterialsCode();
 						MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",wzcode));
 						materialBase = materialBaseService.translate(materialBase);
+						if (ObjectUtil.isEmpty(materialBase)){
+							materialBase = new MaterialBase();
+						}
 						String zyname = sysBaseApi.translateDictFromTable("cs_major", "major_name", "major_code", materialBase.getMajorCode());
 						String zxyname = sysBaseApi.translateDictFromTable("cs_subsystem", "system_name", "system_code", materialBase.getSystemCode());
 						String wztype = materialBase.getType()==null?"":materialBase.getType().toString();
