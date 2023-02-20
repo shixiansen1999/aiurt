@@ -4,6 +4,7 @@ import com.aiurt.modules.system.dto.SysMessageInfoDTO;
 import com.aiurt.modules.system.dto.SysMessageTypeDTO;
 import com.aiurt.modules.system.entity.SysAnnouncement;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -60,5 +61,5 @@ public interface ISysAnnouncementService extends IService<SysAnnouncement> {
      * @param busType
      * @return
      */
-    public List<SysMessageInfoDTO> queryMessageInfo(String messageFlag,String todoType,String keyword,String busType);
+    public IPage<SysMessageInfoDTO> queryMessageInfo(Page<SysMessageInfoDTO> page ,String messageFlag, String todoType, String keyword, String busType,String msgCategory);
 }

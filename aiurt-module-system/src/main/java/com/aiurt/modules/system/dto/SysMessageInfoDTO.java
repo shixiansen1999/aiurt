@@ -6,6 +6,8 @@ package com.aiurt.modules.system.dto;/**
  * @time: 12:12
  */
 
+import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -16,7 +18,7 @@ import lombok.Data;
  * @date: 2023-02-17 12:12
  */
 @Data
-public class SysMessageInfoDTO {
+public class SysMessageInfoDTO extends DictEntity {
     @ApiModelProperty("标题")
     private String title;
 
@@ -27,6 +29,7 @@ public class SysMessageInfoDTO {
     private String intervalTime;
 
     @ApiModelProperty("已读未读标识")
+    @Dict(dicCode = "read_flag")
     private String readFlag;
 
     @ApiModelProperty("消息类型：1:通知公告2:系统消息3:特情消息")

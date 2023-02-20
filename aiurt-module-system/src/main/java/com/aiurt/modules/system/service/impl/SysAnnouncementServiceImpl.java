@@ -23,6 +23,7 @@ import com.aiurt.modules.system.mapper.SysAnnouncementSendMapper;
 import com.aiurt.modules.system.service.ISysAnnouncementService;
 import com.aiurt.modules.todo.entity.SysTodoList;
 import com.aiurt.modules.todo.mapper.SysTodoListMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
@@ -152,10 +153,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		List<SysAnnouncementSendDTO> sysAnnouncementSendList = sysAnnouncementMapper.queryAnnouncementByNull(userId);
 
 		//获取当前登录人待办消息(流程消息)
-		LambdaQueryWrapper<SysTodoList> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-		lambdaQueryWrapper.ne(SysTodoList::getTodoType,1)
-				.eq(SysTodoList::getActualUserName,username);
-		List<SysTodoList> sysTodoLists = sysTodoListMapper.selectList(lambdaQueryWrapper);
+		List<SysTodoList> sysTodoLists = sysAnnouncementMapper.queryTodoList(username);
 		//业务消息处理
 		Map<String, List<SysAnnouncementSendDTO>> collect = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getBusType() != null).collect(Collectors.groupingBy(SysAnnouncementSendDTO::getBusType));
 		for (Map.Entry<String, List<SysAnnouncementSendDTO>> entry : collect.entrySet()) {
@@ -178,7 +176,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			//获取时间，在对list进行排序
 			Collections.sort(value,((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime())));
 			if(CollUtil.isNotEmpty(value)){
-				SysAnnouncementSendDTO lastSysAnnouncementSendDTO = value.get(value.size() - 1);
+				SysAnnouncementSendDTO lastSysAnnouncementSendDTO = value.get(0);
 				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
 			}
 			sysMessageTypeDTO.setMessageFlag("1");
@@ -206,7 +204,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			//获取时间，在对list进行排序
 			Collections.sort(value,((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime())));
 			if(CollUtil.isNotEmpty(value)) {
-				SysAnnouncementSendDTO lastSysAnnouncementSendDTO = value.get(value.size() - 1);
+				SysAnnouncementSendDTO lastSysAnnouncementSendDTO = value.get(0);
 				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
 			}
 			sysMessageTypeDTO.setMessageFlag("0");
@@ -235,28 +233,27 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			//获取时间，在对list进行排序
 			Collections.sort(value,((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime())));
 			if(CollUtil.isNotEmpty(value)) {
-				SysTodoList sysTodoList = value.get(value.size() - 1);
+				SysTodoList sysTodoList = value.get(0);
 				sysMessageTypeDTO.setIntervalTime(sysTodoList.getCreateTime());
 			}
 			sysMessageTypeDTO.setMessageFlag("2");
 			list.add(sysMessageTypeDTO);
 		}
-
-
+		list = list.stream().sorted(Comparator.comparing(SysMessageTypeDTO::getIntervalTime).reversed()).collect(Collectors.toList());
 
 		return list;
 	}
 
 	@Override
-	public List<SysMessageInfoDTO> queryMessageInfo(String messageFlag, String todoType,String keyWord,String busType) {
+	public IPage<SysMessageInfoDTO> queryMessageInfo(Page<SysMessageInfoDTO> page,String messageFlag, String todoType, String keyWord, String busType,String msgCategory) {
 		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String userId = loginUser.getId();
 		String username = loginUser.getUsername();
-		if(("1").equals(messageFlag)){
-			List<SysMessageInfoDTO> businessList = sysAnnouncementMapper.queryAnnouncementInfo(userId, keyWord,busType);
+		if("1".equals(messageFlag)){
+			IPage<SysMessageInfoDTO> businessList = sysAnnouncementMapper.queryAnnouncementInfo(page,userId, keyWord,busType,msgCategory);
 			return businessList;
-		} else if(("2").equals(messageFlag)){
-			List<SysMessageInfoDTO> flowList = sysAnnouncementMapper.queryTodoListInfo(username, todoType, keyWord);
+		} else if("2".equals(messageFlag)){
+			IPage<SysMessageInfoDTO> flowList = sysAnnouncementMapper.queryTodoListInfo(page,username, todoType, keyWord,busType);
 		return flowList;
 		}
 		return null;

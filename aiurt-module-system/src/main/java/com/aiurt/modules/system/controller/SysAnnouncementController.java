@@ -577,12 +577,15 @@ public class SysAnnouncementController {
     @AutoLog(value = "消息中心-业务消息类型-详情")
     @ApiOperation(value="消息中心-业务消息类型-详情", notes="消息中心-业务消息类型-详情")
     @GetMapping(value = "/queryAnnouncementInfo")
-    public Result<List<SysMessageInfoDTO>> queryAnnouncementInfo(@ApiParam(name = "messageFlag", value = "1:业务、2:流程 、0:通知公告，系统消息，特情消息")@RequestParam(name="messageFlag",required=true) String  messageFlag,
+    public Result<IPage<SysMessageInfoDTO>> queryAnnouncementInfo( @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                         @ApiParam(name = "messageFlag", value = "1:业务、2:流程 ")@RequestParam(name="messageFlag",required=true) String  messageFlag,
+                                                                   @ApiParam(name = "msgCategory", value = "消息类型1:通知公告2:系统消息3:特情消息 ")@RequestParam(name="msgCategory",required=false) String  msgCategory,
                                                                  @ApiParam(name = "todoType", value = "0：待办、1：已办、2：待阅、3：已阅")@RequestParam(name="todoType",required=false) String  todoType,
                                                                  @ApiParam(name = "keyword", value = "关键字")@RequestParam(name="keyword",required=false) String  keyword,
-                                                                 @ApiParam(name = "busType", value = "fault:故障、situation:特情 、trainplan，trainrecheck:培训、worklog:工作日志、inspection_assign:检修、patrol_assign，patrol_audit:巡视、inspection:检修流程、patrol:巡视流程、fault:故障流程")@RequestParam(name="keyword",required=false) String  busType
-    ){
-        List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementService.queryMessageInfo(messageFlag, todoType, keyword,busType);
+                                                                 @ApiParam(name = "busType", value = "fault:故障、situation:特情 、trainplan，trainrecheck:培训、worklog:工作日志、inspection_assign,inspection:检修、patrol_assign，patrol_audit:巡视、patrol:巡视流程、fault:故障流程、emergency:应急业务消息、inspection:检修流程")@RequestParam(name="keyword",required=false) String  busType){
+        Page<SysMessageInfoDTO> page = new Page<>(pageNo,pageSize);
+        IPage<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementService.queryMessageInfo(page,messageFlag, todoType, keyword,busType,msgCategory);
         return Result.ok(sysMessageInfoDTOS);
     }
 
