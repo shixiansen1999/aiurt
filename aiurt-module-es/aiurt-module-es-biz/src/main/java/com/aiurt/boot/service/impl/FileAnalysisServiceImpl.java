@@ -3,7 +3,6 @@ package com.aiurt.boot.service.impl;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.EsFileAPI;
 import com.aiurt.boot.constant.EsConstant;
 import com.aiurt.boot.service.IFileAnalysisService;
@@ -56,10 +55,10 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
 //            String base64Content = Base64.getEncoder().encodeToString(StrUtil.bytes(content));
 
             analysisData.setId(id);
-//            analysisData.setName(fileName);
-//            analysisData.setFormat(suffix);
-//            analysisData.setTypeId(typeId);
-//            analysisData.setAddress(path);
+            analysisData.setName(fileName);
+            analysisData.setFormat(suffix);
+            analysisData.setTypeId(typeId);
+            analysisData.setAddress(path);
             analysisData.setContent(base64);
 
             this.saveData(analysisData);
@@ -90,11 +89,10 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
 
         FileAnalysisData analysisData = new FileAnalysisData();
         analysisData.setId(fileDataDTO.getId());
-//        analysisData.setAddress(fileDataDTO.getAddress());
-//        analysisData.setTypeId(fileDataDTO.getTyepId());
-//        analysisData.setName(fileDataDTO.getName());
-//        analysisData.setFormat(fileDataDTO.getFormat());
-        // 其余的字段可以不用同步，通过canal同步即可，此处仅保存更新文件内容的数据
+        analysisData.setAddress(fileDataDTO.getAddress());
+        analysisData.setTypeId(fileDataDTO.getTyepId());
+        analysisData.setName(fileDataDTO.getName());
+        analysisData.setFormat(fileDataDTO.getFormat());
         analysisData.setContent(content);
         IndexRequest request = this.extractingFiles(analysisData);
         IndexResponse response = null;
@@ -120,11 +118,10 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
         String content = this.byteEncodeToString(fileBytes);
 
         analysisData.setId(fileDataDTO.getId());
-//        analysisData.setAddress(fileDataDTO.getAddress());
-//        analysisData.setTypeId(fileDataDTO.getTyepId());
-//        analysisData.setName(fileDataDTO.getName());
-//        analysisData.setFormat(fileDataDTO.getFormat());
-        // 其余的字段可以不用同步，通过canal同步即可，此处仅保存更新文件内容的数据
+        analysisData.setAddress(fileDataDTO.getAddress());
+        analysisData.setTypeId(fileDataDTO.getTyepId());
+        analysisData.setName(fileDataDTO.getName());
+        analysisData.setFormat(fileDataDTO.getFormat());
         analysisData.setContent(content);
 
         IndexRequest indexRequest = this.extractingFiles(analysisData);
@@ -155,6 +152,7 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
      */
     private IndexRequest extractingFiles(FileAnalysisData analysisData) {
         IndexRequest indexRequest = new IndexRequest(EsConstant.FILE_DATA_INDEX);
+//        IndexRequest indexRequest = new IndexRequest("regulation_knowledge_base");
         indexRequest.id(analysisData.getId());
         // 使用attachment pipline进行提取文件
         indexRequest.source(JSON.toJSONString(analysisData), XContentType.JSON);
