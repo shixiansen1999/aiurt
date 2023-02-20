@@ -3,6 +3,7 @@ package com.aiurt.boot.standard.controller;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
+import com.aiurt.boot.manager.dto.OrgVO;
 import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
@@ -97,10 +98,10 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     @ApiOperation(value = "检修标准表-添加", notes = "检修标准表-添加")
     @PostMapping(value = "/add")
     public Result<String> add(@RequestBody InspectionCode inspectionCode) {
-        List<String> orgCodeList = inspectionCode.getOrgCodeList();
-        for (String s : orgCodeList) {
+        List<OrgVO> orgCodeList = inspectionCode.getOrgCodeList();
+        for (OrgVO s : orgCodeList) {
             InspectionCoOrgRel inspectionCoOrgRel = new InspectionCoOrgRel();
-            inspectionCoOrgRel.setOrgCode(s);
+            inspectionCoOrgRel.setOrgCode(s.getValue());
             inspectionCoOrgRel.setInspectionCoCode(inspectionCode.getCode());
             orgRelService.save(inspectionCoOrgRel);
         }

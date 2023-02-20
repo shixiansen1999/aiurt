@@ -15,6 +15,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
+import com.aiurt.boot.manager.dto.OrgVO;
 import com.aiurt.boot.standard.dto.InspectionCodeContentDTO;
 import com.aiurt.boot.standard.dto.InspectionCodeErrorDTO;
 import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
@@ -108,10 +109,9 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
             i.setNumber(baseMapper.number(i.getCode()));
             List<InspectionCoOrgRel> orgRelList = inspectionCoOrgRelMapper.selectList(new LambdaQueryWrapper<InspectionCoOrgRel>().eq(InspectionCoOrgRel::getInspectionCoCode, i.getCode()));
             if(CollUtil.isNotEmpty(orgRelList)){
-                List<String> orgCodeList = orgRelList.stream().map(InspectionCoOrgRel::getOrgCode).collect(Collectors.toList());
-                List<String> list = sysBaseApi.queryOrgNamesByOrgCodes(orgCodeList);
+                List<OrgVO> orgCodeList = inspectionCoOrgRelMapper.getOrgList(orgRelList);
                 i.setOrgCodeList(orgCodeList);
-                String orgNames = list.stream().collect(Collectors.joining(";"));
+                String orgNames = orgCodeList.stream().map(OrgVO::getLabel).collect(Collectors.joining(";"));
                 i.setOrgName(orgNames);
             }
         });
