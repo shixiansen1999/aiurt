@@ -32,7 +32,7 @@ public class SysMessageTypeDTO {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private java.util.Date intervalTime;
 
-    @ApiModelProperty(value = "消息标识")
+    @ApiModelProperty(value = "消息标识（1：业务，2：流程，0：系统公告，消息，特情）")
     private String messageFlag;
 
     @ApiModelProperty(value = "消息内容")

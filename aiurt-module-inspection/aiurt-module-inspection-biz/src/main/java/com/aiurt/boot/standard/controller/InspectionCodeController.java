@@ -1,5 +1,6 @@
 package com.aiurt.boot.standard.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
@@ -13,6 +14,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -118,6 +120,17 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     @ApiOperation(value = "检修标准表-编辑", notes = "检修标准表-编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<String> edit(@RequestBody InspectionCode inspectionCode) {
+        List<OrgVO> orgCodeList = inspectionCode.getOrgCodeList();
+        List<InspectionCoOrgRel> list = orgRelService.list(new LambdaQueryWrapper<InspectionCoOrgRel>().eq(InspectionCoOrgRel::getInspectionCoCode, inspectionCode.getCode()));
+        if(CollUtil.isNotEmpty(list)){
+            orgRelService.removeBatchByIds(list);
+        }
+        for (OrgVO s : orgCodeList) {
+            InspectionCoOrgRel inspectionCoOrgRel = new InspectionCoOrgRel();
+            inspectionCoOrgRel.setOrgCode(s.getValue());
+            inspectionCoOrgRel.setInspectionCoCode(inspectionCode.getCode());
+            orgRelService.save(inspectionCoOrgRel);
+        }
         Integer isAppointDevice = inspectionCode.getIsAppointDevice();
         if (ObjectUtil.isNotEmpty(isAppointDevice) && InspectionConstant.NO_ISAPPOINT_DEVICE.equals(isAppointDevice)) {
             inspectionCode.setDeviceTypeCode(null);

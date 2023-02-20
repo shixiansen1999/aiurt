@@ -47,7 +47,7 @@
       from sys_announcement sa
       left join sys_announcement_send sas on sas.annt_id = sa.id
       <where>
-<!--           sas.read_flag = 0-->
+           sas.read_flag = 0
            and sa.del_flag = 0
 		  <if test="userId!=null and userId!=''">
                 and sas.user_id = #{userId}
@@ -59,12 +59,12 @@
 		select sa.* from sys_announcement sa
 		left join sys_announcement_send sas on sas.annt_id = sa.id
 		<where>
-<!--			sas.read_flag = 0-->
+			sas.read_flag = 0
 			and sa.del_flag = 0
 			<if test="userId!=null and userId!=''">
 				and sas.user_id = #{userId}
 			</if>
-            and sa.bus_type = null
+            and isNull(sa.bus_type)
 		</where>
 	</select>
 
@@ -94,11 +94,11 @@
 			<if test="userId!=null and userId!=''">
 				and sas.user_id = #{userId}
 			</if>
-			<if test="keyWord!=null and keyWord!=''">
-				and sa.msg_content LIKE concat(concat('%',#{keyWord}),'%')
-			</if>
 			<if test="busType!=null and busType!=''">
-				and sa.bus_type LIKE concat(concat('%',#{busType}),'%')
+				and sa.bus_type LIKE concat('%',#{busType},'%')
+			</if>
+			<if test="keyWord!=null and keyWord!=''">
+				and sa.msg_content LIKE concat('%',#{keyWord},'%')
 			</if>
 			<if test="msgCategory!=null and msgCategory!=''">
 				and sa.msg_category =#{msgCategory}
