@@ -20,5 +20,6 @@ public class FalutExternalReceiveDTO implements Serializable {
 
     private String message;
 
+    private FaultExternal data;
 
 }
