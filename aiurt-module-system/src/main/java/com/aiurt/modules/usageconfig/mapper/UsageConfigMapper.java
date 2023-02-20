@@ -2,14 +2,14 @@ package com.aiurt.modules.usageconfig.mapper;
 
 
 import com.aiurt.modules.usageconfig.dto.UsageConfigDTO;
+import com.aiurt.modules.usageconfig.dto.UsageStatDTO;
 import com.aiurt.modules.usageconfig.entity.UsageConfig;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 /**
  * @Description: 待办池列表
@@ -27,7 +27,7 @@ public interface UsageConfigMapper extends BaseMapper<UsageConfig> {
      * @param tableName
      * @return
      */
-    Integer getTotal(@Param("tableName") String tableName,@Param("staCondition") String staCondition);
+    Long getTotal(@Param("tableName") String tableName,@Param("staCondition") String staCondition);
 
 
     /**
@@ -37,6 +37,20 @@ public interface UsageConfigMapper extends BaseMapper<UsageConfig> {
      * @param endTime
      * @return
      */
-    Integer getNewNumber(@Param("tableName") String tableName,@Param("startTime") String startTime,@Param("endTime") String endTime,@Param("staCondition") String staCondition);
+    Long getNewNumber(@Param("tableName") String tableName, @Param("startTime") Date startTime, @Param("endTime") Date endTime, @Param("staCondition") String staCondition);
 
+    /**
+     * 查询子级
+     * @param id
+     * @return
+     */
+    List<UsageConfig> getChildrenList(@Param("id") String id);
+
+
+    /**
+     * 分页查询
+     * @param pageList
+     * @return
+     */
+    List<UsageStatDTO> selectByPage(Page<UsageStatDTO> pageList, @Param("code") String code);
 }

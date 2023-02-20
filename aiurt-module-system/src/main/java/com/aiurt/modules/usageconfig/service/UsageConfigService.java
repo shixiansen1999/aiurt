@@ -2,7 +2,9 @@ package com.aiurt.modules.usageconfig.service;
 
 import com.aiurt.modules.usageconfig.dto.UsageConfigDTO;
 import com.aiurt.modules.usageconfig.dto.UsageConfigParamDTO;
+import com.aiurt.modules.usageconfig.dto.UsageStatDTO;
 import com.aiurt.modules.usageconfig.entity.UsageConfig;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -24,5 +26,5 @@ public interface UsageConfigService extends IService<UsageConfig> {
      * @param usageConfigParamDTO
      * @return
      */
-    UsageConfig getBusinessDataStatistics(UsageConfigParamDTO usageConfigParamDTO);
+    IPage<UsageStatDTO> getBusinessDataStatistics(UsageConfigParamDTO usageConfigParamDTO);
 }

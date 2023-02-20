@@ -1,23 +1,31 @@
 package com.aiurt.modules.usageconfig.service.impl;
+import cn.hutool.core.date.DateUtil;
+import com.google.common.collect.Lists;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.usageconfig.dto.UsageConfigDTO;
 import com.aiurt.modules.usageconfig.dto.UsageConfigParamDTO;
+import com.aiurt.modules.usageconfig.dto.UsageStatDTO;
 import com.aiurt.modules.usageconfig.entity.UsageConfig;
 import com.aiurt.modules.usageconfig.mapper.UsageConfigMapper;
 import com.aiurt.modules.usageconfig.service.UsageConfigService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -26,6 +34,7 @@ import java.util.stream.Collectors;
  * @Date: 2022-12-21
  * @Version: V1.0
  */
+@Slf4j
 @Service
 public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig> implements UsageConfigService {
 
@@ -40,97 +49,90 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
     }
 
     @Override
-    public UsageConfig getBusinessDataStatistics(UsageConfigParamDTO usageConfigParamDTO) {
-        UsageConfig usageConfig = new UsageConfig();
+    public IPage<UsageStatDTO> getBusinessDataStatistics(UsageConfigParamDTO usageConfigParamDTO) {
+        Date startTime = usageConfigParamDTO.getStartTime();
 
-        //基础数据
-        if (usageConfigParamDTO.getSign() == 0) {
-            LambdaQueryWrapper<UsageConfig> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(UsageConfig::getState, 1);
-            lambdaQueryWrapper.eq(UsageConfig::getPid, 0);
-            lambdaQueryWrapper.eq(UsageConfig::getHasChild, 1);
-            lambdaQueryWrapper.like(UsageConfig::getName, "基础");
-
-            usageConfig = usageConfigMapper.selectOne(lambdaQueryWrapper);
-            List<UsageConfig> children = new ArrayList<>();
-            this.getBasicData(usageConfig.getId(), usageConfigParamDTO.getStartTime(), usageConfigParamDTO.getEndTime(), children);
-            usageConfig.setChildren(children);
-        }
-        //业务数据
-        else {
-            LambdaQueryWrapper<UsageConfig> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(UsageConfig::getState, 1);
-            lambdaQueryWrapper.eq(UsageConfig::getPid, 0);
-            lambdaQueryWrapper.eq(UsageConfig::getHasChild, 1);
-            lambdaQueryWrapper.like(UsageConfig::getName, "业务");
-
-            usageConfig = usageConfigMapper.selectOne(lambdaQueryWrapper);
-            List<UsageConfig> children = new ArrayList<>();
-            this.getBusinessData(usageConfig.getId(), usageConfigParamDTO.getStartTime(), usageConfigParamDTO.getEndTime(), children);
-            usageConfig.setChildren(children);
+        Date endTime = usageConfigParamDTO.getEndTime();
+        if (Objects.isNull(startTime) || Objects.isNull(endTime)) {
+            startTime = DateUtil.beginOfDay(new Date());
+            endTime = DateUtil.endOfDay(new Date());
         }
 
-        return usageConfig;
-    }
+        Page<UsageStatDTO> pageList = new Page<>(usageConfigParamDTO.getPageNo(),usageConfigParamDTO.getPageSize());
 
+        if (Objects.isNull(usageConfigParamDTO.getSign())) {
+            usageConfigParamDTO.setSign(0);
+        }
+        String code = usageConfigParamDTO.getSign()==0 ? "base" : "business";
 
+        List<UsageStatDTO> dtoList = usageConfigMapper.selectByPage(pageList, code);
 
-    /**
-     * 递归统计所有的基础数据
-     */
-    private void getBasicData(String id, String startTime, String endTime, List<UsageConfig> children) {
-        LambdaQueryWrapper<UsageConfig> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UsageConfig::getPid, id);
-        List<UsageConfig> usageConfigs = usageConfigMapper.selectList(lambdaQueryWrapper);
-        if (CollectionUtil.isNotEmpty(usageConfigs)) {
-            for (UsageConfig e : usageConfigs) {
-                if (StrUtil.isNotBlank(e.getTableName()) && e.getHasChild() == 1) {
-                    Integer total = usageConfigMapper.getTotal(e.getTableName(), e.getStaCondition());
-                    e.setTotal(total);
-                    Integer newNumber = usageConfigMapper.getNewNumber(e.getTableName(), startTime, endTime, e.getStaCondition());
-                    e.setNewlyAdded(newNumber);
+        Date finalStartTime = startTime;
+        Date finalEndTime = endTime;
+        dtoList.stream().forEach(usageStatDTO -> {
+            String id = usageStatDTO.getId();
+
+            // 查询下级
+            List<UsageConfig> childrenList = usageConfigMapper.getChildrenList(id);
+            //
+            if (CollUtil.isNotEmpty(childrenList)) {
+                AtomicReference<Long> num = new AtomicReference<>(0L);
+                AtomicReference<Long> totalNum = new AtomicReference<>(0L);
+                List<UsageStatDTO> children = new ArrayList<>();
+                for (UsageConfig usageConfig : childrenList) {
+                    Long newNumber = this.getNewNumber(usageConfig.getTableName(), finalStartTime, finalEndTime, usageConfig.getStaCondition());
+                    Long total = this.getTotal(usageConfig.getTableName(), usageConfig.getStaCondition());
+                    num.set(num.get() + newNumber);
+                    totalNum.set(totalNum.get() + total);
+                    UsageStatDTO dto = new UsageStatDTO();
+                    dto.setTileName(usageConfig.getName());
+                    dto.setTotal(total);
+                    dto.setNewAddNum(newNumber);
+                    dto.setId(usageConfig.getId());
+                    dto.setPid(usageConfig.getPid());
+                    dto.setTableName("");
+                    dto.setStaCondition("");
+                    children.add(dto);
+
                 }
-                children.add(e);
-                List<UsageConfig> children1 = new ArrayList<>();
-                this.getBasicData(e.getId(), startTime, endTime, children1);
-                e.setChildren(children1);
+                usageStatDTO.setNewAddNum(num.get());
+                usageStatDTO.setTotal(totalNum.get());
+                usageStatDTO.setChildren(children);
+
+            }else {
+                Long newNumber = this.getNewNumber(usageStatDTO.getTableName(), finalStartTime, finalEndTime, usageStatDTO.getStaCondition());
+                Long total = this.getTotal(usageStatDTO.getTableName(), usageStatDTO.getStaCondition());
+                usageStatDTO.setNewAddNum(newNumber);
+                usageStatDTO.setTotal(total);
             }
-        }
+        });
+        pageList.setRecords(dtoList);
+        return pageList;
     }
 
-    /**
-     * 统计每个层级的总数和新增数量
-     * @param usageConfigs
-     */
-    private void setNumber(List<UsageConfig> usageConfigs){
-        if (CollectionUtil.isNotEmpty(usageConfigs)){
-            int count = 0;
-            usageConfigs.stream().filter(e -> e.getHasChild() == 0).map(UsageConfig::getId).collect(Collectors.toList());
 
+    private Long getNewNumber(String tableName, Date startTime, Date endTime, String staCondition) {
+        try {
+            Long newNumber = usageConfigMapper.getNewNumber(tableName, startTime, endTime, staCondition);
+            return newNumber;
+        } catch (Exception e) {
 
         }
+        return 0L;
     }
 
-    /**
-     * 递归统计所有的业务数据
-     * @param id
-     * @param startTime
-     * @param endTime
-     * @param children
-     */
-    private void getBusinessData(String id, String startTime, String endTime, List<UsageConfig> children){
-        LambdaQueryWrapper<UsageConfig> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UsageConfig::getPid, id);
-        List<UsageConfig> usageConfigs = usageConfigMapper.selectList(lambdaQueryWrapper);
-        if (CollectionUtil.isNotEmpty(usageConfigs)) {
-            for (UsageConfig e : usageConfigs) {
-                children.add(e);
-                List<UsageConfig> children1 = new ArrayList<>();
-                this.getBasicData(e.getId(), startTime, endTime, children1);
-                e.setChildren(children1);
-            }
+    private Long getTotal(String tableName, String staCondition) {
+        try {
+            Long total = usageConfigMapper.getTotal(tableName, staCondition);
+            return total;
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
+        return 0L;
     }
+
+
+
 
 
     @Override

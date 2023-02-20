@@ -9,7 +9,7 @@
         select *
         from sys_usage_config
     </select>
-    <select id="getTotal" resultType="java.lang.Integer">
+    <select id="getTotal" resultType="java.lang.Long">
         select
         count(*)
         from
@@ -20,21 +20,41 @@
             </if>
         </where>
     </select>
-    <select id="getNewNumber" resultType="java.lang.Integer">
+    <select id="getNewNumber" resultType="java.lang.Long">
         select
         count(*)
-        from
-        ${tableName}
+        from ${tableName}
         <where>
-            <if test="staCondition != null">
-                ${staCondition}
-            </if>
-            <if test="startTime != null and startTime != ''">
-                and DATE_FORMAT(create_time, '%Y-%m-%d %H-%I-%S') &gt;= DATE_FORMAT(#{startTime}, '%Y-%m-%d %H-%I-%S')
-            </if>
-            <if test="endTime != null and endTime != ''">
-                and DATE_FORMAT(create_time, '%Y-%m-%d %H-%I-%S') &lt;= DATE_FORMAT(#{endTime}, '%Y-%m-%d %H-%I-%S')
-            </if>
+        <if test="startTime != null and endTime != null">
+             create_time between  #{startTime} and  #{endTime}
+        </if>
+        <if test="staCondition != null and staCondition != ''">
+           and ${staCondition}
+        </if>
         </where>
+
+
+    </select>
+
+    <select id="getChildrenList" resultType="com.aiurt.modules.usageconfig.entity.UsageConfig">
+        SELECT
+                *
+        FROM
+                ( SELECT * FROM sys_usage_config WHERE pid > 0 ORDER BY pid, id DESC ) realname_sorted,
+                ( SELECT @pv := #{id} ) initialisation
+        WHERE
+                (
+                        FIND_IN_SET( pid, @pv COLLATE utf8mb4_general_ci )> 0
+                                AND @pv := concat( @pv, ',', id ));
+    </select>
+
+    <select id="selectByPage" resultType="com.aiurt.modules.usageconfig.dto.UsageStatDTO">
+        SELECT
+            id,pid, `name` as tile_name, table_name, sta_condition
+        FROM
+            sys_usage_config
+        WHERE
+            pid IN (SELECT id from sys_usage_config where `code` = #{code})
+          AND state = 1
     </select>
 </mapper>

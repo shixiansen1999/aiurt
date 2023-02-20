@@ -90,4 +90,8 @@ public class UsageConfig implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "子级")
     private List<UsageConfig> children;
+
+    private String code;
+
+    private Integer order;
 }
