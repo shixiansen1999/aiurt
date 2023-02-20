@@ -8,7 +8,8 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.InspectionApi;
 import com.aiurt.boot.api.PatrolApi;
-import com.aiurt.common.api.dto.message.BusMessageDTO;
+import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.enums.WorkLogCheckStatusEnum;
 import com.aiurt.common.enums.WorkLogConfirmStatusEnum;
 import com.aiurt.common.enums.WorkLogStatusEnum;
@@ -200,21 +201,18 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 //            addParam.setLevel(9);
 //            userTaskService.add(addParam);
 
-            //todo 待处理
-            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            // 发消息
-            BusMessageDTO messageDTO = new BusMessageDTO();
-            messageDTO.setFromUser(sysUser.getUsername());
-            messageDTO.setToUser(dto.getSucceedUserName());
-            messageDTO.setToAll(false);
-            messageDTO.setContent(dto.getContent()==null?"您有一条待接班日志":dto.getContent());
-            messageDTO.setCategory("2");
-            messageDTO.setTitle("您有一条待接班日志");
-            messageDTO.setBusType(SysAnnmentTypeEnum.WORKLOG.getType());
-            iSysBaseAPI.sendBusAnnouncement(messageDTO);
+        //todo 待处理
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //发送通知
+        MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(), dto.getSucceedUserName(), "您有一条待接班日志" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_2);
+        //构建消息模板
+        HashMap<String, Object> map = new HashMap<>();
+        map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
 
-
-
+        messageDTO.setType(MessageTypeEnum.XT.getType());
+        messageDTO.setMsgAbstract("工作日志上报");
+        messageDTO.setPublishingContent("您有一条待接班日志");
+        iSysBaseAPI.sendTemplateMessage(messageDTO);
     }
 
     /**
