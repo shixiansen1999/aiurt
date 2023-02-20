@@ -50,17 +50,17 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
         try {
             //将文件内容转化为base64编码
             byte[] bytes = file.getBytes();
-//            String base64 = Base64.getEncoder().encodeToString(bytes);
+            String base64 = Base64.getEncoder().encodeToString(bytes);
             // 去除空格换行符等
-            String content = StrUtil.removeAllLineBreaks(new String(bytes));
-            String base64Content = Base64.getEncoder().encodeToString(StrUtil.bytes(content));
+//            String content = StrUtil.removeAllLineBreaks(new String(bytes));
+//            String base64Content = Base64.getEncoder().encodeToString(StrUtil.bytes(content));
 
             analysisData.setId(id);
-            analysisData.setName(fileName);
-            analysisData.setFormat(suffix);
-            analysisData.setContent(base64Content);
-            analysisData.setTypeId(typeId);
-            analysisData.setAddress(path);
+//            analysisData.setName(fileName);
+//            analysisData.setFormat(suffix);
+//            analysisData.setTypeId(typeId);
+//            analysisData.setAddress(path);
+            analysisData.setContent(base64);
 
             this.saveData(analysisData);
         } catch (IOException e) {
@@ -85,17 +85,17 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
 
     @Override
     public IndexResponse saveFileData(FileDataDTO fileDataDTO) {
-        FileAnalysisData analysisData = new FileAnalysisData();
         byte[] fileBytes = fileDataDTO.getFileBytes();
         String content = this.byteEncodeToString(fileBytes);
 
+        FileAnalysisData analysisData = new FileAnalysisData();
         analysisData.setId(fileDataDTO.getId());
-        analysisData.setAddress(fileDataDTO.getAddress());
-        analysisData.setTypeId(fileDataDTO.getTyepId());
-        analysisData.setName(fileDataDTO.getName());
+//        analysisData.setAddress(fileDataDTO.getAddress());
+//        analysisData.setTypeId(fileDataDTO.getTyepId());
+//        analysisData.setName(fileDataDTO.getName());
+//        analysisData.setFormat(fileDataDTO.getFormat());
+        // 其余的字段可以不用同步，通过canal同步即可，此处仅保存更新文件内容的数据
         analysisData.setContent(content);
-        analysisData.setFormat(fileDataDTO.getFormat());
-
         IndexRequest request = this.extractingFiles(analysisData);
         IndexResponse response = null;
         try {
@@ -120,11 +120,12 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
         String content = this.byteEncodeToString(fileBytes);
 
         analysisData.setId(fileDataDTO.getId());
-        analysisData.setAddress(fileDataDTO.getAddress());
-        analysisData.setTypeId(fileDataDTO.getTyepId());
-        analysisData.setName(fileDataDTO.getName());
+//        analysisData.setAddress(fileDataDTO.getAddress());
+//        analysisData.setTypeId(fileDataDTO.getTyepId());
+//        analysisData.setName(fileDataDTO.getName());
+//        analysisData.setFormat(fileDataDTO.getFormat());
+        // 其余的字段可以不用同步，通过canal同步即可，此处仅保存更新文件内容的数据
         analysisData.setContent(content);
-        analysisData.setFormat(fileDataDTO.getFormat());
 
         IndexRequest indexRequest = this.extractingFiles(analysisData);
         UpdateRequest request = new UpdateRequest(EsConstant.FILE_DATA_INDEX, analysisData.getId())
@@ -140,9 +141,10 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
 
 
     private String byteEncodeToString(byte[] bytes) {
-        // 去除空格换行符等
-        String content = StrUtil.removeAllLineBreaks(new String(bytes));
-        String base64Content = Base64.getEncoder().encodeToString(StrUtil.bytes(content));
+//        // 去除空格换行符等
+//        String content = StrUtil.removeAllLineBreaks(new String(bytes));
+//        String base64Content = Base64.getEncoder().encodeToString(StrUtil.bytes(content));
+        String base64Content = Base64.getEncoder().encodeToString(bytes);
         return base64Content;
     }
 
