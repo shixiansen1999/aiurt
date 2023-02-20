@@ -1255,8 +1255,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
             List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
             if (CollUtil.isNotEmpty(loginUsers)) {
+                String usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
                 //发送通知
-                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(",")), "检修任务-审核" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
+                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),usernames, "检修任务-审核" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
                 RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                 BeanUtil.copyProperties(repairTask1,repairTaskMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -1265,7 +1266,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairTaskMessageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
                 repairTaskMessageDTO.setMsgAbstract("检修任务审核");
                 repairTaskMessageDTO.setPublishingContent("检修任务审核通过");
-                sendMessage(messageDTO,loginUsers,null,repairTaskMessageDTO);
+                sendMessage(messageDTO,usernames,null,repairTaskMessageDTO);
             }
         }
     }
@@ -1442,13 +1443,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
 
             if (CollUtil.isNotEmpty(loginUsers)) {
+                String usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
                 //发送通知
-                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(",")), "检修任务-审核驳回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
+                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, "检修任务-审核驳回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
                 RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                 BeanUtil.copyProperties(repairTask1,repairTaskMessageDTO);
                 //构建消息模板
                 HashMap<String, Object> map = new HashMap<>();
-                map.put("repairTaskName",repairTask1.getErrorContent());
+                map.put("errorContent",repairTask1.getErrorContent());
                 messageDTO.setData(map);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
                 repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION.getType());
@@ -1456,7 +1458,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairTaskMessageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_REJECT);
                 repairTaskMessageDTO.setMsgAbstract("检修任务审核驳回");
                 repairTaskMessageDTO.setPublishingContent("检修任务审核驳回，请重新处理");
-                sendMessage(messageDTO,loginUsers,null,repairTaskMessageDTO);
+                sendMessage(messageDTO,usernames,null,repairTaskMessageDTO);
             }
         }
     }
@@ -1485,8 +1487,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
             List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
             if (CollUtil.isNotEmpty(loginUsers)) {
+                String usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
                 //发送通知
-                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(",")), "检修任务-验收" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
+                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, "检修任务-验收" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
                 RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                 BeanUtil.copyProperties(repairTask1,repairTaskMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -1495,7 +1498,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairTaskMessageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
                 repairTaskMessageDTO.setMsgAbstract("检修任务审核");
                 repairTaskMessageDTO.setPublishingContent("检修任务审核通过");
-                sendMessage(messageDTO,loginUsers,null,repairTaskMessageDTO);
+                sendMessage(messageDTO,usernames,null,repairTaskMessageDTO);
             }
         }
     }
@@ -1612,7 +1615,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairTaskMessageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_RETURN);
                 repairTaskMessageDTO.setMsgAbstract("检修任务退回");
                 repairTaskMessageDTO.setPublishingContent("检修任务退回，请重新安排");
-                sendMessage(messageDTO,null,user,repairTaskMessageDTO);
+                sendMessage(messageDTO,null,user.getUsername(),repairTaskMessageDTO);
             }
         }
         repairTaskMapper.deleteById(examineDTO.getId());
@@ -2277,11 +2280,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
      * 检修消息发送
      *
      * @param messageDTO
-     * @param loginUsers
-     * @param user
+     * @param usernames
+     * @param username
      * @param repairTaskMessageDTO
      */
-    private void sendMessage(MessageDTO messageDTO, List<LoginUser> loginUsers, LoginUser user, RepairTaskMessageDTO repairTaskMessageDTO) {
+    private void sendMessage(MessageDTO messageDTO, String usernames, String username, RepairTaskMessageDTO repairTaskMessageDTO) {
         //发送通知
         //构建消息模板
         HashMap<String, Object> map = new HashMap<>();
@@ -2302,10 +2305,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
         map.put("repairStation",stringBuilder.toString());
         map.put("repairTaskTime",repairTaskMessageDTO.getStartTime().toString()+repairTaskMessageDTO.getEndTime().toString());
-        if (CollUtil.isNotEmpty(loginUsers)) {
-            map.put("repairName", loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(",")));
+        if (StrUtil.isNotEmpty(usernames)) {
+            map.put("repairName", usernames);
         } else {
-            map.put("repairName",user.getUsername());
+            map.put("repairName",username);
         }
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTaskMessageDTO.getId());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, repairTaskMessageDTO.getBusType());

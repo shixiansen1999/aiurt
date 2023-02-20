@@ -527,5 +527,10 @@ public interface CommonConstant {
  public static final String REPAIR_SERVICE_NOTICE_REJECT = "repair_service_notice_reject";
  /** 消息模板：检修业务通知-退回 */
  public static final String REPAIR_SERVICE_NOTICE_RETURN = "repair_service_notice_return";
-
+ /** 消息模板：巡视业务通知 */
+ public static final String PATROL_SERVICE_NOTICE = "patrol_service_notice";
+ /** 消息模板：巡视业务通知-驳回 */
+ public static final String PATROL_SERVICE_NOTICE_REJECT = "patrol_service_notice_reject";
+ /** 消息模板：巡视业务通知-退回 */
+ public static final String PATROL_SERVICE_NOTICE_RETURN = "patrol_service_notice_return";
 }
