@@ -2284,7 +2284,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
      * @param username
      * @param repairTaskMessageDTO
      */
-    private void sendMessage(MessageDTO messageDTO, String usernames, String username, RepairTaskMessageDTO repairTaskMessageDTO) {
+    @Override
+    public void sendMessage(MessageDTO messageDTO, String usernames, String username, RepairTaskMessageDTO repairTaskMessageDTO) {
         //发送通知
         //构建消息模板
         HashMap<String, Object> map = new HashMap<>();

@@ -25,8 +25,9 @@ import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
-import com.aiurt.common.api.dto.message.BusMessageDTO;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtNoDataException;
 import com.aiurt.common.util.DateUtils;
@@ -676,16 +677,48 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             String[] strings = userIds.toArray(new String[userIds.size()]);
             List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(strings);
             if (CollUtil.isNotEmpty(loginUsers)) {
-                String userNameStr = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
-                sysBaseApi.sendBusAnnouncement(
-                        new BusMessageDTO(
-                                manager.checkLogin().getUsername(),
-                                userNameStr,
-                                "检修任务", "您有一条新的检修任务单号为:" + code + "检修任务需要确认接收！",
-                                CommonConstant.MSG_CATEGORY_2,
-                                SysAnnmentTypeEnum.INSPECTION_ASSIGN.getType(),
-                                code));
+                LambdaQueryWrapper<RepairTask> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(RepairTask::getCode, code);
+                RepairTask repairTask = repairTaskMapper.selectOne(wrapper);
+
+                String usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+                //发送通知
+                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),usernames, "检修任务-指派" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
+
+                //构建消息模板
+                HashMap<String, Object> map = new HashMap<>();
+                if (CollUtil.isNotEmpty(messageDTO.getData())) {
+                    map.putAll(messageDTO.getData());
+                }
+                map.put("code",repairTask.getCode());
+                map.put("repairTaskName",repairTask.getType()+repairTask.getCode());
+                List<String> codes = repairTaskMapper.getRepairTaskStation(repairTask.getId());
+                Map<String, String> stationNameByCode = sysBaseApi.getStationNameByCode(codes);
+                StringBuilder stringBuilder = new StringBuilder();
+                for (Map.Entry<String, String> entry : stationNameByCode.entrySet()) {
+                    stringBuilder.append(entry.getValue());
+                    stringBuilder.append(",");
+                }
+                if (stringBuilder.length() > 0) {
+                    stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                }
+                map.put("repairStation",stringBuilder.toString());
+                map.put("repairTaskTime",repairTask.getStartTime().toString()+repairTask.getEndTime().toString());
+                if (StrUtil.isNotEmpty(usernames)) {
+                    map.put("repairName", usernames);
+                }
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTask.getId());
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.INSPECTION_ASSIGN.getType());
+                messageDTO.setData(map);
+                messageDTO.setType(MessageTypeEnum.XT.getType());
+                messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
+                messageDTO.setMsgAbstract("新的检修任务");
+                messageDTO.setPublishingContent("接收到新的检修任务，请尽快确认");
+                sysBaseApi.sendTemplateMessage(messageDTO);
             }
+
+
+
         }
     }
 
