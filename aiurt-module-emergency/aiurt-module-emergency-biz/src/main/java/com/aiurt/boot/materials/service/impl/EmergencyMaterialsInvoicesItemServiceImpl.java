@@ -1,4 +1,10 @@
 package com.aiurt.boot.materials.service.impl;
+import com.aiurt.boot.materials.dto.*;
+import com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper;
+import com.aiurt.common.system.base.entity.DynamicTableDataEntity;
+import com.aiurt.modules.common.entity.SelectTable;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.google.common.collect.Lists;
 import com.aiurt.boot.materials.dto.PatrolRecordDetailDTO;
 import com.aiurt.common.system.base.entity.DynamicTableDataEntity;
 import com.aiurt.modules.common.entity.SelectTable;
@@ -9,7 +15,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.materials.dto.PatrolRecordReqDTO;
 import com.aiurt.boot.materials.entity.EmergencyMaterials;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsInvoices;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsInvoicesItemMapper;
@@ -31,6 +36,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -56,6 +62,9 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
 
     @Autowired
     private IEmergencyMaterialsInvoicesService invoicesService;
+
+    @Autowired
+    private EmergencyMaterialsMapper emergencyMaterialsMapper;
 
 
     @Override
@@ -130,6 +139,9 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
     public DynamicTableEntity getPatrolRecord(PatrolRecordReqDTO recordReqDTO) {
         DynamicTableEntity dynamicTableEntity = new DynamicTableEntity();
         String standardCode = recordReqDTO.getStandardCode();
+        if (StrUtil.isBlank(standardCode)) {
+            throw new AiurtBootException("请选择巡检表！");
+        }
         // 查询物资
         String id = recordReqDTO.getId();
         EmergencyMaterials emergencyMaterials = emergencyMaterialsService.getById(id);
@@ -158,61 +170,78 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
 
         dynamicTableEntity.setCurrent(page.getCurrent());
         dynamicTableEntity.setTotal(page.getTotal());
-        // 只需要构建一次title即可
-        AtomicReference<Boolean> flag = new AtomicReference<>(Boolean.TRUE);
+        // 只需要构建一次title即可,list集合最大组装title
+        LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> queryWrapper = new LambdaQueryWrapper<>();
+        Set<String> idSet = recordList.stream().map(EmergencyMaterialsInvoices::getId).collect(Collectors.toSet());
+        // 查询检修记录结果数据
+        queryWrapper.in(EmergencyMaterialsInvoicesItem::getInvoicesId, idSet)
+                .eq(EmergencyMaterialsInvoicesItem::getMaterialsCode, materialsCode)
+                .orderByDesc(EmergencyMaterialsInvoicesItem::getCreateTime);
+        List<EmergencyMaterialsInvoicesItem> maxInvoicesItemList = baseMapper.selectList(queryWrapper);
+
+        Map<String, List<EmergencyMaterialsInvoicesItem>> itemMap = maxInvoicesItemList.stream().collect(Collectors.groupingBy(EmergencyMaterialsInvoicesItem::getInvoicesId));
+        AtomicInteger max = new AtomicInteger();
+        AtomicReference<String> maxId = new AtomicReference<>("");
+        itemMap.forEach((recordId, list)->{
+            List<EmergencyMaterialsInvoicesItem> itemList = list.stream().filter(it -> Objects.nonNull(it.getCheck()) && it.getCheck() == 1).collect(Collectors.toList());
+            max.set(max.get() > itemList.size() ? max.get():itemList.size());
+            maxId.set(max.get() > itemList.size() ? maxId.get() : recordId);
+        });
+
+        List<EmergencyMaterialsInvoicesItem> maxItemList = itemMap.getOrDefault(maxId.get(), Collections.emptyList());
+        // 获取code
+        Set<String> dataIndexSet = maxItemList.stream().filter(it -> Objects.nonNull(it.getCheck()) && it.getCheck() == 1).map(EmergencyMaterialsInvoicesItem::getCode).collect(Collectors.toSet());
+        // 组装title
+        List<DynamicTableTitleEntity> treeList = maxItemList.stream().map(item -> {
+            DynamicTableTitleEntity title = new DynamicTableTitleEntity();
+            title.setTitle(item.getContent());
+            title.setDataIndex(item.getCode());
+            title.setId(item.getId());
+            title.setPid(StrUtil.isBlank(item.getPid()) ? "-9999" : item.getPid());
+            return title;
+        }).collect(Collectors.toList());
+
+        Map<String, DynamicTableTitleEntity> root = new LinkedHashMap<>();
+
+        for (DynamicTableTitleEntity titleEntity : treeList) {
+            DynamicTableTitleEntity parent = root.get(titleEntity.getPid());
+            if (Objects.isNull(parent)) {
+                parent = new DynamicTableTitleEntity();
+                root.put(titleEntity.getPid(), parent);
+            }
+            DynamicTableTitleEntity table = root.get(titleEntity.getId());
+            if (Objects.nonNull(table)) {
+                titleEntity.setChildren(table.getChildren());
+            }
+            root.put(titleEntity.getId(), titleEntity);
+            parent.addChildren(titleEntity);
+        }
+
+        List<DynamicTableTitleEntity> resultList = new ArrayList<>();
+        List<DynamicTableTitleEntity> col = root.values().stream().filter(entity -> StrUtil.isBlank(entity.getPid())).collect(Collectors.toList());
+        for (DynamicTableTitleEntity entity : col) {
+            resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
+        }
+        dynamicTableEntity.setTitleList(resultList);
+
+
         List<DynamicTableDataEntity> records = new ArrayList<>();
         recordList.stream().forEach(record->{
             String recordId = record.getId();
-            LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> queryWrapper = new LambdaQueryWrapper<>();
+            LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> wrapper = new LambdaQueryWrapper<>();
 
             // 查询检修记录结果数据
-            queryWrapper.eq(EmergencyMaterialsInvoicesItem::getInvoicesId, recordId)
-                    .eq(EmergencyMaterialsInvoicesItem::getMaterialsCode, materialsCode)
-            .eq(EmergencyMaterialsInvoicesItem::getStorageLocationCode, positionCode);
-            List<EmergencyMaterialsInvoicesItem> invoicesItemList = baseMapper.selectList(queryWrapper);
-            if (flag.get()) {
-                flag.set(false);
-                // 组装title
-                List<DynamicTableTitleEntity> treeList = invoicesItemList.stream().map(item -> {
-                    DynamicTableTitleEntity title = new DynamicTableTitleEntity();
-                    title.setTitle(item.getContent());
-                    title.setDataIndex(item.getId());
-                    title.setId(item.getId());
-                    title.setPid(StrUtil.isBlank(item.getPid()) ? "-9999" : item.getPid());
-                    return title;
-                }).collect(Collectors.toList());
-
-                Map<String, DynamicTableTitleEntity> root = new LinkedHashMap<>();
-
-                for (DynamicTableTitleEntity titleEntity : treeList) {
-                    DynamicTableTitleEntity parent = root.get(titleEntity.getPid());
-                    if (Objects.isNull(parent)) {
-                        parent = new DynamicTableTitleEntity();
-                        root.put(titleEntity.getPid(), parent);
-                    }
-                    DynamicTableTitleEntity table = root.get(titleEntity.getId());
-                    if (Objects.nonNull(table)) {
-                        titleEntity.setChildren(table.getChildren());
-                    }
-                    root.put(titleEntity.getId(), titleEntity);
-                    parent.addChildren(titleEntity);
-                }
-
-                List<DynamicTableTitleEntity> resultList = new ArrayList<>();
-                List<DynamicTableTitleEntity> collect = root.values().stream().filter(entity -> StrUtil.isBlank(entity.getPid())).collect(Collectors.toList());
-                for (DynamicTableTitleEntity entity : collect) {
-                    resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
-                }
-                dynamicTableEntity.setTitleList(resultList);
-            }
+            wrapper.eq(EmergencyMaterialsInvoicesItem::getInvoicesId, recordId)
+                    .eq(EmergencyMaterialsInvoicesItem::getMaterialsCode, materialsCode);
+            List<EmergencyMaterialsInvoicesItem> invoicesItemList = baseMapper.selectList(wrapper);
 
 
             // 组装dataList,一记录一条数据
             PatrolRecordDetailDTO dataEntity = new PatrolRecordDetailDTO();
-            Integer inspectionResults = record.getInspectionResults();
-            if (Objects.nonNull(inspectionResults)) {
-                dataEntity.setAbnormalCondition(inspectionResults==0?"异常":"正常");
-            }
+//            Integer inspectionResults = record.getInspectionResults();
+//            if (Objects.nonNull(inspectionResults)) {
+//                dataEntity.setAbnormalCondition(inspectionResults==0?"异常":"正常");
+//            }
             dataEntity.setPatrolDate(record.getPatrolDate());
             if (StrUtil.isNotBlank(record.getUserId())) {
                 //根据巡视人id查询巡视人名称
@@ -227,22 +256,46 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
                 String departNameByOrgCode = iSysBaseAPI.getDepartNameByOrgCode(record.getDepartmentCode());
                 dataEntity.setPatrolTeamName(departNameByOrgCode);
             }
+
+
             Map<String,Object> map = new HashMap<>(16);
             invoicesItemList.stream().forEach(item->{
+                CheckResultDTO checkResultDTO = new CheckResultDTO();
                 Integer check = item.getCheck();
-                String itemId = item.getId();
+                String itemId = item.getCode();
                 // 检修项
                 if (1 == check) {
+                    String abnormalCondition = item.getAbnormalCondition();
                     Integer checkResult = item.getCheckResult();
-                    String dictCode = item.getDictCode();
-                    if (StringUtils.isNotBlank(dictCode)) {
-                        if (Objects.nonNull(item.getOptionValue())) {
-                            String s = iSysBaseAPI.translateDict(dictCode, String.valueOf(item.getOptionValue()));
-                            map.put(itemId, s);
-                        }
-                    }else {
-                        map.put(itemId, item.getWriteValue());
+                    if (StrUtil.isNotBlank(abnormalCondition)){
+                        dataEntity.setAbnormalCondition(abnormalCondition);
                     }
+                    if (checkResult !=null){
+                        checkResultDTO.setCheckResult(checkResult);
+
+                    }
+                    Integer inputType = item.getInputType();
+
+                    if (Objects.nonNull(inputType) && 1!=inputType){
+                        // 巡检的结果
+                        String dictCode = item.getDictCode();
+                        if (StringUtils.isNotBlank(dictCode)) {
+                            if (Objects.nonNull(item.getOptionValue())) {
+                                String s = iSysBaseAPI.translateDict(dictCode, String.valueOf(item.getOptionValue()));
+                                checkResultDTO.setWriteValue(s);
+                            }
+                        }else {
+                            checkResultDTO.setWriteValue(item.getWriteValue());
+                        }
+                    }
+                    map.put(itemId,checkResultDTO);
+                }
+            });
+            // 不全数据
+            dataIndexSet.forEach(code->{
+                Object o = map.get(code);
+                if (Objects.isNull(o)) {
+                    map.put(code, new CheckResultDTO());
                 }
             });
             dataEntity.setDynamicData(map);

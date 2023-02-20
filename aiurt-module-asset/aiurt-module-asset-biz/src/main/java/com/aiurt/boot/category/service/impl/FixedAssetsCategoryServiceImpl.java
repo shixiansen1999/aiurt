@@ -3,6 +3,7 @@ package com.aiurt.boot.category.service.impl;
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.category.constant.CategoryConstant;
@@ -84,32 +85,64 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
     }
 
     @Override
-    public List<FixedAssetsCategoryDTO> getCategoryTree() {
+    public List<FixedAssetsCategoryDTO> getCategoryTree(String name) {
         List<FixedAssetsCategoryDTO> list = categoryMapper.getList(new FixedAssetsCategoryDTO());
         List<FixedAssetsCategoryDTO> categoryTree = new ArrayList<>();
-        //构建树形
-        if (CollUtil.isNotEmpty(list)) {
-            for (FixedAssetsCategoryDTO categoryDTO : list) {
-                LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
-                queryWrapper.eq(FixedAssetsCategory::getId, categoryDTO.getPid());
-                queryWrapper.eq(FixedAssetsCategory::getDelFlag, CommonConstant.DEL_FLAG_0);
-                FixedAssetsCategory category = categoryMapper.selectOne(queryWrapper);
-                if (ObjectUtil.isNotEmpty(category)) {
-                    categoryDTO.setPidName(category.getCategoryName());
-                    categoryDTO.setParentCode(category.getCategoryCode());
-                } else {
-                    categoryDTO.setParentCode(categoryDTO.getCategoryCode());
+            //构建树形
+            if (CollUtil.isNotEmpty(list)) {
+                for (FixedAssetsCategoryDTO categoryDTO : list) {
+                    LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
+                    queryWrapper.eq(FixedAssetsCategory::getId, categoryDTO.getPid());
+                    queryWrapper.eq(FixedAssetsCategory::getDelFlag, CommonConstant.DEL_FLAG_0);
+                    FixedAssetsCategory category = categoryMapper.selectOne(queryWrapper);
+                    if (ObjectUtil.isNotEmpty(category)) {
+                        categoryDTO.setPidName(category.getCategoryName());
+                        categoryDTO.setParentCode(category.getCategoryCode());
+                    } else {
+                        categoryDTO.setParentCode(categoryDTO.getCategoryCode());
+                    }
+                }
+                List<FixedAssetsCategoryDTO> parentList = list.stream().filter(c -> c.getPid().equals(CategoryConstant.PID)).collect(Collectors.toList());
+                for (FixedAssetsCategoryDTO parentCategory : parentList) {
+                    FixedAssetsCategoryDTO categoryDTO = buildChildTree(list, parentCategory);
+                    categoryTree.add(categoryDTO);
                 }
             }
-            List<FixedAssetsCategoryDTO> parentList = list.stream().filter(c -> c.getPid().equals(CategoryConstant.PID)).collect(Collectors.toList());
-            for (FixedAssetsCategoryDTO parentCategory : parentList) {
-                FixedAssetsCategoryDTO categoryDTO = buildChildTree(list, parentCategory);
-                categoryTree.add(categoryDTO);
+
+        if(StrUtil.isNotBlank(name) && CollectionUtil.isNotEmpty(categoryTree)){
+            this.assetTree(name,categoryTree);
+            Iterator<FixedAssetsCategoryDTO> iterator = categoryTree.iterator();
+            while (iterator.hasNext()) {
+                FixedAssetsCategoryDTO next = iterator.next();
+                if (next.getCategoryName().contains(name)){
+                    next.setColor("#FF5B05");
+                }
+                if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+                    iterator.remove();
+                }
             }
         }
         return categoryTree;
     }
 
+    private void assetTree(String name, List<FixedAssetsCategoryDTO>categoryTree){
+        for (FixedAssetsCategoryDTO fixedAssetsCategoryDTO : categoryTree) {
+            fixedAssetsCategoryDTO.setMatching(false);
+            List<FixedAssetsCategoryDTO> children = fixedAssetsCategoryDTO.getChildren();
+            if(CollectionUtil.isNotEmpty(children)){
+                for (FixedAssetsCategoryDTO categoryDTO : children) {
+                    if (categoryDTO.getCategoryName().contains(name)){
+                        categoryDTO.setColor("#FF5B05");
+                        fixedAssetsCategoryDTO.setMatching(true);
+                    }
+                }
+                assetTree(name,children);
+                //如果子级的子级匹配不成功，并且当前子级不匹配，则去除
+                children.removeIf(next -> !next.getMatching() && StrUtil.isEmpty(next.getColor()));
+                fixedAssetsCategoryDTO.setChildren(children);
+            }
+        }
+    }
     /**
      * 递归构建子节点
      *
@@ -201,7 +234,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                     FixedAssetsCategory category = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getCategoryName, fixedAssetsCategory.getCategoryName()).
                             ne(FixedAssetsCategory::getId, fixedAssetsCategory.getId()).eq(FixedAssetsCategory::getPid, CategoryConstant.PID));
                     if (ObjectUtil.isNotEmpty(category)) {
-                        return Result.error("一级分类名称不允许重复");
+                        return Result.error("资产分类名称不能重复");
                     }
                     //编辑-根节点修改名称，不能与底下的所有子级相同
                     FixedAssetsCategory myCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getId, fixedAssetsCategory.getId()));
@@ -210,7 +243,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                     if (CollUtil.isNotEmpty(allChildren)) {
                         List<FixedAssetsCategory> collect = allChildren.stream().filter(a -> a.getCategoryName().equals(fixedAssetsCategory.getCategoryName())).collect(Collectors.toList());
                         if (CollUtil.isNotEmpty(collect)) {
-                            return Result.error("同根同枝同叶之间不能重复");
+                            return Result.error("资产分类名称不能重复");
                         }
                     }
                 }//二三级编辑
@@ -222,13 +255,13 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                     if(CollUtil.isNotEmpty(categoryList)){
                         categoryList = categoryList.stream().filter(c -> c.getCategoryName().equals(fixedAssetsCategory.getCategoryName()) && !c.getId().equals(fixedAssetsCategory.getId())).collect(Collectors.toList());
                         if (CollUtil.isNotEmpty(categoryList)) {
-                            return Result.error("同根下枝干之间不能重复");
+                            return Result.error("资产分类名称不能重复");
                         }
                     }
                     //编辑
                     //二三级-自己与上一级是否同名
                     if (fixedAssetsCategory.getCategoryName().equals(category.getCategoryName()) && !fixedAssetsCategory.getId().equals(category.getId())) {
-                        return Result.error("同根同枝同叶之间不能重复");
+                        return Result.error("资产分类名称不能重复");
                     }
                     if (CategoryConstant.PID.equals(category.getPid())) {
                         //二级编辑-自己与下级是否重名
@@ -236,7 +269,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                         if (CollUtil.isNotEmpty(levelThreeList)) {
                             List<FixedAssetsCategory> sonCategoryList = levelThreeList.stream().filter(l -> l.getCategoryName().equals(fixedAssetsCategory.getCategoryName())).collect(Collectors.toList());
                             if (CollUtil.isNotEmpty(sonCategoryList)) {
-                                return Result.error("同根同枝同叶之间不能重复");
+                                return Result.error("资产分类名称不能重复");
                             }
                         }
                     } else {
@@ -244,7 +277,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                         FixedAssetsCategory firstCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getId, category.getPid()).ne(FixedAssetsCategory::getId, fixedAssetsCategory.getId()));
                         if (ObjectUtil.isNotEmpty(firstCategory)) {
                             if (fixedAssetsCategory.getCategoryName().equals(firstCategory.getCategoryName())) {
-                                return Result.error("同根同枝同叶之间不能重复");
+                                return Result.error("资产分类名称不能重复");
                             }
                         }
                     }
@@ -260,7 +293,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                     queryWrapper.eq(FixedAssetsCategory::getPid, CategoryConstant.PID);
                     FixedAssetsCategory category = categoryMapper.selectOne(queryWrapper);
                     if (ObjectUtil.isNotEmpty(category)) {
-                        return Result.error("一级分类名称不允许重复");
+                        return Result.error("资产分类名称不能重复");
                     }
                 }
                 //二三级添加
@@ -277,19 +310,19 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                     if (ObjectUtil.isEmpty(fixedAssetsCategory.getId())) {
                         categoryList = categoryList.stream().filter(c -> c.getCategoryName().equals(fixedAssetsCategory.getCategoryName())).collect(Collectors.toList());
                         if (CollUtil.isNotEmpty(categoryList)) {
-                            return Result.error("同根下枝干之间不能重复");
+                            return Result.error("资产分类名称不能重复");
                         }
                     }
                     //查询自己及上一级是否同名
                     if (fixedAssetsCategory.getCategoryName().equals(category.getCategoryName())) {
-                        return Result.error("同根同枝同叶之间不能重复");
+                        return Result.error("资产分类名称不能重复");
                     }
                     if (!CategoryConstant.PID.equals(category.getPid())) {
                         //自己与上上级是否同名
                         FixedAssetsCategory firstCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getId, category.getPid())
                         .eq(FixedAssetsCategory::getCategoryName, fixedAssetsCategory.getCategoryName()));
                         if (ObjectUtil.isNotEmpty(firstCategory)) {
-                            return Result.error("同根同枝同叶之间不能重复");
+                            return Result.error("资产分类名称不能重复");
                         }
                     }
                 }
@@ -697,7 +730,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                         if (count == 0) {
                             //先知道是导入的是文件中，还是数据库中
                             if (model.getPidName().equals(model.getCategoryName())) {
-                                stringBuilder.append("同根同枝之间名称不能重复，");
+                                stringBuilder.append("资产分类名称不能重复，");
                             }
                             List<FixedAssetsCategoryImport> imports = list.stream().filter(l -> model.getPidName().equals(l.getPidName()) && model.getPidName().equals(l.getCategoryName())).collect(Collectors.toList());
                             if (imports.size() == 0) {
@@ -707,7 +740,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                                     if (CollUtil.isNotEmpty(categoryList)) {
                                         List<FixedAssetsCategory> collect = categoryList.stream().filter(c -> c.getCategoryName().equals(model.getCategoryName())).collect(Collectors.toList());
                                         if (ObjectUtil.isNotEmpty(collect)) {
-                                            stringBuilder.append("同根下枝干之间名称不能重复，");
+                                            stringBuilder.append("资产分类名称不能重复，");
                                         }
                                     }
                                 }
@@ -715,7 +748,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                             if (imports.size() == 1) {
                                 List<FixedAssetsCategoryImport> collect = list.stream().filter(c -> c.getPidName().equals(model.getPidName()) && c.getCategoryName().equals(model.getCategoryName()) && !c.equals(model)).collect(Collectors.toList());
                                 if (CollUtil.isNotEmpty(collect)) {
-                                    stringBuilder.append("同根下枝干之间名称不能重复，");
+                                    stringBuilder.append("资产分类名称不能重复，");
                                 }
                             }
                         }
@@ -725,12 +758,12 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                             String firstName = depositPositionName.get(0);
                             String secondName = depositPositionName.get(1);
                             if (firstName.equals(model.getCategoryName()) || secondName.equals(model.getCategoryName())) {
-                                stringBuilder.append("同根同枝同叶之间不能重复，");
+                                stringBuilder.append("资产分类名称不能重复，");
                             }
                             //确定是否文件同名、是否数据库同名
                             List<FixedAssetsCategoryImport> collect = list.stream().filter(c -> c.getPidName().equals(model.getPidName()) && c.getCategoryName().equals(model.getCategoryName()) && !c.equals(model)).collect(Collectors.toList());
                             if (CollUtil.isNotEmpty(collect)) {
-                                stringBuilder.append("同根同枝同叶之间不能重复，");
+                                stringBuilder.append("资产分类名称不能重复，");
                             }
 
                             FixedAssetsCategory assetsCategory = categoryMapper.selectOne(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getCategoryName, firstName).eq(FixedAssetsCategory::getPid, CategoryConstant.PID));
@@ -740,7 +773,7 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
                                     List<FixedAssetsCategory> categoryList = categoryMapper.selectList(new LambdaQueryWrapper<FixedAssetsCategory>().eq(FixedAssetsCategory::getPid, secondCategory.getId()));
                                     List<FixedAssetsCategory> thirdCategory = categoryList.stream().filter(c -> c.getCategoryName().equals(model.getCategoryName())).collect(Collectors.toList());
                                     if (ObjectUtil.isNotEmpty(thirdCategory)) {
-                                        stringBuilder.append("同根同枝同叶之间不能重复，");
+                                        stringBuilder.append("资产分类名称不能重复，");
                                     }
                                 }
                             }

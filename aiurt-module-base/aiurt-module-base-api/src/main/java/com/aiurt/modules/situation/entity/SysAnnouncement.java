@@ -127,6 +127,10 @@ public class SysAnnouncement implements Serializable {
      **/
     private String userIds;
     /**
+     * 指定范围（组织机构）
+     **/
+    private String orgIds;
+    /**
      * 业务类型(email:邮件 bpm:流程)
      */
     private String busType;
@@ -155,8 +159,8 @@ public class SysAnnouncement implements Serializable {
      * 指定接收范围
      **/
     @TableField(exist = false)
-    @Excel(name = "指定接收范围", width = 15, dicCode = "userNames")
-    private String userNames;
+    @Excel(name = "指定接收范围", width = 15, dicCode = "orgNames")
+    private String orgNames;
 
     /**
      * 查询发布时间的起始时间

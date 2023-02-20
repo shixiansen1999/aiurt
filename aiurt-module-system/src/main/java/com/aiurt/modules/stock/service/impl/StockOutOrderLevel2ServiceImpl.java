@@ -161,9 +161,12 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
                                 .eq("material_code",materialCode).eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0)
                                 .eq("stock_check_code",stockCheckCode));
                         if(stockLevel2CheckDetail != null){
-                            Integer num = stockLevel2CheckDetail.getActualNum();
-								stockLevel2CheckDetail.setBookNumber(num - sparePartApplyMaterial.getActualNum());
-								iStockLevel2CheckDetailService.updateById(stockLevel2CheckDetail);
+							Integer actualNum = sparePartApplyMaterial.getActualNum();
+							Integer bookNumber = stockLevel2CheckDetail.getBookNumber();
+							if (bookNumber >= actualNum) {
+								stockLevel2CheckDetail.setBookNumber(bookNumber - actualNum);
+							}
+                            iStockLevel2CheckDetailService.updateById(stockLevel2CheckDetail);
                         }
                     }
                 }

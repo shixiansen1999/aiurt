@@ -1,35 +1,30 @@
 package com.aiurt.boot.plan.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-
 import com.aiurt.boot.plan.dto.DeviceListDTO;
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
 import com.aiurt.boot.plan.dto.StandardDTO;
-import com.aiurt.boot.task.dto.MajorDTO;
-import com.aiurt.boot.utils.PatrolCodeUtil;
-import com.aiurt.common.aspect.annotation.LimitSubmit;
-import com.aiurt.common.aspect.annotation.PermissionData;
-import com.aiurt.common.constant.enums.ModuleType;
-import com.aiurt.modules.device.entity.Device;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import org.jeecg.common.api.vo.Result;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.service.IPatrolPlanService;
-
+import com.aiurt.boot.task.dto.MajorDTO;
+import com.aiurt.boot.utils.PatrolCodeUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.common.constant.enums.ModuleType;
+import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
-import org.jeecg.common.system.query.QueryGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Description: patrol_plan
@@ -95,7 +90,6 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
     @AutoLog(value = "巡检计划表-添加", operateType =  2, operateTypeAlias = "添加", module = ModuleType.PATROL)
     @ApiOperation(value = "巡检计划表-添加", notes = "巡检计划表-添加")
     @PostMapping(value = "/add")
-    @LimitSubmit(key = "addAnnualPlan:#id")
     public Result<String> add(@RequestBody PatrolPlanDto patrolPlanDto) {
 
         patrolPlanService.add(patrolPlanDto);

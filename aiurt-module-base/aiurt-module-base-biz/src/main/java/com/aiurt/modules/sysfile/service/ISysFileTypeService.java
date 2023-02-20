@@ -24,7 +24,7 @@ public interface ISysFileTypeService extends IService<SysFileType> {
 	 * @param userId 用户id
 	 * @return {@link Result}<{@link List}<{@link SysFileTypeTreeVO}>>
 	 */
-	Result<List<SysFileTypeTreeVO>> tree(String userId);
+	Result<List<SysFileTypeTreeVO>> tree(String userId,String name);
 
 	/**
 	 * 添加

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,7 @@ public class CsUserDepartServiceImpl extends ServiceImpl<CsUserDepartMapper, CsU
         return departByUserId;
     }
 
-    public List<CsUserDepartModel> queryDepartTree() {
+    public List<CsUserDepartModel> queryDepartTree(String name) {
         //查询用户拥有部门权限树,如果权限是父部门，同时查出该部门的子部门
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserDepartModel> list = getDepartByUserId(loginUser.getId());
@@ -79,12 +80,32 @@ public class CsUserDepartServiceImpl extends ServiceImpl<CsUserDepartMapper, CsU
         if (CollUtil.isNotEmpty(models)) {
             List<CsUserDepartModel> modelList = models.stream().filter(f -> StrUtil.isEmpty(f.getParentId())).collect(Collectors.toList());
             getChildrenDepartTree(modelList,models);
+            if(ObjectUtil.isNotEmpty(name)&&CollUtil.isNotEmpty(modelList)){
+                processingTreeList(name,modelList);
+            }
             return modelList;
         }
         return new ArrayList<>();
 
     }
-
+    public void processingTreeList(String name,List<CsUserDepartModel> list) {
+        Iterator<CsUserDepartModel> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            CsUserDepartModel next = iterator.next();
+            if (next.getDepartName().contains(name)) {
+                //名称匹配则赋值颜色
+                next.setColor("#FF5B05");
+            }
+            List<CsUserDepartModel> children = next.getChildrenList();
+            if (CollUtil.isNotEmpty(children)) {
+                processingTreeList(name, children);
+            }
+            //如果没有子级，并且当前不匹配，则去除
+            if (CollUtil.isEmpty(next.getChildrenList()) && StrUtil.isEmpty(next.getColor())) {
+                iterator.remove();
+            }
+        }
+    }
    private void getChildrenDepartTree (List<CsUserDepartModel> modelList,List<CsUserDepartModel> models) {
        for (CsUserDepartModel csUserDepartModel : modelList) {
            List<CsUserDepartModel> childrenDeparts = models.stream().filter(f -> csUserDepartModel.getId().equals(f.getParentId())).collect(Collectors.toList());

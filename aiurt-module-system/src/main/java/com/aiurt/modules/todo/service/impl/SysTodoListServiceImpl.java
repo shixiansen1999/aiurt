@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.system.mapper.SysDictMapper;
 import com.aiurt.modules.todo.dto.TaskModuleDTO;
 import com.aiurt.modules.todo.entity.SysTodoList;
@@ -13,12 +14,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.flowable.task.api.Task;
 import org.jeecg.common.system.vo.DictModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -33,11 +36,28 @@ public class SysTodoListServiceImpl extends ServiceImpl<SysTodoListMapper, SysTo
     @Autowired
     private SysDictMapper sysDictMapper;
 
+    @Autowired
+    private FlowApiService flowApiService;
+
 
     @Override
     public IPage<SysTodoList> queryPageList(Page<SysTodoList> page, SysTodoList sysTodoList) {
         LambdaQueryWrapper<SysTodoList> queryWrapper = doQuery(sysTodoList);
-        return this.page(page, queryWrapper);
+        Page<SysTodoList> listPage = this.page(page, queryWrapper);
+        // 流程需要已办，待办的需要处理
+        List<SysTodoList> records = listPage.getRecords();
+        if (CollUtil.isNotEmpty(records)) {
+            records.forEach(todoList->{
+                String taskType = todoList.getTaskType();
+                if (StrUtil.equalsIgnoreCase("bpmn", taskType) && StrUtil.equalsIgnoreCase("1,3", sysTodoList.getTodoType())) {
+                    Task activeTask = flowApiService.getProcessInstanceActiveTask(todoList.getProcessInstanceId(), null);
+                    if (Objects.nonNull(activeTask)) {
+                        todoList.setTaskId(activeTask.getId());
+                    }
+                }
+            });
+        }
+        return listPage;
     }
 
     @Override

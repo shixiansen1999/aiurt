@@ -43,6 +43,12 @@ public class FixedAssetsCategoryDTO {
     @Excel(name = "分类编码", width = 15)
     @ApiModelProperty(value = "分类编码")
     private java.lang.String categoryCode;
+    /**分类名称*/
+    @ApiModelProperty(value = "分类名称")
+    private java.lang.String title;
+    /**分类编码*/
+    @ApiModelProperty(value = "分类编码")
+    private java.lang.String key;
     /**分类编码*/
     @ApiModelProperty(value = "分类编码")
     private java.lang.String treeCategoryCode;
@@ -60,4 +66,9 @@ public class FixedAssetsCategoryDTO {
     private java.lang.String remark;
     private java.util.Date createTime;
     private List<FixedAssetsCategoryDTO> children;
+
+    @TableField(exist = false)
+    private java.lang.String color;
+
+    private Boolean matching;
 }

@@ -254,9 +254,10 @@ public interface FlowApiService {
 
     /**
      * 删除流程
-     * @param processInstanceId
+     * @param processInstanceId 流程实例
+     * @param delReason 删除原因
      */
-    void deleteProcessInstance(String processInstanceId);
+    void deleteProcessInstance(String processInstanceId, String delReason);
 
     /**
      * 获取开始节点之后的第一个任务节点的数据。

@@ -16,6 +16,7 @@ import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.mapper.CsUserSubsystemMapper;
+import com.aiurt.modules.system.model.SysPermissionTree;
 import com.aiurt.modules.system.service.ISysUserService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -58,10 +59,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -187,7 +185,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     }
 
     @Override
-    public List<YearFaultDTO> yearFault() {
+    public List<YearFaultDTO> yearFault(String name) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<YearFaultDTO> yearFaultDtos = csUserSubsystemMapper.getYearNumFault(sysUser.getId());
         yearFaultDtos.forEach(y->{
@@ -202,7 +200,30 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             });
             y.setYearFaultDtos(years);
         });
+        if (StrUtil.isNotBlank(name) && CollectionUtil.isNotEmpty(yearFaultDtos)){
+             this.annualDataTree(name,yearFaultDtos);
+        }
         return yearFaultDtos;
+    }
+
+    private void annualDataTree(String name,List<YearFaultDTO> sysPermissionTreeList){
+        Iterator<YearFaultDTO> iterator = sysPermissionTreeList.iterator();
+        while (iterator.hasNext()) {
+            YearFaultDTO next = iterator.next();
+            if (StrUtil.containsAnyIgnoreCase(next.getName(),name)) {
+                //名称匹配则赋值颜色
+                next.setColor("#FF5B05");
+            }
+            List<YearFaultDTO> children = next.getYearFaultDtos();
+            if (CollUtil.isNotEmpty(children)) {
+                annualDataTree(name, children);
+            }
+            //如果没有子级，并且当前不匹配，则去除
+            if (CollUtil.isEmpty(next.getYearFaultDtos()) && StrUtil.isEmpty(next.getColor())) {
+                iterator.remove();
+            }
+
+        }
     }
 
     @Override
@@ -212,7 +233,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     }
 
     @Override
-    public List<YearFaultDTO> yearMinuteFault() {
+    public List<YearFaultDTO> yearMinuteFault(String name) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Page<SubsystemFaultDTO> page = new Page<SubsystemFaultDTO>(1, 999);
         List<SubsystemFaultDTO> strings = csUserSubsystemMapper.selectByUserId(page, sysUser.getId());
@@ -292,6 +313,9 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
               yearFaultDTO.setYearFaultDtos(yearFaultDTOList);
               yearFaultDtos.add(yearFaultDTO);
           });
+          if(StrUtil.isNotBlank(name) && CollectionUtil.isNotEmpty(yearFaultDtos)){
+              this.annualDataTree(name,yearFaultDtos);
+          }
         return yearFaultDtos;
     }
 

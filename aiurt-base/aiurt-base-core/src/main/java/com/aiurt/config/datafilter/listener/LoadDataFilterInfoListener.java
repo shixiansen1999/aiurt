@@ -1,6 +1,6 @@
 package com.aiurt.config.datafilter.listener;
 
-import com.aiurt.config.datafilter.interceptor.MybatisDataFilterInterceptor;
+import com.aiurt.config.datafilter.interceptor.PlusLoadDataPerm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -20,8 +20,8 @@ public class LoadDataFilterInfoListener implements ApplicationListener<Applicati
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
-        MybatisDataFilterInterceptor interceptor =
-                applicationReadyEvent.getApplicationContext().getBean(MybatisDataFilterInterceptor.class);
+        PlusLoadDataPerm interceptor =
+                applicationReadyEvent.getApplicationContext().getBean(PlusLoadDataPerm.class);
         interceptor.loadInfoWithDataFilter();
     }
 }

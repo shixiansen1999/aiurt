@@ -13,4 +13,10 @@ public interface SysInfoListService extends IService<SysAnnouncement> {
      * @return
      */
     ModelAndView reportExport(HttpServletRequest request,SysAnnouncement sysAnnouncement, Class<SysAnnouncement> clazz, String title);
+
+    /**
+     * 获取指定范围
+     * @param announcement
+     */
+    void getOrgNames(SysAnnouncement announcement);
 }

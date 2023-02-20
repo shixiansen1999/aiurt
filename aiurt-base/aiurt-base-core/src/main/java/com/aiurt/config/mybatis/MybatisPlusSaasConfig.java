@@ -1,6 +1,7 @@
 package com.aiurt.config.mybatis;
 
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.config.datafilter.interceptor.PlusDataPermissionInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
@@ -68,11 +69,19 @@ public class MybatisPlusSaasConfig {
                 return true;
             }
         }));
+        // 数据权限插件
+        interceptor.addInnerInterceptor(dataPermissionInterceptor());
         // 添加权限过滤插件，权限过滤插件需要在分页插件之前执行
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
         return interceptor;
     }
 
+    /**
+     * 数据权限拦截器
+     */
+    public PlusDataPermissionInterceptor dataPermissionInterceptor() {
+        return new PlusDataPermissionInterceptor();
+    }
 //    /**
 //     * 下个版本会删除，现在为了避免缓存出现问题不得不配置
 //     * @return

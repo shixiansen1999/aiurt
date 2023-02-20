@@ -188,4 +188,10 @@ public interface ISysDepartService extends IService<SysDepart>{
      * @return
      */
     List<SysDepart> queryDeptByPid(String pid);
+
+    /**
+     * 树形搜索，并带有颜色返回
+     * @return
+     */
+   void processingTreeList(String name,List<SysDepartTreeModel> list);
 }

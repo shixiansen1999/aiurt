@@ -197,6 +197,26 @@ public class FlowBaseApiImpl implements FlowBaseApi {
         }
     }
 
+    /**
+     * 删除业务数据，终止流程
+     *
+     * @param userName
+     * @param businessKey
+     * @param delReason
+     */
+    @Override
+    public void delProcess(String userName, String businessKey, String delReason) {
+        if (StrUtil.isNotBlank(businessKey)) {
+            log.info("终止流程：{}", businessKey);
+            return;
+        }
+        List<ProcessInstance> list = runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(businessKey).list();
+
+        list.stream().forEach(processInstance -> {
+            flowApiService.deleteProcessInstance(processInstance.getProcessInstanceId(), delReason);
+        });
+    }
+
     private void saveData(Task task, Map<String, Object> busData, String processInstanceId, String taskId, ProcessInstance processInstance) {
         // 判断是否存在
         boolean exists = businessDataService.getBaseMapper().exists(new LambdaQueryWrapper<ActCustomBusinessData>()

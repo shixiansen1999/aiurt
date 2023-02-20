@@ -1,6 +1,9 @@
 package com.aiurt.modules.system.controller;
 
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
@@ -312,6 +315,7 @@ public class SysDictController {
                                                       @RequestParam(name="code") String code,
                                                       @RequestParam(name="hasChildField") String hasChildField,
                                                       @RequestParam(name="condition") String condition,
+													  @RequestParam(value = "name",required = false) String name,
                                                       @RequestParam(value = "sign",required = false) String sign, HttpServletRequest request) {
 		Result<List<TreeSelectModel>> result = new Result<List<TreeSelectModel>>();
 		Map<String, String> query = null;
@@ -324,7 +328,30 @@ public class SysDictController {
 		List<TreeSelectModel> ls = sysDictService.queryTreeList(query,tbname, text, code, pidField, pid,hasChildField);
 		result.setSuccess(true);
 		result.setResult(ls);
+		//做树形搜索处理
+		if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(result.getResult())){
+			this.assetTreeList(result.getResult(),name);
+		}
 		return result;
+	}
+
+	private void assetTreeList(List<TreeSelectModel> deviceTypeTree, String name){
+		Iterator<TreeSelectModel> iterator = deviceTypeTree.iterator();
+		while (iterator.hasNext()) {
+			TreeSelectModel next = iterator.next();
+			if (StrUtil.containsAnyIgnoreCase(next.getTitle(), name)) {
+				//名称匹配则赋值颜色
+				next.setColor("#FF5B05");
+			}
+			List<TreeSelectModel> children = next.getChildren();
+			if (CollUtil.isNotEmpty(children)) {
+				assetTreeList(children,name);
+			}
+			//如果没有子级，并且当前不匹配，则去除
+			if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+				iterator.remove();
+			}
+		}
 	}
 
 	/**

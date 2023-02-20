@@ -33,12 +33,45 @@ public class PatrolRecordDetailDTO extends DynamicTableDataEntity implements Ser
     private String abnormalCondition;
 
     /**
-     * 巡视人名称
+     * 巡视班组名称
      */
-    @ApiModelProperty(value = "巡视人名称")
+    @ApiModelProperty(value = "巡视班组名称")
     private String patrolTeamName;
 
 
+    /**
+     * 巡视人名称
+     */
     @ApiModelProperty(value = "巡视人名称")
-    private String patrolName;
+    private java.lang.String patrolName;
+
+    /**
+     * 物资分类名称
+     */
+    @ApiModelProperty(value = "物资分类名称")
+    private java.lang.String categoryName;
+
+    /**
+     * 物资名称
+     */
+    @ApiModelProperty(value = "物资名称")
+    private java.lang.String materialsName;
+
+    /**
+     * 存放地点
+     */
+    @ApiModelProperty(value = "存放地点")
+    private java.lang.String storageLocationName;
+
+    /**
+     * 规格型号
+     */
+    @ApiModelProperty(value = "规格型号")
+    private java.lang.String specification;
+
+    /**
+     * 数量
+     */
+    @ApiModelProperty(value = "数量")
+    private Integer number;
 }

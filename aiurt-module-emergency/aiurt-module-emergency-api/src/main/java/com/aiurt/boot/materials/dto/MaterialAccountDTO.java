@@ -71,6 +71,10 @@ public class MaterialAccountDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "主管部门名称")
     private java.lang.String primaryName;
+  /**主管部门名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "主管部门code")
+    private List<String> orgCodeList;
 
     /**主管部门集合*/
     @TableField(exist = false)

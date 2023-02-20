@@ -60,6 +60,6 @@ public interface IBdQuestionCategoryService extends IService<BdQuestionCategory>
 	 * 查询习题类别树
 	 * @return
 	 */
-	List<TreeNode> queryPageList();
+	List<TreeNode> queryPageList(String name);
 
 }

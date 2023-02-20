@@ -32,4 +32,5 @@ public class TreeNode {
     private String hasChild;
     @ApiModelProperty(value = "扩展字段")
     private String extendedField;
+    private String color;
 }

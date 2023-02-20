@@ -46,4 +46,5 @@ public class CsUserDepartModel {
     private Boolean select;
     @ApiModelProperty(value = "子级")
     private List<CsUserDepartModel> childrenList;
+    private String color;
 }

@@ -30,10 +30,10 @@ public interface IFixedAssetsCategoryService extends IService<FixedAssetsCategor
 
     /**
      * 资产分类-树形
-     *
+     * @param name
      * @return
      */
-    List<FixedAssetsCategoryDTO> getCategoryTree();
+    List<FixedAssetsCategoryDTO> getCategoryTree(String name);
 
     /**
      * 获取分类信息

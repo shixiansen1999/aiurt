@@ -1,5 +1,7 @@
 package com.aiurt.modules.system.controller;
 
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonSendStatus;
 import com.aiurt.common.constant.WebsocketConst;
@@ -9,6 +11,8 @@ import com.aiurt.common.util.TokenUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.message.websocket.WebSocket;
 import com.aiurt.modules.system.dto.SysAnnouncementDTO;
+import com.aiurt.modules.system.dto.SysMessageInfoDTO;
+import com.aiurt.modules.system.dto.SysMessageTypeDTO;
 import com.aiurt.modules.system.entity.SysAnnouncement;
 import com.aiurt.modules.system.entity.SysAnnouncementSend;
 import com.aiurt.modules.system.service.ISysAnnouncementSendService;
@@ -27,6 +31,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jeecg.dingtalk.api.core.response.Response;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -41,6 +46,7 @@ import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -94,6 +100,7 @@ public class SysAnnouncementController {
      * @param req
      * @return
      */
+    @ApiOperation(value = "系统通告")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public Result<IPage<SysAnnouncement>> queryPageList(SysAnnouncement sysAnnouncement,
                                                         @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -101,14 +108,53 @@ public class SysAnnouncementController {
                                                         HttpServletRequest req) {
         Result<IPage<SysAnnouncement>> result = new Result<IPage<SysAnnouncement>>();
         sysAnnouncement.setDelFlag(CommonConstant.DEL_FLAG_0.toString());
+        String sTime = null;
+        String eTime = null;
+        if (StrUtil.isNotBlank(sysAnnouncement.getSTime()) || StrUtil.isNotBlank(sysAnnouncement.getETime())) {
+            sTime = sysAnnouncement.getSTime();
+            eTime = sysAnnouncement.getETime();
+            eTime = eTime + " 23:59:59";
+            sysAnnouncement.setSTime(null);
+            sysAnnouncement.setETime(null);
+        }
         QueryWrapper<SysAnnouncement> queryWrapper = QueryGenerator.initQueryWrapper(sysAnnouncement, req.getParameterMap());
         Page<SysAnnouncement> page = new Page<SysAnnouncement>(pageNo, pageSize);
+        if (StrUtil.isNotEmpty(sTime)) {
+            queryWrapper.lambda().ge(SysAnnouncement::getSendTime, sTime);
+        }
+        if (StrUtil.isNotEmpty(eTime)) {
+            queryWrapper.lambda().le(SysAnnouncement::getSendTime, eTime);
+        }
 
         //排序逻辑 处理
         IPage<SysAnnouncement> pageList = sysAnnouncementService.page(page, queryWrapper);
+        List<SysAnnouncement> records = pageList.getRecords();
+        for (SysAnnouncement record : records) {
+            getUserNames(record);
+        }
         result.setSuccess(true);
         result.setResult(pageList);
         return result;
+    }
+
+    private void getUserNames(@RequestBody SysAnnouncement sysAnnouncement) {
+        if (StrUtil.isNotBlank(sysAnnouncement.getUserIds())) {
+            String[] split = sysAnnouncement.getUserIds().split(",");
+            if (split.length > 0) {
+                StringBuilder str = new StringBuilder();
+                for (String s : split) {
+                    if (!Objects.isNull(s)) {
+                        LoginUser userById = sysBaseApi.getUserByName(s);
+                        if (!ObjectUtils.isEmpty(userById)) {
+                            str.append(userById.getRealname()).append(",");
+                        }
+                    }
+                }
+                if (StrUtil.isNotBlank(str)) {
+                    sysAnnouncement.setUserNames(str.deleteCharAt(str.length() - 1).toString());
+                }
+            }
+        }
     }
 
     /**
@@ -519,5 +565,30 @@ public class SysAnnouncementController {
         modelAndView.setStatus(HttpStatus.NOT_FOUND);
         return modelAndView;
     }
+
+    @AutoLog(value = "消息中心-消息类型")
+    @ApiOperation(value="消息中心-消息类型", notes="消息中心-消息类型")
+    @GetMapping(value = "/queryAnnouncementCount")
+    public Result<List<SysMessageTypeDTO>> queryMessageType(){
+        List<SysMessageTypeDTO> list = sysAnnouncementService.queryMessageType();
+        return Result.ok(list);
+    }
+
+    @AutoLog(value = "消息中心-业务消息类型-详情")
+    @ApiOperation(value="消息中心-业务消息类型-详情", notes="消息中心-业务消息类型-详情")
+    @GetMapping(value = "/queryAnnouncementInfo")
+    public Result<IPage<SysMessageInfoDTO>> queryAnnouncementInfo( @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                         @ApiParam(name = "messageFlag", value = "1:业务、2:流程 ")@RequestParam(name="messageFlag",required=true) String  messageFlag,
+                                                                   @ApiParam(name = "msgCategory", value = "消息类型1:通知公告2:系统消息3:特情消息 ")@RequestParam(name="msgCategory",required=false) String  msgCategory,
+                                                                 @ApiParam(name = "todoType", value = "0：待办、1：已办、2：待阅、3：已阅")@RequestParam(name="todoType",required=false) String  todoType,
+                                                                 @ApiParam(name = "keyword", value = "关键字")@RequestParam(name="keyword",required=false) String  keyword,
+                                                                 @ApiParam(name = "busType", value = "fault:故障、situation:特情 、trainplan，trainrecheck:培训、worklog:工作日志、inspection_assign,inspection:检修、patrol_assign，patrol_audit:巡视、patrol:巡视流程、fault:故障流程、emergency:应急业务消息、inspection:检修流程")@RequestParam(name="keyword",required=false) String  busType){
+        Page<SysMessageInfoDTO> page = new Page<>(pageNo,pageSize);
+        IPage<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementService.queryMessageInfo(page,messageFlag, todoType, keyword,busType,msgCategory);
+        return Result.ok(sysMessageInfoDTOS);
+    }
+
+
 
 }

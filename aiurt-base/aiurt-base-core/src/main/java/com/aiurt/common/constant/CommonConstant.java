@@ -514,4 +514,23 @@ public interface CommonConstant {
   */
  public static final String TODO_TYPE_0 = "0";
  public static final String TODO_TYPE_2 = "2";
+
+
+ /** 消息模板：markdown */
+ String MSG_TEMPLATE_TYPE_MD = "5";
+
+ /** 消息模板：应急管理业务 */
+ public static final String EMERGENCY_MANAGEMENT_SERVICE = "emergency_management_service";
+ /** 消息模板：检修业务通知 */
+ public static final String REPAIR_SERVICE_NOTICE = "repair_service_notice";
+ /** 消息模板：检修业务通知-驳回 */
+ public static final String REPAIR_SERVICE_NOTICE_REJECT = "repair_service_notice_reject";
+ /** 消息模板：检修业务通知-退回 */
+ public static final String REPAIR_SERVICE_NOTICE_RETURN = "repair_service_notice_return";
+ /** 消息模板：巡视业务通知 */
+ public static final String PATROL_SERVICE_NOTICE = "patrol_service_notice";
+ /** 消息模板：巡视业务通知-驳回 */
+ public static final String PATROL_SERVICE_NOTICE_REJECT = "patrol_service_notice_reject";
+ /** 消息模板：巡视业务通知-退回 */
+ public static final String PATROL_SERVICE_NOTICE_RETURN = "patrol_service_notice_return";
 }

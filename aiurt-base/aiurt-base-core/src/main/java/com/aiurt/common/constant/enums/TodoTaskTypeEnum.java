@@ -11,19 +11,19 @@ public enum TodoTaskTypeEnum {
     /**
      * 流程
      */
-    BPMN("bpmn", ""),
+    BPMN("bpmn", "","流程"),
     /**
      * 检修
      */
-    INSPECTION("inspection", ""),
+    INSPECTION("inspection", "","检修业务流程"),
     /**
      * 巡视
      */
-    PATROL("patrol", ""),
+    PATROL("patrol", "","巡视业务流程"),
     /**
      * 故障
      */
-    FAULT("fault","");
+    FAULT("fault","","故障管理流程");
 
 
     /**
@@ -35,9 +35,25 @@ public enum TodoTaskTypeEnum {
      */
     private String url;
 
-    TodoTaskTypeEnum(String type, String url) {
+    /**
+     * 类型名称
+     * @param type
+     * @param url
+     */
+    private String module;
+
+    TodoTaskTypeEnum(String type, String url,String module) {
         this.type = type;
         this.url = url;
+        this.module = module;
+    }
+
+    public String getModule() {
+        return module;
+    }
+
+    public void setModule(String module) {
+        this.module = module;
     }
 
     public String getType() {

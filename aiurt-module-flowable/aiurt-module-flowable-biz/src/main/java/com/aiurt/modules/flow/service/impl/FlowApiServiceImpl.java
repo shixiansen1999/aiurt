@@ -1354,8 +1354,8 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteProcessInstance(String processInstanceId) {
-        historyService.deleteHistoricProcessInstance(processInstanceId);
+    public void deleteProcessInstance(String processInstanceId,String delReason) {
+        runtimeService.deleteProcessInstance(processInstanceId,delReason);
     }
 
     /**

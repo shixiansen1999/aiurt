@@ -50,6 +50,28 @@ public class SysBaseAPIFallback implements ISysBaseAPI {
         return null;
     }
 
+    /**
+     * 发送模板消息【新，支持自定义推送类型】
+     *
+     * @param message
+     */
+    @Override
+    public void sendTemplateMessage(MessageDTO message) {
+        log.error("发送消息失败 {}", cause);
+    }
+
+    /**
+     * 根据模板编码获取模板内容【新，支持自定义推送类型】
+     *
+     * @param templateCode
+     * @return
+     */
+    @Override
+    public String getTemplateContent(String templateCode) {
+        log.error("通过模板获取消息内容失败 {}", cause);
+        return null;
+    }
+
     @Override
     public LoginUser getUserById(String id) {
         return null;

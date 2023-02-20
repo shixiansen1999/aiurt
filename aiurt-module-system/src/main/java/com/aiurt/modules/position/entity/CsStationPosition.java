@@ -150,4 +150,14 @@ public class CsStationPosition implements Serializable {
     private String length;
     @TableField(exist = false)
     String text;
+
+    @TableField(exist = false)
+    private String title;
+
+    @TableField(exist = false)
+    private String value;
+
+    @ApiModelProperty(value = "搜索颜色")
+    @TableField(exist = false)
+    private String color;
 }

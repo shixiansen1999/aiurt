@@ -6,6 +6,7 @@ import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.common.entity.SelectDeviceType;
+import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
@@ -61,6 +62,20 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     String parseTemplateByCode(TemplateDTO templateDTO);
 
+    //update-begin---author:taoyan ---date:20220705  for：支持自定义推送类型，邮件、钉钉、企业微信、系统消息-----------
+    /**
+     * 发送模板消息【新，支持自定义推送类型】
+     * @param message
+     */
+    void sendTemplateMessage(MessageDTO message);
+
+    /**
+     * 根据模板编码获取模板内容【新，支持自定义推送类型】
+     * @param templateCode
+     * @return
+     */
+    String getTemplateContent(String templateCode);
+    //update-begin---author:taoyan ---date:20220705  for：支持自定义推送类型，邮件、钉钉、企业微信、系统消息-----------
 
     /**
      * 6根据用户id查询用户信息
@@ -493,7 +508,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @param deviceCode
      * @return
      */
-    List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode);
+    List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode,String name);
 
     /**
      * 数据过大 物资分类列表结构查询（无分页。用于左侧树）
@@ -818,6 +833,12 @@ public interface ISysBaseAPI extends CommonAPI {
     List<SysDepartModel> getDepartByParentId(String parentId);
 
     /**
+     * 根据部门code,获取该部门下所有子级的code和自己
+     * @param orgCode
+     * @return
+     */
+    List<String> sysDepartList(String orgCode);
+    /**
      * 根据线路名称获取线路信息
      * @param lineName
      * @return
@@ -929,5 +950,23 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<String> getSublevelOrgCodes(String orgCode);
+
+
+    /**
+     * 树形搜索匹配
+     *
+     * @param name
+     * @param list
+     * @return
+     */
+    void processingTreeList(String name, List<SelectTable> list);
+
+    /**
+     * 根据数据库名和表名验证该数据库中是存在这张表
+     * @param dbName
+     * @param tableName
+     * @return
+     */
+    boolean selectTableName(String dbName, String tableName);
 }
 

@@ -34,6 +34,9 @@ public class SysFileTypeTreeVO extends SysFileType implements Serializable {
 
 	@ApiModelProperty("可删除")
 	private Set<SimpUserVO> deleteStatus;
+	private String color;
+
+	private Boolean matching;
 
 
 }

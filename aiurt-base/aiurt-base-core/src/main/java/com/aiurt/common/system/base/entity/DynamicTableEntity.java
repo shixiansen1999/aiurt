@@ -10,7 +10,7 @@ import java.util.List;
  * @author fgw
  */
 @Data
-public class DynamicTableEntity implements Serializable {
+public class DynamicTableEntity<T extends DynamicTableDataEntity> implements Serializable {
 
     private static final long serialVersionUID = -5914141692149276831L;
 

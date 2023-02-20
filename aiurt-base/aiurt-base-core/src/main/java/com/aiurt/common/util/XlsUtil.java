@@ -2,6 +2,7 @@ package com.aiurt.common.util;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,19 @@ public class XlsUtil {
 
     //导入返回结果
     public static Result<?> importReturnRes(int errorLines, int successLines, List<String> errorMessage, boolean isType, String failReportUrl) {
+        if (CollUtil.isNotEmpty(errorMessage)) {
+            JSONObject result = new JSONObject(5);
+            result.put("isSucceed", false);
+            result.put("errorCount", errorLines);
+            result.put("successCount", successLines);
+            int totalCount = successLines + errorLines;
+            result.put("totalCount", totalCount);
+            Result res = Result.ok(result);
+            String message = StrUtil.join(",", errorMessage);
+            res.setMessage("导入失败:"+message);
+            res.setCode(200);
+            return res;
+        }
         if (isType) {
             if (errorLines != 0) {
                 JSONObject result = new JSONObject(5);

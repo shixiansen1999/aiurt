@@ -15,6 +15,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
+import com.aiurt.boot.manager.dto.OrgVO;
 import com.aiurt.boot.standard.dto.InspectionCodeContentDTO;
 import com.aiurt.boot.standard.dto.InspectionCodeErrorDTO;
 import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
@@ -24,8 +25,10 @@ import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
 import com.aiurt.boot.standard.mapper.InspectionCodeMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
+import com.aiurt.boot.strategy.entity.InspectionCoOrgRel;
 import com.aiurt.boot.strategy.entity.InspectionStrDeviceRel;
 import com.aiurt.boot.strategy.entity.InspectionStrRel;
+import com.aiurt.boot.strategy.mapper.InspectionCoOrgRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrDeviceRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
@@ -95,6 +98,8 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
     private CommonAPI commonApi;
     @Autowired
     private InspectionCodeContentMapper inspectionCodeContentMapper;
+    @Resource
+    private InspectionCoOrgRelMapper inspectionCoOrgRelMapper;
 
     @Override
     public IPage<InspectionCodeDTO> pageList(Page<InspectionCodeDTO> page, InspectionCodeDTO inspectionCodeDTO) {
@@ -102,6 +107,13 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         GlobalThreadLocal.setDataFilter(false);
         inspectionCodeDTOS.forEach(i->{
             i.setNumber(baseMapper.number(i.getCode()));
+            List<InspectionCoOrgRel> orgRelList = inspectionCoOrgRelMapper.selectList(new LambdaQueryWrapper<InspectionCoOrgRel>().eq(InspectionCoOrgRel::getInspectionCoCode, i.getCode()));
+            if(CollUtil.isNotEmpty(orgRelList)){
+                List<OrgVO> orgCodeList = inspectionCoOrgRelMapper.getOrgList(orgRelList);
+                i.setOrgCodeList(orgCodeList);
+                String orgNames = orgCodeList.stream().map(OrgVO::getLabel).collect(Collectors.joining(";"));
+                i.setOrgName(orgNames);
+            }
         });
         if (ObjectUtils.isNotEmpty(inspectionCodeDTO.getInspectionStrCode())) {
             for (InspectionCodeDTO il : inspectionCodeDTOS) {

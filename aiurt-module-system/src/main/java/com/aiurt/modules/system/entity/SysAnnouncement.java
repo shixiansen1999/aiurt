@@ -64,12 +64,14 @@ public class SysAnnouncement implements Serializable {
      */
     @Excel(name = "发布人", width = 15)
     @ApiModelProperty("发布人")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
     private java.lang.String sender;
     /**
      * 优先级（L低，M中，H高）
      */
     @Excel(name = "优先级（L低，M中，H高,）", width = 15, dicCode = "priority")
     @ApiModelProperty("优先级（L低，M中，H高,）")
+    @Dict(dicCode = "priority")
     private java.lang.String priority;
 
     /**
@@ -138,6 +140,13 @@ public class SysAnnouncement implements Serializable {
      **/
     @ApiModelProperty("指定用户")
     private java.lang.String userIds;
+
+    /**
+     * 指定范围（组织机构）
+     **/
+    @ApiModelProperty("指定范围（组织机构）")
+    private java.lang.String orgIds;
+
     /**
      * 业务类型(email:邮件 bpm:流程)
      */
@@ -163,6 +172,12 @@ public class SysAnnouncement implements Serializable {
      */
     @ApiModelProperty("摘要")
     private java.lang.String msgAbstract;
+
+    /**
+     * 发布内容
+     */
+    @ApiModelProperty("发布内容")
+    protected String publishingContent;
     /**
      * 钉钉task_id，用于撤回消息
      */

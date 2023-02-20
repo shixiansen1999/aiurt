@@ -118,4 +118,7 @@ public class SysTodoList implements Serializable {
     /**是否为定时任务标识*/
     @TableField(exist = false)
     private Boolean timedTask;
+    /**内容*/
+    @ApiModelProperty("内容")
+    private java.lang.String msgContent;
 }
