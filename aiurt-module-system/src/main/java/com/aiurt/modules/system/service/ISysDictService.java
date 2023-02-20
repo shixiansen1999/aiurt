@@ -252,5 +252,11 @@ public interface ISysDictService extends IService<SysDict> {
      * @return
      */
     List<DictModel> loadDict(String dictCode, String keyword, Integer pageSize);
-
+	/**
+	 * 返回当前dictCode对应的字典项在数据库中最后更新的时间
+	 *
+	 * @param dictCode
+	 * @return
+	 */
+    String getCurrentNewModified(String dictCode);
 }

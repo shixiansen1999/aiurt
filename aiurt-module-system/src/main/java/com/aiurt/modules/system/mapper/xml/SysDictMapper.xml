@@ -208,4 +208,11 @@
 	<select id="getDelFlag" resultType="java.lang.Long">
 		select count(*) from information_schema.columns where table_schema = 'aiurt-platform' and table_name =#{tableName} and column_name = 'del_flag'
 	</select>
+
+    <select id="getCurrentNewModified" resultType="java.lang.String">
+	SELECT max( sdi.update_time )
+	FROM sys_dict sd
+	LEFT JOIN sys_dict_item sdi ON sdi.dict_id = sd.id
+	where sd.dict_code = #{dictCode}
+	</select>
 </mapper>

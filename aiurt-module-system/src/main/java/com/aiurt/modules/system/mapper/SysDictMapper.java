@@ -272,4 +272,11 @@ public interface SysDictMapper extends BaseMapper<SysDict> {
 	 */
 	@Select("select count(*) from information_schema.COLUMNS where TABLE_NAME = #{tableName} and COLUMN_NAME = 'del_flag'")
 	Long isExistDelFlag(@Param("tableName") String tableName);
+
+	/**
+	 * 返回当前dictCode对应的字典项在数据库中最后更新的时间
+	 * @param dictCode
+	 * @return
+	 */
+    String getCurrentNewModified(String dictCode);
 }
