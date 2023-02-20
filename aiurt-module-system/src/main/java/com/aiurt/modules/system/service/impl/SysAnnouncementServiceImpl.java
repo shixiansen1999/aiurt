@@ -162,6 +162,15 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			String key = entry.getKey();
 			String module = SysAnnmentTypeEnum.getByType(key).getModule();
 			sysMessageTypeDTO.setTitle(module);
+			//设置消息类型
+			int index = key.indexOf('_');
+			if(index !=-1){
+				String sub = key.substring(0, index);
+				sysMessageTypeDTO.setBusType(sub);
+			}else{
+				sysMessageTypeDTO.setBusType(key);
+			}
+
 			// 统计长度
 			List<SysAnnouncementSendDTO> value = entry.getValue();
 			int size = value.size();
@@ -188,12 +197,17 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			String key = entry.getKey();
 			if("1".equals(key)){
 				sysMessageTypeDTO.setTitle("系统公告");
+				sysMessageTypeDTO.setBusType(null);
 			}
 			if("2".equals(key)){
 				sysMessageTypeDTO.setTitle("系统消息");
+				//设置消息类型
+				sysMessageTypeDTO.setBusType(null);
 			}
 			if("3".equals(key)){
 				sysMessageTypeDTO.setTitle("特情消息");
+				//设置消息类型
+				sysMessageTypeDTO.setBusType("situation");
 			}
 			// 统计长度
 			List<SysAnnouncementSendDTO> value = entry.getValue();
@@ -221,6 +235,14 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			String key = entry.getKey();
 			String module = TodoTaskTypeEnum.getByType(key).getModule();
 			sysMessageTypeDTO.setTitle(module);
+			//设置消息类型
+			int index = key.indexOf('_');
+			if(index !=-1){
+				String sub = key.substring(0, index);
+				sysMessageTypeDTO.setBusType(sub);
+			}else{
+				sysMessageTypeDTO.setBusType(key);
+			}
 			// 统计长度
 			List<SysTodoList> value = entry.getValue();
 			int size = value.size();

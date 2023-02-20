@@ -35,6 +35,9 @@ public class SysMessageTypeDTO {
     @ApiModelProperty(value = "消息标识（1：业务，2：流程，0：系统公告，消息，特情）")
     private String messageFlag;
 
+    @ApiModelProperty(value = "消息类型")
+    private String busType;
+
     @ApiModelProperty(value = "消息内容")
     private String titleContent;
 }
