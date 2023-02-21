@@ -543,4 +543,8 @@ public interface CommonConstant {
  public static final String TRAIN_PLAN_SERVICE_NOTICE = "train_plan_service_notice";
  /** 消息模板：特情消息 */
  public static final String SPECIAL_INFO_SERVICE_NOTICE = "special_info_service_notice";
+ /** 消息模板：流程消息 */
+ public static final String BPM_SERVICE_NOTICE = "bpm_info_service_notice";
+ /** 消息模板：固定资产业务通知 */
+ public static final String FIXED_ASSETS_SERVICE_NOTICE = "fixed_assets_service_notice";
 }

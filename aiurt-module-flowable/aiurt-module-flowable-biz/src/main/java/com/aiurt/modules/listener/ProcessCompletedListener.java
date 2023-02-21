@@ -1,8 +1,9 @@
 package com.aiurt.modules.listener;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.common.api.dto.message.BusMessageDTO;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
 import org.apache.shiro.SecurityUtils;
@@ -21,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * @Author cjb
@@ -55,7 +57,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                 try {
                     LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                     ISysBaseAPI iSysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
-                    iSysBaseApi.sendBusAnnouncement(
+                    /*iSysBaseApi.sendBusAnnouncement(
                             new BusMessageDTO(
                                     loginUser.getUsername(),
                                     historicProcessInstance.getStartUserId(),
@@ -65,7 +67,27 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                                     SysAnnmentTypeEnum.BPM.getType(),
                                     historicProcessInstance.getBusinessKey()
                             )
-                    );
+                    );*/
+                    // 发消息
+                    MessageDTO messageDTO = new MessageDTO();
+                    //构建消息模板
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, historicProcessInstance.getBusinessKey());
+                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.BPM.getType());
+                    map.put("msgContent", msgContent);
+                    messageDTO.setData(map);
+
+                    messageDTO.setTitle(historicProcessInstance.getName());
+                    messageDTO.setFromUser( loginUser.getUsername());
+                    messageDTO.setToUser(historicProcessInstance.getStartUserId());
+                    messageDTO.setToAll(false);
+                    messageDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE);
+                    messageDTO.setType(MessageTypeEnum.XT.getType());
+                    messageDTO.setMsgAbstract("你有一条流程消息");
+                    messageDTO.setPublishingContent("你有一条流程消息");
+                    messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
+                    iSysBaseApi.sendTemplateMessage(messageDTO);
+
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 }
