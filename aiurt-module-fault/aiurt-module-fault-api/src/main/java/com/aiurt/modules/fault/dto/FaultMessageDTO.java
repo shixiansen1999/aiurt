@@ -68,18 +68,5 @@ public class FaultMessageDTO {
      */
     protected String messageType;
 
-    /**
-     * 模板消息对应的模板编码
-     */
-    protected String templateCode;
-    /**
-     * 摘要
-     */
-    private java.lang.String msgAbstract;
-    /**
-     * 发布内容
-     */
-    private String publishingContent;
-
 
 }

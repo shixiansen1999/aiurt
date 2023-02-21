@@ -1237,9 +1237,23 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
         // 创建验收待办任务
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) && repairTask.getIsReceipt().equals(InspectionConstant.IS_EFFECT)) {
+            String usernames = null;
             String currentUserName = getUserName(repairTask.getCode(), RoleConstant.TECHNICIAN);
             if (StrUtil.isNotEmpty(currentUserName)) {
-                createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_RECEIPT.getType(),repairTask.getId(), "检修任务验收", "", "");
+                List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().eq(RepairTaskUser::getRepairTaskCode, repairTask1.getCode()).eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+                if(CollUtil.isNotEmpty(repairTaskUsers)){
+                    String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
+                    List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+                    if (CollUtil.isNotEmpty(loginUsers)) {
+                        usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+                    }
+                }
+                TodoDTO todoDTO = new TodoDTO();
+                todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                todoDTO.setTitle("检修任务-审核");
+                todoDTO.setMsgAbstract("检修任务审核");
+                todoDTO.setPublishingContent("检修任务审核通过");
+                createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_RECEIPT.getType(),repairTask.getId(), "检修任务验收", "", "",todoDTO,repairTask1,usernames,null);
             }
         }
     }
@@ -1367,7 +1381,21 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (InspectionConstant.IS_CONFIRM_1.equals(repairTask.getIsConfirm())) {
             String currentUserName = getUserName(repairTask.getCode(), RoleConstant.FOREMAN);
             if (StrUtil.isNotEmpty(currentUserName)) {
-                createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_CONFIRM.getType(),repairTask.getId(), "检修任务审核", "", "");
+                String usernames = null;
+                List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode()).eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+                if(CollUtil.isNotEmpty(repairTaskUsers)){
+                    String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
+                    List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+                    if (CollUtil.isNotEmpty(loginUsers)) {
+                        usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+                    }
+                }
+                TodoDTO todoDTO = new TodoDTO();
+                todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                todoDTO.setTitle("检修任务-审核");
+                todoDTO.setMsgAbstract("检修任务审核");
+                todoDTO.setPublishingContent("您有一条检修任务审核");
+                createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_CONFIRM.getType(), repairTask.getId(), "检修任务审核", "", "", todoDTO, repairTask, usernames, null);
             }
         }
     }
@@ -1714,7 +1742,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         // 生成待办任务
         String currentUserName = manager.checkLogin().getUsername();
         if (StrUtil.isNotEmpty(currentUserName)) {
-            createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(),repairTask.getId(), "执行检修任务", "", "");
+            String usernames = null;
+            List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode()).eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+            if(CollUtil.isNotEmpty(repairTaskUsers)){
+                String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
+                List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+                if (CollUtil.isNotEmpty(loginUsers)) {
+                    usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+                }
+            }
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+            todoDTO.setTitle("检修任务-领取");
+            todoDTO.setMsgAbstract("领取检修任务");
+            todoDTO.setPublishingContent("您领取了一条检修任务，请尽快检修");
+
+            createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(),repairTask.getId(), "执行检修任务", "", "",todoDTO,repairTask,usernames,null);
         }
     }
 
@@ -2068,7 +2111,18 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             // 新建待办任务
             String currentUserName = getCurrentUserName(repairTask);
             if (StrUtil.isNotEmpty(currentUserName)) {
-                createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(),repairTask.getId(), "执行检修任务", "", "");
+                String usernames = null;
+                String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
+                List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+                if (CollUtil.isNotEmpty(loginUsers)) {
+                    usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+                }
+                TodoDTO todoDTO = new TodoDTO();
+                todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                todoDTO.setTitle("检修任务-待执行");
+                todoDTO.setMsgAbstract("检修任务待执行");
+                todoDTO.setPublishingContent("您有一条检修任务待执行");
+                createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(), repairTask.getId(), "执行检修任务", "", "", todoDTO, repairTask, usernames, null);
             }
         } else {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
@@ -2104,8 +2158,32 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
      * @param url             pc跳转前端路径
      * @param appUrl          app跳转前端路径
      */
-    private void createTodoTask(String currentUserName,String businessType, String businessKey, String taskName, String url, String appUrl) {
-        TodoDTO todoDTO = new TodoDTO();
+    private void createTodoTask(String currentUserName,String businessType, String businessKey, String taskName, String url, String appUrl, TodoDTO todoDTO,RepairTask repairTask1,String usernames, String username) {
+       //构建消息模板
+        HashMap<String, Object> map = new HashMap<>();
+        if (CollUtil.isNotEmpty(todoDTO.getData())) {
+            map.putAll(todoDTO.getData());
+        }
+        map.put("code",repairTask1.getCode());
+        map.put("repairTaskName",repairTask1.getType()+repairTask1.getCode());
+        List<String> codes = repairTaskMapper.getRepairTaskStation(repairTask1.getId());
+        Map<String, String> stationNameByCode = iSysBaseAPI.getStationNameByCode(codes);
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Map.Entry<String, String> entry : stationNameByCode.entrySet()) {
+            stringBuilder.append(entry.getValue());
+            stringBuilder.append(",");
+        }
+        if (stringBuilder.length() > 0) {
+            stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        }
+        map.put("repairStation",stringBuilder.toString());
+        map.put("repairTaskTime",repairTask1.getStartTime().toString()+repairTask1.getEndTime().toString());
+        if (StrUtil.isNotEmpty(usernames)) {
+            map.put("repairName", usernames);
+        } else {
+            map.put("repairName",username);
+        }
+
         todoDTO.setTaskName(taskName);
         todoDTO.setBusinessKey(businessKey);
         todoDTO.setBusinessType(businessType);
