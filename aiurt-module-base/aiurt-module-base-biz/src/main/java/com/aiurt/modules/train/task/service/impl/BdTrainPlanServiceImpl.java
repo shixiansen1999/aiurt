@@ -134,12 +134,13 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
 
         //发送通知
         MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),users, "年计划发布" + DateUtil.today(), null);
+
         BdTrainPlanMessageDTO bdTrainPlanMessageDTO = new BdTrainPlanMessageDTO();
         BeanUtil.copyProperties(bdTrainPlan,bdTrainPlanMessageDTO);
         //业务类型，消息类型，消息模板编码，摘要，发布内容
         bdTrainPlanMessageDTO.setBusType(SysAnnmentTypeEnum.TRAIN_PLAN.getType());
         bdTrainPlanMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
-        bdTrainPlanMessageDTO.setTemplateCode(CommonConstant.TRAIN_PLAN_SERVICE_NOTICE_RETURN);
+        bdTrainPlanMessageDTO.setTemplateCode(CommonConstant.TRAIN_PLAN_SERVICE_NOTICE);
         bdTrainPlanMessageDTO.setMsgAbstract("年计划已经发布");
         bdTrainPlanMessageDTO.setPublishingContent("年计划已经发布，请相关人员进行培训计划的制定。");
 
@@ -507,7 +508,7 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             bdTrainPlanMessageDTO.setBusType(SysAnnmentTypeEnum.TRAINRE_CHECK.getType());
             bdTrainPlanMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
-            bdTrainPlanMessageDTO.setTemplateCode(CommonConstant.TRAIN_PLAN_SERVICE_NOTICE_RETURN);
+            bdTrainPlanMessageDTO.setTemplateCode(CommonConstant.TRAIN_PLAN_SERVICE_NOTICE);
             bdTrainPlanMessageDTO.setMsgAbstract("考试结果发布");
             bdTrainPlanMessageDTO.setPublishingContent(String.format("%s你好，你的考试结果为%s分", checkVO.getExamPersonName(), checkVO.getExamResult()));
 

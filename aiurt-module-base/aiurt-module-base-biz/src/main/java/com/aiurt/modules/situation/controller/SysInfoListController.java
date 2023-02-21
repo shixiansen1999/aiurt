@@ -2,9 +2,10 @@ package com.aiurt.modules.situation.controller;
 
 
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.common.api.dto.message.BusMessageDTO;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.situation.entity.SysAnnouncement;
@@ -30,6 +31,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -134,19 +136,27 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             // TODO wgp修改默认值
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             // 发消息
-            BusMessageDTO messageDTO = new BusMessageDTO();
+            MessageDTO messageDTO = new MessageDTO();
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.SITUATION.getType());
+            map.put("msgContent", sysAnnouncement.getMsgContent());
+            messageDTO.setData(map);
+
+            messageDTO.setTitle(sysAnnouncement.getTitile());
             messageDTO.setFromUser(sysUser.getUsername());
             messageDTO.setOrgIds(sysAnnouncement.getOrgIds());
             messageDTO.setToUser(sysAnnouncement.getUserIds());
             messageDTO.setToAll(false);
-            messageDTO.setContent(sysAnnouncement.getMsgContent());
+            messageDTO.setTemplateCode(CommonConstant.SPECIAL_INFO_SERVICE_NOTICE);
+            messageDTO.setType(MessageTypeEnum.XT.getType());
+            messageDTO.setMsgAbstract("你有一条特情消息");
+            messageDTO.setPublishingContent("你有一条特情消息");
             messageDTO.setCategory(CommonConstant.MSG_CATEGORY_3);
-            messageDTO.setTitle(sysAnnouncement.getTitile());
-            messageDTO.setBusType(SysAnnmentTypeEnum.SITUATION.getType());
-            messageDTO.setLevel(sysAnnouncement.getLevel());
             messageDTO.setStartTime(sysAnnouncement.getStartTime());
             messageDTO.setEndTime(sysAnnouncement.getEndTime());
-            iSysBaseAPI.sendBusAnnouncement(messageDTO);
+            messageDTO.setLevel(sysAnnouncement.getLevel());
+            iSysBaseAPI.sendTemplateMessage(messageDTO);
 
             result.success("发布成功！");
         } catch (Exception e) {
@@ -174,17 +184,27 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             // TODO wgp修改默认值
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             // 发消息
-            BusMessageDTO messageDTO = new BusMessageDTO();
-            messageDTO.setFromUser(sysUser.getId());
-            messageDTO.setToUser(sysAnnouncement.getUserIds());
-            messageDTO.setContent(sysAnnouncement.getMsgContent());
-            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_3);
+            MessageDTO messageDTO = new MessageDTO();
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.SITUATION.getType());
+            map.put("msgContent", sysAnnouncement.getMsgContent());
+            messageDTO.setData(map);
+
             messageDTO.setTitle(sysAnnouncement.getTitile());
-            messageDTO.setBusType(SysAnnmentTypeEnum.SITUATION.getType());
-            messageDTO.setLevel(sysAnnouncement.getLevel());
+            messageDTO.setFromUser(sysUser.getUsername());
+            messageDTO.setOrgIds(sysAnnouncement.getOrgIds());
+            messageDTO.setToUser(sysAnnouncement.getUserIds());
+            messageDTO.setToAll(false);
+            messageDTO.setTemplateCode(CommonConstant.SPECIAL_INFO_SERVICE_NOTICE);
+            messageDTO.setType(MessageTypeEnum.XT.getType());
+            messageDTO.setMsgAbstract("你有一条特情消息");
+            messageDTO.setPublishingContent("你有一条特情消息");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_3);
             messageDTO.setStartTime(sysAnnouncement.getStartTime());
             messageDTO.setEndTime(sysAnnouncement.getEndTime());
-            iSysBaseAPI.sendBusAnnouncement(messageDTO);
+            messageDTO.setLevel(sysAnnouncement.getLevel());
+            iSysBaseAPI.sendTemplateMessage(messageDTO);
             result.success("发布成功！");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
