@@ -36,13 +36,6 @@
         <if test="inspectionCodeDTO.deviceTypeName !=null and inspectionCodeDTO.deviceTypeName !=''">
             AND b.`name` LIKE CONCAT ('%', #{inspectionCodeDTO.deviceTypeName}, '%')
         </if>
-        <if test="inspectionCodeDTO.orgList != null and inspectionCodeDTO.orgList.size() != 0">
-        and inspection_code.`code` in (select inspection_co_code from inspection_co_org_rel where org_code in
-            <foreach collection="inspectionCodeDTO.orgList" open="(" close=")" separator="," item="item" >
-                #{item}
-            </foreach>
-            )
-        </if>
         ORDER BY  inspection_code.create_time DESC
     </select>
     <select id="pageLists" resultType="com.aiurt.boot.manager.dto.InspectionCodeDTO">
@@ -77,6 +70,13 @@
         </if>
         <if test="inspectionCodeDTO.deviceTypeCode !=null ">
             AND ta.device_type_code = #{inspectionCodeDTO.deviceTypeCode}
+        </if>
+        <if test="inspectionCodeDTO.orgList != null and inspectionCodeDTO.orgList.size() != 0">
+        and ta.`code` in (select inspection_co_code from inspection_co_org_rel where org_code in
+            <foreach collection="inspectionCodeDTO.orgList" open="(" close=")" separator="," item="item" >
+                #{item}
+            </foreach>
+            )
         </if>
         ORDER BY  ta.create_time DESC
     </select>
