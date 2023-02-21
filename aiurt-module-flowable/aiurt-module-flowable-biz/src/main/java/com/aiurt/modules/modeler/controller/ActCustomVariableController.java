@@ -4,6 +4,9 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.common.constant.FlowVariableConstant;
+import com.aiurt.modules.common.enums.SystemVariableEnum;
+import com.aiurt.modules.modeler.dto.ActCustomVariableDTO;
 import com.aiurt.modules.modeler.entity.ActCustomVariable;
 import com.aiurt.modules.modeler.service.IActCustomVariableService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -17,10 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @Description: 流程变量
@@ -60,7 +62,6 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 		LambdaQueryWrapper<ActCustomVariable> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(ActCustomVariable::getModelId, modelId).eq(ActCustomVariable::getVariableType,
 				variableType);
-		// 需要默认添加两个变量
 		List<ActCustomVariable> list = actCustomVariableService.list(wrapper);
 		return Result.OK(list);
 	}
@@ -75,6 +76,7 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 	@ApiOperation(value="流程变量-添加", notes="流程变量-添加")
 	@PostMapping(value = "/add")
 	public Result<ActCustomVariable> add(@Valid @RequestBody ActCustomVariable actCustomVariable) {
+		// todo 系统字段
 		actCustomVariableService.save(actCustomVariable);
 		return Result.OK(actCustomVariable);
 	}
@@ -134,6 +136,35 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 		return Result.OK();
 	}
 
+	@ApiOperation(value = "流转条件名称")
+	@GetMapping(value = "/selectConditionVar")
+	public Result<List<ActCustomVariableDTO>> selectConditionVar(@RequestParam(value = "modelId", required = true) String modelId) {
+		LambdaQueryWrapper<ActCustomVariable> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(ActCustomVariable::getModelId, modelId).eq(ActCustomVariable::getVariableType,
+				FlowVariableConstant.VARIABLE_TYPE_1);
+		List<ActCustomVariable> list = actCustomVariableService.list(wrapper);
+
+		if (Objects.isNull(list)) {
+			list = new ArrayList<>();
+		}
+
+		List<ActCustomVariableDTO> resultList = list.stream().map(variable -> {
+			ActCustomVariableDTO variableDTO = new ActCustomVariableDTO();
+			variableDTO.setValue(variable.getVariableName());
+			variableDTO.setLabel(variable.getShowName());
+			return variableDTO;
+		}).collect(Collectors.toList());
+		// 构建系统字段
+		SystemVariableEnum[] variableEnums = SystemVariableEnum.values();
+		for (int i = 0; i < variableEnums.length; i++) {
+			SystemVariableEnum variableEnum = variableEnums[i];
+			ActCustomVariableDTO variableDTO = new ActCustomVariableDTO();
+			variableDTO.setValue(variableEnum.getCode());
+			variableDTO.setLabel(variableEnum.getName());
+			resultList.add(variableDTO);
+		}
+		return Result.OK(resultList);
+	}
 
 
 }
