@@ -81,6 +81,7 @@
 
 	<select id="queryAnnouncementInfo" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysMessageInfoDTO">
 		select
+		@i:=@i+1 as seq,
 		sa.id as id,
 		sa.titile as title,
 		sa.msg_content as msgContent,
@@ -88,9 +89,11 @@
 		sa.msg_category as msgCategory,
 		sa.msg_abstract as msgAbstract,
 		sa.publishing_content as publishingContent,
+		sa.bus_type as taskType,
 		sas.read_flag as readFlag
 		from sys_announcement sa
 		left join sys_announcement_send sas on sas.annt_id = sa.id
+		left join (SELECT @i:=0) b on 1=1
 		<where>
 			 sa.del_flag = 0
 			<if test="userId!=null and userId!=''">
@@ -111,17 +114,23 @@
 
 	<select id="queryTodoListInfo" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysMessageInfoDTO">
 		select
+		@i:=@i+1 as seq ,
 		stl.id as id,
 		stl.msg_content as msgContent ,
 		stl.title as title,
 		stl.create_time as intervalTime,
 		stl.msg_abstract as msgAbstract,
 		stl.publishing_content as publishingContent,
+		stl.task_id as taskId,
+		stl.task_type as taskType,
+		stl.business_key as businessKey,
+		stl.url as url,
+		stl.app_url as appUrl,
 		stl.todo_type as todoType
-		from sys_todo_list stl
+		from sys_todo_list stl,(SELECT @i:=0) b
 		<where>
 			<if test="userName!=null and userName!=''">
-				and find_in_set(#{userName},stl.current_user_name)
+			 find_in_set(#{userName},stl.current_user_name)
 			</if>
 			<if test="keyWord!=null and keyWord!=''">
 				and stl.msg_content LIKE concat(concat('%',#{keyWord}),'%')

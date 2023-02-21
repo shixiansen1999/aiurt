@@ -293,12 +293,21 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			IPage<SysMessageInfoDTO> businessList = sysAnnouncementMapper.queryAnnouncementInfo(page,userId, keyWord,busType,msgCategory);
 			List<SysMessageInfoDTO> records = businessList.getRecords();
 			//查找最远的未读消息
-			Optional<SysMessageInfoDTO> max = records.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getReadFlag().equals("0")).max(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
-			if(max.isPresent()){
-				SysMessageInfoDTO sysMessageInfoDTO = max.get();
-				sysMessageInfoDTO.setDumpFlag("1");
-			}
-
+			Optional<SysMessageInfoDTO> min = records.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getReadFlag().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
+				if(min.isPresent()){
+					SysMessageInfoDTO sysMessageInfoDTO = min.get();
+					String seq = sysMessageInfoDTO.getSeq();
+					int num = Integer.parseInt(seq);
+					int pageNum = num/20;
+					if(num%20 !=0){
+						pageNum = pageNum+1;
+					}
+					sysMessageInfoDTO.setPageNumber(String.valueOf(pageNum));
+					sysMessageInfoDTO.setDumpFlag("1");
+				}
+			//根据时间排序
+//			records = records.stream().sorted(Comparator.comparing(SysMessageInfoDTO::getIntervalTime).reversed()).collect(Collectors.toList());
+//             businessList.setRecords(records);
 			return businessList;
 		}
 		//流程业务
@@ -307,9 +316,16 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			IPage<SysMessageInfoDTO> flowList = sysAnnouncementMapper.queryTodoListInfo(page,username, todoType, keyWord,busType);
 			List<SysMessageInfoDTO> records = flowList.getRecords();
 			//查找最远的流程消息
-			Optional<SysMessageInfoDTO> max = records.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).max(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
-			if(max.isPresent()){
-				SysMessageInfoDTO sysMessageInfoDTO = max.get();
+			Optional<SysMessageInfoDTO> min = records.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
+			if(min.isPresent()){
+				SysMessageInfoDTO sysMessageInfoDTO = min.get();
+				String seq = sysMessageInfoDTO.getSeq();
+				int num = Integer.parseInt(seq);
+				int pageNum = num/20;
+				if(num%20 !=0){
+					pageNum = pageNum+1;
+				}
+				sysMessageInfoDTO.setPageNumber(String.valueOf(pageNum));
 				sysMessageInfoDTO.setDumpFlag("1");
 			}
 			return flowList;
@@ -317,18 +333,5 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		return null;
 	}
 
-	@Override
-	public IPage<String> queryPageSize(Page<SysMessageInfoDTO> page, String messageFlag, String todoType) {
-		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		String userId = loginUser.getId();
-		String username = loginUser.getUsername();
-		if("1".equals(messageFlag)){
-			IPage<SysMessageInfoDTO> sysMessageInfoDTOIPage = sysAnnouncementMapper.queryTodoListInfo(page, userId, null, null, null);
-
-		}else if("2".equals(messageFlag)){
-			IPage<SysMessageInfoDTO> sysMessageInfoDTOIPage = sysAnnouncementMapper.queryTodoListInfo(page, username, todoType, null, null);
-		}
-		return  null;
-	}
 
 }

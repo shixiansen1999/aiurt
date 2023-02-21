@@ -52,10 +52,29 @@ public class SysMessageInfoDTO extends DictEntity {
     private String dumpFlag;
 
     @ApiModelProperty("序号")
-    private String index;
+    private String seq;
 
     @ApiModelProperty("页码")
     private String pageNumber;
+
+    @ApiModelProperty("跳转路径")
+    private String url;
+
+    @ApiModelProperty("app跳转路径")
+    private String appUrl;
+
+    @ApiModelProperty("业务id")
+    private String businessKey;
+
+    @ApiModelProperty("任务id")
+    private String taskId;
+
+    @ApiModelProperty("任务类型")
+    private String taskType;
+
+
+
+
 
 
 
