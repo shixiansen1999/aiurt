@@ -1,11 +1,15 @@
 package com.aiurt.modules.train.task.service.impl;
 
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.common.api.dto.message.BusMessageDTO;
+import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
@@ -16,6 +20,7 @@ import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
 import com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt;
 import com.aiurt.modules.train.task.constans.TainPlanConstans;
+import com.aiurt.modules.train.task.dto.BdTrainPlanMessageDTO;
 import com.aiurt.modules.train.task.enmu.QuarterEnmu;
 import com.aiurt.modules.train.task.entity.*;
 import com.aiurt.modules.train.task.listener.NoModelDataListener;
@@ -108,16 +113,6 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         // 发消息
-        BusMessageDTO messageDTO = new BusMessageDTO();
-        //设置消息属性
-        messageDTO.setStartTime(new Date());
-        messageDTO.setEndTime(new Date());
-        messageDTO.setPriority("H");
-        messageDTO.setCategory("1");
-        messageDTO.setTitle("年计划发布");
-        messageDTO.setContent("年计划已经发布，请相关人员进行培训计划的制定。");
-        messageDTO.setFromUser(sysUser.getUsername());
-        messageDTO.setBusType(SysAnnmentTypeEnum.TRAINPLAN.getType());
         //设置接收人（查询部门下面的人员）
         String deptName = bdTrainPlan.getDeptName();
         StringBuilder stringBuilder = new StringBuilder();
@@ -136,9 +131,20 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             }
             users = stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString();
         }
-        messageDTO.setToUser(users);
-        messageDTO.setToAll(false);
-        iSysBaseAPI.sendBusAnnouncement(messageDTO);
+
+        //发送通知
+        MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),users, "年计划发布" + DateUtil.today(), null);
+        BdTrainPlanMessageDTO bdTrainPlanMessageDTO = new BdTrainPlanMessageDTO();
+        BeanUtil.copyProperties(bdTrainPlan,bdTrainPlanMessageDTO);
+        //业务类型，消息类型，消息模板编码，摘要，发布内容
+        bdTrainPlanMessageDTO.setBusType(SysAnnmentTypeEnum.TRAIN_PLAN.getType());
+        bdTrainPlanMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
+        bdTrainPlanMessageDTO.setTemplateCode(CommonConstant.TRAIN_PLAN_SERVICE_NOTICE_RETURN);
+        bdTrainPlanMessageDTO.setMsgAbstract("年计划已经发布");
+        bdTrainPlanMessageDTO.setPublishingContent("年计划已经发布，请相关人员进行培训计划的制定。");
+
+        sendMessage(messageDTO,bdTrainPlanMessageDTO);
+
         //更改为已发布的状态
         bdTrainPlan.setState(1);
         bdTrainPlan.setPblishTime(new Date());
@@ -495,24 +501,17 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         for (ReCheckVO checkVO : reCheckVOList) {
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             // 发消息
-            BusMessageDTO messageDTO = new BusMessageDTO();
-            //设置消息属性
+            MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),checkVO.getUserName(), "考试结果发布" + DateUtil.today(), null);
+            BdTrainPlanMessageDTO bdTrainPlanMessageDTO = new BdTrainPlanMessageDTO();
+            BeanUtil.copyProperties(checkVO,bdTrainPlanMessageDTO);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            bdTrainPlanMessageDTO.setBusType(SysAnnmentTypeEnum.TRAINRE_CHECK.getType());
+            bdTrainPlanMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
+            bdTrainPlanMessageDTO.setTemplateCode(CommonConstant.TRAIN_PLAN_SERVICE_NOTICE_RETURN);
+            bdTrainPlanMessageDTO.setMsgAbstract("考试结果发布");
+            bdTrainPlanMessageDTO.setPublishingContent(String.format("%s你好，你的考试结果为%s分", checkVO.getExamPersonName(), checkVO.getExamResult()));
 
-            messageDTO.setStartTime(new Date());
-            messageDTO.setEndTime(new Date());
-            messageDTO.setPriority("H");
-            messageDTO.setCategory("1");
-            messageDTO.setTitle("考试结果发布");
-            messageDTO.setBusType(SysAnnmentTypeEnum.TRAINRECHECK.getType());
-            messageDTO.setToAll(false);
-            if (StrUtil.isBlank(checkVO.getUserName()) || StrUtil.isBlank(checkVO.getExamResult())) {
-                throw new JeecgBootException("考生姓名不存在或考生考试结果为空");
-            }
-            messageDTO.setContent(String.format("%s你好，你的考试结果为%s分", checkVO.getExamPersonName(), checkVO.getExamResult()));
-
-            //设置接收人
-            messageDTO.setToUser(checkVO.getUserName());
-            iSysBaseAPI.sendBusAnnouncement(messageDTO);
+            sendMessage(messageDTO,bdTrainPlanMessageDTO);
 
             BdExamRecord bdExamRecord = bdExamRecordMapper.selectById(checkVO.getId());
             BdTrainTask bdTrainTask = bdTrainTaskMapper.selectById(bdExamRecord.getTrainTaskId());
@@ -597,5 +596,32 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             default:
                 return null;
         }
+    }
+
+    /**
+     * 发送消息
+     * @param messageDTO
+     * @param bdTrainPlanMessageDTO
+     */
+    private void sendMessage(MessageDTO messageDTO, BdTrainPlanMessageDTO bdTrainPlanMessageDTO) {
+        //发送通知
+        //构建消息模板
+        HashMap<String, Object> map = new HashMap<>();
+        if (CollUtil.isNotEmpty(messageDTO.getData())) {
+            map.putAll(messageDTO.getData());
+        }
+        map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, bdTrainPlanMessageDTO.getId());
+        map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, bdTrainPlanMessageDTO.getBusType());
+        messageDTO.setData(map);
+        messageDTO.setType(bdTrainPlanMessageDTO.getMessageType());
+        messageDTO.setTemplateCode(bdTrainPlanMessageDTO.getTemplateCode());
+        messageDTO.setMsgAbstract(bdTrainPlanMessageDTO.getMsgAbstract());
+        messageDTO.setPublishingContent(bdTrainPlanMessageDTO.getPublishingContent());
+        messageDTO.setStartTime(new Date());
+        messageDTO.setEndTime(new Date());
+        messageDTO.setPriority("H");
+        messageDTO.setCategory("1");
+        messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
+        sysBaseAPI.sendTemplateMessage(messageDTO);
     }
 }

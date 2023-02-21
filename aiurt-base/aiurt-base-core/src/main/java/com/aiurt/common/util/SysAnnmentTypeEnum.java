@@ -26,11 +26,11 @@ public enum SysAnnmentTypeEnum {
     /**
      * 培训年计划
      */
-    TRAINPLAN("trainplan", "component","","培训业务消息"),
+    TRAIN_PLAN("train_plan", "component","","培训业务消息"),
     /**
      * 培训复核
      */
-    TRAINRECHECK("trainrecheck", "component","","培训业务消息"),
+    TRAINRE_CHECK("trainre_check", "component","","培训业务消息"),
     /**
      * 工作日志
      */
