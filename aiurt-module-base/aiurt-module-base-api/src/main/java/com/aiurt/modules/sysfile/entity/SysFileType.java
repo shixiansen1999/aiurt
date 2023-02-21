@@ -101,5 +101,5 @@ public class SysFileType {
 	@TableField(exist = false)
 	private Long value;
 	@TableField(exist = false)
-	private String label;
+	private String title;
 }
