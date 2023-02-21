@@ -462,14 +462,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             List<String> nameList = sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList());
             String str = StringUtils.join(nameList, ",");
             record.setUserList(str);
-
+            String users = "";
             //交班人名称
             String handoverIds = record.getHandoverId();
             if (StrUtil.isNotEmpty(handoverIds)) {
                 List<JSONObject> jsonObjects = iSysBaseAPI.queryUsersByIds(handoverIds);
                 String realNames = jsonObjects.stream().map(js -> js.getString("realname")).collect(Collectors.joining("；"));
                 record.setHandoverName(realNames);
-
+                users = realNames;
             }
             //接班人名称
             String succeedIds = record.getSucceedId();
@@ -477,10 +477,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 List<JSONObject> jsonObjects = iSysBaseAPI.queryUsersByIds(succeedIds);
                 String realNames = jsonObjects.stream().map(js -> js.getString("realname")).collect(Collectors.joining("；"));
                 record.setSucceedName(realNames);
-
+                if(StrUtil.isNotEmpty(handoverIds)){
+                    users = users+","+realNames;
+                }else {
+                    users = realNames;
+                }
             }
             //获取参与人员
-            record.setUserList(record.getHandoverName()+","+record.getSucceedName());
+            record.setUserList(users);
             //防疫相关工作
             StringBuffer stringBuffer = new StringBuffer();
             if (WorkLogConstans.IS.equals(record.getIsDisinfect())) {
@@ -1015,13 +1019,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         List<String> nameList = sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList());
         String str = StringUtils.join(nameList, ",");
         workLog.setUserList(str);
-
+        String users = "";
         //交班人姓名
         String handoverId = workLog.getHandoverId();
         if (StrUtil.isNotEmpty(handoverId)) {
             List<JSONObject> jsonObjects = iSysBaseAPI.queryUsersByIds(handoverId);
             String realNames = jsonObjects.stream().map(js -> js.getString("realname")).collect(Collectors.joining("；"));
             workLog.setHandoverName(realNames);
+            users = realNames;
         }
         //接班人名称
         String succeedIds = workLog.getSucceedId();
@@ -1029,10 +1034,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             List<JSONObject> jsonObjects = iSysBaseAPI.queryUsersByIds(succeedIds);
             String realNames = jsonObjects.stream().map(js -> js.getString("realname")).collect(Collectors.joining("；"));
             workLog.setSucceedName(realNames);
-
+            if(StrUtil.isNotEmpty(handoverId)){
+                users = users+","+realNames;
+            }else {
+                users = realNames;
+            }
         }
         //获取参与人员
-        workLog.setUserList(workLog.getHandoverName()+","+workLog.getSucceedName());
+        workLog.setUserList(users);
         //防疫相关工作
         StringBuffer stringBuffer = new StringBuffer();
 //        if (WorkLogConstans.IS.equals(workLog.getIsDisinfect())) {
