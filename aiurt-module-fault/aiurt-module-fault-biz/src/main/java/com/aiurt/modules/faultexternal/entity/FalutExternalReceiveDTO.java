@@ -2,6 +2,7 @@ package com.aiurt.modules.faultexternal.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -16,10 +17,13 @@ public class FalutExternalReceiveDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @ApiModelProperty(value = "code")
     private String code;
 
+    @ApiModelProperty(value = "message")
     private String message;
 
+    @ApiModelProperty(value = "FaultExternal对象")
     private FaultExternal data;
 
 }

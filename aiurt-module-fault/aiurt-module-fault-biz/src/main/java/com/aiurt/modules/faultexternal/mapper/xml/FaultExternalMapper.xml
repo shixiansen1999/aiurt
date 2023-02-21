@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.faultexternal.mapper.FaultExternalMapper">
+    <select id="selectFaultExternalPage" resultType="com.aiurt.modules.faultexternal.entity.FaultExternal">
+        SELECT *
+        FROM fault_external f
+            LEFT JOIN cs_station s ON f.spos = s.station_name
+            LEFT JOIN cs_line l ON f.sline = l.line_name
+        <where>
+            <if test="faultExternal.startTime !=null and faultExternal.endTime !=null">
+                f.dhappen between #{faultExternal.startTime} and #{faultExternal.endTime}
+            </if>
+            <if test="faultExternal.stationIds != null and faultExternal.stationIds.size() != 0">
+                and s.id in
+                <foreach collection="faultExternal.stationIds" index="index" open="(" separator="," close=")" item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="faultExternal.status !=null">
+                and f.status = #{faultExternal.status}
+            </if>
+        </where>
+        ORDER BY f.create_time DESC
+    </select>
+</mapper>
