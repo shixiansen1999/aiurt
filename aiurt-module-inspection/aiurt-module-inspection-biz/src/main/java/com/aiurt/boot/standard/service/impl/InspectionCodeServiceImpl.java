@@ -103,6 +103,10 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
 
     @Override
     public IPage<InspectionCodeDTO> pageList(Page<InspectionCodeDTO> page, InspectionCodeDTO inspectionCodeDTO) {
+        if(ObjectUtil.isNotEmpty(inspectionCodeDTO.getOrgCodes())){
+            List<String> list = StrUtil.splitTrim(inspectionCodeDTO.getOrgCodes(), ",");
+            inspectionCodeDTO.setOrgList(list);
+        }
         List<InspectionCodeDTO> inspectionCodeDTOS = baseMapper.pageList(page,inspectionCodeDTO);
         GlobalThreadLocal.setDataFilter(false);
         inspectionCodeDTOS.forEach(i->{
