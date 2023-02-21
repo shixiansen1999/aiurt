@@ -829,7 +829,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 			types.forEach(type -> {
 				Optional.ofNullable(type).ifPresent(t -> {
 					type.setValue(type.getId());
-					type.setLabel(type.getName());
+					type.setTitle(type.getName());
 					SysFileTypeTreeVO vo = new SysFileTypeTreeVO();
 					BeanUtils.copyProperties(t, vo);
 					Result<SysFileTypeDetailVO> detail = this.detail(t.getId());
