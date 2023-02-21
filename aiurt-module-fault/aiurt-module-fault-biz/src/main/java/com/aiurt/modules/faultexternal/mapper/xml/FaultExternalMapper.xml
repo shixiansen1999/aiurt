@@ -4,8 +4,7 @@
     <select id="selectFaultExternalPage" resultType="com.aiurt.modules.faultexternal.entity.FaultExternal">
         SELECT *
         FROM fault_external f
-            LEFT JOIN cs_station s ON f.spos = s.station_name
-            LEFT JOIN cs_line l ON f.sline = l.line_name
+            LEFT JOIN cs_station s ON (f.spos = s.station_name and f.sline = s.line_name)
         <where>
             <if test="faultExternal.startTime !=null and faultExternal.endTime !=null">
                 f.dhappen between #{faultExternal.startTime} and #{faultExternal.endTime}
