@@ -80,12 +80,14 @@
 	</select>
 
 	<select id="queryAnnouncementInfo" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysMessageInfoDTO">
-		select sa.titile as title,
-		       sa.msg_content as msgContent,
-		       sa.create_time as intervalTime,
-		       sa.msg_category as msgCategory,
-		       sa.msg_abstract as msgAbstract,
-		       sa.publishing_content as publishingContent,
+		select
+		sa.id as id,
+		sa.titile as title,
+		sa.msg_content as msgContent,
+		sa.create_time as intervalTime,
+		sa.msg_category as msgCategory,
+		sa.msg_abstract as msgAbstract,
+		sa.publishing_content as publishingContent,
 		sas.read_flag as readFlag
 		from sys_announcement sa
 		left join sys_announcement_send sas on sas.annt_id = sa.id
@@ -107,11 +109,14 @@
 	</select>
 
 	<select id="queryTodoListInfo" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysMessageInfoDTO">
-		select stl.msg_content as msgContent ,
-		       stl.title as title,
-		       stl.create_time as intervalTime,
+		select
+		stl.id as id,
+		stl.msg_content as msgContent ,
+		stl.title as title,
+		stl.create_time as intervalTime,
 		stl.msg_abstract as msgAbstract,
-		stl.publishing_content as publishingContent
+		stl.publishing_content as publishingContent,
+		stl.todo_type as todoType
 		from sys_todo_list stl
 		<where>
 			<if test="userName!=null and userName!=''">

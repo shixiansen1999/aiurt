@@ -62,4 +62,7 @@ public interface ISysAnnouncementService extends IService<SysAnnouncement> {
      * @return
      */
     public IPage<SysMessageInfoDTO> queryMessageInfo(Page<SysMessageInfoDTO> page ,String messageFlag, String todoType, String keyword, String busType,String msgCategory);
+
+    public IPage<String> queryPageSize(Page<SysMessageInfoDTO> page ,String messageFlag, String todoType);
+
 }

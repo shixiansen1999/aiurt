@@ -589,6 +589,18 @@ public class SysAnnouncementController {
         return Result.ok(sysMessageInfoDTOS);
     }
 
+    @AutoLog(value = "消息中心-业务消息类型-详情")
+    @ApiOperation(value="消息中心-业务消息类型-详情", notes="消息中心-业务消息类型-详情")
+    @GetMapping(value = "/queryPageSize")
+    public Result<IPage<String>> queryPageSize( @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                   @ApiParam(name = "messageFlag", value = "1:业务、2:流程 ")@RequestParam(name="messageFlag",required=true) String  messageFlag,
+                                                                   @ApiParam(name = "todoType", value = "0：待办、1：已办、2：待阅、3：已阅")@RequestParam(name="todoType",required=false) String  todoType){
+        Page<SysMessageInfoDTO> page = new Page<>(pageNo,pageSize);
+        IPage<String> stringIPage = sysAnnouncementService.queryPageSize(page, messageFlag, todoType);
+        return Result.ok(stringIPage);
+    }
+
 
 
 }

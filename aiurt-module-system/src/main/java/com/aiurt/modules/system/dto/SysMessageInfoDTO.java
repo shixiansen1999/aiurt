@@ -19,6 +19,9 @@ import lombok.Data;
  */
 @Data
 public class SysMessageInfoDTO extends DictEntity {
+    @ApiModelProperty(value = "主键id")
+    private String id;
+
     @ApiModelProperty("标题")
     private String title;
 
@@ -44,6 +47,10 @@ public class SysMessageInfoDTO extends DictEntity {
     @ApiModelProperty(value = "任务类型（待办池类型：0：待办、1：已办、2：待阅、3：已阅）")
     @Dict(dicCode = "todo_task_state")
     private String todoType;
+
+    @ApiModelProperty("跳转标记")
+    private String dumpFlag;
+
 
 
 

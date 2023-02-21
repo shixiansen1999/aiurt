@@ -19,6 +19,9 @@ import org.springframework.format.annotation.DateTimeFormat;
  */
 @Data
 public class SysMessageTypeDTO {
+    @ApiModelProperty(value = "主键id")
+    private String id;
+
     @ApiModelProperty(value = "消息类型名称")
     private String title;
 
