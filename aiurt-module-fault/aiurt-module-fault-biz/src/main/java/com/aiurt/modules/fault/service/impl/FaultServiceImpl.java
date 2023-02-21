@@ -1632,6 +1632,15 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         String faultModeCode = sysBaseAPI.translateDict("fault_mode_code", faultMessageDTO.getFaultModeCode());
         map.put("faultModeCode",faultModeCode);
 
+        String line = sysBaseAPI.getPosition(faultMessageDTO.getLineCode());
+        String station = sysBaseAPI.getPosition(faultMessageDTO.getStationCode());
+        String position = sysBaseAPI.getPosition(faultMessageDTO.getStationPositionCode());
+        String faultStationPosition = line + station;
+        if (StrUtil.isNotBlank(position)) {
+            faultStationPosition = faultStationPosition + position;
+        }
+        map.put("faultStationPosition",faultStationPosition);
+
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, faultMessageDTO.getId());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, faultMessageDTO.getBusType());
         messageDTO.setData(map);

@@ -1,5 +1,6 @@
 package com.aiurt.boot.weeklyplan.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
@@ -18,7 +19,9 @@ import com.aiurt.boot.weeklyplan.mapper.BdTeamMapper;
 import com.aiurt.boot.weeklyplan.service.*;
 import com.aiurt.boot.weeklyplan.util.ExportExcelUtil;
 import com.aiurt.boot.weeklyplan.util.ImportExcelUtil;
-import com.aiurt.common.api.dto.message.BusMessageDTO;
+import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.position.entity.CsLine;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -179,33 +182,38 @@ public class BdOperatePlanDeclarationFormServiceImpl
     /**
      * 发送消息
      *
-     * @param afterStatus     2状态不发送
-     * @param isLineallpeople 是否是总线路负责人，true是false否
+     * @param messageDTO
+     * @param bdOperatePlanDeclarationFormMessageDTO
      */
-    private void sendMessage(String busId, String fromUser, String toUserId, String content, int typeId, int afterStatus, boolean isLineallpeople) {
+    private void sendMessage(MessageDTO messageDTO,BdOperatePlanDeclarationFormMessageDTO bdOperatePlanDeclarationFormMessageDTO) {
+        //2状态不发送
         int num = 2;
-        if (ObjectUtil.isNotEmpty(toUserId) && afterStatus != num) {
-            //发送消息
-            BusMessageDTO busMessageDTO = new BusMessageDTO();
-            busMessageDTO.setBusType(SysAnnmentTypeEnum.BDOPERATEPLANDECLARATIONFORM.getType());
-            busMessageDTO.setBusId(busId);
-            busMessageDTO.setFromUser(fromUser);
-            busMessageDTO.setTitle("周计划");
-            busMessageDTO.setCategory("3");
-            String toLineStaffIdUser = sysBaseApi.getUserById(toUserId).getUsername();
-            busMessageDTO.setToUser(toLineStaffIdUser);
-            busMessageDTO.setContent(content);
-            busMessageDTO.setAnnouncementTypeId(typeId);
-            sysBaseApi.sendBusAnnouncement(busMessageDTO);
-
-            if (isLineallpeople) {
+        if (ObjectUtil.isNotEmpty(messageDTO.getToUser()) && bdOperatePlanDeclarationFormMessageDTO.getAfterStatus() != num) {
+            if (bdOperatePlanDeclarationFormMessageDTO.getLineAllPeople()) {
                 //发送给所有总线路负责人
-                List<String> lineallpeopleList = bdOperatePlanDeclarationFormMapper.queryUsernameByLineallpeople();
-                for (String username : lineallpeopleList) {
-                    busMessageDTO.setToUser(username);
-                    sysBaseApi.sendBusAnnouncement(busMessageDTO);
+                List<String> lineAllPeopleList = bdOperatePlanDeclarationFormMapper.queryUsernameByLineallpeople();
+                if (CollUtil.isNotEmpty(lineAllPeopleList)) {
+                    String join = StrUtil.join(",", lineAllPeopleList);
+                    messageDTO.setToUser(join);
                 }
             }
+            //发送通知
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            if (CollUtil.isNotEmpty(messageDTO.getData())) {
+                map.putAll(messageDTO.getData());
+            }
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, bdOperatePlanDeclarationFormMessageDTO.getId());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, bdOperatePlanDeclarationFormMessageDTO.getBusType());
+
+            messageDTO.setType(bdOperatePlanDeclarationFormMessageDTO.getMessageType());
+            messageDTO.setTemplateCode(bdOperatePlanDeclarationFormMessageDTO.getTemplateCode());
+            messageDTO.setMsgAbstract(bdOperatePlanDeclarationFormMessageDTO.getMsgAbstract());
+            messageDTO.setPublishingContent(bdOperatePlanDeclarationFormMessageDTO.getPublishingContent());
+            messageDTO.setPriority("L");
+            messageDTO.setStartTime(new Date());
+            messageDTO.setCategory("3");
+            sysBaseApi.sendTemplateMessage(messageDTO);
         }
     }
 
@@ -939,19 +947,29 @@ public class BdOperatePlanDeclarationFormServiceImpl
         if (!MagicWords.STATUS_3.equals(bdOperatePlanDeclarationForm.getFormStatus())) {
             //1是申请计划，2修改，不传,驳回也不传
             if (ObjectUtil.isNotEmpty(bdOperatePlanDeclarationForm.getIsApply())) {
-                if (bdOperatePlanDeclarationForm.getIsApply() == 1) {
-                    //申请计划
-                    LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-                    this.sendMessage(String.valueOf(bdOperatePlanDeclarationForm.getId()), sysUser.getUsername(), bdOperatePlanDeclarationForm.getLineStaffId(),
-                            "你有新的待审批周计划", 13, 1, true);
-                } else if (MagicWords.STATUS_2.equals(bdOperatePlanDeclarationForm.getIsApply())) {
+                if (MagicWords.STATUS_2.equals(bdOperatePlanDeclarationForm.getIsApply())) {
                     //修改主页消息提醒
                     readMessage(Convert.toStr(bdOperatePlanDeclarationForm.getId()), SysAnnmentTypeEnum.BDOPERATEPLANDECLARATIONFORM.getType(), null);
-                    //申请计划
-                    LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-                    this.sendMessage(String.valueOf(bdOperatePlanDeclarationForm.getId()), sysUser.getUsername(), bdOperatePlanDeclarationForm.getLineStaffId(),
-                            "你有新的待审批周计划", 13, 1, true);
                 }
+                //申请计划
+                LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                //发送通知
+                String toLineStaffIdUser = sysBaseApi.getUserById(bdOperatePlanDeclarationForm.getLineStaffId()).getUsername();
+                MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),toLineStaffIdUser, "新的待审批周计划" + DateUtil.today(), null);
+                BdOperatePlanDeclarationFormMessageDTO bdOperatePlanDeclarationFormMessageDTO = new BdOperatePlanDeclarationFormMessageDTO();
+
+                bdOperatePlanDeclarationFormMessageDTO.setAfterStatus(1);
+                bdOperatePlanDeclarationFormMessageDTO.setLineAllPeople(true);
+                BeanUtil.copyProperties(bdOperatePlanDeclarationForm,bdOperatePlanDeclarationFormMessageDTO);
+                //业务类型，消息类型，消息模板编码，摘要，发布内容
+                bdOperatePlanDeclarationFormMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+                bdOperatePlanDeclarationFormMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
+                bdOperatePlanDeclarationFormMessageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                bdOperatePlanDeclarationFormMessageDTO.setMsgAbstract("新的待审批周计划");
+                bdOperatePlanDeclarationFormMessageDTO.setPublishingContent("你有新的待审批周计划");
+
+                sendMessage(messageDTO,bdOperatePlanDeclarationFormMessageDTO);
+
             } else {
                 //修改主页消息提醒
                 readMessage(Convert.toStr(bdOperatePlanDeclarationForm.getId()), SysAnnmentTypeEnum.BDOPERATEPLANDECLARATIONFORM.getType(), null);
@@ -1126,12 +1144,28 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
         //发送消息
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        String toLineStaffIdUser = sysBaseApi.getUserById(operatePlanDeclarationForm.getLineStaffId()).getUsername();
+        BdOperatePlanDeclarationFormMessageDTO bdOperatePlanDeclarationFormMessageDTO = new BdOperatePlanDeclarationFormMessageDTO();
+
+        bdOperatePlanDeclarationFormMessageDTO.setAfterStatus(1);
+        bdOperatePlanDeclarationFormMessageDTO.setLineAllPeople(true);
+        BeanUtil.copyProperties(operatePlanDeclarationForm,bdOperatePlanDeclarationFormMessageDTO);
+        //业务类型，消息类型，消息模板编码，摘要，发布内容
+        bdOperatePlanDeclarationFormMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+        bdOperatePlanDeclarationFormMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
+        bdOperatePlanDeclarationFormMessageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+
         if (operatePlanDeclarationForm.getPlanChange() == 0) {
-            this.sendMessage(String.valueOf(operatePlanDeclarationForm.getId()), sysUser.getUsername(), operatePlanDeclarationForm.getLineStaffId(),
-                    "你有新的待审批周计划", 13, 1, true);
+            MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),toLineStaffIdUser, "新的待审批周计划" + DateUtil.today(), null);
+            bdOperatePlanDeclarationFormMessageDTO.setMsgAbstract("新的待审批周计划");
+            bdOperatePlanDeclarationFormMessageDTO.setPublishingContent("你有新的待审批周计划");
+            sendMessage(messageDTO,bdOperatePlanDeclarationFormMessageDTO);
         } else { //如果是补充计划, 设置补充计划专属字段
-            this.sendMessage(String.valueOf(operatePlanDeclarationForm.getId()), sysUser.getUsername(), operatePlanDeclarationForm.getLineStaffId(),
-                    "你有新的待审批补充计划/变更计划", 45, 1, false);
+            MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),toLineStaffIdUser, "新的待审批补充计划/变更计划" + DateUtil.today(), null);
+            bdOperatePlanDeclarationFormMessageDTO.setMsgAbstract("新的待审批补充计划/变更计划");
+            bdOperatePlanDeclarationFormMessageDTO.setPublishingContent("你有新的待审批补充计划/变更计划");
+            sendMessage(messageDTO,bdOperatePlanDeclarationFormMessageDTO);
         }
     }
 
