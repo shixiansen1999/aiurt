@@ -79,13 +79,31 @@ public class UsageConfig implements Serializable {
     @ApiModelProperty(value = "更新时间")
     private Date updateTime;
 
+    @Excel(name = "总数", width = 15)
     @TableField(exist = false)
     @ApiModelProperty(value = "总数")
-    private Integer total;
+    private Long total;
 
+    @Excel(name = "新增数", width = 15)
     @TableField(exist = false)
     @ApiModelProperty(value = "新增数")
-    private Integer newlyAdded;
+    private Long newAddNum;
+
+    @TableField(exist = false)
+    private List<String> configId;
+
+
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "开始时间")
+    @TableField(exist = false)
+    private Date startTime;
+
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "结束时间")
+    @TableField(exist = false)
+    private Date endTime;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "子级")

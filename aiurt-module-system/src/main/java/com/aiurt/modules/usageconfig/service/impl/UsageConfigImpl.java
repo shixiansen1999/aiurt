@@ -1,5 +1,7 @@
 package com.aiurt.modules.usageconfig.service.impl;
 import cn.hutool.core.date.DateUtil;
+import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
+import com.aiurt.common.constant.CommonConstant;
 import com.google.common.collect.Lists;
 
 import cn.hutool.core.collection.CollUtil;
@@ -18,9 +20,15 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -108,6 +116,61 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
         });
         pageList.setRecords(dtoList);
         return pageList;
+    }
+
+    @Override
+    public ModelAndView exportXls(HttpServletRequest request, UsageConfig usageConfig) {
+        Date startTime = usageConfig.getStartTime();
+        Date endTime = usageConfig.getEndTime();
+        if (Objects.isNull(startTime) || Objects.isNull(endTime)) {
+            startTime = DateUtil.beginOfDay(new Date());
+            endTime = DateUtil.endOfDay(new Date());
+        }
+
+        Date finalStartTime = startTime;
+        Date finalEndTime = endTime;
+
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        LambdaQueryWrapper<UsageConfig> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(UsageConfig::getState, CommonConstant.DEL_FLAG_1);
+        if (CollectionUtil.isNotEmpty(usageConfig.getConfigId())){
+            queryWrapper.in(UsageConfig::getId,usageConfig.getConfigId());
+        }
+        List<UsageConfig> list = usageConfigMapper.selectList(queryWrapper);
+        if (CollectionUtil.isNotEmpty(list)){
+            list.forEach(e->{
+                String id = e.getId();
+                AtomicReference<Long> num = new AtomicReference<>(0L);
+                AtomicReference<Long> totalNum = new AtomicReference<>(0L);
+                //如果没有表名信息说明这条数据一定是父级，就去查询它的子级
+                    LambdaQueryWrapper<UsageConfig> queryWrapper1 = new LambdaQueryWrapper<>();
+                    queryWrapper1.eq(UsageConfig::getState, CommonConstant.DEL_FLAG_1);
+                    queryWrapper1.eq(UsageConfig::getPid,id);
+                    List<UsageConfig> usageConfigs = usageConfigMapper.selectList(queryWrapper1);
+                    if (CollectionUtil.isNotEmpty(usageConfigs)){
+                        for (UsageConfig usageConfig1 : usageConfigs) {
+                            Long newNumber = this.getNewNumber(usageConfig1.getTableName(), finalStartTime, finalEndTime, usageConfig1.getStaCondition());
+                            Long total = this.getTotal(usageConfig1.getTableName(), usageConfig1.getStaCondition());
+                            num.set(num.get() + newNumber);
+                            totalNum.set(totalNum.get() + total);
+                        }
+                        e.setNewAddNum(num.get());
+                        e.setTotal(totalNum.get());
+                    }else {
+                        Long newNumber = this.getNewNumber(e.getTableName(), finalStartTime, finalEndTime, e.getStaCondition());
+                        Long total = this.getTotal(e.getTableName(), e.getStaCondition());
+                        e.setNewAddNum(newNumber);
+                        e.setTotal(total);
+                    }
+            });
+        }
+
+        //导出文件名称
+        mv.addObject(NormalExcelConstants.FILE_NAME, "数据概览");
+        mv.addObject(NormalExcelConstants.CLASS, UsageConfig.class);
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("数据概览",  "导出信息", ExcelType.XSSF));
+        mv.addObject(NormalExcelConstants.DATA_LIST, list);
+        return mv;
     }
 
 

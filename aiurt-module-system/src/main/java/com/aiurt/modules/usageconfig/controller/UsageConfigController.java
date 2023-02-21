@@ -1,23 +1,33 @@
 package com.aiurt.modules.usageconfig.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.usageconfig.dto.UsageConfigDTO;
 import com.aiurt.modules.usageconfig.dto.UsageConfigParamDTO;
 import com.aiurt.modules.usageconfig.dto.UsageStatDTO;
 import com.aiurt.modules.usageconfig.entity.UsageConfig;
 import com.aiurt.modules.usageconfig.service.UsageConfigService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Description: 系统配置
@@ -122,5 +132,16 @@ public class UsageConfigController extends BaseController<UsageConfig, UsageConf
     public Result<IPage<UsageStatDTO>> getBusinessDataStatistics(UsageConfigParamDTO usageConfigParamDTO){
         IPage<UsageStatDTO> page = usageConfigService.getBusinessDataStatistics(usageConfigParamDTO);
         return Result.OK(page);
+    }
+
+    /**
+     * 导出
+     * @param request
+     * @param usageConfig
+     * @return
+     */
+    @RequestMapping(value = "/exportXls")
+    public ModelAndView exportXls(HttpServletRequest request,UsageConfig usageConfig) {
+        return usageConfigService.exportXls(request, usageConfig);
     }
 }
