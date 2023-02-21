@@ -106,6 +106,7 @@
 				and sa.msg_category =#{msgCategory}
 			</if>
 		</where>
+		order by sa.create_time desc
 	</select>
 
 	<select id="queryTodoListInfo" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysMessageInfoDTO">
@@ -132,6 +133,7 @@
 				and stl.task_type = #{busType}
 			</if>
 		</where>
+		order by stl.create_time desc
 	</select>
 
 

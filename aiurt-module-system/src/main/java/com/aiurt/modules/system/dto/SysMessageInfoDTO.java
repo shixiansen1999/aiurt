@@ -51,6 +51,14 @@ public class SysMessageInfoDTO extends DictEntity {
     @ApiModelProperty("跳转标记")
     private String dumpFlag;
 
+    @ApiModelProperty("序号")
+    private String index;
+
+    @ApiModelProperty("页码")
+    private String pageNumber;
+
+
+
 
 
 

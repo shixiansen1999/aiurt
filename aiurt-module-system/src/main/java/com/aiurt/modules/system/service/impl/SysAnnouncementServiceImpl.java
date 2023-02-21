@@ -277,10 +277,8 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		//list根据创建时间排序
 		list = list.stream().sorted(Comparator.comparing(SysMessageTypeDTO::getIntervalTime).reversed()).collect(Collectors.toList());
 		//集合设置id
-		for (SysMessageTypeDTO sysMessageTypeDTO : list) {
-			int i = 0;
-			sysMessageTypeDTO.setId(String.valueOf(i));
-			i++;
+		for (int i = 0; i < list.size(); i++) {
+			list.get(i).setId(String.valueOf(i));
 		}
 		return list;
 	}
@@ -290,27 +288,30 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String userId = loginUser.getId();
 		String username = loginUser.getUsername();
+		//业务数据
 		if("1".equals(messageFlag)){
 			IPage<SysMessageInfoDTO> businessList = sysAnnouncementMapper.queryAnnouncementInfo(page,userId, keyWord,busType,msgCategory);
 			List<SysMessageInfoDTO> records = businessList.getRecords();
 			//查找最远的未读消息
-			Optional<SysMessageInfoDTO> max = records.stream().max(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
-			SysMessageInfoDTO sysMessageInfoDTO = max.get();
-			sysMessageInfoDTO.setDumpFlag("1");
-			//根据时间排序
-			records = records.stream().sorted(Comparator.comparing(SysMessageInfoDTO::getIntervalTime).reversed()).collect(Collectors.toList());
-             businessList.setRecords(records);
+			Optional<SysMessageInfoDTO> max = records.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getReadFlag().equals("0")).max(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
+			if(max.isPresent()){
+				SysMessageInfoDTO sysMessageInfoDTO = max.get();
+				sysMessageInfoDTO.setDumpFlag("1");
+			}
+
 			return businessList;
-		} else if("2".equals(messageFlag)){
+		}
+		//流程业务
+		else if("2".equals(messageFlag)){
+			//流程数据
 			IPage<SysMessageInfoDTO> flowList = sysAnnouncementMapper.queryTodoListInfo(page,username, todoType, keyWord,busType);
 			List<SysMessageInfoDTO> records = flowList.getRecords();
 			//查找最远的流程消息
 			Optional<SysMessageInfoDTO> max = records.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).max(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
-			SysMessageInfoDTO sysMessageInfoDTO = max.get();
-			sysMessageInfoDTO.setDumpFlag("1");
-			//根据时间排序，最新的在最上面
-			records = records.stream().sorted(Comparator.comparing(SysMessageInfoDTO::getIntervalTime).reversed()).collect(Collectors.toList());
-			flowList.setRecords(records);
+			if(max.isPresent()){
+				SysMessageInfoDTO sysMessageInfoDTO = max.get();
+				sysMessageInfoDTO.setDumpFlag("1");
+			}
 			return flowList;
 		}
 		return null;
