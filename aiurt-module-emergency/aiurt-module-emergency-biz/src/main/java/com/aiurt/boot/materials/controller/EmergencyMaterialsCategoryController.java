@@ -1,5 +1,6 @@
 package com.aiurt.boot.materials.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -166,7 +167,15 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	@Transactional(rollbackFor = Exception.class)
 	public Result<String> edit(@RequestBody EmergencyMaterialsCategory emergencyMaterialsCategory) {
-		emergencyMaterialsCategoryService.updateById(emergencyMaterialsCategory);
+		EmergencyMaterialsCategory emergencyMaterialsCategory1 = new EmergencyMaterialsCategory();
+		String id = emergencyMaterialsCategory.getId();
+		if (StrUtil.isNotBlank(id)){
+			emergencyMaterialsCategoryService.removeById(id);
+
+			BeanUtil.copyProperties(emergencyMaterialsCategory,emergencyMaterialsCategory1);
+
+			emergencyMaterialsCategoryService.save(emergencyMaterialsCategory1);
+		}
 		return Result.OK("编辑成功!");
 	}
 
