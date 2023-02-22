@@ -208,7 +208,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //构建消息模板
         HashMap<String, Object> map = new HashMap<>();
         map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
-
+        messageDTO.setData(map);
+        messageDTO.setTemplateCode(com.aiurt.common.constant.CommonConstant.WORK_LOG_SERVICE_NOTICE);
         messageDTO.setType(MessageTypeEnum.XT.getType());
         messageDTO.setMsgAbstract("工作日志上报");
         messageDTO.setPublishingContent("您有一条待接班日志");
