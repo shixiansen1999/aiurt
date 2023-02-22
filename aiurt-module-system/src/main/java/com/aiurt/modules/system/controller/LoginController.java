@@ -19,6 +19,7 @@ import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.system.util.JwtUtil;
 import com.aiurt.common.util.*;
 import com.aiurt.common.util.encryption.EncryptedString;
+import com.aiurt.config.thirdapp.ThirdAppConfig;
 import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.model.SysLoginModel;
 import com.aiurt.modules.system.service.*;
@@ -87,6 +88,9 @@ public class LoginController {
 
 	@Autowired
 	private IWeaverSsoService weaverSsoService;
+
+	@Autowired
+	ThirdAppConfig thirdAppConfig;
 
 	@ApiOperation("登录接口")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -769,7 +773,7 @@ public class LoginController {
 			log.info("st->{}", string1);
 			String signature = sha1(string1);
 			JSONObject obj = new JSONObject();
-			obj.put("appId","ww19d88c8272303c7b");
+			obj.put("appId", thirdAppConfig.getWechatEnterprise().getClientId());
 			obj.put("timestamp",time);
 			obj.put("nonceStr",noncestr);
 			obj.put("signature",signature);
@@ -786,7 +790,7 @@ public class LoginController {
 			System.out.println(string1);
 			String signature = sha1(string1);
 			JSONObject obj = new JSONObject();
-			obj.put("appId","ww19d88c8272303c7b");
+			obj.put("appId",thirdAppConfig.getWechatEnterprise().getClientId());
 			obj.put("timestamp",time);
 			obj.put("nonceStr",noncestr);
 			obj.put("signature",signature);
