@@ -1,6 +1,8 @@
 package com.aiurt.modules.editor.language.json.converter;
 
 import cn.hutool.core.collection.CollUtil;
+import com.aiurt.modules.common.constant.FlowModelAttConstant;
+import com.aiurt.modules.constants.FlowConstant;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,10 +14,7 @@ import org.flowable.bpmn.model.*;
 import org.flowable.editor.language.json.converter.*;
 import org.flowable.editor.language.json.converter.util.JsonConverterUtil;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author fgw
@@ -96,7 +95,10 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         }
 
         if (StringUtils.isNotEmpty(sequenceFlow.getConditionExpression())) {
-            propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, sequenceFlow.getConditionExpression());
+            // 获取表达式
+            String conditionExpression = sequenceFlow.getConditionExpression();
+
+            propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, conditionExpression);
         }
 
         if (StringUtils.isNotEmpty(sequenceFlow.getSourceRef())) {
@@ -155,9 +157,18 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         if (CollUtil.isNotEmpty(serviceElementList)) {
             ObjectNode objectNode = super.objectMapper.createObjectNode();
             ExtensionElement e = serviceElementList.get(0);
-            objectNode.put("name", e.getAttributeValue(null, "name"));
+            objectNode.put(FlowModelAttConstant.NAME, e.getAttributeValue(null, FlowModelAttConstant.NAME));
             flowNode.set(SERVICE, objectNode);
         }
+
+        // 优化的条件表达式修改, "flowCondition":[{},{}]
+        List<ExtensionElement> flowConditionElementList = extensionElements.getOrDefault(FlowModelAttConstant.FLOW_CONDITION, new ArrayList<>());
+        if (CollUtil.isNotEmpty(flowConditionElementList)) {
+            flowConditionElementList.stream().forEach(extensionElement -> {
+              //  extensionElement
+            });
+        }
+
 
         flowNode.set(EDITOR_SHAPE_PROPERTIES, propertiesNode);
         shapesArrayNode.add(flowNode);

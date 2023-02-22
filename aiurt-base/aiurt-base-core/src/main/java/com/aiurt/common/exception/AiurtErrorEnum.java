@@ -19,7 +19,7 @@ public enum AiurtErrorEnum {
      * 6 开头
      */
     FLOW_MODEL_NOT_FOUND(61001,"流程模板信息不存在"),
-    FLOW_DEFINITION_NOT_FOUND(61002,"流程定义信息不存在"),
+    FLOW_DEFINITION_NOT_FOUND(61002,"流程定义信息不存在, 请先发布流程！"),
     FLOW_TASK_NOT_FOUND(61003,"请重新配置流程, 该流程配置错误, 无法找到第一个用户任务"),
 
     /**

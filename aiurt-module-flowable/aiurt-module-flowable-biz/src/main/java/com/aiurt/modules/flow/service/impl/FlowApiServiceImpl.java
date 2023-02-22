@@ -188,7 +188,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void startAndTakeFirst(StartBpmnDTO startBpmnDTO) {
-        // 保存数据不发起流程
+
         log.info("启动流程请求参数：[{}]", JSON.toJSONString(startBpmnDTO));
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (Objects.isNull(loginUser)) {
@@ -288,6 +288,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      * @param taskCompleteDTO
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void completeTask(TaskCompleteDTO taskCompleteDTO) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         // 任务id
@@ -338,13 +339,23 @@ public class FlowApiServiceImpl implements FlowApiService {
     }
 
 
+    /**
+     * 提交任务
+     * @param task 任务实体
+     * @param comment 流转信息
+     * @param busData 业务数据
+     * @param variableData 变量数据
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData, Map<String, Object> variableData) {
+        // 流程实例id
         String processInstanceId = task.getProcessInstanceId();
+        // 流程任务id
         String taskId = task.getId();
         // 获取流程任务
         Task processInstanceActiveTask = this.getProcessInstanceActiveTask(processInstanceId, taskId);
-
-        // 数据处理
+        // 获取流程实例对象
         ProcessInstance processInstance = getProcessInstance(processInstanceId);
 
         // 验证流程任务的合法性。
@@ -354,27 +365,11 @@ public class FlowApiServiceImpl implements FlowApiService {
         String approvalType = comment.getApprovalType();
         String commentStr = comment.getComment();
 
-
-        // todo 中间变量
         variableData.put("operationType", approvalType);
         variableData.put("comment", commentStr);
 
-        if (Objects.nonNull(busData)) {
-            // 流程key
-            String processDefinitionKey = processInstance.getProcessDefinitionKey();
-
-            // 流程模板信息
-            LambdaQueryWrapper<ActCustomModelInfo> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(ActCustomModelInfo::getModelKey, processDefinitionKey).last("limit 1");
-            ActCustomModelInfo one = modelInfoService.getOne(queryWrapper);
-
-            List<ActCustomVariable> list = variableService.list(new LambdaQueryWrapper<ActCustomVariable>().eq(ActCustomVariable::getModelId, one.getModelId())
-                    .eq(ActCustomVariable::getVariableType, 1).eq(ActCustomVariable::getType, 0));
-            list.stream().forEach(variable -> {
-                String variableName = variable.getVariableName();
-                variableData.put(variableName, busData.get(variableName));
-            });
-        }
+        // 构建中间变量
+        buildVariable(busData, variableData, processInstance);
 
         // 判断使保存还是提交
         if (StrUtil.equalsIgnoreCase(FlowApprovalType.SAVE, approvalType)) {
@@ -390,7 +385,6 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
         } else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE, FlowApprovalType.REFUSE)) {
             if (Objects.nonNull(busData)) {
-                //busData.put("operationType", approvalType);
                 flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
             // 完成任务
@@ -398,7 +392,6 @@ public class FlowApiServiceImpl implements FlowApiService {
             // 驳回
         } else if (StrUtil.equalsIgnoreCase(FlowApprovalType.REJECT, approvalType)) {
             if (Objects.nonNull(busData)) {
-                // busData.put("operationType", approvalType);
                 flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
             // 完成任务
@@ -429,6 +422,31 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         if (Objects.nonNull(busData)) {
             saveData(task, busData, processInstanceId, taskId, processInstance);
+        }
+    }
+
+    /**
+     * 构建中间变量
+     * @param busData
+     * @param variableData
+     * @param processInstance
+     */
+    private void buildVariable(Map<String, Object> busData, Map<String, Object> variableData, ProcessInstance processInstance) {
+        if (Objects.nonNull(busData)) {
+            // 流程key
+            String processDefinitionKey = processInstance.getProcessDefinitionKey();
+
+            // 流程模板信息
+            LambdaQueryWrapper<ActCustomModelInfo> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(ActCustomModelInfo::getModelKey, processDefinitionKey).last("limit 1");
+            ActCustomModelInfo one = modelInfoService.getOne(queryWrapper);
+
+            List<ActCustomVariable> list = variableService.list(new LambdaQueryWrapper<ActCustomVariable>().eq(ActCustomVariable::getModelId, one.getModelId())
+                    .eq(ActCustomVariable::getVariableType, 1).eq(ActCustomVariable::getType, 0));
+            list.stream().forEach(variable -> {
+                String variableName = variable.getVariableName();
+                variableData.put(variableName, busData.get(variableName));
+            });
         }
     }
 
@@ -866,9 +884,6 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (!this.isAssigneeOrCandidate(task)) {
             throw new AiurtBootException("数据验证失败，当前用户不是指派人也不是候选人之一！");
         }
-        /*if (StrUtil.isBlank(task.getFormKey())) {
-            throw new AiurtBootException("数据验证失败，指定任务的formKey属性不存在，请重新修改流程图！");
-        }*/
     }
 
     /**
