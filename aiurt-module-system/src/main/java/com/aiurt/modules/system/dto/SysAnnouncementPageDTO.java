@@ -25,4 +25,9 @@ public class SysAnnouncementPageDTO {
 
     @ApiModelProperty("序号")
     private String seq;
+
+    @ApiModelProperty("条数")
+    private Integer dateNumber;
+
+
 }

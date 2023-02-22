@@ -43,4 +43,8 @@ public class SysMessageTypeDTO {
 
     @ApiModelProperty(value = "消息内容")
     private String titleContent;
+
+    @ApiModelProperty(value = "头像值")
+    private String value;
+
 }

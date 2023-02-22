@@ -13,6 +13,8 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.param.entity.SysParam;
+import com.aiurt.modules.param.mapper.SysParamMapper;
 import com.aiurt.modules.system.dto.SysAnnouncementPageDTO;
 import com.aiurt.modules.system.dto.SysAnnouncementSendDTO;
 import com.aiurt.modules.system.dto.SysMessageInfoDTO;
@@ -24,6 +26,7 @@ import com.aiurt.modules.system.mapper.SysAnnouncementSendMapper;
 import com.aiurt.modules.system.service.ISysAnnouncementService;
 import com.aiurt.modules.todo.entity.SysTodoList;
 import com.aiurt.modules.todo.mapper.SysTodoListMapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.models.auth.In;
 import org.apache.shiro.SecurityUtils;
@@ -54,6 +57,9 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 
 	@Resource
 	private SysTodoListMapper sysTodoListMapper;
+
+	@Resource
+	private SysParamMapper sysParamMapper;
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
@@ -146,7 +152,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 	}
 
 	@Override
-	public List<SysMessageTypeDTO> queryMessageType() {
+	public List<SysMessageTypeDTO> queryMessageType(String code) {
 		List<SysMessageTypeDTO> list = new ArrayList<>();
 		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String userId = loginUser.getId();
@@ -158,6 +164,14 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 
 		//获取当前登录人待办消息(流程消息)
 		List<SysTodoList> sysTodoLists = sysAnnouncementMapper.queryTodoList(username);
+
+		//模块设置头像
+		QueryWrapper<SysParam> wrapper = new QueryWrapper<>();
+		wrapper.lambda().eq(SysParam::getDelFlag, CommonConstant.DEL_FLAG_0)
+				.eq(SysParam::getCode, code)
+				.last("limit 1");
+		SysParam sysParam = Optional.of(sysParamMapper.selectOne(wrapper)).orElseGet(SysParam::new);
+
 		//业务消息处理
 		Map<String, List<SysAnnouncementSendDTO>> collect = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getBusType() != null).collect(Collectors.groupingBy(SysAnnouncementSendDTO::getBusType));
 		for (Map.Entry<String, List<SysAnnouncementSendDTO>> entry : collect.entrySet()) {
@@ -190,6 +204,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				SysAnnouncementSendDTO lastSysAnnouncementSendDTO = value.get(0);
 				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
 			}
+			sysMessageTypeDTO.setValue(sysParam.getValue());
 			sysMessageTypeDTO.setMessageFlag("1");
 			list.add(sysMessageTypeDTO);
 		}
@@ -227,6 +242,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				SysAnnouncementSendDTO lastSysAnnouncementSendDTO = value.get(0);
 				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
 			}
+			sysMessageTypeDTO.setValue(sysParam.getValue());
 			sysMessageTypeDTO.setMessageFlag("0");
 			list.add(sysMessageTypeDTO);
 		}
@@ -262,6 +278,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				sysMessageTypeDTO.setIntervalTime(sysTodoList.getCreateTime());
 			}
 			sysMessageTypeDTO.setMessageFlag("2");
+			sysMessageTypeDTO.setValue(sysParam.getValue());
 			list.add(sysMessageTypeDTO);
 		}
 		//list去重，数量相加
@@ -329,6 +346,9 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		//业务数据
 		if("1".equals(messageFlag)){
 			List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementMapper.queryAllAnnouncement(userId, keyWord, busType, msgCategory);
+			//获取未读的条数
+			List<SysMessageInfoDTO> collect = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getReadFlag().equals("0")).collect(Collectors.toList());
+			int number = collect.size();
 			//查找最远的未读消息
 			int pageNum = 0;
 			String seq = null;
@@ -351,12 +371,16 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			sysAnnouncementPageDTO.setId(id);
 			sysAnnouncementPageDTO.setPageNumber(pageNum);
 			sysAnnouncementPageDTO.setSeq(seq);
+			sysAnnouncementPageDTO.setDateNumber(number);
 			return sysAnnouncementPageDTO;
 		}
 		//流程业务
 		else if ("2".equals(messageFlag)) {
 			//流程数据
 			List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementMapper.queryAllTodoList(username, todoType, keyWord, busType);
+			//获取未读的条数
+			List<SysMessageInfoDTO> collect = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).collect(Collectors.toList());
+			int number = collect.size();
 			//查找最远的流程消息
 			Optional<SysMessageInfoDTO> min = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
 			int pageNum = 0;
@@ -379,6 +403,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			sysAnnouncementPageDTO.setId(id);
 			sysAnnouncementPageDTO.setPageNumber(pageNum);
 			sysAnnouncementPageDTO.setSeq(seq);
+			sysAnnouncementPageDTO.setDateNumber(number);
 			return sysAnnouncementPageDTO;
 		}
 		return null;
