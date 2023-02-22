@@ -326,9 +326,9 @@ third-app:
       #CORP_ID
       client-id: ww19d88c8272303c7b
       #SECRET
-      client-secret: dlcGybmI3DaooKDYv7g3cKKBcVmtd5Ljb82TgHBq6Jk
+      client-secret: kv1Aes4L4I_Abf013_vJWoyF281ok1TCTPhBnVpKsHY
       #自建应用id
-      agent-id: 1000002
+      agent-id: 1000014
     #自建应用秘钥（新版企微需要配置）
     # agent-app-secret: ??
   #钉钉
