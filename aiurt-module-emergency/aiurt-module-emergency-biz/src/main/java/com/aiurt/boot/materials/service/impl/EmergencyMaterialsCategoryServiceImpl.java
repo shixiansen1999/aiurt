@@ -250,6 +250,11 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
         return imporReturnRes(errorLines, successLines, tipMessage, true, null);
     }
 
+    @Override
+    public EmergencyMaterialsCategory getOne(String code) {
+        return emergencyMaterialsCategoryMapper.getOne(code);
+    }
+
     private void saveTree(String id, List<EmergencyMaterialsCategory> materialsCategoryTree) {
         for (EmergencyMaterialsCategory menu : materialsCategoryTree) {
             menu.setPid(id==null?"0":id);
