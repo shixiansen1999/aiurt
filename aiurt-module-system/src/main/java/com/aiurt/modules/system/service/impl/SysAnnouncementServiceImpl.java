@@ -13,6 +13,7 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.system.dto.SysAnnouncementPageDTO;
 import com.aiurt.modules.system.dto.SysAnnouncementSendDTO;
 import com.aiurt.modules.system.dto.SysMessageInfoDTO;
 import com.aiurt.modules.system.dto.SysMessageTypeDTO;
@@ -320,17 +321,18 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 	}
 
 	@Override
-	public Map<Integer,String> queryPageNumber(Page<SysMessageInfoDTO> page, String messageFlag, String todoType, String keyWord, String busType, String msgCategory) {
+	public SysAnnouncementPageDTO queryPageNumber(Page<Object> page,String messageFlag, String todoType, String keyWord, String busType, String msgCategory) {
 		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String userId = loginUser.getId();
 		String username = loginUser.getUsername();
-		Map<Integer, String> map = new HashMap<>(32);
+		SysAnnouncementPageDTO sysAnnouncementPageDTO = new SysAnnouncementPageDTO();
 		//业务数据
 		if("1".equals(messageFlag)){
 			List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementMapper.queryAllAnnouncement(userId, keyWord, busType, msgCategory);
 			//查找最远的未读消息
 			int pageNum = 0;
 			String seq = null;
+			String id = null;
 			Optional<SysMessageInfoDTO> min = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getReadFlag().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
 			if(min.isPresent()){
 				SysMessageInfoDTO sysMessageInfoDTO = min.get();
@@ -339,14 +341,17 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				String s = subZeroAndDot(seq);
 				int num = Integer.parseInt(s);
 				//计算所在页码
-				int pageSize = 20;
-				 pageNum = num/pageSize;
-				if(num%pageSize !=0){
+				long size = page.getSize();
+				pageNum = Math.toIntExact(num / size);
+				if(num%size !=0){
 					pageNum = pageNum+1;
 				}
+				 id = sysMessageInfoDTO.getId();
 			}
-			map.put(pageNum,seq);
-			return map;
+			sysAnnouncementPageDTO.setId(id);
+			sysAnnouncementPageDTO.setPageNumber(pageNum);
+			sysAnnouncementPageDTO.setSeq(seq);
+			return sysAnnouncementPageDTO;
 		}
 		//流程业务
 		else if ("2".equals(messageFlag)) {
@@ -356,6 +361,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			Optional<SysMessageInfoDTO> min = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
 			int pageNum = 0;
 			String seq = null;
+			String id = null;
 			if (min.isPresent()) {
 				SysMessageInfoDTO sysMessageInfoDTO = min.get();
 				seq = sysMessageInfoDTO.getSeq();
@@ -363,14 +369,17 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				String s = subZeroAndDot(seq);
 				int num = Integer.parseInt(s);
 				//计算所在页码
-				int pageSize = 20;
-				pageNum = num / pageSize;
-				if (num % pageSize != 0) {
-					pageNum = pageNum + 1;
+				long size = page.getSize();
+				pageNum = Math.toIntExact(num / size);
+				if(num%size !=0){
+					pageNum = pageNum+1;
 				}
+				id = sysMessageInfoDTO.getId();
 			}
-			map.put(pageNum, seq);
-			return map;
+			sysAnnouncementPageDTO.setId(id);
+			sysAnnouncementPageDTO.setPageNumber(pageNum);
+			sysAnnouncementPageDTO.setSeq(seq);
+			return sysAnnouncementPageDTO;
 		}
 		return null;
 	}
