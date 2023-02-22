@@ -178,6 +178,41 @@
         order by t2.update_time desc,t2.create_time desc
     </select>
 
+    <select id="selectDeviceTaskList" resultType="com.aiurt.boot.task.dto.RepairTaskDTO">
+        SELECT
+        t1.id as taskId,
+        t1.code as taskCode,
+        t2.id as deviceId,
+        t3.id as standardId,
+        t2.code as overhaulCode,
+        t2.duration as duration,
+        t3.major_code as majorCode,
+        t3.subsystem_code as systemCode,
+        t3.device_type_code as deviceTypeCode,
+        t2.device_code as equipmentCode,
+        t2.submit_time as submitTime,
+        t2.start_time as startTime,
+        t2.is_submit as isSubmit,
+        t2.staff_id as overhaulId,
+        t3.title as overhaulStandardName,
+        t3.is_appoint_device as isAppointDevice,
+        t1.status as maintenanceTaskStatus
+        FROM
+        repair_task t1
+        LEFT JOIN repair_task_device_rel t2 ON t1.id = t2.repair_task_id
+        LEFT JOIN repair_task_standard_rel t3 ON t2.task_standard_rel_id = t3.id
+        LEFT JOIN repair_task_station_rel t4 ON t4.repair_task_code = t1.code
+        <where>
+            t1.del_flag = 0
+            AND t2.del_flag = 0
+            <if test="taskId !=null ">
+                AND t1.id = #{taskId}
+            </if>
+        </where>
+        group by t2.id
+        order by t2.update_time desc,t2.create_time desc
+    </select>
+
     <select id="selectRepairTaskInfo" resultType="com.aiurt.boot.task.dto.CheckListDTO">
         SELECT
         rtdr.id as deviceId,

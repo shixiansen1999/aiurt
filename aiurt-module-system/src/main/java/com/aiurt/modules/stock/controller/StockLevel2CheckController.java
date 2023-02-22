@@ -8,7 +8,6 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.stock.entity.StockLevel2Check;
 import com.aiurt.modules.stock.service.IStockLevel2CheckService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -16,26 +15,16 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @Description: 二级库盘点
@@ -222,10 +211,9 @@ public class StockLevel2CheckController {
     @AutoLog(value = "二级库管理-二级库盘点管理-导出", operateType = 6, operateTypeAlias = "导出", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
     @ApiOperation(value = "导出", notes = "导出")
     @GetMapping(value = "/export")
-    public void eqFaultAnaExport(@RequestParam(name = "ids") String ids,
-                                         HttpServletRequest request,
-                                         HttpServletResponse response) {
-        iStockLevel2CheckService.eqExport(ids, request, response);
+    public void eqFaultAnaExport(StockLevel2Check stockLevel2Check,
+                                 @RequestParam(name = "ids",required =  false) String ids,HttpServletRequest request,HttpServletResponse response) {
+        iStockLevel2CheckService.eqExport(stockLevel2Check,ids, request, response);
     }
 
 }

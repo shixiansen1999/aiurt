@@ -19,7 +19,6 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -73,7 +72,6 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
     @AutoLog(value = "添加检修策略", operateType = 2, operateTypeAlias = "添加", module = ModuleType.INSPECTION)
     @ApiOperation(value = "添加检修策略", notes = "添加检修策略")
     @PostMapping(value = "/add")
-    @LimitSubmit(key = "addAnnualPlan:#id")
     public Result<String> add(@RequestBody InspectionStrategyDTO inspectionStrategyDTO) {
         inspectionStrategyService.add(inspectionStrategyDTO);
         return Result.OK("添加成功！");

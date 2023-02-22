@@ -77,7 +77,7 @@ public class YouBianCodeUtil {
 	 * @return
 	 */
 	public static synchronized String getSubYouBianCode(String parentCode,String localCode) {
-		if(localCode!=null && localCode!=""){
+		if(localCode!=null && !localCode.equals("")){
 
 //			return parentCode + getNextYouBianCode(localCode);
 			return getNextYouBianCode(localCode);
@@ -125,7 +125,7 @@ public class YouBianCodeUtil {
 	/**
 	 * 递增获取下个字母
 	 *
-	 * @param num
+	 * @param zimu
 	 * @return
 	 */
 	private static char getNextZiMu(char zimu) {

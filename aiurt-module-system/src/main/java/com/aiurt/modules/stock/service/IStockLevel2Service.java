@@ -34,5 +34,5 @@ public interface IStockLevel2Service extends IService<StockLevel2> {
      * @param ids
      * @return
      */
-    List<StockLevel2> exportXls(String ids);
+    List<StockLevel2> exportXls(StockLevel2 stockLevel2,String ids);
 }

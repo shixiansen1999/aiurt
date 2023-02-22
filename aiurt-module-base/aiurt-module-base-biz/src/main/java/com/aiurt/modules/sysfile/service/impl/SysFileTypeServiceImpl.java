@@ -2,7 +2,6 @@ package com.aiurt.modules.sysfile.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
@@ -829,6 +828,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 		if (types != null && types.size() > 0) {
 			types.forEach(type -> {
 				Optional.ofNullable(type).ifPresent(t -> {
+					type.setValue(type.getId());
+					type.setTitle(type.getName());
 					SysFileTypeTreeVO vo = new SysFileTypeTreeVO();
 					BeanUtils.copyProperties(t, vo);
 					Result<SysFileTypeDetailVO> detail = this.detail(t.getId());

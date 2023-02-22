@@ -71,6 +71,13 @@
         <if test="inspectionCodeDTO.deviceTypeCode !=null ">
             AND ta.device_type_code = #{inspectionCodeDTO.deviceTypeCode}
         </if>
+        <if test="inspectionCodeDTO.orgList != null and inspectionCodeDTO.orgList.size() != 0">
+        and ta.`code` in (select inspection_co_code from inspection_co_org_rel where org_code in
+            <foreach collection="inspectionCodeDTO.orgList" open="(" close=")" separator="," item="item" >
+                #{item}
+            </foreach>
+            )
+        </if>
         ORDER BY  ta.create_time DESC
     </select>
     <select id="number" resultType="java.lang.Integer">

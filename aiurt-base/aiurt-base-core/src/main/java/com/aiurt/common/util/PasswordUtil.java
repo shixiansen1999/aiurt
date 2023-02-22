@@ -1,12 +1,12 @@
 package com.aiurt.common.util;
 
-import java.security.Key;
-import java.security.SecureRandom;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
+import java.security.Key;
+import java.security.SecureRandom;
 
 /**
  * @Description: 密码工具类
@@ -178,7 +178,7 @@ public class PasswordUtil {
 		byte[] d = new byte[length];
 		for (int i = 0; i < length; i++) {
 			int pos = i * 2;
-			d[i] = (byte) (charToByte(hexChars[pos]) << 4 | charToByte(hexChars[pos + 1]));
+			d[i] = (byte) (charToByte(hexChars[pos]) << 4 | charToByte(hexChars[(pos + 1)]));
 		}
 		return d;
 	}

@@ -1,19 +1,14 @@
 package com.aiurt.modules.stock.service;
 
 import com.aiurt.modules.stock.entity.StockLevel2Check;
-import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @Description:
@@ -48,7 +43,7 @@ public interface IStockLevel2CheckService extends IService<StockLevel2Check> {
      * @param request
      * @param response
      */
-    void eqExport(String ids, HttpServletRequest request, HttpServletResponse response);
+    void eqExport(StockLevel2Check stockLevel2Check,String ids, HttpServletRequest request, HttpServletResponse response);
 
     /**
      * 获取仓库所属机构人员
