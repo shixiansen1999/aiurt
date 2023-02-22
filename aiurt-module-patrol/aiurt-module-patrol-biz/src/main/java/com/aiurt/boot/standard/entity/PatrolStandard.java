@@ -111,6 +111,7 @@ public class PatrolStandard extends DictEntity implements Serializable {
     private List<PatrolStandardItems> patrolStandardItemsList;
     /**前端传组织机构codes*/
     @ApiModelProperty(value = "组织机构")
+    @TableField(exist = false)
     private java.lang.String[] orgCodes;
     /**
      * 组织机构
