@@ -31,6 +31,9 @@ public class SysMessageInfoDTO extends DictEntity {
     @ApiModelProperty("创建时间")
     private String intervalTime;
 
+    @ApiModelProperty("接收时间")
+    private String receiveTime;
+
     @ApiModelProperty("已读未读标识（0未读，1已读）")
     @Dict(dicCode = "read_flag")
     private String readFlag;
@@ -68,6 +71,12 @@ public class SysMessageInfoDTO extends DictEntity {
 
     @ApiModelProperty("任务id")
     private String taskId;
+
+    @ApiModelProperty("流程定义key")
+    private String processDefinitionKey;
+
+    @ApiModelProperty("流程实例id")
+    private String processInstanceId;
 
     @ApiModelProperty("任务类型")
     private String taskType;

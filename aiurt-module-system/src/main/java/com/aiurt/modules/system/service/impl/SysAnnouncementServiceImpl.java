@@ -24,7 +24,10 @@ import com.aiurt.modules.system.service.ISysAnnouncementService;
 import com.aiurt.modules.todo.entity.SysTodoList;
 import com.aiurt.modules.todo.mapper.SysTodoListMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import io.swagger.models.auth.In;
 import org.apache.shiro.SecurityUtils;
+import org.checkerframework.checker.units.qual.min;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -289,49 +292,104 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		String userId = loginUser.getId();
 		String username = loginUser.getUsername();
 		//业务数据
-		if("1".equals(messageFlag)){
-			IPage<SysMessageInfoDTO> businessList = sysAnnouncementMapper.queryAnnouncementInfo(page,userId, keyWord,busType,msgCategory);
+		if ("1".equals(messageFlag)) {
+			IPage<SysMessageInfoDTO> businessList = sysAnnouncementMapper.queryAnnouncementInfo(page, userId, keyWord, busType, msgCategory);
+			//接收时间为空，则接收时间等于创建时间
 			List<SysMessageInfoDTO> records = businessList.getRecords();
-			//查找最远的未读消息
-			Optional<SysMessageInfoDTO> min = records.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getReadFlag().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
-				if(min.isPresent()){
-					SysMessageInfoDTO sysMessageInfoDTO = min.get();
-					String seq = sysMessageInfoDTO.getSeq();
-					int num = Integer.parseInt(seq);
-					int pageNum = num/20;
-					if(num%20 !=0){
-						pageNum = pageNum+1;
-					}
-					sysMessageInfoDTO.setPageNumber(String.valueOf(pageNum));
-					sysMessageInfoDTO.setDumpFlag("1");
+			for (SysMessageInfoDTO record : records) {
+				if (ObjectUtil.isEmpty(record.getReceiveTime())) {
+					record.setReceiveTime(record.getIntervalTime());
 				}
-			//根据时间排序
-//			records = records.stream().sorted(Comparator.comparing(SysMessageInfoDTO::getIntervalTime).reversed()).collect(Collectors.toList());
-//             businessList.setRecords(records);
+			}
 			return businessList;
 		}
 		//流程业务
-		else if("2".equals(messageFlag)){
+		else if ("2".equals(messageFlag)) {
 			//流程数据
-			IPage<SysMessageInfoDTO> flowList = sysAnnouncementMapper.queryTodoListInfo(page,username, todoType, keyWord,busType);
+			IPage<SysMessageInfoDTO> flowList = sysAnnouncementMapper.queryTodoListInfo(page, username, todoType, keyWord, busType);
+			//接收时间为空，则接收时间等于创建时间
 			List<SysMessageInfoDTO> records = flowList.getRecords();
-			//查找最远的流程消息
-			Optional<SysMessageInfoDTO> min = records.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
-			if(min.isPresent()){
-				SysMessageInfoDTO sysMessageInfoDTO = min.get();
-				String seq = sysMessageInfoDTO.getSeq();
-				int num = Integer.parseInt(seq);
-				int pageNum = num/20;
-				if(num%20 !=0){
-					pageNum = pageNum+1;
+			for (SysMessageInfoDTO record : records) {
+				if (ObjectUtil.isEmpty(record.getReceiveTime())) {
+					record.setReceiveTime(record.getIntervalTime());
 				}
-				sysMessageInfoDTO.setPageNumber(String.valueOf(pageNum));
-				sysMessageInfoDTO.setDumpFlag("1");
 			}
 			return flowList;
 		}
 		return null;
 	}
+
+	@Override
+	public Map<Integer,String> queryPageNumber(Page<SysMessageInfoDTO> page, String messageFlag, String todoType, String keyWord, String busType, String msgCategory) {
+		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		String userId = loginUser.getId();
+		String username = loginUser.getUsername();
+		Map<Integer, String> map = new HashMap<>(32);
+		//业务数据
+		if("1".equals(messageFlag)){
+			List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementMapper.queryAllAnnouncement(userId, keyWord, busType, msgCategory);
+			//查找最远的未读消息
+			int pageNum = 0;
+			String seq = null;
+			Optional<SysMessageInfoDTO> min = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getReadFlag().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
+			if(min.isPresent()){
+				SysMessageInfoDTO sysMessageInfoDTO = min.get();
+				 seq = sysMessageInfoDTO.getSeq();
+				 //去除末尾加.0的情况
+				String s = subZeroAndDot(seq);
+				int num = Integer.parseInt(s);
+				//计算所在页码
+				int pageSize = 20;
+				 pageNum = num/pageSize;
+				if(num%pageSize !=0){
+					pageNum = pageNum+1;
+				}
+			}
+			map.put(pageNum,seq);
+			return map;
+		}
+		//流程业务
+		else if ("2".equals(messageFlag)) {
+			//流程数据
+			List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementMapper.queryAllTodoList(username, todoType, keyWord, busType);
+			//查找最远的流程消息
+			Optional<SysMessageInfoDTO> min = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
+			int pageNum = 0;
+			String seq = null;
+			if (min.isPresent()) {
+				SysMessageInfoDTO sysMessageInfoDTO = min.get();
+				seq = sysMessageInfoDTO.getSeq();
+				//去除末尾加.0的情况
+				String s = subZeroAndDot(seq);
+				int num = Integer.parseInt(s);
+				//计算所在页码
+				int pageSize = 20;
+				pageNum = num / pageSize;
+				if (num % pageSize != 0) {
+					pageNum = pageNum + 1;
+				}
+			}
+			map.put(pageNum, seq);
+			return map;
+		}
+		return null;
+	}
+
+	/**
+	 * 使用java正则表达式去掉多余的.与0
+	 * @param s
+	 * @return
+	 */
+	public static String subZeroAndDot(String s){
+		if(s.indexOf(".") > 0){
+			//去掉多余的0
+			s = s.replaceAll("0+?$", "");
+			//如最后一位是.则去掉
+			s = s.replaceAll("[.]$", "");
+		}
+		return s;
+	}
+
 
 
 }

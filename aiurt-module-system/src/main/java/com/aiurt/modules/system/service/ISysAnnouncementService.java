@@ -7,8 +7,10 @@ import com.aiurt.modules.system.entity.SysAnnouncement;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: 系统通告表
@@ -55,12 +57,26 @@ public interface ISysAnnouncementService extends IService<SysAnnouncement> {
 
     /**
      * 消息中心详情
+     * @param page
      * @param messageFlag
      * @param todoType
-     * @param keyword
+     * @param keyWord
      * @param busType
+     * @param msgCategory
      * @return
      */
-    public IPage<SysMessageInfoDTO> queryMessageInfo(Page<SysMessageInfoDTO> page ,String messageFlag, String todoType, String keyword, String busType,String msgCategory);
+    public IPage<SysMessageInfoDTO> queryMessageInfo(Page<SysMessageInfoDTO> page ,String messageFlag, String todoType, String keyWord, String busType,String msgCategory);
+
+    /**
+     * 查询未读/未处理消息最远的页码
+     * @param page
+     * @param messageFlag
+     * @param todoType
+     * @param keyWord
+     * @param busType
+     * @param msgCategory
+     * @return
+     */
+    public Map<Integer,String> queryPageNumber(Page<SysMessageInfoDTO> page , String messageFlag, String todoType, String keyWord, String busType, String msgCategory);
 
 }
