@@ -417,4 +417,15 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 		}
 	}
 
+	/**
+	 * 返回当前dictCode对应的字典项在数据库中最后更新的时间
+	 *
+	 * @param dictCode
+	 * @return
+	 */
+	@Override
+	public String getCurrentNewModified(String dictCode) {
+		return baseMapper.getCurrentNewModified(dictCode);
+	}
+
 }

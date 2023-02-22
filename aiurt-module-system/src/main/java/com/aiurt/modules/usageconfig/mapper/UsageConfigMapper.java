@@ -53,4 +53,6 @@ public interface UsageConfigMapper extends BaseMapper<UsageConfig> {
      * @return
      */
     List<UsageStatDTO> selectByPage(Page<UsageStatDTO> pageList, @Param("code") String code);
+
+    List<UsageConfig> selectByPages(@Param("code") String code);
 }

@@ -1,5 +1,6 @@
 package com.aiurt;
 
+import cn.easyes.starter.register.EsMapperScan;
 import com.aiurt.common.util.oConvertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -27,6 +28,7 @@ import java.net.UnknownHostException;
 @SpringBootApplication
 @EnableAutoConfiguration(exclude={MongoAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
 @ComponentScan({"com.aiurt","org.jeecg"})
+@EsMapperScan("com.aiurt.boot.mapper")
 public class SystemApplication extends SpringBootServletInitializer {
 
     @Override

@@ -760,17 +760,19 @@ public interface ISysBaseAPI extends CommonAPI {
      * @param cellText
      * @param line
      */
-    List<CsStation> getStationInfoByNameAndLineId( String cellText,String line);
+    List<CsStation> getStationInfoByNameAndLineId(String cellText, String line);
 
     /**
      * 根据工区编码获取工区名称
+     *
      * @param workAreaCode
      * @return
      */
     String getWorkAreaNameByCode(String workAreaCode);
 
     /**
-     *  获取用户的所属部门及所属部门子部门编码
+     * 获取用户的所属部门及所属部门子部门编码
+     *
      * @param
      * @return
      */
@@ -783,6 +785,7 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据组织机构编码获取所有用户，如果编码为空则获取全部
+     *
      * @param deptCode
      * @return
      */
@@ -792,6 +795,7 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 查询配置巡检项树
+     *
      * @param id
      * @return
      */
@@ -799,14 +803,16 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据专业、子系统，查询是否有安全事项
+     *
      * @param majorCode
      * @param systemCode
      * @return
      */
-   boolean isNullSafetyPrecautions(String majorCode,String systemCode,String code,Integer status);
+    boolean isNullSafetyPrecautions(String majorCode, String systemCode, String code, Integer status);
 
     /**
      * 根据线路编码获取线路id
+     *
      * @param lineCode
      * @return
      */
@@ -814,6 +820,7 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据部门名称获取部门信息
+     *
      * @param departName
      * @return
      */
@@ -821,25 +828,30 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据部门名称和父id获取部门信息
+     *
      * @param departName
      * @return
      */
-    JSONObject getDepartByNameAndParentId(String departName,String parentId);
+    JSONObject getDepartByNameAndParentId(String departName, String parentId);
 
     /**
      * 根据父编码获取所有子部门信息
+     *
      * @return
      */
     List<SysDepartModel> getDepartByParentId(String parentId);
 
     /**
      * 根据部门code,获取该部门下所有子级的code和自己
+     *
      * @param orgCode
      * @return
      */
     List<String> sysDepartList(String orgCode);
+
     /**
      * 根据线路名称获取线路信息
+     *
      * @param lineName
      * @return
      */
@@ -847,6 +859,7 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据站点名称获取站点信息
+     *
      * @param stationName
      * @return
      */
@@ -854,24 +867,27 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据位置名称，线路站点code获取位置信息（位置名存在重复可能性）
+     *
      * @param positionName
      * @param lineCode
      * @param stationCode
      * @return
      */
-    JSONObject getPositionByName(String positionName,String lineCode,String stationCode);
+    JSONObject getPositionByName(String positionName, String lineCode, String stationCode);
 
     /**
      * 根据用户姓名,工号查询用户信息
+     *
      * @param realName
      * @param workNo
      * @return
      */
-    List<LoginUser> getUserByRealName(String realName,String workNo);
+    List<LoginUser> getUserByRealName(String realName, String workNo);
 
 
     /**
      * 获取用户岗位为post的人员
+     *
      * @param post
      * @return
      */
@@ -879,14 +895,16 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据业务类型及业务id查询消息
+     *
      * @param busType 业务类型 SysAnnmentTypeEnum
-     * @param busId 业务id
+     * @param busId   业务id
      * @return 消息的id
      */
     public String getSysAnnounByBusTypeAndBusId(String busType, String busId);
 
     /**
      * 获取SysAttachment的文件地址
+     *
      * @param filePath
      * @return
      */
@@ -894,14 +912,16 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据部门，角色编码查询人员账号
-     * @param orgCode 组织机构编码
+     *
+     * @param orgCode  组织机构编码
      * @param roleCode 角色编码
      * @return 人员账号用逗号隔开
      */
-    public String getUserNameByOrgCodeAndRoleCode(List<String> orgCode,List<String> roleCode);
+    public String getUserNameByOrgCodeAndRoleCode(List<String> orgCode, List<String> roleCode);
 
     /**
      * 根据站点获取工区信息
+     *
      * @param stationCode
      * @return
      */
@@ -917,6 +937,7 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 通过权限查询用户
+     *
      * @return
      */
     List<LoginUser> getAllUsers();
@@ -931,13 +952,16 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据用户的部门权限编码和角色编码获取用户账号
+     *
      * @param orgCodes
      * @param roleCodes
      * @return
      */
     String getUserNameByDeptAuthCodeAndRoleCode(List<String> orgCodes, List<String> roleCodes);
+
     /**
      * 根据站点id获取站点信息
+     *
      * @param stationCode
      * @return
      */
@@ -950,6 +974,13 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<String> getSublevelOrgCodes(String orgCode);
+
+    /**
+     * 返回当前dictCode对应的字典项在数据库中最后更新的时间
+     * @param dictCode
+     * @return
+     */
+    String getCurrentNewModified(String dictCode);
 
 
     /**

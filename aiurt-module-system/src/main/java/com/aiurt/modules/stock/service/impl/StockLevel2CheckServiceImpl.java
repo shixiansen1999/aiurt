@@ -1,15 +1,16 @@
 package com.aiurt.modules.stock.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.common.util.XlsExport;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.stock.entity.*;
 import com.aiurt.modules.stock.mapper.StockLevel2CheckMapper;
-import com.aiurt.modules.stock.service.*;
-import com.aiurt.modules.system.entity.SysDepart;
-import com.aiurt.modules.system.entity.SysUser;
+import com.aiurt.modules.stock.service.IStockLevel2CheckDetailService;
+import com.aiurt.modules.stock.service.IStockLevel2CheckService;
+import com.aiurt.modules.stock.service.IStockLevel2InfoService;
+import com.aiurt.modules.stock.service.IStockLevel2Service;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -19,27 +20,19 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @Description:
@@ -137,11 +130,14 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 	}
 
 	@Override
-	public void eqExport(String ids, HttpServletRequest request, HttpServletResponse response) {
-		String[] split = ids.split(",");
-		List<String> strings = Arrays.asList(split);
+	public void eqExport(StockLevel2Check level2Check,String ids, HttpServletRequest request, HttpServletResponse response) {
+		List<String> strings = new ArrayList<>();
+		if (StrUtil.isNotEmpty(ids)) {
+			String[] split = ids.split(",");
+			strings = Arrays.asList(split);
+		}
 		// 过滤选中数据
-		List<StockLevel2Check> list = this.list(new QueryWrapper<StockLevel2Check>().in("id", strings).orderByDesc("create_time"));
+		List<StockLevel2Check> list = baseMapper.exportList(level2Check,strings);
 		//设置相应头
 		response.setContentType("Application/excel");
 		try {

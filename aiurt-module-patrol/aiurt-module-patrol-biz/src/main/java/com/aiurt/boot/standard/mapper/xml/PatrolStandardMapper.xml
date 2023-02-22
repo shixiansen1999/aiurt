@@ -99,6 +99,14 @@
                 #{majorCodes}
             </foreach>
         </if>
+               <if test="patrolStandard.orgCodes != null and patrolStandard.orgCodes.length != 0">
+        AND ta.`code` in
+            (select standard_code from patrol_standard_org where org_code in
+            <foreach collection="patrolStandard.orgCodes" open="(" separator="," close=")" item="item">
+                #{item}
+            </foreach>
+                 )
+        </if>
         order by ta.createTime desc
     </select>
     <select id="list" resultType="com.aiurt.boot.standard.dto.InspectionStandardDto">

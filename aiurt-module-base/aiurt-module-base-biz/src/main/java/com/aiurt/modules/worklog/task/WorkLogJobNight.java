@@ -69,11 +69,13 @@ public class WorkLogJobNight implements Job {
                 userName.forEach(
                         u->{
                             //发送通知
-                            MessageDTO messageDTO = new MessageDTO(dto.getFromUser(), u, "工作日志上报" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_2);
+                            MessageDTO messageDTO = new MessageDTO(dto.getFromUser(), u, "工作日志上报" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_8);
                             //构建消息模板
                             HashMap<String, Object> map = new HashMap<>();
                             map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
-
+                            map.put("msgContent", dto.getContent());
+                            messageDTO.setData(map);
+                            messageDTO.setTemplateCode(com.aiurt.common.constant.CommonConstant.WORK_LOG_SERVICE_NOTICE);
                             messageDTO.setType(MessageTypeEnum.XT.getType());
                             messageDTO.setMsgAbstract("工作日志上报");
                             messageDTO.setPublishingContent("今日工作日志未上报");
@@ -96,11 +98,13 @@ public class WorkLogJobNight implements Job {
                 userName.forEach(
                         u->{
                             //发送通知
-                            MessageDTO messageDTO = new MessageDTO(dto.getFromUser(), u, "工作日志上报" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_2);
+                            MessageDTO messageDTO = new MessageDTO(dto.getFromUser(), u, "工作日志上报" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_8);
                             //构建消息模板
                             HashMap<String, Object> map = new HashMap<>();
                             map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
-
+                            map.put("msgContent", dto.getContent());
+                            messageDTO.setData(map);
+                            messageDTO.setTemplateCode(com.aiurt.common.constant.CommonConstant.WORK_LOG_SERVICE_NOTICE);
                             messageDTO.setType(MessageTypeEnum.XT.getType());
                             messageDTO.setMsgAbstract("工作日志上报");
                             messageDTO.setPublishingContent("今日工作日志未上报");

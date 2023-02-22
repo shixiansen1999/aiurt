@@ -98,4 +98,8 @@ public class SysFileType {
 	@ApiModelProperty(value = "是否可上传，1：是，0：否")
 	@TableField(exist = false)
 	private Integer upload;
+	@TableField(exist = false)
+	private Long value;
+	@TableField(exist = false)
+	private String label;
 }

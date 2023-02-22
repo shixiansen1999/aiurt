@@ -3,7 +3,11 @@ package com.aiurt.modules.todo.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
+import com.aiurt.common.util.dynamic.db.FreemarkerParseFactory;
+import com.aiurt.modules.message.entity.SysMessageTemplate;
+import com.aiurt.modules.message.service.ISysMessageTemplateService;
 import com.aiurt.modules.message.websocket.WebSocket;
 import com.aiurt.modules.todo.dto.BpmnTodoDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
@@ -19,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.Optional;
+import java.util.List;
 
 /**
  * @Description 待办任务具体实现类
@@ -33,6 +37,8 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
     private ISysTodoListService sysTodoListService;
     @Autowired
     private WebSocket webSocket;
+    @Autowired
+    private ISysMessageTemplateService sysMessageTemplateService;
 
     @Override
     public void createBbmnTodoTask(BpmnTodoDTO bpmnTodoDTO) {
@@ -56,6 +62,7 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             LambdaUpdateWrapper<SysTodoList> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.set(SysTodoList::getTodoType, todoType)
                     .set(SysTodoList::getActualUserName, username)
+                    .set(SysTodoList::getUpdateTime, new Date())
                     .eq(SysTodoList::getBusinessKey, businessKey)
                     .eq(SysTodoList::getBusinessType, businessType);
             update = sysTodoListService.update(updateWrapper);
@@ -81,6 +88,7 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
         LambdaUpdateWrapper<SysTodoList> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(SysTodoList::getTodoType, todoType)
                 .set(SysTodoList::getActualUserName, username)
+                .set(SysTodoList::getUpdateTime, new Date())
                 .eq(SysTodoList::getTaskId, taskId)
                 .eq(SysTodoList::getProcessInstanceId, processInstanceId);
 
@@ -96,6 +104,19 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             log.error("待办任务创建失败");
             return;
         }
+        //处理消息模板
+        String templateCode = sysTodoList.getTemplateCode();
+        if(StrUtil.isNotBlank(templateCode)){
+            SysMessageTemplate templateEntity = getTemplateEntity(templateCode);
+            boolean isMarkdown = CommonConstant.MSG_TEMPLATE_TYPE_MD.equals(templateEntity.getTemplateType());
+            String content = templateEntity.getTemplateContent();
+            if(StrUtil.isNotBlank(content) && null!=sysTodoList.getData()){
+                content = FreemarkerParseFactory.parseTemplateContent(content, sysTodoList.getData(), isMarkdown);
+            }
+            sysTodoList.setMarkdown(isMarkdown);
+            sysTodoList.setMsgContent(content);
+        }
+
         // 定时任务下发送消息则跳过补充信息
         Boolean timedTask = ObjectUtil.isNotEmpty(sysTodoList.getTimedTask()) && sysTodoList.getTimedTask() ? true : false;
         if (!timedTask) {
@@ -115,6 +136,20 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             webSocket.pushMessage("please update the to-do list");
         }
 
+    }
+
+    /**
+     * 获取模板内容，解析markdown
+     *
+     * @param code
+     * @return
+     */
+    private SysMessageTemplate getTemplateEntity(String code) {
+        List<SysMessageTemplate> list = sysMessageTemplateService.selectByCode(code);
+        if (list == null || list.size() == 0) {
+            return null;
+        }
+        return list.get(0);
     }
 
 

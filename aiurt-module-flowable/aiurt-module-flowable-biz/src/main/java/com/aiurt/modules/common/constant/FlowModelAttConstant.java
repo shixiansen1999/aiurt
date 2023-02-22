@@ -15,12 +15,12 @@ public interface FlowModelAttConstant {
     String FORM_TYPE = "formType";
 
     /**
-     *
+     * 业务表单
      */
     String STATIC_FORM_TYPE = "1";
 
     /**
-     *
+     * 表单类型0， 表单设计器，动态
      */
     String DYNAMIC_FORM_TYPE = "0";
 
@@ -108,4 +108,18 @@ public interface FlowModelAttConstant {
      * 流程终止接口变量名
      */
     String CANCEL = "cancel";
+
+    // =================流转条件=======================
+
+    String FLOW_CONDITION = "flowCondition";
+
+    String NAME = "name";
+
+    String CODE = "code";
+
+    String CONDITION = "condition";
+
+    String VALUE = "value";
+
+    String RELATION = "relation";
 }

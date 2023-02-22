@@ -1,0 +1,71 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "keyword"
+      },
+      "knowledge_base_type_code": {
+        "type": "keyword"
+      },
+      "device_type_code": {
+        "type": "keyword"
+      },
+      "material_code": {
+        "type": "keyword"
+      },
+      "fault_codes": {
+        "type": "keyword",
+        "index": false
+      },
+      "fault_phenomenon": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_max_word"
+          }
+        },
+        "search_analyzer": "ik_smart"
+      },
+      "fault_reason": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_max_word"
+          }
+        },
+        "search_analyzer": "ik_smart"
+      },
+      "solution": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
+      },
+      "method": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
+      },
+      "tools": {
+        "type": "text"
+      },
+      "status": {
+        "type": "integer"
+      },
+      "file_path": {
+        "type": "integer",
+        "index": false,
+        "doc_values": false
+      },
+      "create_time": {
+        "type": "date",
+        "index": false,
+        "doc_values": false
+      }
+    }
+  }
+}
+

@@ -300,13 +300,26 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         List<Process> processList = bpmnModel.getProcesses();
         for (Process process : processList) {
             for (FlowElement element : process.getFlowElements()) {
+                // 用户任务
                 if (element instanceof UserTask) {
                     ActCustomTaskExt flowTaskExt = this.buildTaskExt((UserTask) element);
                     flowTaskExtList.add(flowTaskExt);
+                }else if (element instanceof SequenceFlow) {
+                    ActCustomTaskExt flowTaskExt = this.buildTaskExt((SequenceFlow) element);
                 }
             }
         }
         return flowTaskExtList;
+    }
+
+    private ActCustomTaskExt buildTaskExt(SequenceFlow element) {
+        ActCustomTaskExt taskExt = new ActCustomTaskExt();
+        String id = element.getId();
+
+        String conditionExpression = element.getConditionExpression();
+        taskExt.setTaskId(id);
+        taskExt.setConditionExpression(conditionExpression);
+        return taskExt;
     }
 
     /**

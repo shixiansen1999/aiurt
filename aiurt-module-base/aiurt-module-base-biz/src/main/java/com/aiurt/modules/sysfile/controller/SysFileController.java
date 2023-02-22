@@ -2,6 +2,14 @@ package com.aiurt.modules.sysfile.controller;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.EsFileAPI;
+import com.aiurt.common.api.CommonAPI;
+import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.MinioUtil;
+import com.aiurt.common.util.XlsUtil;
+import com.aiurt.modules.basic.entity.SysAttachment;
+import com.aiurt.modules.search.dto.FileDataDTO;
 import com.aiurt.modules.sysfile.constant.PatrolConstant;
 import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
@@ -27,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.elasticsearch.action.index.IndexResponse;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -38,6 +47,8 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -45,8 +56,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.util.*;
@@ -71,6 +81,11 @@ public class SysFileController {
 	private ISysFileTypeService sysFileTypeService;
 	@Autowired
 	private ISysBaseAPI iSysBaseAPI;
+	@Autowired
+	private EsFileAPI esFileAPI;
+
+	@Value("${jeecg.path.upload}")
+	private String uploadPath;
 
 	/**
 	 * 分页列表查询
@@ -290,12 +305,81 @@ public class SysFileController {
 		try {
 			sysFileService.save(sysFile);
 			sysFileService.add(req,sysFile);
+
+			// ES更新规范规程知识库的文件数据
+            this.saveEsDate(sysFile);
+
 			result.success("添加成功！");
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			result.error500("操作失败");
 		}
 		return result;
+	}
+
+    private IndexResponse saveEsDate(SysFile sysFile) throws IOException {
+
+		// 根据文件地址获取文件
+		byte[] bytes = this.getBytes(sysFile);
+
+		FileDataDTO fileDataDTO = new FileDataDTO();
+        fileDataDTO.setId(String.valueOf(sysFile.getId()));
+        fileDataDTO.setName(sysFile.getName());
+        fileDataDTO.setTyepId(String.valueOf(sysFile.getTypeId()));
+        fileDataDTO.setFormat(sysFile.getType());
+        fileDataDTO.setAddress(sysFile.getUrl());
+		fileDataDTO.setFileBytes(bytes);
+        IndexResponse response = esFileAPI.saveFileData(fileDataDTO);
+        return response;
+    }
+
+	private byte[] getBytes(SysFile sysFile) throws IOException {
+		byte[] bytes = null;
+		String attName = null;
+		String filePath = null;
+		String url = sysFile.getUrl();
+		filePath = StrUtil.subBefore(url, "?", false);
+
+		filePath = filePath.replace("..", "").replace("../", "");
+		if (filePath.endsWith(SymbolConstant.COMMA)) {
+			filePath = filePath.substring(0, filePath.length() - 1);
+		}
+
+		SysAttachment sysAttachment = iSysBaseAPI.getFilePath(filePath);
+		InputStream inputStream = null;
+
+		if (Objects.isNull(sysAttachment)) {
+			File file = new File(filePath);
+			if (!file.exists()) {
+				throw new AiurtBootException("文件不存在..");
+			}
+			if (StrUtil.isBlank(sysFile.getName())) {
+				attName = file.getName();
+			} else {
+				attName = sysFile.getName();
+			}
+			inputStream = new BufferedInputStream(new FileInputStream(filePath));
+			bytes = StreamUtils.copyToByteArray(inputStream);
+			//关闭流
+			inputStream.close();
+
+		}else {
+			if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
+				inputStream = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
+			}else {
+				String imgPath = uploadPath + File.separator + sysAttachment.getFilePath();
+				File file = new File(imgPath);
+				if (!file.exists()) {
+
+					throw new RuntimeException("文件[" + imgPath + "]不存在..");
+				}
+				inputStream = new BufferedInputStream(new FileInputStream(imgPath));
+			}
+			bytes = StreamUtils.copyToByteArray(inputStream);
+			//关闭流
+			inputStream.close();
+		}
+		return bytes;
 	}
 
 	/**

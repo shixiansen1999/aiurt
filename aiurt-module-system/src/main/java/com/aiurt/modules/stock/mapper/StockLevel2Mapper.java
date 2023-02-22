@@ -36,5 +36,5 @@ public interface StockLevel2Mapper extends BaseMapper<StockLevel2> {
      * @param ids
      * @return
      */
-    List<StockLevel2> exportXls(@Param("ids") List<String> ids);
+    List<StockLevel2> exportXls(@Param("condition") StockLevel2 stockLevel2,@Param("ids") List<String> ids);
 }

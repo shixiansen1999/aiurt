@@ -73,4 +73,7 @@ public class ActCustomTaskExt implements Serializable {
 
     @ApiModelProperty(value = "动态选人(流程变量)")
     private String dynamicVariable;
+
+    @ApiModelProperty(value = "条件表单式")
+    private String conditionExpression;
 }

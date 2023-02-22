@@ -16,14 +16,8 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.subject.Subject;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.util.SpringContextUtils;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -31,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -124,6 +117,11 @@ public class PatrolTaskMissingDetection implements Job {
                         return;
                     }
                     TodoDTO todoDTO = new TodoDTO();
+                    todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
+                    todoDTO.setTitle("巡视任务-确认接收");
+                    todoDTO.setMsgAbstract("巡视任务接收");
+                    todoDTO.setPublishingContent("接收巡视任务指派，请在巡视任务计划执行日期开展巡视工作");
+
                     todoDTO.setProcessDefinitionName("巡视管理");
                     todoDTO.setTaskName(l.getName() + "(漏巡待处理)");
                     todoDTO.setBusinessKey(l.getId());

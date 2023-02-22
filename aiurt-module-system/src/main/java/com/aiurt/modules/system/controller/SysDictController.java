@@ -386,8 +386,10 @@ public class SysDictController {
 	public Result<SysDict> add(@RequestBody SysDict sysDict) {
 		Result<SysDict> result = new Result<SysDict>();
 		try {
-			sysDict.setCreateTime(new Date());
+			Date createTime = new Date();
+			sysDict.setCreateTime(createTime);
 			sysDict.setDelFlag(CommonConstant.DEL_FLAG_0);
+			sysDict.setUpdateTime(createTime);
 			sysDictService.save(sysDict);
 			result.success("保存成功！");
 		} catch (Exception e) {

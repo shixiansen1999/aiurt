@@ -1,0 +1,39 @@
+{
+  "mappings": {
+    "properties": {
+      "id":{
+        "type": "keyword"
+      },
+      "name":{
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_max_word"
+          }
+        },
+        "search_analyzer": "ik_smart"
+      },
+      "format":{
+        "type": "keyword"
+      },
+      "type_id":{
+        "type": "keyword"
+      },
+      "address":{
+        "type": "text",
+        "index": false
+      },
+      "attachment": {
+        "properties": {
+          "content":{
+            "type": "text",
+            "analyzer": "ik_max_word",
+            "search_analyzer": "ik_smart"
+          }
+        }
+      }
+    }
+  }
+}

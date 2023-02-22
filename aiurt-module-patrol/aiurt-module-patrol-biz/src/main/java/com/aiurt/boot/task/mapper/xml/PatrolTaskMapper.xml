@@ -2,24 +2,57 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.PatrolTaskMapper">
     <select id="getPatrolTaskPoolList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
-        select t1.*,(select realname from sys_user where id= t1.end_user_id) as
-        endUserName,concat(DATE_FORMAT(t1.start_time,'%H:%i'),"-",DATE_FORMAT(t1.end_time,'%H:%i'))as startEndTime
-        from patrol_task t1
-        where t1.status not in (6,7,8) and t1.del_flag = 0 and t1.omit_status=0
-        and t1.discard_status = 0
-        and t1.id not in(select id from patrol_task where source=3 and (`status` =0 or `status`=3))
-        <if test="patrolTaskDTO.dateScope !=null and patrolTaskDTO.dateScope !=''">
-            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d' )
-            between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
-            and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
+     SELECT
+	t1.*
+FROM
+	(
+	SELECT
+		t1.*,
+		date_format( t1.create_time, '%Y-%m-%d' ) AS creatTime,
+		GROUP_CONCAT( cl.line_name ) AS lineName,
+		GROUP_CONCAT( DISTINCT cl.sort ) AS lineSort,
+		SUBSTRING_INDEX( GROUP_CONCAT( DISTINCT cs.sort ), ',', 1 ) * 1 AS stationSort,
+		( SELECT realname FROM sys_user WHERE id = t1.end_user_id ) AS endUserName,
+		concat(
+			DATE_FORMAT( t1.start_time, '%H:%i' ),
+			"-",
+		DATE_FORMAT( t1.end_time, '%H:%i' )) AS startEndTime
+	FROM
+		patrol_task t1
+		LEFT JOIN patrol_task_station pts ON t1.`code` = pts.task_code
+		LEFT JOIN cs_station cs ON pts.station_code = cs.station_code
+		LEFT JOIN cs_line cl ON cs.line_code = cl.line_code
+	WHERE
+		t1.STATUS NOT IN ( 6, 7, 8 )
+		AND t1.del_flag = 0
+		AND t1.omit_status = 0
+		AND t1.discard_status = 0
+		AND cs.del_flag = 0
+		AND cl.del_flag = 0
+		AND t1.id NOT IN (
+		SELECT
+			id
+		FROM
+			patrol_task
+		WHERE
+			source = 3
+		AND ( `status` = 0 OR `status` = 3 ))
+	GROUP BY
+		t1.id
+	) AS t1
+		where 1=1
+        <if test="patrolTaskDTO.dateScope != null and patrolTaskDTO.dateScope != ''">
+            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d')
+                    between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
+                    and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
         </if>
-           <if test="patrolTaskDTO.userHaveOrgCodeList != null and patrolTaskDTO.userHaveOrgCodeList.size() > 0">
-           and t1.CODE IN
-           (
-           SELECT t2.task_code
-           FROM patrol_task_organization t2
-           WHERE t2.task_code = t1.CODE
-           AND t2.org_code in
+        <if test="patrolTaskDTO.userHaveOrgCodeList != null and patrolTaskDTO.userHaveOrgCodeList.size() > 0">
+            and t1.CODE IN
+                    (
+                    SELECT t2.task_code
+                    FROM patrol_task_organization t2
+                    WHERE t2.task_code = t1.CODE
+                      AND t2.org_code in
             <foreach collection="patrolTaskDTO.userHaveOrgCodeList" separator="," open="(" close=")" item="item">
                 #{item}
             </foreach>
@@ -31,78 +64,91 @@
                 #{item}
             </foreach>
         </if>
-        <if test="patrolTaskDTO.status!=null">
+        <if test="patrolTaskDTO.status != null">
             and t1.status = #{patrolTaskDTO.status}
         </if>
-        <if test="patrolTaskDTO.orgCode!=null and patrolTaskDTO.orgCode!=''">
-            AND t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND
-            t2.org_code = #{patrolTaskDTO.orgCode})
+        <if test="patrolTaskDTO.orgCode != null and patrolTaskDTO.orgCode != ''">
+            AND t1.CODE IN (SELECT t2.task_code
+                            FROM patrol_task_organization t2
+                            WHERE t2.task_code = t1.CODE
+                              AND t2.org_code = #{patrolTaskDTO.orgCode})
         </if>
         <if test="patrolTaskDTO.stationCode != null and patrolTaskDTO.stationCode != ''">
             <choose>
-                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 1 ">
+                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 1">
                     and t1.code in (
-                    SELECT pps.task_code
-                    FROM patrol_task_station pps
-                    JOIN cs_station cs ON pps.station_code = cs.station_code
-                    AND cs.del_flag = 0
-                    WHERE pps.del_flag = 0 AND cs.line_code = #{patrolTaskDTO.stationCode}
-                    )
+                            SELECT pps.task_code
+                            FROM patrol_task_station pps
+                                         JOIN cs_station cs ON pps.station_code = cs.station_code
+                                    AND cs.del_flag = 0
+                            WHERE pps.del_flag = 0
+                              AND cs.line_code = #{patrolTaskDTO.stationCode}
+                            )
                 </when>
-                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 2 ">
+                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 2">
                     and t1.code in (
-                    SELECT pps.task_code
-                    FROM patrol_task_station pps
-                    WHERE pps.del_flag = 0 and pps.station_code = #{patrolTaskDTO.stationCode}
-                    )
+                            SELECT pps.task_code
+                            FROM patrol_task_station pps
+                            WHERE pps.del_flag = 0
+                              and pps.station_code = #{patrolTaskDTO.stationCode}
+                            )
                 </when>
             </choose>
         </if>
-        order by t1.create_time desc
+        ORDER BY
+  	    t1.creatTime DESC,
+	    t1.lineSort ASC,
+	    t1.stationSort ASC;
     </select>
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
-        select t1.*,(select realname from sys_user where id= t1.end_user_id) as
-        endUserName,concat(DATE_FORMAT(t1.start_time,'%H:%i'),"-",DATE_FORMAT(t1.end_time,'%H:%i'))as startEndTime
+        select t1.*,
+               (select realname from sys_user where id = t1.end_user_id)                           as
+                                                                                                      endUserName,
+               concat(DATE_FORMAT(t1.start_time, '%H:%i'), "-", DATE_FORMAT(t1.end_time, '%H:%i')) as startEndTime
         from patrol_task t1
-        where t1.status in (6,7) and t1.del_flag = 0 and t1.omit_status=0
-        and t1.discard_status = 0
-         <if test="patrolTaskDTO.userHaveOrgCodeList != null and patrolTaskDTO.userHaveOrgCodeList.size() > 0">
-           and t1.CODE IN
-           (
-           SELECT t2.task_code
-           FROM patrol_task_organization t2
-           WHERE t2.task_code = t1.CODE
-           AND t2.org_code in
+                where t1.status in (6, 7)
+                  and t1.del_flag = 0
+                  and t1.omit_status = 0
+                  and t1.discard_status = 0
+        <if test="patrolTaskDTO.userHaveOrgCodeList != null and patrolTaskDTO.userHaveOrgCodeList.size() > 0">
+            and t1.CODE IN
+                    (
+                    SELECT t2.task_code
+                    FROM patrol_task_organization t2
+                    WHERE t2.task_code = t1.CODE
+                      AND t2.org_code in
             <foreach collection="patrolTaskDTO.userHaveOrgCodeList" separator="," open="(" close=")" item="item">
                 #{item}
             </foreach>
             )
         </if>
-        <if test="patrolTaskDTO.dateScope !=null and patrolTaskDTO.dateScope !=''">
-            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d' )
-            between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
-            and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
+        <if test="patrolTaskDTO.dateScope != null and patrolTaskDTO.dateScope != ''">
+            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d')
+                    between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
+                    and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
         </if>
-        <if test="patrolTaskDTO.status!=null">
+        <if test="patrolTaskDTO.status != null">
             and t1.status = #{patrolTaskDTO.status}
         </if>
         <if test="patrolTaskDTO.stationCode != null and patrolTaskDTO.stationCode != ''">
             <choose>
-                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 1 ">
+                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 1">
                     and t1.code in (
-                    SELECT pps.task_code
-                    FROM patrol_task_station pps
-                    JOIN cs_station cs ON pps.station_code = cs.station_code
-                    AND cs.del_flag = 0
-                    WHERE pps.del_flag = 0 AND cs.line_code = #{patrolTaskDTO.stationCode}
-                    )
+                            SELECT pps.task_code
+                            FROM patrol_task_station pps
+                                         JOIN cs_station cs ON pps.station_code = cs.station_code
+                                    AND cs.del_flag = 0
+                            WHERE pps.del_flag = 0
+                              AND cs.line_code = #{patrolTaskDTO.stationCode}
+                            )
                 </when>
-                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 2 ">
+                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 2">
                     and t1.code in (
-                    SELECT pps.task_code
-                    FROM patrol_task_station pps
-                    WHERE pps.del_flag = 0 and pps.station_code = #{patrolTaskDTO.stationCode}
-                    )
+                            SELECT pps.task_code
+                            FROM patrol_task_station pps
+                            WHERE pps.del_flag = 0
+                              and pps.station_code = #{patrolTaskDTO.stationCode}
+                            )
                 </when>
             </choose>
         </if>
@@ -117,30 +163,36 @@
     <select id="getOrganizationName" resultType="java.lang.String">
         SELECT t2.depart_name
         FROM patrol_task_organization t1
-                 LEFT JOIN sys_depart t2 ON t1.org_code = t2.org_code and t2.del_flag = 0
+                     LEFT JOIN sys_depart t2 ON t1.org_code = t2.org_code and t2.del_flag = 0
         where t1.task_code = #{taskCode}
     </select>
     <select id="getStationName" resultType="com.aiurt.boot.standard.dto.StationDTO">
-        SELECT t2.line_code, t1.station_code
+        SELECT t2.line_code,
+               t1.station_code,
+               t2.sort as stationSort,
+               t3.sort AS lineSort
         FROM patrol_task_station t1
-                 LEFT JOIN cs_station t2 ON t1.station_code = t2.station_code and t2.del_flag = 0
+                     LEFT JOIN cs_station t2 ON t1.station_code = t2.station_code
+                     LEFT JOIN cs_line t3 ON t3.line_code = t2.line_code
+                AND t2.del_flag = 0
+                AND t3.del_flag = 0
         WHERE t1.task_code = #{code}
+        ORDER BY t3.sort asc,
+                 t2.sort ASC;
     </select>
     <select id="getTaskList" resultType="com.aiurt.boot.task.param.PatrolTaskParam">
-        SELECT
-        pt.*
-        FROM
-        patrol_task pt
-        WHERE
-        pt.del_flag = 0
-        <if test='patrolTask.identify != null and patrolTask.identify == "1" '>
-            and pt.id not in(select id from patrol_task where source=3 and (`status` =0 or `status`=3))
+        SELECT pt.*
+        FROM patrol_task pt
+                WHERE
+                pt.del_flag = 0
+        <if test='patrolTask.identify != null and patrolTask.identify == "1"'>
+            and pt.id not in (select id from patrol_task where source = 3 and (`status` = 0 or `status` = 3))
         </if>
         <if test="patrolTask.name != null and patrolTask.name != ''">
-            and pt.name like concat('%',#{patrolTask.name},'%')
+            and pt.name like concat('%', #{patrolTask.name}, '%')
         </if>
         <if test="patrolTask.code != null and patrolTask.code != ''">
-            and pt.code like concat('%',#{patrolTask.code},'%')
+            and pt.code like concat('%', #{patrolTask.code}, '%')
         </if>
         <if test="patrolTask.statusArray != null">
             and pt.status in
@@ -162,40 +214,43 @@
         </if>
         <if test="patrolTask.organizationCode != null and patrolTask.organizationCode != ''">
             and pt.code in (
-            SELECT ppo.task_code
-            FROM patrol_task_organization ppo
-            WHERE ppo.del_flag = 0 and ppo.org_code = #{patrolTask.organizationCode}
-            )
+                    SELECT ppo.task_code
+                    FROM patrol_task_organization ppo
+                    WHERE ppo.del_flag = 0
+                      and ppo.org_code = #{patrolTask.organizationCode}
+                    )
         </if>
         <if test="patrolTask.stationCode != null and patrolTask.stationCode != ''">
             <choose>
-                <when test="patrolTask.level != null and patrolTask.level == 1 ">
+                <when test="patrolTask.level != null and patrolTask.level == 1">
                     and pt.code in (
-                    SELECT pps.task_code
-                    FROM patrol_task_station pps
-                    JOIN cs_station cs ON pps.station_code = cs.station_code
-                    AND cs.del_flag = 0
-                    WHERE pps.del_flag = 0 AND cs.line_code = #{patrolTask.stationCode}
-                    )
+                            SELECT pps.task_code
+                            FROM patrol_task_station pps
+                                         JOIN cs_station cs ON pps.station_code = cs.station_code
+                                    AND cs.del_flag = 0
+                            WHERE pps.del_flag = 0
+                              AND cs.line_code = #{patrolTask.stationCode}
+                            )
                 </when>
-                <when test="patrolTask.level != null and patrolTask.level == 2 ">
+                <when test="patrolTask.level != null and patrolTask.level == 2">
                     and pt.code in (
-                    SELECT pps.task_code
-                    FROM patrol_task_station pps
-                    WHERE pps.del_flag = 0 and pps.station_code = #{patrolTask.stationCode}
-                    )
+                            SELECT pps.task_code
+                            FROM patrol_task_station pps
+                            WHERE pps.del_flag = 0
+                              and pps.station_code = #{patrolTask.stationCode}
+                            )
                 </when>
             </choose>
         </if>
         <if test="patrolTask.dateHead != null and patrolTask.dateEnd != null">
-            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
-            BETWEEN DATE_FORMAT( #{patrolTask.dateHead}, '%Y-%m-%d' )
-            AND DATE_FORMAT( #{patrolTask.dateEnd}, '%Y-%m-%d')
+            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
+                    BETWEEN DATE_FORMAT(#{patrolTask.dateHead}, '%Y-%m-%d')
+                    AND DATE_FORMAT(#{patrolTask.dateEnd}, '%Y-%m-%d')
         </if>
         <if test="patrolTask.submitDateHead != null and patrolTask.submitDateEnd != null">
-            AND DATE_FORMAT( pt.submit_time, '%Y-%m-%d' )
-            BETWEEN DATE_FORMAT( #{patrolTask.submitDateHead}, '%Y-%m-%d' )
-            AND DATE_FORMAT( #{patrolTask.submitDateEnd}, '%Y-%m-%d')
+            AND DATE_FORMAT(pt.submit_time, '%Y-%m-%d')
+                    BETWEEN DATE_FORMAT(#{patrolTask.submitDateHead}, '%Y-%m-%d')
+                    AND DATE_FORMAT(#{patrolTask.submitDateEnd}, '%Y-%m-%d')
         </if>
         <if test="patrolTask.patrolDate != null and patrolTask.patrolDate != null">
             AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTask.patrolDate}, '%Y-%m-%d')
@@ -238,56 +293,61 @@
     <select id="selectBasicInfo" resultType="com.aiurt.boot.task.param.PatrolTaskParam">
         SELECT *
         FROM patrol_task pt
-        WHERE pt.del_flag = 0
+                WHERE pt.del_flag = 0
         <if test="patrolTaskParam.id != null and patrolTaskParam.id != ''">
             and pt.id = #{patrolTaskParam.id}
         </if>
     </select>
     <select id="getPatrolTaskManualList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
-        SELECT
-        t1.*
-        FROM
-        patrol_task t1
-        where t1.source = 3 and t1.status in (0,3) and t1.discard_status = 0 and t1.omit_status=0
+        SELECT t1.*
+        FROM patrol_task t1
+                where t1.source = 3
+                  and t1.status in (0, 3)
+                  and t1.discard_status = 0
+                  and t1.omit_status = 0
         <!--        and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND-->
         <!--            t2.org_code = #{patrolTaskDTO.loginOrgId})-->
         <if test="patrolTaskDTO.stationCode != null and patrolTaskDTO.stationCode != ''">
             <choose>
-                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 1 ">
+                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 1">
                     and t1.code in (
-                    SELECT pps.task_code
-                    FROM patrol_task_station pps
-                    JOIN cs_station cs ON pps.station_code = cs.station_code
-                    AND cs.del_flag = 0
-                    WHERE pps.del_flag = 0 AND cs.line_code = #{patrolTaskDTO.stationCode}
-                    )
+                            SELECT pps.task_code
+                            FROM patrol_task_station pps
+                                         JOIN cs_station cs ON pps.station_code = cs.station_code
+                                    AND cs.del_flag = 0
+                            WHERE pps.del_flag = 0
+                              AND cs.line_code = #{patrolTaskDTO.stationCode}
+                            )
                 </when>
-                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 2 ">
+                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 2">
                     and t1.code in (
-                    SELECT pps.task_code
-                    FROM patrol_task_station pps
-                    WHERE pps.del_flag = 0 and pps.station_code = #{patrolTaskDTO.stationCode}
-                    )
+                            SELECT pps.task_code
+                            FROM patrol_task_station pps
+                            WHERE pps.del_flag = 0
+                              and pps.station_code = #{patrolTaskDTO.stationCode}
+                            )
                 </when>
             </choose>
         </if>
-        <if test="patrolTaskDTO.orgCode != null and patrolTaskDTO.orgCode!=''">
-            and t1.code in (SELECT t2.task_code FROM patrol_task_organization t2 where t2.org_code =
-            #{patrolTaskDTO.orgCode})
+        <if test="patrolTaskDTO.orgCode != null and patrolTaskDTO.orgCode != ''">
+            and t1.code in (SELECT t2.task_code
+                            FROM patrol_task_organization t2
+                            where t2.org_code =
+                                  #{patrolTaskDTO.orgCode})
         </if>
-        <if test="patrolTaskDTO.name!=null and patrolTaskDTO.name!=''">
-            and t1.name like concat('%',#{patrolTaskDTO.name},'%')
+        <if test="patrolTaskDTO.name != null and patrolTaskDTO.name != ''">
+            and t1.name like concat('%', #{patrolTaskDTO.name}, '%')
         </if>
-        <if test="patrolTaskDTO.code!=null and patrolTaskDTO.code!=''">
-            and t1.code like concat('%',#{patrolTaskDTO.code},'%')
+        <if test="patrolTaskDTO.code != null and patrolTaskDTO.code != ''">
+            and t1.code like concat('%', #{patrolTaskDTO.code}, '%')
         </if>
-        <if test="patrolTaskDTO.status !=null">
+        <if test="patrolTaskDTO.status != null">
             and t1.status = #{patrolTaskDTO.status}
         </if>
-        <if test="patrolTaskDTO.dateScope !=null">
-            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d' )
-            between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
-            and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
+        <if test="patrolTaskDTO.dateScope != null">
+            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d')
+                    between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
+                    and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
         </if>
         <if test="patrolTaskDTO.taskCodes != null and patrolTaskDTO.taskCodes.size() > 0">
             and t1.code in
@@ -298,24 +358,20 @@
         order by t1.create_time desc
     </select>
     <select id="getMajorNameByMajorCode" resultType="java.lang.String">
-        SELECT
-        cm.major_name
-        FROM
-        cs_major cm
-        WHERE
-        cm.del_flag = 0
-        <if test="code !=null and code !=''">
+        SELECT cm.major_name
+        FROM cs_major cm
+                WHERE
+                cm.del_flag = 0
+        <if test="code != null and code != ''">
             AND cm.major_code = #{code}
         </if>
     </select>
     <select id="getSubsystemNameBySystemCode" resultType="java.lang.String">
-        SELECT
-        cs.system_name
-        FROM
-        cs_subsystem cs
-        WHERE
-        cs.del_flag = 0
-        <if test="code !=null and code !=''">
+        SELECT cs.system_name
+        FROM cs_subsystem cs
+                WHERE
+                cs.del_flag = 0
+        <if test="code != null and code != ''">
             AND cs.system_code = #{code}
         </if>
     </select>
@@ -326,15 +382,14 @@
           AND su.id = #{userId}
     </select>
     <select id="getMajorSubsystemGanged" resultType="com.aiurt.boot.task.dto.SubsystemDTO">
-        SELECT
-        cs.system_code subsystemCode,
-        cs.system_name subsystemName
+        SELECT cs.system_code subsystemCode,
+               cs.system_name subsystemName
         FROM cs_subsystem cs
-        WHERE
-        <if test="majorCode !=null and majorCode !=''">
+                WHERE
+        <if test="majorCode != null and majorCode != ''">
             cs.major_code = #{majorCode}
         </if>
-        <if test="subsystemList !=null and subsystemList.size()>0">
+        <if test="subsystemList != null and subsystemList.size() > 0">
             AND cs.system_code IN
             <foreach collection="subsystemList" item="item" open="(" separator="," close=")">
                 #{item.subsystemCode}
@@ -347,46 +402,45 @@
         where task_code = #{code}
     </select>
     <select id="getLineCode" resultType="java.lang.String">
-        SELECT
-        line_code
-        FROM
-        cs_station
-        WHERE
-        del_flag = 0
-        <if test="stationCode !=null and stationCode !=''">
+        SELECT line_code
+        FROM cs_station
+                WHERE
+                del_flag = 0
+        <if test="stationCode != null and stationCode != ''">
             AND station_code = #{stationCode}
         </if>
     </select>
     <select id="getIndexPatrolList" resultType="com.aiurt.boot.statistics.model.PatrolIndexTask">
         SELECT sub.*
-        FROM
-        ( SELECT
-        pts.station_code,
-        cs.station_name,
-        cs.line_code,
-        cs.line_name,
-        GROUP_CONCAT( pt.`code` ) taskCode,
-        IF ( MIN( pt.`status` )= 7, '已完成', '未完成' ) statusName,
-        MAX( pt.submit_time ) submitTime
-        <if test="regexp !=null and regexp !=''">
-            ,IF(GROUP_CONCAT(DISTINCT pt.`status`) REGEXP #{regexp}, 1, 0) `status`
+                FROM
+                ( SELECT
+                pts.station_code,
+                cs.station_name,
+                cs.line_code,
+                cs.line_name,
+                GROUP_CONCAT(pt.`code`)                taskCode,
+                IF(MIN(pt.`status`) = 7, '已完成', '未完成') statusName,
+                MAX(pt.submit_time)                    submitTime
+        <if test="regexp != null and regexp != ''">
+            ,
+                    IF(GROUP_CONCAT(DISTINCT pt.`status`) REGEXP #{regexp}, 1, 0) `status`
         </if>
         FROM patrol_task pt
-        JOIN patrol_task_station pts ON pt.`code` = pts.task_code
-        JOIN cs_station cs ON pts.station_code = cs.station_code
-        WHERE pt.del_flag = 0
+                     JOIN patrol_task_station pts ON pt.`code` = pts.task_code
+                     JOIN cs_station cs ON pts.station_code = cs.station_code
+                WHERE pt.del_flag = 0
         <if test="condition.startDate != null and condition.endDate != null">
-            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
-            BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
-            AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d')
+            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
+                    BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+                    AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
         </if>
-        <if test="departList != null and departList.size>0">
+        <if test="departList != null and departList.size > 0">
             AND pt.`code` in
             <foreach collection="departList" item="item" open="(" separator="," close=")">
                 #{item.taskCode}
             </foreach>
         </if>
-           <if test="standard != null and standard.size() != 0">
+        <if test="standard != null and standard.size() != 0">
             AND pt.id in
             <foreach collection="standard" item="item" open="(" separator="," close=")">
                 #{item.taskId}
@@ -401,10 +455,9 @@
         <if test="condition.lineCode != null and condition.lineCode != ''">
             AND cs.line_code = #{condition.lineCode}
         </if>
-        GROUP BY
-        pts.station_code
+        GROUP BY pts.station_code
         <if test="condition.type != null and condition.type == 1">
-            HAVING MAX( pt.`status` ) = 7
+            HAVING MAX(pt.`status`) = 7
         </if>
         <if test="condition.type != null and condition.type == 2">
             HAVING MIN( pt.`status` ) &lt;&gt; 7
@@ -417,11 +470,11 @@
     <select id="getIndexTaskList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
         SELECT pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time
         FROM patrol_task pt
-        WHERE pt.del_flag = 0
+                WHERE pt.del_flag = 0
         <if test="condition.startDate != null and condition.endDate != null">
-            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
-            BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
-            AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d')
+            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
+                    BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+                    AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
         </if>
         <if test="condition.state != null">
             AND pt.abnormal_state = #{condition.state}
@@ -433,9 +486,9 @@
         <!--            </foreach>-->
         <!--        </if>-->
         <if test="condition.stationCode != null and condition.stationCode != ''">
-            AND pt.`code` IN ( SELECT task_code FROM patrol_task_station WHERE station_code = #{condition.stationCode})
+            AND pt.`code` IN (SELECT task_code FROM patrol_task_station WHERE station_code = #{condition.stationCode})
         </if>
-        <if test="condition.status != null and condition.status.length>0">
+        <if test="condition.status != null and condition.status.length > 0">
             AND pt.`status` IN
             <foreach collection="condition.status" item="item" open="(" separator="," close=")">
                 #{item}
@@ -448,19 +501,21 @@
             AND pt.omit_status = #{condition.omitStatus}
         </if>
         <if test="condition.username != null and condition.username != ''">
-            AND pt.`code` IN ( SELECT task_code FROM patrol_task_user WHERE user_name
-            LIKE CONCAT('%',#{condition.username},'%'))
+            AND pt.`code` IN (SELECT task_code
+                              FROM patrol_task_user
+                              WHERE user_name
+                                            LIKE CONCAT('%', #{condition.username}, '%'))
         </if>
         <if test="condition.orgCode != null and condition.orgCode != ''">
-            AND pt.`code` IN ( SELECT task_code FROM patrol_task_organization WHERE org_code = #{condition.orgCode})
+            AND pt.`code` IN (SELECT task_code FROM patrol_task_organization WHERE org_code = #{condition.orgCode})
         </if>
-        <if test="departList != null and departList.size>0">
+        <if test="departList != null and departList.size > 0">
             AND pt.`code` in
             <foreach collection="departList" item="item" open="(" separator="," close=")">
                 #{item.taskCode}
             </foreach>
         </if>
-               <if test="standard != null and standard.size() != 0">
+        <if test="standard != null and standard.size() != 0">
             AND pt.id in
             <foreach collection="standard" item="item" open="(" separator="," close=")">
                 #{item.taskId}
@@ -468,31 +523,29 @@
         </if>
     </select>
     <select id="getScheduleList" resultType="com.aiurt.boot.statistics.model.ScheduleTask">
-        SELECT
-        pt.`name`,
-        pt.`code`,
-        pt.`status`,
-        pt.patrol_date,
-        IF( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) submitTime,
-        GROUP_CONCAT( DISTINCT ptu.user_name SEPARATOR '；' ) userInfo,
-        GROUP_CONCAT( DISTINCT cs.station_name SEPARATOR '；'  ) stationInfo,
-        GROUP_CONCAT( DISTINCT sd.depart_name SEPARATOR '；'  ) orgInfo
-        FROM
-        patrol_task pt
-        LEFT JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
-        AND ptu.del_flag = 0
-        LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code
-        AND pts.del_flag = 0
-        LEFT JOIN cs_station cs ON pts.station_code = cs.station_code
-        AND cs.del_flag = 0
-        LEFT JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
-        AND pto.del_flag = 0
-        LEFT JOIN sys_depart sd ON pto.org_code = sd.org_code
-        AND sd.del_flag = 0
-        WHERE
-        pt.del_flag = 0
+        SELECT pt.`name`,
+               pt.`code`,
+               pt.`status`,
+               pt.patrol_date,
+               IF(1 = pt.auditor, pt.auditor_time, pt.submit_time)    submitTime,
+               GROUP_CONCAT(DISTINCT ptu.user_name SEPARATOR '；' )    userInfo,
+               GROUP_CONCAT(DISTINCT cs.station_name SEPARATOR '；'  ) stationInfo,
+               GROUP_CONCAT(DISTINCT sd.depart_name SEPARATOR '；'  )  orgInfo
+        FROM patrol_task pt
+                     LEFT JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
+                AND ptu.del_flag = 0
+                     LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code
+                AND pts.del_flag = 0
+                     LEFT JOIN cs_station cs ON pts.station_code = cs.station_code
+                AND cs.del_flag = 0
+                     LEFT JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
+                AND pto.del_flag = 0
+                     LEFT JOIN sys_depart sd ON pto.org_code = sd.org_code
+                AND sd.del_flag = 0
+                WHERE
+                pt.del_flag = 0
         <if test="condition.date != null">
-            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) = DATE_FORMAT(#{condition.date} , '%Y-%m-%d' )
+            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.date}, '%Y-%m-%d')
         </if>
         <if test="condition.source != null">
             and pt.source = #{condition.source}
@@ -502,15 +555,17 @@
         </if>
         <if test="condition.stationCode != null and condition.stationCode != ''">
             and pt.`code` in (
-            SELECT pps.task_code
-            FROM patrol_task_station pps
-            WHERE pps.del_flag = 0 and pps.station_code = #{condition.stationCode}
-            )
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                    WHERE pps.del_flag = 0
+                      and pps.station_code = #{condition.stationCode}
+                    )
         </if>
-        <if test="departList != null and departList.size>0">
+        <if test="departList != null and departList.size > 0">
             AND pt.`code` in (
-            SELECT task_code FROM patrol_task_organization WHERE del_flag = 0
-            AND org_code IN
+                    SELECT task_code
+                    FROM patrol_task_organization WHERE del_flag = 0
+                                                    AND org_code IN
             <foreach collection="departList" item="item" open="(" separator="," close=")">
                 #{item.orgCode}
             </foreach>
@@ -521,17 +576,17 @@
     <select id="getOverviewInfo" resultType="com.aiurt.boot.task.entity.PatrolTask">
         SELECT pt.*
         FROM patrol_task pt
-        WHERE pt.del_flag = 0
+                WHERE pt.del_flag = 0
         <if test="startDate != null and endDate != null">
             AND pt.patrol_date BETWEEN #{startDate} AND #{endDate}
         </if>
-        <if test="departList != null and departList.size>0">
+        <if test="departList != null and departList.size > 0">
             AND pt.`code` in
             <foreach collection="departList" item="item" open="(" separator="," close=")">
                 #{item.taskCode}
             </foreach>
         </if>
-            <if test="taskIds != null and taskIds.size() != 0">
+        <if test="taskIds != null and taskIds.size() != 0">
             AND pt.id in
             <foreach collection="taskIds" item="item" open="(" separator="," close=")">
                 #{item.taskId}
@@ -543,63 +598,62 @@
                pt.`code`,
                pt.`name`
         FROM patrol_task_user ptu
-                 LEFT JOIN patrol_task pt on ptu.task_code = pt.`code`
+                     LEFT JOIN patrol_task pt on ptu.task_code = pt.`code`
         WHERE DATE_FORMAT(ptu.create_time, '%Y-%m-%d') = DATE_FORMAT(#{date}, '%Y-%m-%d')
           and ptu.user_id = #{userId}
     </select>
     <select id="getScreenTask" resultType="com.aiurt.boot.screen.model.ScreenStatisticsTask">
-        SELECT
-        pt.`code`,
-        pt.`name`,
-        pt.submit_time,
-        pt.auditor,
-        pt.auditor_time,
-        pt.`status`,
-        pt.abnormal_state,
-        pt.omit_status,
-        GROUP_CONCAT( DISTINCT CONCAT_WS( '/', cs.line_name, cs.station_name ) SEPARATOR '；' ) stationInfo,
-        GROUP_CONCAT( DISTINCT ptu.user_name SEPARATOR '；' ) userInfo
-        FROM
-        patrol_task pt
-        LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
-        JOIN cs_station cs ON pts.station_code = cs.station_code AND cs.del_flag = 0
-        LEFT JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code AND ptu.del_flag = 0
-        join patrol_task_organization pto on pt.`code` = pto.task_code and pto.del_flag = 0
-        WHERE
-        pt.del_flag = 0
+        SELECT pt.`code`,
+               pt.`name`,
+               pt.submit_time,
+               pt.auditor,
+               pt.auditor_time,
+               pt.`status`,
+               pt.abnormal_state,
+               pt.omit_status,
+               GROUP_CONCAT(DISTINCT CONCAT_WS( '/', cs.line_name, cs.station_name ) SEPARATOR '；' ) stationInfo,
+               GROUP_CONCAT(DISTINCT ptu.user_name SEPARATOR '；' )                                   userInfo
+        FROM patrol_task pt
+                     LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
+                     JOIN cs_station cs ON pts.station_code = cs.station_code AND cs.del_flag = 0
+                     LEFT JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code AND ptu.del_flag = 0
+                     join patrol_task_organization pto on pt.`code` = pto.task_code and pto.del_flag = 0
+                WHERE
+                pt.del_flag = 0
         <if test="condition.startTime != null and condition.endTime != null">
             AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
         </if>
         <if test="condition.discardStatus != null">
             AND pt.discard_status = #{condition.discardStatus}
         </if>
-        <if test="condition.orgCodes != null and condition.orgCodes.size>0 ">
+        <if test="condition.orgCodes != null and condition.orgCodes.size > 0">
             AND pt.`code` IN(
-                select distinct task_code from patrol_task_organization where del_flag = 0
-                and org_code in
-                <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
+                    select distinct task_code
+                    from patrol_task_organization where del_flag = 0
+                                                    and org_code in
+            <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
             )
         </if>
         GROUP BY pt.`code`
     </select>
     <select id="getScreenGraph" resultType="com.aiurt.boot.screen.model.ScreenStatisticsGraph">
-        select sd.depart_name orgName,
-        count(pt.`code`) total,
-        sum(pt.`status` = 7) finish,
-        sum(pt.`status` != 7) unfinish
+        select sd.depart_name        orgName,
+               count(pt.`code`)      total,
+               sum(pt.`status` = 7)  finish,
+               sum(pt.`status` != 7) unfinish
         from patrol_task pt
-        join patrol_task_organization pto on pt.`code` = pto.task_code and pto.del_flag = 0
-        join sys_depart sd on pto.org_code = sd.org_code
-        where pt.del_flag = 0
+                     join patrol_task_organization pto on pt.`code` = pto.task_code and pto.del_flag = 0
+                     join sys_depart sd on pto.org_code = sd.org_code
+                where pt.del_flag = 0
         <if test="condition.startTime != null and condition.endTime != null">
             AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
         </if>
         <if test="condition.discardStatus != null">
             AND pt.discard_status = #{condition.discardStatus}
         </if>
-        <if test="condition.orgCodes != null and condition.orgCodes.size>0 ">
+        <if test="condition.orgCodes != null and condition.orgCodes.size > 0">
             and pto.org_code in
             <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
                 #{item}
@@ -608,24 +662,22 @@
         group by pto.org_code
     </select>
     <select id="getStatisticsDataList" resultType="com.aiurt.boot.screen.model.ScreenStatisticsTask">
-        SELECT
-        pt.`code`,
-        pt.`name`,
-        pt.submit_time,
-        pt.auditor,
-        pt.auditor_time,
-        pt.`status`,
-        pt.abnormal_state,
-        pt.omit_status,
-        GROUP_CONCAT( DISTINCT CONCAT_WS( '/', cs.line_name, cs.station_name ) SEPARATOR '；' ) stationInfo,
-        GROUP_CONCAT( DISTINCT ptu.user_name SEPARATOR '；' ) userInfo
-        FROM
-        patrol_task pt
-        LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
-        JOIN cs_station cs ON pts.station_code = cs.station_code AND cs.del_flag = 0
-        LEFT JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code AND ptu.del_flag = 0
-        WHERE
-        pt.del_flag = 0
+        SELECT pt.`code`,
+               pt.`name`,
+               pt.submit_time,
+               pt.auditor,
+               pt.auditor_time,
+               pt.`status`,
+               pt.abnormal_state,
+               pt.omit_status,
+               GROUP_CONCAT(DISTINCT CONCAT_WS( '/', cs.line_name, cs.station_name ) SEPARATOR '；' ) stationInfo,
+               GROUP_CONCAT(DISTINCT ptu.user_name SEPARATOR '；' )                                   userInfo
+        FROM patrol_task pt
+                     LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
+                     JOIN cs_station cs ON pts.station_code = cs.station_code AND cs.del_flag = 0
+                     LEFT JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code AND ptu.del_flag = 0
+                WHERE
+                pt.del_flag = 0
         <if test="condition.startTime != null and condition.endTime != null">
             AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
         </if>
@@ -642,15 +694,16 @@
             AND pt.discard_status = #{condition.discardStatus}
         </if>
         <if test="condition.today != null">
-            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) = DATE_FORMAT(#{condition.today} , '%Y-%m-%d' )
+            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.today}, '%Y-%m-%d')
         </if>
-        <if test="condition.orgCodes != null and condition.orgCodes.size>0 ">
+        <if test="condition.orgCodes != null and condition.orgCodes.size > 0">
             AND pt.`code` IN(
-                select distinct task_code from patrol_task_organization where del_flag = 0
-                and org_code in
-                <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
+                    select distinct task_code
+                    from patrol_task_organization where del_flag = 0
+                                                    and org_code in
+            <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
             )
         </if>
         GROUP BY pt.`code`
@@ -658,7 +711,7 @@
     <select id="getScreenDataCount" resultType="com.aiurt.boot.task.entity.PatrolTask">
         select *
         from patrol_task
-        where del_flag = 0
+                where del_flag = 0
         <if test="condition.startTime != null and condition.endTime != null">
             AND patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
         </if>
@@ -668,601 +721,638 @@
         <if test="condition.discardStatus != null">
             AND discard_status = #{condition.discardStatus}
         </if>
-        <if test="condition.orgCodes != null and condition.orgCodes.size>0 ">
+        <if test="condition.orgCodes != null and condition.orgCodes.size > 0">
             AND `code` IN(
-                select distinct task_code from patrol_task_organization where del_flag = 0
-                and org_code in
-                <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
-                    #{item}
-                </foreach>
+                    select distinct task_code
+                    from patrol_task_organization where del_flag = 0
+                                                    and org_code in
+            <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
             )
         </if>
     </select>
     <select id="getFailureReport" resultType="com.aiurt.boot.report.model.FailureReport">
         SELECT
-        a.id,
-        a.system_name,
-        a.system_code as code,
-        count( c.id) AS failureNum,
-        count( c.id AND c.fault_mode_code = 1 OR NOT NULL ) AS repairNum,
-        count( c.id AND c.fault_mode_code = 0 OR NOT NULL ) AS selfInspectionNum,
-        count( c.id AND c.end_time is NOT NULL and c.status = 12 OR not null ) AS resolvedNum,
-        count( c.id AND  c.status &lt;> 12 OR not NULL ) AS unResolvedNum,
-        (SELECT COUNT(id) FROM fault WHERE a.system_code = sub_system_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT( #{endTime}, '%Y-%m')
+                a.id,
+                a.system_name,
+                a.system_code                                                        as code,
+                count(c.id)                                                          AS failureNum,
+                count(c.id AND c.fault_mode_code = 1 OR NOT NULL)                    AS repairNum,
+                count(c.id AND c.fault_mode_code = 0 OR NOT NULL)                    AS selfInspectionNum,
+                count(c.id AND c.end_time is NOT NULL and c.status = 12 OR not null) AS resolvedNum,
+                count(c.id AND c.status &lt;> 12 OR not NULL)                        AS unResolvedNum,
+                (SELECT COUNT(id)
+                 FROM fault WHERE a.system_code = sub_system_code
+                              and `status` > 2
+                              AND DATE_FORMAT(happen_time, '%Y-%m') = DATE_FORMAT(#{endTime}, '%Y-%m')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
-        <if test="stationCode != null and stationCode.size>0 ">
+        <if test="stationCode != null and stationCode.size > 0">
             AND station_code IN
             <foreach collection="stationCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
-        </if>) as monthNum,
-        (SELECT COUNT(id) FROM fault WHERE a.system_code = sub_system_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT(date_sub( #{endTime}, interval 1 month), '%Y-%m')
+        </if>
+        ) as monthNum,
+                (SELECT COUNT(id)
+                 FROM fault WHERE a.system_code = sub_system_code
+                              and `status` > 2
+                              AND
+                DATE_FORMAT(happen_time, '%Y-%m') = DATE_FORMAT(date_sub(#{endTime}, interval 1 month), '%Y-%m')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
-        <if test="stationCode != null and stationCode.size>0 ">
+        <if test="stationCode != null and stationCode.size > 0">
             AND station_code IN
             <foreach collection="stationCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
-        </if>) as lastMonthNum,
-        (SELECT COUNT(id) FROM fault WHERE a.system_code = sub_system_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y') =  DATE_FORMAT(curdate(), '%Y')
+        </if>
+        ) as lastMonthNum,
+                (SELECT COUNT(id)
+                 FROM fault WHERE a.system_code = sub_system_code
+                              and `status` > 2
+                              AND DATE_FORMAT(happen_time, '%Y') = DATE_FORMAT(curdate(), '%Y')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
-        <if test="stationCode != null and stationCode.size>0 ">
+        <if test="stationCode != null and stationCode.size > 0">
             AND station_code IN
             <foreach collection="stationCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
-        </if>) as yearNum,
-        (SELECT COUNT(id) FROM fault WHERE a.system_code = sub_system_code and `status` >0 AND DATE_FORMAT(happen_time, '%Y') =  DATE_FORMAT(date_sub(curdate(), interval 1 year), '%Y')
+        </if>
+        ) as yearNum,
+                (SELECT COUNT(id)
+                 FROM fault WHERE a.system_code = sub_system_code
+                              and `status` > 0
+                              AND
+                DATE_FORMAT(happen_time, '%Y') = DATE_FORMAT(date_sub(curdate(), interval 1 year), '%Y')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
-        <if test="stationCode != null and stationCode.size>0 ">
+        <if test="stationCode != null and stationCode.size > 0">
             AND station_code IN
             <foreach collection="stationCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
-        </if>) as lastYearNum
-        FROM cs_subsystem a
-        LEFT JOIN fault c ON a.system_code = c.sub_system_code and c.`status` > 2
-        <if test="startTime != null and endTime !=null ">
-            and  DATE_FORMAT( c.happen_time, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{startTime}, '%Y-%m-%d' )
-            AND DATE_FORMAT( #{endTime}, '%Y-%m-%d' )
+        </if>
+        ) as lastYearNum
+                FROM cs_subsystem a
+                LEFT JOIN fault c ON a.system_code = c.sub_system_code and c.`status` > 2
+        <if test="startTime != null and endTime != null">
+            and  DATE_FORMAT(c.happen_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+                         AND DATE_FORMAT(#{endTime}, '%Y-%m-%d')
         </if>
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
-        <if test="stationCode != null and stationCode.size>0 ">
+        <if test="stationCode != null and stationCode.size > 0">
             AND c.station_code IN
             <foreach collection="stationCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-     where a.del_flag=0
+        where a.del_flag = 0
         <if test="id != null">
-           AND a.id in(select system_id from cs_user_subsystem where user_id = #{id})
+            AND a.id in (select system_id from cs_user_subsystem where user_id = #{id})
         </if>
-  group by a.id
+        group by a.id
     </select>
     <select id="getReportTaskList" resultType="com.aiurt.boot.report.model.PatrolReport">
-   SELECT
-	sd.depart_name AS orgName,
-	sd.id AS orgId,
-	sd.org_code AS orgCode
-   FROM
-	sys_depart sd
-  WHERE
-	 <if test="orgIdList != null and orgIdList.size>0 ">
-	 sd.id IN
-	    <foreach collection="orgIdList" item="item" open="(" separator="," close=")">
-                    #{item}
-         </foreach>
-	 </if>
-GROUP BY
-	sd.depart_name,sd.org_code
+        SELECT sd.depart_name AS orgName,
+               sd.id          AS orgId,
+               sd.org_code    AS orgCode
+        FROM sys_depart sd
+                WHERE
+        <if test="orgIdList != null and orgIdList.size > 0">
+            sd.id IN
+            <foreach collection="orgIdList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY sd.depart_name, sd.org_code
     </select>
     <select id="getTasks" resultType="com.aiurt.boot.report.model.PatrolReport">
-        SELECT
-        count( pt.id ) AS taskTotal,
-        GROUP_CONCAT(pt.id) as taskId
-        FROM patrol_task pt
-        JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
+        SELECT count(pt.id)        AS taskTotal,
+               GROUP_CONCAT(pt.id) as taskId
+                FROM patrol_task pt
+                JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
         <if test="orgCode != null and orgCode != ''">
             AND pto.org_code = #{orgCode}
         </if>
         <if test="condition.startDate != null and condition.endDate != null">
-            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
-            AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d' )
+            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+                        AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
         </if>
         <if test="condition.lineCode != null and condition.stationCode != ''">
             and pt.code in (
-                SELECT pps.task_code
-                FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
-                where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
-            )
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                                 LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                    where pps.station_code = #{condition.stationCode}
+                      and cs.line_code = #{condition.lineCode}
+                    )
         </if>
-        <if test="condition.lineCode != null and condition.stationCode ==null ">
+        <if test="condition.lineCode != null and condition.stationCode == null">
             and pt.code in (
-                SELECT pps.task_code
-                FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
-                where cs.line_code = #{condition.lineCode}
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                                 LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                    where cs.line_code = #{condition.lineCode}
+                    )
+        </if>
+        <if test="condition.stationCode != null and condition.lineCode == null">
+            and pt.code in (
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                                 LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                    where pps.station_code = #{condition.stationCode}
+                    )
+        </if>
+        <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
+            and pt.id in (
+                    SELECT pts.task_id
+                    FROM patrol_task_standard pts
+                    where pts.subsystem_code = #{condition.subsystemCode}
+                    )
+        </if>
+        GROUP BY pto.org_code
+    </select>
+    <select id="getReportOmitList" resultType="com.aiurt.boot.report.model.PatrolReport">
+        select count(pt.omit_status = 1 OR NULL) AS missInspectedNumber,
+               GROUP_CONCAT(pt.id)               as taskId,
+               pto.org_code
+                FROM
+                patrol_task pt
+                JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
+        <if test="condition.orgCodeList != null and condition.orgCodeList.size > 0">
+            AND pto.org_code IN
+            <foreach collection="condition.orgCodeList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.startDate != null and condition.endDate != null">
+            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+                        AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+        </if>
+        <if test="condition.lineCode != null and condition.stationCode != null">
+            and pt.code in (
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                                 LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                    where pps.station_code = #{condition.stationCode}
+                      and cs.line_code = #{condition.lineCode}
+                    )
+        </if>
+        <if test="condition.lineCode != null and condition.stationCode == null">
+            and pt.code in (
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                                 LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                    where  cs.station_code in
+            <foreach collection="param1.stationCodeList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
             )
         </if>
         <if test="condition.stationCode != null and condition.lineCode == null">
             and pt.code in (
-                SELECT pps.task_code
-                FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
-                where pps.station_code = #{condition.stationCode}
-            )
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                                 LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                    where pps.station_code = #{condition.stationCode}
+                    )
         </if>
         <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
-            and pt.id in(
-                SELECT pts.task_id
-                FROM patrol_task_standard pts
-                where pts.subsystem_code = #{condition.subsystemCode}
-            )
+            and pt.id in (
+                    SELECT pts.task_id
+                    FROM patrol_task_standard pts
+                    where pts.subsystem_code = #{condition.subsystemCode}
+                    )
+        </if>
+        <if test="condition.orgCode != null and condition.orgCode != ''">
+            and pto.org_code = #{condition.orgCode}
         </if>
         GROUP BY pto.org_code
-</select>
-    <select id="getReportOmitList" resultType="com.aiurt.boot.report.model.PatrolReport">
-    select
-	count( pt.omit_status = 1 OR NULL ) AS missInspectedNumber,
-	GROUP_CONCAT(pt.id) as taskId,
-	pto.org_code
-FROM
-	patrol_task pt
-	JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
-	 <if test="condition.orgCodeList != null and condition.orgCodeList.size>0 ">
-	  AND pto.org_code IN
-	    <foreach collection="condition.orgCodeList" item="item" open="(" separator="," close=")">
-                    #{item}
-         </foreach>
-	 </if>
-	 <if test="condition.startDate != null and condition.endDate != null">
-	 AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
-	 AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d' )
-     </if>
-    <if test="condition.lineCode != null and condition.stationCode != null">
-	and pt.code in (
-	SELECT pps.task_code
-	FROM patrol_task_station pps
-	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
-	where  pps.station_code = #{condition.stationCode}  and cs.line_code = #{condition.lineCode}
-     )
-    </if>
-    <if test="condition.lineCode != null and condition.stationCode ==null ">
-    and pt.code in (
-	SELECT pps.task_code
-	FROM patrol_task_station pps
-	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
-	where  cs.station_code in
-	   <foreach collection="param1.stationCodeList" item="item" open="(" separator="," close=")">
-                #{item}
-       </foreach>
-     )
-    </if>
-     <if test="condition.stationCode != null and condition.lineCode == null">
-	and pt.code in (
-	SELECT pps.task_code
-	FROM patrol_task_station pps
-	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
-	where  pps.station_code = #{condition.stationCode}
-     )
-    </if>
-    <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
-    and pt.id in(
-        SELECT  pts.task_id
-        FROM patrol_task_standard pts
-        where  pts.subsystem_code = #{condition.subsystemCode}
-    )
-    </if>
-    <if test="condition.orgCode != null and condition.orgCode != ''">
-    and pto.org_code = #{condition.orgCode}
-   </if>
-GROUP BY
-	pto.org_code
     </select>
     <select id="selectNum" resultType="java.lang.Integer">
-        select ifnull((TIME_TO_SEC(a.time)/60),0)as times from
-                                                               (SELECT
-            timediff(c.arrive_time,IFNULL(c.recevice_time,c.assign_time)) as time
-        FROM
-            fault a
-                LEFT JOIN fault_repair_record c ON a.`code` = c.fault_code
-        WHERE
-           a.`status` >0
+        select ifnull((TIME_TO_SEC(a.time) / 60), 0) as times from
+                (SELECT timediff(c.arrive_time, IFNULL(c.recevice_time, c.assign_time)) as time
+                 FROM
+                         fault a
+                         LEFT JOIN fault_repair_record c
+                 ON a.`code` = c.fault_code
+                WHERE
+                a.`status`
+                    >0
         <if test="code != null">
             and  a.sub_system_code = #{code}
         </if>
         <if test="orgCode != null">
             and  a.sys_org_code = #{orgCode}
         </if>
-        <if test="startTime != null and endTime !=null ">
-            and  DATE_FORMAT( a.happen_time, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{startTime}, '%Y-%m-%d' )
-            AND DATE_FORMAT( #{endTime}, '%Y-%m-%d' )
+        <if test="startTime != null and endTime != null">
+            and  DATE_FORMAT( a.happen_time
+              , '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{startTime}
+              , '%Y-%m-%d' )
+            AND DATE_FORMAT( #{endTime}
+              , '%Y-%m-%d' )
         </if>
         <if test="lineCode != null">
             AND a.line_code = #{lineCode}
         </if>
-        <if test="stationCode != null and stationCode.size>0 ">
+        <if test="stationCode != null and stationCode.size > 0">
             AND a.station_code IN
             <foreach collection="stationCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-          and (a.end_time or not NULL) ) as a
-        where  1=1
+        and (a.end_time
+         or not NULL) ) as a
+                where 1 = 1
     </select>
     <select id="selectNum1" resultType="java.lang.Integer">
-        select ifnull((TIME_TO_SEC(abc.time)/60),0)as times from
-        (SELECT
-           timediff(c.end_time,IFNULL(c.recevice_time,c.assign_time)) as time
-        FROM
-        fault a
-        LEFT JOIN fault_repair_record c ON a.`code` = c.fault_code
-        WHERE
-        a.`status` >0
+        select ifnull((TIME_TO_SEC(abc.time) / 60), 0) as times from
+                (SELECT timediff(c.end_time, IFNULL(c.recevice_time, c.assign_time)) as time
+                 FROM
+                         fault a
+                         LEFT JOIN fault_repair_record c
+                 ON a.`code` = c.fault_code
+                WHERE
+                a.`status`
+                    >0
         <if test="code != null">
             and  a.sub_system_code = #{code}
         </if>
         <if test="orgCode != null">
             and  a.sys_org_code = #{orgCode}
         </if>
-        <if test="startTime != null and endTime !=null ">
-            and  DATE_FORMAT( a.happen_time, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{startTime}, '%Y-%m-%d' )
-            AND DATE_FORMAT( #{endTime}, '%Y-%m-%d' )
+        <if test="startTime != null and endTime != null">
+            and  DATE_FORMAT( a.happen_time
+              , '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{startTime}
+              , '%Y-%m-%d' )
+            AND DATE_FORMAT( #{endTime}
+              , '%Y-%m-%d' )
         </if>
         <if test="lineCode != null">
             AND a.line_code = #{lineCode}
         </if>
-        <if test="stationCode != null and stationCode.size>0 ">
+        <if test="stationCode != null and stationCode.size > 0">
             AND a.station_code IN
             <foreach collection="stationCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-        and (a.end_time or not NULL) ) as abc
-        where  1=1
+        and (a.end_time
+         or not NULL) ) as abc
+                where 1 = 1
     </select>
     <select id="selectMonth" resultType="com.aiurt.boot.report.model.dto.MonthDTO">
         select a.system_name,
-               COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='01' or not NULL ) as january,
-               COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='02' or not NULL ) as  february,
-               COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='03' or not NULL ) as march,
-               COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='04' or not NULL ) as april,
-               COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='05' or not NULL ) as may,
-               COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='06' or not NULL ) as june,
-               COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='07' or not NULL ) as july,
-               COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='08' or not NULL ) as august,
-               COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='09' or not NULL ) as september,
-               COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='10' or not NULL ) as october,
-               COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='11' or not NULL ) as november,
-               COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='12' or not NULL ) as december
-        FROM cs_subsystem a
-                 LEFT JOIN fault c ON a.system_code = c.sub_system_code
-            and c.`status` >2  AND DATE_ADD(c.happen_time,INTERVAL 1 YEAR) > NOW()
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '01' or not NULL) as january,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '02' or not NULL) as february,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '03' or not NULL) as march,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '04' or not NULL) as april,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '05' or not NULL) as may,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '06' or not NULL) as june,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '07' or not NULL) as july,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '08' or not NULL) as august,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '09' or not NULL) as september,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '10' or not NULL) as october,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '11' or not NULL) as november,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '12' or not NULL) as december
+                FROM cs_subsystem a
+                LEFT JOIN fault c ON a.system_code = c.sub_system_code
+                and c.`status` > 2  AND DATE_ADD(c.happen_time, INTERVAL 1 YEAR) > NOW()
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
-        <if test="stationCode != null and stationCode.size>0 ">
+        <if test="stationCode != null and stationCode.size > 0">
             AND c.station_code IN
             <foreach collection="stationCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-        WHERE a.del_flag=0
-          AND a.id in(select system_id from cs_user_subsystem where user_id = #{id})
-        GROUP BY  a.system_name
+        WHERE a.del_flag = 0
+          AND a.id in (select system_id from cs_user_subsystem where user_id = #{id})
+        GROUP BY a.system_name
     </select>
     <select id="getOrgReport" resultType="com.aiurt.boot.report.model.FailureOrgReport">
         SELECT
-            a.id,
-            a.depart_name as orgName,
-            a.org_code,
-            count( c.id) AS failureNum,
-            count( c.id AND c.fault_mode_code = 1 OR NOT NULL ) AS repairNum,
-            count( c.id AND c.fault_mode_code = 0 OR NOT NULL ) AS selfInspectionNum,
-            count( c.id AND c.end_time is NOT NULL and c.status = 12 OR not null ) AS resolvedNum,
-            count( c.id AND  c.status &lt;> 12 OR not NULL ) AS unResolvedNum,
-            (SELECT COUNT(id) FROM fault WHERE a.org_code = sys_org_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT( #{startTime}, '%Y-%m')
-        <if test="lineCode != null">
-        AND line_code = #{lineCode}
-    </if>
-        <if test="stationCode != null and stationCode.size>0 ">
-            AND station_code IN
-            <foreach collection="stationCode" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
-        <if test="systemCode != null and systemCode.size>0 ">
-            AND sub_system_code IN
-            <foreach collection="systemCode" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>) as monthNum,
-            (SELECT COUNT(id) FROM fault WHERE a.org_code = sys_org_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT(date_sub( #{endTime}, interval 1 month), '%Y-%m')
+                a.id,
+                a.depart_name                                                        as orgName,
+                a.org_code,
+                count(c.id)                                                          AS failureNum,
+                count(c.id AND c.fault_mode_code = 1 OR NOT NULL)                    AS repairNum,
+                count(c.id AND c.fault_mode_code = 0 OR NOT NULL)                    AS selfInspectionNum,
+                count(c.id AND c.end_time is NOT NULL and c.status = 12 OR not null) AS resolvedNum,
+                count(c.id AND c.status &lt;> 12 OR not NULL)                        AS unResolvedNum,
+                (SELECT COUNT(id)
+                 FROM fault WHERE a.org_code = sys_org_code
+                              and `status` > 2
+                              AND DATE_FORMAT(happen_time, '%Y-%m') = DATE_FORMAT(#{startTime}, '%Y-%m')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
-        <if test="stationCode != null and stationCode.size>0 ">
+        <if test="stationCode != null and stationCode.size > 0">
             AND station_code IN
             <foreach collection="stationCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-        <if test="systemCode != null and systemCode.size>0 ">
+        <if test="systemCode != null and systemCode.size > 0">
             AND sub_system_code IN
             <foreach collection="systemCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
-        </if>) as lastMonthNum,
-            (SELECT COUNT(id) FROM fault WHERE a.org_code = sys_org_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y') =  DATE_FORMAT(curdate(), '%Y')
+        </if>
+        ) as monthNum,
+                (SELECT COUNT(id)
+                 FROM fault WHERE a.org_code = sys_org_code
+                              and `status` > 2
+                              AND
+                DATE_FORMAT(happen_time, '%Y-%m') = DATE_FORMAT(date_sub(#{endTime}, interval 1 month), '%Y-%m')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
-        <if test="stationCode != null and stationCode.size>0 ">
+        <if test="stationCode != null and stationCode.size > 0">
             AND station_code IN
             <foreach collection="stationCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-        <if test="systemCode != null and systemCode.size>0 ">
+        <if test="systemCode != null and systemCode.size > 0">
             AND sub_system_code IN
             <foreach collection="systemCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
-        </if>) as yearNum,
-            (SELECT COUNT(id) FROM fault WHERE a.org_code = sys_org_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y') =  DATE_FORMAT(date_sub(curdate(), interval 1 year), '%Y')
+        </if>
+        ) as lastMonthNum,
+                (SELECT COUNT(id)
+                 FROM fault WHERE a.org_code = sys_org_code
+                              and `status` > 2
+                              AND DATE_FORMAT(happen_time, '%Y') = DATE_FORMAT(curdate(), '%Y')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
-        <if test="stationCode != null and stationCode.size>0 ">
+        <if test="stationCode != null and stationCode.size > 0">
             AND station_code IN
             <foreach collection="stationCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-        <if test="systemCode != null and systemCode.size>0 ">
+        <if test="systemCode != null and systemCode.size > 0">
             AND sub_system_code IN
             <foreach collection="systemCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
-        </if>) as lastYearNum
-        FROM sys_depart a
-                 LEFT JOIN fault c ON a.org_code = c.sys_org_code and c.`status` >2
-        <if test="startTime != null and endTime !=null ">
-            and  DATE_FORMAT( c.happen_time, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{startTime}, '%Y-%m-%d' )
-            AND DATE_FORMAT( #{endTime}, '%Y-%m-%d' )
+        </if>
+        ) as yearNum,
+                (SELECT COUNT(id)
+                 FROM fault WHERE a.org_code = sys_org_code
+                              and `status` > 2
+                              AND
+                DATE_FORMAT(happen_time, '%Y') = DATE_FORMAT(date_sub(curdate(), interval 1 year), '%Y')
+        <if test="lineCode != null">
+            AND line_code = #{lineCode}
+        </if>
+        <if test="stationCode != null and stationCode.size > 0">
+            AND station_code IN
+            <foreach collection="stationCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="systemCode != null and systemCode.size > 0">
+            AND sub_system_code IN
+            <foreach collection="systemCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ) as lastYearNum
+                FROM sys_depart a
+                LEFT JOIN fault c ON a.org_code = c.sys_org_code and c.`status` > 2
+        <if test="startTime != null and endTime != null">
+            and  DATE_FORMAT(c.happen_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+                         AND DATE_FORMAT(#{endTime}, '%Y-%m-%d')
         </if>
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
-        <if test="stationCode != null and stationCode.size>0 ">
+        <if test="stationCode != null and stationCode.size > 0">
             AND c.station_code IN
             <foreach collection="stationCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-        <if test="systemCode != null and systemCode.size>0 ">
+        <if test="systemCode != null and systemCode.size > 0">
             AND c.sub_system_code IN
             <foreach collection="systemCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-        WHERE a.del_flag=0
-          <if test="ids != null and ids.size>0 ">
-        AND a.id IN
-        <foreach collection="ids" item="ids" open="(" separator="," close=")">
-            #{ids}
-        </foreach>
+        WHERE a.del_flag = 0
+        <if test="ids != null and ids.size > 0">
+            AND a.id IN
+            <foreach collection="ids" item="ids" open="(" separator="," close=")">
+                #{ids}
+            </foreach>
         </if>
-        GROUP BY a.depart_name,a.org_code
+        GROUP BY a.depart_name, a.org_code
     </select>
     <select id="selectMonthOrg" resultType="com.aiurt.boot.report.model.dto.MonthDTO">
-        select
-               a.depart_name as orgName,
-        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='01' or not NULL ) as january,
-        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='02' or not NULL ) as  february,
-        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='03' or not NULL ) as march,
-        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='04' or not NULL ) as april,
-        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='05' or not NULL ) as may,
-        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='06' or not NULL ) as june,
-        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='07' or not NULL ) as july,
-        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='08' or not NULL ) as august,
-        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='09' or not NULL ) as september,
-        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='10' or not NULL ) as october,
-        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='11' or not NULL ) as november,
-        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='12' or not NULL ) as december
-        FROM sys_depart a
-        LEFT JOIN fault c ON a.org_code = c.sys_org_code
-        and c.`status` >2  AND DATE_ADD(c.happen_time,INTERVAL 1 YEAR) > NOW()
+        select a.depart_name                                                       as orgName,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '01' or not NULL) as january,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '02' or not NULL) as february,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '03' or not NULL) as march,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '04' or not NULL) as april,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '05' or not NULL) as may,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '06' or not NULL) as june,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '07' or not NULL) as july,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '08' or not NULL) as august,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '09' or not NULL) as september,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '10' or not NULL) as october,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '11' or not NULL) as november,
+               COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '12' or not NULL) as december
+                FROM sys_depart a
+                LEFT JOIN fault c ON a.org_code = c.sys_org_code
+                and c.`status` > 2  AND DATE_ADD(c.happen_time, INTERVAL 1 YEAR) > NOW()
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
-        <if test="stationCode != null and stationCode.size>0 ">
+        <if test="stationCode != null and stationCode.size > 0">
             AND c.station_code IN
             <foreach collection="stationCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-        <if test="systemCode != null and systemCode.size>0 ">
+        <if test="systemCode != null and systemCode.size > 0">
             AND c.sub_system_code IN
             <foreach collection="systemCode" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-        WHERE a.del_flag=0
-        <if test="orgCodes != null and orgCodes.size>0 ">
+        WHERE a.del_flag = 0
+        <if test="orgCodes != null and orgCodes.size > 0">
             AND a.org_code in
             <foreach collection="orgCodes" item="orgCodes" open="(" separator="," close=")">
                 #{orgCodes}
             </foreach>
         </if>
-        GROUP BY  a.depart_name
+        GROUP BY a.depart_name
     </select>
     <select id="selectLine" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
-        select a.line_name as name,a.line_code as code from cs_station a left join cs_user_station c on c.station_id =a.id
-       where c.user_id = #{id}
+        select a.line_name as name, a.line_code as code
+        from cs_station a
+                     left join cs_user_station c on c.station_id = a.id
+        where c.user_id = #{id}
     </select>
     <select id="selectStation" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
-        select a.station_name as name,a.station_code as code from cs_station a left join cs_user_station c on c.station_id =a.id
-        where c.user_id = #{id}
+        select a.station_name as name, a.station_code as code
+        from cs_station a
+                     left join cs_user_station c on c.station_id = a.id
+                where c.user_id = #{id}
         <if test="lineCode != null">
             AND a.line_code = #{lineCode}
         </if>
     </select>
     <select id="selectSystem" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
-        select a.system_name as name, a.system_code as code from cs_subsystem a left join  cs_user_subsystem c on c.system_id = a.id
+        select a.system_name as name, a.system_code as code
+        from cs_subsystem a
+                     left join cs_user_subsystem c on c.system_id = a.id
         where c.user_id = #{id}
     </select>
     <select id="selectDepart" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
-       select
-        a.id as id,
-        a.org_code as code,
-        a.depart_name as name,
-        a.org_category as orgCategory
-    from
-        sys_depart a
-    where
-    a.manager_id = #{id}
+        select a.id           as id,
+               a.org_code     as code,
+               a.depart_name  as name,
+               a.org_category as orgCategory
+        from sys_depart a
+        where a.manager_id = #{id}
     </select>
     <select id="getUserOrgCategory" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
-        select
-        a.id as id,
-        a.org_code as code,
-        a.depart_name as name,
-        a.org_category as orgCategory
-        from
-        sys_depart a
-        where
-        org_code_cc LIKE CONCAT ('%', #{orgCode}, '%' )
-        and a.org_category in(3,4,5)
-     </select>
-     <select id="getUserPlanNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
-    SELECT
-    COUNt(pt.id) as planTaskNumber,
-	sd.id AS orgId,
-	pt.id AS taskId
-FROM
-	patrol_task pt
-	JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
-	JOIN sys_depart sd ON sd.org_code = pto.org_code
-	  <if test="orgId != null and orgId != '' ">
-    AND sd.id = #{orgId}
-    </if>
-    <if test="startDate != null and startDate != ''">
-     and DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
-    </if>
-</select>
-<select id="getUserNowNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
-     SELECT
-    SUM(IF(pt.STATUS = 7,TIMESTAMPDIFF( SECOND, pt.begin_time, IF ( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) ), 0))as  workHours,
-	sd.id as orgId,
-	pt.id AS taskId
-FROM
-	patrol_task pt
-	JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
-	JOIN sys_user su ON su.id = ptu.user_id
-	JOIN sys_depart sd ON sd.id = su.org_id
-	  <if test="useIds != null and useIds.size() != 0">
-     and ptu.user_id in
-     <foreach collection="useIds" item="item" open="(" separator="," close=")">
+        select a.id           as id,
+               a.org_code     as code,
+               a.depart_name  as name,
+               a.org_category as orgCategory
+        from sys_depart a
+        where org_code_cc LIKE CONCAT('%', #{orgCode}, '%')
+          and a.org_category in (3, 4, 5)
+    </select>
+    <select id="getUserPlanNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
+        SELECT COUNt(pt.id) as planTaskNumber,
+               sd.id        AS orgId,
+               pt.id        AS taskId
+                FROM
+                patrol_task pt
+                JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
+                JOIN sys_depart sd ON sd.org_code = pto.org_code
+        <if test="orgId != null and orgId != ''">
+            AND sd.id = #{orgId}
+        </if>
+        <if test="startDate != null and startDate != ''">
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+        </if>
+    </select>
+    <select id="getUserNowNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
+        SELECT SUM(IF(pt.STATUS = 7,
+                      TIMESTAMPDIFF(SECOND, pt.begin_time, IF(1 = pt.auditor, pt.auditor_time, pt.submit_time)),
+                      0)) as workHours,
+               sd.id      as orgId,
+               pt.id      AS taskId
+                FROM
+                patrol_task pt
+                JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
+                JOIN sys_user su ON su.id = ptu.user_id
+                JOIN sys_depart sd ON sd.id = su.org_id
+        <if test="useIds != null and useIds.size() != 0">
+            and ptu.user_id in
+            <foreach collection="useIds" item="item" open="(" separator="," close=")">
                 #{item}
-     </foreach>
-
-    </if>
-    <if test="startDate != null and startDate != ''">
-     and DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
-    </if>
-   and pt.`status` = 7
-	GROUP BY
-	pt.id
-</select>
-<select id="getPeopleNowNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
-    SELECT
-    SUM(IF(pt.STATUS = 7,TIMESTAMPDIFF( SECOND, pt.begin_time, IF ( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) ), 0))as  workHours,
-	sd.id as orgId,
-	pt.id AS taskId
-    FROM
-	patrol_task pt
-    JOIN patrol_task_device ptd ON pt.id = ptd.task_id
-    JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
-	JOIN sys_user su ON su.id = pa.user_id
-	JOIN sys_depart sd ON sd.id = su.org_id
-	<if test="useIds != null and useIds.size() != 0">
-    AND pa.user_id IN
-     <foreach collection="useIds" item="item" open="(" separator="," close=")">
+            </foreach>
+        </if>
+        <if test="startDate != null and startDate != ''">
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+        </if>
+        and pt.`status` = 7
+                GROUP BY pt.id
+    </select>
+    <select id="getPeopleNowNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
+        SELECT SUM(IF(pt.STATUS = 7,
+                      TIMESTAMPDIFF(SECOND, pt.begin_time, IF(1 = pt.auditor, pt.auditor_time, pt.submit_time)),
+                      0)) as workHours,
+               sd.id      as orgId,
+               pt.id      AS taskId
+                FROM
+                patrol_task pt
+                JOIN patrol_task_device ptd ON pt.id = ptd.task_id
+                JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
+                JOIN sys_user su ON su.id = pa.user_id
+                JOIN sys_depart sd ON sd.id = su.org_id
+        <if test="useIds != null and useIds.size() != 0">
+            AND pa.user_id IN
+            <foreach collection="useIds" item="item" open="(" separator="," close=")">
                 #{item}
-     </foreach>
-    </if>
-	<if test="startDate != null and startDate != ''">
-     and DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
-    </if>
-    and pt.`status` = 7
-	GROUP BY
-	pt.id
-</select>
-<select id="getUserOmitTasksNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
-     SELECT
-	sd.id as orgId,
-	pt.id AS taskId
-FROM
-	patrol_task pt
-	JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
-	JOIN sys_user su ON su.id = ptu.user_id
-	JOIN sys_depart sd ON sd.id = su.org_id
-	  <if test="useIds != null and useIds.size() != 0">
-     and ptu.user_id in
-     <foreach collection="useIds" item="item" open="(" separator="," close=")">
+            </foreach>
+        </if>
+        <if test="startDate != null and startDate != ''">
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+        </if>
+        and pt.`status` = 7
+                GROUP BY pt.id
+    </select>
+    <select id="getUserOmitTasksNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
+        SELECT sd.id as orgId,
+               pt.id AS taskId
+                FROM
+                patrol_task pt
+                JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
+                JOIN sys_user su ON su.id = ptu.user_id
+                JOIN sys_depart sd ON sd.id = su.org_id
+        <if test="useIds != null and useIds.size() != 0">
+            and ptu.user_id in
+            <foreach collection="useIds" item="item" open="(" separator="," close=")">
                 #{item}
-     </foreach>
-
-    </if>
-    <if test="startDate != null and startDate != ''">
-     and DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
-    </if>
-   and pt.abnormal_state = 1
-	GROUP BY
-	pt.id
-</select>
-<select id="getPeopleOmitTasksNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
-    SELECT
-	sd.id as orgId,
-	pt.id AS taskId
-    FROM
-	patrol_task pt
-    JOIN patrol_task_device ptd ON pt.id = ptd.task_id
-    JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
-	JOIN sys_user su ON su.id = pa.user_id
-	JOIN sys_depart sd ON sd.id = su.org_id
-	<if test="useIds != null and useIds.size() != 0">
-    AND pa.user_id IN
-     <foreach collection="useIds" item="item" open="(" separator="," close=")">
+            </foreach>
+        </if>
+        <if test="startDate != null and startDate != ''">
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+        </if>
+        and pt.abnormal_state = 1
+                GROUP BY pt.id
+    </select>
+    <select id="getPeopleOmitTasksNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
+        SELECT sd.id as orgId,
+               pt.id AS taskId
+                FROM
+                patrol_task pt
+                JOIN patrol_task_device ptd ON pt.id = ptd.task_id
+                JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
+                JOIN sys_user su ON su.id = pa.user_id
+                JOIN sys_depart sd ON sd.id = su.org_id
+        <if test="useIds != null and useIds.size() != 0">
+            AND pa.user_id IN
+            <foreach collection="useIds" item="item" open="(" separator="," close=")">
                 #{item}
-     </foreach>
-    </if>
-	<if test="startDate != null and startDate != ''">
-     and DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
-    </if>
-    and pt.abnormal_state = 1
-	GROUP BY
-	pt.id
-</select>
-<select id="getDetail" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
-        select t1.*,(select realname from sys_user where id= t1.end_user_id) as
-        endUserName,concat(DATE_FORMAT(t1.start_time,'%H:%i'),"-",DATE_FORMAT(t1.end_time,'%H:%i'))as startEndTime
+            </foreach>
+        </if>
+        <if test="startDate != null and startDate != ''">
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+        </if>
+        and pt.abnormal_state = 1
+                GROUP BY pt.id
+    </select>
+    <select id="getDetail" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
+        select t1.*,
+               (select realname from sys_user where id = t1.end_user_id)                           as
+                                                                                                      endUserName,
+               concat(DATE_FORMAT(t1.start_time, '%H:%i'), "-", DATE_FORMAT(t1.end_time, '%H:%i')) as startEndTime
         from patrol_task t1
-         where t1.del_flag = 0
-         <if test="id != null and id != ''">
-         and t1.id = #{id}
-</if>
-</select>
+                where t1.del_flag = 0
+        <if test="id != null and id != ''">
+            and t1.id = #{id}
+        </if>
+    </select>
 </mapper>

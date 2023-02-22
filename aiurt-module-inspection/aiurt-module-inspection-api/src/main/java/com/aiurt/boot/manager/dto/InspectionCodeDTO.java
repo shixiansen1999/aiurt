@@ -40,4 +40,10 @@ public class InspectionCodeDTO extends InspectionCode {
     @ApiModelProperty(value = "选择的设备集合")
     @TableField(exist = false)
     List<Device> devices;
+    /**前端传多个部门code*/
+    @ApiModelProperty(value = "多个部门code")
+    private java.lang.String orgCodes;
+    /**数据库查询用*/
+    @ApiModelProperty(value = "数据库查询用")
+    private List<String> orgList;
 }

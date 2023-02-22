@@ -7,7 +7,9 @@ import com.aiurt.modules.usageconfig.entity.UsageConfig;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -27,4 +29,12 @@ public interface UsageConfigService extends IService<UsageConfig> {
      * @return
      */
     IPage<UsageStatDTO> getBusinessDataStatistics(UsageConfigParamDTO usageConfigParamDTO);
+
+    /**
+     * 导出
+     * @param request
+     * @param usageConfig
+     * @return
+     */
+    ModelAndView exportXls(HttpServletRequest request, UsageConfig usageConfig);
 }

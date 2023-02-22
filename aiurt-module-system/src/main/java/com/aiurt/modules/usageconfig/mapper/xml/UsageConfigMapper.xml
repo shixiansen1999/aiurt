@@ -57,4 +57,15 @@
             pid IN (SELECT id from sys_usage_config where `code` = #{code})
           AND state = 1
     </select>
+
+
+    <select id="selectByPages" resultType="com.aiurt.modules.usageconfig.entity.UsageConfig">
+        SELECT
+        id,pid, `name` as name, table_name, sta_condition
+        FROM
+        sys_usage_config
+        WHERE
+        pid IN (SELECT id from sys_usage_config where `code` = #{code})
+        AND state = 1
+    </select>
 </mapper>

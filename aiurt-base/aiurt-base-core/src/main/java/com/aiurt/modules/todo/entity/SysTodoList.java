@@ -16,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * @Description: 待办池列表
@@ -121,4 +122,27 @@ public class SysTodoList implements Serializable {
     /**内容*/
     @ApiModelProperty("内容")
     private java.lang.String msgContent;
+
+    /**摘要*/
+    @ApiModelProperty("摘要")
+    private java.lang.String msgAbstract;
+    /**发布内容*/
+    @ApiModelProperty("发布内容")
+    private String publishingContent;
+    /**标题*/
+    @ApiModelProperty("标题")
+    private String title;
+
+    /**模板消息对应的模板编码*/
+    @TableField(exist = false)
+    private String templateCode;
+
+    /**是否发送Markdown格式的消息*/
+    @TableField(exist = false)
+    private Boolean markdown;
+
+    /**解析模板内容 对应的数据*/
+    @TableField(exist = false)
+    private Map<String, Object> data;
+
 }

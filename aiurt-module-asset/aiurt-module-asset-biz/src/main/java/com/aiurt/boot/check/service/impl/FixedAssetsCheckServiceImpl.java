@@ -1,6 +1,7 @@
 package com.aiurt.boot.check.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.asset.entity.FixedAssets;
@@ -24,8 +25,9 @@ import com.aiurt.boot.check.vo.FixedAssetsCheckVO;
 import com.aiurt.boot.constant.FixedAssetsConstant;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.boot.record.service.IFixedAssetsCheckRecordService;
-import com.aiurt.common.api.dto.message.BusMessageDTO;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
@@ -41,6 +43,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -245,7 +248,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         }
         fixedAssetsCheckRecordService.saveBatch(records);
         fixedAssetsCheckDetailService.saveBatch(details);
-        // 发消息
+        /*// 发消息
         BusMessageDTO messageDTO = new BusMessageDTO();
         //设置消息属性
         messageDTO.setStartTime(new Date());
@@ -257,7 +260,34 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         messageDTO.setContent(String.format("%s你好，您作为[%s]盘点任务的盘点人,尽快完成!", userById.getRealname(), fixedAssetsCheck.getInventoryList()));
         //设置接收人
         messageDTO.setToUser(userById.getUsername());
-        sysBaseApi.sendBusAnnouncement(messageDTO);
+        sysBaseApi.sendBusAnnouncement(messageDTO);*/
+
+        // 发消息
+        MessageDTO messageDTO = new MessageDTO();
+        LoginUser userById = sysBaseApi.getUserById(fixedAssetsCheck.getCheckId());
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //构建消息模板
+        HashMap<String, Object> map = new HashMap<>();
+        map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.ASSET_CHECKER.getType());
+        map.put("inventoryList",fixedAssetsCheck.getInventoryList());
+        SysDepartModel departByOrgCode = sysBaseApi.getDepartByOrgCode(fixedAssetsCheck.getOrgCode());
+        map.put("departName", departByOrgCode.getDepartName());
+        map.put("checkName", userById.getRealname());
+        map.put("time", DateUtil.format(fixedAssetsCheck.getPlanStartDate(), "yyyy-MM-dd")+"-"+DateUtil.format(fixedAssetsCheck.getPlanEndDate(), "yyyy-MM-dd"));
+        messageDTO.setData(map);
+
+        messageDTO.setTitle("固定资产盘点");
+        messageDTO.setStartTime(new Date());
+        messageDTO.setEndTime(new Date());
+        messageDTO.setFromUser(sysUser.getUsername());
+        messageDTO.setToUser(userById.getUsername());
+        messageDTO.setToAll(false);
+        messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
+        messageDTO.setType(MessageTypeEnum.XT.getType());
+        messageDTO.setMsgAbstract("固定资产盘点");
+        messageDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
+        messageDTO.setCategory(CommonConstant.MSG_CATEGORY_12);
+        sysBaseApi.sendTemplateMessage(messageDTO);
     }
 
     @Override

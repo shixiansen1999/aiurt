@@ -12,12 +12,14 @@
 # 第二步：将此yml文件上传服务器，执行启动命令 docker-compose -f ./docker-compose-server.yml up
 version: '2'
 services:
-  jeecg-boot-mysql:
+  aiurt-mysql:
     image: 81.70.17.111:5000/jeecg-boot-mysql:1.0
     environment:
       MYSQL_ROOT_PASSWORD: root
     restart: always
-    container_name: jeecg-boot-mysql
+    container_name: aiurt-mysql
+    volumes:
+      - /data/config:/jeecg-boot/config
     command:
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_general_ci
@@ -27,25 +29,18 @@ services:
     ports:
       - 3306:3306
 
-  jeecg-boot-redis:
+  aiurt-redis:
     image: redis:5.0
     ports:
       - 6379:6379
     restart: always
-    container_name: jeecg-boot-redis
+    container_name: aiurt-redis
 
-  jeecg-boot-system:
-    image: 81.70.17.111:5000/jeecg-boot-system:1.0
+  aiurt-platform:
+    image: aiurt-platfrom:1.0.1
     restart: always
-    container_name: jeecg-boot-system
+    container_name: aiurt-platform
     volumes:
       - /data/config:/jeecg-boot/config
     ports:
       - 8080:8080
-
-  jeecg-boot-nginx:
-    image: 81.70.17.111:5000/nginxhtml
-    restart: always
-    container_name: jeecg-boot-nginx
-    ports:
-      - 80:80

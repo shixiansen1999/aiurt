@@ -95,6 +95,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/sys/checkAuth", "anon"); //授权接口排除
 
         filterChainDefinitionMap.put("/workTicket/bdWorkTicket/printf/**", "anon");  // 获取打印数据
+        filterChainDefinitionMap.put("/ik/**", "anon");  // 动态词库
 
 
         filterChainDefinitionMap.put("/", "anon");
