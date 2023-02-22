@@ -103,6 +103,7 @@ public class SystemSendMsgHandle implements ISendMsgHandle {
         announcement.setUserIds(messageDTO.getToUser());
         announcement.setStartTime(messageDTO.getStartTime());
         announcement.setEndTime(messageDTO.getEndTime());
+        announcement.setLevel(messageDTO.getLevel());
         sysAnnouncementMapper.insert(announcement);
         // 2.插入用户通告阅读标记表记录
         String userId = messageDTO.getToUser();

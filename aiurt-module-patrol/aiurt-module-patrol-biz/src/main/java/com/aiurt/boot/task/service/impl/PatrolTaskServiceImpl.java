@@ -409,9 +409,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         TodoDTO todoDTO = new TodoDTO();
         todoDTO.setData(map);
         todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
-        todoDTO.setTitle("巡视任务-漏检");
-        todoDTO.setMsgAbstract("巡视任务-漏检");
-        todoDTO.setPublishingContent("巡视任务漏检，请尽快处置");
+        todoDTO.setTitle("巡视任务-确认接收");
+        todoDTO.setMsgAbstract("巡视任务接收");
+        todoDTO.setPublishingContent("接收巡视任务指派，请在巡视任务计划执行日期开展巡视工作");
 
         todoDTO.setProcessDefinitionName("巡视管理");
         todoDTO.setTaskName(patrolTask.getName() + "(待执行)");

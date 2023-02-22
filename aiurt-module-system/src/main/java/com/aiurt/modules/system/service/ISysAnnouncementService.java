@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service;
 
+import com.aiurt.modules.system.dto.SysAnnouncementPageDTO;
 import com.aiurt.modules.system.dto.SysMessageInfoDTO;
 import com.aiurt.modules.system.dto.SysMessageTypeDTO;
 import com.aiurt.modules.system.entity.SysAnnouncement;
@@ -69,7 +70,6 @@ public interface ISysAnnouncementService extends IService<SysAnnouncement> {
 
     /**
      * 查询未读/未处理消息最远的页码
-     * @param page
      * @param messageFlag
      * @param todoType
      * @param keyWord
@@ -77,6 +77,6 @@ public interface ISysAnnouncementService extends IService<SysAnnouncement> {
      * @param msgCategory
      * @return
      */
-    public Map<Integer,String> queryPageNumber(Page<SysMessageInfoDTO> page , String messageFlag, String todoType, String keyWord, String busType, String msgCategory);
+    public SysAnnouncementPageDTO queryPageNumber(Page<Object> page,String messageFlag, String todoType, String keyWord, String busType, String msgCategory);
 
 }
