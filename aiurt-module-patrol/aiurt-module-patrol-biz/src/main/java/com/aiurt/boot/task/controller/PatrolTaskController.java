@@ -12,6 +12,7 @@ import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.boot.task.service.IPatrolTaskUserService;
+import com.aiurt.boot.utils.ArchiveUtils;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
@@ -19,6 +20,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -30,6 +32,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +57,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     private IPatrolTaskDeviceService patrolTaskDeviceService;
     @Autowired
     private IPatrolTaskUserService patrolTaskUserService;
-
+    @Resource
+    private ArchiveUtils archiveUtils;
 
     /**
      * PC巡检任务列表-巡视任务池
@@ -565,6 +569,51 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
                                           HttpServletRequest req) {
         patrolTaskService.getPatrolTaskManualEdit(patrolTaskManualDTO);
         return Result.OK("编辑成功");
+    }
+    /**
+     * 巡视归档
+     */
+    @AutoLog("巡视归档")
+    @RequestMapping(value = "/archivePatrol")
+    @ApiOperation(value = "巡视归档", notes = "巡视归档")
+    public Result<?> archivePatrol(HttpServletRequest request, @RequestBody List<PatrolTaskParam> data) {
+        if (data == null || data.size() == 0) {
+            return Result.error("没有选择要归档的文件");
+        }
+        //获取token先看有没有归档权限
+        String token = null;
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        try {
+            token = archiveUtils.getToken(sysUser.getUsername());
+            System.out.println(token);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("系统异常");
+        }
+        if (StringUtils.isEmpty(token)) {
+            return Result.error("没有归档权限");
+        }
+        //获取登录用户信息
+        Map userInfo = archiveUtils.getArchiveUser(sysUser.getUsername(), token);
+        if (ObjectUtil.isEmpty(userInfo)) {
+            return Result.error("没有归档权限");
+        }
+        //通过id获取档案类型信息，拿到refileFolderId
+        Map typeInfo = archiveUtils.getTypeInfoById(token);
+        String refileFolderId = typeInfo.get("refileFolderId").toString();
+
+        //逐条归档
+        String finalToken = token;
+        String finalArchiveUserId = userInfo.get("ID").toString();
+        String username = userInfo.get("Name").toString();
+        String sectId = typeInfo.get("sectId").toString();
+
+        data.forEach(patrolTask -> {
+            patrolTaskService.archPatrol(patrolTask, finalToken, finalArchiveUserId, refileFolderId, username, sectId);
+            //patrolTaskService.archPatrol(patrolTask,null, null,null,null,null);
+        });
+
+        return Result.ok("归档成功");
     }
 
 }

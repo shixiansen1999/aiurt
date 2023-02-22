@@ -23,7 +23,9 @@ import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.aiurt.boot.utils.ArchiveUtils;
 import com.aiurt.boot.utils.PatrolCodeUtil;
+import com.aiurt.boot.utils.PdfUtil;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
@@ -37,12 +39,17 @@ import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
@@ -52,11 +59,14 @@ import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import java.io.*;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -475,6 +485,70 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_COMPLETE).set(PatrolTask::getAuditorRemark, remark).set(PatrolTask::getAuditorTime, new Date()).eq(PatrolTask::getId, id);
             this.update(queryWrapper);
             return Result.OK("通过成功");
+        }
+    }
+    @Value("${support.path.exportPatrolPath}")
+    private String exportPath;
+    @Autowired
+    private ArchiveUtils archiveUtils;
+    @Override
+    public void archPatrol(PatrolTaskParam patrolTask, String token, String finalArchiveUserId, String refileFolderId, String username, String sectId) {
+        try {
+            SXSSFWorkbook archiveFault = new SXSSFWorkbook();
+            // TODO 后期修改 导出Excel表 ExcelUtils.createArchivePatrol(patrolTask);
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            Date date = new Date();
+            Date submitTime = patrolTask.getSubmitTime();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+            String fileName = patrolTask.getName() + sdf.format(submitTime);
+            String path = exportPath + fileName + ".xlsx";
+            FileOutputStream fos = new FileOutputStream(path);
+            archiveFault.write(os);
+            fos.write(os.toByteArray());
+            os.close();
+            fos.close();
+            PdfUtil.excel2pdf(path);
+
+            //传入档案系统
+            //创建文件夹
+            String foldername = fileName + "_" + date.getTime();
+            String refileFolderIdNew = archiveUtils.createFolder(token, refileFolderId, foldername);
+            //上传文件
+            String fileType = "pdf";
+            File file = new File(exportPath + fileName + "." + fileType);
+            Long size = file.length();
+            InputStream in = new FileInputStream(file);
+            JSONObject res = archiveUtils.upload(token, refileFolderIdNew, fileName + "." + fileType, size, fileType, in);
+            String fileId = res.getString("fileId");
+            Map<String, String> fileInfo = new HashMap<>();
+            fileInfo.put("fileId", fileId);
+            fileInfo.put("operateType", "upload");
+            ArrayList<Object> fileList = new ArrayList<>();
+            fileList.add(fileInfo);
+            Map values = new HashMap();
+            // TODO 后期修改
+//            values.put("archiver", archiveUserId);
+//            values.put("username", realname);
+//            values.put("duration", patrolTask.getSecertduration());
+//            values.put("secert", patrolTask.getSecert());
+//            values.put("secertduration", patrolTask.getSecertduration());
+            values.put("name", fileName);
+            values.put("fileList", fileList);
+            values.put("number", values.get("number"));
+            values.put("refileFolderId", refileFolderIdNew);
+            values.put("sectid", sectId);
+            Map result = archiveUtils.arch(values, token);
+            Map<String, String> obj = JSON.parseObject((String) result.get("obj"), new TypeReference<HashMap<String, String>>() {
+            });
+            if (result.get("result").toString() == "true" && "新增".equals(obj.get("rs"))) {
+                UpdateWrapper<PatrolTask> uwrapper = new UpdateWrapper<>();
+                uwrapper.eq("id", patrolTask.getId()).set("ecm_status", 1);
+                this.update(uwrapper);
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
