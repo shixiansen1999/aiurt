@@ -4,6 +4,7 @@ package com.aiurt.modules.fault.service;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -112,6 +113,8 @@ public interface IFaultService extends IService<Fault> {
      * @param repairRecordDTO
      */
     void fillRepairRecord(RepairRecordDTO repairRecordDTO);
+
+    void complete(RepairRecordDTO dto, LoginUser username);
 
     /**
      * 审核结果

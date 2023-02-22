@@ -21,7 +21,11 @@ import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.*;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
+import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.fault.service.*;
+import com.aiurt.modules.faultexternal.entity.FaultExternal;
+import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
+import com.aiurt.modules.faultexternal.service.IFaultExternalService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
@@ -32,6 +36,7 @@ import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -53,6 +58,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -109,6 +115,19 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     private ISTodoBaseAPI todoBaseApi;
     @Autowired
     private ISysParamAPI iSysParamAPI;
+
+    @Autowired
+    private FaultRepairRecordMapper recordMapper;
+
+    @Autowired
+    private FaultMapper faultMapper;
+
+    @Autowired
+    private FaultExternalMapper faultExternalMapper;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
     /**
      * 故障上报
      *
@@ -901,7 +920,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Transactional(rollbackFor = Exception.class)
     public void fillRepairRecord(RepairRecordDTO repairRecordDTO) {
 
-
         LoginUser loginUser = checkLogin();
 
         String faultCode = repairRecordDTO.getFaultCode();
@@ -998,8 +1016,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
 
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_DEAL.getType(), faultCode, loginUser.getUsername(), "1");
+        complete(repairRecordDTO,loginUser);
+    }
 
     }
+
 
     /**
      *  统计实际的出库量以及更新故障组件更换记录device_change_spare_part
@@ -1357,6 +1378,49 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 记录日志
         saveLog(loginUser, "修改故障工单", fault.getCode(), FaultStatusEnum.APPROVAL_REJECT.getStatus(), null);
 
+    @Override
+    public void complete(RepairRecordDTO dto, LoginUser user) {
+        //如果是调度推送过来的故障，发送推送数据至调度系统
+        //通过faultCode找到对应的faultExternal
+        FaultRepairRecord faultRecord = recordMapper.selectById(dto.getId());
+        String code = faultRecord.getFaultCode();
+        FaultExternal faultExternal = faultExternalMapper.selectOne(new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getFaultcode, code)
+                .orderByDesc(FaultExternal::getId).last("limit 0,1"));;
+        if (faultExternal != null) {
+            Map param = new HashMap<String, Object>();
+            Map<String, Object> data = new HashMap<>();
+            data.put("indocno", faultExternal.getIndocno());
+            data.put("smfcode", faultExternal.getSmfcode());
+            data.put("sexecode", faultExternal.getSexecode());
+            data.put("iresult", 1);
+            data.put("smethod", dto.getMaintenanceMeasures());
+            data.put("icharger", null);
+            data.put("sworkno", user.getUsername());
+            data.put("scharger", user.getRealname());
+            //花费的时间
+            Date startTime = faultRecord.getCreateTime();
+            Date overTime = faultRecord.getEndTime();
+            long start = startTime.getTime();
+            long over = overTime.getTime();
+            long diff = over - start;
+            long nd = 1000 * 24 * 60 * 60;//一天的毫秒数
+            long nh = 1000 * 60 * 60;//一小时的毫秒数
+            long hour = diff % nd / nh;
+            data.put("irepairtime", hour);
+            data.put("dcompelete", faultRecord.getEndTime());
+
+            param.put("code", 200);
+            param.put("message", "success");
+            param.put("data", data);
+            param.put("systemid", "TXSYS");
+            JSONObject json = (JSONObject) JSONObject.toJSON(param);
+            String url = "http://123.57.62.172:30235/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
+            try {
+                restTemplate.postForObject(url, json, JSONObject.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
