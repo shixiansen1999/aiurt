@@ -718,7 +718,7 @@ public class LoginController {
 		String url1 ="https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token="+accessToken+"&userid="+userId;
 		Map response2 = RestUtil.get(url1);
 		String phone = (String)response2.get("mobile");
-		log.info("请求url->{},请求结果：{}", url, JSONObject.toJSONString(response1));
+		log.info("请求url->{},请求结果：{}", url1, JSONObject.toJSONString(response2));
 		ISysUserService bean = SpringContextUtils.getBean(ISysUserService.class);
 		SysUser sysUser = bean.getUserByPhone(phone);
 		if (ObjectUtil.isEmpty(sysUser)){
