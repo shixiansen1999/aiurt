@@ -706,12 +706,15 @@ public class LoginController {
 		Result<JSONObject> result = new Result<JSONObject>();
 		ThirdAppWechatEnterpriseServiceImpl enterpriseService = SpringContextUtils.getBean(ThirdAppWechatEnterpriseServiceImpl.class);
 		String accessToken = enterpriseService.getAccessToken();
+		log.info("请求参数：code->{}", code);
 		String url = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token="+accessToken+"&code="+code;
 		Map response1  =  RestUtil.get(url);
 		String userId = (String)response1.get("UserId");
+		log.info("请求结果：{}", JSONObject.toJSONString(response1));
 		String url1 ="https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token="+accessToken+"&userid="+userId;
 		Map response2 = RestUtil.get(url1);
 		String phone = (String)response2.get("mobile");
+		log.info("请求结果：{}", JSONObject.toJSONString(response1));
 		ISysUserService bean = SpringContextUtils.getBean(ISysUserService.class);
 		SysUser sysUser = bean.getUserByPhone(phone);
 		if (ObjectUtil.isEmpty(sysUser)){
