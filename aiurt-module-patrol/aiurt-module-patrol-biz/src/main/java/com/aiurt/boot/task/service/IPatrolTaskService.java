@@ -192,4 +192,15 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @return
      */
     Result<String> patrolTaskAudit(String id, Integer status, String remark, String backReason);
+
+    /**
+     * 归档
+     * @param patrolTask
+     * @param finalToken
+     * @param finalArchiveUserId
+     * @param refileFolderId
+     * @param username
+     * @param sectId
+     */
+    void archPatrol(PatrolTaskParam patrolTask, String finalToken, String finalArchiveUserId, String refileFolderId, String username, String sectId);
 }
