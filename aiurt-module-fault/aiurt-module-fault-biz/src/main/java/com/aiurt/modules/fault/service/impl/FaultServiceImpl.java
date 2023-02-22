@@ -1757,7 +1757,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         messageDTO.setType(faultMessageDTO.getMessageType());
         messageDTO.setPriority("L");
         messageDTO.setStartTime(new Date());
-        messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
+        messageDTO.setCategory(CommonConstant.MSG_CATEGORY_6);
         sysBaseAPI.sendTemplateMessage(messageDTO);
     }
 }

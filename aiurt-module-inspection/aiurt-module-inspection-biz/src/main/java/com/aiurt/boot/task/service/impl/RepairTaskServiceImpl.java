@@ -1271,7 +1271,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             if (CollUtil.isNotEmpty(loginUsers)) {
                 String usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
                 //发送通知
-                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),usernames, "检修任务-审核" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
+                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),usernames, "检修任务-审核" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                 RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                 BeanUtil.copyProperties(repairTask1,repairTaskMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -1473,7 +1473,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             if (CollUtil.isNotEmpty(loginUsers)) {
                 String usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
                 //发送通知
-                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, "检修任务-审核驳回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
+                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, "检修任务-审核驳回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                 RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                 BeanUtil.copyProperties(repairTask1,repairTaskMessageDTO);
                 //构建消息模板
@@ -1517,7 +1517,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             if (CollUtil.isNotEmpty(loginUsers)) {
                 String usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
                 //发送通知
-                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, "检修任务-验收" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
+                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, "检修任务-验收" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                 RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                 BeanUtil.copyProperties(repairTask1,repairTaskMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -1630,7 +1630,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             LoginUser user = sysBaseApi.getUserById(repairTask.getAssignUserId());
             if (ObjectUtil.isNotEmpty(user) && StrUtil.isNotEmpty(user.getUsername())) {
                 //发送通知
-                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), user.getUsername(), "检修任务-退回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
+                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), user.getUsername(), "检修任务-退回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                 RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                 BeanUtil.copyProperties(repairTask,repairTaskMessageDTO);
                 //构建消息模板

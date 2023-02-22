@@ -622,7 +622,7 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         messageDTO.setEndTime(new Date());
         messageDTO.setPriority("H");
         messageDTO.setCategory("1");
-        messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
+        messageDTO.setCategory(CommonConstant.MSG_CATEGORY_11);
         sysBaseAPI.sendTemplateMessage(messageDTO);
     }
 }

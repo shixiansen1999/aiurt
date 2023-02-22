@@ -145,11 +145,20 @@ public interface CommonConstant {
     public static final Integer ACT_SYNC_0 = 0;
 
     /**
-     * 消息类型1:通知公告2:系统消息3:特情消息
+     * 消息类型1:系统公告，2:系统消息，3:特情消息，4:巡视业务消息，5:检修业务消息，6:故障业务消息，7:应急管理消息，8:工作日志提醒，9:施工计划消息，10:备件与二级库消息，11:培训业务消息，12:固定资产业务消息
      */
     public static final String MSG_CATEGORY_1 = "1";
     public static final String MSG_CATEGORY_2 = "2";
     public static final String MSG_CATEGORY_3 = "3";
+    public static final String MSG_CATEGORY_4 = "4";
+    public static final String MSG_CATEGORY_5 = "5";
+    public static final String MSG_CATEGORY_6 = "6";
+    public static final String MSG_CATEGORY_7 = "7";
+    public static final String MSG_CATEGORY_8 = "8";
+    public static final String MSG_CATEGORY_9 = "9";
+    public static final String MSG_CATEGORY_10 = "10";
+    public static final String MSG_CATEGORY_11 = "11";
+    public static final String MSG_CATEGORY_12 = "12";
 
     /**
      * 是否配置菜单的数据权限 1是0否

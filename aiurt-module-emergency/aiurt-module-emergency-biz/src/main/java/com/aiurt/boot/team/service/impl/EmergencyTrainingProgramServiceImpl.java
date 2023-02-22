@@ -237,7 +237,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(strings);
             String userNameStr = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
             //发送通知
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(), userNameStr, "应急训练计划"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_2);
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(), userNameStr, "应急训练计划"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_7);
             //构建消息模板
             HashMap<String, Object> map = new HashMap<>();
             map.put("trainingProgramCode",program.getTrainingProgramCode() );

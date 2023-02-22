@@ -204,7 +204,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //todo 待处理
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //发送通知
-        MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(), dto.getSucceedUserName(), "您有一条待接班日志" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_2);
+        MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(), dto.getSucceedUserName(), "您有一条待接班日志" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_8);
         //构建消息模板
         HashMap<String, Object> map = new HashMap<>();
         map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());

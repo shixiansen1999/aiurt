@@ -284,7 +284,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         messageDTO.setType(MessageTypeEnum.XT.getType());
         messageDTO.setMsgAbstract("固定资产盘点");
         messageDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
-        messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
+        messageDTO.setCategory(CommonConstant.MSG_CATEGORY_12);
         sysBaseApi.sendTemplateMessage(messageDTO);
     }
 
