@@ -369,6 +369,7 @@ support:
     #webapp文件路径
     webapp: /data/wwwroot/support/dist/
     pic: /home/data/pic
+    exportPatrolPath: C:\Users\wangbin\Desktop\test\
   downFilePath:
     #先存到本地
     materialBasicInfoPath: G:\changchunguidao\swsc-copsms-admin\src\main\resources\template\物资基础信息导入模板.xlsx
@@ -378,7 +379,12 @@ support:
     #    inspectionCodeTemplatePath: /work/jar/BOOT-INF/classes/template/检修规范模版.xlsx
     safetyPrecautionsTemplatePath: /Users/qian/Downloads/安全事项模版.xlsx
     holidayExcelPath: /data/wwwroot/support/upload/template/holiday.xlsx
-
+  #档案系统host
+  host: http://10.3.2.13
+  #档案系统IntegrationKey,用于获取token
+  IntegrationKey: 46aa92ec-66af-4818-b7c1-8495a9bd7f17
+  #档案类型Id
+  archivesTypeId: 3d74878a-5c31-43b4-a024-188e0a3be725
 
 swsc:
   host: http://116.62.143.85/#/
