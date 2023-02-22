@@ -506,7 +506,7 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             BdTrainPlanMessageDTO bdTrainPlanMessageDTO = new BdTrainPlanMessageDTO();
             BeanUtil.copyProperties(checkVO,bdTrainPlanMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
-            bdTrainPlanMessageDTO.setBusType(SysAnnmentTypeEnum.TRAINRE_CHECK.getType());
+            bdTrainPlanMessageDTO.setBusType(SysAnnmentTypeEnum.TRAIN_RECHECK.getType());
             messageDTO.setType(MessageTypeEnum.XT.getType());
             messageDTO.setTemplateCode(CommonConstant.TRAIN_PLAN_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("考试结果发布");

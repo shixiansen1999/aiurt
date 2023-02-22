@@ -30,7 +30,7 @@ public enum SysAnnmentTypeEnum {
     /**
      * 培训复核
      */
-    TRAINRE_CHECK("trainre_check", "component","","培训业务消息"),
+    TRAIN_RECHECK("train_recheck", "component","","培训业务消息"),
     /**
      * 工作日志
      */
