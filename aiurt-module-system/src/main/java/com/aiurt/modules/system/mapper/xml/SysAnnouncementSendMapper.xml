@@ -37,6 +37,9 @@
 	   		sa.bus_id as bus_id,
 			sa.open_type as open_type,
 			sa.open_page as open_page,
+			sa.end_time as endTime,
+			sa.msg_type as msgType,
+			sa.user_ids as userIds,
 			sa.msg_abstract
 	   from sys_announcement_send sas
 	   left join sys_announcement sa ON sas.annt_id = sa.id

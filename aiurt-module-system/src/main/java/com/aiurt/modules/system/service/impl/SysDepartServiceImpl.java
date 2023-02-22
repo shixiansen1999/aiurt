@@ -4,6 +4,7 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
@@ -155,6 +156,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 		//update-begin---author:wangshuai ---date:20220307  for：[JTC-119]在部门管理菜单下设置部门负责人 创建用户的时候不需要处理
 		//设置用户id,让前台显示
 		this.setUserIdsByDepList(list);
+
 		//update-begin---author:wangshuai ---date:20220307  for：[JTC-119]在部门管理菜单下设置部门负责人 创建用户的时候不需要处理
 		// 调用wrapTreeDataToTreeList方法生成树状数据
 		List<SysDepartTreeModel> listResult = FindsDepartsChildrenUtil.wrapTreeDataToTreeList(list);
@@ -1196,5 +1198,27 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
         }
     }
     //update-end---author:wangshuai ---date:20200308  for：[JTC-119]在部门管理菜单下设置部门负责人，新增方法添加部门负责人、删除负责部门负责人、查询部门对应的负责人
+
+
+	@Override
+	public void processingTreeList(String name,List<SysDepartTreeModel> list) {
+		Iterator<SysDepartTreeModel> iterator = list.iterator();
+		while (iterator.hasNext()) {
+			SysDepartTreeModel next = iterator.next();
+			if (StrUtil.containsAnyIgnoreCase(next.getDepartName(),name)) {
+				//名称匹配则赋值颜色
+				next.setColor("#FF5B05");
+			}
+			List<SysDepartTreeModel> children = next.getChildren();
+			if (CollUtil.isNotEmpty(children)) {
+				processingTreeList(name, children);
+			}
+			//如果没有子级，并且当前不匹配，则去除
+			if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+				iterator.remove();
+			}
+		}
+	}
+
 
 }

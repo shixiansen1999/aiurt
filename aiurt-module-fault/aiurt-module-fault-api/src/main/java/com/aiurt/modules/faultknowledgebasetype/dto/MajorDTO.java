@@ -32,6 +32,8 @@ public class MajorDTO {
     @TableField(exist = false)
     private String title;
 
+    private String color;
+
     List<SelectTableDTO> children;
 
 

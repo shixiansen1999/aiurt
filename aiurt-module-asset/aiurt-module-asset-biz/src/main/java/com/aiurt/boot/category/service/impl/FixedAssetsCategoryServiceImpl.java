@@ -3,6 +3,7 @@ package com.aiurt.boot.category.service.impl;
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.category.constant.CategoryConstant;
@@ -84,32 +85,64 @@ public class FixedAssetsCategoryServiceImpl extends ServiceImpl<FixedAssetsCateg
     }
 
     @Override
-    public List<FixedAssetsCategoryDTO> getCategoryTree() {
+    public List<FixedAssetsCategoryDTO> getCategoryTree(String name) {
         List<FixedAssetsCategoryDTO> list = categoryMapper.getList(new FixedAssetsCategoryDTO());
         List<FixedAssetsCategoryDTO> categoryTree = new ArrayList<>();
-        //构建树形
-        if (CollUtil.isNotEmpty(list)) {
-            for (FixedAssetsCategoryDTO categoryDTO : list) {
-                LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
-                queryWrapper.eq(FixedAssetsCategory::getId, categoryDTO.getPid());
-                queryWrapper.eq(FixedAssetsCategory::getDelFlag, CommonConstant.DEL_FLAG_0);
-                FixedAssetsCategory category = categoryMapper.selectOne(queryWrapper);
-                if (ObjectUtil.isNotEmpty(category)) {
-                    categoryDTO.setPidName(category.getCategoryName());
-                    categoryDTO.setParentCode(category.getCategoryCode());
-                } else {
-                    categoryDTO.setParentCode(categoryDTO.getCategoryCode());
+            //构建树形
+            if (CollUtil.isNotEmpty(list)) {
+                for (FixedAssetsCategoryDTO categoryDTO : list) {
+                    LambdaQueryWrapper<FixedAssetsCategory> queryWrapper = new LambdaQueryWrapper<>();
+                    queryWrapper.eq(FixedAssetsCategory::getId, categoryDTO.getPid());
+                    queryWrapper.eq(FixedAssetsCategory::getDelFlag, CommonConstant.DEL_FLAG_0);
+                    FixedAssetsCategory category = categoryMapper.selectOne(queryWrapper);
+                    if (ObjectUtil.isNotEmpty(category)) {
+                        categoryDTO.setPidName(category.getCategoryName());
+                        categoryDTO.setParentCode(category.getCategoryCode());
+                    } else {
+                        categoryDTO.setParentCode(categoryDTO.getCategoryCode());
+                    }
+                }
+                List<FixedAssetsCategoryDTO> parentList = list.stream().filter(c -> c.getPid().equals(CategoryConstant.PID)).collect(Collectors.toList());
+                for (FixedAssetsCategoryDTO parentCategory : parentList) {
+                    FixedAssetsCategoryDTO categoryDTO = buildChildTree(list, parentCategory);
+                    categoryTree.add(categoryDTO);
                 }
             }
-            List<FixedAssetsCategoryDTO> parentList = list.stream().filter(c -> c.getPid().equals(CategoryConstant.PID)).collect(Collectors.toList());
-            for (FixedAssetsCategoryDTO parentCategory : parentList) {
-                FixedAssetsCategoryDTO categoryDTO = buildChildTree(list, parentCategory);
-                categoryTree.add(categoryDTO);
+
+        if(StrUtil.isNotBlank(name) && CollectionUtil.isNotEmpty(categoryTree)){
+            this.assetTree(name,categoryTree);
+            Iterator<FixedAssetsCategoryDTO> iterator = categoryTree.iterator();
+            while (iterator.hasNext()) {
+                FixedAssetsCategoryDTO next = iterator.next();
+                if (next.getCategoryName().contains(name)){
+                    next.setColor("#FF5B05");
+                }
+                if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+                    iterator.remove();
+                }
             }
         }
         return categoryTree;
     }
 
+    private void assetTree(String name, List<FixedAssetsCategoryDTO>categoryTree){
+        for (FixedAssetsCategoryDTO fixedAssetsCategoryDTO : categoryTree) {
+            fixedAssetsCategoryDTO.setMatching(false);
+            List<FixedAssetsCategoryDTO> children = fixedAssetsCategoryDTO.getChildren();
+            if(CollectionUtil.isNotEmpty(children)){
+                for (FixedAssetsCategoryDTO categoryDTO : children) {
+                    if (categoryDTO.getCategoryName().contains(name)){
+                        categoryDTO.setColor("#FF5B05");
+                        fixedAssetsCategoryDTO.setMatching(true);
+                    }
+                }
+                assetTree(name,children);
+                //如果子级的子级匹配不成功，并且当前子级不匹配，则去除
+                children.removeIf(next -> !next.getMatching() && StrUtil.isEmpty(next.getColor()));
+                fixedAssetsCategoryDTO.setChildren(children);
+            }
+        }
+    }
     /**
      * 递归构建子节点
      *

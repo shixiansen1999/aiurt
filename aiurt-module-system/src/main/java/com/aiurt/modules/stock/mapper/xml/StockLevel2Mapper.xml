@@ -86,10 +86,66 @@
         left join cs_major cm on mb.major_code = cm.major_code and cm.del_flag=0
         left join cs_subsystem cs on mb.system_code = cs.system_code and cs.del_flag=0
         left join sys_depart sd on sli.organization_id = sd.id
-        where sl.id in
+        <where>
+         <if test="ids != null and ids.size() != 0 ">
+             and sl.id in
         <foreach collection="ids" item="id" index="index" open=" ( " close=" ) " separator=",">
             #{id}
         </foreach>
+        </if>
+        <if test="condition.selectMaterialType != null and condition.selectMaterialType != ''">
+            and (cm.major_name like concat('%', #{condition.selectMaterialType}, '%')
+            or cs.system_name like concat('%', #{condition.selectMaterialType}, '%')
+            or CONCAT(',',REPLACE(stock_level2.base_type_code,'/',','),',') REGEXP CONCAT(',(',replace((select GROUP_CONCAT(base_type_code)
+            from (select base_type_code from material_base_type where base_type_name like concat('%', #{condition.selectMaterialType}, '%')) t),',','|'),'),')
+            )
+        </if>
+        <if test="condition.majorCode != null and condition.majorCode != ''">
+            and sl.major_code = #{condition.majorCode}
+        </if>
+        <if test="condition.systemCode != null and condition.systemCode != ''">
+            and sl.system_code = #{condition.systemCode}
+        </if>
+        <if test="condition.baseType != null and condition.baseType != ''">
+            and mb.base_type_code = #{condition.baseType}
+        </if>
+        <if test="condition.materialCode != null and condition.materialCode != ''">
+            and sl.material_code like concat('%', #{condition.materialCode}, '%')
+        </if>
+        <if test="condition.organizationId != null and condition.organizationId != ''">
+            and sli.organization_id = #{condition.organizationId}
+        </if>
+        <if test="condition.baseTypeCode != null and condition.baseTypeCode != ''">
+            and FIND_IN_SET ( #{condition.baseTypeCode} , REPLACE(mb.base_type_code_cc,'/',','))
+        </if>
+        <if test="condition.materialName != null and condition.materialName != ''">
+            and mb.`name` like concat('%', #{condition.materialName}, '%')
+        </if>
+        <if test="condition.type != null and condition.type != ''">
+            and mb.`type` = #{condition.type}
+        </if>
+        <if test="condition.warehouseCode != null and condition.warehouseCode != ''">
+            and sl.warehouse_code = #{condition.warehouseCode}
+        </if>
+        <if test="condition.warehouseName != null and condition.warehouseName != ''">
+            and sli.warehouse_name like concat('%', #{condition.warehouseName}, '%')
+        </if>
+        <if test="condition.num != null and condition.num != ''">
+            and sl.num <![CDATA[ <> ]]> 0
+        </if>
+        <if test="condition.materialCode != null and condition.materialCode != ''">
+            and mb.code like concat('%', #{condition.materialCode}, '%')
+        </if>
+        <if test="condition.materialName != null and condition.materialName != ''">
+            and mb.name like concat('%', #{condition.materialName}, '%')
+        </if>
+        <if test="condition.minimumStock != null and condition.minimumStock == 0">
+            and sl.num &lt; stock_level2.minimum_stock
+        </if>
+        <if test="condition.minimumStock != null and condition.minimumStock == 1">
+            and sl.num > stock_level2.minimum_stock
+        </if>
+        </where>
         order by sl.create_time desc
     </select>
 

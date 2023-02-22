@@ -25,4 +25,34 @@
         </where>
         order by stock_level2_check.create_time desc
     </select>
+    <select id="exportList" resultType="com.aiurt.modules.stock.entity.StockLevel2Check">
+        select stock_level2_check.*
+        from stock_level2_check stock_level2_check
+        left join stock_level2_info sli on stock_level2_check.warehouse_code = sli.warehouse_code and sli.del_flag = 0
+        <where>
+            and stock_level2_check.del_flag = 0
+            <if test="condition.stockCheckCode != null and condition.stockCheckCode != ''">
+                and stock_level2_check.stock_check_code like concat(concat('%',#{condition.stockCheckCode}),'%')
+            </if>
+            <if test="condition.warehouseName != null and condition.warehouseName != ''">
+                and sli.warehouse_name like concat(concat('%',#{condition.warehouseName}),'%')
+            </if>
+            <if test="condition.warehouseCode != null and condition.warehouseCode != ''">
+                and stock_level2_check.warehouse_code = #{condition.warehouseCode}
+            </if>
+            <if test="condition.planStartTimeStart != null and condition.planStartTimeEnd != null">
+                and Date(stock_level2_check.plan_start_time) &gt;= #{condition.planStartTimeStart} and Date(stock_level2_check.plan_start_time) &lt;= #{condition.planStartTimeEnd}
+            </if>
+            <if test="condition.status != null and condition.status != ''">
+                and stock_level2_check.status = #{condition.status}
+            </if>
+            <if test="ids != null and ids.size() != 0 ">
+            and stock_level2_check.id in
+            <foreach collection="ids" item="id" index="index" open=" ( " close=" ) " separator=",">
+                #{id}
+            </foreach>
+            </if>
+        </where>
+        order by stock_level2_check.create_time desc
+    </select>
 </mapper>

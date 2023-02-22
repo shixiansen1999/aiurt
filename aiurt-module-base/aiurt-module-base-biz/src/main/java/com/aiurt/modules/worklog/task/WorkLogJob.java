@@ -2,7 +2,8 @@ package com.aiurt.modules.worklog.task;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
-import com.aiurt.common.api.dto.message.BusMessageDTO;
+import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
@@ -12,6 +13,7 @@ import com.aiurt.modules.worklog.service.IWorkLogRemindService;
 import com.aiurt.modules.worklog.service.IWorkLogService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.quartz.Job;
@@ -20,10 +22,7 @@ import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -67,16 +66,16 @@ public class WorkLogJob implements Job {
                 //发消息提醒
                 userName.forEach(
                         u->{
-                             iSysBaseAPI.queryUser(u);
-                                BusMessageDTO messageDTO = new BusMessageDTO();
-                                messageDTO.setFromUser(dto.getFromUser());
-                                messageDTO.setToUser(u);
-                                messageDTO.setToAll(false);
-                                messageDTO.setContent(dto.getContent());
-                                messageDTO.setCategory("2");
-                                messageDTO.setTitle("工作日志上报提醒");
-                                messageDTO.setBusType(SysAnnmentTypeEnum.WORKLOG.getType());
-                                iSysBaseAPI.sendBusAnnouncement(messageDTO);
+                            //发送通知
+                            MessageDTO messageDTO = new MessageDTO(dto.getFromUser(), u, "工作日志上报" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_8);
+                            //构建消息模板
+                            HashMap<String, Object> map = new HashMap<>();
+                            map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
+
+                            messageDTO.setType(MessageTypeEnum.XT.getType());
+                            messageDTO.setMsgAbstract("工作日志上报");
+                            messageDTO.setPublishingContent("今日工作日志未上报");
+                            iSysBaseAPI.sendTemplateMessage(messageDTO);
                         }
                 );
             }
@@ -92,16 +91,16 @@ public class WorkLogJob implements Job {
                 //发消息提醒
                 userName.forEach(
                         u->{
-                            iSysBaseAPI.queryUser(u);
-                            BusMessageDTO messageDTO = new BusMessageDTO();
-                            messageDTO.setFromUser(dto.getFromUser());
-                            messageDTO.setToUser(u);
-                            messageDTO.setToAll(false);
-                            messageDTO.setContent(dto.getContent());
-                            messageDTO.setCategory("2");
-                            messageDTO.setTitle("工作日志上报提醒");
-                            messageDTO.setBusType(SysAnnmentTypeEnum.WORKLOG.getType());
-                            iSysBaseAPI.sendBusAnnouncement(messageDTO);
+                            //发送通知
+                            MessageDTO messageDTO = new MessageDTO(dto.getFromUser(), u, "工作日志上报" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_8);
+                            //构建消息模板
+                            HashMap<String, Object> map = new HashMap<>();
+                            map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
+
+                            messageDTO.setType(MessageTypeEnum.XT.getType());
+                            messageDTO.setMsgAbstract("工作日志上报");
+                            messageDTO.setPublishingContent("今日工作日志未上报");
+                            iSysBaseAPI.sendTemplateMessage(messageDTO);
                         }
                 );
             }

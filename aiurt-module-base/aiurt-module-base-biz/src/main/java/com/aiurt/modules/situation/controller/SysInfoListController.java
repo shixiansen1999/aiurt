@@ -2,9 +2,10 @@ package com.aiurt.modules.situation.controller;
 
 
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.common.api.dto.message.BusMessageDTO;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.situation.entity.SysAnnouncement;
@@ -25,14 +26,13 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -85,6 +85,9 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
         }
         QueryWrapper<SysAnnouncement> queryWrapper = new QueryWrapper<>();
         Page<SysAnnouncement> page = new Page<SysAnnouncement>(pageNo, pageSize);
+        if (StrUtil.isNotEmpty(sysAnnouncement.getLevel())) {
+            queryWrapper.lambda().eq(SysAnnouncement::getLevel, sysAnnouncement.getLevel());
+        }
         if (StrUtil.isNotEmpty(sTime)) {
             queryWrapper.lambda().ge(SysAnnouncement::getSendTime, sTime);
         }
@@ -108,7 +111,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
         IPage<SysAnnouncement> pageList = bdInfoListService.page(page, queryWrapper);
         List<SysAnnouncement> records = pageList.getRecords();
         for (SysAnnouncement announcement : records) {
-            getUserNames(announcement);
+            bdInfoListService.getOrgNames(announcement);
         }
         result.setSuccess(true);
         result.setResult(pageList);
@@ -133,18 +136,27 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             // TODO wgp修改默认值
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             // 发消息
-            BusMessageDTO messageDTO = new BusMessageDTO();
+            MessageDTO messageDTO = new MessageDTO();
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.SITUATION.getType());
+            map.put("msgContent", sysAnnouncement.getMsgContent());
+            messageDTO.setData(map);
+
+            messageDTO.setTitle(sysAnnouncement.getTitile());
             messageDTO.setFromUser(sysUser.getUsername());
+            messageDTO.setOrgIds(sysAnnouncement.getOrgIds());
             messageDTO.setToUser(sysAnnouncement.getUserIds());
             messageDTO.setToAll(false);
-            messageDTO.setContent(sysAnnouncement.getMsgContent());
+            messageDTO.setTemplateCode(CommonConstant.SPECIAL_INFO_SERVICE_NOTICE);
+            messageDTO.setType(MessageTypeEnum.XT.getType());
+            messageDTO.setMsgAbstract("你有一条特情消息");
+            messageDTO.setPublishingContent("你有一条特情消息");
             messageDTO.setCategory(CommonConstant.MSG_CATEGORY_3);
-            messageDTO.setTitle(sysAnnouncement.getTitile());
-            messageDTO.setBusType(SysAnnmentTypeEnum.SITUATION.getType());
-            messageDTO.setLevel(sysAnnouncement.getLevel());
             messageDTO.setStartTime(sysAnnouncement.getStartTime());
             messageDTO.setEndTime(sysAnnouncement.getEndTime());
-            iSysBaseAPI.sendBusAnnouncement(messageDTO);
+            messageDTO.setLevel(sysAnnouncement.getLevel());
+            iSysBaseAPI.sendTemplateMessage(messageDTO);
 
             result.success("发布成功！");
         } catch (Exception e) {
@@ -172,17 +184,27 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             // TODO wgp修改默认值
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             // 发消息
-            BusMessageDTO messageDTO = new BusMessageDTO();
-            messageDTO.setFromUser(sysUser.getId());
-            messageDTO.setToUser(sysAnnouncement.getUserIds());
-            messageDTO.setContent(sysAnnouncement.getMsgContent());
-            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_3);
+            MessageDTO messageDTO = new MessageDTO();
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.SITUATION.getType());
+            map.put("msgContent", sysAnnouncement.getMsgContent());
+            messageDTO.setData(map);
+
             messageDTO.setTitle(sysAnnouncement.getTitile());
-            messageDTO.setBusType(SysAnnmentTypeEnum.SITUATION.getType());
-            messageDTO.setLevel(sysAnnouncement.getLevel());
+            messageDTO.setFromUser(sysUser.getUsername());
+            messageDTO.setOrgIds(sysAnnouncement.getOrgIds());
+            messageDTO.setToUser(sysAnnouncement.getUserIds());
+            messageDTO.setToAll(false);
+            messageDTO.setTemplateCode(CommonConstant.SPECIAL_INFO_SERVICE_NOTICE);
+            messageDTO.setType(MessageTypeEnum.XT.getType());
+            messageDTO.setMsgAbstract("你有一条特情消息");
+            messageDTO.setPublishingContent("你有一条特情消息");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_3);
             messageDTO.setStartTime(sysAnnouncement.getStartTime());
             messageDTO.setEndTime(sysAnnouncement.getEndTime());
-            iSysBaseAPI.sendBusAnnouncement(messageDTO);
+            messageDTO.setLevel(sysAnnouncement.getLevel());
+            iSysBaseAPI.sendTemplateMessage(messageDTO);
             result.success("发布成功！");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -212,27 +234,6 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
         }
         return Result.OK(page.setRecords(sysAnnouncementSends));
     }
-
-    private void getUserNames(@RequestBody SysAnnouncement sysAnnouncement) {
-        if (StrUtil.isNotBlank(sysAnnouncement.getUserIds())) {
-            String[] split = sysAnnouncement.getUserIds().split(",");
-            if (split.length > 0) {
-                StringBuilder str = new StringBuilder();
-                for (String s : split) {
-                    if (!Objects.isNull(s)) {
-                        LoginUser userById = iSysBaseAPI.getUserByName(s);
-                        if (!ObjectUtils.isEmpty(userById)) {
-                            str.append(userById.getRealname()).append(",");
-                        }
-                    }
-                }
-                if (StrUtil.isNotBlank(str)) {
-                    sysAnnouncement.setUserNames(str.deleteCharAt(str.length() - 1).toString());
-                }
-            }
-        }
-    }
-
     /**
      * 我的通知分页列表查询
      *

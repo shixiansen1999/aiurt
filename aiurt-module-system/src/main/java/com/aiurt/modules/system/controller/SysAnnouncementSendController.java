@@ -6,6 +6,7 @@ import com.aiurt.common.constant.WebsocketConst;
 import com.aiurt.common.util.SqlInjectionUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.message.websocket.WebSocket;
+import com.aiurt.modules.system.entity.SysAnnouncement;
 import com.aiurt.modules.system.entity.SysAnnouncementSend;
 import com.aiurt.modules.system.model.AnnouncementSendModel;
 import com.aiurt.modules.system.service.ISysAnnouncementSendService;
@@ -22,13 +23,17 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @Title: Controller
@@ -48,6 +53,8 @@ public class SysAnnouncementSendController {
     private ISysAnnouncementService sysAnnouncementService;
     @Autowired
     private WebSocket webSocket;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
 
     /**
      * 分页列表查询
@@ -228,9 +235,33 @@ public class SysAnnouncementSendController {
         announcementSendModel.setPageSize(pageSize);
         Page<AnnouncementSendModel> pageList = new Page<AnnouncementSendModel>(pageNo, pageSize);
         pageList = sysAnnouncementSendService.getMyAnnouncementSendPage(pageList, announcementSendModel);
+        List<AnnouncementSendModel> records = pageList.getRecords();
+        for (AnnouncementSendModel record : records) {
+            getUserNames(record);
+        }
         result.setResult(pageList);
         result.setSuccess(true);
         return result;
+    }
+
+    private void getUserNames(@RequestBody AnnouncementSendModel announcementSendModel) {
+        if (StrUtil.isNotBlank(announcementSendModel.getUserIds())) {
+            String[] split = announcementSendModel.getUserIds().split(",");
+            if (split.length > 0) {
+                StringBuilder str = new StringBuilder();
+                for (String s : split) {
+                    if (!Objects.isNull(s)) {
+                        LoginUser userById = sysBaseApi.getUserByName(s);
+                        if (!ObjectUtils.isEmpty(userById)) {
+                            str.append(userById.getRealname()).append(",");
+                        }
+                    }
+                }
+                if (StrUtil.isNotBlank(str)) {
+                    announcementSendModel.setUserNames(str.deleteCharAt(str.length() - 1).toString());
+                }
+            }
+        }
     }
 
     /**

@@ -88,10 +88,10 @@ public class FaultCountInfoDTO {
     @TableField(exist = false)
     private String deviceName;
 
-    /**故障现象*/
-    @ApiModelProperty(value = "故障现象",  required = true)
-    @NotBlank(message = "请填写故障现象!")
-    @Length(max = 255, message = "故障现象长度不能超过255")
+    /**故障现象分类*/
+    @ApiModelProperty(value = "故障现象分类",  required = true)
+    @NotBlank(message = "请填写故障现象分类!")
+    @Dict(dictTable = "fault_knowledge_base_type", dicCode = "code", dicText = "name")
     private String faultPhenomenon;
 
     /**故障发生时间*/

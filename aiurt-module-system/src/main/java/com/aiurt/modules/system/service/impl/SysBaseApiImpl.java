@@ -11,14 +11,18 @@ import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.aspect.UrlMatchEnum;
 import com.aiurt.common.constant.*;
+import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.HTMLUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.YouBianCodeUtil;
+import com.aiurt.common.util.dynamic.db.FreemarkerParseFactory;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.common.entity.SelectDeviceType;
+import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceMapper;
@@ -28,7 +32,10 @@ import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
+import com.aiurt.modules.message.handle.impl.DdSendMsgHandle;
 import com.aiurt.modules.message.handle.impl.EmailSendMsgHandle;
+import com.aiurt.modules.message.handle.impl.QywxSendMsgHandle;
+import com.aiurt.modules.message.handle.impl.SystemSendMsgHandle;
 import com.aiurt.modules.message.service.ISysMessageTemplateService;
 import com.aiurt.modules.message.websocket.WebSocket;
 import com.aiurt.modules.position.entity.CsLine;
@@ -1491,7 +1498,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode) {
+    public List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode,String name) {
 
         QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
         deviceTypeQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
@@ -1527,59 +1534,85 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             deviceTypeTable.setLabel(deviceType.getName());
             list.add(deviceTypeTable);
         });
+        //做树形搜索处理
         List<DeviceTypeTable> deviceTypeTree = getDeviceTypeTree(list, "0");
+        if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(deviceTypeTree)){
+            this.assetTreeList(name, deviceTypeTree);
+        }
         return deviceTypeTree;
+    }
+
+    private void assetTreeList(String name,List<DeviceTypeTable> deviceTypeTree){
+        Iterator<DeviceTypeTable> iterator = deviceTypeTree.iterator();
+        while (iterator.hasNext()) {
+            DeviceTypeTable next = iterator.next();
+            if (StrUtil.containsAnyIgnoreCase(next.getName(), name)) {
+                //名称匹配则赋值颜色
+                next.setColor("#FF5B05");
+            }
+            List<DeviceTypeTable> children = next.getChildren();
+            if (CollUtil.isNotEmpty(children)) {
+                assetTreeList(name, children);
+            }
+            //如果没有子级，并且当前不匹配，则去除
+            if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+                iterator.remove();
+            }
+        }
     }
     @Override
     public List<SelectDeviceType> selectDeviceTypeList(String value) {
         List<SelectDeviceType> selectDeviceTypes = new ArrayList<>();
-        if (StrUtil.isEmpty(value)){
+        if (StrUtil.isEmpty(value)) {
             // 一级专业显示
-            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).list();
+            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).list();
             List<String> collect = deviceTypes.stream().map(DeviceType::getMajorCode).distinct().collect(Collectors.toList());
-            List<CsMajor> majors = majorService.lambdaQuery().eq(CsMajor::getDelFlag,CommonConstant.DEL_FLAG_0)
-                                                             .in(CsMajor::getMajorCode,collect).list();
-            majors.forEach(m->{
-                SelectDeviceType selectDeviceType = new SelectDeviceType(m.getId(),"0",m.getMajorCode(),m.getMajorName(),false,false);
+            List<CsMajor> majors = majorService.lambdaQuery().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0).list();
+            majors.forEach(m -> {
+                List<String> list = collect.stream().filter(c -> c.equals(m.getMajorCode())).collect(Collectors.toList());
+                SelectDeviceType selectDeviceType = new SelectDeviceType(m.getId(), "0", m.getMajorCode(), m.getMajorName(), CollectionUtil.isEmpty(list), false);
                 selectDeviceTypes.add(selectDeviceType);
             });
-        }else {
+        } else {
             // 作为二级子系统显示
-            List<CsSubsystem> csSubsystems = csSubsystemService.lambdaQuery().eq(CsSubsystem::getDelFlag,CommonConstant.DEL_FLAG_0).eq(CsSubsystem::getMajorCode,value).list();
-            if (CollectionUtil.isNotEmpty(csSubsystems)){
-                csSubsystems.forEach(s->{
-                    List<DeviceType> deviceTypeList = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0)
-                            .eq(DeviceType::getMajorCode,s.getMajorCode()).eq(DeviceType::getSystemCode,s.getSystemCode()).list();
+            List<CsSubsystem> csSubsystems = csSubsystemService.lambdaQuery().eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).eq(CsSubsystem::getMajorCode, value).list();
+            if (CollectionUtil.isNotEmpty(csSubsystems)) {
+                csSubsystems.forEach(s -> {
+                    List<DeviceType> deviceTypeList = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                            .eq(DeviceType::getMajorCode, s.getMajorCode()).eq(DeviceType::getSystemCode, s.getSystemCode()).list();
                     String str = sysUserRoleMapper.getMajorId(s.getMajorCode());
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(s.getId(),str,s.getSystemCode(),s.getSystemName(),CollectionUtil.isEmpty(deviceTypeList),false);
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(s.getId(), str, s.getSystemCode(), s.getSystemName(), CollectionUtil.isEmpty(deviceTypeList), false);
                     selectDeviceTypes.add(selectDeviceType);
                 });
             }
             // 二级分类显示
-            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0)
-                    .eq(DeviceType::getMajorCode,value).isNull(DeviceType::getSystemCode).list();
-            if (CollectionUtil.isNotEmpty(deviceTypes)){
-                deviceTypes.forEach(d->{
+            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .eq(DeviceType::getMajorCode, value).isNull(DeviceType::getSystemCode).list();
+            if (CollectionUtil.isNotEmpty(deviceTypes)) {
+                deviceTypes.forEach(d -> {
                     String str = sysUserRoleMapper.getMajorId(d.getMajorCode());
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),str,d.getId(),d.getName(),d.getIsEnd()==1?true:false,true);
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(), str, d.getCode(), d.getName(), d.getIsEnd() == 1 ? true : false, true);
                     selectDeviceTypes.add(selectDeviceType);
                 });
             }
             //在子系统下的三级分类
-            List<DeviceType> deviceTypes1 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getSystemCode,value).list();
-            if (CollectionUtil.isNotEmpty(deviceTypes1)){
-                deviceTypes1.forEach(d->{
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),sysUserRoleMapper.getSubsystemId(d.getMajorCode(),d.getSystemCode()),d.getId(),d.getName(),d.getIsEnd()==1?true:false,true);
+            List<DeviceType> deviceTypes1 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).eq(DeviceType::getSystemCode, value).list();
+            if (CollectionUtil.isNotEmpty(deviceTypes1)) {
+                deviceTypes1.forEach(d -> {
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(), sysUserRoleMapper.getSubsystemId(d.getMajorCode(), d.getSystemCode()), d.getCode(), d.getName(), d.getIsEnd() == 1 ? true : false, true);
                     selectDeviceTypes.add(selectDeviceType);
                 });
             }
             //无限层级分类
-            List<DeviceType> deviceTypes2 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getPid,value).list();
-            if (CollectionUtil.isNotEmpty(deviceTypes2)){
-                deviceTypes2.forEach(d->{
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),d.getPid(),d.getId(),d.getName(),d.getIsEnd()==1?true:false,true);
-                    selectDeviceTypes.add(selectDeviceType);
-                });
+            DeviceType deviceType = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).eq(DeviceType::getCode, value).one();
+            if (ObjectUtil.isNotEmpty(deviceType)) {
+                List<DeviceType> deviceTypes2 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).eq(DeviceType::getPid, deviceType.getId()).list();
+                if (CollectionUtil.isNotEmpty(deviceTypes2)) {
+                    deviceTypes2.forEach(d -> {
+                        SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(), d.getPid(), d.getCode(), d.getName(), d.getIsEnd() == 1 ? true : false, true);
+                        selectDeviceTypes.add(selectDeviceType);
+                    });
+                }
             }
         }
         return selectDeviceTypes;
@@ -1598,7 +1631,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public List<CsUserDepartModel> getDepartByUserId(String id) {
         return iCsUserDepartService.getDepartByUserId(id);
     }
-
     @Override
     public List<CsUserMajorModel> getMajorByUserId(String id) {
         return iCsUserMajorService.getMajorByUserId(id);
@@ -1613,6 +1645,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public List<CsUserSubsystemModel> getSubsystemByUserId(String id) {
         return csUserSubsystemMapper.getSubsystemByUserId(id);
     }
+
 
     public List<SysUser> getOrgUsersByOrgid(String orgId) {
         return userMapper.selectList(new QueryWrapper<SysUser>().eq("org_id", orgId));
@@ -2562,6 +2595,117 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 .list();
         List<String> orgCodes = orgCodeList.stream().map(SysDepart::getOrgCode).collect(Collectors.toList());
         return orgCodes;
+    }
+
+    @Override
+    public void processingTreeList(String name, List<SelectTable> list) {
+        Iterator<SelectTable> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            SelectTable next = iterator.next();
+            if (StrUtil.containsAnyIgnoreCase(next.getLabel(),name)) {
+                //名称匹配则赋值颜色
+                next.setColor("#FF5B05");
+            }
+            List<SelectTable> children = next.getChildren();
+            if (CollUtil.isNotEmpty(children)) {
+                processingTreeList(name, children);
+            }
+            //如果没有子级，并且当前不匹配，则去除
+            if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+                iterator.remove();
+            }
+        }
+    }
+
+    @Override
+    public boolean selectTableName(String dbName, String tableName) {
+        String string = userMapper.selectTableName(dbName, tableName);
+        if (StrUtil.isNotBlank(string)){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+
+    //-------------------------------------流程节点发送模板消息-----------------------------------------------
+    @Autowired
+    private QywxSendMsgHandle qywxSendMsgHandle;
+
+    @Autowired
+    private SystemSendMsgHandle systemSendMsgHandle;
+
+    @Autowired
+    private EmailSendMsgHandle emailSendMsgHandle;
+
+    @Autowired
+    private DdSendMsgHandle ddSendMsgHandle;
+
+    @Override
+    public void sendTemplateMessage(MessageDTO message) {
+        String messageType = message.getType();
+        //update-begin-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
+        String templateCode = message.getTemplateCode();
+        if(StrUtil.isNotBlank(templateCode)){
+            SysMessageTemplate templateEntity = getTemplateEntity(templateCode);
+            boolean isMarkdown =CommonConstant.MSG_TEMPLATE_TYPE_MD.equals(templateEntity.getTemplateType());
+            String content = templateEntity.getTemplateContent();
+            if(StrUtil.isNotBlank(content) && null!=message.getData()){
+                content = FreemarkerParseFactory.parseTemplateContent(content, message.getData(), isMarkdown);
+            }
+            message.setIsMarkdown(isMarkdown);
+            message.setContent(content);
+        }
+        if(StrUtil.isBlank(message.getContent())){
+            throw new AiurtBootException("发送消息失败,消息内容为空！");
+        }
+        //update-end-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
+        if(MessageTypeEnum.XT.getType().equals(messageType)){
+            if (message.isMarkdown()) {
+                // 系统消息要解析Markdown
+                message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
+            }
+            systemSendMsgHandle.sendMessage(message);
+        }else if(MessageTypeEnum.YJ.getType().equals(messageType)){
+            if (message.isMarkdown()) {
+                // 邮件消息要解析Markdown
+                message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
+            }
+            emailSendMsgHandle.sendMessage(message);
+        }else if(MessageTypeEnum.DD.getType().equals(messageType)){
+            ddSendMsgHandle.sendMessage(message);
+        }else if(MessageTypeEnum.QYWX.getType().equals(messageType)){
+            qywxSendMsgHandle.sendMessage(message);
+        }
+    }
+
+    /**
+     * 根据模板编码获取模板内容【新，支持自定义推送类型】
+     *
+     * @param templateCode
+     * @return
+     */
+    @Override
+    public String getTemplateContent(String templateCode) {
+        List<SysMessageTemplate> list = sysMessageTemplateService.selectByCode(templateCode);
+        if(list==null || list.size()==0){
+            return null;
+        }
+        return list.get(0).getTemplateContent();
+    }
+
+    /**
+     * 获取模板内容，解析markdown
+     *
+     * @param code
+     * @return
+     */
+    public SysMessageTemplate getTemplateEntity(String code) {
+        List<SysMessageTemplate> list = sysMessageTemplateService.selectByCode(code);
+        if (list == null || list.size() == 0) {
+            return null;
+        }
+        return list.get(0);
     }
 
     /**

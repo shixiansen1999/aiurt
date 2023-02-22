@@ -25,6 +25,8 @@ public class SelectTableDTO {
 
     private String majorCode;
 
+    private String color;
+
     List<SelectTableDTO> children;
 
     /**是否是知识库类别*/

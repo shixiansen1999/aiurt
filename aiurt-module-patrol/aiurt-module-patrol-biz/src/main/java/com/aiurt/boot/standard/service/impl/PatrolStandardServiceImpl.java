@@ -12,14 +12,13 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
-import com.aiurt.boot.standard.dto.InspectionStandardDto;
-import com.aiurt.boot.standard.dto.PatrolStandardDto;
-import com.aiurt.boot.standard.dto.PatrolStandardErrorModel;
-import com.aiurt.boot.standard.dto.PatrolStandardModel;
+import com.aiurt.boot.standard.dto.*;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
+import com.aiurt.boot.standard.entity.PatrolStandardOrg;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
+import com.aiurt.boot.standard.mapper.PatrolStandardOrgMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.api.CommonAPI;
@@ -82,13 +81,25 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
 
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
-
+    @Autowired
+    private PatrolStandardOrgMapper standardOrgMapper;
     @Override
     public IPage<PatrolStandardDto> pageList(Page page, PatrolStandard patrolStandard) {
+//        if(ObjectUtil.isNotEmpty(patrolStandard.getOrgCodes())){
+//            List<String> list = StrUtil.splitTrim(patrolStandard.getOrgCodes(), ",");
+//            inspectionCodeDTO.setOrgList(list);
+//        }
         List<PatrolStandardDto> page1 = patrolStandardMapper.pageList(page, patrolStandard);
         // 以下包含的代码权限拦截局部过滤
         boolean filter = GlobalThreadLocal.setDataFilter(false);
         page1.forEach(a -> {
+            List<PatrolStandardOrg> orgRelList = standardOrgMapper.selectList(new LambdaQueryWrapper<PatrolStandardOrg>().eq(PatrolStandardOrg::getStandardCode, a.getCode()));
+            if(CollUtil.isNotEmpty(orgRelList)){
+                List<OrgVO> orgCodeList = standardOrgMapper.getOrgList(orgRelList);
+                a.setOrgCodeList(orgCodeList);
+                String orgNames = orgCodeList.stream().map(OrgVO::getLabel).collect(Collectors.joining(";"));
+                a.setOrgName(orgNames);
+            }
             String username = baseMapper.selectUserName(a.getCreateBy());
             a.setCreateByName(null == username ? a.getCreateBy() : username);
             a.setNumber(baseMapper.number(a.getCode()));

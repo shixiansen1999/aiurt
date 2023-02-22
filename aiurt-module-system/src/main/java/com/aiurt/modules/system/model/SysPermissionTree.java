@@ -24,6 +24,9 @@ public class SysPermissionTree implements Serializable {
 	private String key;
 	private String title;
 
+	private String color;
+
+
 	/**
 	 * 父id
 	 */
@@ -213,6 +216,14 @@ public class SysPermissionTree implements Serializable {
 
 	public void setTitle(String title) {
 		this.title = title;
+	}
+
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
 	}
 
 	private List<SysPermissionTree> children;

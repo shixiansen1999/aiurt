@@ -1,52 +1,44 @@
 package com.aiurt.modules.system.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.system.util.JwtUtil;
-import org.jeecg.common.system.vo.LoginUser;
-import com.aiurt.common.util.YouBianCodeUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.model.DepartIdModel;
 import com.aiurt.modules.system.model.SysDepartTreeModel;
+import com.aiurt.modules.system.service.ISysDepartService;
+import com.aiurt.modules.system.service.ISysUserDepartService;
+import com.aiurt.modules.system.service.ISysUserService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import com.aiurt.common.util.ImportExcelUtil;
-import com.aiurt.modules.system.entity.SysUser;
-import com.aiurt.modules.system.service.ISysDepartService;
-import com.aiurt.modules.system.service.ISysUserDepartService;
-import com.aiurt.modules.system.service.ISysUserService;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -111,7 +103,7 @@ public class SysDepartController {
 	@ApiOperation(value="部门管理-查询所有部门", notes="部门管理-查询所有部门")
 	@RequestMapping(value = "/queryTreeList", method = RequestMethod.GET)
 	@PermissionData(pageComponent = "system/DepartList")
-	public Result<List<SysDepartTreeModel>> queryTreeList(@RequestParam(name = "ids", required = false) String ids ,@RequestParam(name = "sign", required = false) String sign) {
+	public Result<List<SysDepartTreeModel>> queryTreeList(@RequestParam(name = "ids", required = false) String ids ,@RequestParam(name = "sign", required = false) String sign ,@RequestParam(name = "name", required = false) String name) {
 		Result<List<SysDepartTreeModel>> result = new Result<>();
 		try {
 			// 从内存中读取
@@ -124,6 +116,10 @@ public class SysDepartController {
 			}if (StrUtil.isNotBlank(sign)){
 				List<SysDepartTreeModel> list1 = sysDepartService.querySignTreeList(sign);
 				result.setResult(list1);
+			}
+			//做树形搜索处理
+			if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(result.getResult())) {
+				sysDepartService.processingTreeList(name, result.getResult());
 			}
 			result.setSuccess(true);
 		} catch (Exception e) {

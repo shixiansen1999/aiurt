@@ -86,6 +86,8 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
     private static List<EmergencyMaterialsCategory> addChildren(List<EmergencyMaterialsCategory> list, Map<String, EmergencyMaterialsCategory> map) {
         List<EmergencyMaterialsCategory> rootNodes = new ArrayList<>();
         for (EmergencyMaterialsCategory treeNode : list) {
+            treeNode.setTitle(treeNode.getCategoryName());
+            treeNode.setValue(treeNode.getCategoryCode());
             EmergencyMaterialsCategory parentHave = map.get(treeNode.getPid());
             if (ObjectUtil.isEmpty(parentHave)) {
                 rootNodes.add(treeNode);
@@ -103,15 +105,36 @@ public class EmergencyMaterialsCategoryServiceImpl extends ServiceImpl<Emergency
     }
 
     @Override
-    public List<EmergencyMaterialsCategory> selectTreeList() {
+    public List<EmergencyMaterialsCategory> selectTreeList(String name) {
         LambdaQueryWrapper<EmergencyMaterialsCategory> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(EmergencyMaterialsCategory::getDelFlag, 0);
         queryWrapper.orderByDesc(EmergencyMaterialsCategory::getSort);
         queryWrapper.orderByDesc(EmergencyMaterialsCategory::getCreateTime);
         List<EmergencyMaterialsCategory> emergencyMaterialsCategories = emergencyMaterialsCategoryMapper.selectList(queryWrapper);
-        return treeFirst(emergencyMaterialsCategories);
+        List<EmergencyMaterialsCategory> categoryList = treeFirst(emergencyMaterialsCategories);
+        if(ObjectUtil.isNotEmpty(name)&&CollUtil.isNotEmpty(categoryList)){
+            processingTreeList(name,categoryList);
+        }
+        return categoryList ;
     }
-
+    public void processingTreeList(String name,List<EmergencyMaterialsCategory> list) {
+        Iterator<EmergencyMaterialsCategory> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            EmergencyMaterialsCategory next = iterator.next();
+            if (next.getCategoryName().contains(name)) {
+                //名称匹配则赋值颜色
+                next.setColor("#FF5B05");
+            }
+            List<EmergencyMaterialsCategory> children = next.getChildren();
+            if (CollUtil.isNotEmpty(children)) {
+                processingTreeList(name, children);
+            }
+            //如果没有子级，并且当前不匹配，则去除
+            if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+                iterator.remove();
+            }
+        }
+    }
     @Override
     public void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException {
         //获取输入流，原始模板位置

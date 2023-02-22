@@ -6,6 +6,7 @@ import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.common.entity.SelectDeviceType;
+import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
@@ -61,6 +62,20 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     String parseTemplateByCode(TemplateDTO templateDTO);
 
+    //update-begin---author:taoyan ---date:20220705  for：支持自定义推送类型，邮件、钉钉、企业微信、系统消息-----------
+    /**
+     * 发送模板消息【新，支持自定义推送类型】
+     * @param message
+     */
+    void sendTemplateMessage(MessageDTO message);
+
+    /**
+     * 根据模板编码获取模板内容【新，支持自定义推送类型】
+     * @param templateCode
+     * @return
+     */
+    String getTemplateContent(String templateCode);
+    //update-begin---author:taoyan ---date:20220705  for：支持自定义推送类型，邮件、钉钉、企业微信、系统消息-----------
 
     /**
      * 6根据用户id查询用户信息
@@ -320,7 +335,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 手机号验证（验证成功返回true,验证失败返回false）
-     *
      * @param string
      * @return
      */
@@ -329,7 +343,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 电话号码(座机)验证（验证成功返回true,验证失败返回false）
-     *
      * @param string
      * @return
      */
@@ -345,7 +358,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据多个部门编码(集合)，查询返回多个部门名称
-     *
      * @param orgCodes
      * @return
      */
@@ -439,7 +451,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据部门list，查询部门list下的人员信息
-     *
      * @param deptIds
      * @return
      */
@@ -497,7 +508,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @param deviceCode
      * @return
      */
-    List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode);
+    List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode,String name);
 
     /**
      * 数据过大 物资分类列表结构查询（无分页。用于左侧树）
@@ -517,14 +528,12 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 定时任务
-     *
      * @param quartzJobDTO
      */
     void saveAndScheduleJob(QuartzJobDTO quartzJobDTO);
 
     /**
      * 定时任务
-     *
      * @param quartzJobDTO
      */
     void deleteAndStopJob(QuartzJobDTO quartzJobDTO);
@@ -571,7 +580,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据线路编号集合查询对应的站点编号集合
-     *
      * @param lineCodes
      * @return
      */
@@ -579,7 +587,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据站点编号查询对应的位置信息(没有位置就返回站点)
-     *
      * @param stationCode
      * @return
      */
@@ -612,40 +619,31 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据编码获取专业
-     *
      * @param majorCode
      * @return
      */
     JSONObject getCsMajorByCode(String majorCode);
-
     /**
      * 根据多个编码获取专业名称
-     *
      * @param majorCodes
      * @return
      */
     List<String> getCsMajorNamesByCodes(List<String> majorCodes);
-
     /**
      * 根据专业名称获取专业
-     *
      * @param majorName
      * @return
      */
     JSONObject getCsMajorByName(String majorName);
-
     /**
      * 根据专业code、子系统名称，获取子系统
-     *
      * @param systemName
      * @param majorCode
      * @return
      */
-    JSONObject getSystemName(String majorCode, String systemName);
-
+    JSONObject getSystemName(String majorCode,String systemName);
     /**
      * 根据子系统code，获取子系统名称
-     *
      * @param systemCodes
      * @return
      */
@@ -653,7 +651,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据专业code、设备类型名称 ，查询设备类型信息
-     *
      * @param majorCode
      * @param deviceTypeName
      * @return
@@ -679,7 +676,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据用户名或者用户账号查询用户信息
-     *
      * @param userNameList
      * @return
      */
@@ -687,7 +683,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据用户姓名查询用户账号
-     *
      * @param realName
      * @return
      */
@@ -696,7 +691,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据用户姓名模糊查询用户账号
-     *
      * @param realName
      * @return
      */
@@ -704,7 +698,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据站点id获取站点信息
-     *
      * @param station
      * @return
      */
@@ -720,7 +713,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据设备code获取设备信息
-     *
      * @param code
      * @return
      */
@@ -733,7 +725,6 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getLineCodeById(String lineId);
-
     /**
      * 通过链接将图片保存到本地
      *
@@ -752,7 +743,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据角色编码获取角色id
-     *
      * @param roleCode
      * @return
      */
@@ -760,7 +750,6 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 获取所有工区信息
-     *
      * @return
      */
     List<CsWorkAreaModel> getWorkAreaInfo();
@@ -768,7 +757,6 @@ public interface ISysBaseAPI extends CommonAPI {
     /**
      * 根据站点名称和线路id获取站点信息
      * 施工计划导入模块使用，其余慎用！
-     *
      * @param cellText
      * @param line
      */
@@ -802,6 +790,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<LoginUser> getUserByDeptCode(String deptCode);
+
 
 
     /**
@@ -992,5 +981,23 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getCurrentNewModified(String dictCode);
+
+
+    /**
+     * 树形搜索匹配
+     *
+     * @param name
+     * @param list
+     * @return
+     */
+    void processingTreeList(String name, List<SelectTable> list);
+
+    /**
+     * 根据数据库名和表名验证该数据库中是存在这张表
+     * @param dbName
+     * @param tableName
+     * @return
+     */
+    boolean selectTableName(String dbName, String tableName);
 }
 

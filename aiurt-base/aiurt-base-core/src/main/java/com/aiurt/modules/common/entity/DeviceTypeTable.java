@@ -45,6 +45,8 @@ public class DeviceTypeTable implements Serializable {
     @TableField(exist = false)
     private List<DeviceTypeTable> children;
 
+    private String color;
+
     private String key;
 
     private String value;

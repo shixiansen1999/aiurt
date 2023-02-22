@@ -1,7 +1,10 @@
 package com.aiurt.modules.system.service;
 
+import com.aiurt.modules.system.dto.SysMessageInfoDTO;
+import com.aiurt.modules.system.dto.SysMessageTypeDTO;
 import com.aiurt.modules.system.entity.SysAnnouncement;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -43,5 +46,21 @@ public interface ISysAnnouncementService extends IService<SysAnnouncement> {
      * @return Page<SysAnnouncement>
      */
 	public Page<SysAnnouncement> querySysCementPageByUserId(Page<SysAnnouncement> page, String userId, List<String> msgCategory);
+
+    /**
+     * 消息中心类型统计
+     * @return
+     */
+    public List<SysMessageTypeDTO> queryMessageType();
+
+    /**
+     * 消息中心详情
+     * @param messageFlag
+     * @param todoType
+     * @param keyword
+     * @param busType
+     * @return
+     */
+    public IPage<SysMessageInfoDTO> queryMessageInfo(Page<SysMessageInfoDTO> page ,String messageFlag, String todoType, String keyword, String busType,String msgCategory);
 
 }

@@ -27,6 +27,10 @@ public class ParamTypeTreeDTO implements Serializable {
 
     private String pid;
 
+    private String color;
+
+    private Boolean matching;
+
     private List<ParamTypeTreeDTO> children;
 
 

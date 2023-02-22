@@ -129,17 +129,17 @@
         <where>
             <if test="level == 1">
                 AND status &lt;&gt; 12
-                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=48
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=#{lv1Hours}
             </if>
             <if test="level == 2">
                 AND status &lt;&gt; 12
-                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=24
-                    and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; 48
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=#{lv2Hours}
+                    and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; #{lv1Hours}
             </if>
             <if test="level == 3">
                 AND status &lt;&gt; 12
-                    and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=12
-                    and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; 24
+                    and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=#{lv3Hours}
+                    and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; #{lv2Hours}
             </if>
             <if test="faultTimeoutLevelReq.startDate!=null and faultTimeoutLevelReq.endDate!=null">
                 and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{faultTimeoutLevelReq.startDate},'%Y-%m-%d')

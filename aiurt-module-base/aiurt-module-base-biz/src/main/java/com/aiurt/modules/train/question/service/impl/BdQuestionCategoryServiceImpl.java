@@ -1,6 +1,7 @@
 package com.aiurt.modules.train.question.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.vo.TreeNode;
 import com.aiurt.common.util.TreeUtils;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -139,11 +141,32 @@ public class BdQuestionCategoryServiceImpl extends ServiceImpl<BdQuestionCategor
      * @return
      */
     @Override
-    public List<TreeNode> queryPageList() {
+    public List<TreeNode> queryPageList(String name) {
         List<TreeNode> treeNodes = baseMapper.queryPageList();
-        return TreeUtils.treeFirst(treeNodes);
+        List<TreeNode> treeFirst = TreeUtils.treeFirst(treeNodes);
+        if(ObjectUtil.isNotEmpty(name)&&CollUtil.isNotEmpty(treeFirst)){
+            processingTreeList(name,treeFirst);
+        }
+        return treeFirst ;
     }
-
+    public void processingTreeList(String name,List<TreeNode> list) {
+        Iterator<TreeNode> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            TreeNode next = iterator.next();
+            if (next.getName().contains(name)) {
+                //名称匹配则赋值颜色
+                next.setColor("#FF5B05");
+            }
+            List<TreeNode> children = next.getChildList();
+            if (CollUtil.isNotEmpty(children)) {
+                processingTreeList(name, children);
+            }
+            //如果没有子级，并且当前不匹配，则去除
+            if (CollUtil.isEmpty(next.getChildList()) && StrUtil.isEmpty(next.getColor())) {
+                iterator.remove();
+            }
+        }
+    }
     /**
 	 * 根据所传pid查询旧的父级节点的子节点并修改相应状态值
 	 * @param pid

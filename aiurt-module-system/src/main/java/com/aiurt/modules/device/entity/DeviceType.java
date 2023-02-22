@@ -52,13 +52,13 @@ public class DeviceType implements Serializable {
     @Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
     private String majorName;
 	/**系统编号*/
-    @Excel(name = "子系统", width = 15,dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
+    @Excel(name = "系统编号", width = 15,dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     @ApiModelProperty(value = "系统编号")
     @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     @SystemFilterColumn
     private String systemCode;
     /**系统名称*/
-    @Excel(name = "子系统", width = 15,dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
+    @Excel(name = "子系统")
     @ApiModelProperty(value = "系统名称")
     @TableField(exist = false)
     private String systemName;
@@ -167,4 +167,9 @@ public class DeviceType implements Serializable {
     String deviceComposeCode;
     @TableField(exist = false)
     String text;
+
+    @ApiModelProperty(value = "搜索颜色")
+    @TableField(exist = false)
+    private String color;
+
 }

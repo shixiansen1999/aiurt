@@ -1,6 +1,7 @@
 package com.aiurt.boot.standard.entity;
 
 import cn.afterturn.easypoi.excel.annotation.ExcelCollection;
+import com.aiurt.boot.manager.dto.OrgVO;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
@@ -138,5 +139,18 @@ public class InspectionCode extends DictEntity implements Serializable {
     @ApiModelProperty(value = "配置项")
     @TableField(exist = false)
     private List<InspectionCodeContent> inspectionCodeContentList;
+
+    /**
+     * 组织机构
+     */
+    @ApiModelProperty(value = "组织机构")
+    @TableField(exist = false)
+    private List<OrgVO> orgCodeList;
+    /**
+     * 组织机构名称
+     */
+    @ApiModelProperty(value = "组织机构名称")
+    @TableField(exist = false)
+    private java.lang.String orgName;
 
 }

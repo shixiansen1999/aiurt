@@ -52,7 +52,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
     private SysFileTypeMapper sysFileTypeMapper;
 
 	@Override
-	public Result<List<SysFileTypeTreeVO>> tree(String userId) {
+	public Result<List<SysFileTypeTreeVO>> tree(String userId,String name) {
 		log.info("userId:{}", userId);
 
 		//权限
@@ -60,9 +60,41 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 		if (role == null || role.size() == 0) {
 			return Result.ok(new ArrayList<>());
 		}
-		return Result.ok(getTree(role, 0L));
+		List<SysFileTypeTreeVO> tree = getTree(role, 0L);
+		if(ObjectUtil.isNotEmpty(name)){
+			processingTreeList(name,tree);
+			Iterator<SysFileTypeTreeVO> iterator = tree.iterator();
+			while (iterator.hasNext()) {
+				SysFileTypeTreeVO next = iterator.next();
+				if (next.getName().contains(name)) {
+					next.setColor("#FF5B05");
+				}
+				if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
+					iterator.remove();
+				}
+			}
+		}
+		return Result.ok(tree);
 	}
-
+	public void processingTreeList(String name,List<SysFileTypeTreeVO> list) {
+		for (SysFileTypeTreeVO sysDepartTreeModel : list) {
+			sysDepartTreeModel.setMatching(false);
+			List<SysFileTypeTreeVO> children = sysDepartTreeModel.getChildren();
+			if (CollUtil.isNotEmpty(children)) {
+				for (SysFileTypeTreeVO child : children) {
+					if (child.getName().contains(name)) {
+						//名称匹配则赋值颜色，并且父级标记有子级匹配成功
+						child.setColor("#FF5B05");
+						sysDepartTreeModel.setMatching(true);
+					}
+				}
+				processingTreeList(name, children);
+				//如果子级的子级匹配不成功，并且当前子级不匹配，则去除
+				children.removeIf(next -> !next.getMatching() && StrUtil.isEmpty(next.getColor()));
+				sysDepartTreeModel.setChildren(children);
+			}
+		}
+	}
 	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public Result<?> add(HttpServletRequest req, SysFileTypeParam param) {
@@ -829,6 +861,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 		if (types != null && types.size() > 0) {
 			types.forEach(type -> {
 				Optional.ofNullable(type).ifPresent(t -> {
+					type.setValue(type.getId());
+					type.setLabel(type.getName());
 					SysFileTypeTreeVO vo = new SysFileTypeTreeVO();
 					BeanUtils.copyProperties(t, vo);
 					Result<SysFileTypeDetailVO> detail = this.detail(t.getId());

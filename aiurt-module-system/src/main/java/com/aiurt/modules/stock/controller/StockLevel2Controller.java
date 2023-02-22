@@ -90,8 +90,10 @@ public class StockLevel2Controller {
     @AutoLog(value = "二级库管理-二级库库存管理-导出", operateType = 6, operateTypeAlias = "导出", permissionUrl = "/secondLevelWarehouse/StockLevel2List")
     @ApiOperation(value = "二级库管理-二级库库存管理-导出", notes = "二级库管理-二级库库存管理-导出")
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(@RequestParam(name = "ids", required = true) String ids, HttpServletRequest request) {
-        List<StockLevel2> exportList = iStockLevel2Service.exportXls(ids);
+    public ModelAndView exportXls(StockLevel2 stockLevel2,
+                                  @RequestParam(name = "ids",required =  false) String ids,
+                                  HttpServletRequest request) {
+        List<StockLevel2> exportList = iStockLevel2Service.exportXls(stockLevel2,ids);
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
         mv.addObject(NormalExcelConstants.FILE_NAME, "二级库库存管理");
         mv.addObject(NormalExcelConstants.CLASS, StockLevel2.class);

@@ -79,9 +79,9 @@ public class DateUtils extends PropertyEditorSupport {
     /**
      * 以毫秒表示的时间
      */
-    private static final long DAY_IN_MILLIS = 24 * 3600 * 1000;
-    private static final long HOUR_IN_MILLIS = 3600 * 1000;
-    private static final long MINUTE_IN_MILLIS = 60 * 1000;
+    private static final long DAY_IN_MILLIS = 24 * 3600 * 1000L;
+    private static final long HOUR_IN_MILLIS = 3600 * 1000L;
+    private static final long MINUTE_IN_MILLIS = 60 * 1000L;
     private static final long SECOND_IN_MILLIS = 1000;
 
     /**
@@ -174,7 +174,12 @@ public class DateUtils extends PropertyEditorSupport {
      */
     public static Timestamp str2Timestamp(String str) {
         Date date = str2Date(str, date_sdf.get());
-        return new Timestamp(date.getTime());
+        if (date != null) {
+            Timestamp timestamp = new Timestamp(date.getTime());
+            return timestamp;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -257,9 +262,6 @@ public class DateUtils extends PropertyEditorSupport {
      */
     public static String getDate(String format) {
         Date date = new Date();
-        if (null == date) {
-            return null;
-        }
         SimpleDateFormat sdf = new SimpleDateFormat(format);
         return sdf.format(date);
     }

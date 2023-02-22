@@ -4,13 +4,11 @@ import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.manager.dto.OrgDTO;
-import com.aiurt.boot.task.dto.CheckListDTO;
-import com.aiurt.boot.task.dto.RepairTaskDTO;
-import com.aiurt.boot.task.dto.RepairTaskStationDTO;
-import com.aiurt.boot.task.dto.WriteMonadDTO;
+import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -205,4 +203,15 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @return
      */
     List<RepairTaskDeviceRel> scanCodeDevice(String taskId, String deviceCode);
+
+
+    /**
+     * 检修消息发送
+     *
+     * @param messageDTO
+     * @param usernames
+     * @param username
+     * @param repairTaskMessageDTO
+     */
+    void sendMessage(MessageDTO messageDTO, String usernames, String username, RepairTaskMessageDTO repairTaskMessageDTO);
 }

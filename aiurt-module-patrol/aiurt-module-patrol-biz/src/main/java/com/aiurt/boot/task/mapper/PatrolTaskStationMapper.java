@@ -66,4 +66,6 @@ public interface PatrolTaskStationMapper extends BaseMapper<PatrolTaskStation> {
      * @return
      */
     List<String> getTaskCodeByUserStation();
+
+    String getStationByTaskCode(String code);
 }

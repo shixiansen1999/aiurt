@@ -1,14 +1,18 @@
 package com.aiurt.boot.standard.controller;
 
+import cn.hutool.core.collection.CollUtil;
+import com.aiurt.boot.standard.dto.OrgVO;
 import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.standard.entity.PatrolStandardOrg;
+import com.aiurt.boot.standard.service.IPatrolStandardOrgService;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -37,7 +41,8 @@ import java.util.List;
 public class PatrolStandardController extends BaseController<PatrolStandard, IPatrolStandardService> {
 	@Autowired
 	private IPatrolStandardService patrolStandardService;
-
+	 @Autowired
+	 private IPatrolStandardOrgService patrolStandardOrgService;
 	/**
 	 * 分页列表查询
 	 *
@@ -90,8 +95,14 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	@AutoLog(value = "巡检标准表-添加", operateType =  2, operateTypeAlias = "添加", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准表-添加", notes="巡检标准表-添加")
 	@PostMapping(value = "/add")
-	@LimitSubmit(key = "addAnnualPlan:#id")
 	public Result<String> add(@RequestBody PatrolStandard patrolStandard) {
+		List<OrgVO> orgCodeList = patrolStandard.getOrgCodeList();
+		for (OrgVO s : orgCodeList) {
+			PatrolStandardOrg patrolStandardOrg = new PatrolStandardOrg();
+			patrolStandardOrg.setOrgCode(s.getValue());
+			patrolStandardOrg.setStandardCode(patrolStandard.getCode());
+			patrolStandardOrgService.save(patrolStandardOrg);
+		}
 		patrolStandardService.save(patrolStandard);
 		return Result.OK("添加成功！");
 	}
@@ -131,6 +142,17 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	@ApiOperation(value="巡检标准表-编辑", notes="巡检标准表-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody PatrolStandard patrolStandard) {
+		List<OrgVO> orgCodeList = patrolStandard.getOrgCodeList();
+		List<PatrolStandardOrg> list = patrolStandardOrgService.list(new LambdaQueryWrapper<PatrolStandardOrg>().eq(PatrolStandardOrg::getStandardCode, patrolStandard.getCode()));
+		if(CollUtil.isNotEmpty(list)){
+			patrolStandardOrgService.removeBatchByIds(list);
+		}
+		for (OrgVO s : orgCodeList) {
+			PatrolStandardOrg patrolStandardOrg = new PatrolStandardOrg();
+			patrolStandardOrg.setOrgCode(s.getValue());
+			patrolStandardOrg.setStandardCode(patrolStandard.getCode());
+			patrolStandardOrgService.save(patrolStandardOrg);
+		}
 		patrolStandardService.updateById(patrolStandard);
 		return Result.OK("编辑成功!");
 	}

@@ -33,7 +33,7 @@
 		and a.inspection_code_id=#{inspectionCodeContent.inspectionCodeId}
 		</if>
 		<if test="inspectionCodeContent.code != null">
-			and  a.`code`=#{inspectionCodeContent.code}
+			and  a.`code` LIKE CONCAT ('%', #{inspectionCodeContent.code}, '%')
 		</if>
 		<if test="inspectionCodeContent.name != null">
 			and	a.`name` LIKE CONCAT ('%', #{inspectionCodeContent.name}, '%')

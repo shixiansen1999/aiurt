@@ -1,5 +1,6 @@
 package com.aiurt.modules.common.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
@@ -38,10 +39,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -106,7 +104,7 @@ public class CommonCtroller {
      */
     @GetMapping("/major/queryMajorByAuth")
     @ApiOperation("查询当前人员所管辖的专业")
-    public Result<List<SelectTable>> queryMajorByAuth() {
+    public Result<List<SelectTable>> queryMajorByAuth( @RequestParam(value ="name",required = false) String name) {
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
@@ -130,7 +128,10 @@ public class CommonCtroller {
             table.setValue(csMajor.getMajorCode());
             return table;
         }).collect(Collectors.toList());
-
+        //树形搜索匹配
+        if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(list)) {
+            sysBaseApi.processingTreeList(name,list);
+        }
         return Result.OK(list);
     }
 
@@ -147,7 +148,8 @@ public class CommonCtroller {
             @ApiImplicitParam(name = "majorIds", value = "专业编码", required = false, paramType = "query"),
     })
     public Result<List<SelectTable>> querySubSystemByAuth(@RequestParam(value = "majorCode", required = false) String majorCode,
-                                                          @RequestParam(value ="majorIds",required = false) List<String> majorIds) {
+                                                          @RequestParam(value ="majorIds",required = false) List<String> majorIds,
+                                                          @RequestParam(value ="name",required = false) String name) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String userId = loginUser.getId();
         String roleCodes = loginUser.getRoleCodes();
@@ -184,8 +186,14 @@ public class CommonCtroller {
                 return table;
             }).collect(Collectors.toList());
         }
+
+        //树形搜索匹配
+        if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(list)) {
+            sysBaseApi.processingTreeList(name,list);
+        }
         return Result.OK(list);
     }
+
 
     /**
      * 查询设备
@@ -207,7 +215,7 @@ public class CommonCtroller {
      */
     @GetMapping("/position/queryTreeByAuth")
     @ApiOperation("根据个人权限获取位置树")
-    public Result<List<SelectTable>> queryPositionTree() {
+    public Result<List<SelectTable>> queryPositionTree(@RequestParam(name = "name", required = false) String name) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String userId = loginUser.getId();
         String roleCodes = loginUser.getRoleCodes();
@@ -274,15 +282,18 @@ public class CommonCtroller {
             table.setChildren(lv2List);
             list.add(table);
         });
+        //树形搜索匹配
+        if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(list)) {
+            sysBaseApi.processingTreeList(name,list);
+        }
+
         return Result.OK(list);
     }
-
-
-    /**
-     * 根据个人权限获取位置树
-     *
-     * @return
-     */
+        /**
+         * 根据个人权限获取位置树
+         *
+         * @return
+         */
     @GetMapping("/position/queryStationTree")
     @ApiOperation("根据个人权限获取站点树")
     public Result<List<SelectTable>> queryStationTree() {
@@ -325,7 +336,7 @@ public class CommonCtroller {
 
     @GetMapping("/system/queryMajorAndSystemTree")
     @ApiOperation("查询专业系统树")
-    public Result<List<SelectTable>> queryMajorAndSystemTree() {
+    public Result<List<SelectTable>> queryMajorAndSystemTree( @RequestParam(value ="name",required = false) String name) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
         String userId = loginUser.getId();
@@ -362,6 +373,11 @@ public class CommonCtroller {
             table.setChildren(list);
             return table;
         }).collect(Collectors.toList());
+
+        //树形搜索匹配
+        if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(tableList)) {
+            sysBaseApi.processingTreeList(name,tableList);
+        }
         return Result.OK(tableList);
     }
 
@@ -439,8 +455,8 @@ public class CommonCtroller {
 
     @GetMapping("/system/queryDepartTree")
     @ApiOperation("查询用户拥有部门权限树")
-    public Result<List<CsUserDepartModel>> queryDepartTree() {
-        List<CsUserDepartModel> list = csUserDepartService.queryDepartTree();
+    public Result<List<CsUserDepartModel>> queryDepartTree(String name) {
+        List<CsUserDepartModel> list = csUserDepartService.queryDepartTree(name);
         return Result.OK(list);
     }
     /**

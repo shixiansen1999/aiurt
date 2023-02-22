@@ -88,8 +88,8 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
     @AutoLog(value = "资产分类-树形")
     @ApiOperation(value = "资产分类-树形", notes = "资产分类-树形")
     @GetMapping(value = "/getCategoryTreeList")
-    public Result<List<FixedAssetsCategoryDTO>> getCategoryTree() {
-        List<FixedAssetsCategoryDTO> list = fixedAssetsCategoryService.getCategoryTree();
+    public Result<List<FixedAssetsCategoryDTO>> getCategoryTree(@RequestParam(name = "name" , required = false) String name) {
+        List<FixedAssetsCategoryDTO> list = fixedAssetsCategoryService.getCategoryTree(name);
         return Result.OK(list);
     }
 

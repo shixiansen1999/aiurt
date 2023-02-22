@@ -132,8 +132,8 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 	 @AutoLog(value = "物资分类-物资分类树")
 	 @ApiOperation(value="物资分类-物资分类树", notes="物资分类-物资分类树")
 	 @GetMapping(value = "/selectTreeList")
-	public Result<List<EmergencyMaterialsCategory>> selectTreeList(){
-		List<EmergencyMaterialsCategory> emergencyMaterialsCategories = emergencyMaterialsCategoryService.selectTreeList();
+	public Result<List<EmergencyMaterialsCategory>> selectTreeList(String name){
+		List<EmergencyMaterialsCategory> emergencyMaterialsCategories = emergencyMaterialsCategoryService.selectTreeList(name);
 		return Result.OK(emergencyMaterialsCategories);
 	}
 

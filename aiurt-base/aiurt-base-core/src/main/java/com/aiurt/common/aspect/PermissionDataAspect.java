@@ -2,10 +2,12 @@ package com.aiurt.common.aspect;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.util.JeecgDataAutorUtils;
 import com.aiurt.common.system.util.JwtUtil;
 import com.aiurt.common.util.HttpRequestDeviceUtils;
@@ -172,45 +174,65 @@ public class PermissionDataAspect {
 
         // 用户信息
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String userId = ObjectUtil.isNotEmpty(sysUser) ? sysUser.getId() : null;
+        if (ObjectUtil.isEmpty(sysUser)) {
+            throw new AiurtBootException("请登录系统后重试");
+        }
+        String userId = sysUser.getId();
 
-        if (CollUtil.isNotEmpty(customPermissions)) {
-            for (SysPermissionDataRuleModel customPermission : customPermissions) {
-                if (ObjectUtil.isNotEmpty(customPermission)) {
-                    if (DataPermRuleType.TYPE_MANAGE_DEPT.equals(customPermission.getRuleConditions())) {
-                        List<CsUserDepartModel> departByUserId = commonApi.getDepartByUserId(userId);
-                        if (CollUtil.isNotEmpty(departByUserId) && !dataPermMap.containsKey(customPermission.getRuleConditions())) {
-                            dataPermMap.put(customPermission.getRuleConditions(), departByUserId.stream().map(custom -> "'" + custom.getOrgCode() + "'").collect(Collectors.joining(",")));
-                        }
-                    } else if (DataPermRuleType.TYPE_DEPT_ONLY.equals(customPermission.getRuleConditions())) {
-                        if (!dataPermMap.containsKey(customPermission.getRuleConditions())) {
-                            dataPermMap.put(customPermission.getRuleConditions(), "null");
-                        }
-                    } else if (DataPermRuleType.TYPE_MANAGE_LINE_ONLY.equals(customPermission.getRuleConditions())) {
-                        // todo 待处理
-                    } else if (DataPermRuleType.TYPE_MANAGE_STATION_ONLY.equals(customPermission.getRuleConditions())) {
-                        List<CsUserStationModel> stationByUserId = commonApi.getStationByUserId(userId);
-                        if (CollUtil.isNotEmpty(stationByUserId) && !dataPermMap.containsKey(customPermission.getRuleConditions())) {
-                            dataPermMap.put(customPermission.getRuleConditions(), stationByUserId.stream().map(custom -> "'" + custom.getStationCode() + "'").collect(Collectors.joining(",")));
-                        }
-                    } else if (DataPermRuleType.TYPE_MANAGE_MAJOR_ONLY.equals(customPermission.getRuleConditions())) {
-                        List<CsUserMajorModel> majorByUserId = commonApi.getMajorByUserId(userId);
-                        if (CollUtil.isNotEmpty(majorByUserId) && !dataPermMap.containsKey(customPermission.getRuleConditions())) {
-                            dataPermMap.put(customPermission.getRuleConditions(), majorByUserId.stream().map(custom -> "'" + custom.getMajorCode() + "'").collect(Collectors.joining(",")));
-                        }
-                    } else if (DataPermRuleType.TYPE_MANAGE_SYSTEM_ONLY.equals(customPermission.getRuleConditions())) {
-                        List<CsUserSubsystemModel> subsystemByUserId = commonApi.getSubsystemByUserId(userId);
-                        if (CollUtil.isNotEmpty(subsystemByUserId) && !dataPermMap.containsKey(customPermission.getRuleConditions())) {
-                            dataPermMap.put(customPermission.getRuleConditions(), subsystemByUserId.stream().map(custom -> "'" + custom.getSystemCode() + "'").collect(Collectors.joining(",")));
-                        }
-                    } else if (DataPermRuleType.TYPE_ALL.equals(customPermission.getRuleConditions())) {
-                        dataPermMap.put(customPermission.getRuleConditions(), "null");
-                    }
+        if (CollUtil.isEmpty(customPermissions)) {
+            return dataPermMap;
+        }
+        for (SysPermissionDataRuleModel customPermission : customPermissions) {
+            if (ObjectUtil.isEmpty(customPermission)) {
+                continue;
+            }
+            if (DataPermRuleType.TYPE_MANAGE_DEPT.equals(customPermission.getRuleConditions())) {
+                List<CsUserDepartModel> departByUserId = commonApi.getDepartByUserId(userId);
+                if (CollUtil.isNotEmpty(departByUserId) && !dataPermMap.containsKey(customPermission.getRuleConditions())) {
+                    dataPermMap.put(customPermission.getRuleConditions(), departByUserId.stream().map(custom -> "'" + custom.getOrgCode() + "'").collect(Collectors.joining(",")));
                 }
             }
+            if (DataPermRuleType.TYPE_DEPT_ONLY.equals(customPermission.getRuleConditions())) {
+                if (!dataPermMap.containsKey(customPermission.getRuleConditions())) {
+                    dataPermMap.put(customPermission.getRuleConditions(), sysUser.getOrgCode());
+                }
+            }
+            if (DataPermRuleType.TYPE_MANAGE_LINE_ONLY.equals(customPermission.getRuleConditions())) {
+                // todo 待处理
+            }
+            if (DataPermRuleType.TYPE_MANAGE_STATION_ONLY.equals(customPermission.getRuleConditions())) {
+                List<CsUserStationModel> stationByUserId = commonApi.getStationByUserId(userId);
+                if (CollUtil.isNotEmpty(stationByUserId) && !dataPermMap.containsKey(customPermission.getRuleConditions())) {
+                    dataPermMap.put(customPermission.getRuleConditions(), stationByUserId.stream().map(custom -> "'" + custom.getStationCode() + "'").collect(Collectors.joining(",")));
+                }
+            }
+            if (DataPermRuleType.TYPE_MANAGE_MAJOR_ONLY.equals(customPermission.getRuleConditions())) {
+                List<CsUserMajorModel> majorByUserId = commonApi.getMajorByUserId(userId);
+                if (CollUtil.isNotEmpty(majorByUserId) && !dataPermMap.containsKey(customPermission.getRuleConditions())) {
+                    dataPermMap.put(customPermission.getRuleConditions(), majorByUserId.stream().map(custom -> "'" + custom.getMajorCode() + "'").collect(Collectors.joining(",")));
+                }
+            }
+            if (DataPermRuleType.TYPE_MANAGE_SYSTEM_ONLY.equals(customPermission.getRuleConditions())) {
+                List<CsUserSubsystemModel> subsystemByUserId = commonApi.getSubsystemByUserId(userId);
+                if (CollUtil.isNotEmpty(subsystemByUserId) && !dataPermMap.containsKey(customPermission.getRuleConditions())) {
+                    dataPermMap.put(customPermission.getRuleConditions(), subsystemByUserId.stream().map(custom -> "'" + custom.getSystemCode() + "'").collect(Collectors.joining(",")));
+                }
+            }
+            if (DataPermRuleType.TYPE_ALL.equals(customPermission.getRuleConditions())) {
+                dataPermMap.put(customPermission.getRuleConditions(), "null");
+            }
         }
-        // 当管理部门里面有当前部门的时候，应该做数据权限规则优化
 
+        // 当管理部门里面有当前部门的时候，应该做数据权限规则优化
+        boolean isNeedOptimize = dataPermMap.containsKey(DataPermRuleType.TYPE_DEPT_ONLY)
+                && dataPermMap.containsKey(DataPermRuleType.TYPE_MANAGE_DEPT)
+                && StrUtil.isNotEmpty(dataPermMap.get(DataPermRuleType.TYPE_MANAGE_DEPT))
+                && StrUtil.isNotEmpty(dataPermMap.get(DataPermRuleType.TYPE_DEPT_ONLY));
+        if (isNeedOptimize) {
+            String newMangeDept = dataPermMap.get(DataPermRuleType.TYPE_MANAGE_DEPT) + "," + dataPermMap.get(DataPermRuleType.TYPE_DEPT_ONLY);
+            dataPermMap.put(DataPermRuleType.TYPE_MANAGE_DEPT, newMangeDept);
+            dataPermMap.remove(DataPermRuleType.TYPE_DEPT_ONLY);
+        }
         return dataPermMap;
     }
 
