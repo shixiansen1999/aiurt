@@ -1016,9 +1016,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
 
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_DEAL.getType(), faultCode, loginUser.getUsername(), "1");
-        complete(repairRecordDTO,loginUser);
-    }
-
     }
 
 
@@ -1378,49 +1375,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 记录日志
         saveLog(loginUser, "修改故障工单", fault.getCode(), FaultStatusEnum.APPROVAL_REJECT.getStatus(), null);
 
-    @Override
-    public void complete(RepairRecordDTO dto, LoginUser user) {
-        //如果是调度推送过来的故障，发送推送数据至调度系统
-        //通过faultCode找到对应的faultExternal
-        FaultRepairRecord faultRecord = recordMapper.selectById(dto.getId());
-        String code = faultRecord.getFaultCode();
-        FaultExternal faultExternal = faultExternalMapper.selectOne(new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getFaultcode, code)
-                .orderByDesc(FaultExternal::getId).last("limit 0,1"));;
-        if (faultExternal != null) {
-            Map param = new HashMap<String, Object>();
-            Map<String, Object> data = new HashMap<>();
-            data.put("indocno", faultExternal.getIndocno());
-            data.put("smfcode", faultExternal.getSmfcode());
-            data.put("sexecode", faultExternal.getSexecode());
-            data.put("iresult", 1);
-            data.put("smethod", dto.getMaintenanceMeasures());
-            data.put("icharger", null);
-            data.put("sworkno", user.getUsername());
-            data.put("scharger", user.getRealname());
-            //花费的时间
-            Date startTime = faultRecord.getCreateTime();
-            Date overTime = faultRecord.getEndTime();
-            long start = startTime.getTime();
-            long over = overTime.getTime();
-            long diff = over - start;
-            long nd = 1000 * 24 * 60 * 60;//一天的毫秒数
-            long nh = 1000 * 60 * 60;//一小时的毫秒数
-            long hour = diff % nd / nh;
-            data.put("irepairtime", hour);
-            data.put("dcompelete", faultRecord.getEndTime());
 
-            param.put("code", 200);
-            param.put("message", "success");
-            param.put("data", data);
-            param.put("systemid", "TXSYS");
-            JSONObject json = (JSONObject) JSONObject.toJSON(param);
-            String url = "http://123.57.62.172:30235/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
-            try {
-                restTemplate.postForObject(url, json, JSONObject.class);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     /**

@@ -114,7 +114,7 @@ public interface IFaultService extends IService<Fault> {
      */
     void fillRepairRecord(RepairRecordDTO repairRecordDTO);
 
-    void complete(RepairRecordDTO dto, LoginUser username);
+
 
     /**
      * 审核结果
