@@ -1,8 +1,7 @@
 package com.aiurt.modules.usageconfig.service.impl;
 import cn.hutool.core.date.DateUtil;
-import com.aiurt.boot.materials.entity.EmergencyMaterialsCategory;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.google.common.collect.Lists;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
@@ -18,7 +17,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -29,10 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -120,6 +115,7 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
 
     @Override
     public ModelAndView exportXls(HttpServletRequest request, UsageConfig usageConfig) {
+        List<UsageConfig> list = new ArrayList<>();
         Date startTime = usageConfig.getStartTime();
         Date endTime = usageConfig.getEndTime();
         if (Objects.isNull(startTime) || Objects.isNull(endTime)) {
@@ -130,19 +126,30 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
         Date finalStartTime = startTime;
         Date finalEndTime = endTime;
 
+        String code = null;
+        if (ObjectUtil.isNotNull(usageConfig.getSign())) {
+            code = usageConfig.getSign()==0 ? "base" : "business";
+        }
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
         LambdaQueryWrapper<UsageConfig> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(UsageConfig::getState, CommonConstant.DEL_FLAG_1);
-        if (CollectionUtil.isNotEmpty(usageConfig.getConfigId())){
-            queryWrapper.in(UsageConfig::getId,usageConfig.getConfigId());
+        String configId = usageConfig.getConfigId();
+        if (StrUtil.isNotBlank(configId)){
+            List<String> stringList = Arrays.asList(configId.split(","));
+            if (CollectionUtil.isNotEmpty(stringList)){
+                queryWrapper.in(UsageConfig::getId,stringList);
+            }
         }
-        List<UsageConfig> list = usageConfigMapper.selectList(queryWrapper);
-        if (CollectionUtil.isNotEmpty(list)){
+        if (StrUtil.isNotBlank(code)){
+            queryWrapper.eq(UsageConfig::getCode,code);
+        }
+        list = usageConfigMapper.selectList(queryWrapper);
+        if (CollectionUtil.isNotEmpty(list) && list.size()>1){
             list.forEach(e->{
                 String id = e.getId();
                 AtomicReference<Long> num = new AtomicReference<>(0L);
                 AtomicReference<Long> totalNum = new AtomicReference<>(0L);
-                //如果没有表名信息说明这条数据一定是父级，就去查询它的子级
+
                     LambdaQueryWrapper<UsageConfig> queryWrapper1 = new LambdaQueryWrapper<>();
                     queryWrapper1.eq(UsageConfig::getState, CommonConstant.DEL_FLAG_1);
                     queryWrapper1.eq(UsageConfig::getPid,id);
@@ -163,6 +170,10 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
                         e.setTotal(total);
                     }
             });
+        }else {
+            List<UsageConfig> children = this.getChildren(code, finalStartTime, finalEndTime);
+            list.clear();
+            list.addAll(children);
         }
 
         //导出文件名称
@@ -194,7 +205,39 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
         return 0L;
     }
 
+    private List<UsageConfig> getChildren(String code, Date finalStartTime, Date finalEndTime){
+        List<UsageConfig> usageConfigList = new ArrayList<>();
+        List<UsageConfig> usageConfigs = usageConfigMapper.selectByPages(code);
+        usageConfigs.stream().forEach(usageStatDTO -> {
+        // 查询下级
+        List<UsageConfig> childrenList = usageConfigMapper.getChildrenList(usageStatDTO.getId());
 
+        if (CollUtil.isNotEmpty(childrenList)) {
+            AtomicReference<Long> num = new AtomicReference<>(0L);
+            AtomicReference<Long> totalNum = new AtomicReference<>(0L);
+            for (UsageConfig usageConfig1 : childrenList) {
+                Long newNumber = this.getNewNumber(usageConfig1.getTableName(), finalStartTime, finalEndTime, usageConfig1.getStaCondition());
+                Long total = this.getTotal(usageConfig1.getTableName(), usageConfig1.getStaCondition());
+                num.set(num.get() + newNumber);
+                totalNum.set(totalNum.get() + total);
+                usageConfig1.setNewAddNum(newNumber);
+                usageConfig1.setTotal(total);
+                usageConfig1.setName(usageConfig1.getName());
+                usageConfigList.add(usageConfig1);
+            }
+            usageStatDTO.setNewAddNum(num.get());
+            usageStatDTO.setTotal(totalNum.get());
+        }else {
+            Long newNumber = this.getNewNumber(usageStatDTO.getTableName(), finalStartTime, finalEndTime, usageStatDTO.getStaCondition());
+            Long total = this.getTotal(usageStatDTO.getTableName(), usageStatDTO.getStaCondition());
+            usageStatDTO.setNewAddNum(newNumber);
+            usageStatDTO.setTotal(total);
+
+         }
+        });
+        usageConfigs.addAll(usageConfigList);
+        return  usageConfigs;
+    }
 
 
 
