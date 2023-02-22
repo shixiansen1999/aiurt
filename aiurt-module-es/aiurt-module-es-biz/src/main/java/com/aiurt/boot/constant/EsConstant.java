@@ -84,11 +84,11 @@ public class EsConstant {
     /**
      * 高亮词语前缀
      */
-    public static final String HIGH_LIGHT_PRE_TAGS = "<b style='color:red'>";
+    public static final String HIGH_LIGHT_PRE_TAGS = "<font style='color:#C60A00'>";
     /**
      * 高亮词语前缀
      */
-    public static final String HIGH_LIGHT_POST_TAGS = "</b>";
+    public static final String HIGH_LIGHT_POST_TAGS = "</font>";
     /**
      * 高亮词语前缀
      */
