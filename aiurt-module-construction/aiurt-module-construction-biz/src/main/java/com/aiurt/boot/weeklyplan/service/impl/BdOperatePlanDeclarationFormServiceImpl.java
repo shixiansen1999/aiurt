@@ -212,7 +212,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
             messageDTO.setPublishingContent(bdOperatePlanDeclarationFormMessageDTO.getPublishingContent());
             messageDTO.setPriority("L");
             messageDTO.setStartTime(new Date());
-            messageDTO.setCategory("3");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_9);
             sysBaseApi.sendTemplateMessage(messageDTO);
         }
     }

@@ -62,6 +62,7 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             LambdaUpdateWrapper<SysTodoList> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.set(SysTodoList::getTodoType, todoType)
                     .set(SysTodoList::getActualUserName, username)
+                    .set(SysTodoList::getUpdateTime, new Date())
                     .eq(SysTodoList::getBusinessKey, businessKey)
                     .eq(SysTodoList::getBusinessType, businessType);
             update = sysTodoListService.update(updateWrapper);
@@ -87,6 +88,7 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
         LambdaUpdateWrapper<SysTodoList> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(SysTodoList::getTodoType, todoType)
                 .set(SysTodoList::getActualUserName, username)
+                .set(SysTodoList::getUpdateTime, new Date())
                 .eq(SysTodoList::getTaskId, taskId)
                 .eq(SysTodoList::getProcessInstanceId, processInstanceId);
 

@@ -139,10 +139,10 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         BeanUtil.copyProperties(bdTrainPlan,bdTrainPlanMessageDTO);
         //业务类型，消息类型，消息模板编码，摘要，发布内容
         bdTrainPlanMessageDTO.setBusType(SysAnnmentTypeEnum.TRAIN_PLAN.getType());
-        bdTrainPlanMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
-        bdTrainPlanMessageDTO.setTemplateCode(CommonConstant.TRAIN_PLAN_SERVICE_NOTICE);
-        bdTrainPlanMessageDTO.setMsgAbstract("年计划已经发布");
-        bdTrainPlanMessageDTO.setPublishingContent("年计划已经发布，请相关人员进行培训计划的制定。");
+        messageDTO.setType(MessageTypeEnum.XT.getType());
+        messageDTO.setTemplateCode(CommonConstant.TRAIN_PLAN_SERVICE_NOTICE);
+        messageDTO.setMsgAbstract("年计划已经发布");
+        messageDTO.setPublishingContent("年计划已经发布，请相关人员进行培训计划的制定。");
 
         sendMessage(messageDTO,bdTrainPlanMessageDTO);
 
@@ -507,10 +507,10 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             BeanUtil.copyProperties(checkVO,bdTrainPlanMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             bdTrainPlanMessageDTO.setBusType(SysAnnmentTypeEnum.TRAINRE_CHECK.getType());
-            bdTrainPlanMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
-            bdTrainPlanMessageDTO.setTemplateCode(CommonConstant.TRAIN_PLAN_SERVICE_NOTICE);
-            bdTrainPlanMessageDTO.setMsgAbstract("考试结果发布");
-            bdTrainPlanMessageDTO.setPublishingContent(String.format("%s你好，你的考试结果为%s分", checkVO.getExamPersonName(), checkVO.getExamResult()));
+            messageDTO.setType(MessageTypeEnum.XT.getType());
+            messageDTO.setTemplateCode(CommonConstant.TRAIN_PLAN_SERVICE_NOTICE);
+            messageDTO.setMsgAbstract("考试结果发布");
+            messageDTO.setPublishingContent(String.format("%s你好，你的考试结果为%s分", checkVO.getExamPersonName(), checkVO.getExamResult()));
 
             sendMessage(messageDTO,bdTrainPlanMessageDTO);
 
@@ -614,14 +614,9 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, bdTrainPlanMessageDTO.getId());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, bdTrainPlanMessageDTO.getBusType());
         messageDTO.setData(map);
-        messageDTO.setType(bdTrainPlanMessageDTO.getMessageType());
-        messageDTO.setTemplateCode(bdTrainPlanMessageDTO.getTemplateCode());
-        messageDTO.setMsgAbstract(bdTrainPlanMessageDTO.getMsgAbstract());
-        messageDTO.setPublishingContent(bdTrainPlanMessageDTO.getPublishingContent());
         messageDTO.setStartTime(new Date());
         messageDTO.setEndTime(new Date());
         messageDTO.setPriority("H");
-        messageDTO.setCategory("1");
         messageDTO.setCategory(CommonConstant.MSG_CATEGORY_11);
         sysBaseAPI.sendTemplateMessage(messageDTO);
     }

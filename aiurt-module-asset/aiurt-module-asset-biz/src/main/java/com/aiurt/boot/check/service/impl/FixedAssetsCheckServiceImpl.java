@@ -265,6 +265,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         // 发消息
         MessageDTO messageDTO = new MessageDTO();
         LoginUser userById = sysBaseApi.getUserById(fixedAssetsCheck.getCheckId());
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //构建消息模板
         HashMap<String, Object> map = new HashMap<>();
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.ASSET_CHECKER.getType());
@@ -278,6 +279,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         messageDTO.setTitle("固定资产盘点");
         messageDTO.setStartTime(new Date());
         messageDTO.setEndTime(new Date());
+        messageDTO.setFromUser(sysUser.getUsername());
         messageDTO.setToUser(userById.getUsername());
         messageDTO.setToAll(false);
         messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
