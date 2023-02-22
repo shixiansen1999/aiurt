@@ -2,26 +2,45 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.PatrolTaskMapper">
     <select id="getPatrolTaskPoolList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
-        SELECT t1.*,
-               date_format(t1.create_time, '%Y-%m-%d')                      AS creatTime,
-               SUBSTRING_INDEX(GROUP_CONCAT(DISTINCT cs.sort ), ',', 1) * 1 AS stationSort,
-               (SELECT realname FROM sys_user WHERE id = t1.end_user_id)    AS endUserName,
-               concat(
-                       DATE_FORMAT(t1.start_time, '%H:%i'),
-                       "-",
-                       DATE_FORMAT(t1.end_time, '%H:%i'))                   AS startEndTime
-        FROM patrol_task t1
-                     LEFT JOIN patrol_task_station pts ON t1.`code` = pts.task_code
-                     LEFT JOIN cs_station cs ON pts.station_code = cs.station_code
-                     LEFT JOIN cs_line cl ON cs.line_code = cl.line_code
-                WHERE
-                t1.STATUS NOT IN (6, 7, 8)
-                  AND t1.del_flag = 0
-                  AND t1.omit_status = 0
-                  AND t1.discard_status = 0
-                  AND cs.del_flag = 0
-                  AND cl.del_flag = 0
-                  AND t1.id NOT IN (SELECT id FROM patrol_task WHERE source = 3 AND (`status` = 0 OR `status` = 3))
+     SELECT
+	t1.*
+FROM
+	(
+	SELECT
+		t1.*,
+		date_format( t1.create_time, '%Y-%m-%d' ) AS creatTime,
+		GROUP_CONCAT( cl.line_name ) AS lineName,
+		GROUP_CONCAT( DISTINCT cl.sort ) AS lineSort,
+		SUBSTRING_INDEX( GROUP_CONCAT( DISTINCT cs.sort ), ',', 1 ) * 1 AS stationSort,
+		( SELECT realname FROM sys_user WHERE id = t1.end_user_id ) AS endUserName,
+		concat(
+			DATE_FORMAT( t1.start_time, '%H:%i' ),
+			"-",
+		DATE_FORMAT( t1.end_time, '%H:%i' )) AS startEndTime
+	FROM
+		patrol_task t1
+		LEFT JOIN patrol_task_station pts ON t1.`code` = pts.task_code
+		LEFT JOIN cs_station cs ON pts.station_code = cs.station_code
+		LEFT JOIN cs_line cl ON cs.line_code = cl.line_code
+	WHERE
+		t1.STATUS NOT IN ( 6, 7, 8 )
+		AND t1.del_flag = 0
+		AND t1.omit_status = 0
+		AND t1.discard_status = 0
+		AND cs.del_flag = 0
+		AND cl.del_flag = 0
+		AND t1.id NOT IN (
+		SELECT
+			id
+		FROM
+			patrol_task
+		WHERE
+			source = 3
+		AND ( `status` = 0 OR `status` = 3 ))
+	GROUP BY
+		t1.id
+	) AS t1
+		where 1=1
         <if test="patrolTaskDTO.dateScope != null and patrolTaskDTO.dateScope != ''">
             and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d')
                     between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
@@ -76,11 +95,10 @@
                 </when>
             </choose>
         </if>
-        GROUP BY t1.id
-        ORDER BY t1.create_time DESC,
-                 cl.sort ASC,
-                 cs.sort ASC,
-                 stationSort ASC;
+        ORDER BY
+  	    t1.creatTime DESC,
+	    t1.lineSort ASC,
+	    t1.stationSort ASC;
     </select>
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
         select t1.*,
