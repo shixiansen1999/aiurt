@@ -179,9 +179,12 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //userTaskService.completeWork(userId, DateUtils.date2Str(depot.getSubmitTime(), new SimpleDateFormat("yyyy-MM-dd")));
         //发送待办消息
         if (StringUtils.isNotBlank(dto.getSucceedId())) {
-            LoginUser userById = iSysBaseAPI.getUserById(dto.getSucceedId());
-            dto.setSucceedUserName(userById.getUsername());
-            sendMessage(dto);
+            List<String> list = StrUtil.splitTrim(dto.getSucceedId(), ",");
+            for (String s : list) {
+                LoginUser userById = iSysBaseAPI.getUserById(s);
+                dto.setSucceedUserName(userById.getUsername());
+                sendMessage(dto);
+            }
         }
         return Result.ok("新增成功");
     }
@@ -587,9 +590,12 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
         if(ObjectUtil.isNotEmpty(workLog.getSucceedId()))
         {
-            LoginUser successor = iSysBaseAPI.getUserById(workLog.getSucceedId());
-            workLog.setSucceedName(successor.getRealname());
-            workLogDTO.setSucceedUserName(successor.getUsername());
+            String[] split1 = workLog.getSucceedId().split(",");
+            List<LoginUser> assortNames = iSysBaseAPI.queryAllUserByIds(split1);
+            String collect1 = assortNames.stream().map(s -> s.getRealname()).collect(Collectors.joining(","));
+            String s = assortNames.stream().map(u -> u.getUsername()).collect(Collectors.joining(","));
+            workLog.setSucceedName(collect1);
+            workLogDTO.setSucceedUserName(s);
         }
         //提交状态
         workLogDTO.setStatusDesc(WorkLogStatusEnum.findMessage(workLog.getStatus()));
@@ -631,7 +637,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         if (StrUtil.isNotEmpty(succeedIds)) {
             List<JSONObject> jsonObjects = iSysBaseAPI.queryUsersByIds(succeedIds);
             String realNames = jsonObjects.stream().map(js -> js.getString("realname")).collect(Collectors.joining("；"));
-            workLog.setSucceedName(realNames);
+            workLogDTO.setSucceedName(realNames);
 
         }
         return workLogDTO;
