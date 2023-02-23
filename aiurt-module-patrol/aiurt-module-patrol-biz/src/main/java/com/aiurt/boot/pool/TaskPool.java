@@ -173,7 +173,9 @@ public class TaskPool implements Job {
                 Date startDate = plan.getStartDate();
                 int compare = DateUtil.compare(DateUtil.parse(DateUtil.formatDate(startDate)), DateUtil.parse(DateUtil.formatDate(date)));
                 long between = DateUtil.betweenDay(startDate, date, true);
-                if (0 == compare || 0 == (between & 1) || 0 == (between % 3)) {
+                boolean twoDay = PatrolConstant.PLAN_PERIOD_TWO_DAY.equals(period) && (0 == (between & 1));
+                boolean threeDay = PatrolConstant.PLAN_PERIOD_THREE_DAY.equals(period) && (0 == (between % 3));
+                if (0 == compare || twoDay || threeDay) {
                     return true;
                 }
                 return false;
