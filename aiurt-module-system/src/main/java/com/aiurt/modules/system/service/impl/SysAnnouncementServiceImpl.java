@@ -9,6 +9,7 @@ import javax.annotation.Resource;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
@@ -32,7 +33,9 @@ import io.swagger.models.auth.In;
 import org.apache.shiro.SecurityUtils;
 import org.checkerframework.checker.units.qual.min;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +63,9 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 
 	@Resource
 	private SysParamMapper sysParamMapper;
+
+	@Resource
+	private ISysParamAPI sysParamAPI;
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
@@ -152,7 +158,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 	}
 
 	@Override
-	public List<SysMessageTypeDTO> queryMessageType(String code) {
+	public List<SysMessageTypeDTO> queryMessageType() {
 		List<SysMessageTypeDTO> list = new ArrayList<>();
 		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String userId = loginUser.getId();
@@ -164,14 +170,14 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 
 		//获取当前登录人待办消息(流程消息)
 		List<SysTodoList> sysTodoLists = sysAnnouncementMapper.queryTodoList(username);
-
-		//模块设置头像
-		QueryWrapper<SysParam> wrapper = new QueryWrapper<>();
-		wrapper.lambda().eq(SysParam::getDelFlag, CommonConstant.DEL_FLAG_0)
-				.eq(SysParam::getCode, code)
-				.last("limit 1");
-		SysParam sysParam = Optional.of(sysParamMapper.selectOne(wrapper)).orElseGet(SysParam::new);
-
+		//头像集合
+        List<String> pictureCode = new ArrayList<>();
+		pictureCode.add(SysParamCodeConstant.FAULT);
+		pictureCode.add(SysParamCodeConstant.INSPECTION);
+		pictureCode.add(SysParamCodeConstant.PATROL);
+		pictureCode.add(SysParamCodeConstant.EMERGENCY);
+		pictureCode.add(SysParamCodeConstant.TRAIN);
+		pictureCode.add(SysParamCodeConstant.CONSTRUCTION);
 		//业务消息处理
 		Map<String, List<SysAnnouncementSendDTO>> collect = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getBusType() != null).collect(Collectors.groupingBy(SysAnnouncementSendDTO::getBusType));
 		for (Map.Entry<String, List<SysAnnouncementSendDTO>> entry : collect.entrySet()) {
@@ -187,6 +193,14 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				sysMessageTypeDTO.setBusType(sub);
 			}else{
 				sysMessageTypeDTO.setBusType(key);
+			}
+			//给不同类型赋值不同图片
+			for (String pCode : pictureCode) {
+				if(pCode.equals(key)){
+					SysParamModel sysParamModel = sysParamAPI.selectByCode(pCode);
+					sysMessageTypeDTO.setValue(sysParamModel.getValue());
+				}
+
 			}
 
 			// 统计长度
@@ -204,7 +218,6 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				SysAnnouncementSendDTO lastSysAnnouncementSendDTO = value.get(0);
 				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
 			}
-			sysMessageTypeDTO.setValue(sysParam.getValue());
 			sysMessageTypeDTO.setMessageFlag("1");
 			list.add(sysMessageTypeDTO);
 		}
@@ -217,16 +230,22 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			if("1".equals(key)){
 				sysMessageTypeDTO.setTitle("系统公告");
 				sysMessageTypeDTO.setBusType(null);
+				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SYS_ANNOUNCEMENT);
+				sysMessageTypeDTO.setValue(sysParamModel.getValue());
 			}
 			if("2".equals(key)){
 				sysMessageTypeDTO.setTitle("系统消息");
 				//设置消息类型
 				sysMessageTypeDTO.setBusType(null);
+				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SYS_MESSAGE);
+				sysMessageTypeDTO.setValue(sysParamModel.getValue());
 			}
 			if("3".equals(key)){
 				sysMessageTypeDTO.setTitle("特情消息");
 				//设置消息类型
 				sysMessageTypeDTO.setBusType("situation");
+				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SITUATION);
+				sysMessageTypeDTO.setValue(sysParamModel.getValue());
 			}
 			// 统计长度
 			List<SysAnnouncementSendDTO> value = entry.getValue();
@@ -242,7 +261,6 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				SysAnnouncementSendDTO lastSysAnnouncementSendDTO = value.get(0);
 				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
 			}
-			sysMessageTypeDTO.setValue(sysParam.getValue());
 			sysMessageTypeDTO.setMessageFlag("0");
 			list.add(sysMessageTypeDTO);
 		}
@@ -255,14 +273,25 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			String key = entry.getKey();
 			String module = TodoTaskTypeEnum.getByType(key).getModule();
 			sysMessageTypeDTO.setTitle(module);
-			//设置消息类型
-			int index = key.indexOf('_');
-			if(index !=-1){
-				String sub = key.substring(0, index);
-				sysMessageTypeDTO.setBusType(sub);
-			}else{
-				sysMessageTypeDTO.setBusType(key);
+			//设置消息类型和头像
+			if (SysParamCodeConstant.FAULT.equals(key)) {
+				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.FAULT_FLOW);
+				sysMessageTypeDTO.setValue(sysParamModel.getValue());
 			}
+			if (SysParamCodeConstant.PATROL.equals(key)) {
+				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.PATROL_FLOW);
+				sysMessageTypeDTO.setValue(sysParamModel.getValue());
+			}
+			if (SysParamCodeConstant.INSPECTION.equals(key)) {
+				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_FLOW);
+				sysMessageTypeDTO.setValue(sysParamModel.getValue());
+			}
+			if (SysParamCodeConstant.EMERGENCY.equals(key)) {
+				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.EMERGENCY_FLOW);
+				sysMessageTypeDTO.setValue(sysParamModel.getValue());
+			}
+			sysMessageTypeDTO.setBusType(key);
+
 			// 统计长度
 			List<SysTodoList> value = entry.getValue();
 			int size = value.size();
@@ -278,7 +307,6 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				sysMessageTypeDTO.setIntervalTime(sysTodoList.getCreateTime());
 			}
 			sysMessageTypeDTO.setMessageFlag("2");
-			sysMessageTypeDTO.setValue(sysParam.getValue());
 			list.add(sysMessageTypeDTO);
 		}
 		//list去重，数量相加

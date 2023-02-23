@@ -54,7 +54,7 @@ public interface ISysAnnouncementService extends IService<SysAnnouncement> {
      * 消息中心类型统计
      * @return
      */
-    public List<SysMessageTypeDTO> queryMessageType(String code);
+    public List<SysMessageTypeDTO> queryMessageType();
 
     /**
      * 消息中心详情
