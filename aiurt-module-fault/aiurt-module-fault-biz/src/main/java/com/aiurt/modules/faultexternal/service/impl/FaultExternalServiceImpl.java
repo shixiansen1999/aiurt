@@ -3,11 +3,11 @@ package com.aiurt.modules.faultexternal.service.impl;
 import cn.hutool.core.util.StrUtil;
 
 import cn.hutool.core.date.DateUtil;
->>>>>>> 81b49fafbeffd7609216bf154d6fb7299dafe71c
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.enums.ProcessLinkEnum;
 import com.aiurt.common.enums.RepairWayEnum;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.fault.dto.RepairRecordDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.OperationProcess;
 import com.aiurt.modules.fault.mapper.FaultMapper;
@@ -29,6 +29,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.swagger.models.auth.In;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -67,8 +68,13 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
     @Lazy
     private IFaultService faultService;
 
+    @Autowired
+    private FaultRepairRecordMapper recordMapper;
 
-//    LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+    @Autowired
+    private FaultExternalMapper faultExternalMapper;
+
+
     @Override
     public Result<?> addFaultExternal(FaultExternalDTO dto, HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -143,4 +149,50 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
         }
     }
 
+
+
+    @Override
+    public void complete(RepairRecordDTO dto, LoginUser user) {
+        //如果是调度推送过来的故障，发送推送数据至调度系统
+        //通过faultCode找到对应的faultExternal
+        FaultRepairRecord faultRecord = recordMapper.selectById(dto.getId());
+        String code = faultRecord.getFaultCode();
+        FaultExternal faultExternal = faultExternalMapper.selectOne(new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getFaultcode, code)
+                .orderByDesc(FaultExternal::getId).last("limit 0,1"));;
+        if (faultExternal != null) {
+            Map param = new HashMap<String, Object>();
+            Map<String, Object> data = new HashMap<>();
+            data.put("indocno", faultExternal.getIndocno());
+            data.put("smfcode", faultExternal.getSmfcode());
+            data.put("sexecode", faultExternal.getSexecode());
+            data.put("iresult", 1);
+            data.put("smethod", dto.getMaintenanceMeasures());
+            data.put("icharger", null);
+            data.put("sworkno", user.getUsername());
+            data.put("scharger", user.getRealname());
+            //花费的时间
+            Date startTime = faultRecord.getCreateTime();
+            Date overTime = faultRecord.getEndTime();
+            long start = startTime.getTime();
+            long over = overTime.getTime();
+            long diff = over - start;
+            long nd = 1000 * 24 * 60 * 60;//一天的毫秒数
+            long nh = 1000 * 60 * 60;//一小时的毫秒数
+            long hour = diff % nd / nh;
+            data.put("irepairtime", hour);
+            data.put("dcompelete", faultRecord.getEndTime());
+
+            param.put("code", 200);
+            param.put("message", "success");
+            param.put("data", data);
+            param.put("systemid", "TXSYS");
+            try {
+                JSONObject json = (JSONObject) JSONObject.toJSON(param);
+                String url = "http://123.57.62.172:30235/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
+                restTemplate.postForObject(url, json, JSONObject.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

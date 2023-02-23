@@ -131,6 +131,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Autowired
     private RestTemplate restTemplate;
 
+    private IFaultExternalService faultExternalService;
+
+
     /**
      * 故障上报
      *
@@ -1180,6 +1183,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             todoDTO.setMsgAbstract("维修完成");
             todoDTO.setPublishingContent("故障维修确认无误");
             sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
+            //推送数据到调度系统
+            faultExternalService.complete(repairRecordDTO,loginUser);
         }
 
         // 使用的解决方案
@@ -1203,6 +1208,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
 
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_DEAL.getType(), faultCode, loginUser.getUsername(), "1");
+
     }
 
 
