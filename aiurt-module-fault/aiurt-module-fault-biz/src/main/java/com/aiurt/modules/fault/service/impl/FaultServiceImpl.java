@@ -14,7 +14,6 @@ import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.dto.FaultCallbackDTO;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
@@ -200,7 +199,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            faultMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
             messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("有新的故障信息");
             messageDTO.setPublishingContent("有新的故障信息，请审核");
@@ -341,7 +339,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             messageDTO.setData(map);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            faultMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
             messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
             messageDTO.setMsgAbstract("故障上报审核驳回");
             messageDTO.setPublishingContent("上报的故障被驳回，请处理");
@@ -415,7 +412,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             BeanUtil.copyProperties(fault,faultMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            faultMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
             messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("故障已被作废");
             messageDTO.setPublishingContent("故障已被作废");
@@ -533,7 +529,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         BeanUtil.copyProperties(fault,faultMessageDTO);
         //业务类型，消息类型，消息模板编码，摘要，发布内容
         faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-        faultMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
         messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
         messageDTO.setMsgAbstract("有一个新的故障维修任务");
         messageDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
@@ -600,7 +595,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         BeanUtil.copyProperties(fault,faultMessageDTO);
         //业务类型，消息类型，消息模板编码，摘要，发布内容
         faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-        faultMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
         messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
         messageDTO.setMsgAbstract("故障被主动领取");
         messageDTO.setPublishingContent("故障被主动领取，维修人请尽快维修，并维修后填写维修记录");
@@ -653,7 +647,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         BeanUtil.copyProperties(fault,faultMessageDTO);
         //业务类型，消息类型，消息模板编码，摘要，发布内容
         faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-        faultMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
         messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
         messageDTO.setMsgAbstract("接收到新的故障维修任务");
         messageDTO.setPublishingContent("接收到新的故障维修任务，请尽快维修，并维修后填写维修记录");
@@ -723,7 +716,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         messageDTO.setData(map);
         //业务类型，消息类型，消息模板编码，摘要，发布内容
         faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-        faultMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
         messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_RETURN);
         messageDTO.setMsgAbstract("指派故障被退回");
         messageDTO.setPublishingContent("指派的维修任务被退回，请尽快重新指派");
@@ -769,7 +761,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         BeanUtil.copyProperties(fault,faultMessageDTO);
         //业务类型，消息类型，消息模板编码，摘要，发布内容
         faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-        faultMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
         messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_RETURN);
         messageDTO.setMsgAbstract("开始维修");
         messageDTO.setPublishingContent("开始维修");
@@ -873,7 +864,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             BeanUtil.copyProperties(fault,faultMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            faultMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
             messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("挂起申请");
             messageDTO.setPublishingContent("故障挂起申请已通过");
@@ -900,7 +890,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             messageDTO.setData(map);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            faultMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
             messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
             messageDTO.setMsgAbstract("挂起申请被驳回");
             messageDTO.setPublishingContent("您申请的故障挂起申请被驳回，关联故障编号："+faultCode);
@@ -1153,7 +1142,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            faultMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
             messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("有一个新的故障维修任务");
             messageDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
@@ -1358,7 +1346,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             BeanUtil.copyProperties(fault,faultMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            faultMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
             messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("维修完成");
             messageDTO.setPublishingContent("故障维修确认无误");
@@ -1388,7 +1375,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             messageDTO.setData(map);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            faultMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
             messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
             messageDTO.setMsgAbstract("维修确认被驳回");
             messageDTO.setPublishingContent("故障维修确认被退回，请重新处理");
@@ -1754,7 +1740,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, faultMessageDTO.getId());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, faultMessageDTO.getBusType());
         messageDTO.setData(map);
-        messageDTO.setType(faultMessageDTO.getMessageType());
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_MESSAGE);
+        messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
         messageDTO.setPriority("L");
         messageDTO.setStartTime(new Date());
         messageDTO.setCategory(CommonConstant.MSG_CATEGORY_6);

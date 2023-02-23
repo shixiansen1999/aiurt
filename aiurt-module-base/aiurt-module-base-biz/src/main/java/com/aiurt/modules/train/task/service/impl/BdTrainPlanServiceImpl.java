@@ -7,9 +7,9 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
@@ -38,9 +38,11 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -51,6 +53,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
@@ -97,7 +100,8 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
     private BdTrainMakeupExamRecordMapper bdTrainMakeupExamRecordMapper;
     @Autowired
     private BdTrainTaskUserMapper bdTrainTaskUserMapper;
-
+    @Resource
+    private ISysParamAPI iSysParamAPI;
     /**
      * 发布
      *
@@ -134,12 +138,16 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
 
         //发送通知
         MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),users, "年计划发布" + DateUtil.today(), null);
-
+        //构建消息模板
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("msgContent", "年计划已经发布");
+        messageDTO.setData(map);
         BdTrainPlanMessageDTO bdTrainPlanMessageDTO = new BdTrainPlanMessageDTO();
         BeanUtil.copyProperties(bdTrainPlan,bdTrainPlanMessageDTO);
         //业务类型，消息类型，消息模板编码，摘要，发布内容
         bdTrainPlanMessageDTO.setBusType(SysAnnmentTypeEnum.TRAIN_PLAN.getType());
-        messageDTO.setType(MessageTypeEnum.XT.getType());
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.TRAIN_PLAN_MESSAGE);
+        messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
         messageDTO.setTemplateCode(CommonConstant.TRAIN_PLAN_SERVICE_NOTICE);
         messageDTO.setMsgAbstract("年计划已经发布");
         messageDTO.setPublishingContent("年计划已经发布，请相关人员进行培训计划的制定。");
@@ -503,11 +511,15 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             // 发消息
             MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),checkVO.getUserName(), "考试结果发布" + DateUtil.today(), null);
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("msgContent", "考试结果发布");
+            messageDTO.setData(map);
             BdTrainPlanMessageDTO bdTrainPlanMessageDTO = new BdTrainPlanMessageDTO();
             BeanUtil.copyProperties(checkVO,bdTrainPlanMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
-            bdTrainPlanMessageDTO.setBusType(SysAnnmentTypeEnum.TRAINRE_CHECK.getType());
-            messageDTO.setType(MessageTypeEnum.XT.getType());
+            bdTrainPlanMessageDTO.setBusType(SysAnnmentTypeEnum.TRAIN_RECHECK.getType());
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.TRAIN_PLAN_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
             messageDTO.setTemplateCode(CommonConstant.TRAIN_PLAN_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("考试结果发布");
             messageDTO.setPublishingContent(String.format("%s你好，你的考试结果为%s分", checkVO.getExamPersonName(), checkVO.getExamResult()));

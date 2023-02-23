@@ -34,4 +34,12 @@ public interface IEmergencyMaterialsCategoryService extends IService<EmergencyMa
      * @return
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
+
+
+    /**
+     * 根据编码查询物资分类
+     * @param code
+     * @return
+     */
+    EmergencyMaterialsCategory getOne(String code);
 }

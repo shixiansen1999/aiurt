@@ -23,11 +23,11 @@ import com.aiurt.boot.check.service.IFixedAssetsCheckService;
 import com.aiurt.boot.check.vo.CheckUserVO;
 import com.aiurt.boot.check.vo.FixedAssetsCheckVO;
 import com.aiurt.boot.constant.FixedAssetsConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.boot.record.service.IFixedAssetsCheckRecordService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
@@ -42,8 +42,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -51,6 +53,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -83,6 +86,8 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
     private FixedAssetsCheckCategoryMapper fixedAssetsCheckCategoryMapper;
     @Autowired
     private FixedAssetsCheckMapper fixedAssetsCheckMapper;
+    @Resource
+    private ISysParamAPI iSysParamAPI;
 
     @Override
     public IPage<FixedAssetsCheck> queryPageList(Page<FixedAssetsCheck> page, FixedAssetsCheck fixedAssetsCheck) {
@@ -283,7 +288,8 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         messageDTO.setToUser(userById.getUsername());
         messageDTO.setToAll(false);
         messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
-        messageDTO.setType(MessageTypeEnum.XT.getType());
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FIXED_ASSETS_MESSAGE);
+        messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
         messageDTO.setMsgAbstract("固定资产盘点");
         messageDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
         messageDTO.setCategory(CommonConstant.MSG_CATEGORY_12);

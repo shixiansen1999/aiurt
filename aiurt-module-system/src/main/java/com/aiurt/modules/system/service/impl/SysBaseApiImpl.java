@@ -2643,7 +2643,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public void sendTemplateMessage(MessageDTO message) {
-        String messageType = message.getType();
+        String type = message.getType();
         //update-begin-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
         String templateCode = message.getTemplateCode();
         if(StrUtil.isNotBlank(templateCode)){
@@ -2659,23 +2659,29 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         if(StrUtil.isBlank(message.getContent())){
             throw new AiurtBootException("发送消息失败,消息内容为空！");
         }
-        //update-end-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
-        if(MessageTypeEnum.XT.getType().equals(messageType)){
-            if (message.isMarkdown()) {
-                // 系统消息要解析Markdown
-                message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
+        if(StrUtil.isBlank(type)){
+            throw new AiurtBootException("发送消息失败,消息发送渠道没有配置！");
+        }
+        List<String> messageTypes = StrUtil.splitTrim(type, ",");
+        for (String messageType : messageTypes) {
+            //update-end-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
+            if(MessageTypeEnum.XT.toString().equals(messageType)){
+                if (message.isMarkdown()) {
+                    // 系统消息要解析Markdown
+                    message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
+                }
+                systemSendMsgHandle.sendMessage(message);
+            }else if(MessageTypeEnum.YJ.toString().equals(messageType)){
+                if (message.isMarkdown()) {
+                    // 邮件消息要解析Markdown
+                    message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
+                }
+                emailSendMsgHandle.sendMessage(message);
+            }else if(MessageTypeEnum.DD.toString().equals(messageType)){
+                ddSendMsgHandle.sendMessage(message);
+            }else if(MessageTypeEnum.QYWX.toString().equals(messageType)){
+                qywxSendMsgHandle.sendMessage(message);
             }
-            systemSendMsgHandle.sendMessage(message);
-        }else if(MessageTypeEnum.YJ.getType().equals(messageType)){
-            if (message.isMarkdown()) {
-                // 邮件消息要解析Markdown
-                message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
-            }
-            emailSendMsgHandle.sendMessage(message);
-        }else if(MessageTypeEnum.DD.getType().equals(messageType)){
-            ddSendMsgHandle.sendMessage(message);
-        }else if(MessageTypeEnum.QYWX.getType().equals(messageType)){
-            qywxSendMsgHandle.sendMessage(message);
         }
     }
 

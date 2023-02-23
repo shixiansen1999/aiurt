@@ -140,6 +140,8 @@ public class UsageConfigController extends BaseController<UsageConfig, UsageConf
      * @param usageConfig
      * @return
      */
+    @AutoLog(value = "系统使用-统计导出")
+    @ApiOperation(value = "系统使用-统计导出", notes = "系统使用-统计导出")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request,UsageConfig usageConfig) {
         return usageConfigService.exportXls(request, usageConfig);

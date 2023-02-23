@@ -2,4 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.materials.mapper.EmergencyMaterialsCategoryMapper">
 
+
+    <select id="getOne" resultType="com.aiurt.boot.materials.entity.EmergencyMaterialsCategory">
+        SELECT
+        id as id,
+        category_code as categoryCode
+        FROM
+	      emergency_materials_category
+        where
+             del_flag = 0
+             and collate category_code = #{code}
+    </select>
 </mapper>

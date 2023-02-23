@@ -11,6 +11,7 @@ import com.aiurt.common.util.TokenUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.message.websocket.WebSocket;
 import com.aiurt.modules.system.dto.SysAnnouncementDTO;
+import com.aiurt.modules.system.dto.SysAnnouncementPageDTO;
 import com.aiurt.modules.system.dto.SysMessageInfoDTO;
 import com.aiurt.modules.system.dto.SysMessageTypeDTO;
 import com.aiurt.modules.system.entity.SysAnnouncement;
@@ -569,8 +570,8 @@ public class SysAnnouncementController {
     @AutoLog(value = "消息中心-消息类型")
     @ApiOperation(value="消息中心-消息类型", notes="消息中心-消息类型")
     @GetMapping(value = "/queryAnnouncementCount")
-    public Result<List<SysMessageTypeDTO>> queryMessageType(){
-        List<SysMessageTypeDTO> list = sysAnnouncementService.queryMessageType();
+    public Result<List<SysMessageTypeDTO>> queryMessageType(@ApiParam(name = "code", value = "图片配置code")@RequestParam(name="code",required=false) String  code){
+        List<SysMessageTypeDTO> list = sysAnnouncementService.queryMessageType(code);
         return Result.ok(list);
     }
 
@@ -582,11 +583,26 @@ public class SysAnnouncementController {
                                                                          @ApiParam(name = "messageFlag", value = "1:业务、2:流程 ")@RequestParam(name="messageFlag",required=true) String  messageFlag,
                                                                    @ApiParam(name = "msgCategory", value = "消息类型1:通知公告2:系统消息3:特情消息 ")@RequestParam(name="msgCategory",required=false) String  msgCategory,
                                                                  @ApiParam(name = "todoType", value = "0：待办、1：已办、2：待阅、3：已阅")@RequestParam(name="todoType",required=false) String  todoType,
-                                                                 @ApiParam(name = "keyword", value = "关键字")@RequestParam(name="keyword",required=false) String  keyword,
+                                                                 @ApiParam(name = "keyWord", value = "关键字")@RequestParam(name="keyWord",required=false) String  keyWord,
                                                                  @ApiParam(name = "busType", value = "fault:故障、situation:特情 、trainplan，trainrecheck:培训、worklog:工作日志、inspection_assign,inspection:检修、patrol_assign，patrol_audit:巡视、patrol:巡视流程、fault:故障流程、emergency:应急业务消息、inspection:检修流程")@RequestParam(name="busType",required=false) String  busType){
         Page<SysMessageInfoDTO> page = new Page<>(pageNo,pageSize);
-        IPage<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementService.queryMessageInfo(page,messageFlag, todoType, keyword,busType,msgCategory);
+        IPage<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementService.queryMessageInfo(page,messageFlag, todoType, keyWord,busType,msgCategory);
         return Result.ok(sysMessageInfoDTOS);
+    }
+
+    @AutoLog(value = "消息中心-业务消息类型-查询未读消息页码")
+    @ApiOperation(value="消息中心-业务消息类型-查询未读消息页码", notes="消息中心-业务消息类型-查询未读消息页码")
+    @GetMapping(value = "/queryPageNumber")
+    public Result<SysAnnouncementPageDTO> queryPageNumber(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                          @ApiParam(name = "messageFlag", value = "1:业务、2:流程 ")@RequestParam(name="messageFlag",required=true) String  messageFlag,
+                                                          @ApiParam(name = "msgCategory", value = "消息类型1:通知公告2:系统消息3:特情消息 ")@RequestParam(name="msgCategory",required=false) String  msgCategory,
+                                                          @ApiParam(name = "todoType", value = "0：待办、1：已办、2：待阅、3：已阅")@RequestParam(name="todoType",required=false) String  todoType,
+                                                          @ApiParam(name = "keyWord", value = "关键字")@RequestParam(name="keyWord",required=false) String  keyWord,
+                                                          @ApiParam(name = "busType", value = "fault:故障、situation:特情 、trainplan，trainrecheck:培训、worklog:工作日志、inspection_assign,inspection:检修、patrol_assign，patrol_audit:巡视、patrol:巡视流程、fault:故障流程、emergency:应急业务消息、inspection:检修流程")@RequestParam(name="busType",required=false) String  busType){
+        Page<Object> page = new Page<>(pageNo, pageSize);
+        SysAnnouncementPageDTO sysAnnouncementPageDTO = sysAnnouncementService.queryPageNumber(page, messageFlag, todoType, keyWord, busType, msgCategory);
+        return Result.ok(sysAnnouncementPageDTO);
     }
 
 

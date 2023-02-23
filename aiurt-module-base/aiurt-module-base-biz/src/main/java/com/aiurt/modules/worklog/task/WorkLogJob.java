@@ -2,8 +2,9 @@ package com.aiurt.modules.worklog.task;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
-import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
@@ -15,7 +16,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -40,6 +43,8 @@ public class WorkLogJob implements Job {
     private ScheduleRecordMapper scheduleRecordMapper;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         WorkLogJobDTO dto = (WorkLogJobDTO)jobExecutionContext.getMergedJobDataMap().get("orgId");
@@ -74,7 +79,8 @@ public class WorkLogJob implements Job {
                             map.put("msgContent", dto.getContent());
                             messageDTO.setData(map);
                             messageDTO.setTemplateCode(com.aiurt.common.constant.CommonConstant.WORK_LOG_SERVICE_NOTICE);
-                            messageDTO.setType(MessageTypeEnum.XT.getType());
+                            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_MESSAGE);
+                            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
                             messageDTO.setMsgAbstract("工作日志上报");
                             messageDTO.setPublishingContent("今日工作日志未上报");
                             iSysBaseAPI.sendTemplateMessage(messageDTO);
@@ -101,7 +107,8 @@ public class WorkLogJob implements Job {
                             map.put("msgContent", dto.getContent());
                             messageDTO.setData(map);
                             messageDTO.setTemplateCode(com.aiurt.common.constant.CommonConstant.WORK_LOG_SERVICE_NOTICE);
-                            messageDTO.setType(MessageTypeEnum.XT.getType());
+                            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_MESSAGE);
+                            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
                             messageDTO.setMsgAbstract("工作日志上报");
                             messageDTO.setPublishingContent("今日工作日志未上报");
                             iSysBaseAPI.sendTemplateMessage(messageDTO);

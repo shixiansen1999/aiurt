@@ -47,7 +47,7 @@
       from sys_announcement sa
       left join sys_announcement_send sas on sas.annt_id = sa.id
       <where>
-           sas.read_flag = 0
+		  sas.read_flag = 0
            and sa.del_flag = 0
 		  <if test="userId!=null and userId!=''">
                 and sas.user_id = #{userId}
@@ -81,11 +81,14 @@
 
 	<select id="queryAnnouncementInfo" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysMessageInfoDTO">
 		select
-		@i:=@i+1 as seq,
+		(@i:=@i+1) as seq,e.*
+		from
+		(select
 		sa.id as id,
 		sa.titile as title,
 		sa.msg_content as msgContent,
 		sa.create_time as intervalTime,
+		sa.update_time as receiveTime,
 		sa.msg_category as msgCategory,
 		sa.msg_abstract as msgAbstract,
 		sa.publishing_content as publishingContent,
@@ -93,9 +96,41 @@
 		sas.read_flag as readFlag
 		from sys_announcement sa
 		left join sys_announcement_send sas on sas.annt_id = sa.id
-		left join (SELECT @i:=0) b on 1=1
 		<where>
 			 sa.del_flag = 0
+			<if test="userId!=null and userId!=''">
+				and sas.user_id = #{userId}
+			</if>
+			<if test="busType!=null and busType!=''">
+				and sa.bus_type LIKE concat('%',#{busType},'%')
+			</if>
+			<if test="keyWord!=null and keyWord!=''">
+				and sa.msg_content LIKE concat('%',#{keyWord},'%')
+			</if>
+			<if test="msgCategory!=null and msgCategory!=''">
+				and sa.msg_category =#{msgCategory}
+			</if>
+		</where>
+		order by sa.create_time desc) e,(SELECT @i:=0) b
+	</select>
+
+	<select id="queryAllAnnouncement" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysMessageInfoDTO">
+		select
+		@i:=@i+1 as seq,
+		sa.id as id,
+		sa.titile as title,
+		sa.msg_content as msgContent,
+		sa.create_time as intervalTime,
+		sa.update_time as receiveTime,
+		sa.msg_category as msgCategory,
+		sa.msg_abstract as msgAbstract,
+		sa.publishing_content as publishingContent,
+		sa.bus_type as taskType,
+		sas.read_flag as readFlag
+		from (SELECT @i:=0) b,sys_announcement sa
+		left join sys_announcement_send sas on sas.annt_id = sa.id
+		<where>
+			sa.del_flag = 0
 			<if test="userId!=null and userId!=''">
 				and sas.user_id = #{userId}
 			</if>
@@ -119,6 +154,44 @@
 		stl.msg_content as msgContent ,
 		stl.title as title,
 		stl.create_time as intervalTime,
+		stl.update_time as receiveTime,
+		stl.msg_abstract as msgAbstract,
+		stl.publishing_content as publishingContent,
+		stl.task_id as taskId,
+		stl.task_type as taskType,
+		stl.business_key as businessKey,
+		stl.business_type as businesstype,
+		stl.process_definition_key as processDefinitionKey,
+		stl.process_instance_id as processInstanceId,
+		stl.url as url,
+		stl.app_url as appUrl,
+		stl.todo_type as todoType
+		from sys_todo_list stl,(SELECT @i:=0) b
+		<where>
+			<if test="userName!=null and userName!=''">
+			 find_in_set(#{userName},stl.current_user_name)
+			</if>
+			<if test="keyWord!=null and keyWord!=''">
+				and stl.msg_content LIKE concat(concat('%',#{keyWord}),'%')
+			</if>
+			<if test="todoType!=null and todoType!=''">
+				and stl.todo_type = #{todoType}
+			</if>
+			<if test="busType!=null and busType!=''">
+				and stl.task_type = #{busType}
+			</if>
+		</where>
+		order by stl.create_time desc
+	</select>
+
+	<select id="queryAllTodoList" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysMessageInfoDTO">
+		select
+		@i:=@i+1 as seq ,
+		stl.id as id,
+		stl.msg_content as msgContent ,
+		stl.title as title,
+		stl.create_time as intervalTime,
+		stl.update_time as receiveTime,
 		stl.msg_abstract as msgAbstract,
 		stl.publishing_content as publishingContent,
 		stl.task_id as taskId,
@@ -130,7 +203,7 @@
 		from sys_todo_list stl,(SELECT @i:=0) b
 		<where>
 			<if test="userName!=null and userName!=''">
-			 find_in_set(#{userName},stl.current_user_name)
+				find_in_set(#{userName},stl.current_user_name)
 			</if>
 			<if test="keyWord!=null and keyWord!=''">
 				and stl.msg_content LIKE concat(concat('%',#{keyWord}),'%')
