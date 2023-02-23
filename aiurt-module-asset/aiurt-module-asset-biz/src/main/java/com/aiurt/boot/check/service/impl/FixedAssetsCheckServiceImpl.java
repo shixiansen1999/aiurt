@@ -44,7 +44,6 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -275,8 +274,8 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         HashMap<String, Object> map = new HashMap<>();
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.ASSET_CHECKER.getType());
         map.put("inventoryList",fixedAssetsCheck.getInventoryList());
-        SysDepartModel departByOrgCode = sysBaseApi.getDepartByOrgCode(fixedAssetsCheck.getOrgCode());
-        map.put("departName", departByOrgCode.getDepartName());
+        List<String> names = sysBaseApi.queryOrgNamesByOrgCodes(orgCodes);
+        map.put("departName", StrUtil.join(",", names));
         map.put("checkName", userById.getRealname());
         map.put("time", DateUtil.format(fixedAssetsCheck.getPlanStartDate(), "yyyy-MM-dd")+"-"+DateUtil.format(fixedAssetsCheck.getPlanEndDate(), "yyyy-MM-dd"));
         messageDTO.setData(map);

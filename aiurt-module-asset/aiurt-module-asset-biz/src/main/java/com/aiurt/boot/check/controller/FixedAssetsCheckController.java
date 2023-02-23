@@ -308,7 +308,7 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
     @PostMapping(value = "/startProcess")
     public Result<IPage<FixedAssetsCheckRecord>> startProcess(@RequestBody AssetsResultDTO assetsResultDTO) {
         String a = fixedAssetsCheckService.startProcess(assetsResultDTO);
-        return Result.OK();
+        return Result.OK(a);
     }
 
     /**

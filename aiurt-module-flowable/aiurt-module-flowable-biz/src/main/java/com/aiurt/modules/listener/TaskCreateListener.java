@@ -2,6 +2,7 @@ package com.aiurt.modules.listener;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
@@ -28,10 +29,7 @@ import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author fgw
@@ -215,6 +213,9 @@ public class TaskCreateListener implements FlowableEventListener {
                     bpmnTodoDTO.setProcessName(name);
                 }
             }
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("msgContent",bpmnTodoDTO.getTaskName());
+            bpmnTodoDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE_PROCESS);
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
             todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
         } catch (Exception e) {
