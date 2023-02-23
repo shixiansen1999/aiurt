@@ -3,10 +3,16 @@ package com.aiurt.modules.todo.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
+import com.aiurt.common.util.HTMLUtils;
 import com.aiurt.common.util.dynamic.db.FreemarkerParseFactory;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
+import com.aiurt.modules.message.handle.impl.DdSendMsgHandle;
+import com.aiurt.modules.message.handle.impl.EmailSendMsgHandle;
+import com.aiurt.modules.message.handle.impl.QywxSendMsgHandle;
 import com.aiurt.modules.message.service.ISysMessageTemplateService;
 import com.aiurt.modules.message.websocket.WebSocket;
 import com.aiurt.modules.todo.dto.BpmnTodoDTO;
@@ -39,6 +45,15 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
     private WebSocket webSocket;
     @Autowired
     private ISysMessageTemplateService sysMessageTemplateService;
+    @Autowired
+    private QywxSendMsgHandle qywxSendMsgHandle;
+
+    @Autowired
+    private EmailSendMsgHandle emailSendMsgHandle;
+
+    @Autowired
+    private DdSendMsgHandle ddSendMsgHandle;
+
 
     @Override
     public void createBbmnTodoTask(BpmnTodoDTO bpmnTodoDTO) {
@@ -135,7 +150,26 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             log.info("新增代办->推送消息：businessKey：{}", JSONObject.toJSONString(sysTodoList));
             webSocket.pushMessage("please update the to-do list");
         }
-
+        String type = sysTodoList.getType();
+        List<String> messageTypes = StrUtil.splitTrim(type, ",");
+        MessageDTO messageDTO = new MessageDTO();
+        BeanUtil.copyProperties(sysTodoList, messageDTO);
+        for (String messageType : messageTypes) {
+            //update-end-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
+            if(MessageTypeEnum.XT.toString().equals(messageType)){
+                webSocket.pushMessage("please update the to-do list");
+            }else if(MessageTypeEnum.YJ.toString().equals(messageType)){
+                if (messageDTO.isMarkdown()) {
+                    // 邮件消息要解析Markdown
+                    messageDTO.setContent(HTMLUtils.parseMarkdown(messageDTO.getContent()));
+                }
+                emailSendMsgHandle.sendMessage(messageDTO);
+            }else if(MessageTypeEnum.DD.toString().equals(messageType)){
+                ddSendMsgHandle.sendMessage(messageDTO);
+            }else if(MessageTypeEnum.QYWX.toString().equals(messageType)){
+                qywxSendMsgHandle.sendMessage(messageDTO);
+            }
+        }
     }
 
     /**

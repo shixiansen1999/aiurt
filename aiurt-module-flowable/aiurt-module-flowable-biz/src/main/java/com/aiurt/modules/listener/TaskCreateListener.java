@@ -4,11 +4,14 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
+import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
+import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.todo.dto.BpmnTodoDTO;
 import com.aiurt.modules.user.service.IFlowUserService;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
@@ -181,7 +184,8 @@ public class TaskCreateListener implements FlowableEventListener {
             bpmnTodoDTO.setTaskKey(taskEntity.getTaskDefinitionKey());
             bpmnTodoDTO.setTaskId(taskEntity.getId());
             bpmnTodoDTO.setProcessInstanceId(taskEntity.getProcessInstanceId());
-            bpmnTodoDTO.setProcessDefinitionKey(taskEntity.getProcessDefinitionId());
+            String processDefinitionId = taskEntity.getProcessDefinitionId();
+            bpmnTodoDTO.setProcessDefinitionKey(processDefinitionId);
             bpmnTodoDTO.setTaskName(taskEntity.getName());
             bpmnTodoDTO.setBusinessKey(instance.getBusinessKey());
             bpmnTodoDTO.setCurrentUserName(StrUtil.join(",", userNameList));
@@ -193,6 +197,22 @@ public class TaskCreateListener implements FlowableEventListener {
                 if (Objects.nonNull(json)) {
                     bpmnTodoDTO.setUrl(json.getString("formUrl"));
                     bpmnTodoDTO.setUrlType(json.getString("formType"));
+                }
+            }
+
+            // 处理流程
+            List<String> processDefinitionIdList = StrUtil.split(processDefinitionId, ':');
+            if (CollectionUtil.isNotEmpty(processDefinitionIdList) && processDefinitionIdList.size()>0) {
+                // 流程标识
+                String modkelKey = processDefinitionIdList.get(0);
+                LambdaQueryWrapper<ActCustomModelInfo> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(ActCustomModelInfo::getModelKey, modkelKey).last("limit 1");
+                IActCustomModelInfoService bean = SpringContextUtils.getBean(IActCustomModelInfoService.class);
+                ActCustomModelInfo one = bean.getOne(wrapper);
+                if (Objects.nonNull(one)) {
+                    bpmnTodoDTO.setProcessCode(one.getModelKey());
+                    String name = StrUtil.contains(one.getName(), "流程") ? one.getName() : one.getName()+"流程";
+                    bpmnTodoDTO.setProcessName(name);
                 }
             }
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
