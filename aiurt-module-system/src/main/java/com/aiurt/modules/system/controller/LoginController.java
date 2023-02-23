@@ -16,9 +16,11 @@ import com.aiurt.common.api.dto.LogDTO;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.util.JwtUtil;
 import com.aiurt.common.util.*;
 import com.aiurt.common.util.encryption.EncryptedString;
+import com.aiurt.config.thirdapp.ThirdAppConfig;
 import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.model.SysLoginModel;
 import com.aiurt.modules.system.service.*;
@@ -87,6 +89,9 @@ public class LoginController {
 
 	@Autowired
 	private IWeaverSsoService weaverSsoService;
+
+	@Autowired
+	ThirdAppConfig thirdAppConfig;
 
 	@ApiOperation("登录接口")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -706,16 +711,41 @@ public class LoginController {
 		Result<JSONObject> result = new Result<JSONObject>();
 		ThirdAppWechatEnterpriseServiceImpl enterpriseService = SpringContextUtils.getBean(ThirdAppWechatEnterpriseServiceImpl.class);
 		String accessToken = enterpriseService.getAccessToken();
+		log.info("请求参数：code->{}, accessToken->{}", code, accessToken);
+		// 该接口用于根据code获取成员信息，适用于自建应用与代开发应用
 		String url = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token="+accessToken+"&code="+code;
-		Map response1  =  RestUtil.get(url);
-		String userId = (String)response1.get("UserId");
-		String url1 ="https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token="+accessToken+"&userid="+userId;
-		Map response2 = RestUtil.get(url1);
-		String phone = (String)response2.get("mobile");
+		Map userinfoResult  =  RestUtil.get(url);
+		// 请请求结果{"errcode": 0,"errmsg": "ok","userid":"USERID","user_ticket": "USER_TICKET"}
+
+		log.info("请求url->{},请求结果：{}", url, JSONObject.toJSONString(userinfoResult));
+		if (Objects.isNull(userinfoResult)) {
+			throw new  AiurtBootException("获取企业微信用户信息失败！请检查应用的配置信息是否正确！");
+		}
+
+		String userId = (String)userinfoResult.getOrDefault("UserId", "");
+		// 用户票据
+		String userTicket = (String)userinfoResult.getOrDefault("user_ticket", "");
+
+		if (StrUtil.isBlank(userTicket)) {
+			throw new  AiurtBootException("获取企业微信用户票据失败！请检查应用的配置信息是否正确！");
+		}
+
+		// 获取访问用户敏感信息接口
+	    String userDetailUrl ="https://qyapi.weixin.qq.com/cgi-bin/auth/getuserdetail?access_token="+accessToken+"&userid="+userId;
+		// 请求参数
+		JSONObject params = new JSONObject();
+		params.put("user_ticket", userTicket);
+		Map userDetailResult = RestUtil.post(userDetailUrl, params);
+		// 获取用户手机号
+		String phone = (String)userDetailResult.getOrDefault("mobile", "");
+		if (StrUtil.isBlank(phone)) {
+			throw new  AiurtBootException("获取企业微信用户手机号失败！请检查应用的配置信息是否正确！");
+		}
+		log.info("请求url->{},请求结果：{}", userDetailUrl, JSONObject.toJSONString(userDetailResult));
 		ISysUserService bean = SpringContextUtils.getBean(ISysUserService.class);
 		SysUser sysUser = bean.getUserByPhone(phone);
 		if (ObjectUtil.isEmpty(sysUser)){
-			return result.error500("请注册好用户信息");
+			return result.error500("该用户手机号:"+phone+"没注册, 请联系管理员添加账号！");
 		}
 		String username = sysUser.getUsername();
 		String password = sysUser.getPassword();
@@ -766,7 +796,7 @@ public class LoginController {
 			log.info("st->{}", string1);
 			String signature = sha1(string1);
 			JSONObject obj = new JSONObject();
-			obj.put("appId","ww19d88c8272303c7b");
+			obj.put("appId", thirdAppConfig.getWechatEnterprise().getClientId());
 			obj.put("timestamp",time);
 			obj.put("nonceStr",noncestr);
 			obj.put("signature",signature);
@@ -783,7 +813,7 @@ public class LoginController {
 			System.out.println(string1);
 			String signature = sha1(string1);
 			JSONObject obj = new JSONObject();
-			obj.put("appId","ww19d88c8272303c7b");
+			obj.put("appId",thirdAppConfig.getWechatEnterprise().getClientId());
 			obj.put("timestamp",time);
 			obj.put("nonceStr",noncestr);
 			obj.put("signature",signature);

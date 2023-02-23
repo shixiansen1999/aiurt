@@ -26,6 +26,9 @@
         <if test="condition.endTime != null and condition.endTime != ''">
             and DATE_FORMAT(patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d')
         </if>
+        <if test="condition.id != null and condition.id != ''">
+            and id in (select  invoices_id  from emergency_materials_invoices_item where materials_id = #{condition.id})
+        </if>
         order by t1.create_time desc
     </select>
 </mapper>

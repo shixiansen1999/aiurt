@@ -1,6 +1,7 @@
 package com.aiurt.boot.materials.service.impl;
 import com.aiurt.boot.materials.dto.*;
 import com.aiurt.boot.materials.mapper.EmergencyMaterialsMapper;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.entity.DynamicTableDataEntity;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
@@ -139,9 +140,9 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
     public DynamicTableEntity getPatrolRecord(PatrolRecordReqDTO recordReqDTO) {
         DynamicTableEntity dynamicTableEntity = new DynamicTableEntity();
         String standardCode = recordReqDTO.getStandardCode();
-        if (StrUtil.isBlank(standardCode)) {
-            throw new AiurtBootException("请选择巡检表！");
-        }
+//        if (StrUtil.isBlank(standardCode)) {
+//            throw new AiurtBootException("请选择巡检表！");
+//        }
         // 查询物资
         String id = recordReqDTO.getId();
         EmergencyMaterials emergencyMaterials = emergencyMaterialsService.getById(id);
@@ -150,20 +151,36 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
         }
         String materialsCode = emergencyMaterials.getMaterialsCode();
 
-        String lineCode = emergencyMaterials.getLineCode();
 
-        String stationCode = emergencyMaterials.getStationCode();
-
-        String positionCode = emergencyMaterials.getPositionCode();
-        recordReqDTO.setMaterialsCode(materialsCode);
-        recordReqDTO.setLineCode(lineCode);
         recordReqDTO.setStandardCode(standardCode);
-        recordReqDTO.setPositionCode(positionCode);
-        recordReqDTO.setStationCode(stationCode);
+
+//        if(StrUtil.isBlank(standardCode)){
+//            LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+//            lambdaQueryWrapper.eq(EmergencyMaterialsInvoicesItem::getMaterialsId,id);
+//            lambdaQueryWrapper.eq(EmergencyMaterialsInvoicesItem::getDelFlag, CommonConstant.DEL_FLAG_0);
+//            List<EmergencyMaterialsInvoicesItem> list = emergencyMaterialsInvoicesItemMapper.selectList(lambdaQueryWrapper);
+//
+//            if (CollectionUtil.isNotEmpty(list)){
+//                List<String> collect = list.stream().map(EmergencyMaterialsInvoicesItem::getInvoicesId).collect(Collectors.toList());
+//                LambdaQueryWrapper<EmergencyMaterialsInvoices> queryWrapper = new LambdaQueryWrapper<>();
+//                queryWrapper.eq(EmergencyMaterialsInvoices::getDelFlag, CommonConstant.DEL_FLAG_0);
+//                queryWrapper.in(EmergencyMaterialsInvoices::getId,collect);
+//                queryWrapper.orderByDesc(EmergencyMaterialsInvoices::getCreateTime);
+//                List<EmergencyMaterialsInvoices> emergencyMaterialsInvoices = emergencyMaterialsInvoicesMapper.selectList(queryWrapper);
+//                if(CollectionUtil.isNotEmpty(emergencyMaterialsInvoices)){
+//                    EmergencyMaterialsInvoices emergencyMaterialsInvoices1 = emergencyMaterialsInvoices.get(0);
+//                    recordReqDTO.setStandardCode(emergencyMaterialsInvoices1.getStandardCode());
+//                }
+//            }
+//        }
+
         // 查询记录数据
+        List<EmergencyMaterialsInvoices> list1 = new ArrayList<>();
         Page<EmergencyMaterialsInvoices> page = new Page<>(recordReqDTO.getPageNo(), recordReqDTO.getPageSize());
-        List<EmergencyMaterialsInvoices> recordList = invoicesService.queryList(page, recordReqDTO);
-        if (CollUtil.isEmpty(recordList)) {
+        if(StrUtil.isNotBlank(standardCode)){
+            list1 = invoicesService.queryList(page, recordReqDTO);
+        }
+        if (CollUtil.isEmpty(list1)) {
             return dynamicTableEntity;
         }
 
@@ -172,10 +189,10 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
         dynamicTableEntity.setTotal(page.getTotal());
         // 只需要构建一次title即可,list集合最大组装title
         LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> queryWrapper = new LambdaQueryWrapper<>();
-        Set<String> idSet = recordList.stream().map(EmergencyMaterialsInvoices::getId).collect(Collectors.toSet());
+        Set<String> idSet = list1.stream().map(EmergencyMaterialsInvoices::getId).collect(Collectors.toSet());
         // 查询检修记录结果数据
         queryWrapper.in(EmergencyMaterialsInvoicesItem::getInvoicesId, idSet)
-                .eq(EmergencyMaterialsInvoicesItem::getMaterialsCode, materialsCode)
+                .eq(EmergencyMaterialsInvoicesItem::getMaterialsId, id)
                 .orderByDesc(EmergencyMaterialsInvoicesItem::getCreateTime);
         List<EmergencyMaterialsInvoicesItem> maxInvoicesItemList = baseMapper.selectList(queryWrapper);
 
@@ -226,13 +243,13 @@ public class EmergencyMaterialsInvoicesItemServiceImpl extends ServiceImpl<Emerg
 
 
         List<DynamicTableDataEntity> records = new ArrayList<>();
-        recordList.stream().forEach(record->{
+        list1.stream().forEach(record->{
             String recordId = record.getId();
             LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> wrapper = new LambdaQueryWrapper<>();
 
             // 查询检修记录结果数据
             wrapper.eq(EmergencyMaterialsInvoicesItem::getInvoicesId, recordId)
-                    .eq(EmergencyMaterialsInvoicesItem::getMaterialsCode, materialsCode);
+                    .eq(EmergencyMaterialsInvoicesItem::getMaterialsId, id);
             List<EmergencyMaterialsInvoicesItem> invoicesItemList = baseMapper.selectList(wrapper);
 
 
