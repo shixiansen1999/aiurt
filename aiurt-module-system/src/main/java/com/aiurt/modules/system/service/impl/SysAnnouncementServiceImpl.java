@@ -281,6 +281,12 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			SysMessageTypeDTO sysMessageTypeDTO = new SysMessageTypeDTO();
 			// 通过key拿名称
 			String key = entry.getKey();
+			if(key.equals("bpmn")){
+				break;
+			}
+			List<SysTodoList> bpmn = collect1.get("bpmn");
+			List<SysTodoList> collect3 = bpmn.stream().filter(sysTodoList -> sysTodoList.getTaskType().contains(key)).collect(Collectors.toList());
+
 			String module = TodoTaskTypeEnum.getByType(key).getModule();
 			sysMessageTypeDTO.setTitle(module);
 			//设置消息类型和头像
@@ -304,6 +310,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 
 			// 统计长度
 			List<SysTodoList> value = entry.getValue();
+			value.addAll(collect3);
 			int size = value.size();
 			sysMessageTypeDTO.setCount(size);
 			//给内容赋值

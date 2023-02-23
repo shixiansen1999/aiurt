@@ -185,6 +185,7 @@
 			</if>
 			<if test="busType!=null and busType!=''">
 				and stl.task_type = #{busType}
+				or stl.process_code like concat('%',#{busType},'%')
 			</if>
 		</where>
 		order by stl.create_time desc
