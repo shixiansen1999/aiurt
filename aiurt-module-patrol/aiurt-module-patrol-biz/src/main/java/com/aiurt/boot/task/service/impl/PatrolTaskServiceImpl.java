@@ -405,6 +405,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
         TodoDTO todoDTO = new TodoDTO();
         todoDTO.setData(map);
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
+        todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+
         todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
         todoDTO.setTitle("巡视任务-确认接收");
         todoDTO.setMsgAbstract("巡视任务接收");
@@ -1082,6 +1085,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
                 TodoDTO todoDTO = new TodoDTO();
                 todoDTO.setData(map);
+                SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
+                todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+
                 todoDTO.setProcessDefinitionName("巡视管理");
                 todoDTO.setTaskName(patrolTask.getName() + "(待审核)");
                 todoDTO.setBusinessKey(patrolTask.getId());

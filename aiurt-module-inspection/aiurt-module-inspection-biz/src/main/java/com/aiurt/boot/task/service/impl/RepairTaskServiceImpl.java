@@ -2184,7 +2184,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         } else {
             map.put("repairName",username);
         }
-
+        todoDTO.setData(map);
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.REPAIR_MESSAGE_PROCESS);
+        todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
         todoDTO.setTaskName(taskName);
         todoDTO.setBusinessKey(businessKey);
         todoDTO.setBusinessType(businessType);

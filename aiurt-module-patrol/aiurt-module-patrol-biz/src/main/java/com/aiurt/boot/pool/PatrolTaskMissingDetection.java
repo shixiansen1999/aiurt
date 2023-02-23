@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskOrganization;
 import com.aiurt.boot.task.service.IPatrolTaskOrganizationService;
@@ -18,6 +19,8 @@ import com.aiurt.modules.todo.dto.TodoDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -46,7 +49,8 @@ public class PatrolTaskMissingDetection implements Job {
     private ISysBaseAPI sysBaseApi;
     @Autowired
     private IPatrolTaskOrganizationService patrolTaskOrganizationService;
-
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -121,6 +125,8 @@ public class PatrolTaskMissingDetection implements Job {
                     todoDTO.setTitle("巡视任务-漏检");
                     todoDTO.setMsgAbstract("巡视任务-漏检");
                     todoDTO.setPublishingContent("巡视任务漏检，请尽快处置");
+                    SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
+                    todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
 
                     todoDTO.setProcessDefinitionName("巡视管理");
                     todoDTO.setTaskName(l.getName() + "(漏巡待处理)");

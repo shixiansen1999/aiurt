@@ -26,9 +26,7 @@ import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.fault.service.*;
-import com.aiurt.modules.faultexternal.entity.FaultExternal;
 import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
-import com.aiurt.modules.faultexternal.service.IFaultExternalService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
@@ -39,7 +37,6 @@ import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -282,6 +279,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             faultStationPosition = faultStationPosition + position;
         }
         map.put("faultStationPosition",faultStationPosition);
+        todoDTO.setData(map);
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_MESSAGE_PROCESS);
+        todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
         // 根据角色获取人员
         todoDTO.setTaskName(taskName);
         todoDTO.setBusinessKey(businessKey);

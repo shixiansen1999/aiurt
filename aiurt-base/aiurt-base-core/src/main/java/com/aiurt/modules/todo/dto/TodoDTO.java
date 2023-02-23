@@ -60,6 +60,16 @@ public class TodoDTO {
     /**是否发送Markdown格式的消息*/
     @TableField(exist = false)
     private Boolean markdown;
+    /**
+     * 消息类型：org.jeecg.common.constant.enums.MessageTypeEnum
+     *  XT("system",  "系统消息")
+     *  YJ("email",  "邮件消息")
+     *  DD("dingtalk", "钉钉消息")
+     *  QYWX("wechat_enterprise", "企业微信")
+     *  WX("wechat","微信")
+     *  DX("short_message","短信")
+     */
+    protected String type;
     /**解析模板内容 对应的数据*/
     @TableField(exist = false)
     private Map<String, Object> data;
