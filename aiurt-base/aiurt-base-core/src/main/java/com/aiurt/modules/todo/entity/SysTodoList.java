@@ -155,4 +155,9 @@ public class SysTodoList implements Serializable {
     @TableField(exist = false)
     private Map<String, Object> data;
 
+
+    private String processName;
+
+    private String processCode;
+
 }

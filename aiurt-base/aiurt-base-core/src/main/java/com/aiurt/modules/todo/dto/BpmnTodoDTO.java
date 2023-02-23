@@ -61,4 +61,8 @@ public class BpmnTodoDTO extends TodoDTO {
     /**解析模板内容 对应的数据*/
     @TableField(exist = false)
     private Map<String, Object> data;
+
+    private String processName;
+
+    private String processCode;
 }
