@@ -1498,7 +1498,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode) {
+    public List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode , String name) {
 
         QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
         deviceTypeQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
