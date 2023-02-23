@@ -39,6 +39,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
@@ -76,6 +77,7 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<?> addFaultExternal(FaultExternalDTO dto, HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Fault fault = new Fault();
