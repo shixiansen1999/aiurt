@@ -66,6 +66,20 @@ public interface CommonConstant {
 	 */
 	public static final int OPERATE_TYPE_6 = 6;
 
+    /**
+     * 检修已完成状态
+     */
+    public static final Long REPAIR_POOL_ACCOMPLISH = 8L;
+
+    /**
+     * 巡检已完成状态
+     */
+    public static final Long PATROL_TASK = 7L;
+
+    /**
+     * 赋值
+     */
+    public static final Long ASSIGNMENT = 0L;
 
 	/** {@code 500 Server Error} (HTTP/1.0 - RFC 1945) */
     public static final Integer SC_INTERNAL_SERVER_ERROR_500 = 500;

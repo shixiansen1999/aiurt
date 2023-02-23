@@ -759,4 +759,76 @@
                         LEFT JOIN repair_task_station_rel t4 ON t1.`code` = t4.repair_task_code
         where t1.code = #{id} and t4.del_flag = 0
     </select>
+
+
+    <select id="getSystemInformation" resultType="com.aiurt.boot.task.dto.SystemInformationDTO">
+         select line_code as lineCode,line_name as lineName  FROM cs_line where  del_flag = 0
+    </select>
+
+    <select id="getMaintenanceQuantity" resultType="java.lang.Long">
+        SELECT
+        COUNT(*)
+        FROM
+        repair_task t1
+        LEFT JOIN repair_task_station_rel t2 ON t1.`code` = t2.repair_task_code
+        <where>
+            t1.del_flag = 0
+            AND t2.del_flag = 0
+            <if test="stationCode!=null ">
+                AND t2.station_code in
+                <foreach  item="item" collection="stationCode" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="status != null">
+                and t1.STATUS = #{status}
+            </if>
+        </where>
+    </select>
+    <select id="getInspection" resultType="java.lang.Long">
+        select
+        COUNT(*)
+        from
+        patrol_task t1
+        LEFT JOIN patrol_task_station t2 ON t1.`code` = t2.task_code
+        <where>
+            t1.del_flag = 0
+            AND t2.del_flag = 0
+            <if test="stationCode!=null ">
+                AND t2.station_code in
+                <foreach  item="item" collection="stationCode" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="status != null">
+                and t1.status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="getFaultCodeList" resultType="java.lang.String">
+        select code from fault
+        <where>
+            <if test="stationCode != null">
+                station_code in
+                <foreach  item="item" collection="stationCode" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getFaultQuantity" resultType="java.lang.Long">
+        select COUNT(*) from fault_analysis_report
+        <where>
+            del_flag = 0
+            and status = 1
+            <if test="faultCode != null">
+                and fault_code in
+                <foreach  item="item" collection="faultCode" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

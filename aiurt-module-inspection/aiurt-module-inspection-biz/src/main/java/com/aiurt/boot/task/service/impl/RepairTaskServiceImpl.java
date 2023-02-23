@@ -40,6 +40,7 @@ import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
@@ -2395,5 +2396,53 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.REPAIR_MESSAGE);
         messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
         iSysBaseAPI.sendTemplateMessage(messageDTO);
+    }
+
+    @Override
+    public IPage<SystemInformationDTO> getSystemInformation(SystemInformationDTO systemInformationDTO) {
+        Page<SystemInformationDTO> pageList = new Page<>(systemInformationDTO.getPageNo(),systemInformationDTO.getPageSize());
+
+        //查询所有线路
+        List<SystemInformationDTO> systemInformation = repairTaskMapper.getSystemInformation(pageList);
+        systemInformation.forEach(e->{
+            e.setSystemTyp("通信");
+            String lineCode = e.getLineCode();
+            if(StrUtil.isNotBlank(lineCode)){
+                //根据线路Code查询站点Code
+                List<String> stationCodeByLineCode = sysBaseApi.getStationCodeByLineCode(lineCode);
+                if (CollectionUtil.isNotEmpty(stationCodeByLineCode)){
+                    //检修总数
+                    Long maintenanceQuantity = repairTaskMapper.getMaintenanceQuantity(stationCodeByLineCode,null);
+                    //巡检总数
+                    Long inspection = repairTaskMapper.getInspection(stationCodeByLineCode, null);
+                    e.setIplanSum(maintenanceQuantity+inspection);
+
+                    //检修已完成总数
+                    Long maintenanceQuantity1 = repairTaskMapper.getMaintenanceQuantity(stationCodeByLineCode, CommonConstant.REPAIR_POOL_ACCOMPLISH);
+                    //巡检已完成总数
+                    Long inspection1 = repairTaskMapper.getInspection(stationCodeByLineCode, CommonConstant.PATROL_TASK);
+                    e.setIplanComplete(maintenanceQuantity1+inspection1);
+
+
+                    List<String> faultCodeList = repairTaskMapper.getFaultCodeList(stationCodeByLineCode);
+                    if (CollectionUtil.isNotEmpty(faultCodeList)){
+                        //故障总数
+                        e.setFaultSum((long) faultCodeList.size());
+
+                        //故障完成总数
+                        Long faultQuantity = repairTaskMapper.getFaultQuantity(faultCodeList);
+                        e.setFaultComplete(faultQuantity);
+                    }
+                }else {
+                    e.setIplanSum(CommonConstant.ASSIGNMENT);
+                    e.setIplanComplete(CommonConstant.ASSIGNMENT);
+                    e.setFaultSum(CommonConstant.ASSIGNMENT);
+                    e.setFaultComplete(CommonConstant.ASSIGNMENT);
+
+                }
+            }
+        });
+        pageList.setRecords(systemInformation);
+        return pageList;
     }
 }

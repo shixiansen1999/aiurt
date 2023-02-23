@@ -283,4 +283,42 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      */
     List<String> getRepairTaskStation(String id);
 
+
+    /**
+     * 分页查询
+     * @param pageList
+     * @return
+     */
+    List<SystemInformationDTO> getSystemInformation(Page<SystemInformationDTO> pageList);
+
+    /**
+     * 统计数量(检修)
+     * @param stationCode
+     * @param status
+     * @return
+     */
+    Long getMaintenanceQuantity(@Param("stationCode") List<String> stationCode,@Param("status") Long status);
+
+    /**
+     * 统计数量(巡检)
+     * @param stationCode
+     * @param status
+     * @return
+     */
+    Long getInspection(@Param("stationCode") List<String> stationCode,@Param("status") Long status);
+
+    /**
+     * 根据站点Code查询故障信息
+     * @param stationCode
+     * @return
+     */
+    List<String> getFaultCodeList(@Param("stationCode") List<String> stationCode);
+
+    /**
+     * 故障已完成数量
+     * @param faultCode
+     * @return
+     */
+    Long getFaultQuantity(@Param("faultCode") List<String> faultCode);
+
 }

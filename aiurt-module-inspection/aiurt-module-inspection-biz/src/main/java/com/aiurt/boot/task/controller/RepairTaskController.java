@@ -8,6 +8,7 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.boot.task.dto.RepairTaskStationDTO;
+import com.aiurt.boot.task.dto.SystemInformationDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
@@ -495,6 +496,15 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
         Page<RepairTask> pageList = new Page<>(pageNo, pageSize);
         Page<RepairTask> repairTaskPage = repairTaskService.selectables(pageList, condition);
         return Result.OK(repairTaskPage);
+    }
+
+
+    @AutoLog(value = "董事长大屏-通信-统计", operateType = 1, operateTypeAlias = "董事长大屏-通信-统计", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "董事长大屏-通信-统计", notes = "董事长大屏-通信-统计")
+    @GetMapping(value = "/getSystemInformation")
+    public Result<IPage<SystemInformationDTO>> getSystemInformation(SystemInformationDTO systemInformationDTO){
+        IPage<SystemInformationDTO> systemInformation = repairTaskService.getSystemInformation(systemInformationDTO);
+        return Result.OK(systemInformation);
     }
 
 }
