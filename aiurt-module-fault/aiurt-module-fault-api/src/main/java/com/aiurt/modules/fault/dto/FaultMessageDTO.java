@@ -59,14 +59,6 @@ public class FaultMessageDTO {
      * 业务类型
      */
     private String busType;
-    /**
-     * 消息类型：org.jeecg.common.constant.enums.MessageTypeEnum
-     *  XT("system",  "系统消息")
-     *  YJ("email",  "邮件消息")
-     *  DD("dingtalk", "钉钉消息")
-     *  QYWX("wechat_enterprise", "企业微信")
-     */
-    protected String messageType;
 
 
 }

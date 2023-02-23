@@ -9,6 +9,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.team.constants.TeamConstant;
 import com.aiurt.boot.team.dto.EmergencyTrainingProgramDTO;
 import com.aiurt.boot.team.entity.EmergencyTeam;
@@ -19,7 +20,6 @@ import com.aiurt.boot.team.model.TrainingProgramModel;
 import com.aiurt.boot.team.service.IEmergencyTrainingProgramService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.TimeUtil;
 import com.aiurt.common.util.XlsUtil;
@@ -34,8 +34,10 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -78,6 +80,8 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
 
     @Autowired
     private EmergencyTeamServiceImpl emergencyTeamService;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
 
     @Override
     public IPage<EmergencyTrainingProgram> queryPageList(EmergencyTrainingProgramDTO emergencyTrainingProgramDTO, Integer pageNo, Integer pageSize) {
@@ -246,7 +250,8 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, program.getId());
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.EMERGENCY.getType());
             messageDTO.setData(map);
-            messageDTO.setType(MessageTypeEnum.XT.getType());
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.EMERGENCY_MANAGEMENT_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
             messageDTO.setTemplateCode(CommonConstant.EMERGENCY_MANAGEMENT_SERVICE);
             messageDTO.setMsgAbstract("有新的应急训练计划");
             messageDTO.setPublishingContent("有新的应急训练计划,请注意训练任务开始时间!");

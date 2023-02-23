@@ -89,6 +89,8 @@ public class MessageDTO implements Serializable {
      *  YJ("email",  "邮件消息")
      *  DD("dingtalk", "钉钉消息")
      *  QYWX("wechat_enterprise", "企业微信")
+     *  WX("wechat","微信")
+     *  DX("short_message","短信")
      */
     protected String type;
 

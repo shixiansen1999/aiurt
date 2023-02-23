@@ -27,7 +27,6 @@ import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtNoDataException;
 import com.aiurt.common.util.DateUtils;
@@ -710,7 +709,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTask.getId());
                 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.INSPECTION_ASSIGN.getType());
                 messageDTO.setData(map);
-                messageDTO.setType(MessageTypeEnum.XT.getType());
+                SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.REPAIR_MESSAGE);
+                messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
                 messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
                 messageDTO.setMsgAbstract("新的检修任务");
                 messageDTO.setPublishingContent("接收到新的检修任务，请尽快确认");

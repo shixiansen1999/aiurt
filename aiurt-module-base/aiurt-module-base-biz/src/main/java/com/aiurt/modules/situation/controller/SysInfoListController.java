@@ -1,11 +1,12 @@
 package com.aiurt.modules.situation.controller;
 
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.situation.entity.SysAnnouncement;
@@ -24,11 +25,14 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.HashMap;
@@ -53,6 +57,8 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
     private ISysBaseAPI iSysBaseAPI;
     @Autowired
     private SysInfoListMapper sysInfoListMapper;
+    @Resource
+    private ISysParamAPI iSysParamAPI;
     /**
      * 特情消息发送分页列表查询
      *
@@ -149,7 +155,8 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             messageDTO.setToUser(sysAnnouncement.getUserIds());
             messageDTO.setToAll(false);
             messageDTO.setTemplateCode(CommonConstant.SPECIAL_INFO_SERVICE_NOTICE);
-            messageDTO.setType(MessageTypeEnum.XT.getType());
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPECIAL_INFO_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
             messageDTO.setMsgAbstract("你有一条特情消息");
             messageDTO.setPublishingContent("你有一条特情消息");
             messageDTO.setCategory(CommonConstant.MSG_CATEGORY_3);
@@ -196,8 +203,8 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             messageDTO.setOrgIds(sysAnnouncement.getOrgIds());
             messageDTO.setToUser(sysAnnouncement.getUserIds());
             messageDTO.setToAll(false);
-            messageDTO.setTemplateCode(CommonConstant.SPECIAL_INFO_SERVICE_NOTICE);
-            messageDTO.setType(MessageTypeEnum.XT.getType());
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPECIAL_INFO_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
             messageDTO.setMsgAbstract("你有一条特情消息");
             messageDTO.setPublishingContent("你有一条特情消息");
             messageDTO.setCategory(CommonConstant.MSG_CATEGORY_3);

@@ -29,7 +29,6 @@ import com.aiurt.boot.utils.PdfUtil;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
-import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
@@ -332,10 +331,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
                 patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
-                patrolMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
-                patrolMessageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
-                patrolMessageDTO.setMsgAbstract("新的巡视任务");
-                patrolMessageDTO.setPublishingContent("接收到新的巡视任务，请尽快确认");
+                messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
+                messageDTO.setMsgAbstract("新的巡视任务");
+                messageDTO.setPublishingContent("接收到新的巡视任务，请尽快确认");
                 sendMessage(messageDTO,userNames,null,patrolMessageDTO);
             }
         }
@@ -370,10 +368,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
         //业务类型，消息类型，消息模板编码，摘要，发布内容
         patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
-        patrolMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
-        patrolMessageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
-        patrolMessageDTO.setMsgAbstract("新的巡视任务");
-        patrolMessageDTO.setPublishingContent("接收到新的巡视任务，请尽快确认");
+        messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
+        messageDTO.setMsgAbstract("新的巡视任务");
+        messageDTO.setPublishingContent("接收到新的巡视任务，请尽快确认");
         sendMessage(messageDTO,userNames,null,patrolMessageDTO);
     }
 
@@ -452,10 +449,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         messageDTO.setData(map);
         //业务类型，消息类型，消息模板编码，摘要，发布内容
         patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_AUDIT.getType());
-        patrolMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
-        patrolMessageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_REJECT);
-        patrolMessageDTO.setMsgAbstract("巡视任务审核驳回");
-        patrolMessageDTO.setPublishingContent("巡视任务审核驳回，请重新处理");
+        messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_REJECT);
+        messageDTO.setMsgAbstract("巡视任务审核驳回");
+        messageDTO.setPublishingContent("巡视任务审核驳回，请重新处理");
         sendMessage(messageDTO,userNames,null,patrolMessageDTO);
 
     }
@@ -775,10 +771,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 messageDTO.setData(map);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
                 patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
-                patrolMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
-                patrolMessageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_RETURN);
-                patrolMessageDTO.setMsgAbstract("巡视任务退回");
-                patrolMessageDTO.setPublishingContent("巡视任务退回，请重新安排");
+                messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_RETURN);
+                messageDTO.setMsgAbstract("巡视任务退回");
+                messageDTO.setPublishingContent("巡视任务退回，请重新安排");
                 sendMessage(messageDTO,null,user.getUsername(),patrolMessageDTO);
 
                 // 同时需要更新待执行任务为已办
@@ -806,10 +801,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         messageDTO.setData(map);
         //业务类型，消息类型，消息模板编码，摘要，发布内容
         patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
-        patrolMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
-        patrolMessageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_RETURN);
-        patrolMessageDTO.setMsgAbstract("巡视任务退回");
-        patrolMessageDTO.setPublishingContent("巡视任务退回，请重新安排");
+        messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_RETURN);
+        messageDTO.setMsgAbstract("巡视任务退回");
+        messageDTO.setPublishingContent("巡视任务退回，请重新安排");
         sendMessage(messageDTO,null,user.getUsername(),patrolMessageDTO);
     }
 
@@ -1704,10 +1698,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, patrolMessageDTO.getId());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, patrolMessageDTO.getBusType());
         messageDTO.setData(map);
-        messageDTO.setType(patrolMessageDTO.getMessageType());
-        messageDTO.setTemplateCode(patrolMessageDTO.getTemplateCode());
-        messageDTO.setMsgAbstract(patrolMessageDTO.getMsgAbstract());
-        messageDTO.setPublishingContent(patrolMessageDTO.getPublishingContent());
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE);
+        messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
         sysBaseApi.sendTemplateMessage(messageDTO);
     }
 }

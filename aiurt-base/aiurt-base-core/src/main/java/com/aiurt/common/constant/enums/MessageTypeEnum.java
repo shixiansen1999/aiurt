@@ -23,9 +23,7 @@ public enum MessageTypeEnum {
     QYWX("wechat_enterprise", "企业微信"),
     /** 微信 */
     WX("wechat","微信"),
-    /**
-     * 短信
-     */
+    /** 短信*/
     DX("short_message","短信");
 
     MessageTypeEnum(String type, String note){

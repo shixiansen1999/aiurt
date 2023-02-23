@@ -8,8 +8,8 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.InspectionApi;
 import com.aiurt.boot.api.PatrolApi;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
-import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.enums.WorkLogCheckStatusEnum;
 import com.aiurt.common.enums.WorkLogConfirmStatusEnum;
 import com.aiurt.common.enums.WorkLogStatusEnum;
@@ -40,8 +40,10 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,6 +84,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     private RoleAdditionalUtils roleAdditionalUtils;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
 
     private String schedule = "1.对工区及材料库进行卫生清洁，2.对各站设备进行检修" ;
     /**
@@ -211,9 +215,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //构建消息模板
         HashMap<String, Object> map = new HashMap<>();
         map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
+        map.put("msgContent", "工作日志上报");
         messageDTO.setData(map);
         messageDTO.setTemplateCode(com.aiurt.common.constant.CommonConstant.WORK_LOG_SERVICE_NOTICE);
-        messageDTO.setType(MessageTypeEnum.XT.getType());
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_MESSAGE);
+        messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
         messageDTO.setMsgAbstract("工作日志上报");
         messageDTO.setPublishingContent("您有一条待接班日志");
         iSysBaseAPI.sendTemplateMessage(messageDTO);

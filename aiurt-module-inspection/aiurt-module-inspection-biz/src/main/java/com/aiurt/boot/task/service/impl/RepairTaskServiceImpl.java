@@ -12,6 +12,7 @@ import com.aiurt.boot.api.InspectionApi;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.manager.dto.*;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
@@ -30,7 +31,6 @@ import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
-import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
@@ -46,7 +46,9 @@ import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -98,6 +100,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     private ISysBaseAPI iSysBaseAPI;
     @Autowired
     private ISTodoBaseAPI isTodoBaseAPI;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
 
     @Override
     public Page<RepairTask> selectables(Page<RepairTask> pageList, RepairTask condition) {
@@ -1276,10 +1280,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 BeanUtil.copyProperties(repairTask1,repairTaskMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
                 repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION.getType());
-                repairTaskMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
-                repairTaskMessageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
-                repairTaskMessageDTO.setMsgAbstract("检修任务审核");
-                repairTaskMessageDTO.setPublishingContent("检修任务审核通过");
+                messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
+                messageDTO.setMsgAbstract("检修任务审核");
+                messageDTO.setPublishingContent("检修任务审核通过");
                 sendMessage(messageDTO,usernames,null,repairTaskMessageDTO);
             }
         }
@@ -1482,10 +1485,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 messageDTO.setData(map);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
                 repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION.getType());
-                repairTaskMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
-                repairTaskMessageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_REJECT);
-                repairTaskMessageDTO.setMsgAbstract("检修任务审核驳回");
-                repairTaskMessageDTO.setPublishingContent("检修任务审核驳回，请重新处理");
+                messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_REJECT);
+                messageDTO.setMsgAbstract("检修任务审核驳回");
+                messageDTO.setPublishingContent("检修任务审核驳回，请重新处理");
                 sendMessage(messageDTO,usernames,null,repairTaskMessageDTO);
             }
         }
@@ -1522,10 +1524,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 BeanUtil.copyProperties(repairTask1,repairTaskMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
                 repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION.getType());
-                repairTaskMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
-                repairTaskMessageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
-                repairTaskMessageDTO.setMsgAbstract("检修任务审核");
-                repairTaskMessageDTO.setPublishingContent("检修任务审核通过");
+                messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
+                messageDTO.setMsgAbstract("检修任务审核");
+                messageDTO.setPublishingContent("检修任务审核通过");
                 sendMessage(messageDTO,usernames,null,repairTaskMessageDTO);
             }
         }
@@ -1639,10 +1640,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 messageDTO.setData(map);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
                 repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION.getType());
-                repairTaskMessageDTO.setMessageType(MessageTypeEnum.XT.getType());
-                repairTaskMessageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_RETURN);
-                repairTaskMessageDTO.setMsgAbstract("检修任务退回");
-                repairTaskMessageDTO.setPublishingContent("检修任务退回，请重新安排");
+                messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_RETURN);
+                messageDTO.setMsgAbstract("检修任务退回");
+                messageDTO.setPublishingContent("检修任务退回，请重新安排");
                 sendMessage(messageDTO,null,user.getUsername(),repairTaskMessageDTO);
             }
         }
@@ -2392,10 +2392,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTaskMessageDTO.getId());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, repairTaskMessageDTO.getBusType());
         messageDTO.setData(map);
-        messageDTO.setType(repairTaskMessageDTO.getMessageType());
-        messageDTO.setTemplateCode(repairTaskMessageDTO.getTemplateCode());
-        messageDTO.setMsgAbstract(repairTaskMessageDTO.getMsgAbstract());
-        messageDTO.setPublishingContent(repairTaskMessageDTO.getPublishingContent());
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.REPAIR_MESSAGE);
+        messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
         iSysBaseAPI.sendTemplateMessage(messageDTO);
     }
 }

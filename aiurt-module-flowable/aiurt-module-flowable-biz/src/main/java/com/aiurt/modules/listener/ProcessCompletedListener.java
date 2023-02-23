@@ -1,9 +1,9 @@
 package com.aiurt.modules.listener;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
 import org.apache.shiro.SecurityUtils;
@@ -16,10 +16,13 @@ import org.flowable.engine.delegate.event.impl.FlowableEntityEventImpl;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -32,7 +35,8 @@ import java.util.HashMap;
 public class ProcessCompletedListener implements Serializable, FlowableEventListener {
 
     private transient final Logger logger = LoggerFactory.getLogger(ProcessCompletedListener.class);
-
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
     @Override
     public void onEvent(FlowableEvent event) {
         logger.info("流程结束监听事件");
@@ -82,7 +86,8 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                     messageDTO.setToUser(historicProcessInstance.getStartUserId());
                     messageDTO.setToAll(false);
                     messageDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE);
-                    messageDTO.setType(MessageTypeEnum.XT.getType());
+                    SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.BPM_MESSAGE);
+                    messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
                     messageDTO.setMsgAbstract("你有一条流程消息");
                     messageDTO.setPublishingContent("你有一条流程消息");
                     messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
