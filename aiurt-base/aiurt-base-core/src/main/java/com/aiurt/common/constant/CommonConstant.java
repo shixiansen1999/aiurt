@@ -578,6 +578,8 @@ public interface CommonConstant {
  public static final String WORK_LOG_SERVICE_NOTICE = "work_log_service_notice";
  /** 消息模板：周计划业务通知 */
  public static final String OPERATE_PLAN_SERVICE_NOTICE = "operate_plan_service_notice";
+ /** 消息模板：系统通告业务通知 */
+ public static final String ANNOUNCEMENT_SERVICE_NOTICE = "announcement_service_notice";
 
  /**
   * 下划线分隔符

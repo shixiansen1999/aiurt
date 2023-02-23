@@ -216,6 +216,7 @@ public class TaskCreateListener implements FlowableEventListener {
             HashMap<String, Object> map = new HashMap<>();
             map.put("msgContent",bpmnTodoDTO.getTaskName());
             bpmnTodoDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE_PROCESS);
+            bpmnTodoDTO.setData(map);
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
             todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
         } catch (Exception e) {

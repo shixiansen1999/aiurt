@@ -1,11 +1,5 @@
 package com.aiurt.modules.system.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Resource;
-
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -14,7 +8,7 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.oConvertUtils;
-import com.aiurt.modules.param.entity.SysParam;
+import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.param.mapper.SysParamMapper;
 import com.aiurt.modules.system.dto.SysAnnouncementPageDTO;
 import com.aiurt.modules.system.dto.SysAnnouncementSendDTO;
@@ -27,21 +21,21 @@ import com.aiurt.modules.system.mapper.SysAnnouncementSendMapper;
 import com.aiurt.modules.system.service.ISysAnnouncementService;
 import com.aiurt.modules.todo.entity.SysTodoList;
 import com.aiurt.modules.todo.mapper.SysTodoListMapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import io.swagger.models.auth.In;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
-import org.checkerframework.checker.units.qual.min;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
+import org.jeecgframework.minidao.util.FreemarkerParseFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 系统通告表
@@ -67,9 +61,22 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 	@Resource
 	private ISysParamAPI sysParamAPI;
 
+	@Resource
+	private SysBaseApiImpl sysBaseApi;
+
 	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void saveAnnouncement(SysAnnouncement sysAnnouncement) {
+		SysMessageTemplate templateEntity = sysBaseApi.getTemplateEntity(CommonConstant.ANNOUNCEMENT_SERVICE_NOTICE);
+		boolean isMarkdown =CommonConstant.MSG_TEMPLATE_TYPE_MD.equals(templateEntity.getTemplateType());
+		HashMap<String, Object> map = new HashMap<>();
+		map.put("msgContent", sysAnnouncement.getMsgContent());
+		String content = templateEntity.getTemplateContent();
+		if(StrUtil.isNotBlank(content)){
+			content = FreemarkerParseFactory.parseTemplateContent(content,map);
+		}
+		sysAnnouncement.setMsgContent(content);
+
 		if(sysAnnouncement.getMsgType().equals(CommonConstant.MSG_TYPE_ALL)) {
 			sysAnnouncementMapper.insert(sysAnnouncement);
 		}else {
