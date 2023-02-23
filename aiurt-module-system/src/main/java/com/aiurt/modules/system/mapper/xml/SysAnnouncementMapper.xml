@@ -176,7 +176,7 @@
 			</if>
 			<if test="keyWord!=null and keyWord!=''">
 				and stl.msg_content LIKE concat(concat('%',#{keyWord}),'%')
-				or stl.titile LIKE concat('%',#{keyWord},'%')
+				or stl.title LIKE concat('%',#{keyWord},'%')
 				or stl.msg_abstract LIKE concat('%',#{keyWord},'%')
 				or stl.publishing_content LIKE concat('%',#{keyWord},'%')
 			</if>
