@@ -56,4 +56,58 @@ public interface SysParamCodeConstant {
      * 流程消息发送渠道
      */
     String BPM_MESSAGE = "bpm_message";
+
+    /**
+     * 故障
+     */
+    String FAULT = "fault";
+    /**
+     * 检修
+     */
+    String INSPECTION = "inspection";
+    /**
+     * 应急
+     */
+    String EMERGENCY = "emergency";
+    /**
+     * 巡视
+     */
+    String PATROL = "patrol";
+    /**
+     * 施工
+     */
+    String CONSTRUCTION = "construction";
+    /**
+     * 培训
+     */
+    String TRAIN = "train";
+    /**
+     * 特情消息
+     */
+    String SITUATION = "situation";
+    /**
+     * 系统公告
+     */
+    String SYS_ANNOUNCEMENT ="sys_announcement";
+    /**
+     * 系统消息
+     */
+    String SYS_MESSAGE = "sys_message";
+    /**
+     * 故障
+     */
+    String FAULT_FLOW = "fault_flow";
+    /**
+     * 检修
+     */
+    String INSPECTION_FLOW = "inspection_flow";
+    /**
+     * 应急
+     */
+    String EMERGENCY_FLOW = "emergency_flow";
+    /**
+     * 巡视
+     */
+    String PATROL_FLOW = "patrol_flow";
+
 }

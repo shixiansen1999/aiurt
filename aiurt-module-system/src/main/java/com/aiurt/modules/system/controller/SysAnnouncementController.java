@@ -570,8 +570,8 @@ public class SysAnnouncementController {
     @AutoLog(value = "消息中心-消息类型")
     @ApiOperation(value="消息中心-消息类型", notes="消息中心-消息类型")
     @GetMapping(value = "/queryAnnouncementCount")
-    public Result<List<SysMessageTypeDTO>> queryMessageType(@ApiParam(name = "code", value = "图片配置code")@RequestParam(name="code",required=false) String  code){
-        List<SysMessageTypeDTO> list = sysAnnouncementService.queryMessageType(code);
+    public Result<List<SysMessageTypeDTO>> queryMessageType(){
+        List<SysMessageTypeDTO> list = sysAnnouncementService.queryMessageType();
         return Result.ok(list);
     }
 

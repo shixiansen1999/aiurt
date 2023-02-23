@@ -38,6 +38,7 @@
     LEFT JOIN cs_line cl ON wal.line_code = cl.line_code
     WHERE
     wal.work_area_code = wa.`code`
+    and cl.del_flag = 0
     ) as teamLineName,
     ( SELECT COUNT(*) FROM work_area_station was WHERE was.work_area_code = wa.`code` ) as stationNum
     FROM
