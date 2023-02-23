@@ -232,6 +232,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				sysMessageTypeDTO.setBusType(null);
 				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SYS_ANNOUNCEMENT);
 				sysMessageTypeDTO.setValue(sysParamModel.getValue());
+				sysMessageTypeDTO.setMsgCategory("1");
 			}
 			if("2".equals(key)){
 				sysMessageTypeDTO.setTitle("系统消息");
@@ -239,6 +240,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				sysMessageTypeDTO.setBusType(null);
 				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SYS_MESSAGE);
 				sysMessageTypeDTO.setValue(sysParamModel.getValue());
+				sysMessageTypeDTO.setMsgCategory("2");
 			}
 			if("3".equals(key)){
 				sysMessageTypeDTO.setTitle("特情消息");
@@ -246,6 +248,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				sysMessageTypeDTO.setBusType("situation");
 				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SITUATION);
 				sysMessageTypeDTO.setValue(sysParamModel.getValue());
+				sysMessageTypeDTO.setMsgCategory("3");
 			}
 			// 统计长度
 			List<SysAnnouncementSendDTO> value = entry.getValue();
@@ -261,7 +264,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				SysAnnouncementSendDTO lastSysAnnouncementSendDTO = value.get(0);
 				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
 			}
-			sysMessageTypeDTO.setMessageFlag("0");
+			sysMessageTypeDTO.setMessageFlag("1");
 			list.add(sysMessageTypeDTO);
 		}
 

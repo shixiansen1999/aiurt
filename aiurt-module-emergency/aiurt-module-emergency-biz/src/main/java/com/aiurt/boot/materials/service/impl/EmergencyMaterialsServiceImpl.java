@@ -351,17 +351,16 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
     }
 
     @Override
-    public MaterialPatrolDTO getStandingBook(String materialsCode,
+    public MaterialPatrolDTO getStandingBook(String materialsId,
                                              String categoryCode,
-                                             String lineCode,
-                                             String stationCode,
-                                             String positionCode) {
+                                             String startTime,
+                                             String endTime) {
         MaterialPatrolDTO materialPatrolDTO = new MaterialPatrolDTO();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         materialPatrolDTO.setPatrolName(sysUser.getRealname());
 
         //根据条件查询巡检表
-        List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getStandingBook(materialsCode, categoryCode, lineCode, stationCode, positionCode);
+        List<PatrolStandardDTO> patrolStandardList = emergencyMaterialsMapper.getStandingBook(materialsId, categoryCode,startTime,endTime);
         if (CollectionUtil.isNotEmpty(patrolStandardList)) {
             List<String> collect = patrolStandardList.stream().map(PatrolStandardDTO::getStandardCode).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(collect)) {
@@ -477,13 +476,12 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
         if (StrUtil.isNotBlank(invoicesId)){
             lambdaQueryWrapper.eq(EmergencyMaterialsInvoicesItem::getInvoicesId,invoicesId);
         }
-        lambdaQueryWrapper.groupBy(EmergencyMaterialsInvoicesItem::getMaterialsCode);
+        lambdaQueryWrapper.groupBy(EmergencyMaterialsInvoicesItem::getMaterialsId);
         Page<EmergencyMaterialsInvoicesItem> page = new Page<>(emergencyMaterialsInvoicesReqDTO.getPageNo(), emergencyMaterialsInvoicesReqDTO.getPageSize());
         Page<EmergencyMaterialsInvoicesItem> emergencyMaterialsInvoicesItemPage = materialsInvoicesItemMapper.selectPage(page,lambdaQueryWrapper);
         if (CollUtil.isEmpty(emergencyMaterialsInvoicesItemPage.getRecords())) {
             return dynamicTableEntity;
         }
-
 
         dynamicTableEntity.setCurrent(page.getCurrent());
         dynamicTableEntity.setTotal(page.getTotal());
@@ -496,7 +494,9 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                 LambdaQueryWrapper<EmergencyMaterialsInvoicesItem> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
                 lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getDelFlag,CommonConstant.DEL_FLAG_0);
                 lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getInvoicesId,invoicesId);
-                lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getMaterialsCode,e.getMaterialsCode());
+                if(StrUtil.isNotBlank(e.getMaterialsId())){
+                    lambdaQueryWrapper1.eq(EmergencyMaterialsInvoicesItem::getMaterialsId,e.getMaterialsId());
+                }
                 List<EmergencyMaterialsInvoicesItem> list = materialsInvoicesItemMapper.selectList(lambdaQueryWrapper1);
 
                 if (flag.get()) {

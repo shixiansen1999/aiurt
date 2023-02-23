@@ -106,6 +106,9 @@
 			</if>
 			<if test="keyWord!=null and keyWord!=''">
 				and sa.msg_content LIKE concat('%',#{keyWord},'%')
+				or sa.titile LIKE concat('%',#{keyWord},'%')
+				or sa.msg_abstract LIKE concat('%',#{keyWord},'%')
+				or sa.publishing_content LIKE concat('%',#{keyWord},'%')
 			</if>
 			<if test="msgCategory!=null and msgCategory!=''">
 				and sa.msg_category =#{msgCategory}
@@ -173,6 +176,9 @@
 			</if>
 			<if test="keyWord!=null and keyWord!=''">
 				and stl.msg_content LIKE concat(concat('%',#{keyWord}),'%')
+				or stl.titile LIKE concat('%',#{keyWord},'%')
+				or stl.msg_abstract LIKE concat('%',#{keyWord},'%')
+				or stl.publishing_content LIKE concat('%',#{keyWord},'%')
 			</if>
 			<if test="todoType!=null and todoType!=''">
 				and stl.todo_type = #{todoType}

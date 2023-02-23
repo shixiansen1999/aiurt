@@ -9,6 +9,7 @@ import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.common.api.dto.message.MessageDTO;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -214,4 +215,12 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @param repairTaskMessageDTO
      */
     void sendMessage(MessageDTO messageDTO, String usernames, String username, RepairTaskMessageDTO repairTaskMessageDTO);
+
+
+    /**
+     * 统计运维系统数据
+     * @param systemInformationDTO
+     * @return
+     */
+    IPage<SystemInformationDTO> getSystemInformation(SystemInformationDTO systemInformationDTO);
 }

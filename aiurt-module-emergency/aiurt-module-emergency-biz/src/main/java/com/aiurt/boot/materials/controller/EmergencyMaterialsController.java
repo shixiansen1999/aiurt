@@ -128,12 +128,11 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	@AutoLog(value = "物资信息-应急物资台账-巡检标准下拉列表")
 	@ApiOperation(value="物资信息-应急物资台账-巡检标准下拉列表", notes="物资信息-应急物资台账-巡检标准下拉列表")
 	@GetMapping(value = "/getStandingBook")
-	public Result<?> getStandingBook(@RequestParam(name = "materialsCode",required=true) String materialsCode,
+	public Result<?> getStandingBook(@RequestParam(name = "materialsId",required=true) String materialsId,
 									 @RequestParam(name = "categoryCode",required=true) String categoryCode,
-			                         @RequestParam(name = "lineCode",required=false) String  lineCode,
-									 @RequestParam(name = "stationCode",required=false) String  stationCode,
-									 @RequestParam(name = "positionCode",required=false) String  positionCode){
-		MaterialPatrolDTO materialPatrol = emergencyMaterialsService.getStandingBook(materialsCode,categoryCode,lineCode,stationCode,positionCode);
+	                                 @RequestParam(name = "startTime",required=false) String  startTime,
+									 @RequestParam(name = "endTime",required=false) String  endTime){
+		MaterialPatrolDTO materialPatrol = emergencyMaterialsService.getStandingBook(materialsId,categoryCode,startTime,endTime);
 		return Result.OK(materialPatrol);
 	}
 
@@ -415,15 +414,21 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	 @AutoLog(value = "物资信息-应急物资位置查询")
 	 @ApiOperation(value="物资信息-应急物资位置查询", notes="物资信息-应急物资位置查询")
 	 @GetMapping(value = "/getMaterialsCode")
-	public Result<?> getMaterialsCode(@RequestParam(name="stationCode",required=false) String stationCode,
+	public Result<?> getMaterialsCode(@RequestParam(name="lineCode",required=false) String lineCode,
+			                          @RequestParam(name="stationCode",required=false) String stationCode,
 									  @RequestParam(name="positionCode",required=false) String positionCode,
 									  @RequestParam(name="materialsCode",required=false) String materialsCode){
 		 LambdaQueryWrapper<EmergencyMaterials> queryWrapper = new LambdaQueryWrapper<>();
+		 if (StrUtil.isNotBlank(lineCode)){
+			 queryWrapper.eq(EmergencyMaterials::getLineCode,lineCode);
+		 }
 		 if (StrUtil.isNotBlank(stationCode)){
 			 queryWrapper.eq(EmergencyMaterials::getStationCode,stationCode);
-		 }if (StrUtil.isNotBlank(positionCode)){
-			 queryWrapper.eq(EmergencyMaterials::getPositionCode,positionCode);
-		 }if (StrUtil.isNotBlank(materialsCode)){
+		 }
+
+		 queryWrapper.eq(EmergencyMaterials::getPositionCode,positionCode);
+
+		 if (StrUtil.isNotBlank(materialsCode)){
 			 queryWrapper.eq(EmergencyMaterials::getMaterialsCode,materialsCode);
 		 }
 		 queryWrapper.eq(EmergencyMaterials::getDelFlag,0);

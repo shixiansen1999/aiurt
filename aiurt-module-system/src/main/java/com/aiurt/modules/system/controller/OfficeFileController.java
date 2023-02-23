@@ -215,7 +215,7 @@ public class OfficeFileController {
 
     @RequestMapping("/getSysFileKey")
     @ApiOperation("获取在线编辑key")
-    public Result<String> getSysFileKey(@ApiParam(name = "id", value = "文件Id") @RequestParam(value = "id", required = false) String id) {
+    public Result<String> getSysFileKey( @ApiParam(name = "id", value = "文件Id")@RequestParam(value = "id", required = false) String id) {
         if (StrUtil.isBlank(id)) {
             return Result.OK(UUIDGenerator.generate());
         }

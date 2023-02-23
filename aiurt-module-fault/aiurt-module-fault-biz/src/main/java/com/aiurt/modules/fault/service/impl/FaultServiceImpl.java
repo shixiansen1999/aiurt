@@ -24,7 +24,11 @@ import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.*;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
+import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.fault.service.*;
+import com.aiurt.modules.faultexternal.entity.FaultExternal;
+import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
+import com.aiurt.modules.faultexternal.service.IFaultExternalService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
@@ -35,6 +39,7 @@ import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -56,6 +61,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -112,6 +118,19 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     private ISTodoBaseAPI todoBaseApi;
     @Autowired
     private ISysParamAPI iSysParamAPI;
+
+    @Autowired
+    private FaultRepairRecordMapper recordMapper;
+
+    @Autowired
+    private FaultMapper faultMapper;
+
+    @Autowired
+    private FaultExternalMapper faultExternalMapper;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
     /**
      * 故障上报
      *
@@ -1064,7 +1083,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Transactional(rollbackFor = Exception.class)
     public void fillRepairRecord(RepairRecordDTO repairRecordDTO) {
 
-
         LoginUser loginUser = checkLogin();
 
         String faultCode = repairRecordDTO.getFaultCode();
@@ -1185,8 +1203,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
 
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_DEAL.getType(), faultCode, loginUser.getUsername(), "1");
-
     }
+
 
     /**
      *  统计实际的出库量以及更新故障组件更换记录device_change_spare_part
@@ -1583,6 +1601,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 记录日志
         saveLog(loginUser, "修改故障工单", fault.getCode(), FaultStatusEnum.APPROVAL_REJECT.getStatus(), null);
+
 
     }
 
