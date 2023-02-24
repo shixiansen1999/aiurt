@@ -951,24 +951,28 @@ public class BdOperatePlanDeclarationFormServiceImpl
                 //申请计划
                 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                 //发送通知
-                String toLineStaffIdUser = sysBaseApi.getUserById(bdOperatePlanDeclarationForm.getLineStaffId()).getUsername();
-                MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),toLineStaffIdUser, "新的待审批周计划" + DateUtil.today(), null);
+                try {
+                    String toLineStaffIdUser = sysBaseApi.getUserById(bdOperatePlanDeclarationForm.getLineStaffId()).getUsername();
+                    MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),toLineStaffIdUser, "新的待审批周计划" + DateUtil.today(), null);
 
-                HashMap<String, Object> map = new HashMap<>();
-                map.put("msgContent", "新的待审批周计划");
-                messageDTO.setData(map);
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put("msgContent", "新的待审批周计划");
+                    messageDTO.setData(map);
 
-                BdOperatePlanDeclarationFormMessageDTO bdOperatePlanDeclarationFormMessageDTO = new BdOperatePlanDeclarationFormMessageDTO();
-                bdOperatePlanDeclarationFormMessageDTO.setAfterStatus(1);
-                bdOperatePlanDeclarationFormMessageDTO.setLineAllPeople(true);
-                BeanUtil.copyProperties(bdOperatePlanDeclarationForm,bdOperatePlanDeclarationFormMessageDTO);
-                //业务类型，消息类型，消息模板编码，摘要，发布内容
-                bdOperatePlanDeclarationFormMessageDTO.setBusType(SysAnnmentTypeEnum.OPERATE_PLAN.getType());
-                messageDTO.setTemplateCode(CommonConstant.OPERATE_PLAN_SERVICE_NOTICE);
-                messageDTO.setMsgAbstract("新的待审批周计划");
-                messageDTO.setPublishingContent("你有新的待审批周计划");
+                    BdOperatePlanDeclarationFormMessageDTO bdOperatePlanDeclarationFormMessageDTO = new BdOperatePlanDeclarationFormMessageDTO();
+                    bdOperatePlanDeclarationFormMessageDTO.setAfterStatus(1);
+                    bdOperatePlanDeclarationFormMessageDTO.setLineAllPeople(true);
+                    BeanUtil.copyProperties(bdOperatePlanDeclarationForm,bdOperatePlanDeclarationFormMessageDTO);
+                    //业务类型，消息类型，消息模板编码，摘要，发布内容
+                    bdOperatePlanDeclarationFormMessageDTO.setBusType(SysAnnmentTypeEnum.OPERATE_PLAN.getType());
+                    messageDTO.setTemplateCode(CommonConstant.OPERATE_PLAN_SERVICE_NOTICE);
+                    messageDTO.setMsgAbstract("新的待审批周计划");
+                    messageDTO.setPublishingContent("你有新的待审批周计划");
 
-                sendMessage(messageDTO,bdOperatePlanDeclarationFormMessageDTO);
+                    sendMessage(messageDTO,bdOperatePlanDeclarationFormMessageDTO);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
             } else {
                 //修改主页消息提醒
@@ -1154,24 +1158,28 @@ public class BdOperatePlanDeclarationFormServiceImpl
         //业务类型，消息类型，消息模板编码，摘要，发布内容
         bdOperatePlanDeclarationFormMessageDTO.setBusType(SysAnnmentTypeEnum.OPERATE_PLAN.getType());
 
-        if (operatePlanDeclarationForm.getPlanChange() == 0) {
-            MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),toLineStaffIdUser, "新的待审批周计划" + DateUtil.today(), null);
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("msgContent", "新的待审批周计划");
-            messageDTO.setData(map);
-            messageDTO.setTemplateCode(CommonConstant.OPERATE_PLAN_SERVICE_NOTICE);
-            messageDTO.setMsgAbstract("新的待审批周计划");
-            messageDTO.setPublishingContent("你有新的待审批周计划");
-            sendMessage(messageDTO,bdOperatePlanDeclarationFormMessageDTO);
-        } else { //如果是补充计划, 设置补充计划专属字段
-            MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),toLineStaffIdUser, "新的待审批补充计划/变更计划" + DateUtil.today(), null);
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("msgContent", "新的待审批补充计划/变更计划");
-            messageDTO.setData(map);
-            messageDTO.setTemplateCode(CommonConstant.OPERATE_PLAN_SERVICE_NOTICE);
-            messageDTO.setMsgAbstract("新的待审批补充计划/变更计划");
-            messageDTO.setPublishingContent("你有新的待审批补充计划/变更计划");
-            sendMessage(messageDTO,bdOperatePlanDeclarationFormMessageDTO);
+        try {
+            if (operatePlanDeclarationForm.getPlanChange() == 0) {
+                MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),toLineStaffIdUser, "新的待审批周计划" + DateUtil.today(), null);
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("msgContent", "新的待审批周计划");
+                messageDTO.setData(map);
+                messageDTO.setTemplateCode(CommonConstant.OPERATE_PLAN_SERVICE_NOTICE);
+                messageDTO.setMsgAbstract("新的待审批周计划");
+                messageDTO.setPublishingContent("你有新的待审批周计划");
+                sendMessage(messageDTO,bdOperatePlanDeclarationFormMessageDTO);
+            } else { //如果是补充计划, 设置补充计划专属字段
+                MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),toLineStaffIdUser, "新的待审批补充计划/变更计划" + DateUtil.today(), null);
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("msgContent", "新的待审批补充计划/变更计划");
+                messageDTO.setData(map);
+                messageDTO.setTemplateCode(CommonConstant.OPERATE_PLAN_SERVICE_NOTICE);
+                messageDTO.setMsgAbstract("新的待审批补充计划/变更计划");
+                messageDTO.setPublishingContent("你有新的待审批补充计划/变更计划");
+                sendMessage(messageDTO,bdOperatePlanDeclarationFormMessageDTO);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
