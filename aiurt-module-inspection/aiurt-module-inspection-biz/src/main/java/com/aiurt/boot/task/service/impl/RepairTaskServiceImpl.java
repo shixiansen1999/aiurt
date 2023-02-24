@@ -2421,7 +2421,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
         map.put("repairStation",stringBuilder.toString());
-        map.put("repairTaskTime",repairTaskMessageDTO.getStartTime().toString()+repairTaskMessageDTO.getEndTime().toString());
+        map.put("repairTaskTime",DateUtil.format(repairTaskMessageDTO.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(repairTaskMessageDTO.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
         if (StrUtil.isNotEmpty(realNames)) {
             map.put("repairName", realNames);
         } else {

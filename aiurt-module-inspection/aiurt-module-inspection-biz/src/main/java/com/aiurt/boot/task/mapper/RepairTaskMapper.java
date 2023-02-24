@@ -281,7 +281,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @param id
      * @return
      */
-    List<String> getRepairTaskStation(String id);
+    List<String> getRepairTaskStation(@Param("id") String id);
 
 
     /**

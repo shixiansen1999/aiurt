@@ -693,17 +693,19 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     map.put("code",repairTask.getCode());
                     map.put("repairTaskName",repairTask.getType()+repairTask.getCode());
                     List<String> codes = repairTaskMapper.getRepairTaskStation(repairTask.getId());
-                    Map<String, String> stationNameByCode = sysBaseApi.getStationNameByCode(codes);
-                    StringBuilder stringBuilder = new StringBuilder();
-                    for (Map.Entry<String, String> entry : stationNameByCode.entrySet()) {
-                        stringBuilder.append(entry.getValue());
-                        stringBuilder.append(",");
+                    if (CollUtil.isNotEmpty(codes)) {
+                        Map<String, String> stationNameByCode = sysBaseApi.getStationNameByCode(codes);
+                        StringBuilder stringBuilder = new StringBuilder();
+                        for (Map.Entry<String, String> entry : stationNameByCode.entrySet()) {
+                            stringBuilder.append(entry.getValue());
+                            stringBuilder.append(",");
+                        }
+                        if (stringBuilder.length() > 0) {
+                            stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                        }
+                        map.put("repairStation",stringBuilder.toString());
                     }
-                    if (stringBuilder.length() > 0) {
-                        stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-                    }
-                    map.put("repairStation",stringBuilder.toString());
-                    map.put("repairTaskTime",repairTask.getStartTime().toString()+repairTask.getEndTime().toString());
+                    map.put("repairTaskTime",DateUtil.format(repairTask.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(repairTask.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
                     String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                     if (StrUtil.isNotEmpty(realNames)) {
                         map.put("repairName", realNames);

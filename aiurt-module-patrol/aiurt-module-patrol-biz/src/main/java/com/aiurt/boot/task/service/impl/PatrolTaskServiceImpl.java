@@ -1730,7 +1730,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         map.put("patrolTaskName",patrolMessageDTO.getName());
         String station = patrolTaskStationMapper.getStationByTaskCode(patrolMessageDTO.getCode());
         map.put("patrolStation",station);
-        map.put("patrolTaskTime",patrolMessageDTO.getStartTime().toString()+patrolMessageDTO.getEndTime().toString());
+        map.put("patrolTaskTime",DateUtil.format(patrolMessageDTO.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(patrolMessageDTO.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
         if (StrUtil.isNotEmpty(realNames)) {
             map.put("patrolName", realNames);
         } else {

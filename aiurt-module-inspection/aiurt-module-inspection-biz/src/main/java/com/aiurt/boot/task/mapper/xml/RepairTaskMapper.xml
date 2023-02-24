@@ -757,7 +757,7 @@
         FROM
                 repair_task t1
                         LEFT JOIN repair_task_station_rel t4 ON t1.`code` = t4.repair_task_code
-        where t1.code = #{id} and t4.del_flag = 0
+        where t1.id = #{id} and t4.del_flag = 0
     </select>
 
 
