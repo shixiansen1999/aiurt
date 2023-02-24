@@ -93,47 +93,10 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
                                                            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                            @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                            HttpServletRequest req) {
-        // 获取到当前登录的用户的专业(majorCode、可能有多个，使用List存储)
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserMajorModel> CsUserMajorModelList = iSysBaseAPI.getMajorByUserId(user.getId());
-        List<String> majorCodeList = new ArrayList<>();
-        for (CsUserMajorModel csUserMajorModel : CsUserMajorModelList) {
-            majorCodeList.add(csUserMajorModel.getMajorCode());
-        }
-        // 如果查询参数有majorCode，这个majorCode在当前登录的用户的专业内，查询的专业只查询这个majorCode
-        if (faultProduceReport.getMajorCode() != null) {
-            if (majorCodeList.contains(faultProduceReport.getMajorCode())) {
-                majorCodeList.clear();
-                majorCodeList.add(faultProduceReport.getMajorCode());
-            }
-        }
-
-        // 根据专业(List)、统计时间创建查询条件QueryWrapper
-        LambdaQueryWrapper<FaultProduceReport> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.in(FaultProduceReport::getMajorCode, majorCodeList);
-
-        // 不传时间参数，默认查询所有
-        // 传有时间参数的话，统计时间大于等于开始时间，小于等于结束时间
-        String[] pattern = new String[]{"yyyy-MM-dd HH:mm:ss"};
-        // 时间是否是指定格式(日期格式：yyyy-MM-dd)， 不是指定格式的话，舍弃
-        if (beginDay != null){
-            try {
-                queryWrapper.ge(FaultProduceReport::getStatisticsDate,
-                        DateUtils.parseDate(beginDay + " 00:00:00", pattern));
-            } catch (Exception ignored){}
-        }
-        if (endDay != null){
-            try {
-                queryWrapper.le(FaultProduceReport::getStatisticsDate,
-                        DateUtils.parseDate(endDay + " 23:59:59", pattern));
-            } catch (Exception ignored){}
-        }
-
-        Page<FaultProduceReport> page = new Page<FaultProduceReport>(pageNo, pageSize);
-        IPage<FaultProduceReport> pageList = faultProduceReportService.page(page, queryWrapper);
-        return Result.OK(pageList);
+        // 自己写查询
+        Page<FaultProduceReport> pageList = new Page<>(pageNo, pageSize);
+        return faultProduceReportService.queryPageList(pageList, faultProduceReport, beginDay, endDay);
     }
-
 
     /**
      * 查看
