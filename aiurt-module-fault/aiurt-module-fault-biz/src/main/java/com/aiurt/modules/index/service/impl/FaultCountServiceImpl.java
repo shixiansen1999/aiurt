@@ -4,11 +4,14 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.service.IFaultDeviceService;
+import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.index.mapper.FaultCountMapper;
 import com.aiurt.modules.index.service.IFaultCountService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -18,6 +21,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.CsUserStationModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +50,9 @@ public class FaultCountServiceImpl implements IFaultCountService {
     @Resource
     private ISysBaseAPI sysBaseApi;
 
+    @Autowired
+    private IFaultService faultService;
+
     @Value("${fault.lv1}")
     private Integer lv1Hours;
 
@@ -64,37 +71,57 @@ public class FaultCountServiceImpl implements IFaultCountService {
      */
     @Override
     public FaultIndexDTO queryFaultCount(Date startDate, Date endDate) {
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-         String[] split = user.getRoleCodes().split(",");
-        List<String> roleCodes = CollUtil.newArrayList(split);
-        roleCodes = roleCodes.stream().filter(s->s.equals("director")).collect(Collectors.toList());
-        //当前登录人为主任，则根据当前用户所拥有的专业，查询该专业下的故障信息
-        boolean isDirector = false;
-        if(roleCodes.size()>0)
-        {
-            isDirector=true;
-        }
-        List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
-        List<String> majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-        FaultIndexDTO faultIndexDTO = new FaultIndexDTO();
         if (ObjectUtil.isEmpty(startDate) || ObjectUtil.isEmpty(endDate)) {
             return  setDefault();
         }
-        if(isDirector&&CollUtil.isEmpty(majors))
-        {
-            return  setDefault();
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String[] split = user.getRoleCodes().split(",");
+        List<String> roleCodes = CollUtil.newArrayList(split);
+        // 系统管理员不做任务权限控制
+        roleCodes = roleCodes.stream().filter(s-> StrUtil.equalsAnyIgnoreCase(RoleConstant.ADMIN, s)).collect(Collectors.toList());
+        //当前登录人为主任，则根据当前用户所拥有的专业，查询该专业下的故障信息
+        boolean isAdmin = false;
+        FaultIndexDTO faultIndexDTO = new FaultIndexDTO();
+        if(roleCodes.size()>0) {
+            isAdmin = true;
         }
+        List<String> ordCode = null;
+        List<String> majors = null;
+        List<String> stationCodeList = null;
+        if (!isAdmin) {
+            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
+            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+
+            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
+
+            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+
+            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
+
+            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
+        }
+
+
+
         //将符合条件的故障数据查出
         LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.ge(Fault::getApprovalPassTime, DateUtil.beginOfDay(startDate));
-        queryWrapper.le(Fault::getApprovalPassTime, DateUtil.beginOfDay(endDate));
-        List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-        if(CollUtil.isEmpty(departByUserId)&&!isDirector)
-        {
-            return  setDefault();
+        queryWrapper.le(Fault::getApprovalPassTime, DateUtil.endOfDay(endDate));
+
+        if (CollUtil.isNotEmpty(ordCode)) {
+            queryWrapper.in(Fault::getSysOrgCode, ordCode);
         }
-        List<String> ordId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
-        List<Fault> faultList = faultCountMapper.queryFaultCount(startDate,endDate,ordId,majors,isDirector);
+
+        if (CollUtil.isNotEmpty(majors)) {
+            queryWrapper.in(Fault::getMajorCode, majors);
+        }
+
+        if (CollUtil.isNotEmpty(stationCodeList)) {
+            queryWrapper.in(Fault::getStationCode, stationCodeList);
+        }
+
+        List<Fault> faultList = faultService.list(queryWrapper);
+
 
         //故障总数
         faultIndexDTO.setSum(CollUtil.isNotEmpty(faultList)?faultList.size():0L);
@@ -178,26 +205,30 @@ public class FaultCountServiceImpl implements IFaultCountService {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String[] split = user.getRoleCodes().split(",");
         List<String> roleCodes = CollUtil.newArrayList(split);
-        roleCodes = roleCodes.stream().filter(s->s.equals("director")).collect(Collectors.toList());
+        // 系统管理员不做任务权限控制
+        roleCodes = roleCodes.stream().filter(s-> StrUtil.equalsAnyIgnoreCase(RoleConstant.ADMIN, s)).collect(Collectors.toList());
         //当前登录人为主任，则根据当前用户所拥有的专业，查询该专业下的故障信息
-        boolean isDirector = false;
-        if(roleCodes.size()>0)
-        {
-            isDirector=true;
+        boolean isAdmin = false;
+        FaultIndexDTO faultIndexDTO = new FaultIndexDTO();
+        if(roleCodes.size()>0) {
+            isAdmin = true;
         }
-        List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
-        List<String> majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-        List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-        if(CollUtil.isEmpty(departByUserId)&&!isDirector)
-        {
-            return result;
+        List<String> ordCode = null;
+        List<String> majors = null;
+        List<String> stationCodeList = null;
+        if (!isAdmin) {
+            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
+            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+
+            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
+
+            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+
+            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
+
+            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
         }
-        if(!isDirector&&CollUtil.isEmpty(majors))
-        {
-            return result;
-        }
-        List<String> ordId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
-        List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq,ordId,majors,isDirector);
+        List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq, ordCode, majors, stationCodeList);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultCountInfoDTO faultDatum : faultData) {
                 //查找设备编码
@@ -234,26 +265,30 @@ public class FaultCountServiceImpl implements IFaultCountService {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String[] split = user.getRoleCodes().split(",");
         List<String> roleCodes = CollUtil.newArrayList(split);
-        roleCodes = roleCodes.stream().filter(s->s.equals("director")).collect(Collectors.toList());
+        // 系统管理员不做任务权限控制
+        roleCodes = roleCodes.stream().filter(s-> StrUtil.equalsAnyIgnoreCase(RoleConstant.ADMIN, s)).collect(Collectors.toList());
         //当前登录人为主任，则根据当前用户所拥有的专业，查询该专业下的故障信息
-        boolean isDirector = false;
-        if(roleCodes.size()>0)
-        {
-            isDirector=true;
+        boolean isAdmin = false;
+        FaultIndexDTO faultIndexDTO = new FaultIndexDTO();
+        if(roleCodes.size()>0) {
+            isAdmin = true;
         }
-        List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
-        List<String> majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-        List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-        if(CollUtil.isEmpty(departByUserId)&&!isDirector)
-        {
-            return result;
+        List<String> ordCode = null;
+        List<String> majors = null;
+        List<String> stationCodeList = null;
+        if (!isAdmin) {
+            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
+            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+
+            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
+
+            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+
+            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
+
+            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
         }
-        if(!isDirector&&CollUtil.isEmpty(majors))
-        {
-            return  result;
-        }
-        List<String> ordId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
-        List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq,ordId,majors,isDirector);
+        List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq, ordCode, majors, stationCodeList);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultCountInfosDTO faultDatum : faultData) {
                 //查找设备编码
@@ -289,27 +324,30 @@ public class FaultCountServiceImpl implements IFaultCountService {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String[] split = user.getRoleCodes().split(",");
         List<String> roleCodes = CollUtil.newArrayList(split);
-        roleCodes = roleCodes.stream().filter(s->s.equals("director")).collect(Collectors.toList());
+        roleCodes = roleCodes.stream().filter(s-> StrUtil.equalsAnyIgnoreCase(RoleConstant.ADMIN, s)).collect(Collectors.toList());
         //当前登录人为主任，则根据当前用户所拥有的专业，查询该专业下的故障信息
-        boolean isDirector = false;
-        if(roleCodes.size()>0)
-        {
-            isDirector=true;
+        boolean isAdmin = false;
+        FaultIndexDTO faultIndexDTO = new FaultIndexDTO();
+        if(roleCodes.size()>0) {
+            isAdmin = true;
         }
-        List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
-        List<String> majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-        List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-        if(CollUtil.isEmpty(departByUserId)&&!isDirector)
-        {
-            return result;
+        List<String> ordCode = null;
+        List<String> majors = null;
+        List<String> stationCodeList = null;
+        if (!isAdmin) {
+            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
+            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+
+            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
+
+            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+
+            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
+
+            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
         }
-        if(!isDirector&&CollUtil.isEmpty(majors))
-        {
-            return  result;
-        }
-         List<String> ordCode = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
         faultTimeoutLevelReq.setOrgList(ordCode);
-        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq,majors,isDirector,lv1Hours,lv2Hours,lv3Hours);
+        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq,majors,stationCodeList,lv1Hours,lv2Hours,lv3Hours);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultTimeoutLevelDTO faultDatum : faultData) {
                 //查找设备编码
