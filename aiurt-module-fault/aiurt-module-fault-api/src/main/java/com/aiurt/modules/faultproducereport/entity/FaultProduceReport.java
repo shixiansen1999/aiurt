@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultproducereport.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -55,6 +56,7 @@ public class FaultProduceReport implements Serializable {
 	/**专业编码*/
 	@Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码")
+    @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private String majorCode;
 	/**统计日期*/
 	@Excel(name = "统计日期", width = 15, format = "yyyy-MM-dd")
@@ -95,5 +97,6 @@ public class FaultProduceReport implements Serializable {
 	/**状态*/
 	@Excel(name = "状态", width = 15)
     @ApiModelProperty(value = "状态")
+    @Dict(dicCode = "fault_produce_report_state")
     private Integer state;
 }
