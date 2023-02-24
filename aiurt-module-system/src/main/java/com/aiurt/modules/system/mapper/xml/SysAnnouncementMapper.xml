@@ -105,10 +105,12 @@
 				and sa.bus_type LIKE concat('%',#{busType},'%')
 			</if>
 			<if test="keyWord!=null and keyWord!=''">
-				and sa.msg_content LIKE concat('%',#{keyWord},'%')
+				and (
+				sa.msg_content LIKE concat('%',#{keyWord},'%')
 				or sa.titile LIKE concat('%',#{keyWord},'%')
 				or sa.msg_abstract LIKE concat('%',#{keyWord},'%')
 				or sa.publishing_content LIKE concat('%',#{keyWord},'%')
+				)
 			</if>
 			<if test="msgCategory!=null and msgCategory!=''">
 				and sa.msg_category =#{msgCategory}
@@ -175,17 +177,19 @@
 			 find_in_set(#{userName},stl.current_user_name)
 			</if>
 			<if test="keyWord!=null and keyWord!=''">
-				and stl.msg_content LIKE concat(concat('%',#{keyWord}),'%')
+				and
+				(stl.msg_content LIKE concat(concat('%',#{keyWord}),'%')
 				or stl.title LIKE concat('%',#{keyWord},'%')
 				or stl.msg_abstract LIKE concat('%',#{keyWord},'%')
 				or stl.publishing_content LIKE concat('%',#{keyWord},'%')
+				)
 			</if>
 			<if test="todoType!=null and todoType!=''">
 				and stl.todo_type = #{todoType}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and stl.task_type = #{busType}
-				or stl.process_code like concat('%',#{busType},'%')
+				and (stl.task_type = #{busType}
+				or stl.process_code like concat('%',#{busType},'%'))
 			</if>
 		</where>
 		order by stl.create_time desc
@@ -219,7 +223,8 @@
 				and stl.todo_type = #{todoType}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and stl.task_type = #{busType}
+				and (stl.task_type = #{busType}
+				or stl.process_code like concat('%',#{busType},'%'))
 			</if>
 		</where>
 		order by stl.create_time desc

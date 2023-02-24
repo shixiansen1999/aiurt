@@ -192,38 +192,42 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 记录日志
         saveLog(user, "故障上报", fault.getCode(), 1, null);
 
-        FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-        BeanUtil.copyProperties(fault,faultMessageDTO);
+        try {
+            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+            BeanUtil.copyProperties(fault,faultMessageDTO);
 
-        // 待办任务
-        TodoDTO todoDTO = new TodoDTO();
-        todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-        if (b) {
-            todoDTO.setTitle("故障维修任务");
-            todoDTO.setMsgAbstract("有新的故障信息");
-            todoDTO.setPublishingContent("有新的维修任务");
-            // 自检
-            sendTodo(fault.getCode(), null, user.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
-        } else {
-            todoDTO.setTitle("故障维修任务");
-            todoDTO.setMsgAbstract("有新的故障信息");
-            todoDTO.setPublishingContent("有新的维修任务");
-            sendTodo(fault.getCode(), RoleConstant.PRODUCTION, null, "故障上报审核", TodoBusinessTypeEnum.FAULT_APPROVAL.getType(),todoDTO,faultMessageDTO);
-        }
+            // 待办任务
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+            if (b) {
+                todoDTO.setTitle("故障维修任务");
+                todoDTO.setMsgAbstract("有新的故障信息");
+                todoDTO.setPublishingContent("有新的维修任务");
+                // 自检
+                sendTodo(fault.getCode(), null, user.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+            } else {
+                todoDTO.setTitle("故障维修任务");
+                todoDTO.setMsgAbstract("有新的故障信息");
+                todoDTO.setPublishingContent("有新的维修任务");
+                sendTodo(fault.getCode(), RoleConstant.PRODUCTION, null, "故障上报审核", TodoBusinessTypeEnum.FAULT_APPROVAL.getType(),todoDTO,faultMessageDTO);
+            }
 
-        // 抄送
-        String remindUserName = fault.getRemindUserName();
-        if (StrUtil.isBlank(remindUserName)) {
-            //发送通知
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(),remindUserName, "故障上报" + DateUtil.today(), null);
+            // 抄送
+            String remindUserName = fault.getRemindUserName();
+            if (StrUtil.isBlank(remindUserName)) {
+                //发送通知
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(),remindUserName, "故障上报" + DateUtil.today(), null);
 
-            //业务类型，消息类型，消息模板编码，摘要，发布内容
-            faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-            messageDTO.setMsgAbstract("有新的故障信息");
-            messageDTO.setPublishingContent("有新的故障信息，请审核");
+                //业务类型，消息类型，消息模板编码，摘要，发布内容
+                faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+                messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                messageDTO.setMsgAbstract("有新的故障信息");
+                messageDTO.setPublishingContent("有新的故障信息，请审核");
 
-            sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO,faultMessageDTO);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         // 回调
         if (StrUtil.isNotBlank(fault.getRepairCode())) {
@@ -343,30 +347,34 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 更新上报的待办
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_APPROVAL.getType(), faultCode, user.getUsername(), "1");
-        FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-        BeanUtil.copyProperties(fault,faultMessageDTO);
-        if (b) {
-            TodoDTO todoDTO = new TodoDTO();
-            todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-            todoDTO.setTitle("故障指派");
-            todoDTO.setMsgAbstract("有一个新的故障维修任");
-            todoDTO.setPublishingContent("有一个新的故障维修任，请尽快确认");
-            // 审批通过 新增任务， 该线路或者是工班长，指派任务
-            sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
-        } else {
-            //被驳回发送通知
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(),fault.getReceiveUserName(), "故障上报审核驳回" + DateUtil.today(), null);
-            //构建消息模板
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("approvalRejection",fault.getApprovalRejection());
-            messageDTO.setData(map);
-            //业务类型，消息类型，消息模板编码，摘要，发布内容
-            faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
-            messageDTO.setMsgAbstract("故障上报审核驳回");
-            messageDTO.setPublishingContent("上报的故障被驳回，请处理");
+        try {
+            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+            BeanUtil.copyProperties(fault,faultMessageDTO);
+            if (b) {
+                TodoDTO todoDTO = new TodoDTO();
+                todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                todoDTO.setTitle("故障指派");
+                todoDTO.setMsgAbstract("有一个新的故障维修任务");
+                todoDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
+                // 审批通过 新增任务， 该线路或者是工班长，指派任务
+                sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
+            } else {
+                //被驳回发送通知
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(),fault.getReceiveUserName(), "故障上报审核驳回" + DateUtil.today(), null);
+                //构建消息模板
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("approvalRejection",fault.getApprovalRejection());
+                messageDTO.setData(map);
+                //业务类型，消息类型，消息模板编码，摘要，发布内容
+                faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+                messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
+                messageDTO.setMsgAbstract("故障上报审核驳回");
+                messageDTO.setPublishingContent("上报的故障被驳回，请处理");
 
-            sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO,faultMessageDTO);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -430,16 +438,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         if (!StrUtil.equalsAnyIgnoreCase(receiveUserName, user.getUsername())) {
             //发送通知
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(),receiveUserName, "故障已被作废" + DateUtil.today(), null);
-            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
-            //业务类型，消息类型，消息模板编码，摘要，发布内容
-            faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-            messageDTO.setMsgAbstract("故障已被作废");
-            messageDTO.setPublishingContent("故障已被作废");
+            try {
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(),receiveUserName, "故障已被作废" + DateUtil.today(), null);
+                FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+                BeanUtil.copyProperties(fault,faultMessageDTO);
+                //业务类型，消息类型，消息模板编码，摘要，发布内容
+                faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+                messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                messageDTO.setMsgAbstract("故障已被作废");
+                messageDTO.setPublishingContent("故障已被作废");
 
-            sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO,faultMessageDTO);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
     }
@@ -547,16 +559,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 重新写任务，指派人
         // sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
         //发送通知
-        MessageDTO messageDTO = new MessageDTO(user.getUsername(),loginUser.getUsername(), "故障指派" + DateUtil.today(), null);
-        FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-        BeanUtil.copyProperties(fault,faultMessageDTO);
-        //业务类型，消息类型，消息模板编码，摘要，发布内容
-        faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-        messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-        messageDTO.setMsgAbstract("有一个新的故障维修任务");
-        messageDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
+        try {
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),loginUser.getUsername(), "故障指派" + DateUtil.today(), null);
+            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+            BeanUtil.copyProperties(fault,faultMessageDTO);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+            messageDTO.setMsgAbstract("有一个新的故障维修任务");
+            messageDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
 
-        sendMessage(messageDTO,faultMessageDTO);
+            sendMessage(messageDTO,faultMessageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -612,25 +628,29 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
        // sendMessage(user, faultCode, fault.getAssignUserName(), String.format("故障【%s】已被【%s】领取!", faultCode, user.getRealname()));
         String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode());
 
-        //发送通知
-        MessageDTO messageDTO = new MessageDTO(user.getUsername(),receiveUserName, "故障领取" + DateUtil.today(), null);
-        FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-        BeanUtil.copyProperties(fault,faultMessageDTO);
-        //业务类型，消息类型，消息模板编码，摘要，发布内容
-        faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-        messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-        messageDTO.setMsgAbstract("故障被主动领取");
-        messageDTO.setPublishingContent("故障被主动领取，维修人请尽快维修，并维修后填写维修记录");
+        try {
+            //发送通知
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),receiveUserName, "故障领取" + DateUtil.today(), null);
+            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+            BeanUtil.copyProperties(fault,faultMessageDTO);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+            messageDTO.setMsgAbstract("故障被主动领取");
+            messageDTO.setPublishingContent("故障被主动领取，维修人请尽快维修，并维修后填写维修记录");
 
-        sendMessage(messageDTO,faultMessageDTO);
+            sendMessage(messageDTO,faultMessageDTO);
 
-        // 维修待办
-        TodoDTO todoDTO = new TodoDTO();
-        todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-        todoDTO.setTitle("故障领取");
-        todoDTO.setMsgAbstract("故障被主动领取");
-        todoDTO.setPublishingContent("故障被主动领取，维修人请尽快维修，并维修后填写维修记录");
-        sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+            // 维修待办
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+            todoDTO.setTitle("故障领取");
+            todoDTO.setMsgAbstract("故障被主动领取");
+            todoDTO.setPublishingContent("故障被主动领取，维修人请尽快维修，并维修后填写维修记录");
+            sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -665,23 +685,27 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         saveLog(loginUser, "接收指派", code, FaultStatusEnum.RECEIVE_ASSIGN.getStatus(), null);
 
         //发送通知
-        MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAssignUserName(), "故障接收" + DateUtil.today(), null);
-        FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-        BeanUtil.copyProperties(fault,faultMessageDTO);
-        //业务类型，消息类型，消息模板编码，摘要，发布内容
-        faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-        messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-        messageDTO.setMsgAbstract("接收到新的故障维修任务");
-        messageDTO.setPublishingContent("接收到新的故障维修任务，请尽快维修，并维修后填写维修记录");
+        try {
+            MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAssignUserName(), "故障接收" + DateUtil.today(), null);
+            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+            BeanUtil.copyProperties(fault,faultMessageDTO);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+            messageDTO.setMsgAbstract("接收到新的故障维修任务");
+            messageDTO.setPublishingContent("接收到新的故障维修任务，请尽快维修，并维修后填写维修记录");
 
-        sendMessage(messageDTO,faultMessageDTO);
-        // 待办任务
-        TodoDTO todoDTO = new TodoDTO();
-        todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-        todoDTO.setTitle("故障接收");
-        todoDTO.setMsgAbstract("接收到新的故障维修任务");
-        todoDTO.setPublishingContent("接收到新的故障维修任务，请尽快维修，并维修后填写维修记录");
-        sendTodo(code, null, loginUser.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+            sendMessage(messageDTO,faultMessageDTO);
+            // 待办任务
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+            todoDTO.setTitle("故障接收");
+            todoDTO.setMsgAbstract("接收到新的故障维修任务");
+            todoDTO.setPublishingContent("接收到新的故障维修任务，请尽快维修，并维修后填写维修记录");
+            sendTodo(code, null, loginUser.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -720,30 +744,34 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 更新待处理的人任务
         // todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_DEAL.getType(), faultCode, loginUser.getUsername(), "1");
-        FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-        BeanUtil.copyProperties(fault,faultMessageDTO);
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("refuseRemark", refuseAssignmentDTO.getRefuseRemark());
+        try {
+            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+            BeanUtil.copyProperties(fault,faultMessageDTO);
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("refuseRemark", refuseAssignmentDTO.getRefuseRemark());
 
-        // 仅需要发送消息，不需要更新待办
-        TodoDTO todoDTO = new TodoDTO();
-        todoDTO.setData(map);
-        todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_RETURN);
-        todoDTO.setTitle("故障退回");
-        todoDTO.setMsgAbstract("指派故障被退回");
-        todoDTO.setPublishingContent("指派的维修任务被退回，请尽快重新指派");
-        sendTodo(refuseAssignmentDTO.getFaultCode(), RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
-        // 消息通知，发送给指派人
-        MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAssignUserName(), "故障退回" + DateUtil.today(), null);
+            // 仅需要发送消息，不需要更新待办
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setData(map);
+            todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_RETURN);
+            todoDTO.setTitle("故障退回");
+            todoDTO.setMsgAbstract("指派故障被退回");
+            todoDTO.setPublishingContent("指派的维修任务被退回，请尽快重新指派");
+            sendTodo(refuseAssignmentDTO.getFaultCode(), RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
+            // 消息通知，发送给指派人
+            MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAssignUserName(), "故障退回" + DateUtil.today(), null);
 
-        messageDTO.setData(map);
-        //业务类型，消息类型，消息模板编码，摘要，发布内容
-        faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-        messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_RETURN);
-        messageDTO.setMsgAbstract("指派故障被退回");
-        messageDTO.setPublishingContent("指派的维修任务被退回，请尽快重新指派");
+            messageDTO.setData(map);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_RETURN);
+            messageDTO.setMsgAbstract("指派故障被退回");
+            messageDTO.setPublishingContent("指派的维修任务被退回，请尽快重新指派");
 
-        sendMessage(messageDTO,faultMessageDTO);
+            sendMessage(messageDTO,faultMessageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -779,16 +807,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
 
         // 消息通知，发送给指派人
-        MessageDTO messageDTO = new MessageDTO(user.getUsername(), receiveUserName, "开始维修" + DateUtil.today(), null);
-        FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-        BeanUtil.copyProperties(fault,faultMessageDTO);
-        //业务类型，消息类型，消息模板编码，摘要，发布内容
-        faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-        messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_RETURN);
-        messageDTO.setMsgAbstract("开始维修");
-        messageDTO.setPublishingContent("开始维修");
+        try {
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(), receiveUserName, "开始维修" + DateUtil.today(), null);
+            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+            BeanUtil.copyProperties(fault,faultMessageDTO);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_RETURN);
+            messageDTO.setMsgAbstract("开始维修");
+            messageDTO.setPublishingContent("开始维修");
 
-        sendMessage(messageDTO,faultMessageDTO);
+            sendMessage(messageDTO,faultMessageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -824,18 +856,22 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_DEAL.getType(), hangUpDTO.getFaultCode(), user.getUsername(), "1");
 
         // 生产调度挂起审核
-        FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-        BeanUtil.copyProperties(fault,faultMessageDTO);
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("hangUpReason", fault.getHangUpReason());
+        try {
+            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+            BeanUtil.copyProperties(fault,faultMessageDTO);
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("hangUpReason", fault.getHangUpReason());
 
-        TodoDTO todoDTO = new TodoDTO();
-        todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_HANGUP);
-        todoDTO.setTitle("故障挂起");
-        todoDTO.setMsgAbstract("故障挂起申请");
-        todoDTO.setPublishingContent("故障挂起申请，请确认");
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_HANGUP);
+            todoDTO.setTitle("故障挂起");
+            todoDTO.setMsgAbstract("故障挂起申请");
+            todoDTO.setPublishingContent("故障挂起申请，请确认");
 
-        sendTodo(fault.getCode(), RoleConstant.PRODUCTION, null, "故障挂起审核", TodoBusinessTypeEnum.FAULT_HANG_UP.getType(),todoDTO,faultMessageDTO);
+            sendTodo(fault.getCode(), RoleConstant.PRODUCTION, null, "故障挂起审核", TodoBusinessTypeEnum.FAULT_HANG_UP.getType(),todoDTO,faultMessageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -880,44 +916,48 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 更新工班长指派的任务
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_HANG_UP.getType(), faultCode, user.getUsername(), "1");
 
-        if (flag) {
-            // 消息通知，发送给指派人
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(), faultRepairRecord.getAppointUserName(), "故障挂起审核" + DateUtil.today(), null);
-            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
-            //业务类型，消息类型，消息模板编码，摘要，发布内容
-            faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-            messageDTO.setMsgAbstract("挂起申请");
-            messageDTO.setPublishingContent("故障挂起申请已通过");
+        try {
+            if (flag) {
+                // 消息通知，发送给指派人
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(), faultRepairRecord.getAppointUserName(), "故障挂起审核" + DateUtil.today(), null);
+                FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+                BeanUtil.copyProperties(fault,faultMessageDTO);
+                //业务类型，消息类型，消息模板编码，摘要，发布内容
+                faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+                messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                messageDTO.setMsgAbstract("挂起申请");
+                messageDTO.setPublishingContent("故障挂起申请已通过");
 
-            sendMessage(messageDTO,faultMessageDTO);
-        }else {
-            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("approvalRejection",approvalHangUpDTO.getApprovalRejection());
+                sendMessage(messageDTO,faultMessageDTO);
+            }else {
+                FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+                BeanUtil.copyProperties(fault,faultMessageDTO);
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("approvalRejection",approvalHangUpDTO.getApprovalRejection());
 
-            // 维修待办
-            TodoDTO todoDTO = new TodoDTO();
-            todoDTO.setData(map);
-            todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
-            todoDTO.setTitle("故障挂起审核驳回");
-            todoDTO.setMsgAbstract("挂起申请被驳回");
-            todoDTO.setPublishingContent("您申请的故障挂起申请被驳回，关联故障编号："+faultCode);
-            sendTodo(faultCode, null, faultRepairRecord.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+                // 维修待办
+                TodoDTO todoDTO = new TodoDTO();
+                todoDTO.setData(map);
+                todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
+                todoDTO.setTitle("故障挂起审核驳回");
+                todoDTO.setMsgAbstract("挂起申请被驳回");
+                todoDTO.setPublishingContent("您申请的故障挂起申请被驳回，关联故障编号："+faultCode);
+                sendTodo(faultCode, null, faultRepairRecord.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
 
-            // 消息通知，发送给指派人
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(), faultRepairRecord.getAppointUserName(), "故障挂起审核驳回" + DateUtil.today(), null);
+                // 消息通知，发送给指派人
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(), faultRepairRecord.getAppointUserName(), "故障挂起审核驳回" + DateUtil.today(), null);
 
-            messageDTO.setData(map);
-            //业务类型，消息类型，消息模板编码，摘要，发布内容
-            faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
-            messageDTO.setMsgAbstract("挂起申请被驳回");
-            messageDTO.setPublishingContent("您申请的故障挂起申请被驳回，关联故障编号："+faultCode);
+                messageDTO.setData(map);
+                //业务类型，消息类型，消息模板编码，摘要，发布内容
+                faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+                messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
+                messageDTO.setMsgAbstract("挂起申请被驳回");
+                messageDTO.setPublishingContent("您申请的故障挂起申请被驳回，关联故障编号："+faultCode);
 
-            sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO,faultMessageDTO);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -951,15 +991,19 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_HANG_UP.getType(), code, null, "1");
 
         // 维修待办
-        FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-        BeanUtil.copyProperties(fault,faultMessageDTO);
+        try {
+            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+            BeanUtil.copyProperties(fault,faultMessageDTO);
 
-        TodoDTO todoDTO = new TodoDTO();
-        todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-        todoDTO.setTitle("取消挂起");
-        todoDTO.setMsgAbstract("挂起申请取消");
-        todoDTO.setPublishingContent("挂起申请取消");
-        sendTodo(code, null, fault.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+            todoDTO.setTitle("取消挂起");
+            todoDTO.setMsgAbstract("挂起申请取消");
+            todoDTO.setPublishingContent("挂起申请取消");
+            sendTodo(code, null, fault.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -1151,24 +1195,28 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             // 重新指派
             // 仅需要发送消息，不需要更新待办
-            TodoDTO todoDTO = new TodoDTO();
-            todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-            todoDTO.setTitle("故障指派");
-            todoDTO.setMsgAbstract("有一个新的故障维修任务");
-            todoDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
-            sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
-            String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
+            try {
+                TodoDTO todoDTO = new TodoDTO();
+                todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                todoDTO.setTitle("故障指派");
+                todoDTO.setMsgAbstract("有一个新的故障维修任务");
+                todoDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
+                sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
+                String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
 
-            //发送通知
-            MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),name, "故障指派" + DateUtil.today(), null);
+                //发送通知
+                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),name, "故障指派" + DateUtil.today(), null);
 
-            //业务类型，消息类型，消息模板编码，摘要，发布内容
-            faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-            messageDTO.setMsgAbstract("有一个新的故障维修任务");
-            messageDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
+                //业务类型，消息类型，消息模板编码，摘要，发布内容
+                faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+                messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                messageDTO.setMsgAbstract("有一个新的故障维修任务");
+                messageDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
 
-            sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO,faultMessageDTO);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         // 已解决
         if (flag.equals(solveStatus)) {
@@ -1178,12 +1226,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             one.setEndTime(new Date());
 
             // 审核
-            TodoDTO todoDTO = new TodoDTO();
-            todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-            todoDTO.setTitle("维修确认");
-            todoDTO.setMsgAbstract("维修完成");
-            todoDTO.setPublishingContent("故障维修确认无误");
-            sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
+            try {
+                TodoDTO todoDTO = new TodoDTO();
+                todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                todoDTO.setTitle("维修确认");
+                todoDTO.setMsgAbstract("维修完成");
+                todoDTO.setPublishingContent("故障维修确认无误");
+                sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             //推送数据到调度系统
             faultExternalService.complete(repairRecordDTO,loginUser);
         }
@@ -1366,45 +1418,53 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
             userNameSet.addAll(list);
             //  发送消息
-            MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),  StrUtil.join(",", userNameSet), "维修确认" + DateUtil.today(), null);
-            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
-            //业务类型，消息类型，消息模板编码，摘要，发布内容
-            faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-            messageDTO.setMsgAbstract("维修完成");
-            messageDTO.setPublishingContent("故障维修确认无误");
+            try {
+                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),  StrUtil.join(",", userNameSet), "维修确认" + DateUtil.today(), null);
+                FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+                BeanUtil.copyProperties(fault,faultMessageDTO);
+                //业务类型，消息类型，消息模板编码，摘要，发布内容
+                faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+                messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                messageDTO.setMsgAbstract("维修完成");
+                messageDTO.setPublishingContent("故障维修确认无误");
 
-            sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO,faultMessageDTO);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
-            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("approvalRejection",resultDTO.getApprovalRejection());
+            try {
+                FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+                BeanUtil.copyProperties(fault,faultMessageDTO);
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("approvalRejection",resultDTO.getApprovalRejection());
 
-            TodoDTO todoDTO = new TodoDTO();
-            todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
-            todoDTO.setTitle("维修确认驳回");
-            todoDTO.setMsgAbstract("维修确认被驳回");
-            todoDTO.setPublishingContent("故障维修确认被退回，请重新处理");
-            todoDTO.setData(map);
+                TodoDTO todoDTO = new TodoDTO();
+                todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
+                todoDTO.setTitle("维修确认驳回");
+                todoDTO.setMsgAbstract("维修确认被驳回");
+                todoDTO.setPublishingContent("故障维修确认被退回，请重新处理");
+                todoDTO.setData(map);
 
-           // FaultRepairRecord faultRepairRecord = getFaultRepairRecord(faultCode, null);
-            fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
-            saveLog(loginUser, "维修结果驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), resultDTO.getApprovalRejection());
-            // 审核
-            sendTodo(faultCode, null, fault.getAppointUserName(), "故障维修处理", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+                // FaultRepairRecord faultRepairRecord = getFaultRepairRecord(faultCode, null);
+                fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
+                saveLog(loginUser, "维修结果驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), resultDTO.getApprovalRejection());
+                // 审核
+                sendTodo(faultCode, null, fault.getAppointUserName(), "故障维修处理", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
 
-            MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAppointUserName(), "维修确认驳回" + DateUtil.today(), null);
+                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAppointUserName(), "维修确认驳回" + DateUtil.today(), null);
 
-            messageDTO.setData(map);
-            //业务类型，消息类型，消息模板编码，摘要，发布内容
-            faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
-            messageDTO.setMsgAbstract("维修确认被驳回");
-            messageDTO.setPublishingContent("故障维修确认被退回，请重新处理");
+                messageDTO.setData(map);
+                //业务类型，消息类型，消息模板编码，摘要，发布内容
+                faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+                messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
+                messageDTO.setMsgAbstract("维修确认被驳回");
+                messageDTO.setPublishingContent("故障维修确认被退回，请重新处理");
 
-            sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO,faultMessageDTO);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         updateById(fault);
@@ -1581,17 +1641,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         updateWrapper.set(Fault::getStatus, FaultStatusEnum.NEW_FAULT.getStatus()).eq(Fault::getCode, faultCode);
         update(updateWrapper);
         Fault fault = isExist(faultCode);
-        FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-        BeanUtil.copyProperties(fault,faultMessageDTO);
+        try {
+            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+            BeanUtil.copyProperties(fault,faultMessageDTO);
 
-        TodoDTO todoDTO = new TodoDTO();
-        todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-        todoDTO.setTitle("故障上报审核");
-        todoDTO.setMsgAbstract("有新的故障信息");
-        todoDTO.setPublishingContent("有新的故障信息，请尽快安排维修");
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+            todoDTO.setTitle("故障上报审核");
+            todoDTO.setMsgAbstract("有新的故障信息");
+            todoDTO.setPublishingContent("有新的故障信息，请尽快安排维修");
 
-        // 待办任务
-        sendTodo(faultCode, RoleConstant.PRODUCTION, null, "故障上报审核", TodoBusinessTypeEnum.FAULT_APPROVAL.getType(),todoDTO,faultMessageDTO);
+            // 待办任务
+            sendTodo(faultCode, RoleConstant.PRODUCTION, null, "故障上报审核", TodoBusinessTypeEnum.FAULT_APPROVAL.getType(),todoDTO,faultMessageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

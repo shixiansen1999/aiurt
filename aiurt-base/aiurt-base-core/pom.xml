@@ -270,6 +270,24 @@
 			<artifactId>easypoi-annotation</artifactId>
 			<version>4.3.0</version>
 		</dependency>
-	</dependencies>
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+		</dependency>
 
+		<!--excel2pdf-->
+		<dependency>
+			<groupId>com.luhuiguo</groupId>
+			<artifactId>aspose-cells</artifactId>
+			<version>8.5.2</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/resources/lib/aspose-cells-8.5.2.jar</systemPath>
+		</dependency>
+	</dependencies>
 </project>

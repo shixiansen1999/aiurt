@@ -1,6 +1,8 @@
 package com.aiurt.modules.faultproducereport.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -55,6 +57,7 @@ public class FaultProduceReport implements Serializable {
 	/**专业编码*/
 	@Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码")
+    @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private String majorCode;
 	/**统计日期*/
 	@Excel(name = "统计日期", width = 15, format = "yyyy-MM-dd")
@@ -95,5 +98,30 @@ public class FaultProduceReport implements Serializable {
 	/**状态*/
 	@Excel(name = "状态", width = 15)
     @ApiModelProperty(value = "状态")
+    @Dict(dicCode = "fault_produce_report_state")
     private Integer state;
+    /**
+     * 实例id
+     */
+    @ApiModelProperty(value = "实例id")
+    @TableField(exist = false)
+    private String processInstanceId;
+    /**
+     * 任务id
+     */
+    @ApiModelProperty(value = "任务id")
+    @TableField(exist = false)
+    private String taskId;
+    /**
+     * 任务名称
+     */
+    @ApiModelProperty(value = "任务名称")
+    @TableField(exist = false)
+    private String taskName;
+    /**
+     * 模板key，流程标识
+     */
+    @ApiModelProperty(value = "模板key，流程标识")
+    @TableField(exist = false)
+    private String modelKey;
 }

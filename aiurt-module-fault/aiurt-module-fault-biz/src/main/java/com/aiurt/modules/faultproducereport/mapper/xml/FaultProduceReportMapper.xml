@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.faultproducereport.mapper.FaultProduceReportMapper">
-
+    <select id="getDetail" resultType="com.aiurt.modules.faultproducereport.entity.FaultProduceReport">
+        select fpr.*,
+         ahp.PROC_INST_ID_ as process_instance_id,
+        ara.ID_           as task_id,
+        ara.NAME_         as task_name,
+        arp.KEY_          as model_key
+        from fault_produce_report fpr
+                     Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fpr.id
+                     LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
+                     LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+        where id = '1628710332829478913'
+    </select>
 </mapper>

@@ -69,7 +69,7 @@ public class SysMessageInfoDTO extends DictEntity {
     @ApiModelProperty("业务id")
     private String businessKey;
 
-    @ApiModelProperty("业务id")
+    @ApiModelProperty("业务类型")
     private String businessType;
 
     @ApiModelProperty("任务id")

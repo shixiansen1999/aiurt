@@ -2,6 +2,7 @@ package com.aiurt.modules.faultproducereport.service;
 
 import com.aiurt.modules.faultproducereport.entity.FaultProduceReport;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 /**
  * @Description: 生产日报
@@ -11,4 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IFaultProduceReportService extends IService<FaultProduceReport> {
 
+    Result<FaultProduceReport> getDetail();
 }

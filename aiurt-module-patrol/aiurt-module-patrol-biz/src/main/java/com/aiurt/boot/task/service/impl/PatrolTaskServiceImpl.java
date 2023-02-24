@@ -23,7 +23,6 @@ import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
-import com.aiurt.boot.utils.ArchiveUtils;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.boot.utils.PdfUtil;
 import com.aiurt.common.api.dto.message.MessageDTO;
@@ -32,6 +31,7 @@ import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.ArchiveUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.IBaseApi;
@@ -319,6 +319,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 String[] userIds = users.stream().map(PatrolAppointUserDTO::getUserId).toArray(String[]::new);
                 List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
                 String userNames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+                String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                 if (ObjectUtil.isEmpty(patrolTask) || CollectionUtil.isEmpty(loginUsers)) {
                     continue;
                 }
@@ -326,15 +327,19 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                 Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
                 //发送通知
-                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),userNames, "巡视任务-指派" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
-                PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
-                BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
-                //业务类型，消息类型，消息模板编码，摘要，发布内容
-                patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
-                messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
-                messageDTO.setMsgAbstract("新的巡视任务");
-                messageDTO.setPublishingContent("接收到新的巡视任务，请尽快确认");
-                sendMessage(messageDTO,userNames,null,patrolMessageDTO);
+                try {
+                    MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),userNames, "巡视任务-指派" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
+                    PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
+                    BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
+                    //业务类型，消息类型，消息模板编码，摘要，发布内容
+                    patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
+                    messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
+                    messageDTO.setMsgAbstract("新的巡视任务");
+                    messageDTO.setPublishingContent("接收到新的巡视任务，请尽快确认");
+                    sendMessage(messageDTO,realNames,null,patrolMessageDTO);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -363,15 +368,20 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
         //发送通知
-        MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),userNames, "巡视任务-指派" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
-        PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
-        BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
-        //业务类型，消息类型，消息模板编码，摘要，发布内容
-        patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
-        messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
-        messageDTO.setMsgAbstract("新的巡视任务");
-        messageDTO.setPublishingContent("接收到新的巡视任务，请尽快确认");
-        sendMessage(messageDTO,userNames,null,patrolMessageDTO);
+        try {
+            MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),userNames, "巡视任务-指派" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
+            PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
+            BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
+            messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
+            messageDTO.setMsgAbstract("新的巡视任务");
+            messageDTO.setPublishingContent("接收到新的巡视任务，请尽快确认");
+            String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+            sendMessage(messageDTO,realNames,null,patrolMessageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -443,19 +453,24 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         String userNames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
 
         //发送通知
-        MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),userNames, "审核驳回" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
-        PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
-        BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
-        //构建消息模板
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("rejectReason",patrolTask.getRejectReason());
-        messageDTO.setData(map);
-        //业务类型，消息类型，消息模板编码，摘要，发布内容
-        patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_AUDIT.getType());
-        messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_REJECT);
-        messageDTO.setMsgAbstract("巡视任务审核驳回");
-        messageDTO.setPublishingContent("巡视任务审核驳回，请重新处理");
-        sendMessage(messageDTO,userNames,null,patrolMessageDTO);
+        try {
+            MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),userNames, "审核驳回" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
+            PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
+            BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("rejectReason",patrolTask.getRejectReason());
+            messageDTO.setData(map);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_AUDIT.getType());
+            messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_REJECT);
+            messageDTO.setMsgAbstract("巡视任务审核驳回");
+            messageDTO.setPublishingContent("巡视任务审核驳回，请重新处理");
+            String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+            sendMessage(messageDTO,realNames,null,patrolMessageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -714,7 +729,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskUser.setDelFlag(0);
             patrolTaskUserMapper.insert(patrolTaskUser);
             // 领取后发送待办消息
-            this.sendWaitingMessage(patrolTask);
+            try {
+                this.sendWaitingMessage(patrolTask);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         //确认：将待确认改为待执行
         if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
@@ -724,7 +743,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
             // 确认后发送待办消息
-            this.sendWaitingMessage(patrolTask);
+            try {
+                this.sendWaitingMessage(patrolTask);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         //执行：将待执行改为执行中
         if (PatrolConstant.TASK_EXECUTE.equals(patrolTaskDTO.getStatus())) {
@@ -765,19 +788,23 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             if (StrUtil.isNotEmpty(assignId)) {
                 LoginUser user = sysBaseApi.getUserById(assignId);
                 //发送通知
-                MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),user.getUsername(), "巡视任务退回后" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
-                PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
-                BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
-                //构建消息模板
-                HashMap<String, Object> map = new HashMap<>();
-                map.put("backReason",patrolTask.getBackReason());
-                messageDTO.setData(map);
-                //业务类型，消息类型，消息模板编码，摘要，发布内容
-                patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
-                messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_RETURN);
-                messageDTO.setMsgAbstract("巡视任务退回");
-                messageDTO.setPublishingContent("巡视任务退回，请重新安排");
-                sendMessage(messageDTO,null,user.getUsername(),patrolMessageDTO);
+                try {
+                    MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),user.getUsername(), "巡视任务退回后" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
+                    PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
+                    BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
+                    //构建消息模板
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put("backReason",patrolTask.getBackReason());
+                    messageDTO.setData(map);
+                    //业务类型，消息类型，消息模板编码，摘要，发布内容
+                    patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
+                    messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_RETURN);
+                    messageDTO.setMsgAbstract("巡视任务退回");
+                    messageDTO.setPublishingContent("巡视任务退回，请重新安排");
+                    sendMessage(messageDTO,null,user.getRealname(),patrolMessageDTO);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 // 同时需要更新待执行任务为已办
                 isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_EXECUTE.getType(), patrolTask.getId(), sysUser.getId(), CommonTodoStatus.DONE_STATUS_1);
@@ -795,19 +822,23 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         LoginUser user= sysBaseApi.getUserByName(userName);
         //发送通知
-        MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),userName, "巡视任务退回后" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
-        PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
-        BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
-        //构建消息模板
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("backReason",patrolTask.getBackReason());
-        messageDTO.setData(map);
-        //业务类型，消息类型，消息模板编码，摘要，发布内容
-        patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
-        messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_RETURN);
-        messageDTO.setMsgAbstract("巡视任务退回");
-        messageDTO.setPublishingContent("巡视任务退回，请重新安排");
-        sendMessage(messageDTO,null,user.getUsername(),patrolMessageDTO);
+        try {
+            MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),userName, "巡视任务退回后" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
+            PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
+            BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("backReason",patrolTask.getBackReason());
+            messageDTO.setData(map);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
+            messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_RETURN);
+            messageDTO.setMsgAbstract("巡视任务退回");
+            messageDTO.setPublishingContent("巡视任务退回，请重新安排");
+            sendMessage(messageDTO,null,user.getRealname(),patrolMessageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -1055,49 +1086,53 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             }
             patrolTaskMapper.update(new PatrolTask(), updateWrapper);
             // 提交任务如果需要审核则发送一条审核待办消息
-            if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
-                QueryWrapper<PatrolTaskOrganization> wrapper = new QueryWrapper<>();
-                wrapper.lambda().eq(PatrolTaskOrganization::getTaskCode, patrolTask.getCode())
-                        .eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0);
-                List<PatrolTaskOrganization> organizations = patrolTaskOrganizationMapper.selectList(wrapper);
-                List<String> orgCodes = organizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
-                String userName = sysBaseApi.getUserNameByOrgCodeAndRoleCode(orgCodes, Arrays.asList(RoleConstant.FOREMAN));
+            try {
+                if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
+                    QueryWrapper<PatrolTaskOrganization> wrapper = new QueryWrapper<>();
+                    wrapper.lambda().eq(PatrolTaskOrganization::getTaskCode, patrolTask.getCode())
+                            .eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0);
+                    List<PatrolTaskOrganization> organizations = patrolTaskOrganizationMapper.selectList(wrapper);
+                    List<String> orgCodes = organizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
+                    String userName = sysBaseApi.getUserNameByOrgCodeAndRoleCode(orgCodes, Arrays.asList(RoleConstant.FOREMAN));
 
-                QueryWrapper<PatrolTaskUser> queryWrapper = new QueryWrapper<>();
-                queryWrapper.lambda().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
-                List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(queryWrapper);
-                if (CollectionUtil.isEmpty(taskUsers)) {
-                    return;
+                    QueryWrapper<PatrolTaskUser> queryWrapper = new QueryWrapper<>();
+                    queryWrapper.lambda().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+                    List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(queryWrapper);
+                    if (CollectionUtil.isEmpty(taskUsers)) {
+                        return;
+                    }
+
+                    String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
+                    List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+                    String userNames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+
+                    //构建消息模板
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put("code",patrolTaskDTO.getCode());
+                    map.put("patrolTaskName",patrolTaskDTO.getName());
+                    String station = patrolTaskStationMapper.getStationByTaskCode(patrolTaskDTO.getCode());
+                    map.put("patrolStation",station);
+                    map.put("patrolTaskTime",patrolTaskDTO.getStartTime().toString()+patrolTaskDTO.getEndTime().toString());
+                    map.put("patrolName", userNames);
+
+                    TodoDTO todoDTO = new TodoDTO();
+                    todoDTO.setData(map);
+                    SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
+                    todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+
+                    todoDTO.setProcessDefinitionName("巡视管理");
+                    todoDTO.setTaskName(patrolTask.getName() + "(待审核)");
+                    todoDTO.setBusinessKey(patrolTask.getId());
+                    todoDTO.setBusinessType(TodoBusinessTypeEnum.PATROL_AUDIT.getType());
+                    todoDTO.setCurrentUserName(userName);
+                    todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
+                    todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+                    todoDTO.setUrl(PatrolMessageUrlConstant.AUDIT_URL);
+                    todoDTO.setAppUrl(PatrolMessageUrlConstant.AUDIT_APP_URL);
+                    isTodoBaseAPI.createTodoTask(todoDTO);
                 }
-
-                String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
-                List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
-                String userNames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
-
-                //构建消息模板
-                HashMap<String, Object> map = new HashMap<>();
-                map.put("code",patrolTaskDTO.getCode());
-                map.put("patrolTaskName",patrolTaskDTO.getName());
-                String station = patrolTaskStationMapper.getStationByTaskCode(patrolTaskDTO.getCode());
-                map.put("patrolStation",station);
-                map.put("patrolTaskTime",patrolTaskDTO.getStartTime().toString()+patrolTaskDTO.getEndTime().toString());
-                map.put("patrolName", userNames);
-
-                TodoDTO todoDTO = new TodoDTO();
-                todoDTO.setData(map);
-                SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
-                todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-
-                todoDTO.setProcessDefinitionName("巡视管理");
-                todoDTO.setTaskName(patrolTask.getName() + "(待审核)");
-                todoDTO.setBusinessKey(patrolTask.getId());
-                todoDTO.setBusinessType(TodoBusinessTypeEnum.PATROL_AUDIT.getType());
-                todoDTO.setCurrentUserName(userName);
-                todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
-                todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
-                todoDTO.setUrl(PatrolMessageUrlConstant.AUDIT_URL);
-                todoDTO.setAppUrl(PatrolMessageUrlConstant.AUDIT_APP_URL);
-                isTodoBaseAPI.createTodoTask(todoDTO);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -1680,11 +1715,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
      * 巡视消息发送
      *
      * @param messageDTO
-     * @param usernames
-     * @param username
+     * @param realNames
+     * @param realName
      * @param patrolMessageDTO
      */
-    private void sendMessage(MessageDTO messageDTO, String usernames, String username, PatrolMessageDTO patrolMessageDTO) {
+    private void sendMessage(MessageDTO messageDTO, String realNames, String realName, PatrolMessageDTO patrolMessageDTO) {
         //发送通知
         //构建消息模板
         HashMap<String, Object> map = new HashMap<>();
@@ -1696,10 +1731,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         String station = patrolTaskStationMapper.getStationByTaskCode(patrolMessageDTO.getCode());
         map.put("patrolStation",station);
         map.put("patrolTaskTime",patrolMessageDTO.getStartTime().toString()+patrolMessageDTO.getEndTime().toString());
-        if (StrUtil.isNotEmpty(usernames)) {
-            map.put("patrolName", usernames);
+        if (StrUtil.isNotEmpty(realNames)) {
+            map.put("patrolName", realNames);
         } else {
-            map.put("patrolName",username);
+            map.put("patrolName",realName);
         }
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, patrolMessageDTO.getId());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, patrolMessageDTO.getBusType());
