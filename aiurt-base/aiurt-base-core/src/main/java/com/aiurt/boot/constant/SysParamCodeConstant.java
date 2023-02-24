@@ -88,7 +88,7 @@ public interface SysParamCodeConstant {
     /**
      * 施工
      */
-    String CONSTRUCTION = "construction";
+    String WEEK_PLAN = "week_plan";
     /**
      * 培训
      */
@@ -121,5 +121,9 @@ public interface SysParamCodeConstant {
      * 巡视
      */
     String PATROL_FLOW = "patrol_flow";
+    /**
+     * 固定资产
+     */
+    String FIXED_ASSETS = "fixed_assets";
 
 }

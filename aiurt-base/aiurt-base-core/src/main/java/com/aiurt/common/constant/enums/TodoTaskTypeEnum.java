@@ -23,7 +23,22 @@ public enum TodoTaskTypeEnum {
     /**
      * 故障
      */
-    FAULT("fault","","故障管理流程");
+    FAULT("fault","","故障管理流程"),
+    /**
+     * 应急
+     */
+    EMERGENCY("emergency","","应急管理流程"),
+    /**
+     * 施工
+     */
+    WEEK_PLAN("week_plan","","施工管理流程"),
+    /**
+     * 固定资产
+     */
+    FIXED_ASSETS("fixed_assets","","固定资产流程");
+
+
+
 
 
     /**
