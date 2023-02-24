@@ -144,7 +144,7 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
             queryWrapper.eq(UsageConfig::getCode,code);
         }
         list = usageConfigMapper.selectList(queryWrapper);
-        if (CollectionUtil.isNotEmpty(list) && list.size()>1){
+        if (CollectionUtil.isNotEmpty(list) && list.size()>=1 && StrUtil.isBlank(code)){
             list.forEach(e->{
                 String id = e.getId();
                 AtomicReference<Long> num = new AtomicReference<>(0L);
@@ -174,6 +174,11 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
             List<UsageConfig> children = this.getChildren(code, finalStartTime, finalEndTime);
             list.clear();
             list.addAll(children);
+        }
+
+        if (usageConfig.getParentTag()==0 || StrUtil.isNotBlank(usageConfig.getConfigId())){
+            String exportField = "name,total,newAddNum";
+            mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
         }
 
         //导出文件名称
@@ -206,37 +211,47 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
     }
 
     private List<UsageConfig> getChildren(String code, Date finalStartTime, Date finalEndTime){
-        List<UsageConfig> usageConfigList = new ArrayList<>();
+
+        List<UsageConfig> usageConfigLists = new ArrayList<>();
         List<UsageConfig> usageConfigs = usageConfigMapper.selectByPages(code);
-        usageConfigs.stream().forEach(usageStatDTO -> {
-        // 查询下级
-        List<UsageConfig> childrenList = usageConfigMapper.getChildrenList(usageStatDTO.getId());
+        int i = 1;
+        for (UsageConfig usageStatDTO : usageConfigs) {
+            // 查询下级
+            if(StrUtil.isNotBlank(usageStatDTO.getId())){
+                List<UsageConfig> childrenList = usageConfigMapper.getChildrenList(usageStatDTO.getId());
 
-        if (CollUtil.isNotEmpty(childrenList)) {
-            AtomicReference<Long> num = new AtomicReference<>(0L);
-            AtomicReference<Long> totalNum = new AtomicReference<>(0L);
-            for (UsageConfig usageConfig1 : childrenList) {
-                Long newNumber = this.getNewNumber(usageConfig1.getTableName(), finalStartTime, finalEndTime, usageConfig1.getStaCondition());
-                Long total = this.getTotal(usageConfig1.getTableName(), usageConfig1.getStaCondition());
-                num.set(num.get() + newNumber);
-                totalNum.set(totalNum.get() + total);
-                usageConfig1.setNewAddNum(newNumber);
-                usageConfig1.setTotal(total);
-                usageConfig1.setName(usageConfig1.getName());
-                usageConfigList.add(usageConfig1);
-            }
-            usageStatDTO.setNewAddNum(num.get());
-            usageStatDTO.setTotal(totalNum.get());
-        }else {
-            Long newNumber = this.getNewNumber(usageStatDTO.getTableName(), finalStartTime, finalEndTime, usageStatDTO.getStaCondition());
-            Long total = this.getTotal(usageStatDTO.getTableName(), usageStatDTO.getStaCondition());
-            usageStatDTO.setNewAddNum(newNumber);
-            usageStatDTO.setTotal(total);
+                if (CollUtil.isNotEmpty(childrenList)) {
+                    AtomicReference<Long> num = new AtomicReference<>(0L);
+                    AtomicReference<Long> totalNum = new AtomicReference<>(0L);
+                    List<UsageConfig> usageConfigList = new ArrayList<>();
+                    for (UsageConfig usageConfig1 : childrenList) {
+                        Long newNumber = this.getNewNumber(usageConfig1.getTableName(), finalStartTime, finalEndTime, usageConfig1.getStaCondition());
+                        Long total = this.getTotal(usageConfig1.getTableName(), usageConfig1.getStaCondition());
+                        num.set(num.get() + newNumber);
+                        totalNum.set(totalNum.get() + total);
+                        UsageConfig usageConfig = new UsageConfig();
+                        usageConfig.setNewAddNum(newNumber);
+                        usageConfig.setTotal(total);
+                        usageConfig.setName(usageConfig1.getName());
+                        usageConfigList.add(usageConfig);
+                    }
+                    usageStatDTO.setParentName(usageStatDTO.getName());
+                    usageStatDTO.setName(null);
+                    usageStatDTO.setNewAddNum(num.get());
+                    usageStatDTO.setTotal(totalNum.get());
+                    usageConfigLists.add(usageStatDTO);
+                    usageConfigLists.addAll(usageConfigList);
 
-         }
-        });
-        usageConfigs.addAll(usageConfigList);
-        return  usageConfigs;
+                } else {
+                    Long newNumber = this.getNewNumber(usageStatDTO.getTableName(), finalStartTime, finalEndTime, usageStatDTO.getStaCondition());
+                    Long total = this.getTotal(usageStatDTO.getTableName(), usageStatDTO.getStaCondition());
+                    usageStatDTO.setNewAddNum(newNumber);
+                    usageStatDTO.setTotal(total);
+                    usageConfigLists.add(usageStatDTO);
+                }
+             }
+        }
+        return  usageConfigLists;
     }
 
 

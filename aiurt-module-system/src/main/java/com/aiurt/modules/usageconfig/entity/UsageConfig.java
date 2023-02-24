@@ -45,6 +45,11 @@ public class UsageConfig implements Serializable {
     private String pid;
 	/**是否有子节点（0否1是）*/
 
+    @Excel(name = "父级名称", width = 15)
+    @ApiModelProperty(value = "父级名称")
+    @TableField(exist = false)
+    private String parentName;
+
     @ApiModelProperty(value = "是否有子节点（0否1是）")
     private Integer hasChild;
 	/**名称*/
@@ -112,6 +117,9 @@ public class UsageConfig implements Serializable {
     @ApiModelProperty(value = "基础数据0， 业务数据1")
     private Integer sign;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "没有父子级关系0， 有父子级关系1")
+    private Integer parentTag;
 
     private String code;
 
