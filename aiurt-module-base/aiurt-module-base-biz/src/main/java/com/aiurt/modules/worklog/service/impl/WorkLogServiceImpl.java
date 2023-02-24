@@ -1,5 +1,8 @@
 package com.aiurt.modules.worklog.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.ExportParams;
+import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
@@ -15,6 +18,8 @@ import com.aiurt.common.enums.WorkLogConfirmStatusEnum;
 import com.aiurt.common.enums.WorkLogStatusEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.result.*;
+import com.aiurt.common.util.ArchiveUtils;
+import com.aiurt.common.util.PdfUtil;
 import com.aiurt.common.util.RoleAdditionalUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.common.api.DailyFaultApi;
@@ -29,13 +34,17 @@ import com.aiurt.modules.worklog.mapper.WorkLogMapper;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.WorkLogParam;
 import com.aiurt.modules.worklog.service.IWorkLogService;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.constant.CommonConstant;
@@ -45,11 +54,14 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.*;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -86,6 +98,12 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     private ISysBaseAPI iSysBaseAPI;
     @Autowired
     private ISysParamAPI iSysParamAPI;
+
+    @Resource
+    private ArchiveUtils archiveUtils;
+
+    @Value("${support.path.exportWorkLogPath}")
+    private String exportPath;
 
     private String schedule = "1.对工区及材料库进行卫生清洁，2.对各站设备进行检修" ;
     /**
@@ -990,6 +1008,114 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         map.put("repairCode", inspectionTaskDevice.get("code"));
         map.put("faultCode", faultTask.get("code"));
         return map;
+    }
+
+    @Override
+    public void archWorkLog(WorkLogResult workLogResult, String token, String archiveUserId, String refileFolderId, String realname, String sectId) {
+        try {
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            List<WorkLogResult> list = Arrays.asList(workLogResult);
+            list.add(workLogResult);
+            String title = "工作日志列表数据";
+            ExportParams exportParams = new ExportParams(title, "导出人：" + sysUser.getUsername(), ExcelType.XSSF);
+            Workbook workbook = ExcelExportUtil.exportExcel(exportParams, WorkLogResult.class, list);
+
+            //SXSSFWorkbook archiveRepairTask = ExcelUtils.createArchiveWorkLog(workLogResult, templatePath);
+            //ByteArrayOutputStream os = new ByteArrayOutputStream();
+
+            Date date = new Date();
+            Date submitTime = workLogResult.getSubmitTime();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+            String fileName = workLogResult.getSubmitOrgName() + "工作日志" + sdf.format(submitTime.toInstant());
+            workLogResult.setSubmitOrgName("");
+            String path = exportPath + fileName + ".xlsx";
+            FileOutputStream fos = new FileOutputStream(path);
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            workbook.write(bos);
+
+            //archiveRepairTask.write(os);
+            //fos.write(os.toByteArray());
+            //os.close();
+
+            bos.close();
+            fos.close();
+            workbook.close();
+
+            PdfUtil.excel2pdf(path);
+            //传入档案系统
+            //创建文件夹
+            String foldername = fileName + "_" + date.getTime();
+            String refileFolderIdNew = archiveUtils.createFolder(token, refileFolderId, foldername);
+            //上传文件
+            String fileType = "pdf";
+            File file = new File(exportPath + fileName + "." + fileType);
+            Long size = file.length();
+            InputStream in = new FileInputStream(file);
+            JSONObject res = archiveUtils.upload(token, refileFolderIdNew, fileName + "." + fileType, size, fileType, in);
+            String fileId = res.getString("fileId");
+            Map<String, String> fileInfo = new HashMap<>();
+            fileInfo.put("fileId", fileId);
+            fileInfo.put("operateType", "upload");
+            ArrayList<Object> fileList = new ArrayList<>();
+            fileList.add(fileInfo);
+
+            // 修改为使用实体类
+            Date archDate = new Date();
+            String uuid = UUID.randomUUID().toString();
+            ArchiveUtils.ArchiveInfo archiveInfo = archiveUtils.getArchiveInfo();
+            archiveInfo.setId(uuid);
+            sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            archiveInfo.setArchivedate(sdf.format(archDate));
+            archiveInfo.setArchiver(archiveUserId);
+            archiveInfo.setArchivername(realname);
+            archiveInfo.setArchtypeid();
+            archiveInfo.setCarrier("电子");
+            archiveInfo.setDuration(workLogResult.getSecertduration());
+            archiveInfo.setObjtype("其他");
+            archiveInfo.setEntrystate("0");
+            archiveInfo.setFileList(fileList);
+            archiveInfo.setIfDossiered("0");
+            archiveInfo.setIfInbound("0");
+            archiveInfo.setLastAutoAddNo("其他");
+            archiveInfo.setLittleStatus("0");
+            archiveInfo.setName(fileName);
+            archiveInfo.setSecert(workLogResult.getSecert());
+            //number怎么取值
+            archiveInfo.setRefileFolderId(refileFolderIdNew);
+            archiveInfo.setSecertduration(workLogResult.getSecertduration());
+            archiveInfo.setSectid(sectId);
+            archiveInfo.setTimes(archDate.getTime());
+            sdf = new SimpleDateFormat("yyyy-MM-dd");
+            archiveInfo.setWrittendate(sdf.format(archDate));
+            Map result = archiveUtils.arch(archiveInfo, token);
+
+            /*
+            Map values = new HashMap();
+            values.put("archiver", archiveUserId);
+            values.put("username", realname);
+            values.put("duration", workLogResult.getSecertduration());
+            values.put("secert", workLogResult.getSecert());
+            values.put("secertduration", workLogResult.getSecertduration());
+            values.put("name", fileName);
+            values.put("fileList", fileList);
+            values.put("number", values.get("number"));
+            values.put("refileFolderId", refileFolderIdNew);
+            values.put("sectid", sectId);
+            Map result = archiveUtils.arch(values, token);
+            */
+            Map<String, String> obj = JSON.parseObject((String) result.get("obj"), new TypeReference<HashMap<String, String>>() {
+            });
+
+            //更新归档状态
+            if (result.get("result").toString() == "true" && "新增".equals(obj.get("rs"))) {
+                UpdateWrapper<WorkLog> uwrapper = new UpdateWrapper<>();
+                uwrapper.eq("id", workLogResult.getId()).set("ecm_status", 1);
+                this.update(uwrapper);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
