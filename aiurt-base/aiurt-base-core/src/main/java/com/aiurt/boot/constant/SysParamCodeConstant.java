@@ -126,4 +126,9 @@ public interface SysParamCodeConstant {
      */
     String FIXED_ASSETS = "fixed_assets";
 
+    /**
+     * 工作票
+     */
+    String BD_WORK_TITCK = "bd_work_titck";
+
 }

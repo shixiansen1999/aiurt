@@ -278,6 +278,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 
 		//流程消息处理
 		TodoTaskTypeEnum[] values = TodoTaskTypeEnum.values();
+		//遍历消息类型枚举
 		for (TodoTaskTypeEnum value : values) {
 			String type = value.getType();
 			String module = value.getModule();
@@ -312,6 +313,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.FIXED_ASSETS);
 				sysMessageTypeDTO.setValue(sysParamModel.getValue());
 			}
+			if (SysParamCodeConstant.BD_WORK_TITCK.equals(type)) {
+				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.BD_WORK_TITCK);
+				sysMessageTypeDTO.setValue(sysParamModel.getValue());
+			}
 			sysMessageTypeDTO.setBusType(type);
 			// 统计长度
 			int size = typeList.size();
@@ -335,56 +340,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				list.add(sysMessageTypeDTO);
 			}
 		}
-//		Map<String, List<SysTodoList>> collect1 = sysTodoLists.stream().filter(sysTodoList -> sysTodoList.getTaskType() !=null).collect(Collectors.groupingBy(SysTodoList::getTaskType));
-//		for (Map.Entry<String, List<SysTodoList>> entry : collect1.entrySet()) {
-//			SysMessageTypeDTO sysMessageTypeDTO = new SysMessageTypeDTO();
-//			// 通过key拿名称
-//			String key = entry.getKey();
-//			String module = TodoTaskTypeEnum.getByType(key).getModule();
-//			sysMessageTypeDTO.setTitle(module);
-//			//设置消息类型和头像
-//			if (SysParamCodeConstant.FAULT.equals(key)) {
-//				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.FAULT_FLOW);
-//				sysMessageTypeDTO.setValue(sysParamModel.getValue());
-//			}
-//			if (SysParamCodeConstant.PATROL.equals(key)) {
-//				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.PATROL_FLOW);
-//				sysMessageTypeDTO.setValue(sysParamModel.getValue());
-//			}
-//			if (SysParamCodeConstant.INSPECTION.equals(key)) {
-//				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_FLOW);
-//				sysMessageTypeDTO.setValue(sysParamModel.getValue());
-//			}
-//			if (SysParamCodeConstant.EMERGENCY.equals(key)) {
-//				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.EMERGENCY_FLOW);
-//				sysMessageTypeDTO.setValue(sysParamModel.getValue());
-//			}
-//			sysMessageTypeDTO.setBusType(key);
-//			// 统计长度
-//			List<SysTodoList> value = entry.getValue();
-//			int size = value.size();
-//			sysMessageTypeDTO.setCount(size);
-//			//给内容赋值
-//			value=value.stream().sorted(Comparator.comparing(SysTodoList::getCreateTime).reversed()).collect(Collectors.toList());
-//			String msgContent = value.get(0).getTaskName();
-//			sysMessageTypeDTO.setTitleContent(msgContent);
-//			//获取时间，在对list进行排序
-//			Collections.sort(value,((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime())));
-//			if(CollUtil.isNotEmpty(value)) {
-//				SysTodoList sysTodoList = value.get(0);
-//				sysMessageTypeDTO.setIntervalTime(sysTodoList.getCreateTime());
-//			}
-//			sysMessageTypeDTO.setMessageFlag("2");
-//			if((TodoTaskTypeEnum.BPMN).equals(sysMessageTypeDTO.getBusType())){
-//				list.add(sysMessageTypeDTO);
-//			}
-//		}
-//		//bpmn类型的数据拆分
-//		List<SysTodoList> bpmn = collect1.get("bpmn");
-//		Map<String, List<SysTodoList>> bpmnMap = bpmn.stream().filter(sysTodoList -> sysTodoList.getProcessCode() != null).collect(Collectors.groupingBy(SysTodoList::getTaskType));
-//		for (Map.Entry<String, List<SysTodoList>> bpmnList : bpmnMap.entrySet()) {
-//
-//		}
+
 		//list去重，数量相加
 		Map<String, SysMessageTypeDTO> productMap = new HashMap<String, SysMessageTypeDTO>(32);
 		for (SysMessageTypeDTO product : list)
