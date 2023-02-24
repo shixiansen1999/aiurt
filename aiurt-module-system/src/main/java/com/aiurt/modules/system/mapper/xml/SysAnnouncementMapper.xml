@@ -89,6 +89,7 @@
 		sa.msg_content as msgContent,
 		sa.create_time as intervalTime,
 		sa.update_time as receiveTime,
+		sa.bus_id as businessKey,
 		sa.msg_category as msgCategory,
 		sa.msg_abstract as msgAbstract,
 		sa.publishing_content as publishingContent,
