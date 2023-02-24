@@ -186,6 +186,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		pictureCode.add(SysParamCodeConstant.EMERGENCY);
 		pictureCode.add(SysParamCodeConstant.TRAIN);
 		pictureCode.add(SysParamCodeConstant.WEEK_PLAN);
+		pictureCode.add(SysParamCodeConstant.SITUATION);
 		//业务消息处理
 		Map<String, List<SysAnnouncementSendDTO>> collect = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getBusType() != null).collect(Collectors.groupingBy(SysAnnouncementSendDTO::getBusType));
 		for (Map.Entry<String, List<SysAnnouncementSendDTO>> entry : collect.entrySet()) {
@@ -438,7 +439,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		else if ("2".equals(messageFlag)) {
 			//流程数据
 			List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementMapper.queryAllTodoList(username, todoType, keyWord, busType);
-			//获取未读的条数
+			//获取未办理的条数
 			List<SysMessageInfoDTO> collect = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).collect(Collectors.toList());
 			int number = collect.size();
 			//查找最远的流程消息
