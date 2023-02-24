@@ -2,42 +2,33 @@ package com.aiurt.modules.faultproducereport.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.fault.entity.Fault;
-import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.modules.fault.service.IFaultRepairRecordService;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultproducereport.entity.FaultProduceReport;
 import com.aiurt.modules.faultproducereport.service.IFaultProduceReportService;
-import com.aiurt.modules.faultproducereportline.entity.FaultProduceReportLine;
 import com.aiurt.modules.faultproducereportline.service.IFaultProduceReportLineService;
-import com.aiurt.modules.faultproducereportlinedetail.entity.FaultProduceReportLineDetail;
 import com.aiurt.modules.faultproducereportlinedetail.service.IFaultProduceReportLineDetailService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotBlank;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Description: 生产日报
@@ -122,6 +113,20 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
         return Result.OK(pageList);
     }
 
+
+    /**
+     * 查看
+     *
+     * @param
+     * @return
+     */
+    @AutoLog(value = "生产日报-查看")
+    @ApiOperation(value = "生产日报-查看", notes = "生产日报-查看")
+    @PostMapping(value = "/getDetail")
+    public Result<FaultProduceReport> getDetail() {
+
+        return faultProduceReportService.getDetail();
+    }
     /**
      * 添加
      *
