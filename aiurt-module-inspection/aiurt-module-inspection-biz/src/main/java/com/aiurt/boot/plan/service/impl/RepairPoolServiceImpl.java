@@ -703,8 +703,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 }
                 map.put("repairStation",stringBuilder.toString());
                 map.put("repairTaskTime",repairTask.getStartTime().toString()+repairTask.getEndTime().toString());
-                if (StrUtil.isNotEmpty(usernames)) {
-                    map.put("repairName", usernames);
+                String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+                if (StrUtil.isNotEmpty(realNames)) {
+                    map.put("repairName", realNames);
                 }
                 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTask.getId());
                 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.INSPECTION_ASSIGN.getType());

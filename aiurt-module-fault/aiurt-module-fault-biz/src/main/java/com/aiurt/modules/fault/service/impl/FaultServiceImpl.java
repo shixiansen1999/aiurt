@@ -349,8 +349,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             TodoDTO todoDTO = new TodoDTO();
             todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             todoDTO.setTitle("故障指派");
-            todoDTO.setMsgAbstract("有一个新的故障维修任");
-            todoDTO.setPublishingContent("有一个新的故障维修任，请尽快确认");
+            todoDTO.setMsgAbstract("有一个新的故障维修任务");
+            todoDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
             // 审批通过 新增任务， 该线路或者是工班长，指派任务
             sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
         } else {
