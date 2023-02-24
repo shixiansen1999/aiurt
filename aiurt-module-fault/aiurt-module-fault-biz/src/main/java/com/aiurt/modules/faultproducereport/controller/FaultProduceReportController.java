@@ -99,6 +99,29 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
     }
 
     /**
+     * 生产日报审核分页列表查询
+     * 查询参数只能是专业、统计时间（开始时间、结束时间）
+     *
+     * @param faultProduceReport
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "生产日报-审核分页列表查询")
+    @ApiOperation(value = "生产日报-审核分页列表查询", notes = "生产日报-审核分页列表查询")
+    @GetMapping(value = "/AuditList")
+    public Result<IPage<FaultProduceReport>> queryPageAuditList(FaultProduceReport faultProduceReport,
+                                                           String beginDay, String endDay,
+                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                           HttpServletRequest req) {
+        // 自己写查询
+        Page<FaultProduceReport> pageList = new Page<>(pageNo, pageSize);
+        return faultProduceReportService.queryPageAuditList(pageList, faultProduceReport, beginDay, endDay);
+    }
+
+    /**
      * 查看
      *
      * @param

@@ -40,4 +40,44 @@
         </where>
         order by fpr.statistics_date desc
     </select>
+    
+    <select id="queryPageAuditList"
+            resultType="com.aiurt.modules.faultproducereport.entity.FaultProduceReport">
+
+        SELECT
+        fpr.*,
+        a.ID_ as task_id,
+        a.PROC_INST_ID_ as process_instance_id,
+        a.NAME_ as task_name,
+        arp.KEY_ as model_key
+        FROM
+        act_ru_task a
+        LEFT JOIN act_hi_procinst ahp ON a.PROC_INST_ID_ = ahp.PROC_INST_ID_
+        LEFT JOIN fault_produce_report fpr ON ahp.BUSINESS_KEY_ = fpr.id
+        Left join act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+        where fpr.id is not null and
+        (a.ASSIGNEE_ = #{userName}  OR a.ID_ in (
+        SELECT TASK_ID_
+        FROM act_ru_identitylink ari
+        WHERE
+        ari.TYPE_= 'candidate'
+        AND ari.USER_ID_= #{userName}
+        AND ari.TASK_ID_ = a.ID_
+        AND (a.assignee_ = '' or a.assignee_ is null)
+        ))
+        <if test="majorCodeList != null and majorCodeList.size() != 0">
+            and fpr.major_code in
+            <foreach item="majorCode" collection="majorCodeList" separator="," open="(" close=")">
+                #{majorCode}
+            </foreach>
+        </if>
+        <if test="beginDay != null and beginDay != ''">
+            and UNIX_TIMESTAMP(fpr.statistics_date) >= UNIX_TIMESTAMP(#{beginDay})
+        </if>
+        <if test="endDay != null and beginDay != ''">
+            and UNIX_TIMESTAMP(#{endDay}) >= UNIX_TIMESTAMP(fpr.statistics_date)
+        </if>
+        order by fpr.statistics_date desc
+    </select>
+    
 </mapper>

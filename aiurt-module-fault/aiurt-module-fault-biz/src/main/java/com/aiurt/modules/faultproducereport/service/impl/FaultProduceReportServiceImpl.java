@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Description: 生产日报
@@ -81,6 +82,14 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
         return Result.OK(produceReport);
     }
 
+    /**
+     * 分页列表查询
+     * @param pageList
+     * @param faultProduceReport
+     * @param beginDay
+     * @param endDay
+     * @return
+     */
     @Override
     public Result<IPage<FaultProduceReport>> queryPageList(Page<FaultProduceReport> pageList, FaultProduceReport faultProduceReport, String beginDay, String endDay) {
         // 获取到当前登录的用户的专业(majorCode、可能有多个，使用List存储)
@@ -120,6 +129,63 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
             }
         }
         List<FaultProduceReport> reportList = produceReportMapper.queryPageList(pageList, majorCodeList, beginDay, endDay);
+        pageList.setRecords(reportList);
+        return Result.ok(pageList);
+    }
+
+    /**
+     * 生产日报审核分页列表查询
+     * @param pageList
+     * @param faultProduceReport
+     * @param beginDay
+     * @param endDay
+     * @return
+     */
+    @Override
+    public Result<IPage<FaultProduceReport>> queryPageAuditList(Page<FaultProduceReport> pageList, FaultProduceReport faultProduceReport, String beginDay, String endDay) {
+        // 获取到当前登录的用户的专业(majorCode、可能有多个，使用List存储)
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserMajorModel> CsUserMajorModelList = iSysBaseAPI.getMajorByUserId(user.getId());
+        List<String> majorCodeList = new ArrayList<>();
+        for (CsUserMajorModel csUserMajorModel : CsUserMajorModelList) {
+            majorCodeList.add(csUserMajorModel.getMajorCode());
+        }
+        // 如果查询参数有majorCode，这个majorCode在当前登录的用户的专业内，查询的专业只查询这个majorCode，不然查询的空
+        if (faultProduceReport.getMajorCode() != null) {
+            if (majorCodeList.contains(faultProduceReport.getMajorCode())) {
+                majorCodeList.clear();
+                majorCodeList.add(faultProduceReport.getMajorCode());
+            } else {
+                // 查询参数有majorCode，但是当前登录的用户的专业不包含majorCode，返回空数据
+                return Result.ok(pageList);
+            }
+        }
+
+        // 不传时间参数，默认查询所有
+        // 传有时间参数的话，统计时间大于等于开始时间，小于等于结束时间
+        String[] pattern = new String[]{"yyyy-MM-dd HH:mm:ss"};
+        // 时间是否是指定格式(日期格式：yyyy-MM-dd)， 不是指定格式的话，舍弃
+        if (beginDay != null) {
+            try {
+                DateUtils.parseDate(beginDay + " 00:00:00", pattern);
+            } catch (Exception ignored) {
+                beginDay = null;
+            }
+        }
+        if (endDay != null) {
+            try {
+                DateUtils.parseDate(endDay + " 23:59:59", pattern);
+            } catch (Exception ignored) {
+                endDay = null;
+            }
+        }
+        //获取当前用户
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        if (Objects.isNull(sysUser)) {
+            throw  new AiurtBootException("请重新登录!");
+        }
+        List<FaultProduceReport> reportList = produceReportMapper.queryPageAuditList(pageList, sysUser.getUsername(), majorCodeList, beginDay, endDay);
         pageList.setRecords(reportList);
         return Result.ok(pageList);
     }

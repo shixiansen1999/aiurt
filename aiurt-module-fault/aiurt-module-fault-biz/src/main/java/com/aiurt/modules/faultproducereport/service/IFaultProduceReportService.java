@@ -19,4 +19,7 @@ public interface IFaultProduceReportService extends IService<FaultProduceReport>
 
     Result<IPage<FaultProduceReport>> queryPageList(Page<FaultProduceReport> pageList, FaultProduceReport faultProduceReport,
                                                     String beginDay, String endDay);
+
+    Result<IPage<FaultProduceReport>> queryPageAuditList(Page<FaultProduceReport> pageList, FaultProduceReport faultProduceReport,
+                                                    String beginDay, String endDay);
 }
