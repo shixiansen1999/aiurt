@@ -142,6 +142,10 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             }
         }
         sysTodoList.setCreateTime(new Date());
+        if (sysTodoList.getMarkdown()) {
+            // 系统消息要解析Markdown
+            sysTodoList.setMsgContent(HTMLUtils.parseMarkdown(sysTodoList.getMsgContent()));
+        }
         // 保存
         boolean save = sysTodoListService.save(sysTodoList);
 
