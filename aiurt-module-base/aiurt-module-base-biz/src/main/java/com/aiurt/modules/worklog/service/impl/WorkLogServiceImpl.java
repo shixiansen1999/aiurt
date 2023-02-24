@@ -227,20 +227,24 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 //            userTaskService.add(addParam);
 
         //todo 待处理
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //发送通知
-        MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(), dto.getSucceedUserName(), "您有一条待接班日志" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_8);
-        //构建消息模板
-        HashMap<String, Object> map = new HashMap<>();
-        map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
-        map.put("msgContent", "工作日志上报");
-        messageDTO.setData(map);
-        messageDTO.setTemplateCode(com.aiurt.common.constant.CommonConstant.WORK_LOG_SERVICE_NOTICE);
-        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_MESSAGE);
-        messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-        messageDTO.setMsgAbstract("工作日志上报");
-        messageDTO.setPublishingContent("您有一条待接班日志");
-        iSysBaseAPI.sendTemplateMessage(messageDTO);
+        try {
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            //发送通知
+            MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(), dto.getSucceedUserName(), "您有一条待接班日志" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_8);
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
+            map.put("msgContent", "工作日志上报");
+            messageDTO.setData(map);
+            messageDTO.setTemplateCode(com.aiurt.common.constant.CommonConstant.WORK_LOG_SERVICE_NOTICE);
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+            messageDTO.setMsgAbstract("工作日志上报");
+            messageDTO.setPublishingContent("您有一条待接班日志");
+            iSysBaseAPI.sendTemplateMessage(messageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

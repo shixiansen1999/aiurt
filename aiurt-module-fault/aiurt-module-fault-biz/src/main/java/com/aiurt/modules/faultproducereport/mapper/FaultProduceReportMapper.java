@@ -11,4 +11,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface FaultProduceReportMapper extends BaseMapper<FaultProduceReport> {
 
+    FaultProduceReport getDetail();
 }

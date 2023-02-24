@@ -267,32 +267,36 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         sysBaseApi.sendBusAnnouncement(messageDTO);*/
 
         // 发消息
-        MessageDTO messageDTO = new MessageDTO();
-        LoginUser userById = sysBaseApi.getUserById(fixedAssetsCheck.getCheckId());
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //构建消息模板
-        HashMap<String, Object> map = new HashMap<>();
-        map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.ASSET_CHECKER.getType());
-        map.put("inventoryList",fixedAssetsCheck.getInventoryList());
-        List<String> names = sysBaseApi.queryOrgNamesByOrgCodes(orgCodes);
-        map.put("departName", StrUtil.join(",", names));
-        map.put("checkName", userById.getRealname());
-        map.put("time", DateUtil.format(fixedAssetsCheck.getPlanStartDate(), "yyyy-MM-dd")+"-"+DateUtil.format(fixedAssetsCheck.getPlanEndDate(), "yyyy-MM-dd"));
-        messageDTO.setData(map);
+        try {
+            MessageDTO messageDTO = new MessageDTO();
+            LoginUser userById = sysBaseApi.getUserById(fixedAssetsCheck.getCheckId());
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.ASSET_CHECKER.getType());
+            map.put("inventoryList",fixedAssetsCheck.getInventoryList());
+            List<String> names = sysBaseApi.queryOrgNamesByOrgCodes(orgCodes);
+            map.put("departName", StrUtil.join(",", names));
+            map.put("checkName", userById.getRealname());
+            map.put("time", DateUtil.format(fixedAssetsCheck.getPlanStartDate(), "yyyy-MM-dd")+"-"+DateUtil.format(fixedAssetsCheck.getPlanEndDate(), "yyyy-MM-dd"));
+            messageDTO.setData(map);
 
-        messageDTO.setTitle("固定资产盘点");
-        messageDTO.setStartTime(new Date());
-        messageDTO.setEndTime(new Date());
-        messageDTO.setFromUser(sysUser.getUsername());
-        messageDTO.setToUser(userById.getUsername());
-        messageDTO.setToAll(false);
-        messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
-        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FIXED_ASSETS_MESSAGE);
-        messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-        messageDTO.setMsgAbstract("固定资产盘点");
-        messageDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
-        messageDTO.setCategory(CommonConstant.MSG_CATEGORY_12);
-        sysBaseApi.sendTemplateMessage(messageDTO);
+            messageDTO.setTitle("固定资产盘点");
+            messageDTO.setStartTime(new Date());
+            messageDTO.setEndTime(new Date());
+            messageDTO.setFromUser(sysUser.getUsername());
+            messageDTO.setToUser(userById.getUsername());
+            messageDTO.setToAll(false);
+            messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FIXED_ASSETS_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+            messageDTO.setMsgAbstract("固定资产盘点");
+            messageDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_12);
+            sysBaseApi.sendTemplateMessage(messageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

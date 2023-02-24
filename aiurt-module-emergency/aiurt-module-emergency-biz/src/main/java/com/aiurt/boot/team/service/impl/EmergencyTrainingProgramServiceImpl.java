@@ -241,21 +241,25 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(strings);
             String userNameStr = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
             //发送通知
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(), userNameStr, "应急训练计划"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_7);
-            //构建消息模板
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("trainingProgramCode",program.getTrainingProgramCode() );
-            map.put("trainingProgramName",program.getTrainingProgramName() );
-            map.put("trainingPlanTime",DateUtil.format(program.getTrainingPlanTime(), "yyyy-MM") );
-            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, program.getId());
-            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.EMERGENCY.getType());
-            messageDTO.setData(map);
-            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.EMERGENCY_MANAGEMENT_MESSAGE);
-            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-            messageDTO.setTemplateCode(CommonConstant.EMERGENCY_MANAGEMENT_SERVICE);
-            messageDTO.setMsgAbstract("有新的应急训练计划");
-            messageDTO.setPublishingContent("有新的应急训练计划,请注意训练任务开始时间!");
-            iSysBaseAPI.sendTemplateMessage(messageDTO);
+            try {
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(), userNameStr, "应急训练计划"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_7);
+                //构建消息模板
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("trainingProgramCode",program.getTrainingProgramCode() );
+                map.put("trainingProgramName",program.getTrainingProgramName() );
+                map.put("trainingPlanTime",DateUtil.format(program.getTrainingPlanTime(), "yyyy-MM") );
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, program.getId());
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.EMERGENCY.getType());
+                messageDTO.setData(map);
+                SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.EMERGENCY_MANAGEMENT_MESSAGE);
+                messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+                messageDTO.setTemplateCode(CommonConstant.EMERGENCY_MANAGEMENT_SERVICE);
+                messageDTO.setMsgAbstract("有新的应急训练计划");
+                messageDTO.setPublishingContent("有新的应急训练计划,请注意训练任务开始时间!");
+                iSysBaseAPI.sendTemplateMessage(messageDTO);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
