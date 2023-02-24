@@ -120,23 +120,27 @@ public class PatrolTaskMissingDetection implements Job {
                     if(StrUtil.isEmpty(userName)){
                         return;
                     }
-                    TodoDTO todoDTO = new TodoDTO();
-                    todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
-                    todoDTO.setTitle("巡视任务-漏检");
-                    todoDTO.setMsgAbstract("巡视任务-漏检");
-                    todoDTO.setPublishingContent("巡视任务漏检，请尽快处置");
-                    SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
-                    todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+                    try {
+                        TodoDTO todoDTO = new TodoDTO();
+                        todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
+                        todoDTO.setTitle("巡视任务-漏检");
+                        todoDTO.setMsgAbstract("巡视任务-漏检");
+                        todoDTO.setPublishingContent("巡视任务漏检，请尽快处置");
+                        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
+                        todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
 
-                    todoDTO.setProcessDefinitionName("巡视管理");
-                    todoDTO.setTaskName(l.getName() + "(漏巡待处理)");
-                    todoDTO.setBusinessKey(l.getId());
-                    todoDTO.setBusinessType(TodoBusinessTypeEnum.PATROL_OMIT.getType());
-                    todoDTO.setCurrentUserName(userName);
-                    todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
-                    todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
-                    todoDTO.setTimedTask(true);
-                    isTodoBaseApi.createTodoTask(todoDTO);
+                        todoDTO.setProcessDefinitionName("巡视管理");
+                        todoDTO.setTaskName(l.getName() + "(漏巡待处理)");
+                        todoDTO.setBusinessKey(l.getId());
+                        todoDTO.setBusinessType(TodoBusinessTypeEnum.PATROL_OMIT.getType());
+                        todoDTO.setCurrentUserName(userName);
+                        todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
+                        todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+                        todoDTO.setTimedTask(true);
+                        isTodoBaseApi.createTodoTask(todoDTO);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });

@@ -682,40 +682,44 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
                 String usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
                 //发送通知
-                MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),usernames, "检修任务-指派" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
+                try {
+                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),usernames, "检修任务-指派" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
 
-                //构建消息模板
-                HashMap<String, Object> map = new HashMap<>();
-                if (CollUtil.isNotEmpty(messageDTO.getData())) {
-                    map.putAll(messageDTO.getData());
+                    //构建消息模板
+                    HashMap<String, Object> map = new HashMap<>();
+                    if (CollUtil.isNotEmpty(messageDTO.getData())) {
+                        map.putAll(messageDTO.getData());
+                    }
+                    map.put("code",repairTask.getCode());
+                    map.put("repairTaskName",repairTask.getType()+repairTask.getCode());
+                    List<String> codes = repairTaskMapper.getRepairTaskStation(repairTask.getId());
+                    Map<String, String> stationNameByCode = sysBaseApi.getStationNameByCode(codes);
+                    StringBuilder stringBuilder = new StringBuilder();
+                    for (Map.Entry<String, String> entry : stationNameByCode.entrySet()) {
+                        stringBuilder.append(entry.getValue());
+                        stringBuilder.append(",");
+                    }
+                    if (stringBuilder.length() > 0) {
+                        stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                    }
+                    map.put("repairStation",stringBuilder.toString());
+                    map.put("repairTaskTime",repairTask.getStartTime().toString()+repairTask.getEndTime().toString());
+                    String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+                    if (StrUtil.isNotEmpty(realNames)) {
+                        map.put("repairName", realNames);
+                    }
+                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTask.getId());
+                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.INSPECTION_ASSIGN.getType());
+                    messageDTO.setData(map);
+                    SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.REPAIR_MESSAGE);
+                    messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+                    messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
+                    messageDTO.setMsgAbstract("新的检修任务");
+                    messageDTO.setPublishingContent("接收到新的检修任务，请尽快确认");
+                    sysBaseApi.sendTemplateMessage(messageDTO);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                map.put("code",repairTask.getCode());
-                map.put("repairTaskName",repairTask.getType()+repairTask.getCode());
-                List<String> codes = repairTaskMapper.getRepairTaskStation(repairTask.getId());
-                Map<String, String> stationNameByCode = sysBaseApi.getStationNameByCode(codes);
-                StringBuilder stringBuilder = new StringBuilder();
-                for (Map.Entry<String, String> entry : stationNameByCode.entrySet()) {
-                    stringBuilder.append(entry.getValue());
-                    stringBuilder.append(",");
-                }
-                if (stringBuilder.length() > 0) {
-                    stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-                }
-                map.put("repairStation",stringBuilder.toString());
-                map.put("repairTaskTime",repairTask.getStartTime().toString()+repairTask.getEndTime().toString());
-                String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
-                if (StrUtil.isNotEmpty(realNames)) {
-                    map.put("repairName", realNames);
-                }
-                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTask.getId());
-                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.INSPECTION_ASSIGN.getType());
-                messageDTO.setData(map);
-                SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.REPAIR_MESSAGE);
-                messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-                messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
-                messageDTO.setMsgAbstract("新的检修任务");
-                messageDTO.setPublishingContent("接收到新的检修任务，请尽快确认");
-                sysBaseApi.sendTemplateMessage(messageDTO);
             }
 
 
