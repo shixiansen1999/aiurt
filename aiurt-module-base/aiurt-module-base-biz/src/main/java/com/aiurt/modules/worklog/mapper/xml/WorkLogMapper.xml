@@ -24,7 +24,7 @@
             </foreach>
         </if>
         <if test="param.submitId!= null and param.successorId!= null">
-            AND (wl.submit_id = #{param.submitId}  or wl.succeed_id = #{param.successorId})
+            AND (wl.submit_id = #{param.submitId}   OR find_in_set (#{param.successorId} ,wl.succeed_id))
         </if>
         <if test="param.submitId!= null and param.successorId == null">
             and wl.submit_id = #{param.submitId}
