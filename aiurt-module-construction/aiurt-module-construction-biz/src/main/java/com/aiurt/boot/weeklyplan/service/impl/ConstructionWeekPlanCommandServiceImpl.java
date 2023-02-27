@@ -607,7 +607,7 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                 if (StrUtil.isNotEmpty(planCommand.getCoordinationDepartmentName())) {
                     JSONObject sysDepartModel = iSysBaseApi.getDepartByName(planCommand.getCoordinationDepartmentName());
                     if (ObjectUtil.isNotNull(sysDepartModel)) {
-                        planCommand.setOrgCode(sysDepartModel.getString("orgCode"));
+                        planCommand.setCoordinationDepartmentCode(sysDepartModel.getString("orgCode"));
                     } else {
                         errorStrs.add("第 " + i + " 行：配合部门未找到,请核对后输入，忽略导入。");
                         planCommand.setText("配合部门未找到,请核对后输入，忽略导入");
