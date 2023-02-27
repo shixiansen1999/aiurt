@@ -526,9 +526,10 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                 }
                 if (StrUtil.isNotEmpty(planCommand.getEndAndTime())) {
                     List<String> strings = Arrays.asList(planCommand.getEndAndTime().split("-"));
-                    DateFormat fmt = new SimpleDateFormat("HH:mm");
-                    planCommand.setTaskStartTime(fmt.parse(strings.get(0)));
-                    planCommand.setTaskEndTime(fmt.parse(strings.get(1)));
+                    String replace = strings.get(0).replace("：", ":");
+                    String replace1 = strings.get(1).replace("：", ":");
+                    planCommand.setTaskStartTime(DateUtil.parse(replace,"HH:mm"));
+                    planCommand.setTaskEndTime(DateUtil.parse(replace1,"HH:mm"));
                 } else {
                     errorStrs.add("第 " + i + " 行：作业时间未输入,忽略导入。");
                     planCommand.setText("作业时间未输入,忽略导入");
@@ -641,7 +642,7 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
                     JSONObject stationByName = iSysBaseApi.getStationByName(planCommand.getSecondStationName());
                     if (ObjectUtil.isNotNull(stationByName)) {
                         if (stationByName.getString("lineCode").equals(planCommand.getLineCode())) {
-                            planCommand.setFirstStationCode(stationByName.getString("stationCode"));
+                            planCommand.setSecondStationCode(stationByName.getString("stationCode"));
                         } else {
                             errorStrs.add("第 " + i + " 行：该销点车站未存在" + planCommand.getLineName() + "，忽略导入。");
                             planCommand.setText("该销点车站未存在" + planCommand.getLineName() + "，忽略导入");
