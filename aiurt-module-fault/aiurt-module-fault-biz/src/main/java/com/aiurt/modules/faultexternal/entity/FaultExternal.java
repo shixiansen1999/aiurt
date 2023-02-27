@@ -1,24 +1,21 @@
 package com.aiurt.modules.faultexternal.entity;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.math.BigDecimal;
-import java.util.List;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: 调度系统故障
@@ -39,7 +36,6 @@ public class FaultExternal implements Serializable {
     @ApiModelProperty(value = "id")
     private Integer id;
 	/**主键*/
-	@Excel(name = "主键", width = 15)
     @ApiModelProperty(value = "主键")
     private Integer indocno;
 	/**派修单号*/
@@ -51,9 +47,9 @@ public class FaultExternal implements Serializable {
     @ApiModelProperty(value = "故障编号")
     private String sexecode;
 	/**发生时间*/
-	@Excel(name = "发生时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@Excel(name = "发生时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "发生时间")
     private Date dhappen;
 	/**线路id*/
@@ -105,9 +101,9 @@ public class FaultExternal implements Serializable {
     @ApiModelProperty(value = "缺陷详细描述")
     private String sproandway;
 	/**报修时间*/
-	@Excel(name = "报修时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@Excel(name = "报修时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "报修时间")
     private Date drepairtime;
 	/**紧急程度*/
@@ -171,7 +167,6 @@ public class FaultExternal implements Serializable {
     @ApiModelProperty(value = "报修部门名称")
     private String sreportdept;
 	/**status*/
-	@Excel(name = "status", width = 15)
     @ApiModelProperty(value = "status")
     private Integer status;
 	/**createTime*/
@@ -185,28 +180,26 @@ public class FaultExternal implements Serializable {
     @ApiModelProperty(value = "updateTime")
     private Date updateTime;
 	/**urls*/
-	@Excel(name = "urls", width = 15)
     @ApiModelProperty(value = "urls")
     private String urls;
 
-    @Excel(name = "fault_code", width = 15)
     @TableField(exist = false)
     @ApiModelProperty(value = "faultcode")
     private String faultcode;
 
     @TableField(exist = false)
-    @ApiModelProperty(value = "查询传参-站点id")
+    @ApiModelProperty(value = "非实体属性-查询传参-站点id")
     private String stationId;
 
     @TableField(exist = false)
     private List<String> stationIds;
 
     @TableField(exist = false)
-    @ApiModelProperty(value = "查询传参-开始时间")
+    @ApiModelProperty(value = "非实体属性-查询传参-开始时间")
     private String startTime;
 
     @TableField(exist = false)
-    @ApiModelProperty(value = "查询传参-结束时间")
+    @ApiModelProperty(value = "非实体属性-查询传参-结束时间")
     private String endTime;
 
 }
