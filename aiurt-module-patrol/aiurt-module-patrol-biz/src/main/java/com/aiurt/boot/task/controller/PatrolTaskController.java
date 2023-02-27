@@ -256,7 +256,11 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @PostMapping(value = "/taskAppoint")
     public Result<?> taskAppoint(@RequestBody PatrolAppointInfoDTO patrolAppointInfoDTO) {
         int reslut = patrolTaskService.taskAppoint(patrolAppointInfoDTO);
-        return Result.OK("成功对" + reslut + "条任务进行指派！", null);
+        if (reslut > 0) {
+            return Result.OK("指派完成！", "成功对" + reslut + "条任务进行指派!");
+        } else {
+            return Result.OK("数据异常，指派失败！");
+        }
     }
 
     /**

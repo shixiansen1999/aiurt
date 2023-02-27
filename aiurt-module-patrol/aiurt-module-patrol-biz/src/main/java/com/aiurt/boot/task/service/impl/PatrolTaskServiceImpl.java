@@ -314,7 +314,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     .in(PatrolTask::getCode, map.keySet())
                     .list();
             for (String code : map.keySet()) {
-                PatrolTask patrolTask = list.stream().filter(l -> code.equals(l.getCode())).findFirst().get();
+                PatrolTask patrolTask = list.stream().filter(l -> code.equals(l.getCode())).findFirst().orElse(null);
                 List<PatrolAppointUserDTO> users = map.get(code);
                 String[] userIds = users.stream().map(PatrolAppointUserDTO::getUserId).toArray(String[]::new);
                 List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
@@ -1730,7 +1730,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         map.put("patrolTaskName",patrolMessageDTO.getName());
         String station = patrolTaskStationMapper.getStationByTaskCode(patrolMessageDTO.getCode());
         map.put("patrolStation",station);
-        map.put("patrolTaskTime",DateUtil.format(patrolMessageDTO.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(patrolMessageDTO.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
+        if (ObjectUtil.isNotEmpty(patrolMessageDTO.getStartTime()) && ObjectUtil.isNotEmpty(patrolMessageDTO.getEndTime())) {
+            map.put("patrolTaskTime",DateUtil.format(patrolMessageDTO.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(patrolMessageDTO.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
+        }
         if (StrUtil.isNotEmpty(realNames)) {
             map.put("patrolName", realNames);
         } else {
