@@ -152,14 +152,21 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
     /**
      * 编辑
      *
-     * @param faultProduceReport
+     * @param faultProduceReportDTO
      * @return
      */
     @AutoLog(value = "生产日报-编辑")
     @ApiOperation(value = "生产日报-编辑", notes = "生产日报-编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<String> edit(@RequestBody FaultProduceReport faultProduceReport) {
-        faultProduceReportService.updateById(faultProduceReport);
+    public Result<String> edit(@RequestBody FaultProduceReportDTO faultProduceReportDTO) {
+        Integer state = faultProduceReportDTO.getState();
+        // 只有待提审(status=0)或者已驳回(status=0)状态的生产日报才能编辑
+        if (!state.equals(0)) {
+            return Result.error("只有待提审/已驳回状态的生产日报才能编辑!");
+        }
+        // 编辑只能编辑故障清单的【处理情况及管控措施】字段
+        List<FaultProduceReportLineDetailDTO> reportLineDetailDTOList = faultProduceReportDTO.getReportLineDetailDTOList();
+        iFaultProduceReportLineDetailService.updateListByIds(reportLineDetailDTOList);
         return Result.OK("编辑成功!");
     }
 
