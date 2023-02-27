@@ -187,8 +187,9 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		pictureCode.add(SysParamCodeConstant.TRAIN);
 		pictureCode.add(SysParamCodeConstant.WEEK_PLAN);
 		pictureCode.add(SysParamCodeConstant.SITUATION);
+		pictureCode.add(SysParamCodeConstant.WORKLOG);
 
-		//流程消息处理
+		//业务消息处理
 		SysAnnmentTypeEnum[] typeValues = SysAnnmentTypeEnum.values();
 		//遍历消息类型枚举
 		for (SysAnnmentTypeEnum value : typeValues) {
@@ -386,6 +387,11 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		//业务数据
 		if ("1".equals(messageFlag)) {
 			IPage<SysMessageInfoDTO> businessList = sysAnnouncementMapper.queryAnnouncementInfo(page, userId, keyWord, busType, msgCategory);
+			//系统公告，系统消息详情
+			if(ObjectUtil.isEmpty(busType)){
+				IPage<SysMessageInfoDTO> sysMessageInfoDTOIPage = sysAnnouncementMapper.queryAnnouncementInfoByNull(page, userId, keyWord, busType, msgCategory);
+				return sysMessageInfoDTOIPage;
+			}
 			//接收时间为空，则接收时间等于创建时间
 			List<SysMessageInfoDTO> records = businessList.getRecords();
 			for (SysMessageInfoDTO record : records) {

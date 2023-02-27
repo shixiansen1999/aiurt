@@ -131,4 +131,9 @@ public interface SysParamCodeConstant {
      */
     String BD_WORK_TITCK = "bd_work_titck";
 
+    /**
+     * 工作日志
+     */
+    String WORKLOG = "worklog";
+
 }
