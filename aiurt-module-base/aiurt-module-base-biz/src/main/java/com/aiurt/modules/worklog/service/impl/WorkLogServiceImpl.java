@@ -811,12 +811,12 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         if (dto.getIsEmergencyDisposal().equals(WorkLogConstans.IS)) {
             workLog.setEmergencyDisposalContent(dto.getEmergencyDisposalContent());
         }else {
-            workLog.setEmergencyDisposalContent(null);
+            workLog.setEmergencyDisposalContent("");
         }
         if (dto.getIsDocumentPublicity().equals(WorkLogConstans.IS)) {
             workLog.setDocumentPublicityContent(dto.getDocumentPublicityContent());
         }else {
-            workLog.setDocumentPublicityContent(null);
+            workLog.setDocumentPublicityContent("");
         }
         workLog.setOtherWorkContent(dto.getOtherWorkContent());
         workLog.setNote(dto.getNote());
