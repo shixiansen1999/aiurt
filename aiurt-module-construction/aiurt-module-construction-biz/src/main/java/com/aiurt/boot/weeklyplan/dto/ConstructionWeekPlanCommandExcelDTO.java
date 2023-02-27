@@ -81,7 +81,7 @@ public class ConstructionWeekPlanCommandExcelDTO {
     @ApiModelProperty(value = "供电要求ID")
     private String powerSupplyRequirementId;
     /**供电要求内容*/
-    @Excel(name = "供电要求内容", width = 15)
+    @Excel(name = "供电要求", width = 15)
     @ApiModelProperty(value = "供电要求内容")
     private String powerSupplyRequirementContent;
     /**作业内容*/
