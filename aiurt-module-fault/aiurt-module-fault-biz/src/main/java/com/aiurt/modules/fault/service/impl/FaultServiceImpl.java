@@ -214,7 +214,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             // 抄送
             String remindUserName = fault.getRemindUserName();
-            if (StrUtil.isBlank(remindUserName)) {
+            if (StrUtil.isNotBlank(remindUserName)) {
                 //发送通知
                 MessageDTO messageDTO = new MessageDTO(user.getUsername(),remindUserName, "故障上报" + DateUtil.today(), null);
 
@@ -270,11 +270,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             map.putAll(todoDTO.getData());
         }
         map.put("code",faultMessageDTO.getCode());
-        String faultLevel = sysBaseAPI.translateDict("fault_level", faultMessageDTO.getFaultLevel());
+        String faultLevel = sysBaseAPI.translateDictFromTable("fault_level", "name","code",faultMessageDTO.getFaultLevel());
         map.put("faultLevel",faultLevel);
         String faultUrgency = sysBaseAPI.translateDict("fault_urgency", Convert.toStr(faultMessageDTO.getUrgency()));
         map.put("urgency",faultUrgency);
-        String faultType = sysBaseAPI.translateDict("fault_type", faultMessageDTO.getFaultTypeCode());
+        String faultType = sysBaseAPI.translateDictFromTable("fault_type","name","code", faultMessageDTO.getFaultTypeCode());
         map.put("faultTypeCode",faultType);
         String faultModeCode = sysBaseAPI.translateDict("fault_mode_code", faultMessageDTO.getFaultModeCode());
         map.put("faultModeCode",faultModeCode);
@@ -1413,6 +1413,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 userNameSet.add(fault.getApprovalUserName());
             }
             String remindUserName = fault.getRemindUserName();
+            if (StrUtil.isBlank(remindUserName)) {
+                return;
+            }
             List<String> list = StrUtil.split(remindUserName, ',');
             //
             getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
@@ -1809,11 +1812,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             map.putAll(messageDTO.getData());
         }
         map.put("code",faultMessageDTO.getCode());
-        String faultLevel = sysBaseAPI.translateDict("fault_level", faultMessageDTO.getFaultLevel());
+        String faultLevel = sysBaseAPI.translateDictFromTable("fault_level", "name","code",faultMessageDTO.getFaultLevel());
         map.put("faultLevel",faultLevel);
         String faultUrgency = sysBaseAPI.translateDict("fault_urgency", Convert.toStr(faultMessageDTO.getUrgency()));
         map.put("urgency",faultUrgency);
-        String faultType = sysBaseAPI.translateDict("fault_type", faultMessageDTO.getFaultTypeCode());
+        String faultType = sysBaseAPI.translateDictFromTable("fault_type","name","code", faultMessageDTO.getFaultTypeCode());
         map.put("faultTypeCode",faultType);
         String faultModeCode = sysBaseAPI.translateDict("fault_mode_code", faultMessageDTO.getFaultModeCode());
         map.put("faultModeCode",faultModeCode);

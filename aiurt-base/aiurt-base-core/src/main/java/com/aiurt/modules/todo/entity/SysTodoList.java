@@ -149,6 +149,7 @@ public class SysTodoList implements Serializable {
      *  WX("wechat","微信")
      *  DX("short_message","短信")
      */
+    @TableField(exist = false)
     protected String type;
 
     /**解析模板内容 对应的数据*/
