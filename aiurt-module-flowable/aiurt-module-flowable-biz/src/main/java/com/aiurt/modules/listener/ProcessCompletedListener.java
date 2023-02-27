@@ -1,11 +1,15 @@
 package com.aiurt.modules.listener;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
+import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
+import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
@@ -26,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @Author cjb
@@ -77,7 +83,22 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                     //构建消息模板
                     HashMap<String, Object> map = new HashMap<>();
                     map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, historicProcessInstance.getBusinessKey());
-                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.BPM.getType());
+
+                    List<String> processDefinitionIdList = StrUtil.split(executionEntity.getProcessInstanceId(), ':');
+                    if (CollectionUtil.isNotEmpty(processDefinitionIdList) && processDefinitionIdList.size()>0) {
+                        // 流程标识
+                        String modkelKey = processDefinitionIdList.get(0);
+                        LambdaQueryWrapper<ActCustomModelInfo> wrapper = new LambdaQueryWrapper<>();
+                        wrapper.eq(ActCustomModelInfo::getModelKey, modkelKey).last("limit 1");
+                        IActCustomModelInfoService bean = SpringContextUtils.getBean(IActCustomModelInfoService.class);
+                        ActCustomModelInfo one = bean.getOne(wrapper);
+                        if (Objects.nonNull(one)) {
+                            messageDTO.setProcessCode(one.getModelKey());
+                            String name = StrUtil.contains(one.getName(), "流程") ? one.getName() : one.getName()+"流程";
+                            messageDTO.setProcessName(name);
+                        }
+                    }
+                    //map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.BPM.getType());
                     map.put("msgContent", msgContent);
                     messageDTO.setData(map);
 

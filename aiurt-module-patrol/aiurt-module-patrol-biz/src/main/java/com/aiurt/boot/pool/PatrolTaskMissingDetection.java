@@ -9,6 +9,9 @@ import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskOrganization;
+import com.aiurt.boot.task.entity.PatrolTaskUser;
+import com.aiurt.boot.task.mapper.PatrolTaskStationMapper;
+import com.aiurt.boot.task.mapper.PatrolTaskUserMapper;
 import com.aiurt.boot.task.service.IPatrolTaskOrganizationService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.constant.CommonConstant;
@@ -16,10 +19,12 @@ import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.modules.todo.dto.TodoDTO;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -51,6 +56,10 @@ public class PatrolTaskMissingDetection implements Job {
     private IPatrolTaskOrganizationService patrolTaskOrganizationService;
     @Autowired
     private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private PatrolTaskStationMapper patrolTaskStationMapper;
+    @Autowired
+    private PatrolTaskUserMapper patrolTaskUserMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -128,6 +137,25 @@ public class PatrolTaskMissingDetection implements Job {
                         todoDTO.setPublishingContent("巡视任务漏检，请尽快处置");
                         SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
                         todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+                        //构建消息模板
+                        HashMap<String, Object> map = new HashMap<>();
+                        map.put("code",l.getCode());
+                        map.put("patrolTaskName",l.getName());
+                        String station = patrolTaskStationMapper.getStationByTaskCode(l.getCode());
+                        map.put("patrolStation",station);
+                        if (ObjectUtil.isNotEmpty(l.getStartTime()) && ObjectUtil.isNotEmpty(l.getEndTime())) {
+                            map.put("patrolTaskTime",DateUtil.format(l.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(l.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
+                        }
+                        QueryWrapper<PatrolTaskUser> wrapper = new QueryWrapper<>();
+                        wrapper.lambda().eq(PatrolTaskUser::getTaskCode, l.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+                        List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(wrapper);
+                        if (CollectionUtil.isEmpty(taskUsers)) {
+                            return;
+                        }
+                        String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
+                        List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+                        String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+                        map.put("patrolName", realNames);
 
                         todoDTO.setProcessDefinitionName("巡视管理");
                         todoDTO.setTaskName(l.getName() + "(漏巡待处理)");

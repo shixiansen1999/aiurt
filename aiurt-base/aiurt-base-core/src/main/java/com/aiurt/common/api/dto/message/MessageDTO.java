@@ -103,6 +103,10 @@ public class MessageDTO implements Serializable {
      * 解析模板内容 对应的数据
      */
     protected Map<String, Object> data;
+
+    private String processName;
+
+    private String processCode;
     //update-end---author:taoyan ---date::20220705  for：支持自定义推送类型，邮件、钉钉、企业微信、系统消息-----------
     //-----------------------------------------------------------------------
 
