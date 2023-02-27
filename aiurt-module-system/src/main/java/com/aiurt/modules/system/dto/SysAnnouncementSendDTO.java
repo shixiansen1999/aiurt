@@ -212,4 +212,10 @@ public class SysAnnouncementSendDTO implements Serializable {
     /**阅读状态（0未读，1已读）*/
     @Dict(dicCode = "read_flag")
     private java.lang.String readFlag;
+
+    @ApiModelProperty("流程名称")
+    private String processName;
+
+    @ApiModelProperty("流程编码")
+    private String processCode;
 }
