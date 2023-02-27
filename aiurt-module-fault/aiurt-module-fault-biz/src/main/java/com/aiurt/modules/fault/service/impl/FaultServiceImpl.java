@@ -128,7 +128,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     @Autowired
     private RestTemplate restTemplate;
-
+    @Autowired
     private IFaultExternalService faultExternalService;
 
 
@@ -1413,16 +1413,17 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 userNameSet.add(fault.getApprovalUserName());
             }
             String remindUserName = fault.getRemindUserName();
-            if (StrUtil.isBlank(remindUserName)) {
-                return;
+            if (StrUtil.isNotBlank(remindUserName)) {
+                List<String> list = StrUtil.split(remindUserName, ',');
+                userNameSet.addAll(list);
             }
-            List<String> list = StrUtil.split(remindUserName, ',');
-            //
-            getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
-            userNameSet.addAll(list);
+            String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
+            if (StrUtil.isNotBlank(name)) {
+                name=StrUtil.join(",", userNameSet) + "," + name;
+            }
             //  发送消息
             try {
-                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),  StrUtil.join(",", userNameSet), "维修确认" + DateUtil.today(), null);
+                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), name , "维修确认" + DateUtil.today(), null);
                 FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
                 BeanUtil.copyProperties(fault,faultMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
