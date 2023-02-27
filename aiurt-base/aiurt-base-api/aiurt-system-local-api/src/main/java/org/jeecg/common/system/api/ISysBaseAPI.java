@@ -999,5 +999,13 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     boolean selectTableName(String dbName, String tableName);
+
+    /**
+     * 通过用户名称模糊查询username集合
+     *
+     * @param realName
+     * @return
+     */
+    public List<String> getUserNameByRealName(String realName);
 }
 
