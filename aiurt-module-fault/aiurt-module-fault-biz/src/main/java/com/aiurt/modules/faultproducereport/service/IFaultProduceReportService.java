@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultproducereport.service;
 
+import com.aiurt.modules.faultproducereport.dto.FaultProduceReportDTO;
 import com.aiurt.modules.faultproducereport.entity.FaultProduceReport;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -17,8 +18,8 @@ public interface IFaultProduceReportService extends IService<FaultProduceReport>
 
     Result<FaultProduceReport> getDetail();
 
-    Result<IPage<FaultProduceReport>> queryPageList(Page<FaultProduceReport> pageList, FaultProduceReport faultProduceReport,
-                                                    String beginDay, String endDay);
+    Result<IPage<FaultProduceReportDTO>> queryPageList(Page<FaultProduceReportDTO> pageList, FaultProduceReport faultProduceReport,
+                                                       String beginDay, String endDay);
 
     Result<IPage<FaultProduceReport>> queryPageAuditList(Page<FaultProduceReport> pageList, FaultProduceReport faultProduceReport,
                                                     String beginDay, String endDay);

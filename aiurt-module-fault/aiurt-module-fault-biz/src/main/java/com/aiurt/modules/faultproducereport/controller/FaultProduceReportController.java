@@ -88,13 +88,13 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
     @AutoLog(value = "生产日报-分页列表查询")
     @ApiOperation(value = "生产日报-分页列表查询", notes = "生产日报-分页列表查询")
     @GetMapping(value = "/list")
-    public Result<IPage<FaultProduceReport>> queryPageList(FaultProduceReport faultProduceReport,
+    public Result<IPage<FaultProduceReportDTO>> queryPageList(FaultProduceReport faultProduceReport,
                                                            String beginDay, String endDay,
                                                            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                            @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                            HttpServletRequest req) {
         // 自己写查询
-        Page<FaultProduceReport> pageList = new Page<>(pageNo, pageSize);
+        Page<FaultProduceReportDTO> pageList = new Page<>(pageNo, pageSize);
         return faultProduceReportService.queryPageList(pageList, faultProduceReport, beginDay, endDay);
     }
 
@@ -217,6 +217,18 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
         FaultProduceReportDTO reportDTO = new FaultProduceReportDTO();
         // 将report的数据复制到reportDTO当中
         BeanUtils.copyProperties(report, reportDTO);
+        List<String> csMajorNamesByCodes = iSysBaseAPI.getCsMajorNamesByCodes(Collections.singletonList(report.getMajorCode()));
+        String majorName = null;
+        if (csMajorNamesByCodes.size() > 0) {
+            majorName = csMajorNamesByCodes.get(0);
+        }
+        reportDTO.setMajorName(majorName);  // 设置专业名称
+        // 设置提交人的realname
+        if (report.getSubmitUserName() != null) {
+            LoginUser submitUser = iSysBaseAPI.queryUser(report.getSubmitUserName());
+            reportDTO.setSubmitUserRealname(submitUser.getRealname());
+        }
+
         // 2、再查询出该生产日报的线路故障数据，
         LambdaQueryWrapper<FaultProduceReportLine> reportLineLambdaQueryWrapper = new LambdaQueryWrapper<>();
         reportLineLambdaQueryWrapper.eq(FaultProduceReportLine::getFaultProduceReportId, report.getId());
@@ -230,16 +242,18 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
             reportLineDetailLambdaQueryWrapper.eq(FaultProduceReportLineDetail::getFaultProduceReportLineId, reportLine.getId());
             reportLineDetailLambdaQueryWrapper.orderByDesc(FaultProduceReportLineDetail::getCreateTime);
             List<FaultProduceReportLineDetail> reportLineDetailList = iFaultProduceReportLineDetailService.list(reportLineDetailLambdaQueryWrapper);
+            String finalMajorName = majorName;
             reportLineDetailList.forEach(item->{
                 // 新建一个reportLineDetailDTO
                 FaultProduceReportLineDetailDTO reportLineDetailDTO = new FaultProduceReportLineDetailDTO();
                 // 给reportLineDetailDTO赋值
                 BeanUtils.copyProperties(item, reportLineDetailDTO);
                 reportLineDetailDTO.setMajorCode(report.getMajorCode());
-                List<String> csMajorNamesByCodes = iSysBaseAPI.getCsMajorNamesByCodes(Collections.singletonList(report.getMajorCode()));
-                if (csMajorNamesByCodes.size() > 0) {
-                    reportLineDetailDTO.setMajorName(csMajorNamesByCodes.get(0));
-                }
+//                List<String> csMajorNamesByCodes = iSysBaseAPI.getCsMajorNamesByCodes(Collections.singletonList(report.getMajorCode()));
+//                if (csMajorNamesByCodes.size() > 0) {
+//                    reportLineDetailDTO.setMajorName(csMajorNamesByCodes.get(0));
+//                }
+                reportLineDetailDTO.setMajorName(finalMajorName); // 设置专业名称
                 reportLineDetailDTOList.add(reportLineDetailDTO);
             });
         }

@@ -5,6 +5,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
+import com.aiurt.modules.faultproducereport.dto.FaultProduceReportDTO;
 import com.aiurt.modules.faultproducereport.entity.FaultProduceReport;
 import com.aiurt.modules.faultproducereport.mapper.FaultProduceReportMapper;
 import com.aiurt.modules.faultproducereport.service.IFaultProduceReportService;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -58,8 +60,6 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
                     faultProduceReport.setState(1);
                 case 3:
                     faultProduceReport.setState(0);
-
-
             }
         }
     }
@@ -91,7 +91,7 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
      * @return
      */
     @Override
-    public Result<IPage<FaultProduceReport>> queryPageList(Page<FaultProduceReport> pageList, FaultProduceReport faultProduceReport, String beginDay, String endDay) {
+    public Result<IPage<FaultProduceReportDTO>> queryPageList(Page<FaultProduceReportDTO> pageList, FaultProduceReport faultProduceReport, String beginDay, String endDay) {
         // 获取到当前登录的用户的专业(majorCode、可能有多个，使用List存储)
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserMajorModel> CsUserMajorModelList = iSysBaseAPI.getMajorByUserId(user.getId());
@@ -128,8 +128,21 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
                 endDay = null;
             }
         }
-        List<FaultProduceReport> reportList = produceReportMapper.queryPageList(pageList, majorCodeList, beginDay, endDay);
-        pageList.setRecords(reportList);
+        List<FaultProduceReportDTO> reportDTOList = produceReportMapper.queryPageList(pageList, majorCodeList, beginDay, endDay);
+        for (FaultProduceReportDTO reportDTO: reportDTOList) {
+            List<String> csMajorNamesByCodes = iSysBaseAPI.getCsMajorNamesByCodes(Collections.singletonList(reportDTO.getMajorCode()));
+            String majorName = null;
+            if (csMajorNamesByCodes.size() > 0) {
+                majorName = csMajorNamesByCodes.get(0);
+            }
+            reportDTO.setMajorName(majorName);  // 设置专业名称
+            // 设置提交人的realname
+            if (reportDTO.getSubmitUserName() != null) {
+                LoginUser submitUser = iSysBaseAPI.queryUser(reportDTO.getSubmitUserName());
+                reportDTO.setSubmitUserRealname(submitUser.getRealname());
+            }
+        }
+        pageList.setRecords(reportDTOList);
         return Result.ok(pageList);
     }
 

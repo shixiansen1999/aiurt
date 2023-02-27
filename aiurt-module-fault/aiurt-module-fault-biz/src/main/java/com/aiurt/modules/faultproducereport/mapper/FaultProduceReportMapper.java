@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultproducereport.mapper;
 
+import com.aiurt.modules.faultproducereport.dto.FaultProduceReportDTO;
 import com.aiurt.modules.faultproducereport.entity.FaultProduceReport;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -17,7 +18,7 @@ public interface FaultProduceReportMapper extends BaseMapper<FaultProduceReport>
 
     FaultProduceReport getDetail();
 
-    List<FaultProduceReport> queryPageList(@Param("pageList") Page<FaultProduceReport> pageList, @Param("majorCodeList") List<String> majorCodeList, @Param("beginDay") String beginDay, @Param("endDay") String endDay);
+    List<FaultProduceReportDTO> queryPageList(@Param("pageList") Page<FaultProduceReportDTO> pageList, @Param("majorCodeList") List<String> majorCodeList, @Param("beginDay") String beginDay, @Param("endDay") String endDay);
 
     /**
      * 生产日报审核分页列表查询

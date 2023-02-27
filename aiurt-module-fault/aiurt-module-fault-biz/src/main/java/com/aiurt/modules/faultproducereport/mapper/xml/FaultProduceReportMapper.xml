@@ -14,7 +14,7 @@
         where id = '1628710332829478913'
     </select>
 
-    <select id="queryPageList" resultType="com.aiurt.modules.faultproducereport.entity.FaultProduceReport">
+    <select id="queryPageList" resultType="com.aiurt.modules.faultproducereport.dto.FaultProduceReportDTO">
         select fpr.*,
          ahp.PROC_INST_ID_ as process_instance_id,
         ara.ID_           as task_id,
