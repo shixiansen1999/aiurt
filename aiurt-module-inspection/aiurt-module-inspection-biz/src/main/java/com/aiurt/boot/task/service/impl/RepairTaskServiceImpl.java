@@ -1839,6 +1839,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (ObjectUtil.isEmpty(result)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
+        if(StrUtil.isNotBlank(monadDTO.getNote()) && StrUtil.isNotBlank(result.getDataCheck())){
+            boolean matches = monadDTO.getNote().matches(result.getDataCheck());
+            if (!matches){
+                String regex = sysBaseApi.translateDict("regex", result.getDataCheck());
+                throw new AiurtBootException(regex);
+            }
+        }
         // 什么情况才能填写检修单
         this.check(result.getTaskDeviceRelId());
 
