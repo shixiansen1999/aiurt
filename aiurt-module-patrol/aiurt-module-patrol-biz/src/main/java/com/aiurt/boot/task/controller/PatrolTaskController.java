@@ -620,4 +620,15 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.ok("归档成功");
     }
 
+    @AutoLog(value = "pc手工下放任务-删除", operateType = 4, operateTypeAlias = "删除", module = ModuleType.PATROL, permissionUrl = "/pollingCheck/issue")
+    @ApiOperation(value = "pc手工下放任务-删除", notes = "pc手工下放任务-删除")
+    @GetMapping(value = "/patrolTaskDelete")
+    public Result<?> patrolTaskManualDelete(@RequestParam(name = "id", required = true) String id) {
+        PatrolTask patrolTask = new PatrolTask();
+        patrolTask.setId(id);
+        patrolTask.setDelFlag(1);
+        patrolTaskService.updateById(patrolTask);
+        return Result.ok("删除成功");
+    }
+
 }
