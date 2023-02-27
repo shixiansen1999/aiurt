@@ -792,6 +792,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
+    public List<String> getUserNameByRealName(String realName) {
+        return sysUserRoleMapper.getUserNameByRealName(realName);
+    }
+
+    @Override
     public String getDepartIdsByOrgCode(String orgCode) {
         return departMapper.queryDepartIdByOrgCode(orgCode);
     }

@@ -30,7 +30,7 @@
 
     <select id="getFaultCountInfo" resultType="com.aiurt.modules.fault.dto.FaultCountInfoDTO">
             select r.* from fault r
-                       <where>
+        <where>
                     <if test="faultCountInfoReq.type == 1">
                         AND 1 = 1
                     </if>
@@ -47,8 +47,11 @@
                     <if test="faultCountInfoReq.status != null">
                         and r.status  = #{faultCountInfoReq.status}
                     </if>
-                    <if test="faultCountInfoReq.appointUserName != null">
-                        and r.appoint_user_name  like concat( '%' , #{faultCountInfoReq.appointUserName}, '%')
+                    <if test="userNameByRealName != null and userNameByRealName.size() != 0">
+                        and r.appoint_user_name  in
+                        <foreach collection="userNameByRealName" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
                     </if>
                     <if test="faultCountInfoReq.faultModeCode != null">
                         and r.fault_mode_code  = #{faultCountInfoReq.faultModeCode}
@@ -93,9 +96,15 @@
                 <if test="faultCountInfoReq.status != null">
                     and r.status  = #{faultCountInfoReq.status}
                 </if>
-                <if test="faultCountInfoReq.appointUserName != null">
-                    and r.appoint_user_name  like concat( '%' , #{faultCountInfoReq.appointUserName}, '%')
+                <if test="userNameByRealName != null and userNameByRealName.size() != 0">
+                    and r.appoint_user_name  in
+                    <foreach collection="userNameByRealName" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
                 </if>
+<!--                <if test="faultCountInfoReq.appointUserName != null">-->
+<!--                    and r.appoint_user_name  like concat( '%' , #{faultCountInfoReq.appointUserName}, '%')-->
+<!--                </if>-->
                 <if test="faultCountInfoReq.faultModeCode != null">
                     and r.fault_mode_code  = #{faultCountInfoReq.faultModeCode}
                 </if>

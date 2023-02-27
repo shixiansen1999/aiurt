@@ -228,7 +228,9 @@ public class FaultCountServiceImpl implements IFaultCountService {
 
             stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
         }
-        List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq, ordCode, majors, stationCodeList);
+
+        List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultCountInfoReq.getAppointUserName());
+        List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq, ordCode, majors, stationCodeList,userNameByRealName);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultCountInfoDTO faultDatum : faultData) {
                 //查找设备编码
@@ -288,7 +290,8 @@ public class FaultCountServiceImpl implements IFaultCountService {
 
             stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
         }
-        List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq, ordCode, majors, stationCodeList);
+        List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultCountInfoReq.getAppointUserName());
+        List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq, ordCode, majors, stationCodeList,userNameByRealName);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultCountInfosDTO faultDatum : faultData) {
                 //查找设备编码

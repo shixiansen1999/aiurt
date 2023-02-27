@@ -35,6 +35,14 @@ public interface SysUserRoleMapper extends BaseMapper<SysUserRole> {
 	List<String> getRoleIdByUserName(@Param("username") String username);
 
 	/**
+	 * 通过用户名称模糊查询username集合
+	 * @param realName
+	 * @return
+	 */
+	@Select("select userName from sys_user where realName  like concat( '%' , #{realName}, '%')")
+	List<String> getUserNameByRealName(@Param("realName")String realName);
+
+	/**
 	 * 通过用户账号获取权限Id集合
 	 * @param userId
 	 * @return
