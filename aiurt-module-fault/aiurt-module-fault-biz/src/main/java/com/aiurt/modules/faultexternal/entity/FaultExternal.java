@@ -183,7 +183,6 @@ public class FaultExternal implements Serializable {
     @ApiModelProperty(value = "urls")
     private String urls;
 
-    @TableField(exist = false)
     @ApiModelProperty(value = "faultcode")
     private String faultcode;
 

@@ -1,8 +1,7 @@
 package com.aiurt.modules.worklog.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
-import cn.afterturn.easypoi.excel.entity.ExportParams;
-import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
@@ -1018,11 +1017,24 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     public void archWorkLog(WorkLogResult workLogResult, String token, String archiveUserId, String refileFolderId, String realname, String sectId) {
         try {
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            List<WorkLogResult> list = Arrays.asList(workLogResult);
-            list.add(workLogResult);
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("submitTime", DateUtil.format(workLogResult.getSubmitTime(), "yyyy-MM-dd HH:mm:ss"));
+            map.put("submitName", workLogResult.getSubmitName());
+            map.put("patrolRepairContent", workLogResult.getPatrolRepairContent());
+            map.put("faultContent", workLogResult.getPatrolContent());
+            map.put("workContent", workLogResult.getWorkContent());
+            map.put("content", workLogResult.getContent());
+            map.put("succeedName", workLogResult.getSucceedName());
+            map.put("assortTime", workLogResult.getAssortTime());
+            map.put("assortLocationName", workLogResult.getAssortLocationName());
+            map.put("assortUnit", workLogResult.getAssortUnit());
+            map.put("assortIds", workLogResult.getAssortIds());
+            map.put("assortNum", workLogResult.getAssortNum());
+            map.put("assortContent", workLogResult.getAssortContent());
+            map.put("signature", workLogResult.getSignature());
+
             String title = "工作日志列表数据";
-            ExportParams exportParams = new ExportParams(title, "导出人：" + sysUser.getUsername(), ExcelType.XSSF);
-            Workbook workbook = ExcelExportUtil.exportExcel(exportParams, WorkLogResult.class, list);
+            Workbook workbook = ExcelExportUtil.exportExcel(new TemplateExportParams("templates/workLogTemplate.xlsx"), map);
 
             //SXSSFWorkbook archiveRepairTask = ExcelUtils.createArchiveWorkLog(workLogResult, templatePath);
             //ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -1030,7 +1042,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             Date date = new Date();
             Date submitTime = workLogResult.getSubmitTime();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-            String fileName = workLogResult.getSubmitOrgName() + "工作日志" + sdf.format(submitTime.toInstant());
+            String fileName = workLogResult.getSubmitOrgName() + "工作日志" + sdf.format(submitTime);
             workLogResult.setSubmitOrgName("");
             String path = exportPath + fileName + ".xlsx";
             FileOutputStream fos = new FileOutputStream(path);
@@ -1043,7 +1055,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
             bos.close();
             fos.close();
-            workbook.close();
 
             PdfUtil.excel2pdf(path);
             //传入档案系统

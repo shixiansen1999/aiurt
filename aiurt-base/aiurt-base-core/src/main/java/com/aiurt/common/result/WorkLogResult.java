@@ -73,6 +73,8 @@ public class WorkLogResult {
     @ApiModelProperty(value = "故障报修")
     private  String  faultContent;
 
+    private String patrolRepairContent;
+
     /**工作内容*/
     @Excel(name = "工作内容", width = 15)
     @ApiModelProperty(value = "工作内容")
