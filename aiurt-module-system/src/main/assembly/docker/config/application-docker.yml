@@ -20,8 +20,8 @@ management:
 spring:
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: 4096MB
+      max-request-size: 4096MB
   mail:
     host: smtp.163.com
     username: jeecgos@163.com
