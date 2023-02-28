@@ -9,6 +9,11 @@ import com.aiurt.modules.faultproducereport.dto.FaultProduceReportDTO;
 import com.aiurt.modules.faultproducereport.entity.FaultProduceReport;
 import com.aiurt.modules.faultproducereport.mapper.FaultProduceReportMapper;
 import com.aiurt.modules.faultproducereport.service.IFaultProduceReportService;
+import com.aiurt.modules.faultproducereportlinedetail.service.IFaultProduceReportLineDetailService;
+import com.aiurt.modules.flow.api.FlowBaseApi;
+import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
+import com.aiurt.modules.flow.dto.StartBpmnDTO;
+import com.aiurt.modules.flow.dto.TaskCompleteDTO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -26,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.*;
 
 /**
  * @Description: 生产日报
@@ -41,6 +47,10 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
     private FaultProduceReportMapper produceReportMapper;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
+    @Autowired
+    private FlowBaseApi flowBaseApi;
+    @Autowired
+    private IFaultProduceReportLineDetailService iFaultProduceReportLineDetailService;
 
     @Override
     public void rejectFirstUserTaskEvent(RejectFirstUserTaskEntity entity) {
@@ -49,18 +59,43 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
 
     @Override
     public void updateState(UpdateStateEntity updateStateEntity) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String businessKey = updateStateEntity.getBusinessKey();
         FaultProduceReport faultProduceReport = this.getById(businessKey);
+        Date date = new Date();
+        date = null;
+
         if (ObjectUtil.isEmpty(faultProduceReport)) {
             throw new AiurtBootException("未找到ID为【" + businessKey + "】的数据！");
         } else {
             int states = updateStateEntity.getStates();
             switch (states) {
-                case 2:
+                //提交，更新状态，及提交人更新
+                case 0:
                     faultProduceReport.setState(1);
-                case 3:
+                case 1:
+                    faultProduceReport.setState(1);
+                    faultProduceReport.setSubmitTime(new Date());
+                    faultProduceReport.setSubmitUserName(sysUser.getUsername());
+                    break;
+                case 2:
+
                     faultProduceReport.setState(0);
+                    faultProduceReport.setSubmitTime(null);
+                    faultProduceReport.setSubmitUserName("");
+                    break;
+                case 3:
+                    faultProduceReport.setState(1);
+                case 4:
+                    faultProduceReport.setState(0);
+                    faultProduceReport.setSubmitTime(null);
+                    faultProduceReport.setSubmitUserName("");
+                case 5:
+                    faultProduceReport.setState(2);
+                    break;
+                default:
             }
+            produceReportMapper.updateById(faultProduceReport);
         }
     }
 
@@ -70,18 +105,11 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
      * @param faultProduceReport
      * @return
      */
-    public String startProcess(FaultProduceReport faultProduceReport) {
+    public String startProcess(FaultProduceReportDTO faultProduceReport) {
         String id = faultProduceReport.getId();
-
+        iFaultProduceReportLineDetailService.updateListByIds(faultProduceReport.getReportLineDetailDTOList());
         return id;
     }
-
-    @Override
-    public Result<FaultProduceReport> getDetail() {
-        FaultProduceReport produceReport = produceReportMapper.getDetail();
-        return Result.OK(produceReport);
-    }
-
     /**
      * 分页列表查询
      * @param pageList
@@ -201,6 +229,61 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
         List<FaultProduceReport> reportList = produceReportMapper.queryPageAuditList(pageList, sysUser.getUsername(), majorCodeList, beginDay, endDay);
         pageList.setRecords(reportList);
         return Result.ok(pageList);
+    }
+
+    @Override
+    public void workSubmit(FaultProduceReport faultProduceReport) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        FaultProduceReport produceReport = produceReportMapper.getDetail(faultProduceReport.getId());
+        if(ObjectUtil.isEmpty(produceReport.getProcessInstanceId())){
+            //引用流程开始接口
+            StartBpmnDTO startBpmnDto  = new StartBpmnDTO();
+            startBpmnDto.setModelKey("fault_produce_report");
+            Map<String,Object> map = new HashMap<>(32);
+            map.put("id",faultProduceReport.getId());
+            map.put("majorCode",faultProduceReport.getMajorCode());
+            map.put("statisticsDate",faultProduceReport.getStatisticsDate());
+            map.put("startTime",faultProduceReport.getStartTime());
+            map.put("endTime",faultProduceReport.getEndTime());
+            map.put("submitUserName",faultProduceReport.getSubmitUserName());
+            map.put("submitTime",faultProduceReport.getSubmitTime());
+            map.put("totalNum",faultProduceReport.getTotalNum());
+            map.put("delayNum",faultProduceReport.getDelayNum());
+            map.put("state",faultProduceReport.getState());
+            startBpmnDto.setBusData(map);
+            FlowTaskCompleteCommentDTO flowTaskCompleteCommentDTO = new FlowTaskCompleteCommentDTO();
+            startBpmnDto.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
+            flowTaskCompleteCommentDTO.setApprovalType("save");
+            flowBaseApi.startAndTakeFirst(startBpmnDto);
+            FaultProduceReport detail = produceReportMapper.getDetail(faultProduceReport.getId());
+            TaskCompleteDTO taskCompleteDTO = new TaskCompleteDTO();
+            Map<String,Object> detailMap = new HashMap<>(32);
+            detailMap.put("id",detail.getId());
+            taskCompleteDTO.setTaskId(detail.getTaskId());
+            taskCompleteDTO.setProcessInstanceId(detail.getProcessInstanceId());
+            taskCompleteDTO.setBusData(detailMap);
+            FlowTaskCompleteCommentDTO commentDTO = new FlowTaskCompleteCommentDTO();
+            commentDTO.setApprovalType("agree");
+            taskCompleteDTO.setFlowTaskCompleteDTO(commentDTO);
+            flowBaseApi.completeTask(taskCompleteDTO);
+        }
+        else {
+            TaskCompleteDTO taskCompleteDTO = new TaskCompleteDTO();
+            Map<String,Object> map = new HashMap<>(32);
+            map.put("id",faultProduceReport.getId());
+            map.put("reportLineDetailDTOList",new ArrayList<>());
+            taskCompleteDTO.setTaskId(produceReport.getTaskId());
+            taskCompleteDTO.setProcessInstanceId(produceReport.getProcessInstanceId());
+            taskCompleteDTO.setBusData(map);
+            FlowTaskCompleteCommentDTO flowTaskCompleteCommentDTO = new FlowTaskCompleteCommentDTO();
+            flowTaskCompleteCommentDTO.setApprovalType("agree");
+            taskCompleteDTO.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
+            flowBaseApi.completeTask(taskCompleteDTO);
+        }
+        produceReport.setState(1);
+        produceReport.setSubmitTime(new Date());
+        produceReport.setSubmitUserName(sysUser.getUsername());
+        produceReportMapper.updateById(produceReport);
     }
 
 }

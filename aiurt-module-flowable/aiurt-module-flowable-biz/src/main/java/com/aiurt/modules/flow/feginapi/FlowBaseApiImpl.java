@@ -7,10 +7,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.api.FlowBaseApi;
 import com.aiurt.modules.flow.constants.FlowApprovalType;
-import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
-import com.aiurt.modules.flow.dto.StartBpmnDTO;
-import com.aiurt.modules.flow.dto.StartBpmnImportDTO;
-import com.aiurt.modules.flow.dto.TaskInfoDTO;
+import com.aiurt.modules.flow.dto.*;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
@@ -215,6 +212,11 @@ public class FlowBaseApiImpl implements FlowBaseApi {
         list.stream().forEach(processInstance -> {
             flowApiService.deleteProcessInstance(processInstance.getProcessInstanceId(), delReason);
         });
+    }
+
+    @Override
+    public void completeTask(TaskCompleteDTO taskCompleteDTO) {
+        flowApiService.completeTask(taskCompleteDTO);
     }
 
     private void saveData(Task task, Map<String, Object> busData, String processInstanceId, String taskId, ProcessInstance processInstance) {

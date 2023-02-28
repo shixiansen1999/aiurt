@@ -16,7 +16,7 @@ import java.util.List;
  */
 public interface FaultProduceReportMapper extends BaseMapper<FaultProduceReport> {
 
-    FaultProduceReport getDetail();
+    FaultProduceReport getDetail(@Param("id") String id);
 
     List<FaultProduceReportDTO> queryPageList(@Param("pageList") Page<FaultProduceReportDTO> pageList, @Param("majorCodeList") List<String> majorCodeList, @Param("beginDay") String beginDay, @Param("endDay") String endDay);
 

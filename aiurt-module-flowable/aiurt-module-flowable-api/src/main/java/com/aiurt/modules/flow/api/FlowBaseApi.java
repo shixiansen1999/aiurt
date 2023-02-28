@@ -2,6 +2,7 @@ package com.aiurt.modules.flow.api;
 
 import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.dto.StartBpmnImportDTO;
+import com.aiurt.modules.flow.dto.TaskCompleteDTO;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 
 /**
@@ -42,4 +43,10 @@ public interface FlowBaseApi {
      * @param delReason
      */
     void delProcess(String userName, String businessKey, String delReason);
+
+    /**
+     * 提交任务
+     * @param taskCompleteDTO
+     */
+    void completeTask(TaskCompleteDTO taskCompleteDTO);
 }

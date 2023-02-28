@@ -11,7 +11,7 @@
                      Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fpr.id
                      LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
                      LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
-        where id = '1628710332829478913'
+        where id = #{id}
     </select>
 
     <select id="queryPageList" resultType="com.aiurt.modules.faultproducereport.dto.FaultProduceReportDTO">
