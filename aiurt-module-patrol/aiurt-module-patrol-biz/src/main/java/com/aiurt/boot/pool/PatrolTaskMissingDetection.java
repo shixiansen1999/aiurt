@@ -149,14 +149,13 @@ public class PatrolTaskMissingDetection implements Job {
                         QueryWrapper<PatrolTaskUser> wrapper = new QueryWrapper<>();
                         wrapper.lambda().eq(PatrolTaskUser::getTaskCode, l.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
                         List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(wrapper);
-                        if (CollectionUtil.isEmpty(taskUsers)) {
-                            return;
-                        }
-                        String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
-                        List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
-                        String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
-                        map.put("patrolName", realNames);
+                        if (CollectionUtil.isNotEmpty(taskUsers)) {
+                            String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
+                            List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+                            String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+                            map.put("patrolName", realNames);
 
+                        }
                         todoDTO.setProcessDefinitionName("巡视管理");
                         todoDTO.setTaskName(l.getName() + "(漏巡待处理)");
                         todoDTO.setBusinessKey(l.getId());

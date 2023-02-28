@@ -32,6 +32,12 @@ public class PatrolMessageDTO {
     @ApiModelProperty(value = "任务名称")
     private java.lang.String name;
 
+    @Excel(name = "巡检的日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "巡检的日期(yyyy-MM-dd)")
+    private java.util.Date patrolDate;
+
     /**
      * 巡检开始时间(HH:mm)
      */

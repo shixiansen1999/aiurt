@@ -394,13 +394,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         QueryWrapper<PatrolTaskUser> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(queryWrapper);
-        if (CollectionUtil.isEmpty(taskUsers)) {
-            return;
-        }
-
-        String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
-        List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
-        String userNames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
 
         //构建消息模板
         HashMap<String, Object> map = new HashMap<>();
@@ -409,7 +402,13 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         String station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
         map.put("patrolStation",station);
         map.put("patrolTaskTime",DateUtil.format(patrolTask.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(patrolTask.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
-        map.put("patrolName", userNames);
+
+        if (CollectionUtil.isNotEmpty(taskUsers)) {
+            String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
+            List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+            String userNames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+            map.put("patrolName", userNames);
+        }
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
@@ -794,7 +793,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
                     //构建消息模板
                     HashMap<String, Object> map = new HashMap<>();
-                    map.put("backReason",patrolTask.getBackReason());
+                    map.put("backReason",patrolTaskDTO.getBackReason());
                     messageDTO.setData(map);
                     //业务类型，消息类型，消息模板编码，摘要，发布内容
                     patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
@@ -1731,7 +1730,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         String station = patrolTaskStationMapper.getStationByTaskCode(patrolMessageDTO.getCode());
         map.put("patrolStation",station);
         if (ObjectUtil.isNotEmpty(patrolMessageDTO.getStartTime()) && ObjectUtil.isNotEmpty(patrolMessageDTO.getEndTime())) {
-            map.put("patrolTaskTime",DateUtil.format(patrolMessageDTO.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(patrolMessageDTO.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
+            String patrolDate = DateUtil.format(patrolMessageDTO.getPatrolDate(), "yyyy-MM-dd HH:mm:ss");
+            map.put("patrolTaskTime",patrolDate+" "+DateUtil.format(patrolMessageDTO.getStartTime(),"HH:mm")+"-"+patrolDate+" "+DateUtil.format(patrolMessageDTO.getEndTime(),"HH:mm"));
         }
         if (StrUtil.isNotEmpty(realNames)) {
             map.put("patrolName", realNames);
