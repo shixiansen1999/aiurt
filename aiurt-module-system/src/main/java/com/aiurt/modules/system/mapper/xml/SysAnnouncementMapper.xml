@@ -94,6 +94,8 @@
 		sa.msg_abstract as msgAbstract,
 		sa.publishing_content as publishingContent,
 		sa.bus_type as taskType,
+		sa.process_name as processName,
+		sa.process_code as processCode,
 		sas.read_flag as readFlag
 		from sys_announcement sa
 		left join sys_announcement_send sas on sas.annt_id = sa.id
@@ -103,7 +105,8 @@
 				and sas.user_id = #{userId}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and sa.bus_type LIKE concat('%',#{busType},'%')
+				and (sa.bus_type LIKE concat('%',#{busType},'%')
+				or sa.process_code like concat('%',#{busType},'%'))
 			</if>
 			<if test="busType ==null or busType ==''">
 				and isNull(sa.bus_type)
