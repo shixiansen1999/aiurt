@@ -14,6 +14,7 @@ import com.aiurt.modules.flow.api.FlowBaseApi;
 import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
 import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.dto.TaskCompleteDTO;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -27,10 +28,6 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 import java.util.*;
 
 /**
@@ -62,9 +59,8 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String businessKey = updateStateEntity.getBusinessKey();
         FaultProduceReport faultProduceReport = this.getById(businessKey);
-        Date date = new Date();
-        date = null;
-
+        LambdaUpdateWrapper<FaultProduceReport> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(FaultProduceReport::getId,faultProduceReport.getId());
         if (ObjectUtil.isEmpty(faultProduceReport)) {
             throw new AiurtBootException("未找到ID为【" + businessKey + "】的数据！");
         } else {
@@ -82,6 +78,7 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
 
                     faultProduceReport.setState(0);
                     faultProduceReport.setSubmitTime(null);
+                    updateWrapper.set(FaultProduceReport::getSubmitTime,null);
                     faultProduceReport.setSubmitUserName("");
                     break;
                 case 3:
@@ -89,13 +86,14 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
                 case 4:
                     faultProduceReport.setState(0);
                     faultProduceReport.setSubmitTime(null);
+                    updateWrapper.set(FaultProduceReport::getSubmitTime,null);
                     faultProduceReport.setSubmitUserName("");
                 case 5:
                     faultProduceReport.setState(2);
                     break;
                 default:
             }
-            produceReportMapper.updateById(faultProduceReport);
+            produceReportMapper.update(faultProduceReport,updateWrapper);
         }
     }
 
