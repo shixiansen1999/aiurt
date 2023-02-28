@@ -187,6 +187,15 @@ public class FaultExternal implements Serializable {
     private String faultcode;
 
     @TableField(exist = false)
+    private List<String> urlList;
+
+    @TableField(exist = false)
+    private String lineCode;
+
+    @TableField(exist = false)
+    private String stationCode;
+
+    @TableField(exist = false)
     @ApiModelProperty(value = "非实体属性-查询传参-站点id")
     private String stationId;
 

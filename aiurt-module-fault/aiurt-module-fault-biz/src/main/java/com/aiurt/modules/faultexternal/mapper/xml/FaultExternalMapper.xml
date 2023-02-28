@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.faultexternal.mapper.FaultExternalMapper">
     <select id="selectFaultExternalPage" resultType="com.aiurt.modules.faultexternal.entity.FaultExternal">
-        SELECT *
+        SELECT f.*,s.line_code,s.station_code
         FROM fault_external f
             LEFT JOIN cs_station s ON (f.spos = s.station_name and f.sline = s.line_name)
         <where>
