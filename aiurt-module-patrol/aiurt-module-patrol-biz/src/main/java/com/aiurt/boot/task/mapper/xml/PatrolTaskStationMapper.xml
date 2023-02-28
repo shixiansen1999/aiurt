@@ -55,7 +55,7 @@
 
     <select id="getStationByTaskCode" resultType="java.lang.String">
         SELECT
-        CONCAT(cs.station_name) stationName
+        cs.station_name
         FROM
         patrol_task_station pts
         JOIN cs_station cs ON pts.station_code = cs.station_code

@@ -1,5 +1,6 @@
 package com.aiurt.boot.pool;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -141,8 +142,8 @@ public class PatrolTaskMissingDetection implements Job {
                         HashMap<String, Object> map = new HashMap<>();
                         map.put("code",l.getCode());
                         map.put("patrolTaskName",l.getName());
-                        String station = patrolTaskStationMapper.getStationByTaskCode(l.getCode());
-                        map.put("patrolStation",station);
+                        List<String>  station = patrolTaskStationMapper.getStationByTaskCode(l.getCode());
+                        map.put("patrolStation", CollUtil.join(station,","));
                         if (ObjectUtil.isNotEmpty(l.getStartTime()) && ObjectUtil.isNotEmpty(l.getEndTime())) {
                             String date = DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd");
                             map.put("patrolTaskTime",date+" "+DateUtil.format(l.getStartTime(),"HH:mm")+"-"+date+" "+DateUtil.format(l.getEndTime(),"HH:mm"));

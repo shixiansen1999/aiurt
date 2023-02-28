@@ -399,8 +399,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         HashMap<String, Object> map = new HashMap<>();
         map.put("code",patrolTask.getCode());
         map.put("patrolTaskName",patrolTask.getName());
-        String station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
-        map.put("patrolStation",station);
+        List<String> station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
+        map.put("patrolStation",CollUtil.join(station,","));
         String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
         map.put("patrolTaskTime",patrolDate+" "+DateUtil.format(patrolTask.getStartTime(),"HH:mm")+"-"+patrolDate+" "+DateUtil.format(patrolTask.getEndTime(),"HH:mm"));
         if (CollectionUtil.isNotEmpty(taskUsers)) {
@@ -489,7 +489,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_AUDIT.getType(), id, loginUser.getUsername(), CommonTodoStatus.DONE_STATUS_1);
         //不通过传0
         if (PatrolConstant.AUDIT_NOPASS.equals(status)) {
-            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_BACK).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
+            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_BACK)
+                    .set(PatrolTask::getRejectReason, backReason)
+                    .set(PatrolTask::getRemark, remark).eq(PatrolTask::getId, id);
             this.update(queryWrapper);
             // 审核不通过则给任务的巡视人发送消息
             this.sendAuditNoPassMessage(id, loginUser);
@@ -1109,8 +1111,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("code",patrolTaskDTO.getCode());
                     map.put("patrolTaskName",patrolTaskDTO.getName());
-                    String station = patrolTaskStationMapper.getStationByTaskCode(patrolTaskDTO.getCode());
-                    map.put("patrolStation",station);
+                    List<String>  station = patrolTaskStationMapper.getStationByTaskCode(patrolTaskDTO.getCode());
+                    map.put("patrolStation",CollUtil.join(station,","));
                     String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
                     map.put("patrolTaskTime",patrolDate+" "+DateUtil.format(patrolTask.getStartTime(),"HH:mm")+"-"+patrolDate+" "+DateUtil.format(patrolTask.getEndTime(),"HH:mm"));
                     map.put("patrolName", userNames);
@@ -1728,8 +1730,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         map.put("code",patrolMessageDTO.getCode());
         map.put("patrolTaskName",patrolMessageDTO.getName());
-        String station = patrolTaskStationMapper.getStationByTaskCode(patrolMessageDTO.getCode());
-        map.put("patrolStation",station);
+        List<String> station = patrolTaskStationMapper.getStationByTaskCode(patrolMessageDTO.getCode());
+        map.put("patrolStation",CollUtil.join(station,","));
         if (ObjectUtil.isNotEmpty(patrolMessageDTO.getStartTime()) && ObjectUtil.isNotEmpty(patrolMessageDTO.getEndTime())) {
             String patrolDate = DateUtil.format(patrolMessageDTO.getPatrolDate(), "yyyy-MM-dd");
             map.put("patrolTaskTime",patrolDate+" "+DateUtil.format(patrolMessageDTO.getStartTime(),"HH:mm")+"-"+patrolDate+" "+DateUtil.format(patrolMessageDTO.getEndTime(),"HH:mm"));

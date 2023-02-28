@@ -67,5 +67,10 @@ public interface PatrolTaskStationMapper extends BaseMapper<PatrolTaskStation> {
      */
     List<String> getTaskCodeByUserStation();
 
-    String getStationByTaskCode(String code);
+    /**
+     * 根据任务获取巡视位置
+     * @param code
+     * @return
+     */
+    List<String> getStationByTaskCode(String code);
 }
