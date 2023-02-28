@@ -401,8 +401,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         map.put("patrolTaskName",patrolTask.getName());
         String station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
         map.put("patrolStation",station);
-        map.put("patrolTaskTime",DateUtil.format(patrolTask.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(patrolTask.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
-
+        String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
+        map.put("patrolTaskTime",patrolDate+" "+DateUtil.format(patrolTask.getStartTime(),"HH:mm")+"-"+patrolDate+" "+DateUtil.format(patrolTask.getEndTime(),"HH:mm"));
         if (CollectionUtil.isNotEmpty(taskUsers)) {
             String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
             List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
@@ -1111,7 +1111,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     map.put("patrolTaskName",patrolTaskDTO.getName());
                     String station = patrolTaskStationMapper.getStationByTaskCode(patrolTaskDTO.getCode());
                     map.put("patrolStation",station);
-                    map.put("patrolTaskTime",DateUtil.format(patrolTaskDTO.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(patrolTaskDTO.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
+                    String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
+                    map.put("patrolTaskTime",patrolDate+" "+DateUtil.format(patrolTask.getStartTime(),"HH:mm")+"-"+patrolDate+" "+DateUtil.format(patrolTask.getEndTime(),"HH:mm"));
                     map.put("patrolName", userNames);
 
                     TodoDTO todoDTO = new TodoDTO();
@@ -1730,7 +1731,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         String station = patrolTaskStationMapper.getStationByTaskCode(patrolMessageDTO.getCode());
         map.put("patrolStation",station);
         if (ObjectUtil.isNotEmpty(patrolMessageDTO.getStartTime()) && ObjectUtil.isNotEmpty(patrolMessageDTO.getEndTime())) {
-            String patrolDate = DateUtil.format(patrolMessageDTO.getPatrolDate(), "yyyy-MM-dd HH:mm:ss");
+            String patrolDate = DateUtil.format(patrolMessageDTO.getPatrolDate(), "yyyy-MM-dd");
             map.put("patrolTaskTime",patrolDate+" "+DateUtil.format(patrolMessageDTO.getStartTime(),"HH:mm")+"-"+patrolDate+" "+DateUtil.format(patrolMessageDTO.getEndTime(),"HH:mm"));
         }
         if (StrUtil.isNotEmpty(realNames)) {
