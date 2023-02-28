@@ -187,6 +187,8 @@
 		stl.process_instance_id as processInstanceId,
 		stl.url as url,
 		stl.app_url as appUrl,
+		stl.process_name as processName,
+		stl.process_code as processCode,
 		stl.todo_type as todoType
 		from sys_todo_list stl,(SELECT @i:=0) b
 		<where>

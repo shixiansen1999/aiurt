@@ -401,8 +401,17 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		else if ("2".equals(messageFlag)) {
 			//流程数据
 			IPage<SysMessageInfoDTO> flowList = sysAnnouncementMapper.queryTodoListInfo(page, username, todoType, keyWord, busType);
-			//接收时间为空，则接收时间等于创建时间
 			List<SysMessageInfoDTO> records = flowList.getRecords();
+			TodoTaskTypeEnum[] values = TodoTaskTypeEnum.values();
+				for (TodoTaskTypeEnum value : values) {
+					String type = value.getType();
+					List<SysMessageInfoDTO> collect = records.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getProcessCode() != null && TodoTaskTypeEnum.BPMN.getType().equals(sysMessageInfoDTO.getTaskType()) && sysMessageInfoDTO.getProcessCode().contains(type)).collect(Collectors.toList());
+					for (SysMessageInfoDTO sysMessageInfoDTO : collect) {
+						sysMessageInfoDTO.setTaskType(type);
+					}
+				}
+
+			//接收时间为空，则接收时间等于创建时间
 			for (SysMessageInfoDTO record : records) {
 				if (ObjectUtil.isEmpty(record.getReceiveTime())) {
 					record.setReceiveTime(record.getIntervalTime());

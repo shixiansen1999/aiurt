@@ -84,6 +84,12 @@ public class SysMessageInfoDTO extends DictEntity {
     @ApiModelProperty("任务类型")
     private String taskType;
 
+    @ApiModelProperty("流程名称")
+    private String processName;
+
+    @ApiModelProperty("流程编码")
+    private String processCode;
+
 
 
 
