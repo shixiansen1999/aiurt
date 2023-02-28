@@ -463,14 +463,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementMapper.queryAllTodoList(username, todoType, keyWord, busType);
 			//获取未办理的条数
 			List<SysMessageInfoDTO> collect = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).collect(Collectors.toList());
-			int number =0;
-			if(ObjectUtil.isEmpty(todoType)){
-				//全部条数
-				number = sysMessageInfoDTOS.size();
-			}else{
-				//未办理的条数
-				number = collect.size();
-			}
+			int number =collect.size();
 			//查找最远的流程消息
 			Optional<SysMessageInfoDTO> min = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
 			sysAnnouncementPageDTO = queryPageNumberInfo(min,sysAnnouncementPageDTO,number,page);
