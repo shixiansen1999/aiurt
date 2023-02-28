@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultproducereport.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
@@ -88,6 +89,7 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
                     faultProduceReport.setSubmitTime(null);
                     updateWrapper.set(FaultProduceReport::getSubmitTime,null);
                     faultProduceReport.setSubmitUserName("");
+                    break;
                 case 5:
                     faultProduceReport.setState(2);
                     break;
@@ -105,7 +107,9 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
      */
     public String startProcess(FaultProduceReportDTO faultProduceReport) {
         String id = faultProduceReport.getId();
-        iFaultProduceReportLineDetailService.updateListByIds(faultProduceReport.getReportLineDetailDTOList());
+        if(CollUtil.isNotEmpty(faultProduceReport.getReportLineDetailDTOList())){
+            iFaultProduceReportLineDetailService.updateListByIds(faultProduceReport.getReportLineDetailDTOList());
+        }
         return id;
     }
     /**
