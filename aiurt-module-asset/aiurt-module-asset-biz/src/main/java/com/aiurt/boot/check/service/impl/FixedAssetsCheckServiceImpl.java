@@ -273,6 +273,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             //构建消息模板
             HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, fixedAssetsCheck.getId());
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.ASSET_CHECKER.getType());
             map.put("inventoryList",fixedAssetsCheck.getInventoryList());
             List<String> names = sysBaseApi.queryOrgNamesByOrgCodes(orgCodes);

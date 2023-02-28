@@ -232,6 +232,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(), dto.getSucceedUserName(), "您有一条待接班日志" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_8);
             //构建消息模板
             HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, dto.getId());
             map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
             map.put("msgContent", "工作日志上报");
             messageDTO.setData(map);
