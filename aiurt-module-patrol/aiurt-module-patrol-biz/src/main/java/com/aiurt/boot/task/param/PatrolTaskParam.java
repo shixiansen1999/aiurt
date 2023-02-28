@@ -148,6 +148,4 @@ public class PatrolTaskParam extends PatrolTask {
     @ApiModelProperty(value = "任务同行人")
     private String accompanyName;
 
-    @ApiModelProperty(value = "作废状态：0未作废、1已作废")
-    private Integer discardStatus;
 }
