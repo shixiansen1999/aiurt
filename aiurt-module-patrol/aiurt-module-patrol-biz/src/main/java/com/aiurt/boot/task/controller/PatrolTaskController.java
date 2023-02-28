@@ -2,7 +2,9 @@ package com.aiurt.boot.task.controller;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
@@ -34,10 +36,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -330,13 +330,17 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "巡检漏检任务处理-处置", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/pollingCheck/dispose")
     @ApiOperation(value = "巡检漏检任务处理-处置", notes = "巡检漏检任务处理-处置")
     @PostMapping(value = "/dispose")
-    public Result<String> taskDispose(@ApiParam(name = "id", value = "任务记录ID") @RequestParam("id") String id,
-                                      @ApiParam(name = "omitExplain", value = "漏检说明") @RequestParam("omitExplain") String omitExplain) {
-        PatrolTask task = patrolTaskService.getById(id);
-        if (ObjectUtil.isEmpty(task)) {
+    public Result<String> taskDispose(@ApiParam(name = "id", value = "任务记录ID") @RequestParam(value = "id") String id,
+                                      @ApiParam(name = "omitExplain", value = "漏检说明") @RequestParam(value = "omitExplain",required = false) String omitExplain) {
+        List<String> stringList = new ArrayList<>();
+        if (StrUtil.isNotBlank(id)){
+            stringList = Arrays.asList(id.split(","));
+        }
+        List<PatrolTask> patrolTasks = patrolTaskService.listByIds(stringList);
+        if (CollectionUtil.isEmpty(patrolTasks)) {
             return Result.error("记录不存在！");
         }
-        int record = patrolTaskService.taskDispose(task, omitExplain);
+        int record = patrolTaskService.taskDispose(patrolTasks, omitExplain);
         return Result.OK("成功处置" + record + "条漏检任务记录！", null);
     }
 

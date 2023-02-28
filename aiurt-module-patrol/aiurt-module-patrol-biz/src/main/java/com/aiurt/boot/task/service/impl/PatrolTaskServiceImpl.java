@@ -1238,26 +1238,31 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int taskDispose(PatrolTask task, String omitExplain) {
+    public int taskDispose(List<PatrolTask> patrolTasks, String omitExplain) {
         // 获取当前登录用户
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("检测为未登录状态，请登录系统后操作！");
         }
-        task.setDisposeId(loginUser.getId());
-        // 漏检说明
-        task.setOmitExplain(omitExplain);
-        task.setDisposeTime(new Date());
-        // 更新为已处置状态
-        task.setDisposeStatus(PatrolConstant.TASK_DISPOSE);
-        // 更新漏巡任务待办消息
-        isTodoBaseAPI.updateTodoTaskState(
-                TodoBusinessTypeEnum.PATROL_OMIT.getType(),
-                task.getId(),
-                loginUser.getUsername(),
-                CommonTodoStatus.DONE_STATUS_1
-        );
-        return patrolTaskMapper.updateById(task);
+        for (PatrolTask task : patrolTasks) {
+            task.setDisposeId(loginUser.getId());
+            // 漏检说明
+            task.setOmitExplain(omitExplain);
+            task.setDisposeTime(new Date());
+            // 更新为已处置状态
+            task.setDisposeStatus(PatrolConstant.TASK_DISPOSE);
+
+            // 更新漏巡任务待办消息
+            isTodoBaseAPI.updateTodoTaskState(
+                    TodoBusinessTypeEnum.PATROL_OMIT.getType(),
+                    task.getId(),
+                    loginUser.getUsername(),
+                    CommonTodoStatus.DONE_STATUS_1
+            );
+
+            patrolTaskMapper.updateById(task);
+        }
+        return patrolTasks.size();
     }
 
     @Override
