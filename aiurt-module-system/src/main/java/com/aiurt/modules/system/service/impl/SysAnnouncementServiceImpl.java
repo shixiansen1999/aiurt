@@ -26,6 +26,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
+import org.checkerframework.checker.units.qual.min;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
@@ -387,11 +388,6 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		//业务数据
 		if ("1".equals(messageFlag)) {
 			IPage<SysMessageInfoDTO> businessList = sysAnnouncementMapper.queryAnnouncementInfo(page, userId, keyWord, busType, msgCategory);
-			//系统公告，系统消息详情
-			if(ObjectUtil.isEmpty(busType)){
-				IPage<SysMessageInfoDTO> sysMessageInfoDTOIPage = sysAnnouncementMapper.queryAnnouncementInfoByNull(page, userId, keyWord, busType, msgCategory);
-				return sysMessageInfoDTOIPage;
-			}
 			//接收时间为空，则接收时间等于创建时间
 			List<SysMessageInfoDTO> records = businessList.getRecords();
 			for (SysMessageInfoDTO record : records) {
@@ -428,12 +424,13 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementMapper.queryAllAnnouncement(userId, keyWord, busType, msgCategory);
 			//获取未读的条数
 			List<SysMessageInfoDTO> collect = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getReadFlag().equals("0")).collect(Collectors.toList());
+			//查找最远的未读消息
+			Optional<SysMessageInfoDTO> min = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getReadFlag().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
 			int number = collect.size();
 			//查找最远的未读消息
 			int pageNum = 0;
 			String seq = null;
 			String id = null;
-			Optional<SysMessageInfoDTO> min = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getReadFlag().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
 			if(min.isPresent()){
 				SysMessageInfoDTO sysMessageInfoDTO = min.get();
 				 seq = sysMessageInfoDTO.getSeq();

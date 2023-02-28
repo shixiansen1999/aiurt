@@ -63,17 +63,6 @@ public interface SysAnnouncementMapper extends BaseMapper<SysAnnouncement> {
      */
     IPage<SysMessageInfoDTO> queryAnnouncementInfo(@Param("page") Page<SysMessageInfoDTO> page, @Param("userId")String userId, @Param("keyWord")String keyWord, @Param("busType")String busType, @Param("msgCategory")String msgCategory);
 
-    /**
-     * 查询当前登录人未读的系统公告，系统消息详情
-     * @param page
-     * @param userId
-     * @param keyWord
-     * @param busType
-     * @param msgCategory
-     * @return
-     */
-    IPage<SysMessageInfoDTO> queryAnnouncementInfoByNull(@Param("page") Page<SysMessageInfoDTO> page, @Param("userId")String userId, @Param("keyWord")String keyWord, @Param("busType")String busType, @Param("msgCategory")String msgCategory);
-
 
     /**
      * 查询当前登录人未读的公告详情不分页
