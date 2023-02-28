@@ -183,7 +183,7 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
      * @return
      */
     @Override
-    public Result<IPage<FaultProduceReport>> queryPageAuditList(Page<FaultProduceReport> pageList, FaultProduceReport faultProduceReport, String beginDay, String endDay) {
+    public Result<IPage<FaultProduceReportDTO>> queryPageAuditList(Page<FaultProduceReportDTO> pageList, FaultProduceReport faultProduceReport, String beginDay, String endDay) {
         // 获取到当前登录的用户的专业(majorCode、可能有多个，使用List存储)
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserMajorModel> CsUserMajorModelList = iSysBaseAPI.getMajorByUserId(user.getId());
@@ -226,8 +226,21 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
         if (Objects.isNull(sysUser)) {
             throw  new AiurtBootException("请重新登录!");
         }
-        List<FaultProduceReport> reportList = produceReportMapper.queryPageAuditList(pageList, sysUser.getUsername(), majorCodeList, beginDay, endDay);
-        pageList.setRecords(reportList);
+        List<FaultProduceReportDTO> reportDTOList = produceReportMapper.queryPageAuditList(pageList, sysUser.getUsername(), majorCodeList, beginDay, endDay);
+        for (FaultProduceReportDTO reportDTO: reportDTOList) {
+            List<String> csMajorNamesByCodes = iSysBaseAPI.getCsMajorNamesByCodes(Collections.singletonList(reportDTO.getMajorCode()));
+            String majorName = null;
+            if (csMajorNamesByCodes.size() > 0) {
+                majorName = csMajorNamesByCodes.get(0);
+            }
+            reportDTO.setMajorName(majorName);  // 设置专业名称
+            // 设置提交人的realname
+            if (reportDTO.getSubmitUserName() != null) {
+                LoginUser submitUser = iSysBaseAPI.queryUser(reportDTO.getSubmitUserName());
+                reportDTO.setSubmitUserRealname(submitUser.getRealname());
+            }
+        }
+        pageList.setRecords(reportDTOList);
         return Result.ok(pageList);
     }
 

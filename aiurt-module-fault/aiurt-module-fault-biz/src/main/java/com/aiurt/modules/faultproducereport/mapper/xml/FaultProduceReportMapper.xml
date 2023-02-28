@@ -42,7 +42,7 @@
     </select>
     
     <select id="queryPageAuditList"
-            resultType="com.aiurt.modules.faultproducereport.entity.FaultProduceReport">
+            resultType="com.aiurt.modules.faultproducereport.dto.FaultProduceReportDTO">
 
         SELECT
         fpr.*,

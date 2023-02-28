@@ -28,6 +28,6 @@ public interface FaultProduceReportMapper extends BaseMapper<FaultProduceReport>
      * @param endDay
      * @return
      */
-    List<FaultProduceReport> queryPageAuditList(@Param("pageList") Page<FaultProduceReport> pageList, @Param("userName") String userName, @Param("majorCodeList") List<String> majorCodeList, @Param("beginDay") String beginDay, @Param("endDay") String endDay);
+    List<FaultProduceReportDTO> queryPageAuditList(@Param("pageList") Page<FaultProduceReportDTO> pageList, @Param("userName") String userName, @Param("majorCodeList") List<String> majorCodeList, @Param("beginDay") String beginDay, @Param("endDay") String endDay);
 
 }

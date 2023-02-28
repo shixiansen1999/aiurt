@@ -107,13 +107,13 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
     @AutoLog(value = "生产日报-审核分页列表查询")
     @ApiOperation(value = "生产日报-审核分页列表查询", notes = "生产日报-审核分页列表查询")
     @GetMapping(value = "/AuditList")
-    public Result<IPage<FaultProduceReport>> queryPageAuditList(FaultProduceReport faultProduceReport,
+    public Result<IPage<FaultProduceReportDTO>> queryPageAuditList(FaultProduceReport faultProduceReport,
                                                            String beginDay, String endDay,
                                                            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                            @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                            HttpServletRequest req) {
         // 自己写查询
-        Page<FaultProduceReport> pageList = new Page<>(pageNo, pageSize);
+        Page<FaultProduceReportDTO> pageList = new Page<>(pageNo, pageSize);
         return faultProduceReportService.queryPageAuditList(pageList, faultProduceReport, beginDay, endDay);
     }
 
