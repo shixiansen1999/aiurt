@@ -408,7 +408,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         map.put("patrolTaskName",patrolTask.getName());
         String station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
         map.put("patrolStation",station);
-        map.put("patrolTaskTime",patrolTask.getStartTime().toString()+patrolTask.getEndTime().toString());
+        map.put("patrolTaskTime",DateUtil.format(patrolTask.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(patrolTask.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
         map.put("patrolName", userNames);
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -1112,7 +1112,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     map.put("patrolTaskName",patrolTaskDTO.getName());
                     String station = patrolTaskStationMapper.getStationByTaskCode(patrolTaskDTO.getCode());
                     map.put("patrolStation",station);
-                    map.put("patrolTaskTime",patrolTaskDTO.getStartTime().toString()+patrolTaskDTO.getEndTime().toString());
+                    map.put("patrolTaskTime",DateUtil.format(patrolTaskDTO.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(patrolTaskDTO.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
                     map.put("patrolName", userNames);
 
                     TodoDTO todoDTO = new TodoDTO();

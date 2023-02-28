@@ -1255,8 +1255,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         }
                     }
                     TodoDTO todoDTO = new TodoDTO();
-                    todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-                    todoDTO.setTitle("检修任务-审核");
+                    todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
+                    todoDTO.setTitle("检修任务-审核" + DateUtil.today());
                     todoDTO.setMsgAbstract("检修任务审核");
                     todoDTO.setPublishingContent("检修任务审核通过");
                     createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_RECEIPT.getType(),repairTask.getId(), "检修任务验收", "", "",todoDTO,repairTask1,usernames,null);
@@ -1405,8 +1405,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         }
                     }
                     TodoDTO todoDTO = new TodoDTO();
-                    todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-                    todoDTO.setTitle("检修任务-审核");
+                    todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
+                    todoDTO.setTitle("检修任务-审核" + DateUtil.today());
                     todoDTO.setMsgAbstract("检修任务审核");
                     todoDTO.setPublishingContent("您有一条检修任务审核");
                     createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_CONFIRM.getType(), repairTask.getId(), "检修任务审核", "", "", todoDTO, repairTask, usernames, null);
@@ -1781,8 +1781,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     }
                 }
                 TodoDTO todoDTO = new TodoDTO();
-                todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-                todoDTO.setTitle("检修任务-领取");
+                todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
+                todoDTO.setTitle("检修任务-领取" + DateUtil.today());
                 todoDTO.setMsgAbstract("领取检修任务");
                 todoDTO.setPublishingContent("您领取了一条检修任务，请尽快检修");
 
@@ -2158,8 +2158,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
                     }
                     TodoDTO todoDTO = new TodoDTO();
-                    todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-                    todoDTO.setTitle("检修任务-待执行");
+                    todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
+                    todoDTO.setTitle("检修任务-待执行" + DateUtil.today());
                     todoDTO.setMsgAbstract("检修任务待执行");
                     todoDTO.setPublishingContent("您有一条检修任务待执行");
                     createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(), repairTask.getId(), "执行检修任务", "", "", todoDTO, repairTask, usernames, null);
@@ -2220,7 +2220,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
         map.put("repairStation",stringBuilder.toString());
-        map.put("repairTaskTime",repairTask1.getStartTime().toString()+repairTask1.getEndTime().toString());
+        map.put("repairTaskTime",DateUtil.format(repairTask1.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(repairTask1.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
         if (StrUtil.isNotEmpty(usernames)) {
             map.put("repairName", usernames);
         } else {
