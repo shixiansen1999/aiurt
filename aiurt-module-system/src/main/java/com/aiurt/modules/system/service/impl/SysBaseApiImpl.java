@@ -797,6 +797,14 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
+    public List<CsLine> getAllLine() {
+        LambdaQueryWrapper<CsLine> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.orderByAsc(CsLine::getSort);
+        return lineMapper.selectList(queryWrapper);
+    }
+
+    @Override
     public String getDepartIdsByOrgCode(String orgCode) {
         return departMapper.queryDepartIdByOrgCode(orgCode);
     }

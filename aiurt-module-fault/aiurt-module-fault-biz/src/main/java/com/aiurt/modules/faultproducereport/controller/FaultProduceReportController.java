@@ -12,6 +12,7 @@ import com.aiurt.modules.faultproducereportline.service.IFaultProduceReportLineS
 import com.aiurt.modules.faultproducereportlinedetail.dto.FaultProduceReportLineDetailDTO;
 import com.aiurt.modules.faultproducereportlinedetail.entity.FaultProduceReportLineDetail;
 import com.aiurt.modules.faultproducereportlinedetail.service.IFaultProduceReportLineDetailService;
+import com.aiurt.modules.position.entity.CsLine;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -221,10 +222,29 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
             reportDTO.setSubmitUserRealname(submitUser.getRealname());
         }
 
-        // 2、再查询出该生产日报的线路故障数据，
-        LambdaQueryWrapper<FaultProduceReportLine> reportLineLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        reportLineLambdaQueryWrapper.eq(FaultProduceReportLine::getFaultProduceReportId, report.getId());
-        List<FaultProduceReportLine> reportLineList = iFaultProduceReportLineService.list(reportLineLambdaQueryWrapper);
+        // 2.1 查询出所有线路
+        List<CsLine> lineList = iSysBaseAPI.getAllLine();
+        // 2.2 遍历每一条线路，并转化成reportLine，要放入reportDTO里面
+        List<FaultProduceReportLine> reportLineList = lineList.stream().map(csLine -> {
+            // 新建一个reportLine
+            FaultProduceReportLine reportLine = new FaultProduceReportLine();
+            // 看这条线路是不是在线路故障表里面
+            LambdaQueryWrapper<FaultProduceReportLine> reportLineLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            reportLineLambdaQueryWrapper.eq(FaultProduceReportLine::getFaultProduceReportId, report.getId());
+            reportLineLambdaQueryWrapper.eq(FaultProduceReportLine::getLineCode, csLine.getLineCode());
+            FaultProduceReportLine queryReportLine = iFaultProduceReportLineService.getOne(reportLineLambdaQueryWrapper);
+            if (queryReportLine != null) {
+                // 这条线路在线路故障表里面，直接复制
+                BeanUtils.copyProperties(queryReportLine, reportLine);
+            } else {
+                reportLine.setTotalNum(0);
+                reportLine.setDelayNum(0);
+                reportLine.setLineCode(csLine.getLineCode());
+                reportLine.setLineName(csLine.getLineName());
+            }
+            return reportLine;
+        }).collect(Collectors.toList());
+
         // 将reportLineList放入reportDTO
         reportDTO.setReportLineList(reportLineList);
         // 3、根据生产日报id查询出故障清单数据，转为reportLineDetailDTO后存入reportLineDetailDTOList

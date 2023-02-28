@@ -8,6 +8,7 @@ import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.common.entity.SelectDeviceType;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
@@ -1007,5 +1008,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     public List<String> getUserNameByRealName(String realName);
+
+    /**
+     * 获取所有del_flag=0的线路
+     * 按照sort排序
+     * @return
+     */
+    List<CsLine> getAllLine();
 }
 
