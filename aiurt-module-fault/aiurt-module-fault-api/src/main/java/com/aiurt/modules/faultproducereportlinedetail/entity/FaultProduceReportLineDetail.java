@@ -96,4 +96,8 @@ public class FaultProduceReportLineDetail implements Serializable {
 	@Excel(name = "	生产日报_线路统计故障数id", width = 15)
     @ApiModelProperty(value = "	生产日报_线路统计故障数id")
     private String faultProduceReportLineId;
+    /**	生产日报_线路统计故障数id*/
+    @Excel(name = "生产日报id", width = 15)
+    @ApiModelProperty(value = "	生产日报id")
+    private String faultProduceReportId;
 }

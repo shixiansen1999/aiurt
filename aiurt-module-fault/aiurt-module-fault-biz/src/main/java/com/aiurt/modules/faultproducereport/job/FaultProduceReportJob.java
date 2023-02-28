@@ -51,13 +51,14 @@ public class FaultProduceReportJob implements Job {
         String[] pattern = new String[]{"yyyy-MM-dd HH:mm:ss"};
         // 统计时间(昨天)，统计开始时间、结束时间
         Date yesterdayDate = DateUtils.addDays(new Date(), -1);
+        Date statisticsDate = yesterdayDate;
         String yesterdayString = dateFormat.format(yesterdayDate);
 //        String begin = "2022-01-23";
 //        String end = "2023-02-23";
 //        Date beginDate = DateUtils.parseDate(begin + " 00:00:00", pattern);
 //        Date endDate = DateUtils.parseDate(end + " 23:59:59", pattern);
-		Date beginDate = DateUtils.parseDate(yesterdayString + " 00:00:00", pattern);
-		Date endDate = DateUtils.parseDate(yesterdayString + " 23:59:59", pattern);
+        Date beginDate = DateUtils.parseDate(yesterdayString + " 00:00:00", pattern);
+        Date endDate = DateUtils.parseDate(yesterdayString + " 23:59:59", pattern);
 
         // 查询故障保修单:
         // 查询条件：审核通过(status=12)&approval_pass_time(审核通过时间)在统计时间范围内(昨天的00:00:00到昨天的23:59:59)
@@ -81,16 +82,16 @@ public class FaultProduceReportJob implements Job {
         }
         // 遍历map,一个key就是一条生产日报的数据
         for (String majorCodeKey : map.keySet()) {
-            FaultProduceReport faultProduceReport = new FaultProduceReport();
-            faultProduceReport.setMajorCode(majorCodeKey);  // 专业编码
-            faultProduceReport.setStatisticsDate(yesterdayDate);  // 统计日期，是昨天的日期
-            faultProduceReport.setStartTime(beginDate);  // 开始统计日期，是昨天的00:00:00
-            faultProduceReport.setEndTime(endDate); // 结束统计日期，是昨天的23:59:59
-            faultProduceReport.setState(0);  // 状态、不知道那个数字表示开始，先置为0
+            FaultProduceReport report = new FaultProduceReport();
+            report.setMajorCode(majorCodeKey);  // 专业编码
+            report.setStatisticsDate(statisticsDate);  // 统计日期
+            report.setStartTime(beginDate);  // 开始统计日期，是昨天的00:00:00
+            report.setEndTime(endDate); // 结束统计日期
+            report.setState(0);  // 状态、不知道那个数字表示开始，先置为0
 
             List<Fault> faults = map.get(majorCodeKey);
-            faultProduceReport.setTotalNum(faults.size());  // 生产日报故障总数
-            Integer delayNum = 0;
+            report.setTotalNum(faults.size());  // 生产日报故障总数
+            Integer delayNum = 0;  // 生产日报延误次数
             // 需要使用一个map来存储线路故障，使用lineCode作为key
             Map<String, List<Fault>> reportLineMap = new HashMap<>();
             for (Fault f : faults) {
@@ -106,21 +107,21 @@ public class FaultProduceReportJob implements Job {
                     reportLineMap.get(lineCode).add(f);
                 }
             }
-            faultProduceReport.setDelayNum(delayNum);  // 生产日报延误次数
+            report.setDelayNum(delayNum);  // 生产日报延误次数
             // 存入一条生产日报数据，并获取存入的生产日报id，线路故障数据要用----------->雪花算法可以存储后可以直接获取id
-            faultProduceReportService.save(faultProduceReport);
+            faultProduceReportService.save(report);
 
             // 一条生产日报数据，可能有几条线路故障数据, 看reportLineMap有几个key
             for (String reportLineKey : reportLineMap.keySet()) {
-                FaultProduceReportLine faultProduceReportLine = new FaultProduceReportLine();
-                faultProduceReportLine.setLineCode(reportLineKey);  // 线路编码
+                FaultProduceReportLine reportLine = new FaultProduceReportLine();
+                reportLine.setLineCode(reportLineKey);  // 线路编码
                 // 根据线路编码，查询线路名称
                 Map<String, String> lineNameCodeMap = iSysBaseAPI.getLineNameByCode(new ArrayList<String>() {{
                     add(reportLineKey);
                 }});
-                faultProduceReportLine.setLineName(lineNameCodeMap.get(reportLineKey));
+                reportLine.setLineName(lineNameCodeMap.get(reportLineKey));
                 List<Fault> reportLineFaults = reportLineMap.get(reportLineKey);
-                faultProduceReportLine.setTotalNum(reportLineFaults.size());  // 故障总数
+                reportLine.setTotalNum(reportLineFaults.size());  // 故障总数
                 Integer lineDelayNum = 0;
                 List<FaultProduceReportLineDetail> reportLineDetailList = new ArrayList<>();
                 for (Fault LineFault : reportLineFaults) {
@@ -150,17 +151,15 @@ public class FaultProduceReportJob implements Job {
                         add(LineFault.getStationCode());
                     }}).get(LineFault.getStationCode());
                     reportLineDetail.setStationName(stationName);
+                    reportLineDetail.setFaultProduceReportId(report.getId());
                     reportLineDetailList.add(reportLineDetail);
                 }
-                faultProduceReportLine.setDelayNum(lineDelayNum); // 延误次数
-                faultProduceReportLine.setFaultProduceReportId(faultProduceReport.getId());  // 生产日报id
+                reportLine.setDelayNum(lineDelayNum); // 延误次数
+                reportLine.setFaultProduceReportId(report.getId());  // 生产日报id
                 // 存入线路故障数据
-                iFaultProduceReportLineService.save(faultProduceReportLine);
+                iFaultProduceReportLineService.save(reportLine);
                 // 存入故障清单数据
-                reportLineDetailList.forEach((item->{
-                    item.setFaultProduceReportLineId(faultProduceReportLine.getId());
-                    iFaultProduceReportLineDetailService.save(item);
-                }));
+                iFaultProduceReportLineDetailService.saveBatch(reportLineDetailList);
             }
         }
     }

@@ -2,6 +2,8 @@ package com.aiurt.modules.faultproducereport.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.modules.fault.service.IFaultRepairRecordService;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultproducereport.dto.FaultProduceReportDTO;
@@ -18,6 +20,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -30,10 +33,10 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 生产日报
@@ -228,28 +231,21 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
         List<FaultProduceReportLine> reportLineList = iFaultProduceReportLineService.list(reportLineLambdaQueryWrapper);
         // 将reportLineList放入reportDTO
         reportDTO.setReportLineList(reportLineList);
-        // 3、根据线路故障、查询出故障清单数据，转为reportLineDetailDTO后存入reportLineDetailDTOList
-        List<FaultProduceReportLineDetailDTO> reportLineDetailDTOList = new ArrayList<>();
-        for (FaultProduceReportLine reportLine: reportLineList) {
-            LambdaQueryWrapper<FaultProduceReportLineDetail> reportLineDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            reportLineDetailLambdaQueryWrapper.eq(FaultProduceReportLineDetail::getFaultProduceReportLineId, reportLine.getId());
-            reportLineDetailLambdaQueryWrapper.orderByDesc(FaultProduceReportLineDetail::getCreateTime);
-            List<FaultProduceReportLineDetail> reportLineDetailList = iFaultProduceReportLineDetailService.list(reportLineDetailLambdaQueryWrapper);
-            String finalMajorName = majorName;
-            reportLineDetailList.forEach(item->{
-                // 新建一个reportLineDetailDTO
-                FaultProduceReportLineDetailDTO reportLineDetailDTO = new FaultProduceReportLineDetailDTO();
-                // 给reportLineDetailDTO赋值
-                BeanUtils.copyProperties(item, reportLineDetailDTO);
-                reportLineDetailDTO.setMajorCode(report.getMajorCode());
-//                List<String> csMajorNamesByCodes = iSysBaseAPI.getCsMajorNamesByCodes(Collections.singletonList(report.getMajorCode()));
-//                if (csMajorNamesByCodes.size() > 0) {
-//                    reportLineDetailDTO.setMajorName(csMajorNamesByCodes.get(0));
-//                }
-                reportLineDetailDTO.setMajorName(finalMajorName); // 设置专业名称
-                reportLineDetailDTOList.add(reportLineDetailDTO);
-            });
-        }
+        // 3、根据生产日报id查询出故障清单数据，转为reportLineDetailDTO后存入reportLineDetailDTOList
+        LambdaQueryWrapper<FaultProduceReportLineDetail> reportLineDetailLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        reportLineDetailLambdaQueryWrapper.eq(FaultProduceReportLineDetail::getFaultProduceReportId, report.getId());
+        reportLineDetailLambdaQueryWrapper.orderByDesc(FaultProduceReportLineDetail::getCreateTime);
+        List<FaultProduceReportLineDetail> reportLineDetailList = iFaultProduceReportLineDetailService.list(reportLineDetailLambdaQueryWrapper);
+        String finalMajorName = majorName;
+        List<FaultProduceReportLineDetailDTO> reportLineDetailDTOList = reportLineDetailList.stream().map(item -> {
+            // 新建一个reportLineDetailDTO
+            FaultProduceReportLineDetailDTO reportLineDetailDTO = new FaultProduceReportLineDetailDTO();
+            // 给reportLineDetailDTO赋值
+            BeanUtils.copyProperties(item, reportLineDetailDTO);
+            reportLineDetailDTO.setMajorCode(report.getMajorCode()); // 设置专业编码
+            reportLineDetailDTO.setMajorName(finalMajorName); // 设置专业名称
+            return reportLineDetailDTO;
+        }).collect(Collectors.toList());
         // 将reportLineDetailDTOList放入reportDTO
         reportDTO.setReportLineDetailDTOList(reportLineDetailDTOList);
         return Result.ok(reportDTO);
