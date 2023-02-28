@@ -130,11 +130,11 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
     /**
      * 漏检任务处置
      *
-     * @param task
+     * @param patrolTasks
      * @param omitExplain
      * @return
      */
-    int taskDispose(PatrolTask task, String omitExplain);
+    int taskDispose(List<PatrolTask> patrolTasks, String omitExplain);
 
     /**
      * pc手工下放任务-编辑-详情
