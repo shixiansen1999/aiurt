@@ -70,13 +70,13 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
                 //提交，更新状态，及提交人更新
                 case 0:
                     faultProduceReport.setState(1);
-                case 1:
-                    faultProduceReport.setState(1);
                     faultProduceReport.setSubmitTime(new Date());
                     faultProduceReport.setSubmitUserName(sysUser.getUsername());
                     break;
+                case 1:
+                    faultProduceReport.setState(1);
+                    break;
                 case 2:
-
                     faultProduceReport.setState(0);
                     faultProduceReport.setSubmitTime(null);
                     updateWrapper.set(FaultProduceReport::getSubmitTime,null);
@@ -84,6 +84,7 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
                     break;
                 case 3:
                     faultProduceReport.setState(1);
+                    break;
                 case 4:
                     faultProduceReport.setState(0);
                     faultProduceReport.setSubmitTime(null);
