@@ -13,6 +13,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: patrol_task
@@ -40,6 +41,10 @@ public class PatrolTask implements Serializable {
     @Excel(name = "任务编号", width = 15)
     @ApiModelProperty(value = "任务编号")
     private java.lang.String code;
+
+    @Excel(name = "任务编号，导出使用参数", width = 15)
+    @ApiModelProperty(value = "任务编号，导出使用参数")
+    private List<String> codeList;
     /**
      * 计划编号
      */
