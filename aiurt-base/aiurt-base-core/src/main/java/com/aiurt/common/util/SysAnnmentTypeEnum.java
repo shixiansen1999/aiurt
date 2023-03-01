@@ -26,7 +26,7 @@ public enum SysAnnmentTypeEnum {
     /**
      * 特情
      */
-    SITUATION("situation", "component","","特情"),
+    SITUATION("situation", "component","","特情消息"),
     /**
      * 培训年计划
      */
@@ -65,7 +65,7 @@ public enum SysAnnmentTypeEnum {
     /**
      * 通知成为资产盘点人
      */
-    ASSET_CHECKER("asset_checker", "component","",""),
+    ASSET_CHECKER("asset_checker", "component","","固定资产盘点"),
     /**
     /**
      * 工作流跳转链接我的办公

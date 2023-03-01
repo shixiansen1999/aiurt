@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
@@ -195,21 +196,25 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		//遍历消息类型枚举
 		for (SysAnnmentTypeEnum value : typeValues) {
 			String type = value.getType();
+			String s = StrUtil.splitTrim(type, "_").get(0);
 			String module = value.getModule();
 			SysMessageTypeDTO sysMessageTypeDTO = new SysMessageTypeDTO();
-			List<SysAnnouncementSendDTO> typeList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getBusType() != null && sysAnnouncementSendDTO.getBusType().contains(type)).collect(Collectors.toList());
-			List<SysAnnouncementSendDTO> bpmList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getProcessCode() != null && sysAnnouncementSendDTO.getProcessCode().contains(type)).collect(Collectors.toList());
+			List<SysAnnouncementSendDTO> typeList = new ArrayList<>();
+			List<SysAnnouncementSendDTO> bpmList = new ArrayList<>();
+			List<SysAnnouncementSendDTO> readFlagList = new ArrayList<>();
+			List<SysAnnouncementSendDTO> readFlagBpmList = new ArrayList<>();
+			//所有数据
+			typeList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getBusType() != null && sysAnnouncementSendDTO.getBusType().contains(s)).collect(Collectors.toList());
+			bpmList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getProcessCode() != null && sysAnnouncementSendDTO.getProcessCode().contains(s)).collect(Collectors.toList());
 			typeList.addAll(bpmList);
-
-			sysMessageTypeDTO.setTitle(module);
+			//所有未读的消息
+			readFlagList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getBusType() != null && sysAnnouncementSendDTO.getReadFlag().equals("0") && sysAnnouncementSendDTO.getBusType().contains(s)).collect(Collectors.toList());
+			readFlagBpmList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getProcessCode() != null && sysAnnouncementSendDTO.getReadFlag().equals("0") && sysAnnouncementSendDTO.getProcessCode().contains(s)).collect(Collectors.toList());
+			readFlagList.addAll(readFlagBpmList);
 			//设置消息类型
-			int index = type.indexOf('_');
-			if(index !=-1){
-				String sub = type.substring(0, index);
-				sysMessageTypeDTO.setBusType(sub);
-			}else{
-				sysMessageTypeDTO.setBusType(type);
-			}
+			sysMessageTypeDTO.setBusType(type);
+			//设置类型名称
+			sysMessageTypeDTO.setTitle(module);
 			//给不同类型赋值不同图片
 			for (String pCode : pictureCode) {
 				if(pCode.equals(type)){
@@ -218,10 +223,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				}
 
 			}
-
 			// 统计长度
 			int size = typeList.size();
-			sysMessageTypeDTO.setCount(size);
+			int messageSize = readFlagList.size();
+			sysMessageTypeDTO.setCount(messageSize);
 			//给内容赋值
 			if(size != 0) {
 				//根据时间排序，最近的在上面
@@ -240,7 +245,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
 			}
 			sysMessageTypeDTO.setMessageFlag("1");
-			if(!("bpm").equals(sysMessageTypeDTO.getBusType()) && size != 0){
+			if(!("bpm").equals(sysMessageTypeDTO.getBusType()) && messageSize != 0){
 				list.add(sysMessageTypeDTO);
 			}
 		}
@@ -276,8 +281,12 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			}
 			// 统计长度
 			List<SysAnnouncementSendDTO> value = entry.getValue();
-			int size = value.size();
-			sysMessageTypeDTO.setCount(size);
+			int messageSize = 0;
+			if(CollUtil.isNotEmpty(value)){
+				List<SysAnnouncementSendDTO> messageList = value.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getMsgCategory() != null && sysAnnouncementSendDTO.getReadFlag().equals("0")).collect(Collectors.toList());
+				messageSize = messageList.size();
+			}
+			sysMessageTypeDTO.setCount(messageSize);
 			//给内容赋值
 			value=value.stream().sorted(Comparator.comparing(SysAnnouncementSendDTO::getCreateTime).reversed()).collect(Collectors.toList());
 			String msgContent = value.get(0).getMsgContent();
@@ -302,6 +311,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			List<SysTodoList> typeList= sysTodoLists.stream().filter(sysTodoList -> sysTodoList.getTaskType() != null && sysTodoList.getTaskType().contains(type)).collect(Collectors.toList());
 			List<SysTodoList> bpmnList = sysTodoLists.stream().filter(sysTodoList -> sysTodoList.getProcessCode() != null && sysTodoList.getProcessCode().contains(type)).collect(Collectors.toList());
 			typeList.addAll(bpmnList);
+			//所有未处理的流程消息
+			List<SysTodoList> readFlagList= sysTodoLists.stream().filter(sysTodoList -> sysTodoList.getTaskType() != null && sysTodoList.getTodoType().equals("0") && sysTodoList.getTaskType().contains(type)).collect(Collectors.toList());
+			List<SysTodoList> readFlagBpmList = sysTodoLists.stream().filter(sysTodoList -> sysTodoList.getProcessCode() != null && sysTodoList.getTodoType().equals("0") && sysTodoList.getProcessCode().contains(type)).collect(Collectors.toList());
+			readFlagList.addAll(readFlagBpmList);
 			//设置流程名称
 			sysMessageTypeDTO.setTitle(module);
 			//设置不同类型流程图片
@@ -310,7 +323,8 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			sysMessageTypeDTO.setBusType(type);
 			// 统计长度
 			int size = typeList.size();
-			sysMessageTypeDTO.setCount(size);
+			int messageSize = readFlagList.size();
+			sysMessageTypeDTO.setCount(messageSize);
 			//给内容赋值
 			if(size != 0){
 				typeList=typeList.stream().sorted(Comparator.comparing(SysTodoList::getCreateTime).reversed()).collect(Collectors.toList());
@@ -323,10 +337,16 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			}
 			if(CollUtil.isNotEmpty(typeList)) {
 				SysTodoList sysTodoList = typeList.get(0);
-				sysMessageTypeDTO.setIntervalTime(sysTodoList.getCreateTime());
+				Date s = sysTodoList.getUpdateTime();
+				String updateTime = DateUtil.formatDateTime(s);
+				if(StrUtil.isNotBlank(updateTime)){
+					sysMessageTypeDTO.setIntervalTime(s);
+				}else{
+					sysMessageTypeDTO.setIntervalTime(sysTodoList.getCreateTime());
+				}
 			}
 			sysMessageTypeDTO.setMessageFlag("2");
-			if(!("bpmn").equals(sysMessageTypeDTO.getBusType()) && size != 0){
+			if(!("bpmn").equals(sysMessageTypeDTO.getBusType()) && messageSize != 0){
 				list.add(sysMessageTypeDTO);
 			}
 		}
@@ -337,7 +357,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		{
 			if (productMap.containsKey(product.getTitle()))
 			{
-				product.setCount(product.getCount() + productMap.get(product.getTitle()).getCount());
+				product.setCount(productMap.get(product.getTitle()).getCount());
 			}
 			productMap.put(product.getTitle(), product);
 		}

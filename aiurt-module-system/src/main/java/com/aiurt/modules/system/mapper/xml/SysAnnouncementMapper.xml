@@ -43,12 +43,11 @@
 	</select>
 
 	<select id="queryAnnouncement" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysAnnouncementSendDTO">
-      select sa.*
+      select sa.*,sas.read_flag as readFlag
       from sys_announcement sa
       left join sys_announcement_send sas on sas.annt_id = sa.id
       <where>
-		  sas.read_flag = 0
-           and sa.del_flag = 0
+               sa.del_flag = 0
 		  <if test="userId!=null and userId!=''">
                 and sas.user_id = #{userId}
 		  </if>
@@ -56,11 +55,11 @@
 	</select>
 
 	<select id="queryAnnouncementByNull" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysAnnouncementSendDTO">
-		select sa.* from sys_announcement sa
+		select sa.* ,sas.read_flag as readFlag
+		from sys_announcement sa
 		left join sys_announcement_send sas on sas.annt_id = sa.id
 		<where>
-			sas.read_flag = 0
-			and sa.del_flag = 0
+			 sa.del_flag = 0
 			<if test="userId!=null and userId!=''">
 				and sas.user_id = #{userId}
 			</if>
@@ -72,9 +71,8 @@
 		select stl.*
 		from sys_todo_list stl
 		<where>
-			stl.todo_type = 0
 			<if test="userName!=null and userName!=''">
-				and find_in_set(#{userName},stl.current_user_name)
+			 find_in_set(#{userName},stl.current_user_name)
 			</if>
 		</where>
 	</select>
