@@ -1862,7 +1862,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public JSONObject getCsMajorByCode(String majorCode) {
         LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsMajor::getMajorCode, majorCode).last("limit 1");
+        wrapper.eq(CsMajor::getMajorCode, majorCode).eq(CsMajor::getDelFlag,CommonConstant.DEL_FLAG_0).last("limit 1");
         CsMajor csMajor = majorService.getBaseMapper().selectOne(wrapper);
         if (Objects.isNull(csMajor)) {
             return null;
