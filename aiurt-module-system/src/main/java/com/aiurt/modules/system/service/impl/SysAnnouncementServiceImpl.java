@@ -430,6 +430,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				if (ObjectUtil.isEmpty(record.getReceiveTime())) {
 					record.setReceiveTime(record.getIntervalTime());
 				}
+				//系统公告和系统消息，特情取消去办理
+				if(StrUtil.isNotEmpty(record.getMsgCategory()) || SysAnnmentTypeEnum.SITUATION.getType().equals(record.getTaskType())){
+					record.setDeal(false);
+				}
 			}
 			return businessList;
 		}
