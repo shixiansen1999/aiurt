@@ -1,6 +1,7 @@
 package com.aiurt.modules.situation.controller;
 
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
@@ -13,6 +14,7 @@ import com.aiurt.modules.situation.entity.SysAnnouncement;
 import com.aiurt.modules.situation.entity.SysAnnouncementSend;
 import com.aiurt.modules.situation.mapper.SysInfoListMapper;
 import com.aiurt.modules.situation.service.SysInfoListService;
+import com.aiurt.modules.situation.service.SysInfoSendService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -53,6 +55,8 @@ import java.util.stream.Collectors;
 public class SysInfoListController  extends BaseController<SysAnnouncement, SysInfoListService> {
     @Autowired
     private SysInfoListService bdInfoListService;
+    @Autowired
+    private SysInfoSendService sysInfoSendService;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
     @Autowired
