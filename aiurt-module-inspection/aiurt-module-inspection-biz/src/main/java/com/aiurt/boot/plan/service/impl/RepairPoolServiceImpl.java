@@ -691,7 +691,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                         map.putAll(messageDTO.getData());
                     }
                     map.put("code",repairTask.getCode());
-                    map.put("repairTaskName",repairTask.getType()+repairTask.getCode());
+                    String typeName = sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairTask.getType()));
+                    map.put("repairTaskName",typeName+repairTask.getCode());
                     List<String> codes = repairTaskMapper.getRepairTaskStation(repairTask.getId());
                     if (CollUtil.isNotEmpty(codes)) {
                         Map<String, String> stationNameByCode = sysBaseApi.getStationNameByCode(codes);
@@ -705,7 +706,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                         }
                         map.put("repairStation",stringBuilder.toString());
                     }
-                    map.put("repairTaskTime",DateUtil.format(repairTask.getStartTime(),"yyyy-MM-dd HH:mm:ss")+"-"+DateUtil.format(repairTask.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
+                    map.put("repairTaskTime",DateUtil.format(repairTask.getStartTime(),"yyyy-MM-dd HH:mm")+"-"+DateUtil.format(repairTask.getEndTime(),"yyyy-MM-dd HH:mm"));
                     String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                     if (StrUtil.isNotEmpty(realNames)) {
                         map.put("repairName", realNames);

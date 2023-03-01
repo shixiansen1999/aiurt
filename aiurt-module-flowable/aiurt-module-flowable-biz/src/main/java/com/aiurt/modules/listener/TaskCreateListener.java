@@ -1,6 +1,7 @@
 package com.aiurt.modules.listener;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.constants.FlowConstant;
@@ -24,10 +25,12 @@ import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
@@ -38,7 +41,8 @@ import java.util.*;
 public class TaskCreateListener implements FlowableEventListener {
 
     private static Logger logger = LoggerFactory.getLogger(TaskCreateListener.class);
-
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
     /**
      * Called when an event has been fired
      *
@@ -178,6 +182,7 @@ public class TaskCreateListener implements FlowableEventListener {
 
     private void buildToDoList(TaskEntity taskEntity, ProcessInstance instance, ActCustomTaskExt taskExt, List<String> userNameList) {
         try {
+
             BpmnTodoDTO bpmnTodoDTO = new BpmnTodoDTO();
             bpmnTodoDTO.setTaskKey(taskEntity.getTaskDefinitionKey());
             bpmnTodoDTO.setTaskId(taskEntity.getId());
@@ -213,10 +218,19 @@ public class TaskCreateListener implements FlowableEventListener {
                     bpmnTodoDTO.setProcessName(name);
                 }
             }
+            String startUserId = instance.getStartUserId();
+            Date startTime = instance.getStartTime();
+            LoginUser userByName = iSysBaseAPI.getUserByName(startUserId);
+            String format = DateUtil.format(startTime, "yyyy-MM-dd");
+
             HashMap<String, Object> map = new HashMap<>();
-            map.put("msgContent",bpmnTodoDTO.getTaskName());
+            map.put("creatBy",userByName.getRealname());
+            map.put("creatTime",format);
             bpmnTodoDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE_PROCESS);
             bpmnTodoDTO.setData(map);
+            bpmnTodoDTO.setMsgAbstract("有流程到达");
+
+            bpmnTodoDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"));
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
             todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
         } catch (Exception e) {

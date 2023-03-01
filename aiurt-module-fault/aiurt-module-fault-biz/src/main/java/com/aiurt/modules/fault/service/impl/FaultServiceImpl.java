@@ -863,6 +863,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             map.put("hangUpReason", fault.getHangUpReason());
 
             TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setData(map);
             todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_HANGUP);
             todoDTO.setTitle("故障挂起");
             todoDTO.setMsgAbstract("故障挂起申请");
@@ -1419,11 +1420,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
             String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
             if (StrUtil.isNotBlank(name)) {
-                name=StrUtil.join(",", userNameSet) + "," + name;
+                List<String> list = StrUtil.splitTrim(",", name);
+                userNameSet.addAll(list);
             }
             //  发送消息
             try {
-                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), name , "维修确认" + DateUtil.today(), null);
+                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), CollUtil.join(userNameSet,",") , "维修确认" + DateUtil.today(), null);
                 FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
                 BeanUtil.copyProperties(fault,faultMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
