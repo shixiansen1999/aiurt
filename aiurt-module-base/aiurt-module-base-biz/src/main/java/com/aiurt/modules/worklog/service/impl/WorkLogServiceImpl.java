@@ -351,11 +351,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     public IPage<WorkLogResult> queryConfirmList(IPage<WorkLogResult> page, WorkLogParam param, HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
-        List<String> departIdsByUserId = roleAdditionalUtils.getListDepartIdsByUserId(user.getId());
+//        List<String> departIdsByUserId = roleAdditionalUtils.getListDepartIdsByUserId(user.getId());
         if (!admin) {
             param.setSubmitId(user.getId());
             param.setSuccessorId(user.getId());
-            param.setDepartList(departIdsByUserId);
+//            param.setDepartList(departIdsByUserId);
         }
         return getWorkLogResultIPage(page, param);
     }

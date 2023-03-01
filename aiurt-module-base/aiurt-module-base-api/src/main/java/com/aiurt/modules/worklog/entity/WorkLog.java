@@ -1,5 +1,6 @@
 package com.aiurt.modules.worklog.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;

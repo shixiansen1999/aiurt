@@ -1,5 +1,8 @@
 package com.aiurt.modules.worklog.mapper;
 
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.common.result.AssortNumResult;
 import com.aiurt.common.result.LogCountResult;
 import com.aiurt.common.result.WorkLogDetailResult;
@@ -21,6 +24,7 @@ import java.util.List;
  * @Date:   2021-09-22
  * @Version: V1.0
  */
+@EnableDataPerm(excluseMethodName = {"deleteOne"})
 public interface WorkLogMapper extends BaseMapper<WorkLog> {
 
 
@@ -30,6 +34,9 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      * @param param
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "wl.org_id")
+    })
     IPage<WorkLogResult> queryWorkLog(IPage<WorkLogResult> page, @Param("param") WorkLogParam param);
 
     /**
