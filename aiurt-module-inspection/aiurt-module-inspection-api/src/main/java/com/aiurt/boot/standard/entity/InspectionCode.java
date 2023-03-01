@@ -153,4 +153,14 @@ public class InspectionCode extends DictEntity implements Serializable {
     @TableField(exist = false)
     private java.lang.String orgName;
 
+    @Excel(name = "备件清单", width = 15)
+    @ApiModelProperty(value = "备件清单")
+    private String sparePartsList;
+    @Excel(name = "材料清单", width = 15)
+    @ApiModelProperty(value = "材料清单")
+    private String materialList;
+    @Excel(name = "工器具清单", width = 15)
+    @ApiModelProperty(value = "工器具清单")
+    private String workToolsList;
+
 }
