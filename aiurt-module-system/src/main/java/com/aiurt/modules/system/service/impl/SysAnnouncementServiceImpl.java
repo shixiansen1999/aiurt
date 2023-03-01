@@ -431,8 +431,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 					record.setReceiveTime(record.getIntervalTime());
 				}
 				//系统公告和系统消息，特情取消去办理
-				if(StrUtil.isNotEmpty(record.getMsgCategory()) || SysAnnmentTypeEnum.SITUATION.getType().equals(record.getTaskType())){
+				if(StrUtil.isNotEmpty(record.getMsgCategory()) && StrUtil.isEmpty(record.getTaskType()) || SysAnnmentTypeEnum.SITUATION.getType().equals(record.getTaskType())){
 					record.setDeal(false);
+				}else{
+					record.setDeal(true);
 				}
 			}
 			return businessList;
@@ -456,6 +458,12 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			for (SysMessageInfoDTO record : records) {
 				if (ObjectUtil.isEmpty(record.getReceiveTime())) {
 					record.setReceiveTime(record.getIntervalTime());
+				}
+				//系统公告和系统消息，特情取消去办理
+				if(StrUtil.isNotEmpty(record.getMsgCategory()) && StrUtil.isEmpty(record.getTaskType()) || SysAnnmentTypeEnum.SITUATION.getType().equals(record.getTaskType())){
+					record.setDeal(false);
+				}else{
+					record.setDeal(true);
 				}
 			}
 			return flowList;
