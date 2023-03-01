@@ -1,5 +1,6 @@
 package com.aiurt.modules.search.dto;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -11,7 +12,7 @@ import lombok.Data;
  * @date 2023/2/1617:12
  */
 @Data
-public class DocumentManageResponseDTO {
+public class DocumentManageResponseDTO extends CommonResponseDTO {
     /**
      * 记录ID
      */
@@ -44,4 +45,10 @@ public class DocumentManageResponseDTO {
     @ApiModelProperty(value = "文件内容")
     private AttachmentDTO attachment;
 
+    public void setName(String name) {
+        this.name = name;
+        if(StrUtil.isNotEmpty(name)){
+            setTitle(name);
+        }
+    }
 }

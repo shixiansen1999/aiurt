@@ -22,7 +22,7 @@ import java.util.List;
  */
 @Data
 @ApiModel(value = "搜索结果dto", description = "搜索结果dto")
-public class SearchResponseDTO implements Serializable {
+public class SearchResponseDTO extends CommonResponseDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -81,6 +81,13 @@ public class SearchResponseDTO implements Serializable {
                 faultCodeList = CollUtil.newArrayList();
             }
             faultCodeList.addAll(StrUtil.split(faultCodes, ','));
+        }
+    }
+
+    public void setFaultPhenomenon(String faultPhenomenon) {
+        this.faultPhenomenon = faultPhenomenon;
+        if(StrUtil.isNotEmpty(faultPhenomenon)){
+            setTitle(faultPhenomenon);
         }
     }
 }
