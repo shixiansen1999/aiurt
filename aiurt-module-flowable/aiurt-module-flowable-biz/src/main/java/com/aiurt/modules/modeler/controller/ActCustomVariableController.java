@@ -152,6 +152,7 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 			ActCustomVariableDTO variableDTO = new ActCustomVariableDTO();
 			variableDTO.setValue(variable.getVariableName());
 			variableDTO.setLabel(variable.getShowName());
+			variableDTO.setIsSystem(0);
 			return variableDTO;
 		}).collect(Collectors.toList());
 		// 构建系统字段
@@ -161,6 +162,8 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 			ActCustomVariableDTO variableDTO = new ActCustomVariableDTO();
 			variableDTO.setValue(variableEnum.getCode());
 			variableDTO.setLabel(variableEnum.getName());
+			variableDTO.setVariableType(variableEnum.getType());
+			variableDTO.setIsSystem(1);
 			resultList.add(variableDTO);
 		}
 		return Result.OK(resultList);
