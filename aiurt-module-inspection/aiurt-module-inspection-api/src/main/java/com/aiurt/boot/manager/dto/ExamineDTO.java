@@ -33,6 +33,10 @@ public class ExamineDTO {
     @ApiModelProperty(value = "备注")
     private String content;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "附件")
+    private String path;
+
     /**提交签名*/
     @TableField(exist = false)
     @ApiModelProperty(value = "提交签名")
