@@ -27,7 +27,7 @@ public enum DataScopeType {
     /**
      * 查看管理专业
      */
-    TYPE_MANAGE_MAJOR_ONLY("TYPE_MANAGE_MAJOR_ONLY", " #{#majorName} IN ( #{@sdss.getMajorByUserIdStr( #user.id )} ) ", " 1 = 0"),
+    TYPE_MANAGE_MAJOR_ONLY("TYPE_MANAGE_MAJOR_ONLY", " #{#majorName} IN ( #{@sdss.getMajorByUserIdStr( #sysUser.id )} ) ", " 1 = 0"),
 
     /**
      * 查看管理子系统

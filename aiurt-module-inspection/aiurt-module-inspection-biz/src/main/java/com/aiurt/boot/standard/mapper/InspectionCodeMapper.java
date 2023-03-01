@@ -7,6 +7,9 @@ import com.aiurt.boot.manager.dto.SubsystemDTO;
 import com.aiurt.boot.standard.dto.DeviceTypeDTO;
 import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
+import com.aiurt.common.aspect.annotation.DataScope;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -34,6 +37,10 @@ public interface InspectionCodeMapper extends BaseMapper<InspectionCode> {
      * @param inspectionCodeDTO
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "majorName",value = "ta.major_code"),
+            @DataColumn(key = "systemName",value = "ta.subsystem_code")
+    })
     List<InspectionCodeDTO> pageLists(@Param("page")Page<InspectionCodeDTO> page,@Param("inspectionCodeDTO") InspectionCodeDTO inspectionCodeDTO);
 
     /**
