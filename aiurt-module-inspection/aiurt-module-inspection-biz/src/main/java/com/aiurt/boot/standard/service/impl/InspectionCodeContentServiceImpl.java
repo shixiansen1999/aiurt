@@ -11,6 +11,7 @@ import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeContentService;
 import com.aiurt.boot.standard.vo.InspectionCodeVo;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.druid.util.StringUtils;
@@ -332,6 +333,7 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
         if (id!="" && id!=null){
             queryWrapper.ne("id",id);
         }
+        queryWrapper.lambda().eq(InspectionCodeContent::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<InspectionCodeContent> inspectionCodeContents = baseMapper.selectList(queryWrapper);
         if (CollUtil.isNotEmpty(inspectionCodeContents)){
             throw new AiurtBootException("输入的code当前列表重复,请重新输入");
