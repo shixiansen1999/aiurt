@@ -68,6 +68,10 @@ public interface SysParamCodeConstant {
      * 流程消息发送渠道
      */
     String BPM_MESSAGE = "bpm_message";
+    /**
+     * 物资出入库发送渠道
+     */
+    String SPAREPART_MESSAGE = "sparepart_message";
 
     /**
      * 故障

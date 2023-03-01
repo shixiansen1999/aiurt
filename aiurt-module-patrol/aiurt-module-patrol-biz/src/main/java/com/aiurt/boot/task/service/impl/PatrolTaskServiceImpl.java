@@ -473,6 +473,41 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     }
 
+    /**
+     * 任务审核通过发送消息给巡视人
+     *
+     * @param id
+     */
+    private void sendAuditPassMessage(String id, LoginUser loginUser) {
+        PatrolTask patrolTask = this.getById(id);
+        QueryWrapper<PatrolTaskUser> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(wrapper);
+        if (CollectionUtil.isEmpty(taskUsers)) {
+            return;
+        }
+        String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
+        List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+        String userNames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+
+        //发送通知
+        try {
+            MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),userNames, "审核通过" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
+            PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
+            BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_AUDIT.getType());
+            messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
+            messageDTO.setMsgAbstract("巡视任务审核");
+            messageDTO.setPublishingContent("巡视任务审核通过");
+            String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+            sendMessage(messageDTO,realNames,null,patrolMessageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<String> patrolTaskAudit(String id, Integer status, String remark, String backReason) {
@@ -499,6 +534,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         } else {
             queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_COMPLETE).set(PatrolTask::getAuditorRemark, remark).set(PatrolTask::getAuditorTime, new Date()).eq(PatrolTask::getId, id);
             this.update(queryWrapper);
+            this.sendAuditPassMessage(id, loginUser);
             return Result.OK("通过成功");
         }
     }
