@@ -215,7 +215,7 @@ jeecg:
   # ElasticSearch 6设置
   elasticsearch:
     cluster-name: jeecg-ES
-    cluster-nodes: 127.0.0.1:9200
+    cluster-nodes: 192.168.1.29:9200
     check-enabled: false
   # 表单设计器配置
   desform:
@@ -409,6 +409,7 @@ aiurt:
     key: ddb048301e3d8a730dbe7cbe5d90a6fd
     # 城市编码
     city: 220100
+# 机器人wsdl服务地址
 robot:
   wsdl:
     address: http://2.0.1.16:11456?wsdl
