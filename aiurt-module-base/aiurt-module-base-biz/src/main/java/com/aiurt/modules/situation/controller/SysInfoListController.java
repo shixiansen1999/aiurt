@@ -295,6 +295,35 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
     }
 
     /**
+     * 特情管理-编辑
+     */
+    @AutoLog(value = "特情管理-编辑", operateType =  3, operateTypeAlias = "特情管理-编辑", permissionUrl = "/specialSituation")
+    @ApiOperation(value = "特情管理-编辑", notes = "特情管理-编辑")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = SysAnnouncementSend.class)
+    })
+    @RequestMapping(value = "/editById", method = {RequestMethod.PUT, RequestMethod.POST})
+    public Result<String> editById(@RequestBody SysAnnouncement sysAnnouncement) {
+        List<SysAnnouncementSend> sendList = sysAnnouncement.getSendList();
+        if (CollUtil.isNotEmpty(sendList)){
+            sysInfoSendService.removeBatchByIds(sendList);
+            for (SysAnnouncementSend s : sendList){
+                SysAnnouncementSend send = new SysAnnouncementSend();
+                send.setAnntId(s.getAnntId());
+                send.setUserId(s.getUserId());
+                send.setReadFlag(s.getReadFlag());
+                send.setCreateBy(s.getCreateBy());
+                send.setCreateTime(s.getCreateTime());
+                send.setUpdateBy(s.getUpdateBy());
+                send.setUpdateTime(s.getUpdateTime());
+                sysInfoSendService.save(send);
+            }
+        }
+        bdInfoListService.updateById(sysAnnouncement);
+        return Result.OK("编辑成功!");
+    }
+
+    /**
      *   通过id删除
      *
      * @param ids
@@ -310,6 +339,16 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             byId.setDelFlag(CommonConstant.DEL_FLAG_1.toString());
             sysInfoListMapper.updateById(byId);
         }
+        return Result.OK("删除成功!");
+    }
+
+    @AutoLog(value = "特情消息-特情消息详情-通过id删除", operateType =  4, operateTypeAlias = "删除-通过id删除", permissionUrl = "/specialSituation/SpecialSituationList")
+    @ApiOperation(value="特情管理-通过id删除", notes="特情管理-通过id删除")
+    @DeleteMapping(value = "/deleteById")
+    public Result<?> deleteById(@RequestParam(name="id",required=true) String id) {
+            SysAnnouncement byId = bdInfoListService.getById(id);
+            byId.setDelFlag(CommonConstant.DEL_FLAG_1.toString());
+            sysInfoListMapper.updateById(byId);
         return Result.OK("删除成功!");
     }
 
