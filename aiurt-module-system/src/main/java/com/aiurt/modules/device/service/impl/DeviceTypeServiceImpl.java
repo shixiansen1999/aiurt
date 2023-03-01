@@ -132,7 +132,6 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         }
         String typeCodeCc = getCcStr(deviceType);
         deviceType.setCodeCc(typeCodeCc);
-        // TODO: 2023/3/1 添加备注字段
         deviceType.setRemark(deviceType.getRemark());
         deviceTypeService.save(deviceType);
         //添加设备组成
