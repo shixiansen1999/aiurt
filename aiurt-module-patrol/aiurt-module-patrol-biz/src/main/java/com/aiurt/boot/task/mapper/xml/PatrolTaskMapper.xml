@@ -194,6 +194,12 @@ FROM
         <if test="patrolTask.code != null and patrolTask.code != ''">
             and pt.code like concat('%', #{patrolTask.code}, '%')
         </if>
+         <if test="patrolTask.codeList != null">
+            and pt.code in
+             <foreach collection="patrolTask.codeList" item="item" open="(" separator="," close=")">
+                 #{item}
+             </foreach>
+        </if>
         <if test="patrolTask.statusArray != null">
             and pt.status in
             <foreach collection="patrolTask.statusArray" item="item" open="(" separator="," close=")">
