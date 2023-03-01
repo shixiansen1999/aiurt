@@ -754,7 +754,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             if (CollUtil.isNotEmpty(taskUserList)) {
                 patrolTaskUserMapper.deleteBatchIds(taskUserList);
             }
-            updateWrapper.set(PatrolTask::getStatus, 2)
+            updateWrapper.set(PatrolTask::getStatus, 4)
                     .set(PatrolTask::getSource, 1)
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
