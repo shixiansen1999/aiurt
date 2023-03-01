@@ -195,8 +195,8 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		SysAnnmentTypeEnum[] typeValues = SysAnnmentTypeEnum.values();
 		//遍历消息类型枚举
 		for (SysAnnmentTypeEnum value : typeValues) {
-			String type = value.getType();
-			String s = StrUtil.splitTrim(type, "_").get(0);
+			String s = value.getType();
+			String type = StrUtil.splitTrim(s, "_").get(0);
 			String module = value.getModule();
 			SysMessageTypeDTO sysMessageTypeDTO = new SysMessageTypeDTO();
 			List<SysAnnouncementSendDTO> typeList = new ArrayList<>();
@@ -204,12 +204,12 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			List<SysAnnouncementSendDTO> readFlagList = new ArrayList<>();
 			List<SysAnnouncementSendDTO> readFlagBpmList = new ArrayList<>();
 			//所有数据
-			typeList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getBusType() != null && sysAnnouncementSendDTO.getBusType().contains(s)).collect(Collectors.toList());
-			bpmList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getProcessCode() != null && sysAnnouncementSendDTO.getProcessCode().contains(s)).collect(Collectors.toList());
+			typeList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getBusType() != null && sysAnnouncementSendDTO.getBusType().contains(type)).collect(Collectors.toList());
+			bpmList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getProcessCode() != null && sysAnnouncementSendDTO.getProcessCode().contains(type)).collect(Collectors.toList());
 			typeList.addAll(bpmList);
 			//所有未读的消息
-			readFlagList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getBusType() != null && sysAnnouncementSendDTO.getReadFlag().equals("0") && sysAnnouncementSendDTO.getBusType().contains(s)).collect(Collectors.toList());
-			readFlagBpmList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getProcessCode() != null && sysAnnouncementSendDTO.getReadFlag().equals("0") && sysAnnouncementSendDTO.getProcessCode().contains(s)).collect(Collectors.toList());
+			readFlagList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getBusType() != null && sysAnnouncementSendDTO.getReadFlag().equals("0") && sysAnnouncementSendDTO.getBusType().contains(type)).collect(Collectors.toList());
+			readFlagBpmList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getProcessCode() != null && sysAnnouncementSendDTO.getReadFlag().equals("0") && sysAnnouncementSendDTO.getProcessCode().contains(type)).collect(Collectors.toList());
 			readFlagList.addAll(readFlagBpmList);
 			//设置消息类型
 			sysMessageTypeDTO.setBusType(type);
