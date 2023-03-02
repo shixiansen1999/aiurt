@@ -1,4 +1,5 @@
 package com.aiurt.modules.usageconfig.service.impl;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.constant.CommonConstant;
@@ -59,6 +60,9 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
         if (Objects.isNull(startTime) || Objects.isNull(endTime)) {
             startTime = DateUtil.beginOfDay(new Date());
             endTime = DateUtil.endOfDay(new Date());
+        }else {
+            startTime = DateUtil.parse(DateUtil.formatDate(startTime)+" 00:00:00");
+            endTime = DateUtil.parse(DateUtil.formatDate(endTime)+" 23:59:59");
         }
 
         Page<UsageStatDTO> pageList = new Page<>(usageConfigParamDTO.getPageNo(),usageConfigParamDTO.getPageSize());

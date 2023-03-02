@@ -24,16 +24,22 @@ public class ExcelExportDTO implements Serializable {
     @ApiModelProperty(value = "请求数据的地址(全路径)")
     private String dataUrl;
     /**
+     * 请求方法类型(GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, TRACE)
+     */
+    @NotNull(message = "请求方法类型不能为空！")
+    @ApiModelProperty(value = "请求方法类型(GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, TRACE)")
+    private String method;
+    /**
      * token
      */
     @NotNull(message = "token不能为空！")
     @ApiModelProperty(value = "token")
     private String token;
     /**
-     * 请求参数体
+     * POST请求参数体(Json格式化的字符串)
      */
-    @ApiModelProperty(value = "请求参数体")
-    private Map<String, Object> reqBody;
+    @ApiModelProperty(value = "POST请求参数体(Json格式化的字符串)")
+    private String reqBody;
     /**
      * 服务的网关前缀地址
      */

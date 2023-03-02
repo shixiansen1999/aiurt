@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
@@ -29,16 +30,22 @@ import org.apache.commons.lang.time.DateUtils;
  * 每日定时任务：定时生成生产日报数据
  * 每日系统自动生成生产日报数据，添加入三个表：fault_produce_report、fault_produce_report_line、fault_produce_report_line_detail
  */
-@Component
-@RequiredArgsConstructor
 @Slf4j
+@Component
+//@RequiredArgsConstructor
 public class FaultProduceReportJob implements Job {
-    private final IFaultService iFaultService;
-    private final IFaultProduceReportService faultProduceReportService;
-    private final ISysBaseAPI iSysBaseAPI;
-    private final IFaultProduceReportLineService iFaultProduceReportLineService;
-    private final IFaultRepairRecordService iFaultRepairRecordService;
-    private final IFaultProduceReportLineDetailService iFaultProduceReportLineDetailService;
+    @Autowired
+    private IFaultService iFaultService;
+    @Autowired
+    private IFaultProduceReportService faultProduceReportService;
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
+    @Autowired
+    private IFaultProduceReportLineService iFaultProduceReportLineService;
+    @Autowired
+    private IFaultRepairRecordService iFaultRepairRecordService;
+    @Autowired
+    private IFaultProduceReportLineDetailService iFaultProduceReportLineDetailService;
 
     /**
      * 参数的格式： 统计截止时间/统计多少个小时内的
