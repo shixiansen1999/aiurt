@@ -11,6 +11,12 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class FaultProduceReportDTO extends FaultProduceReport {
+    /**传入的reportId列表*/
+    private List<String> selections;
+    /**查询统计日期：开始时间*/
+    private String beginDay;
+    /**查询统计日期：结束时间*/
+    private String endDay;
     /**专业名称*/
     private String majorName;
     /**提交人的真实名称*/

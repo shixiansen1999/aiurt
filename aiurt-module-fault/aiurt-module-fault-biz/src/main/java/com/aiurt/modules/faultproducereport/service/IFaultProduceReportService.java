@@ -7,6 +7,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 /**
  * @Description: 生产日报
  * @Author: aiurt
@@ -23,4 +27,8 @@ public interface IFaultProduceReportService extends IService<FaultProduceReport>
                                                     String beginDay, String endDay);
 
     void workSubmit(FaultProduceReport faultProduceReport);
+
+    void exportZip(FaultProduceReportDTO faultProduceReportDTO, HttpServletRequest request, HttpServletResponse response) throws IOException;
+
+    void exportExcel(FaultProduceReportDTO faultProduceReportDTO, HttpServletRequest request, HttpServletResponse response) throws IOException;
 }
