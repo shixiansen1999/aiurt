@@ -1,5 +1,6 @@
 package com.aiurt.boot.check.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -275,53 +276,29 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
 
         // 发消息
         try {
-            MessageDTO messageDTO = new MessageDTO();
-            LoginUser userById = sysBaseApi.getUserById(fixedAssetsCheck.getCheckId());
-            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
             //构建消息模板
             HashMap<String, Object> map = new HashMap<>();
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, fixedAssetsCheck.getId());
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.ASSET_CHECKER.getType());
-            map.put("inventoryList",fixedAssetsCheck.getInventoryList());
-            List<String> names = sysBaseApi.queryOrgNamesByOrgCodes(orgCodes);
-            map.put("departName", StrUtil.join(",", names));
-            map.put("checkName", userById.getRealname());
-            map.put("time", DateUtil.format(fixedAssetsCheck.getPlanStartDate(), "yyyy-MM-dd")+"-"+DateUtil.format(fixedAssetsCheck.getPlanEndDate(), "yyyy-MM-dd"));
-            messageDTO.setData(map);
 
+            MessageDTO messageDTO = new MessageDTO();
+            messageDTO.setData(map);
             messageDTO.setTitle("固定资产盘点"+DateUtil.today());
-            messageDTO.setStartTime(new Date());
-            messageDTO.setEndTime(new Date());
-            messageDTO.setFromUser(sysUser.getUsername());
-            messageDTO.setToUser(userById.getUsername());
-            messageDTO.setToAll(false);
             messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
-            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FIXED_ASSETS_MESSAGE);
-            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
             messageDTO.setMsgAbstract("固定资产盘点");
             messageDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
-            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_12);
-            sysBaseApi.sendTemplateMessage(messageDTO);
+            sendMessage(messageDTO,fixedAssetsCheck,orgCodes);
 
             TodoDTO todoDTO = new TodoDTO();
             todoDTO.setData(map);
-            todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-
-            todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
+            todoDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
             todoDTO.setTitle("固定资产盘点"+DateUtil.today());
             todoDTO.setMsgAbstract("固定资产盘点");
             todoDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
-
             todoDTO.setProcessDefinitionName("固定资产盘点");
             todoDTO.setTaskName("固定资产盘点");
-            todoDTO.setBusinessKey(fixedAssetsCheck.getId());
-            todoDTO.setBusinessType(TodoBusinessTypeEnum.FIXED_ASSETS.getType());
-            todoDTO.setCurrentUserName(userById.getUsername());
-            todoDTO.setTaskType(TodoTaskTypeEnum.FIXED_ASSETS.getType());
-            todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
-            todoDTO.setUrl(null);
-            todoDTO.setAppUrl(null);
-            isTodoBaseAPI.createTodoTask(todoDTO);
+            sendTodo(todoDTO, fixedAssetsCheck, orgCodes);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -512,49 +489,144 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         FixedAssetsCheck assetsCheck = this.getById(businessKey);
         Assert.notNull(assetsCheck, "未找到对应数据！");
 
-        int states = updateStateEntity.getStates();
-        switch (states) {
-            case 2:
-                // 盘点结果审核
-                assetsCheck.setStatus(FixedAssetsConstant.STATUS_2);
-                assetsCheck.setAuditResult(null);
-                break;
-            case 3:
-                // 盘点结果驳回
-                assetsCheck.setStatus(FixedAssetsConstant.STATUS_1);
-                assetsCheck.setAuditResult(FixedAssetsConstant.AUDIT_RESULT_0);
-                break;
-            case 4:
-                // 审核通过
-                assetsCheck.setStatus(FixedAssetsConstant.STATUS_3);
-                assetsCheck.setAuditTime(new Date());
-                assetsCheck.setAuditId(userId);
-                assetsCheck.setAuditReason(updateStateEntity.getReason());
-                assetsCheck.setAuditResult(FixedAssetsConstant.AUDIT_RESULT_1);
-                List<FixedAssetsCheckRecord> fixedAssetsCheckRecord = fixedAssetsCheckRecordService.lambdaQuery()
-                        .eq(FixedAssetsCheckRecord::getDelFlag,FixedAssetsConstant.STATUS_0)
-                        .eq(FixedAssetsCheckRecord::getCheckId,businessKey).list();
-                List<FixedAssetsCheckDetail> fixedAssetsCheckDetail =fixedAssetsCheckDetailService.lambdaQuery()
-                        .eq(FixedAssetsCheckDetail::getDelFlag,FixedAssetsConstant.STATUS_0)
-                        .eq(FixedAssetsCheckDetail::getCheckId,businessKey).list();
-                fixedAssetsCheckDetail.forEach(f->{
-                    FixedAssetsCheckRecord fixedAssetsCheckRecordList = fixedAssetsCheckRecord.stream().filter(fix-> fix.getAssetCode().equals(f.getAssetCode())).findFirst().get();
-                    f.setAfterNumber(fixedAssetsCheckRecordList.getActualNumber());
-                });
-                fixedAssetsCheckDetailService.updateBatchById(fixedAssetsCheckDetail);
-                List<FixedAssets> fixedAssetsArrayList = new ArrayList<>();
-                fixedAssetsCheckRecord.forEach(f->{
-                    if (ObjectUtils.isNotEmpty(f.getActualNumber())){
-                        FixedAssets fixedAssets = fixedAssetsService.lambdaQuery()
-                                .eq(FixedAssets::getDelFlag,FixedAssetsConstant.STATUS_0)
-                                .eq(FixedAssets::getAssetCode,f.getAssetCode()).one();
-                        fixedAssets.setNumber(f.getActualNumber());
-                        fixedAssetsArrayList.add(fixedAssets);
-                    }
-                });
-                fixedAssetsService.updateBatchById(fixedAssetsArrayList);
-                break;
+        try {
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, assetsCheck.getId());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.ASSET_AUDIT.getType());
+
+            MessageDTO messageDTO = new MessageDTO();
+            messageDTO.setData(map);
+
+            List<FixedAssetsCheckDept> deptList = fixedAssetsCheckDeptService.lambdaQuery()
+                    .eq(FixedAssetsCheckDept::getCheckId, assetsCheck.getId()).list();
+            List<String> orgCodes = deptList.stream().map(FixedAssetsCheckDept::getOrgCode).collect(Collectors.toList());
+
+            int states = updateStateEntity.getStates();
+            switch (states) {
+                case 2:
+                    // 盘点结果审核
+                    assetsCheck.setStatus(FixedAssetsConstant.STATUS_2);
+                    assetsCheck.setAuditResult(null);
+                    //发送通知
+                    messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
+                    messageDTO.setTitle("固定资产盘点审核"+DateUtil.today());
+                    messageDTO.setMsgAbstract("固定资产盘点审核");
+                    messageDTO.setPublishingContent("固定资产盘点审核");
+                    sendMessage(messageDTO,assetsCheck,orgCodes);
+                    break;
+                case 3:
+                    // 盘点结果驳回
+                    assetsCheck.setStatus(FixedAssetsConstant.STATUS_1);
+                    assetsCheck.setAuditResult(FixedAssetsConstant.AUDIT_RESULT_0);
+
+                    map.put("", DateUtil.format(assetsCheck.getActualStartTime(), "yyyy-MM-dd HH:mm") + "-" + DateUtil.format(assetsCheck.getActualEndTime(), "yyyy-MM-dd HH:mm"));
+                    //发送通知
+                    messageDTO.setData(map);
+                    messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE_REJECT);
+                    messageDTO.setTitle("固定资产盘点审核"+DateUtil.today());
+                    messageDTO.setMsgAbstract("固定资产盘点审核驳回");
+                    messageDTO.setPublishingContent("固定资产盘点审核驳回");
+                    sendMessage(messageDTO,assetsCheck,orgCodes);
+                    break;
+                case 4:
+                    // 审核通过
+                    assetsCheck.setStatus(FixedAssetsConstant.STATUS_3);
+                    assetsCheck.setAuditTime(new Date());
+                    assetsCheck.setAuditId(userId);
+                    assetsCheck.setAuditReason(updateStateEntity.getReason());
+                    assetsCheck.setAuditResult(FixedAssetsConstant.AUDIT_RESULT_1);
+                    List<FixedAssetsCheckRecord> fixedAssetsCheckRecord = fixedAssetsCheckRecordService.lambdaQuery()
+                            .eq(FixedAssetsCheckRecord::getDelFlag,FixedAssetsConstant.STATUS_0)
+                            .eq(FixedAssetsCheckRecord::getCheckId,businessKey).list();
+                    List<FixedAssetsCheckDetail> fixedAssetsCheckDetail =fixedAssetsCheckDetailService.lambdaQuery()
+                            .eq(FixedAssetsCheckDetail::getDelFlag,FixedAssetsConstant.STATUS_0)
+                            .eq(FixedAssetsCheckDetail::getCheckId,businessKey).list();
+                    fixedAssetsCheckDetail.forEach(f->{
+                        FixedAssetsCheckRecord fixedAssetsCheckRecordList = fixedAssetsCheckRecord.stream().filter(fix-> fix.getAssetCode().equals(f.getAssetCode())).findFirst().get();
+                        f.setAfterNumber(fixedAssetsCheckRecordList.getActualNumber());
+                    });
+                    fixedAssetsCheckDetailService.updateBatchById(fixedAssetsCheckDetail);
+                    List<FixedAssets> fixedAssetsArrayList = new ArrayList<>();
+                    fixedAssetsCheckRecord.forEach(f->{
+                        if (ObjectUtils.isNotEmpty(f.getActualNumber())){
+                            FixedAssets fixedAssets = fixedAssetsService.lambdaQuery()
+                                    .eq(FixedAssets::getDelFlag,FixedAssetsConstant.STATUS_0)
+                                    .eq(FixedAssets::getAssetCode,f.getAssetCode()).one();
+                            fixedAssets.setNumber(f.getActualNumber());
+                            fixedAssetsArrayList.add(fixedAssets);
+                        }
+                    });
+                    fixedAssetsService.updateBatchById(fixedAssetsArrayList);
+                    //发送通知
+                    messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
+                    messageDTO.setTitle("固定资产盘点审核"+DateUtil.today());
+                    messageDTO.setMsgAbstract("固定资产盘点审核");
+                    messageDTO.setPublishingContent("固定资产盘点审核");
+                    sendMessage(messageDTO,assetsCheck,orgCodes);
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         this.updateById(assetsCheck);
+    }
+
+    /**
+     * 发送通知消息
+     */
+    private void sendMessage(MessageDTO messageDTO, FixedAssetsCheck fixedAssetsCheck, List<String> orgCodes) {
+        LoginUser userById = sysBaseApi.getUserById(fixedAssetsCheck.getCheckId());
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //发送通知
+        //构建消息模板
+        HashMap<String, Object> map = new HashMap<>();
+        if (CollUtil.isNotEmpty(messageDTO.getData())) {
+            map.putAll(messageDTO.getData());
+        }
+        map.put("inventoryList",fixedAssetsCheck.getInventoryList());
+        List<String> names = sysBaseApi.queryOrgNamesByOrgCodes(orgCodes);
+        map.put("departName", StrUtil.join(",", names));
+        map.put("checkName", userById.getRealname());
+        map.put("time", DateUtil.format(fixedAssetsCheck.getPlanStartDate(), "yyyy-MM-dd")+"-"+DateUtil.format(fixedAssetsCheck.getPlanEndDate(), "yyyy-MM-dd"));
+        messageDTO.setData(map);
+
+        messageDTO.setStartTime(new Date());
+        messageDTO.setEndTime(new Date());
+        messageDTO.setFromUser(sysUser.getUsername());
+        messageDTO.setToUser(userById.getUsername());
+        messageDTO.setToAll(false);
+        messageDTO.setCategory(CommonConstant.MSG_CATEGORY_12);
+
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FIXED_ASSETS_MESSAGE);
+        messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+        sysBaseApi.sendTemplateMessage(messageDTO);
+    }
+
+    /**发送待办消息*/
+    private void sendTodo(TodoDTO todoDTO, FixedAssetsCheck fixedAssetsCheck,List<String> orgCodes) {
+        LoginUser userById = sysBaseApi.getUserById(fixedAssetsCheck.getCheckId());
+        HashMap<String, Object> map = new HashMap<>();
+        if (CollUtil.isNotEmpty(todoDTO.getData())) {
+            map.putAll(todoDTO.getData());
+        }
+        map.put("inventoryList",fixedAssetsCheck.getInventoryList());
+        List<String> names = sysBaseApi.queryOrgNamesByOrgCodes(orgCodes);
+        map.put("departName", StrUtil.join(",", names));
+        map.put("checkName", userById.getRealname());
+        map.put("time", DateUtil.format(fixedAssetsCheck.getPlanStartDate(), "yyyy-MM-dd")+"-"+DateUtil.format(fixedAssetsCheck.getPlanEndDate(), "yyyy-MM-dd"));
+        todoDTO.setData(map);
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FIXED_ASSETS_MESSAGE_PROCESS);
+        todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+
+        todoDTO.setBusinessKey(fixedAssetsCheck.getId());
+        todoDTO.setBusinessType(TodoBusinessTypeEnum.FIXED_ASSETS.getType());
+        todoDTO.setCurrentUserName(userById.getUsername());
+        todoDTO.setTaskType(TodoTaskTypeEnum.FIXED_ASSETS.getType());
+        todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+        todoDTO.setUrl(null);
+        todoDTO.setAppUrl(null);
+
+        isTodoBaseAPI.createTodoTask(todoDTO);
     }
 }

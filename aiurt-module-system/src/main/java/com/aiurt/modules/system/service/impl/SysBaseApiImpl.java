@@ -2633,10 +2633,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         String type = message.getType();
         //update-begin-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
         String templateCode = message.getTemplateCode();
+        String content = null;
         if(StrUtil.isNotBlank(templateCode)){
             SysMessageTemplate templateEntity = getTemplateEntity(templateCode);
             boolean isMarkdown =CommonConstant.MSG_TEMPLATE_TYPE_MD.equals(templateEntity.getTemplateType());
-            String content = templateEntity.getTemplateContent();
+            content = templateEntity.getTemplateContent();
             if(StrUtil.isNotBlank(content) && null!=message.getData()){
                 content = FreemarkerParseFactory.parseTemplateContent(content, message.getData(), isMarkdown);
             }
@@ -2665,8 +2666,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 }
                 emailSendMsgHandle.sendMessage(message);
             }else if(MessageTypeEnum.DD.toString().equals(messageType)){
+
                 ddSendMsgHandle.sendMessage(message);
             }else if(MessageTypeEnum.QYWX.toString().equals(messageType)){
+                message.setContent( StrUtil.replace(content, "<br/>", ","));
                 qywxSendMsgHandle.sendMessage(message);
             }
         }

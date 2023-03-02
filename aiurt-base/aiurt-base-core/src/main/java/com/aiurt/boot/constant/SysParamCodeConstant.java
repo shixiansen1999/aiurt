@@ -21,6 +21,10 @@ public interface SysParamCodeConstant {
      */
     String FIXED_ASSETS_MESSAGE = "fixed_assets_message";
     /**
+     * 固定资产业务消息发送渠道(代办)
+     */
+    String FIXED_ASSETS_MESSAGE_PROCESS = "fixed_assets_message_process";
+    /**
      * 特情消息发送渠道
      */
     String SPECIAL_INFO_MESSAGE = "special_info_message";

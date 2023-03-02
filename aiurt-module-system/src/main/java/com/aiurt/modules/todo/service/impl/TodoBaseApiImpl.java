@@ -120,11 +120,12 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             return;
         }
         //处理消息模板
+        String content = null;
         String templateCode = sysTodoList.getTemplateCode();
         if(StrUtil.isNotBlank(templateCode)){
             SysMessageTemplate templateEntity = getTemplateEntity(templateCode);
             boolean isMarkdown = CommonConstant.MSG_TEMPLATE_TYPE_MD.equals(templateEntity.getTemplateType());
-            String content = templateEntity.getTemplateContent();
+            content = templateEntity.getTemplateContent();
             if(StrUtil.isNotBlank(content) && null!=sysTodoList.getData()){
                 content = FreemarkerParseFactory.parseTemplateContent(content, sysTodoList.getData(), isMarkdown);
             }
@@ -169,8 +170,10 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
                 }
                 emailSendMsgHandle.sendMessage(messageDTO);
             }else if(MessageTypeEnum.DD.toString().equals(messageType)){
+                messageDTO.setContent( StrUtil.replace(content, "<br/>", ","));
                 ddSendMsgHandle.sendMessage(messageDTO);
             }else if(MessageTypeEnum.QYWX.toString().equals(messageType)){
+                messageDTO.setContent( StrUtil.replace(content, "<br/>", ","));
                 qywxSendMsgHandle.sendMessage(messageDTO);
             }
         }

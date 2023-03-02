@@ -574,6 +574,8 @@ public interface CommonConstant {
  public static final String BPM_SERVICE_NOTICE_PROCESS = "bpm_service_notice_process";
  /** 消息模板：固定资产业务通知 */
  public static final String FIXED_ASSETS_SERVICE_NOTICE = "fixed_assets_service_notice";
+ /** 消息模板：固定资产业务通知-驳回 */
+ public static final String FIXED_ASSETS_SERVICE_NOTICE_REJECT = "fixed_assets_service_notice_reject";
  /** 消息模板：工作日志业务通知 */
  public static final String WORK_LOG_SERVICE_NOTICE = "work_log_service_notice";
  /** 消息模板：周计划业务通知 */
