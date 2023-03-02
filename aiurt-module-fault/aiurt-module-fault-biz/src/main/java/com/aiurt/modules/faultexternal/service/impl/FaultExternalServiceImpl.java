@@ -100,6 +100,18 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
         fault.setFaultPhenomenon(dto.getFaultPhenomenon());
 //        fault.setFaultType(dto.getFaultType());
         fault.setFaultLevel(dto.getFaultLevel());
+        //紧急程度
+        fault.setUrgency(dto.getUrgency());
+        //是否委外
+        fault.setIsOutsource(dto.getIsOutsource());
+        //接报人
+        fault.setReceiveUserName(dto.getReceiveUserName());
+        //报修组织机构
+        fault.setFaultApplicantDept(dto.getFaultApplicantDept());
+        //报修方式
+        fault.setFaultModeCode(dto.getFaultModeCode());
+        //所属子系统
+        fault.setSubSystemCode(dto.getSubSystemCode());
         fault.setRepairCode(dto.getRepairCode());
         if (StringUtils.isNotBlank(dto.getLocation())) {
             fault.setDetailLocation(dto.getLocation());
@@ -147,7 +159,7 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
         if (faultExternal != null) {
             faultExternal.setFaultcode(code);
             faultExternal.setStatus(1);
-            this.updateById(faultExternal);
+            faultExternalMapper.updateById(faultExternal);
         }
     }
 
