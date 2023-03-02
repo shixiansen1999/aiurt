@@ -4,7 +4,6 @@ import com.aiurt.boot.dto.ExcelExportDTO;
 import com.aiurt.boot.service.ExportExcelService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,10 +24,9 @@ public class ExportExcelController {
 
     @ApiOperation(value = "excel导出", notes = "excel导出")
     @RequestMapping(value = "/excel", method = {RequestMethod.GET, RequestMethod.POST})
-    public Result<String> exportExcel(HttpServletRequest request, HttpServletResponse response,
-                                      @RequestBody @Validated ExcelExportDTO excelExportDTO) {
+    public void exportExcel(HttpServletRequest request, HttpServletResponse response,
+                            @RequestBody @Validated ExcelExportDTO excelExportDTO) {
         exportExcelService.exportExcel(request, response, excelExportDTO);
-        return Result.OK("导出成功！");
     }
 
 }
