@@ -436,6 +436,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				}else{
 					record.setDeal(true);
 				}
+				//设置类型
+				String s = record.getTaskType();
+				String type = StrUtil.splitTrim(s, "_").get(0);
+				record.setTaskType(type);
 			}
 			return businessList;
 		}
