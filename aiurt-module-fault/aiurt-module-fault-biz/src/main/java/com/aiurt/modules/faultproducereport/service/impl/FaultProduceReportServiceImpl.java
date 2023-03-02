@@ -20,6 +20,8 @@ import com.aiurt.modules.flow.api.FlowBaseApi;
 import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
 import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.dto.TaskCompleteDTO;
+import com.aiurt.modules.flow.dto.TaskInfoDTO;
+import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.position.entity.CsLine;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -191,6 +193,30 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
                 LoginUser submitUser = iSysBaseAPI.queryUser(reportDTO.getSubmitUserName());
                 reportDTO.setSubmitUserRealname(submitUser.getRealname());
             }
+
+            if (reportDTO.getTaskId() != null && reportDTO.getState() == 0) {
+                TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfo(reportDTO.getProcessInstanceId(), reportDTO.getTaskId());
+                List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
+                if (operationList != null && !operationList.isEmpty()) {
+                    reportDTO.setIsOpen(true);
+                }else {
+                    reportDTO.setIsOpen(false);
+                }
+//                Task task = flowBaseApi.getProcessInstanceActiveTask(, );
+//                LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+//                String username = loginUser.getUsername();
+//                if (StrUtil.isNotBlank(task.getAssignee())) {
+//                    boolean isOpen = StrUtil.equals(username, task.getAssignee());
+//                    reportDTO.setIsOpen(isOpen);
+//                }
+            }
+            if (reportDTO.getTaskId() == null && reportDTO.getState() == 0) {
+                reportDTO.setIsOpen(true);
+            }
+            if (reportDTO.getState() != 0) {
+                reportDTO.setIsOpen(false);
+            }
+
         }
         pageList.setRecords(reportDTOList);
         return Result.ok(pageList);

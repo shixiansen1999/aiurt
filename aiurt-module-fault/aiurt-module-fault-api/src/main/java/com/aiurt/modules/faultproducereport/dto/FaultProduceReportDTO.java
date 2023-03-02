@@ -25,4 +25,5 @@ public class FaultProduceReportDTO extends FaultProduceReport {
     private List<FaultProduceReportLine> reportLineList;
     /**一条生产日报下的所有故障清单数据*/
     private List<FaultProduceReportLineDetailDTO> reportLineDetailDTOList;
+    private Boolean isOpen;
 }
