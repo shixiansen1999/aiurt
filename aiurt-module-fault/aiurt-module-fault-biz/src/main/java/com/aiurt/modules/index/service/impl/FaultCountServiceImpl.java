@@ -290,6 +290,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
 
             stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
         }
+        //通过真实姓名模糊查询username
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultCountInfoReq.getAppointUserName());
         List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq, ordCode, majors, stationCodeList,userNameByRealName);
         if (CollUtil.isNotEmpty(faultData)) {
@@ -350,7 +351,9 @@ public class FaultCountServiceImpl implements IFaultCountService {
             stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
         }
         faultTimeoutLevelReq.setOrgList(ordCode);
-        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq,majors,stationCodeList,lv1Hours,lv2Hours,lv3Hours);
+        //通过真实姓名模糊查询username
+        List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultTimeoutLevelReq.getAppointUserName());
+        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq,majors,stationCodeList,lv1Hours,lv2Hours,lv3Hours,userNameByRealName);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultTimeoutLevelDTO faultDatum : faultData) {
                 //查找设备编码

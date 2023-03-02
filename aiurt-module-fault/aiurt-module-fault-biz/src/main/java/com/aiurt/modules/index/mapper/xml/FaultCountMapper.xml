@@ -102,9 +102,6 @@
                         #{item}
                     </foreach>
                 </if>
-<!--                <if test="faultCountInfoReq.appointUserName != null">-->
-<!--                    and r.appoint_user_name  like concat( '%' , #{faultCountInfoReq.appointUserName}, '%')-->
-<!--                </if>-->
                 <if test="faultCountInfoReq.faultModeCode != null">
                     and r.fault_mode_code  = #{faultCountInfoReq.faultModeCode}
                 </if>
@@ -163,6 +160,12 @@
                 </if>
                 <if test="faultTimeoutLevelReq.faultModeCode != null">
                     and fault_mode_code  = #{faultTimeoutLevelReq.faultModeCode}
+                </if>
+                <if test="userNameByRealName != null and userNameByRealName.size() != 0">
+                    and appoint_user_name  in
+                    <foreach collection="userNameByRealName" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
                 </if>
                 <if test="faultTimeoutLevelReq.orgList != null and faultTimeoutLevelReq.orgList.size() != 0 ">
                   AND  fault.sys_org_code in
