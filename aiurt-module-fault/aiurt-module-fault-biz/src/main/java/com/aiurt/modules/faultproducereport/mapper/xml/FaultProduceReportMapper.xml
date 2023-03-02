@@ -79,5 +79,25 @@
         </if>
         order by fpr.statistics_date desc
     </select>
-    
+
+    <select id="selectIdList" resultType="java.lang.String">
+        select id
+        from fault_produce_report fpr
+        <where>
+            <if test="majorCodeList != null and majorCodeList.size() != 0">
+                and fpr.major_code in
+                <foreach item="majorCode" collection="majorCodeList" separator="," open="(" close=")">
+                    #{majorCode}
+                </foreach>
+            </if>
+            <if test="beginDay != null and beginDay != ''">
+                and UNIX_TIMESTAMP(fpr.statistics_date) >= UNIX_TIMESTAMP(#{beginDay})
+            </if>
+            <if test="endDay != null and beginDay != ''">
+                and UNIX_TIMESTAMP(#{endDay}) >= UNIX_TIMESTAMP(fpr.statistics_date)
+            </if>
+        </where>
+        order by fpr.statistics_date desc
+    </select>
+
 </mapper>

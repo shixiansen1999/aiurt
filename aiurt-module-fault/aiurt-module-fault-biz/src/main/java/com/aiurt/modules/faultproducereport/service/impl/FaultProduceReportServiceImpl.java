@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -369,15 +370,15 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
                 endDay = null;
             }
         }
-        List<FaultProduceReportDTO> reportDTOList = produceReportMapper.queryPageList(new Page<>(), majorCodeList, beginDay, endDay);
-
+//        List<FaultProduceReportDTO> reportDTOList = produceReportMapper.queryPageList(new Page<>(), majorCodeList, beginDay, endDay);
+        List<String> reportDTOIdList = produceReportMapper.selectIdList(majorCodeList, beginDay, endDay);
         // 没查询出数据，抛出异常
-        if (reportDTOList.isEmpty()) {
+        if (reportDTOIdList.isEmpty()) {
             throw new AiurtBootException("未找到数据");
         }
         // 如果 selections 是空的话，默认导出查询的全部,不然就是 selections 和 reportDTOList的id列表的并集
         List<String> reportIdList;
-        List<String> reportDTOIdList = reportDTOList.stream().map(FaultProduceReport::getId).collect(Collectors.toList());
+//        List<String> reportDTOIdList = reportDTOList.stream().map(FaultProduceReport::getId).collect(Collectors.toList());
         if (selections == null || selections.isEmpty()) {
             reportIdList = reportDTOIdList;
         }else {
@@ -385,15 +386,16 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
         }
 
         // 设置返回的是附件，设置附件名称
-        String attachName = new String("生产日报表.zip".getBytes(),"ISO8859-1");
+        String attachName = new String("生产日报表.zip".getBytes(), StandardCharsets.UTF_8);
         response.setContentType("multipart/form-data");
         response.setHeader("Content-Disposition", "attachment;fileName=" + attachName);
 
         ZipOutputStream zipOut = new ZipOutputStream(response.getOutputStream());
 
-        for (String reportId : reportIdList) {
+        for (int i = 0; i < reportIdList.size(); i++) {
+            String reportId = reportIdList.get(i);
             // 压缩包里面的excel表名
-            String filename = "生产日报" + reportId + ".xls";
+            String filename = "生产日报_" + (i + 1) + ".xls";
             //创新新的 ZipEntry
             ZipEntry zipEntry = new ZipEntry(filename);
             zipOut.putNextEntry(zipEntry);
@@ -472,7 +474,7 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
         byte[] fileByte = getOutPutBytesByReportId(reportId);
 
         // 设置返回的是附件，设置附件名称
-        String attachName = new String("生产日报excel.xls".getBytes(),"ISO8859-1");
+        String attachName = new String("生产日报.xls".getBytes(), StandardCharsets.UTF_8);
         response.setContentType("multipart/form-data");
         response.setHeader("Content-Disposition", "attachment;fileName=" + attachName);
 
