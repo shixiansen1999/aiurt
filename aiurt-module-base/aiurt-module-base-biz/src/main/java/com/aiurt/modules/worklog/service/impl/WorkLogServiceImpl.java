@@ -313,15 +313,15 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 //                stringBuffer.append("完成工区消毒；");
 //            }else {stringBuffer.append("未完成工区消毒；");}
 
-            if (WorkLogConstans.IS.equals(record.getIsClean())) {
-                stringBuffer.append("完成工区卫生打扫；");
-            }else { stringBuffer.append("未完成工区卫生打扫；");}
+//            if (WorkLogConstans.IS.equals(record.getIsClean())) {
+//                stringBuffer.append("完成工区卫生打扫；");
+//            }else { stringBuffer.append("未完成工区卫生打扫；");}
 
 //            if (WorkLogConstans.NORMAL.equals(record.getIsAbnormal())) {
 //                stringBuffer.append("班组上岗人员体温正常。");
 //            }else { stringBuffer.append("班组上岗人员体温异常。");}
 
-            record.setAntiepidemicWork(stringBuffer.toString());
+           // record.setAntiepidemicWork(stringBuffer.toString());
 
             record.setSchedule(schedule);
 
@@ -330,7 +330,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 stringBuffer2.append("应急处理情况：");
                 stringBuffer2.append(record.getEmergencyDisposalContent()+";");
             }
-            stringBuffer2.append("防疫相关工作：");
+//            stringBuffer2.append("防疫相关工作：");
             stringBuffer2.append(stringBuffer);
             if (WorkLogConstans.IS.equals(record.getIsDocumentPublicity())) {
                 stringBuffer2.append("文件宣贯概况：");
@@ -516,20 +516,20 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             //获取参与人员
             record.setUserList(users);
             //防疫相关工作
-            StringBuffer stringBuffer = new StringBuffer();
-            if (WorkLogConstans.IS.equals(record.getIsDisinfect())) {
-                stringBuffer.append("完成工区消毒；");
-            }else {stringBuffer.append("未完成工区消毒；");}
+           // StringBuffer stringBuffer = new StringBuffer();
+//            if (WorkLogConstans.IS.equals(record.getIsDisinfect())) {
+//                stringBuffer.append("完成工区消毒；");
+//            }else {stringBuffer.append("未完成工区消毒；");}
 
-            if (WorkLogConstans.IS.equals(record.getIsClean())) {
-                stringBuffer.append("完成工区卫生打扫；");
-            }else { stringBuffer.append("未完成工区卫生打扫；");}
+//            if (WorkLogConstans.IS.equals(record.getIsClean())) {
+//                stringBuffer.append("完成工区卫生打扫；");
+//            }else { stringBuffer.append("未完成工区卫生打扫；");}
 
-            if (WorkLogConstans.NORMAL.equals(record.getIsAbnormal())) {
-                stringBuffer.append("班组上岗人员体温正常。");
-            }else { stringBuffer.append("班组上岗人员体温异常。");}
+//            if (WorkLogConstans.NORMAL.equals(record.getIsAbnormal())) {
+//                stringBuffer.append("班组上岗人员体温正常。");
+//            }else { stringBuffer.append("班组上岗人员体温异常。");}
 
-            record.setAntiepidemicWork(stringBuffer.toString());
+            //record.setAntiepidemicWork(stringBuffer.toString());
 
             record.setSchedule(schedule);
 
@@ -538,8 +538,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 stringBuffer2.append("应急处理情况：");
                 stringBuffer2.append(record.getEmergencyDisposalContent()+";");
             }
-            stringBuffer2.append("防疫相关工作：");
-            stringBuffer2.append(stringBuffer);
+          //  stringBuffer2.append("防疫相关工作：");
+            //stringBuffer2.append(stringBuffer);
             if (WorkLogConstans.IS.equals(record.getIsDocumentPublicity())) {
                 stringBuffer2.append("文件宣贯概况：");
                 stringBuffer2.append(record.getDocumentPublicityContent()+";");
@@ -1196,14 +1196,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //获取参与人员
         workLog.setUserList(users);
         //防疫相关工作
-        StringBuffer stringBuffer = new StringBuffer();
+       // StringBuffer stringBuffer = new StringBuffer();
 //        if (WorkLogConstans.IS.equals(workLog.getIsDisinfect())) {
 //            stringBuffer.append("完成工区消毒；");
 //        }else {stringBuffer.append("未完成工区消毒；");}
 
-        if (WorkLogConstans.IS.equals(workLog.getIsClean())) {
-            stringBuffer.append("完成工区卫生打扫；");
-        }else { stringBuffer.append("未完成工区卫生打扫；");}
+//        if (WorkLogConstans.IS.equals(workLog.getIsClean())) {
+//            stringBuffer.append("完成工区卫生打扫；");
+//        }else { stringBuffer.append("未完成工区卫生打扫；");}
 
 //        if (WorkLogConstans.NORMAL.equals(workLog.getIsAbnormal())) {
 //            stringBuffer.append("班组上岗人员体温正常。");
@@ -1238,7 +1238,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         if (ObjectUtil.isEmpty(content1)) {
             workLog.setContent("无");
         }
-        workLog.setAntiepidemicWork(stringBuffer.toString());
         workLog.setSchedule(schedule);
         return workLog;
     }
