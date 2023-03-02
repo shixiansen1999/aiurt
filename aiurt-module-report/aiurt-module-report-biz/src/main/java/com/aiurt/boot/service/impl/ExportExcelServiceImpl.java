@@ -83,7 +83,7 @@ public class ExportExcelServiceImpl implements ExportExcelService {
             }
         }
         try {
-            response.setContentType("application/json;charset=utf-8");
+            response.setContentType("application/octet-stream");
             response.setCharacterEncoding("utf-8");
             // 防止中文乱码
             String fileName = URLEncoder.encode(excelName, "UTF-8");
