@@ -298,7 +298,9 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
 			}
 			sysMessageTypeDTO.setMessageFlag("1");
-			list.add(sysMessageTypeDTO);
+			if(messageSize !=0){
+				list.add(sysMessageTypeDTO);
+			}
 		}
 
 		//流程消息处理
