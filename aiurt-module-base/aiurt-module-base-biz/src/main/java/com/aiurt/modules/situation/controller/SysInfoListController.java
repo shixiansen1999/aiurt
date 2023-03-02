@@ -117,6 +117,10 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
         IPage<SysAnnouncement> pageList = bdInfoListService.page(page, queryWrapper);
         List<SysAnnouncement> records = pageList.getRecords();
         for (SysAnnouncement announcement : records) {
+            String msgContent = announcement.getMsgContent();
+            String replace = StrUtil.replace(msgContent, "<p>", "");
+            String replace1 = StrUtil.replace(replace, "</p>", "");
+            announcement.setMsgContent(replace1);
             bdInfoListService.getOrgNames(announcement);
         }
         result.setSuccess(true);
