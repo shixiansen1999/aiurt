@@ -56,6 +56,7 @@
         LEFT JOIN fault_produce_report fpr ON ahp.BUSINESS_KEY_ = fpr.id
         Left join act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
         where fpr.id is not null and
+        fpr.state != 0 and
         (a.ASSIGNEE_ = #{userName}  OR a.ID_ in (
         SELECT TASK_ID_
         FROM act_ru_identitylink ari
