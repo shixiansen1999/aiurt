@@ -10,6 +10,7 @@
         left join device_type d on patrol_standard.device_type_code =d.code AND d.del_flag=0
         left join sys_user f on patrol_standard.create_by = f.username and f.del_flag =0
         where patrol_standard.del_flag =0
+        AND patrol_standard.`code` IN ( SELECT standard_code FROM patrol_standard_org WHERE del_flag = 0 )
         <if test="patrolStandard.name !=null ">
             AND patrol_standard.name LIKE CONCAT ('%', #{patrolStandard.name}, '%')
         </if>
