@@ -51,10 +51,11 @@ public enum TodoBusinessTypeEnum {
      * 故障挂起
      */
     FAULT_HANG_UP("fault_hang_up"),
-    FAULT_RESULT("fault_result")
-    ;
-
-
+    FAULT_RESULT("fault_result"),
+    /**
+     * 固定资产盘点
+     */
+    FIXED_ASSETS("fixed_assets");
 
     /**
      * 业务类型(email:邮件 bpm:流程)

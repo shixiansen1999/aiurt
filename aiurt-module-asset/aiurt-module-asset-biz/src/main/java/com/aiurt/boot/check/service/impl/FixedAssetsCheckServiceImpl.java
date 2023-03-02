@@ -28,11 +28,15 @@ import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.boot.record.service.IFixedAssetsCheckRecordService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.CommonTodoStatus;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
+import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
+import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -41,6 +45,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -87,6 +92,8 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
     private FixedAssetsCheckMapper fixedAssetsCheckMapper;
     @Resource
     private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private ISTodoBaseAPI isTodoBaseAPI;
 
     @Override
     public IPage<FixedAssetsCheck> queryPageList(Page<FixedAssetsCheck> page, FixedAssetsCheck fixedAssetsCheck) {
@@ -282,7 +289,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
             map.put("time", DateUtil.format(fixedAssetsCheck.getPlanStartDate(), "yyyy-MM-dd")+"-"+DateUtil.format(fixedAssetsCheck.getPlanEndDate(), "yyyy-MM-dd"));
             messageDTO.setData(map);
 
-            messageDTO.setTitle("固定资产盘点");
+            messageDTO.setTitle("固定资产盘点"+DateUtil.today());
             messageDTO.setStartTime(new Date());
             messageDTO.setEndTime(new Date());
             messageDTO.setFromUser(sysUser.getUsername());
@@ -295,6 +302,26 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
             messageDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
             messageDTO.setCategory(CommonConstant.MSG_CATEGORY_12);
             sysBaseApi.sendTemplateMessage(messageDTO);
+
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setData(map);
+            todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+
+            todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
+            todoDTO.setTitle("固定资产盘点"+DateUtil.today());
+            todoDTO.setMsgAbstract("固定资产盘点");
+            todoDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
+
+            todoDTO.setProcessDefinitionName("固定资产盘点");
+            todoDTO.setTaskName("固定资产盘点");
+            todoDTO.setBusinessKey(fixedAssetsCheck.getId());
+            todoDTO.setBusinessType(TodoBusinessTypeEnum.FIXED_ASSETS.getType());
+            todoDTO.setCurrentUserName(userById.getUsername());
+            todoDTO.setTaskType(TodoTaskTypeEnum.FIXED_ASSETS.getType());
+            todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+            todoDTO.setUrl(null);
+            todoDTO.setAppUrl(null);
+            isTodoBaseAPI.createTodoTask(todoDTO);
         } catch (Exception e) {
             e.printStackTrace();
         }

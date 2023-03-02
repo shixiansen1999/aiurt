@@ -1401,7 +1401,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
                         List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
                         if (CollUtil.isNotEmpty(loginUsers)) {
-                            realNames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+                            realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                         }
                     }
                     TodoDTO todoDTO = new TodoDTO();
@@ -1777,7 +1777,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
                     List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
                     if (CollUtil.isNotEmpty(loginUsers)) {
-                        realNames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+                        realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                     }
                 }
                 TodoDTO todoDTO = new TodoDTO();
@@ -2155,7 +2155,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
                     List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
                     if (CollUtil.isNotEmpty(loginUsers)) {
-                        realNames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+                        realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                     }
                     TodoDTO todoDTO = new TodoDTO();
                     todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
