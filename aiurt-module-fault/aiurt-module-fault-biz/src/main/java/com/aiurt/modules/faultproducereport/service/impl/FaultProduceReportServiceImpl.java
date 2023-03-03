@@ -87,33 +87,33 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
             throw new AiurtBootException("未找到ID为【" + businessKey + "】的数据！");
         } else {
             int states = updateStateEntity.getStates();
-            switch (states) {
+                switch (states) {
                 //提交，更新状态，及提交人更新
                 case 0:
-                    faultProduceReport.setState(1);
+                    faultProduceReport.setState(2);
                     faultProduceReport.setSubmitTime(new Date());
                     faultProduceReport.setSubmitUserName(sysUser.getUsername());
                     break;
                 case 1:
-                    faultProduceReport.setState(1);
+                    faultProduceReport.setState(2);
                     break;
                 case 2:
-                    faultProduceReport.setState(0);
+                    faultProduceReport.setState(1);
                     faultProduceReport.setSubmitTime(null);
                     updateWrapper.set(FaultProduceReport::getSubmitTime,null);
                     faultProduceReport.setSubmitUserName("");
                     break;
                 case 3:
-                    faultProduceReport.setState(1);
+                    faultProduceReport.setState(2);
                     break;
                 case 4:
-                    faultProduceReport.setState(0);
+                    faultProduceReport.setState(1);
                     faultProduceReport.setSubmitTime(null);
                     updateWrapper.set(FaultProduceReport::getSubmitTime,null);
                     faultProduceReport.setSubmitUserName("");
                     break;
                 case 5:
-                    faultProduceReport.setState(2);
+                    faultProduceReport.setState(3);
                     break;
                 default:
             }
@@ -194,7 +194,7 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
                 reportDTO.setSubmitUserRealname(submitUser.getRealname());
             }
 
-            if (reportDTO.getTaskId() != null && reportDTO.getState() == 0) {
+            if (reportDTO.getTaskId() != null && (reportDTO.getState() == 0 || reportDTO.getState() == 1)) {
                 TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfo(reportDTO.getProcessInstanceId(), reportDTO.getTaskId());
                 List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
                 if (operationList != null && !operationList.isEmpty()) {
@@ -213,7 +213,7 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
             if (reportDTO.getTaskId() == null && reportDTO.getState() == 0) {
                 reportDTO.setIsOpen(true);
             }
-            if (reportDTO.getState() != 0) {
+            if (reportDTO.getState() != 0 && reportDTO.getState() != 1) {
                 reportDTO.setIsOpen(false);
             }
 
