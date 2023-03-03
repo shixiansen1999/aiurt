@@ -2655,6 +2655,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         //保存信息
         Map<String,Object> data = message.getData();
         SysAnnouncement announcement = new SysAnnouncement();
+        announcement.setProcessName(message.getProcessName());
+        announcement.setProcessCode(message.getProcessCode());
         if(data!=null){
             // 任务节点ID
             Object taskId = data.get(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID);

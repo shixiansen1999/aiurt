@@ -1,6 +1,7 @@
 package com.aiurt.modules.listener;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
@@ -26,9 +27,9 @@ import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -41,8 +42,6 @@ import java.util.Objects;
 public class ProcessCompletedListener implements Serializable, FlowableEventListener {
 
     private transient final Logger logger = LoggerFactory.getLogger(ProcessCompletedListener.class);
-    @Autowired
-    private ISysParamAPI iSysParamAPI;
     @Override
     public void onEvent(FlowableEvent event) {
         logger.info("流程结束监听事件");
@@ -84,7 +83,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                     HashMap<String, Object> map = new HashMap<>();
                     map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, historicProcessInstance.getBusinessKey());
 
-                    List<String> processDefinitionIdList = StrUtil.split(executionEntity.getProcessInstanceId(), ':');
+                    List<String> processDefinitionIdList = StrUtil.split(executionEntity.getProcessDefinitionId(), ':');
                     if (CollectionUtil.isNotEmpty(processDefinitionIdList) && processDefinitionIdList.size()>0) {
                         // 流程标识
                         String modkelKey = processDefinitionIdList.get(0);
@@ -99,18 +98,25 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                         }
                     }
                     //map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.BPM.getType());
-                    map.put("msgContent", msgContent);
+                    String startUserId = historicProcessInstance.getStartUserId();
+                    Date startTime = historicProcessInstance.getStartTime();
+                    ISysBaseAPI sysBaseAPI = SpringContextUtils.getBean(ISysBaseAPI.class);
+                    LoginUser userByName = sysBaseAPI.getUserByName(startUserId);
+                    String format = DateUtil.format(startTime, "yyyy-MM-dd");
+
+                    map.put("creatBy",userByName.getRealname());
+                    map.put("creatTime",format);
                     messageDTO.setData(map);
 
-                    messageDTO.setTitle(historicProcessInstance.getName());
+                    messageDTO.setTitle(historicProcessInstance.getProcessDefinitionName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"));
                     messageDTO.setFromUser( loginUser.getUsername());
                     messageDTO.setToUser(historicProcessInstance.getStartUserId());
                     messageDTO.setToAll(false);
                     messageDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE);
-                    SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.BPM_MESSAGE);
+                    ISysParamAPI bean = SpringContextUtils.getBean(ISysParamAPI.class);
+                    SysParamModel sysParamModel = bean.selectByCode(SysParamCodeConstant.BPM_MESSAGE);
                     messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
                     messageDTO.setMsgAbstract("你有一条流程消息");
-                    messageDTO.setPublishingContent("你有一条流程消息");
                     messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
                     iSysBaseApi.sendTemplateMessage(messageDTO);
 

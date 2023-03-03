@@ -214,4 +214,9 @@ public class SysAnnouncement implements Serializable {
     @Dict(dicCode = "level")
     @ApiModelProperty("特情等级")
     private java.lang.String level;
+
+    private String processName;
+
+    private String processCode;
+
 }

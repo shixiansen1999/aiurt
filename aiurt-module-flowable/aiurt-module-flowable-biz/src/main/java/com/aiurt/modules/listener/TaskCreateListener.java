@@ -30,7 +30,6 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
@@ -41,8 +40,6 @@ import java.util.*;
 public class TaskCreateListener implements FlowableEventListener {
 
     private static Logger logger = LoggerFactory.getLogger(TaskCreateListener.class);
-    @Autowired
-    private ISysBaseAPI iSysBaseAPI;
     /**
      * Called when an event has been fired
      *
@@ -218,9 +215,11 @@ public class TaskCreateListener implements FlowableEventListener {
                     bpmnTodoDTO.setProcessName(name);
                 }
             }
+
             String startUserId = instance.getStartUserId();
             Date startTime = instance.getStartTime();
-            LoginUser userByName = iSysBaseAPI.getUserById(startUserId);
+            ISysBaseAPI bean = SpringContextUtils.getBean(ISysBaseAPI.class);
+            LoginUser userByName = bean.getUserByName(startUserId);
             String format = DateUtil.format(startTime, "yyyy-MM-dd");
 
             HashMap<String, Object> map = new HashMap<>();
