@@ -165,7 +165,7 @@ public class FaultProduceReportJob implements Job {
                     reportLineDetail.setLineCode(reportLineKey);  // 线路编码
                     reportLineDetail.setLineName(lineNameCodeMap.get(reportLineKey));  // 线路名称
                     reportLineDetail.setFaultCode(LineFault.getCode());  // 故障编码
-                    reportLineDetail.setFaultPhenomenon(LineFault.getFaultPhenomenon());  // 故障现象
+                    reportLineDetail.setFaultPhenomenon(LineFault.getSymptoms());  // 故障现象
                     // 处理情况 -- 根据故障编码查询故障维修单（时间排序）
                     LambdaQueryWrapper<FaultRepairRecord> qw = new LambdaQueryWrapper<>();
                     qw.eq(FaultRepairRecord::getFaultCode, LineFault.getCode());
