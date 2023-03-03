@@ -2,7 +2,10 @@ package com.aiurt.modules.listener;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
@@ -26,7 +29,9 @@ import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -199,7 +204,7 @@ public class TaskCreateListener implements FlowableEventListener {
                     bpmnTodoDTO.setUrlType(json.getString("formType"));
                 }
             }
-
+            HashMap<String, Object> map = new HashMap<>();
             // 处理流程
             List<String> processDefinitionIdList = StrUtil.split(processDefinitionId, ':');
             if (CollectionUtil.isNotEmpty(processDefinitionIdList) && processDefinitionIdList.size()>0) {
@@ -214,15 +219,16 @@ public class TaskCreateListener implements FlowableEventListener {
                     String name = StrUtil.contains(one.getName(), "流程") ? one.getName() : one.getName()+"流程";
                     bpmnTodoDTO.setProcessName(name);
                 }
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,processDefinitionIdList.get(0));
             }
 
+            //发送待办
             String startUserId = instance.getStartUserId();
             Date startTime = instance.getStartTime();
             ISysBaseAPI bean = SpringContextUtils.getBean(ISysBaseAPI.class);
             LoginUser userByName = bean.getUserByName(startUserId);
             String format = DateUtil.format(startTime, "yyyy-MM-dd");
 
-            HashMap<String, Object> map = new HashMap<>();
             map.put("creatBy",userByName.getRealname());
             map.put("creatTime",format);
             bpmnTodoDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE_PROCESS);
@@ -232,6 +238,22 @@ public class TaskCreateListener implements FlowableEventListener {
             bpmnTodoDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"));
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
             todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
+
+            //发送通知
+            ISysBaseAPI iSysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
+            MessageDTO messageDTO = new MessageDTO();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, instance.getBusinessKey());
+            messageDTO.setData(map);
+            messageDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"));
+            messageDTO.setToUser(StrUtil.join(",", userNameList));
+            messageDTO.setToAll(false);
+            messageDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE);
+            ISysParamAPI sysParamAPI = SpringContextUtils.getBean(ISysParamAPI.class);
+            SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.BPM_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+            messageDTO.setMsgAbstract("有流程到达");
+            iSysBaseApi.sendTemplateMessage(messageDTO);
+
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

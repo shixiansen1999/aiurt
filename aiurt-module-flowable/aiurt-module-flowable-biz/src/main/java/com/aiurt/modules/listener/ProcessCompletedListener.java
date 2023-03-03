@@ -83,6 +83,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                     HashMap<String, Object> map = new HashMap<>();
                     map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, historicProcessInstance.getBusinessKey());
 
+
                     List<String> processDefinitionIdList = StrUtil.split(executionEntity.getProcessDefinitionId(), ':');
                     if (CollectionUtil.isNotEmpty(processDefinitionIdList) && processDefinitionIdList.size()>0) {
                         // 流程标识
@@ -96,8 +97,8 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                             String name = StrUtil.contains(one.getName(), "流程") ? one.getName() : one.getName()+"流程";
                             messageDTO.setProcessName(name);
                         }
+                        map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,processDefinitionIdList.get(0));
                     }
-                    //map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.BPM.getType());
                     String startUserId = historicProcessInstance.getStartUserId();
                     Date startTime = historicProcessInstance.getStartTime();
                     ISysBaseAPI sysBaseAPI = SpringContextUtils.getBean(ISysBaseAPI.class);
@@ -117,7 +118,6 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                     SysParamModel sysParamModel = bean.selectByCode(SysParamCodeConstant.BPM_MESSAGE);
                     messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
                     messageDTO.setMsgAbstract("你有一条流程消息");
-                    messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
                     iSysBaseApi.sendTemplateMessage(messageDTO);
 
                 } catch (Exception e) {
