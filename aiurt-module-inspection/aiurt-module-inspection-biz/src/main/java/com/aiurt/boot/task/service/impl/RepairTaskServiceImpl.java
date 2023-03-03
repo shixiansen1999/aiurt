@@ -1259,7 +1259,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     todoDTO.setTitle("检修任务-审核" + DateUtil.today());
                     todoDTO.setMsgAbstract("检修任务审核");
                     todoDTO.setPublishingContent("检修任务审核通过");
-                    createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_RECEIPT.getType(),repairTask.getId(), "检修任务验收", "", "",todoDTO,repairTask1,realNames,null);
+                    createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_RECEIPT.getType(),repairTask.getId(), "检修任务审核", "", "",todoDTO,repairTask1,realNames,null);
                 }
             }
         } catch (Exception e) {
@@ -1473,7 +1473,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
 
             // 给检修人驳回发消息
-            sendMessage(repairTask1);
+            sendBackMessage(repairTask1);
         }
     }
 
@@ -1481,7 +1481,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
      * 发送消息
      * @param repairTask1
      */
-    private void sendMessage(RepairTask repairTask1) {
+    private void sendBackMessage(RepairTask repairTask1) {
         List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().eq(RepairTaskUser::getRepairTaskCode, repairTask1.getCode()).eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
         if(CollUtil.isNotEmpty(repairTaskUsers)){
             String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
@@ -1494,7 +1494,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 try {
                     MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, "检修任务-审核驳回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                     RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
-                    BeanUtil.copyProperties(repairTask1,repairTaskMessageDTO);
+                    RepairTask repairTask = repairTaskMapper.selectById(repairTask1.getId());
+                    if (ObjectUtil.isEmpty(repairTask)) {
+                        throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+                    }
+                    BeanUtil.copyProperties(repairTask,repairTaskMessageDTO);
                     //构建消息模板
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("errorContent",repairTask1.getErrorContent());
@@ -1505,6 +1509,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     messageDTO.setMsgAbstract("检修任务审核驳回");
                     messageDTO.setPublishingContent("检修任务审核驳回，请重新处理");
                     sendMessage(messageDTO,realNames,null,repairTaskMessageDTO);
+
+                    TodoDTO todoDTO = new TodoDTO();
+                    todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_REJECT);
+                    todoDTO.setTitle("检修任务-审核驳回" + DateUtil.today());
+                    todoDTO.setMsgAbstract("检修任务审核驳回");
+                    todoDTO.setPublishingContent("检修任务审核驳回，请重新处理");
+                    todoDTO.setData(map);
+                    createTodoTask(usernames, TodoBusinessTypeEnum.INSPECTION_CONFIRM.getType(),repairTask.getId(), "检修任务审核驳回", "", "",todoDTO,repairTask,realNames,null);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -1542,7 +1555,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 try {
                     MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, "检修任务-验收" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                     RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
-                    BeanUtil.copyProperties(repairTask1,repairTaskMessageDTO);
+                    RepairTask repairTask = repairTaskMapper.selectById(repairTask1.getId());
+                    if (ObjectUtil.isEmpty(repairTask)) {
+                        throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+                    }
+                    BeanUtil.copyProperties(repairTask,repairTaskMessageDTO);
                     //业务类型，消息类型，消息模板编码，摘要，发布内容
                     repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION.getType());
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
