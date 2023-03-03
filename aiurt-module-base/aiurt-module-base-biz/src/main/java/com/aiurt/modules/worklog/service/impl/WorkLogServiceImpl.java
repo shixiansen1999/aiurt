@@ -1017,7 +1017,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public void archWorkLog(WorkLogResult workLogResult, String token, String archiveUserId, String refileFolderId, String realname, String sectId) {
         try {
-            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             HashMap<String, Object> map = new HashMap<>();
             map.put("submitTime", DateUtil.format(workLogResult.getSubmitTime(), "yyyy-MM-dd HH:mm:ss"));
             map.put("submitName", workLogResult.getSubmitName());
@@ -1034,7 +1033,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             map.put("assortContent", workLogResult.getAssortContent());
             map.put("signature", workLogResult.getSignature());
 
-            String title = "工作日志列表数据";
+            //String title = "工作日志列表数据";
             Workbook workbook = ExcelExportUtil.exportExcel(new TemplateExportParams("templates/workLogTemplate.xlsx"), map);
 
             //SXSSFWorkbook archiveRepairTask = ExcelUtils.createArchiveWorkLog(workLogResult, templatePath);
