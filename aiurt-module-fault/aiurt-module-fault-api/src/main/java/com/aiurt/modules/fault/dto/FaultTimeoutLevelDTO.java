@@ -2,6 +2,7 @@ package com.aiurt.modules.fault.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -95,6 +96,10 @@ public class FaultTimeoutLevelDTO {
     @NotBlank(message = "请填写故障现象分类!")
     @Dict(dictTable = "fault_knowledge_base_type", dicCode = "code", dicText = "name")
     private String faultPhenomenon;
+
+    /**故障现象名称*/
+    @ApiModelProperty(value = "故障现象分类名称",  required = true)
+    private String faultPhenomenonTypeName;
 
     /**故障发生时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
