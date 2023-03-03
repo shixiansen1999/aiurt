@@ -856,7 +856,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_RETURN);
                     messageDTO.setMsgAbstract("巡视任务退回");
                     messageDTO.setPublishingContent("巡视任务退回，请重新安排");
-                    sendMessage(messageDTO,null,user.getRealname(),patrolMessageDTO);
+                    sendMessage(messageDTO,null,sysUser.getRealname(),patrolMessageDTO);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
