@@ -5,8 +5,10 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
@@ -82,6 +84,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                     //构建消息模板
                     HashMap<String, Object> map = new HashMap<>();
                     map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, historicProcessInstance.getBusinessKey());
+                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
 
 
                     List<String> processDefinitionIdList = StrUtil.split(executionEntity.getProcessDefinitionId(), ':');
@@ -97,7 +100,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                             String name = StrUtil.contains(one.getName(), "流程") ? one.getName() : one.getName()+"流程";
                             messageDTO.setProcessName(name);
                         }
-                        map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,processDefinitionIdList.get(0));
+                       // map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,processDefinitionIdList.get(0));
                     }
                     String startUserId = historicProcessInstance.getStartUserId();
                     Date startTime = historicProcessInstance.getStartTime();

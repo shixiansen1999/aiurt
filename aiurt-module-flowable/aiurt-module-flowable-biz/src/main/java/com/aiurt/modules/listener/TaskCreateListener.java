@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
@@ -243,6 +244,7 @@ public class TaskCreateListener implements FlowableEventListener {
             ISysBaseAPI iSysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
             MessageDTO messageDTO = new MessageDTO();
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, instance.getBusinessKey());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
             messageDTO.setData(map);
             messageDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"));
             messageDTO.setToUser(StrUtil.join(",", userNameList));
