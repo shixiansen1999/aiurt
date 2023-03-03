@@ -206,6 +206,7 @@ public class TaskCreateListener implements FlowableEventListener {
                 }
             }
             HashMap<String, Object> map = new HashMap<>();
+            MessageDTO messageDTO = new MessageDTO();
             // 处理流程
             List<String> processDefinitionIdList = StrUtil.split(processDefinitionId, ':');
             if (CollectionUtil.isNotEmpty(processDefinitionIdList) && processDefinitionIdList.size()>0) {
@@ -219,6 +220,8 @@ public class TaskCreateListener implements FlowableEventListener {
                     bpmnTodoDTO.setProcessCode(one.getModelKey());
                     String name = StrUtil.contains(one.getName(), "流程") ? one.getName() : one.getName()+"流程";
                     bpmnTodoDTO.setProcessName(name);
+                    messageDTO.setProcessCode(one.getModelKey());
+                    messageDTO.setProcessName(name);
                 }
                 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,processDefinitionIdList.get(0));
             }
@@ -242,13 +245,14 @@ public class TaskCreateListener implements FlowableEventListener {
 
             //发送通知
             ISysBaseAPI iSysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
-            MessageDTO messageDTO = new MessageDTO();
+
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, instance.getBusinessKey());
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
             messageDTO.setData(map);
             messageDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"));
             messageDTO.setToUser(StrUtil.join(",", userNameList));
             messageDTO.setToAll(false);
+
             messageDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE);
             ISysParamAPI sysParamAPI = SpringContextUtils.getBean(ISysParamAPI.class);
             SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.BPM_MESSAGE);
