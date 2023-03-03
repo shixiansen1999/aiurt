@@ -125,6 +125,9 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
         if (Objects.isNull(startTime) || Objects.isNull(endTime)) {
             startTime = DateUtil.beginOfDay(new Date());
             endTime = DateUtil.endOfDay(new Date());
+        }else {
+            startTime = DateUtil.parse(DateUtil.formatDate(startTime)+" 00:00:00");
+            endTime = DateUtil.parse(DateUtil.formatDate(endTime)+" 23:59:59");
         }
 
         Date finalStartTime = startTime;
