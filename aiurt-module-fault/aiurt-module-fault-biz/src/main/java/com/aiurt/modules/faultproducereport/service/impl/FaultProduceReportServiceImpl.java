@@ -99,18 +99,18 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
                     break;
                 case 2:
                     faultProduceReport.setState(1);
-                    faultProduceReport.setSubmitTime(null);
-                    updateWrapper.set(FaultProduceReport::getSubmitTime,null);
-                    faultProduceReport.setSubmitUserName("");
+//                    faultProduceReport.setSubmitTime(null);
+//                    updateWrapper.set(FaultProduceReport::getSubmitTime,null);
+//                    faultProduceReport.setSubmitUserName("");
                     break;
                 case 3:
                     faultProduceReport.setState(2);
                     break;
                 case 4:
                     faultProduceReport.setState(1);
-                    faultProduceReport.setSubmitTime(null);
-                    updateWrapper.set(FaultProduceReport::getSubmitTime,null);
-                    faultProduceReport.setSubmitUserName("");
+//                    faultProduceReport.setSubmitTime(null);
+//                    updateWrapper.set(FaultProduceReport::getSubmitTime,null);
+//                    faultProduceReport.setSubmitUserName("");
                     break;
                 case 5:
                     faultProduceReport.setState(3);
@@ -341,10 +341,6 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
             taskCompleteDTO.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
             flowBaseApi.completeTask(taskCompleteDTO);
         }
-        produceReport.setState(1);
-        produceReport.setSubmitTime(new Date());
-        produceReport.setSubmitUserName(sysUser.getUsername());
-        produceReportMapper.updateById(produceReport);
     }
 
     /**
