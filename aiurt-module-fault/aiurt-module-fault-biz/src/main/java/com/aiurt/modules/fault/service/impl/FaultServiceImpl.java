@@ -813,7 +813,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             BeanUtil.copyProperties(fault,faultMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_RETURN);
+            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("开始维修");
             messageDTO.setPublishingContent("开始维修");
 
