@@ -170,10 +170,12 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
                 }
                 emailSendMsgHandle.sendMessage(messageDTO);
             }else if(MessageTypeEnum.DD.toString().equals(messageType)){
-                messageDTO.setContent( StrUtil.replace(content, "<br/>", ","));
                 ddSendMsgHandle.sendMessage(messageDTO);
             }else if(MessageTypeEnum.QYWX.toString().equals(messageType)){
-                messageDTO.setContent( StrUtil.replace(content, "<br/>", ","));
+                if (messageDTO.isMarkdown()) {
+                    // 系统消息要解析Markdown
+                    messageDTO.setContent(HTMLUtils.parseMarkdown(messageDTO.getContent()));
+                }
                 qywxSendMsgHandle.sendMessage(messageDTO);
             }
         }

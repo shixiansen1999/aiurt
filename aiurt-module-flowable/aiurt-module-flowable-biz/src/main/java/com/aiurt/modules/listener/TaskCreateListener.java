@@ -220,7 +220,7 @@ public class TaskCreateListener implements FlowableEventListener {
             }
             String startUserId = instance.getStartUserId();
             Date startTime = instance.getStartTime();
-            LoginUser userByName = iSysBaseAPI.getUserByName(startUserId);
+            LoginUser userByName = iSysBaseAPI.getUserById(startUserId);
             String format = DateUtil.format(startTime, "yyyy-MM-dd");
 
             HashMap<String, Object> map = new HashMap<>();
