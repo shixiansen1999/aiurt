@@ -37,7 +37,7 @@ public interface SysParamCodeConstant {
      */
     String FAULT_MESSAGE = "fault_message";
     /**
-     * 故障消息发送渠道(代办)
+     * 故障消息发送渠道(待办)
      */
     String FAULT_MESSAGE_PROCESS = "fault_message_process";
     /**
@@ -45,7 +45,7 @@ public interface SysParamCodeConstant {
      */
     String PATROL_MESSAGE = "patrol_message";
     /**
-     * 巡视消息发送渠道（代办）
+     * 巡视消息发送渠道（待办）
      */
     String PATROL_MESSAGE_PROCESS = "patrol_message_process";
     /**
@@ -53,7 +53,7 @@ public interface SysParamCodeConstant {
      */
     String REPAIR_MESSAGE = "repair_message";
     /**
-     * 检修消息发送渠道（代办）
+     * 检修消息发送渠道（待办）
      */
     String REPAIR_MESSAGE_PROCESS = "repair_message_process";
     /**

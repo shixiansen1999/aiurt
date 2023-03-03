@@ -2651,6 +2651,72 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             throw new AiurtBootException("发送消息失败,消息发送渠道没有配置！");
         }
         List<String> messageTypes = StrUtil.splitTrim(type, ",");
+
+        //保存信息
+        Map<String,Object> data = message.getData();
+        SysAnnouncement announcement = new SysAnnouncement();
+        if(data!=null){
+            // 任务节点ID
+            Object taskId = data.get(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID);
+            if(taskId!=null){
+                announcement.setBusId(taskId.toString());
+                // announcement.setBusType(Vue3MessageHrefEnum.BPM_TASK.getBusType());
+            }
+            Object busType = data.get(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE);
+            if (busType != null) {
+                announcement.setBusType(busType.toString());
+                announcement.setOpenType(SysAnnmentTypeEnum.getByType(busType.toString()).getOpenType());
+                announcement.setOpenPage(SysAnnmentTypeEnum.getByType(busType.toString()).getOpenPage());
+            }
+        }
+        //摘要信息
+        announcement.setMsgAbstract(message.getMsgAbstract());
+        announcement.setPublishingContent(message.getPublishingContent());
+        announcement.setTitile(message.getTitle());
+        announcement.setMsgContent(message.getContent());
+        announcement.setSender(message.getFromUser());
+        if (StringUtils.isNotBlank(message.getPriority())) {
+            announcement.setPriority(message.getPriority());
+        } else {
+            announcement.setPriority(com.aiurt.common.constant.CommonConstant.PRIORITY_M);
+        }
+        announcement.setMsgType(org.jeecg.common.constant.CommonConstant.MSG_TYPE_UESR);
+        announcement.setSendStatus(org.jeecg.common.constant.CommonConstant.HAS_SEND);
+        announcement.setSendTime(new Date());
+        announcement.setMsgCategory(message.getCategory());
+        announcement.setDelFlag(String.valueOf(org.jeecg.common.constant.CommonConstant.DEL_FLAG_0));
+        announcement.setUserIds(message.getToUser());
+        announcement.setStartTime(message.getStartTime());
+        announcement.setEndTime(message.getEndTime());
+        announcement.setLevel(message.getLevel());
+        sysAnnouncementMapper.insert(announcement);
+
+        // 2.插入用户通告阅读标记表记录
+        String userId = message.getToUser();
+        String[] userIds = userId.split(",");
+        String anntId = announcement.getId();
+        for(int i=0;i<userIds.length;i++) {
+            if(org.jeecg.common.util.oConvertUtils.isNotEmpty(userIds[i])) {
+                SysUser sysUser = userMapper.getUserByName(userIds[i]);
+                if(sysUser==null) {
+                    continue;
+                }
+                SysAnnouncementSend announcementSend = new SysAnnouncementSend();
+                announcementSend.setAnntId(anntId);
+                announcementSend.setUserId(sysUser.getId());
+                announcementSend.setReadFlag(org.jeecg.common.constant.CommonConstant.NO_READ_FLAG);
+                sysAnnouncementSendMapper.insert(announcementSend);
+                JSONObject obj = new JSONObject();
+                obj.put(WebsocketConst.MSG_CMD, WebsocketConst.CMD_USER);
+                obj.put(WebsocketConst.MSG_USER_ID, sysUser.getId());
+                obj.put(WebsocketConst.MSG_ID, announcement.getId());
+                obj.put(WebsocketConst.MSG_TXT, message.getTitle());
+                webSocket.sendMessage(sysUser.getId(), obj.toJSONString());
+            }
+        }
+        message.setMessageId(anntId);
+
+        //根据发送渠道发送消息
         for (String messageType : messageTypes) {
             //update-end-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
             if(MessageTypeEnum.XT.toString().equals(messageType)){
@@ -2669,7 +2735,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
                 ddSendMsgHandle.sendMessage(message);
             }else if(MessageTypeEnum.QYWX.toString().equals(messageType)){
-                message.setContent( StrUtil.replace(content, "<br/>", ","));
+                if (message.isMarkdown()) {
+                    // 系统消息要解析Markdown
+                    message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
+                }
                 qywxSendMsgHandle.sendMessage(message);
             }
         }
