@@ -12,6 +12,7 @@
             LEFT JOIN cs_subsystem cs_subsystem ON cs_subsystem.system_code = device_type.system_code
         WHERE
             device_type.del_flag =0
+        group by device_type.code
 
     </select>
     <select id="selectCsMajor" resultType="org.jeecg.common.system.vo.CsUserMajorModel">
