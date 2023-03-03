@@ -9,6 +9,7 @@
     </if>
     </select>
 
+
 <select id="getMyInfo" resultType="com.aiurt.modules.situation.entity.SysAnnouncement">
     select
     sas.id,
@@ -25,5 +26,8 @@
 
 <update id="updateReadFlag">
     update sys_announcement_send set read_flag = 1 ,read_time =#{readTime},update_time=#{readTime} where id =#{id}
+    </update>
+    <update id="updateSendById">
+        update sys_announcement_send set
     </update>
 </mapper>

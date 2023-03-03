@@ -11,6 +11,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: 系统通告表
@@ -200,4 +201,7 @@ public class SysAnnouncement implements Serializable {
      * */
     @TableField(exist = false)
     private Integer unreadCount;
+
+    @TableField(exist = false)
+    private List<SysAnnouncementSend> sendList;
 }

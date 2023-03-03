@@ -26,6 +26,7 @@ public interface SysInfoListMapper extends BaseMapper<SysAnnouncement> {
      */
     List<SysAnnouncementSend> getByAnntId(@Param("page") Page<SysAnnouncementSend> page ,@Param("id")String id,@Param("readFlag")String readFlag);
 
+    void updateSendById(@Param("sysAnnouncementSend")SysAnnouncementSend sysAnnouncementSend);
     /**
      * 我的通知分页列表查询
      *
