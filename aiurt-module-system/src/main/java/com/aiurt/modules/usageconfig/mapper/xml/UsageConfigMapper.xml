@@ -4,11 +4,12 @@
     <select id="getList" resultType="com.aiurt.modules.usageconfig.dto.UsageConfigDTO">
     select *
     from sys_usage_config
+    order by sort
 </select>
     <select id="getAllList" resultType="com.aiurt.modules.usageconfig.dto.UsageConfigDTO">
-        select *,
-               rank() over ( partition by pid order by sequence)
+        select *
         from sys_usage_config
+        order by sort
     </select>
     <select id="getTotal" resultType="java.lang.Long">
         select
@@ -38,15 +39,15 @@
     </select>
 
     <select id="getChildrenList" resultType="com.aiurt.modules.usageconfig.entity.UsageConfig">
-        SELECT *,
-               rank() over ( partition by pid order by sequence)
+        SELECT *
         FROM
                 ( SELECT * FROM sys_usage_config WHERE pid > 0 ORDER BY pid, id DESC ) realname_sorted,
                 ( SELECT @pv := #{id} ) initialisation
         WHERE
                 (
                         FIND_IN_SET( pid, @pv COLLATE utf8mb4_general_ci )> 0
-                                AND @pv := concat( @pv, ',', id ));
+                                AND @pv := concat( @pv, ',', id ))
+        order by sort;
     </select>
 
     <select id="selectByPage" resultType="com.aiurt.modules.usageconfig.dto.UsageStatDTO">
@@ -54,13 +55,13 @@
                pid,
                `name` as tile_name,
                table_name,
-               sta_condition,
-               rank()    over ( partition by pid order by sequence)
+               sta_condition
         FROM
             sys_usage_config
         WHERE
             pid IN (SELECT id from sys_usage_config where `code` = #{code})
           AND state = 1
+        order by sort
     </select>
 
 
@@ -69,12 +70,12 @@
                pid,
                `name` as name,
                table_name,
-               sta_condition,
-               rank()    over ( partition by pid order by sequence)
+               sta_condition
         FROM
         sys_usage_config
         WHERE
         pid IN (SELECT id from sys_usage_config where `code` = #{code})
         AND state = 1
+        order by sort
     </select>
 </mapper>
