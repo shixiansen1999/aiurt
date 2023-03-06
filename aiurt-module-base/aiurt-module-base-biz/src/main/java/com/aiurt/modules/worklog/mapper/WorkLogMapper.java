@@ -35,7 +35,7 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      * @return
      */
     @DataPermission({
-            @DataColumn(key = "deptName",value = "wl.org_id")
+            @DataColumn(key = "deptName",value = "sd.org_code")
     })
     IPage<WorkLogResult> queryWorkLog(IPage<WorkLogResult> page, @Param("param") WorkLogParam param);
 

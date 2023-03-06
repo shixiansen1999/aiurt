@@ -48,6 +48,9 @@
                 #{id}
             </foreach>
         </if>
+        <if test="param.departCode!=null ">
+            AND sd.org_code = #{param.departCode}
+        </if>
         ORDER BY
             wl.create_time DESC
     </select>
