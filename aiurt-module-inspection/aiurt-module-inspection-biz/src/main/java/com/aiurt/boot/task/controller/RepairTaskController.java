@@ -325,6 +325,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     @ApiOperation(value = "检修任务-审核", notes = "检修任务-审核")
     @PostMapping(value = "/toExamine")
     public Result<String> toExamine(@RequestBody ExamineDTO examineDTO) {
+        examineDTO.setAcceptanceRemark(1);
         repairTaskService.toExamine(examineDTO);
         return Result.OK("操作成功！");
     }
@@ -339,6 +340,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     @ApiOperation(value = "检修任务-验收", notes = "检修任务-验收")
     @PostMapping(value = "/acceptance")
     public Result<String> acceptance(@RequestBody ExamineDTO examineDTO) {
+        examineDTO.setAcceptanceRemark(0);
         repairTaskService.acceptance(examineDTO);
         return Result.OK("操作成功！");
     }

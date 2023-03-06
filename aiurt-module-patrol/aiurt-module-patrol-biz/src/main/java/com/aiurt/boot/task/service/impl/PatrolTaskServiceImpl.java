@@ -405,9 +405,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<String> station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
         map.put("patrolStation",CollUtil.join(station,","));
         String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
-        String startTime = DateUtil.format(patrolTask.getStartTime(), "HH:mm");
-        String endTime = DateUtil.format(patrolTask.getEndTime(), "HH:mm");
-        map.put("patrolTaskTime",patrolDate+" "+(startTime!=null?startTime:"")+"-"+patrolDate+" "+(endTime!=null?endTime:""));
+        map.put("patrolTaskTime",patrolDate);
         if (CollectionUtil.isNotEmpty(taskUsers)) {
             String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
             List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
@@ -1174,7 +1172,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     List<String>  station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
                     map.put("patrolStation",CollUtil.join(station,","));
                     String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
-                    map.put("patrolTaskTime",patrolDate+" "+DateUtil.format(patrolTask.getStartTime(),"HH:mm")+"-"+patrolDate+" "+DateUtil.format(patrolTask.getEndTime(),"HH:mm"));
+                    map.put("patrolTaskTime",patrolDate);
                     map.put("patrolName", realNames);
 
                     //发送通知

@@ -3,13 +3,13 @@
 <mapper namespace="com.aiurt.boot.task.mapper.RepairTaskEnclosureMapper">
 
 
-    <select id="getByRepairTaskId" resultType="java.lang.String">
+    <select id="getById" resultType="java.lang.String">
         SELECT rte.id from repair_task_enclosure rte,
-                           repair_task_result as rtr,
-                           repair_task_device_rel as rtdr
+        repair_task_result as rtr,
+        repair_task_device_rel as rtdr
         where
-            rte.repair_task_result_id=rtr.id
-          and rtr.task_device_rel_id=rtdr.id
-          and rtdr.repair_task_id=#{id}
+        rte.repair_task_result_id=rtr.id
+        and rtr.task_device_rel_id=rtdr.id
+        and rtdr.repair_task_id=#{id}
     </select>
 </mapper>

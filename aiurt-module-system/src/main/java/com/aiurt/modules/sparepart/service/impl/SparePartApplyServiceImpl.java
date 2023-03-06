@@ -121,56 +121,6 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             });
             sparePartApplyMaterialService.saveBatch(sparePartApply.getStockLevel2List());
         }
-        try {
-            //根据仓库编号获取仓库组织机构code
-            String orgCode = sparePartApplyMapper.getDepartByWarehouseCode(sparePartApply.getApplyWarehouseCode());
-            String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.MATERIAL_CLERK));
-
-            //发送通知
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "设备申领" + DateUtil.today(), null);
-
-            //构建消息模板
-            HashMap<String, Object> map = new HashMap<>();
-            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartApply.getId());
-            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
-            map.put("code",sparePartApply.getCode());
-            map.put("applyNumber",sparePartApply.getApplyNumber());
-            LoginUser userById = sysBaseApi.getUserById(sparePartApply.getApplyUserId());
-            map.put("applyUserId",userById.getRealname());
-            map.put("applyTime",sparePartApply.getApplyTime());
-            if(null!=info){
-                map.put("warehouseName",info.getWarehouseName());
-            }
-
-            messageDTO.setData(map);
-            //业务类型，消息类型，消息模板编码，摘要，发布内容
-            messageDTO.setTemplateCode(CommonConstant.SPAREPARTAPPLY_SERVICE_NOTICE);
-            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
-            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-            messageDTO.setMsgAbstract("备件申领");
-            messageDTO.setPublishingContent("班组申请物资，请确认");
-            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
-            sysBaseApi.sendTemplateMessage(messageDTO);
-            //发送待办
-            TodoDTO todoDTO = new TodoDTO();
-            todoDTO.setData(map);
-            SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
-            todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
-            todoDTO.setTitle("设备申领" + DateUtil.today());
-            todoDTO.setMsgAbstract("备件申领");
-            todoDTO.setPublishingContent("班组申请物资，请确认");
-            todoDTO.setCurrentUserName(userName);
-            todoDTO.setBusinessKey(sparePartApply.getId());
-            todoDTO.setBusinessType(TodoBusinessTypeEnum.MATERIAL_WAREHOUSING.getType());
-            todoDTO.setCurrentUserName(userById.getUsername());
-            todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
-            todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
-            todoDTO.setTemplateCode(CommonConstant.SPAREPARTAPPLY_SERVICE_NOTICE);
-
-            isTodoBaseAPI.createTodoTask(todoDTO);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         return Result.OK("添加成功！");
     }
     /**
@@ -240,6 +190,60 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             stockOutboundMaterials.setApplyOutput(applyMaterial.getApplyNum());
             stockOutboundMaterialsMapper.insert(stockOutboundMaterials);
         });
+        try {
+            LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(SparePartStockInfo::getOrganizationId,user.getOrgId());
+            wrapper.eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
+            SparePartStockInfo info = sparePartStockInfoService.getOne(wrapper);
+
+            //根据仓库编号获取仓库组织机构code
+            String orgCode = sparePartApplyMapper.getDepartByWarehouseCode(partApply.getApplyWarehouseCode());
+            String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.MATERIAL_CLERK));
+
+            //发送通知
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "设备申领" + DateUtil.today(), null);
+
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, partApply.getId());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
+            map.put("code",partApply.getCode());
+            map.put("applyNumber",partApply.getApplyNumber());
+            map.put("applyUserId",user.getRealname());
+            map.put("applyTime",DateUtil.format(partApply.getApplyTime(),"yyyy-MM-dd HH:mm"));
+            if(null!=info){
+                map.put("warehouseName",info.getWarehouseName());
+            }
+
+            messageDTO.setData(map);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            messageDTO.setTemplateCode(CommonConstant.SPAREPARTAPPLY_SERVICE_NOTICE);
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+            messageDTO.setMsgAbstract("备件申领");
+            messageDTO.setPublishingContent("班组申请物资，请确认");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+            sysBaseApi.sendTemplateMessage(messageDTO);
+            //发送待办
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setData(map);
+            SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
+            todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
+            todoDTO.setTitle("设备申领" + DateUtil.today());
+            todoDTO.setMsgAbstract("备件申领");
+            todoDTO.setPublishingContent("班组申请物资，请确认");
+            todoDTO.setCurrentUserName(userName);
+            todoDTO.setBusinessKey(partApply.getId());
+            todoDTO.setBusinessType(TodoBusinessTypeEnum.MATERIAL_WAREHOUSING.getType());
+            todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
+            todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+            todoDTO.setTemplateCode(CommonConstant.SPAREPARTAPPLY_SERVICE_NOTICE);
+
+            isTodoBaseAPI.createTodoTask(todoDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return Result.OK("提交成功！");
     }
 

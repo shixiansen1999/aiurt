@@ -7,6 +7,7 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.HTMLUtils;
 import com.aiurt.common.util.dynamic.db.FreemarkerParseFactory;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
@@ -156,6 +157,9 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             webSocket.pushMessage("please update the to-do list");
         }
         String type = sysTodoList.getType();
+        if(StrUtil.isBlank(type)){
+            throw new AiurtBootException("发送消息失败,消息发送渠道没有配置！");
+        }
         List<String> messageTypes = StrUtil.splitTrim(type, ",");
         MessageDTO messageDTO = new MessageDTO();
         BeanUtil.copyProperties(sysTodoList, messageDTO);

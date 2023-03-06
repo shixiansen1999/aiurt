@@ -1255,10 +1255,20 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     }
                     TodoDTO todoDTO = new TodoDTO();
                     todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
-                    todoDTO.setTitle("检修任务-审核" + DateUtil.today());
-                    todoDTO.setMsgAbstract("检修任务审核");
-                    todoDTO.setPublishingContent("检修任务审核通过");
-                    createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_RECEIPT.getType(),repairTask.getId(), "检修任务审核", "", "",todoDTO,repairTask1,realNames,null);
+                    todoDTO.setTitle("检修任务-验收" + DateUtil.today());
+                    todoDTO.setMsgAbstract("检修任务验收");
+                    todoDTO.setPublishingContent("检修任务审核待验收");
+                    createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_RECEIPT.getType(), repairTask.getId(), "检修任务验收", "", "", todoDTO, repairTask, realNames, null);
+
+                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),currentUserName, "检修任务-验收" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
+                    RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
+                    BeanUtil.copyProperties(repairTask,repairTaskMessageDTO);
+                    //业务类型，消息类型，消息模板编码，摘要，发布内容
+                    repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION.getType());
+                    messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
+                    messageDTO.setMsgAbstract("检修任务验收");
+                    messageDTO.setPublishingContent("检修任务审核待验收");
+                    sendMessage(messageDTO,realNames,null,repairTaskMessageDTO);
                 }
             }
         } catch (Exception e) {
@@ -1627,6 +1637,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), user.getUsername(), "检修任务-退回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                     RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                     BeanUtil.copyProperties(repairTask,repairTaskMessageDTO);
+                    repairTaskMessageDTO.setId(repairTask.getRepairPoolId());
                     //构建消息模板
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("returnReason",examineDTO.getContent());

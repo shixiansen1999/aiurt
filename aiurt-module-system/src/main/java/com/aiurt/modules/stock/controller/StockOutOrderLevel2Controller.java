@@ -126,7 +126,7 @@ public class StockOutOrderLevel2Controller {
 				LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 				//根据仓库编号获取仓库组织机构code
 				String orgCode = sysBaseApi.getDepartByWarehouseCode(sparePartApply.getApplyWarehouseCode());
-				String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.MATERIAL_CLERK));
+				String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
 
 				//发送通知
 				MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "二级库出库" + DateUtil.today(), null);
