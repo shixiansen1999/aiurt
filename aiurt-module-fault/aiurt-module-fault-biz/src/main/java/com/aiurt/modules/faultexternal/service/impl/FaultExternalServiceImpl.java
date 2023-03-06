@@ -112,6 +112,14 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
         fault.setFaultModeCode(dto.getFaultModeCode());
         //所属子系统
         fault.setSubSystemCode(dto.getSubSystemCode());
+        //是否影响行车
+        fault.setAffectDrive(dto.getAffectDrive());
+        //是否影响客运服务
+        fault.setAffectPassengerService(dto.getAffectPassengerService());
+        //是否停止服务
+        fault.setIsStopService(dto.getIsStopService());
+        //抄送人
+        fault.setRemindUserName(dto.getRemindUserName());
         fault.setRepairCode(dto.getRepairCode());
         if (StringUtils.isNotBlank(dto.getLocation())) {
             fault.setDetailLocation(dto.getLocation());
