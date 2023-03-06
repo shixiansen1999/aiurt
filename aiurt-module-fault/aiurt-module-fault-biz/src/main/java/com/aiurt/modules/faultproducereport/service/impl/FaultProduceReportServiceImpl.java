@@ -480,17 +480,18 @@ public class FaultProduceReportServiceImpl extends ServiceImpl<FaultProduceRepor
                 endDay = null;
             }
         }
-        List<FaultProduceReportDTO> reportDTOList = produceReportMapper.queryPageList(new Page<>(), majorCodeList, beginDay, endDay);
-        List<String> reportDTOIdList = reportDTOList.stream().map(FaultProduceReport::getId).collect(Collectors.toList());
+//        List<FaultProduceReportDTO> reportDTOList = produceReportMapper.queryPageList(new Page<>(), majorCodeList, beginDay, endDay);
+//        List<String> reportDTOIdList = reportDTOList.stream().map(FaultProduceReport::getId).collect(Collectors.toList());
+        List<String> reportDTOIdList = produceReportMapper.selectIdList(majorCodeList, beginDay, endDay);
         // 如果 reportId不在 reportDTOIdList 里面，抛出没有数据异常
         if (!reportDTOIdList.contains(reportId)) {
             throw new AiurtBootException("查询条件没有数据");
         }
 
-        // 没查询出数据，抛出异常
-        if (reportDTOList.isEmpty()) {
-            throw new AiurtBootException("未找到数据");
-        }
+//        // 没查询出数据，抛出异常
+//        if (reportDTOList.isEmpty()) {
+//            throw new AiurtBootException("未找到数据");
+//        }
 
         // 获取生产日报excel的byte字节
         byte[] fileByte = getOutPutBytesByReportId(reportId);
