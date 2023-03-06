@@ -207,7 +207,7 @@ public class MaterialBaseTypeController {
                     csSubsystem.setIsRemove(false);
                 }
             }
-            csSubsystem.setMaterialBaseTypeList(sysList);
+            csSubsystem.setChildren(sysList);
             csSubsystem.setTitle(csSubsystem.getSystemName());
             csSubsystem.setValue(csSubsystem.getSystemCode());
         });

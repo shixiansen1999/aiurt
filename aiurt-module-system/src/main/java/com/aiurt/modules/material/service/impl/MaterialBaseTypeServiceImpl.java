@@ -247,7 +247,7 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                     status = CommonConstant.MATERIAL_BASE_TYPE_STATUS_1.toString();
                 }
                 materialBaseType.setPStatus(status);
-                materialBaseType.setMaterialBaseTypeList(getTreeRes(materialBaseTypeList,materialBaseType.getId()));
+                materialBaseType.setChildren(getTreeRes(materialBaseTypeList,materialBaseType.getId()));
             }
         }
         return childList;
