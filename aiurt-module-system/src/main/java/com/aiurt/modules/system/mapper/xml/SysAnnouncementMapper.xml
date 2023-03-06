@@ -151,7 +151,7 @@
 			<if test="busType!=null and busType!=''">
 				and sa.bus_type LIKE concat('%',#{busType},'%')
 			</if>
-			<if test="busType ==null and busType ==''">
+			<if test="busType ==null or busType ==''">
 				and isNull(sa.bus_type)
 			</if>
 			<if test="keyWord!=null and keyWord!=''">

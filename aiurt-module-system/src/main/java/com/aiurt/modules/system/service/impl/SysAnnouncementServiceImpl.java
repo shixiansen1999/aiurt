@@ -173,12 +173,13 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String userId = loginUser.getId();
 		String username = loginUser.getUsername();
-		//获取当前登录人待办消息(业务消息)
+		//获取当前登录人所有业务消息
 		List<SysAnnouncementSendDTO> sysAnnouncementSendDTOS = sysAnnouncementMapper.queryAnnouncement(userId);
 		//获取当前登录人待办消息(业务消息)消息类型为null
 		List<SysAnnouncementSendDTO> sysAnnouncementSendList = sysAnnouncementMapper.queryAnnouncementByNull(userId);
 
-		//获取当前登录人待办消息(流程消息)
+
+		//获取当前登录人所有流程消息
 		List<SysTodoList> sysTodoLists = sysAnnouncementMapper.queryTodoList(username);
 		//头像集合
         List<String> pictureCode = new ArrayList<>();
