@@ -4,10 +4,7 @@ import cn.afterturn.easypoi.excel.annotation.ExcelCollection;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -116,6 +113,7 @@ public class DeviceType implements Serializable {
 	/**删除状态 0-未删除 1-已删除*/
 	@Excel(name = "删除状态 0-未删除 1-已删除", width = 15)
     @ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
+    @TableLogic
     private Integer delFlag;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
@@ -177,4 +175,9 @@ public class DeviceType implements Serializable {
     @TableField(exist = false)
     private String color;
 
+
+    /**备注*/
+    @Excel(name = "备注", width = 15)
+    @ApiModelProperty(value = "备注")
+    private String remark;
 }

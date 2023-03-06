@@ -1239,6 +1239,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             sendAcceptanceMessage(repairTask);
         }
+
+        // 修改审核待办任务的状态
+        isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.INSPECTION_CONFIRM.getType(), repairTask.getId(), loginUser.getUsername(), CommonTodoStatus.DONE_STATUS_1);
+
         // 创建验收待办任务
         try {
             if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) && repairTask.getIsReceipt().equals(InspectionConstant.IS_EFFECT)) {

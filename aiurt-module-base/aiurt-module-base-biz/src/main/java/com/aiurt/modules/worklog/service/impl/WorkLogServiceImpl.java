@@ -3,6 +3,7 @@ package com.aiurt.modules.worklog.service.impl;
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.Week;
@@ -49,6 +50,7 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysParamModel;
@@ -256,9 +258,19 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public IPage<WorkLogResult> pageList(IPage<WorkLogResult> page, WorkLogParam param, HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        param.setSubmitId(user.getId());
-        param.setSuccessorId(user.getId());
-        param.setDepartId(user.getOrgId());
+//        param.setSubmitId(user.getId());
+//        param.setSuccessorId(user.getId());
+        List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
+        boolean admin = SecurityUtils.getSubject().hasRole("admin");
+        if (!admin) {
+            if(CollUtil.isNotEmpty(departByUserId)){
+                List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+                param.setDepartList(departIdsByUserId);
+            }
+            else {
+                return null;
+            }
+        }
         return getWorkLogResultIPage(page, param);
     }
 
@@ -271,10 +283,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public List<WorkLogResult> exportXls(WorkLogParam param, HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<String> departIdsByUserId = roleAdditionalUtils.getListDepartIdsByUserId(user.getId());
-        if (CollectionUtils.isNotEmpty(departIdsByUserId)) {
-            param.setDepartList(departIdsByUserId);
-        }
+        List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
+            if(CollUtil.isNotEmpty(departByUserId)){
+                List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+                param.setDepartList(departIdsByUserId);
+            }
         List<WorkLogResult> workLogResults = depotMapper.exportXls(param);
         for (WorkLogResult record : workLogResults) {
             //通过站点和班组的关联获取线路
@@ -313,15 +326,15 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 //                stringBuffer.append("完成工区消毒；");
 //            }else {stringBuffer.append("未完成工区消毒；");}
 
-            if (WorkLogConstans.IS.equals(record.getIsClean())) {
-                stringBuffer.append("完成工区卫生打扫；");
-            }else { stringBuffer.append("未完成工区卫生打扫；");}
+//            if (WorkLogConstans.IS.equals(record.getIsClean())) {
+//                stringBuffer.append("完成工区卫生打扫；");
+//            }else { stringBuffer.append("未完成工区卫生打扫；");}
 
 //            if (WorkLogConstans.NORMAL.equals(record.getIsAbnormal())) {
 //                stringBuffer.append("班组上岗人员体温正常。");
 //            }else { stringBuffer.append("班组上岗人员体温异常。");}
 
-            record.setAntiepidemicWork(stringBuffer.toString());
+           // record.setAntiepidemicWork(stringBuffer.toString());
 
             record.setSchedule(schedule);
 
@@ -330,7 +343,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 stringBuffer2.append("应急处理情况：");
                 stringBuffer2.append(record.getEmergencyDisposalContent()+";");
             }
-            stringBuffer2.append("防疫相关工作：");
+//            stringBuffer2.append("防疫相关工作：");
             stringBuffer2.append(stringBuffer);
             if (WorkLogConstans.IS.equals(record.getIsDocumentPublicity())) {
                 stringBuffer2.append("文件宣贯概况：");
@@ -351,11 +364,15 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     public IPage<WorkLogResult> queryConfirmList(IPage<WorkLogResult> page, WorkLogParam param, HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
-//        List<String> departIdsByUserId = roleAdditionalUtils.getListDepartIdsByUserId(user.getId());
+        List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
         if (!admin) {
-            param.setSubmitId(user.getId());
-            param.setSuccessorId(user.getId());
-//            param.setDepartList(departIdsByUserId);
+            if(CollUtil.isNotEmpty(departByUserId)){
+                List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+                param.setDepartList(departIdsByUserId);
+            }
+            else {
+                return null;
+            }
         }
         return getWorkLogResultIPage(page, param);
     }
@@ -516,20 +533,20 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             //获取参与人员
             record.setUserList(users);
             //防疫相关工作
-            StringBuffer stringBuffer = new StringBuffer();
-            if (WorkLogConstans.IS.equals(record.getIsDisinfect())) {
-                stringBuffer.append("完成工区消毒；");
-            }else {stringBuffer.append("未完成工区消毒；");}
+           // StringBuffer stringBuffer = new StringBuffer();
+//            if (WorkLogConstans.IS.equals(record.getIsDisinfect())) {
+//                stringBuffer.append("完成工区消毒；");
+//            }else {stringBuffer.append("未完成工区消毒；");}
 
-            if (WorkLogConstans.IS.equals(record.getIsClean())) {
-                stringBuffer.append("完成工区卫生打扫；");
-            }else { stringBuffer.append("未完成工区卫生打扫；");}
+//            if (WorkLogConstans.IS.equals(record.getIsClean())) {
+//                stringBuffer.append("完成工区卫生打扫；");
+//            }else { stringBuffer.append("未完成工区卫生打扫；");}
 
-            if (WorkLogConstans.NORMAL.equals(record.getIsAbnormal())) {
-                stringBuffer.append("班组上岗人员体温正常。");
-            }else { stringBuffer.append("班组上岗人员体温异常。");}
+//            if (WorkLogConstans.NORMAL.equals(record.getIsAbnormal())) {
+//                stringBuffer.append("班组上岗人员体温正常。");
+//            }else { stringBuffer.append("班组上岗人员体温异常。");}
 
-            record.setAntiepidemicWork(stringBuffer.toString());
+            //record.setAntiepidemicWork(stringBuffer.toString());
 
             record.setSchedule(schedule);
 
@@ -538,8 +555,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 stringBuffer2.append("应急处理情况：");
                 stringBuffer2.append(record.getEmergencyDisposalContent()+";");
             }
-            stringBuffer2.append("防疫相关工作：");
-            stringBuffer2.append(stringBuffer);
+          //  stringBuffer2.append("防疫相关工作：");
+            //stringBuffer2.append(stringBuffer);
             if (WorkLogConstans.IS.equals(record.getIsDocumentPublicity())) {
                 stringBuffer2.append("文件宣贯概况：");
                 stringBuffer2.append(record.getDocumentPublicityContent()+";");
@@ -1017,6 +1034,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public void archWorkLog(WorkLogResult workLogResult, String token, String archiveUserId, String refileFolderId, String realname, String sectId) {
         try {
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             HashMap<String, Object> map = new HashMap<>();
             map.put("submitTime", DateUtil.format(workLogResult.getSubmitTime(), "yyyy-MM-dd HH:mm:ss"));
             map.put("submitName", workLogResult.getSubmitName());
@@ -1033,7 +1051,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             map.put("assortContent", workLogResult.getAssortContent());
             map.put("signature", workLogResult.getSignature());
 
-            //String title = "工作日志列表数据";
+            String title = "工作日志列表数据";
             Workbook workbook = ExcelExportUtil.exportExcel(new TemplateExportParams("templates/workLogTemplate.xlsx"), map);
 
             //SXSSFWorkbook archiveRepairTask = ExcelUtils.createArchiveWorkLog(workLogResult, templatePath);
@@ -1195,14 +1213,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //获取参与人员
         workLog.setUserList(users);
         //防疫相关工作
-        StringBuffer stringBuffer = new StringBuffer();
+       // StringBuffer stringBuffer = new StringBuffer();
 //        if (WorkLogConstans.IS.equals(workLog.getIsDisinfect())) {
 //            stringBuffer.append("完成工区消毒；");
 //        }else {stringBuffer.append("未完成工区消毒；");}
 
-        if (WorkLogConstans.IS.equals(workLog.getIsClean())) {
-            stringBuffer.append("完成工区卫生打扫；");
-        }else { stringBuffer.append("未完成工区卫生打扫；");}
+//        if (WorkLogConstans.IS.equals(workLog.getIsClean())) {
+//            stringBuffer.append("完成工区卫生打扫；");
+//        }else { stringBuffer.append("未完成工区卫生打扫；");}
 
 //        if (WorkLogConstans.NORMAL.equals(workLog.getIsAbnormal())) {
 //            stringBuffer.append("班组上岗人员体温正常。");
@@ -1237,7 +1255,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         if (ObjectUtil.isEmpty(content1)) {
             workLog.setContent("无");
         }
-        workLog.setAntiepidemicWork(stringBuffer.toString());
         workLog.setSchedule(schedule);
         return workLog;
     }
