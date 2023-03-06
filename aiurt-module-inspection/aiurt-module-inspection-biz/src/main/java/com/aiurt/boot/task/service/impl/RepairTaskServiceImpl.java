@@ -1470,14 +1470,17 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPool.setStatus(InspectionConstant.REJECTED);
                 repairPoolMapper.updateById(repairPool);
             }
-            String EnclosureId = repairTaskEnclosureMapper.getById(id);
-            if (EnclosureId!=null){
-                RepairTaskEnclosure repairTaskEnclosure = repairTaskEnclosureMapper.selectById(EnclosureId);
-                if (ObjectUtil.isNotEmpty(repairTaskEnclosure)) {
-                    repairTaskEnclosure.setUrl(examineDTO.getPath());
-                    repairTaskEnclosureMapper.updateById(repairTaskEnclosure);
+            List<String> enclosureIds = repairTaskEnclosureMapper.getByRepairTaskId(id);
+            if (enclosureIds!=null){
+                for (String enclosureId : enclosureIds){
+                    RepairTaskEnclosure repairTaskEnclosure = repairTaskEnclosureMapper.selectById(enclosureId);
+                    if (ObjectUtil.isNotEmpty(repairTaskEnclosure)) {
+                        repairTaskEnclosure.setUrl(examineDTO.getPath());
+                        repairTaskEnclosureMapper.updateById(repairTaskEnclosure);
+                    }
                 }
             }
+
             // 给检修人驳回发消息
             sendBackMessage(repairTask1,examineDTO.getAcceptanceRemark());
         }
