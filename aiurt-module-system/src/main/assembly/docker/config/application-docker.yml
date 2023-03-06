@@ -362,6 +362,7 @@ support:
     pic: /home/data/pic
     exportPatrolPath: /data/wwwroot/support/test/
     exportWorkLogPath: /data/wwwroot/support/test/
+    exportRepairTaskPath: /data/wwwroot/support/test/
   downFilePath:
     #先存到本地
     materialBasicInfoPath: G:\changchunguidao\swsc-copsms-admin\src\main\resources\template\物资基础信息导入模板.xlsx
