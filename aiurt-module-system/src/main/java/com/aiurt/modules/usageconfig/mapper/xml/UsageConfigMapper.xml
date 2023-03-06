@@ -2,11 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.usageconfig.mapper.UsageConfigMapper">
     <select id="getList" resultType="com.aiurt.modules.usageconfig.dto.UsageConfigDTO">
-        select *
-        from sys_usage_config
-    </select>
+    select *
+    from sys_usage_config
+</select>
     <select id="getAllList" resultType="com.aiurt.modules.usageconfig.dto.UsageConfigDTO">
-        select *
+        select *,
+               rank() over ( partition by pid order by sequence)
         from sys_usage_config
     </select>
     <select id="getTotal" resultType="java.lang.Long">
@@ -37,8 +38,8 @@
     </select>
 
     <select id="getChildrenList" resultType="com.aiurt.modules.usageconfig.entity.UsageConfig">
-        SELECT
-                *
+        SELECT *,
+               rank() over ( partition by pid order by sequence)
         FROM
                 ( SELECT * FROM sys_usage_config WHERE pid > 0 ORDER BY pid, id DESC ) realname_sorted,
                 ( SELECT @pv := #{id} ) initialisation
@@ -49,8 +50,12 @@
     </select>
 
     <select id="selectByPage" resultType="com.aiurt.modules.usageconfig.dto.UsageStatDTO">
-        SELECT
-            id,pid, `name` as tile_name, table_name, sta_condition
+        SELECT id,
+               pid,
+               `name` as tile_name,
+               table_name,
+               sta_condition,
+               rank()    over ( partition by pid order by sequence)
         FROM
             sys_usage_config
         WHERE
@@ -60,8 +65,12 @@
 
 
     <select id="selectByPages" resultType="com.aiurt.modules.usageconfig.entity.UsageConfig">
-        SELECT
-        id,pid, `name` as name, table_name, sta_condition
+        SELECT id,
+               pid,
+               `name` as name,
+               table_name,
+               sta_condition,
+               rank()    over ( partition by pid order by sequence)
         FROM
         sys_usage_config
         WHERE

@@ -14,6 +14,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -66,6 +67,11 @@ public class UsageConfig implements Serializable {
     private String staCondition;
     @ApiModelProperty(value = "状态（1启用/0禁用)")
     private Integer state;
+    /**
+     * 拖拽排序顺序
+     */
+    @ApiModelProperty(value = "拖拽排序顺序(新增时：取同级顺序最大的一条+1，建议取个整数；拖拽时：拖拽位置的上下两条记录的平均值，除不尽四舍五入，保留5位小数)")
+    private BigDecimal sequence;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
     private String createBy;
