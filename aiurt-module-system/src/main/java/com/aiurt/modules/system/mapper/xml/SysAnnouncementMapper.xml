@@ -149,7 +149,8 @@
 				and sas.user_id = #{userId}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and sa.bus_type LIKE concat('%',#{busType},'%')
+				and (sa.bus_type LIKE concat('%',#{busType},'%')
+				or sa.process_code like concat('%',#{busType},'%'))
 			</if>
 			<if test="busType ==null or busType ==''">
 				and isNull(sa.bus_type)
