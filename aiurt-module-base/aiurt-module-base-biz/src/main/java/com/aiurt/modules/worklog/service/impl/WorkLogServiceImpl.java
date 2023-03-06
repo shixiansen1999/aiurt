@@ -256,9 +256,19 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public IPage<WorkLogResult> pageList(IPage<WorkLogResult> page, WorkLogParam param, HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        param.setSubmitId(user.getId());
-        param.setSuccessorId(user.getId());
-        param.setDepartId(user.getOrgId());
+//        param.setSubmitId(user.getId());
+//        param.setSuccessorId(user.getId());
+        List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
+        boolean admin = SecurityUtils.getSubject().hasRole("admin");
+        if (!admin) {
+            if(CollUtil.isNotEmpty(departByUserId)){
+                List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+                param.setDepartList(departIdsByUserId);
+            }
+            else {
+                return null;
+            }
+        }
         return getWorkLogResultIPage(page, param);
     }
 
@@ -271,10 +281,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public List<WorkLogResult> exportXls(WorkLogParam param, HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<String> departIdsByUserId = roleAdditionalUtils.getListDepartIdsByUserId(user.getId());
-        if (CollectionUtils.isNotEmpty(departIdsByUserId)) {
-            param.setDepartList(departIdsByUserId);
-        }
+        List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
+            if(CollUtil.isNotEmpty(departByUserId)){
+                List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+                param.setDepartList(departIdsByUserId);
+            }
         List<WorkLogResult> workLogResults = depotMapper.exportXls(param);
         for (WorkLogResult record : workLogResults) {
             //通过站点和班组的关联获取线路
@@ -351,11 +362,15 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     public IPage<WorkLogResult> queryConfirmList(IPage<WorkLogResult> page, WorkLogParam param, HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
-//        List<String> departIdsByUserId = roleAdditionalUtils.getListDepartIdsByUserId(user.getId());
+        List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
         if (!admin) {
-            param.setSubmitId(user.getId());
-            param.setSuccessorId(user.getId());
-//            param.setDepartList(departIdsByUserId);
+            if(CollUtil.isNotEmpty(departByUserId)){
+                List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+                param.setDepartList(departIdsByUserId);
+            }
+            else {
+                return null;
+            }
         }
         return getWorkLogResultIPage(page, param);
     }
