@@ -4,7 +4,7 @@
 
 
     <select id="getByRepairTaskId" resultType="java.lang.String">
-        SELECT id from repair_task_enclosure rte
+        SELECT rte.id from repair_task_enclosure rte
                LEFT JOIN
            repair_task_result as rtr
            on
