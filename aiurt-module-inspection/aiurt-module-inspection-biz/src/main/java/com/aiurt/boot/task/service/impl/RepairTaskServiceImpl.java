@@ -1,5 +1,7 @@
 package com.aiurt.boot.task.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
@@ -35,15 +37,21 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtNoDataException;
+import com.aiurt.common.util.ArchiveUtils;
 import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.PdfUtil;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.todo.dto.TodoDTO;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -51,10 +59,15 @@ import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -103,6 +116,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     private ISTodoBaseAPI isTodoBaseAPI;
     @Autowired
     private ISysParamAPI iSysParamAPI;
+
+//    @Autowired
+//    private RepairTaskService repairTaskService;
+    @Autowired
+    ArchiveUtils archiveUtils;
+
+    @Value("${support.path.exportRepairTaskPath}")
+    private String exportPath;
 
     @Override
     public Page<RepairTask> selectables(Page<RepairTask> pageList, RepairTask condition) {
@@ -2538,5 +2559,107 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         });
         pageList.setRecords(systemInformation);
         return pageList;
+    }
+
+    @Override
+    public void archRepairTask(RepairTask repairTask, String token, String archiveUserId, String refileFolderId, String realname, String sectId) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+            String fileName = repairTask.getSiteName() + "检修记录表" + sdf.format(repairTask.getStartTime());
+            Date date = new Date();
+            //传入档案系统
+            //创建文件夹
+            String foldername = fileName + "_" + date.getTime();
+            String refileFolderIdNew = archiveUtils.createFolder(token, refileFolderId, foldername);
+            //上传文件
+            String fileType = "pdf";
+            File file = new File(exportPath + fileName + "." + fileType);
+            Long size = file.length();
+            InputStream in = new FileInputStream(file);
+            JSONObject res = archiveUtils.upload(token, refileFolderIdNew, fileName + "." + fileType, size, fileType, in);
+            String fileId = res.getString("fileId");
+            Map<String, String> fileInfo = new HashMap<>();
+            fileInfo.put("fileId", fileId);
+            fileInfo.put("operateType", "upload");
+            ArrayList<Object> fileList = new ArrayList<>();
+            fileList.add(fileInfo);
+            Map values = new HashMap();
+            values.put("archiver", archiveUserId);
+            values.put("username", realname);
+            values.put("duration", repairTask.getSecertduration());
+            values.put("secert", repairTask.getSecert());
+            values.put("secertduration",  repairTask.getSecertduration());
+            values.put("name", fileName);
+            values.put("fileList", fileList);
+            values.put("number", values.get("number"));
+            values.put("refileFolderId", refileFolderIdNew);
+            values.put("sectid", sectId);
+            Map result = archiveUtils.arch(values, token);
+            Map<String, String> obj = JSON.parseObject((String) result.get("obj"), new TypeReference<HashMap<String, String>>() {
+            });
+
+            //更新归档状态
+            if (result.get("result").toString() == "true" && "新增".equals(obj.get("rs"))) {
+                UpdateWrapper<RepairTask> uwrapper = new UpdateWrapper<>();
+                uwrapper.eq("id", repairTask.getId()).set("ecm_status", 1);
+                update(uwrapper);
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void exportPdf(HttpServletRequest request, RepairTask repairTask, HttpServletResponse response) throws IOException {
+        String path = "templates/repairTaskTemplate.xlsx";
+        TemplateExportParams params = new TemplateExportParams(path, true);
+        Map<String, Object> map = new HashMap<String, Object>();
+
+//        检修任务单号
+        map.put("code", repairTask.getCode());
+//        任务来源
+        map.put("sourceName",repairTask.getSourceName() );
+//        适用专业
+        map.put("majorName", repairTask.getMajorName());
+//        适用系统
+        map.put("systemName", repairTask.getSystemName());
+//        适用站点
+        map.put("siteName", repairTask.getSiteName());
+//        组织机构
+        map.put("organizational",repairTask.getOrganizational());
+//        检修周期类型
+        map.put("typeName", repairTask.getTypeName());
+//        所属周
+        map.put("weekName", repairTask.getWeekName());
+//        作业类型
+        map.put("workType", repairTask.getWorkType());
+//        作业令
+        map.put("planOrderCodeUrl", repairTask.getPlanOrderCodeUrl());
+//        同行人
+        map.put("peerName", repairTask.getPeerName());
+//        计划开始时间
+        map.put("startTime", DateUtil.format(repairTask.getStartTime(), "YYYY-MM-dd HH:mm:ss"));
+//        计划结束时间vwv
+        map.put("endTime", DateUtil.format(repairTask.getEndTime(), "YYYY-MM-dd HH:mm:ss"));
+//        开始检修任务时间
+        map.put("overhaulTime", DateUtil.format(repairTask.getStartOverhaulTime(), "YYYY-MM-dd HH:mm:ss"));
+//        结束检修任务时间
+        map.put("endOverhaulTime", DateUtil.format(repairTask.getEndOverhaulTime(), "YYYY-MM-dd HH:mm:ss"));
+//        任务状态
+        map.put("statusName", repairTask.getStatusName());
+//        检修任务提交人
+        map.put("sumitUserName",repairTask.getSumitUserName());
+
+        String fileName = repairTask.getSiteName() + "检修记录表" ;
+        String exportRepairTaskPath = exportPath +"/" +fileName + ".xlsx";
+        Workbook workbook = ExcelExportUtil.exportExcel(params,map);
+        FileOutputStream fos = new FileOutputStream(exportRepairTaskPath);
+        BufferedOutputStream bos = new BufferedOutputStream(fos);
+        workbook.write(bos);
+        bos.close();
+        fos.close();
+        workbook.close();
+        PdfUtil.excel2pdf(exportRepairTaskPath);
     }
 }
