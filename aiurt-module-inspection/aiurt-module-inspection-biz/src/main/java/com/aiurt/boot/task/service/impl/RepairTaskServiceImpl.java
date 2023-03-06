@@ -1633,7 +1633,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_RETURN);
                     messageDTO.setMsgAbstract("检修任务退回");
                     messageDTO.setPublishingContent("检修任务退回，请重新安排");
-                    sendMessage(messageDTO,null,user.getRealname(),repairTaskMessageDTO);
+                    List<String> userNames = repairTaskUserss.stream().map(RepairTaskUser::getName).collect(Collectors.toList());
+                    sendMessage(messageDTO,CollUtil.join(userNames,","),null,repairTaskMessageDTO);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

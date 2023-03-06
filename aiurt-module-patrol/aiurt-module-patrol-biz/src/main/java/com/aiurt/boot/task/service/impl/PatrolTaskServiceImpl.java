@@ -1811,11 +1811,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         map.put("patrolTaskName",patrolMessageDTO.getName());
         List<String> station = patrolTaskStationMapper.getStationByTaskCode(patrolMessageDTO.getCode());
         map.put("patrolStation",CollUtil.join(station,","));
-        if (ObjectUtil.isNotEmpty(patrolMessageDTO.getStartTime()) && ObjectUtil.isNotEmpty(patrolMessageDTO.getEndTime())) {
-            String patrolDate = DateUtil.format(patrolMessageDTO.getPatrolDate(), "yyyy-MM-dd");
-            String startTime = DateUtil.format(patrolMessageDTO.getStartTime(), "HH:mm");
-            String endTime = DateUtil.format(patrolMessageDTO.getEndTime(), "HH:mm");
-            map.put("patrolTaskTime",patrolDate+" "+(startTime!=null?startTime:"")+"-"+patrolDate+" "+(endTime!=null?endTime:""));  }
+        String patrolDate = DateUtil.format(patrolMessageDTO.getPatrolDate(), "yyyy-MM-dd");
+        map.put("patrolTaskTime",patrolDate);
         if (StrUtil.isNotEmpty(realNames)) {
             map.put("patrolName", realNames);
         } else {
