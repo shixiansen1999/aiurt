@@ -24,3 +24,4 @@ public class PatrolOrgDTO {
     @ApiModelProperty(value = "组织机构")
     private List<String> org;
 }
+

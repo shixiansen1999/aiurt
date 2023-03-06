@@ -998,11 +998,13 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).distinct().collect(Collectors.joining("；"));
             String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).distinct().collect(Collectors.joining("；"));
             List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
+            List<GeneralReturn> orgCodeName = patrolTaskMapper.getOrgCodeName(orgCodes);
             e.setOrganizationName(manager.translateOrg(orgCodes));
             List<String> stationCodeList = patrolTaskMapper.getStationCode(e.getCode());
             List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
             e.setStationName(manager.translateStation(stationName));
             e.setSysName(sysName);
+            e.setOrgCodes(orgCodeName);
             e.setStationCodeList(stationCodeList);
             e.setMajorName(majorName);
             e.setOrgCodeList(orgCodes);
