@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.result.*;
 import com.aiurt.common.util.ArchiveUtils;
@@ -99,6 +100,7 @@ public class WorkLogController {
     @AutoLog(value = "工作日志确认-分页列表查询")
     @ApiOperation(value="工作日志确认-分页列表查询", notes="工作日志确认-分页列表查询")
     @GetMapping(value = "/confirmList")
+    @PermissionData(pageComponent = "workLog/affirm")
     public Result<IPage<WorkLogResult>> queryConfirmList(@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                                          @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
                                                          WorkLogParam param, HttpServletRequest req) {
