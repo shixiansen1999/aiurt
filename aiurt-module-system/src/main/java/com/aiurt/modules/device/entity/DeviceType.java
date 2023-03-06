@@ -175,9 +175,4 @@ public class DeviceType implements Serializable {
     @TableField(exist = false)
     private String color;
 
-
-    /**备注*/
-    @Excel(name = "备注", width = 15)
-    @ApiModelProperty(value = "备注")
-    private String remark;
 }
