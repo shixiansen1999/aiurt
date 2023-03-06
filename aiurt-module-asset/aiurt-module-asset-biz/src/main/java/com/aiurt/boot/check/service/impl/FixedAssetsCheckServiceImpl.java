@@ -503,24 +503,33 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
             List<String> orgCodes = deptList.stream().map(FixedAssetsCheckDept::getOrgCode).collect(Collectors.toList());
 
             int states = updateStateEntity.getStates();
+            TodoDTO todoDTO = new TodoDTO();
             switch (states) {
                 case 2:
                     // 盘点结果审核
                     assetsCheck.setStatus(FixedAssetsConstant.STATUS_2);
                     assetsCheck.setAuditResult(null);
-                    //发送通知
-                    messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
+                    //发送通知和待办
+                    /*messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
                     messageDTO.setTitle("固定资产盘点审核"+DateUtil.today());
                     messageDTO.setMsgAbstract("固定资产盘点审核");
                     messageDTO.setPublishingContent("固定资产盘点审核");
                     sendMessage(messageDTO,assetsCheck,orgCodes);
+
+                    todoDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
+                    todoDTO.setTitle("固定资产盘点审核"+DateUtil.today());
+                    todoDTO.setMsgAbstract("固定资产盘点审核");
+                    todoDTO.setPublishingContent("固定资产盘点审核");
+                    todoDTO.setProcessDefinitionName("固定资产盘点审核");
+                    todoDTO.setTaskName("固定资产盘点审核");
+                    sendTodo(todoDTO, assetsCheck, orgCodes);*/
                     break;
                 case 3:
                     // 盘点结果驳回
                     assetsCheck.setStatus(FixedAssetsConstant.STATUS_1);
                     assetsCheck.setAuditResult(FixedAssetsConstant.AUDIT_RESULT_0);
 
-                    map.put("", DateUtil.format(assetsCheck.getActualStartTime(), "yyyy-MM-dd HH:mm") + "-" + DateUtil.format(assetsCheck.getActualEndTime(), "yyyy-MM-dd HH:mm"));
+                   /* map.put("", DateUtil.format(assetsCheck.getActualStartTime(), "yyyy-MM-dd HH:mm") + "-" + DateUtil.format(assetsCheck.getActualEndTime(), "yyyy-MM-dd HH:mm"));
                     //发送通知
                     messageDTO.setData(map);
                     messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE_REJECT);
@@ -528,6 +537,13 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
                     messageDTO.setMsgAbstract("固定资产盘点审核驳回");
                     messageDTO.setPublishingContent("固定资产盘点审核驳回");
                     sendMessage(messageDTO,assetsCheck,orgCodes);
+                    todoDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
+                    todoDTO.setTitle("固定资产盘点审核"+DateUtil.today());
+                    todoDTO.setMsgAbstract("固定资产盘点审核驳回");
+                    todoDTO.setPublishingContent("固定资产盘点审核驳回");
+                    todoDTO.setProcessDefinitionName("固定资产盘点审核");
+                    todoDTO.setTaskName("固定资产盘点审核");
+                    sendTodo(todoDTO, assetsCheck, orgCodes);*/
                     break;
                 case 4:
                     // 审核通过
@@ -559,11 +575,11 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
                     });
                     fixedAssetsService.updateBatchById(fixedAssetsArrayList);
                     //发送通知
-                    messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
+                    /*messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
                     messageDTO.setTitle("固定资产盘点审核"+DateUtil.today());
                     messageDTO.setMsgAbstract("固定资产盘点审核");
                     messageDTO.setPublishingContent("固定资产盘点审核");
-                    sendMessage(messageDTO,assetsCheck,orgCodes);
+                    sendMessage(messageDTO,assetsCheck,orgCodes);*/
                     break;
             }
         } catch (Exception e) {

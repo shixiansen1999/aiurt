@@ -56,7 +56,7 @@ public enum SysAnnmentTypeEnum {
      */
     PATROL_AUDIT("patrol_audit", "component","","巡视业务消息"),
     /**
-     * 物资出入库
+     *物资出入库
      */
     MATERIAL_WAREHOUSING("material_warehousing", "component","","物资出入库消息"),
 

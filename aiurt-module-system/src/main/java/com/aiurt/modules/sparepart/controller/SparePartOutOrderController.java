@@ -1,17 +1,22 @@
 package com.aiurt.modules.sparepart.controller;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.CommonTodoStatus;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
+import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
-import com.aiurt.modules.sparepart.entity.SparePartStock;
-import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
-import com.aiurt.modules.stock.entity.StockOutboundMaterials;
+import com.aiurt.modules.todo.dto.TodoDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -21,16 +26,17 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
-import java.util.Date;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,8 +53,12 @@ import java.util.stream.Collectors;
 public class SparePartOutOrderController extends BaseController<SparePartOutOrder, ISparePartOutOrderService> {
    @Autowired
    private ISparePartOutOrderService sparePartOutOrderService;
-
-
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private ISTodoBaseAPI isTodoBaseAPI;
    /**
     * 分页列表查询
     *
@@ -124,6 +134,55 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
            sparePartOutOrder.setUnused(orderList.get(0).getUnused());
        }
        sparePartOutOrderService.updateById(sparePartOutOrder);
+
+       try {
+           //根据仓库编号获取仓库组织机构code
+           String orgCode = sysBaseApi.getDepartByWarehouseCode(sparePartOutOrder.getWarehouseCode());
+           String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
+
+           //发送通知
+           MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件库出库申请" + DateUtil.today(), null);
+
+           //构建消息模板
+           HashMap<String, Object> map = new HashMap<>();
+           map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartOutOrder.getId());
+           map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
+           map.put("materialCode",sparePartOutOrder.getMaterialCode());
+           map.put("name",sparePartOutOrder.getName());
+           map.put("num",sparePartOutOrder.getNum());
+           String warehouseName= sysBaseApi.getWarehouseNameByCode(sparePartOutOrder.getWarehouseCode());
+           map.put("warehouseName",warehouseName);
+           map.put("realName",user.getRealname());
+
+           messageDTO.setData(map);
+           //业务类型，消息类型，消息模板编码，摘要，发布内容
+           messageDTO.setTemplateCode(CommonConstant.SPAREPARTOUTORDER_SERVICE_NOTICE);
+           SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+           messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+           messageDTO.setMsgAbstract("备件库出库申请");
+           messageDTO.setPublishingContent("备件出库申请，请确认");
+           messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+           sysBaseApi.sendTemplateMessage(messageDTO);
+           //发送待办
+           TodoDTO todoDTO = new TodoDTO();
+           todoDTO.setData(map);
+           SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
+           todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
+           todoDTO.setTitle("备件库出库申请" + DateUtil.today());
+           todoDTO.setMsgAbstract("备件库出库申请");
+           todoDTO.setPublishingContent("备件出库申请，请确认");
+           todoDTO.setCurrentUserName(userName);
+           todoDTO.setBusinessKey(sparePartOutOrder.getId());
+           todoDTO.setBusinessType(TodoBusinessTypeEnum.MATERIAL_WAREHOUSING.getType());
+           todoDTO.setCurrentUserName(userName);
+           todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
+           todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+           todoDTO.setTemplateCode(CommonConstant.SPAREPARTOUTORDER_SERVICE_NOTICE);
+
+           isTodoBaseAPI.createTodoTask(todoDTO);
+       } catch (Exception e) {
+           e.printStackTrace();
+       }
        return Result.OK("添加成功！");
    }
 
@@ -137,6 +196,37 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
    @ApiOperation(value="spare_part_out_order-确认", notes="spare_part_out_order-确认")
    @RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
    public Result<?> edit(@RequestBody SparePartOutOrder sparePartOutOrder) {
+       SparePartOutOrder one = sparePartOutOrderService.getById(sparePartOutOrder.getId());
+       LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+       try {
+           LoginUser userById = sysBaseApi.getUserById(one.getApplyUserId());
+           //发送通知
+           MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件出库-确认" + DateUtil.today(), null);
+
+           //构建消息模板
+           HashMap<String, Object> map = new HashMap<>();
+           map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, one.getId());
+           map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
+           map.put("materialCode",one.getMaterialCode());
+           map.put("name",one.getName());
+           map.put("num",one.getNum());
+           String warehouseName= sysBaseApi.getWarehouseNameByCode(one.getWarehouseCode());
+           map.put("warehouseName",warehouseName);
+           map.put("realName",userById.getRealname());
+
+           messageDTO.setData(map);
+           //业务类型，消息类型，消息模板编码，摘要，发布内容
+           messageDTO.setTemplateCode(CommonConstant.SPAREPARTOUTORDER_SERVICE_NOTICE);
+           SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+           messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+           messageDTO.setMsgAbstract("备件出库申请通过");
+           messageDTO.setPublishingContent("备件出库申请通过");
+           messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+           sysBaseApi.sendTemplateMessage(messageDTO);
+       } catch (Exception e) {
+           e.printStackTrace();
+       }
+
        return sparePartOutOrderService.update(sparePartOutOrder);
    }
 

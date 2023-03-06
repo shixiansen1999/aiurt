@@ -1,13 +1,21 @@
 package com.aiurt.modules.stock.controller;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.CommonTodoStatus;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
+import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.stock.entity.StockLevel2Check;
 import com.aiurt.modules.stock.service.IStockLevel2CheckService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
+import com.aiurt.modules.todo.dto.TodoDTO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -15,7 +23,11 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +37,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * @Description: 二级库盘点
@@ -42,7 +55,10 @@ public class StockLevel2CheckController {
     private IStockLevel2CheckService iStockLevel2CheckService;
     @Autowired
     private SysBaseApiImpl sysBaseApi;
-
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private ISTodoBaseAPI isTodoBaseAPI;
     /**
      * 分页列表查询
      *
@@ -144,17 +160,55 @@ public class StockLevel2CheckController {
     @GetMapping(value = "/sendStockCheck")
     public Result<StockLevel2Check> sendStockCheck(@RequestParam(name = "id", required = true) String id) {
         StockLevel2Check stockLevel2Check = iStockLevel2CheckService.getById(id);
-        MessageDTO message = new MessageDTO();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        message.setFromUser(sysUser.getUsername());
-        String checkerId = stockLevel2Check.getCheckerId();
-        message.setToUser(checkerId==null?"":checkerId);
-        message.setTitle("二级库盘点下发通知");
-        message.setContent("您有一个新的二级库盘点任务。");
-        message.setCategory("2");
-        sysBaseApi.sendSysAnnouncement(message);
         stockLevel2Check.setStatus(CommonConstant.STOCK_LEVEL2_CHECK_3);
         iStockLevel2CheckService.updateById(stockLevel2Check);
+
+        try {
+            //发送通知
+            MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),stockLevel2Check.getCheckerId(), "2级库盘点" + DateUtil.today(), null);
+
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, stockLevel2Check.getId());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
+            map.put("stockCheckCode",stockLevel2Check.getStockCheckCode());
+            SysDepartModel departByOrgCode = sysBaseApi.getDepartByOrgCode(stockLevel2Check.getOrgCode());
+            map.put("departName", departByOrgCode.getDepartName());
+            LoginUser userByName = sysBaseApi.getUserByName(stockLevel2Check.getCheckerId());
+            map.put("checkName", userByName.getRealname());
+            map.put("time", DateUtil.format(stockLevel2Check.getPlanStartTime(), "yyyy-MM-dd HH:mm:ss"));
+            messageDTO.setData(map);
+
+
+            messageDTO.setData(map);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            messageDTO.setTemplateCode(CommonConstant.STOCKLEVEL2CHECK_SERVICE_NOTICE);
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+            messageDTO.setMsgAbstract("2级库物资盘点");
+            messageDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+            sysBaseApi.sendTemplateMessage(messageDTO);
+            //发送待办
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setData(map);
+            SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
+            todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
+            todoDTO.setTitle("2级库盘点" + DateUtil.today());
+            todoDTO.setMsgAbstract("2级库物资盘点");
+            todoDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
+            todoDTO.setCurrentUserName(stockLevel2Check.getCheckerId());
+            todoDTO.setBusinessKey(stockLevel2Check.getId());
+            todoDTO.setBusinessType(TodoBusinessTypeEnum.MATERIAL_WAREHOUSING.getType());
+            todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
+            todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+            todoDTO.setTemplateCode(CommonConstant.STOCKLEVEL2CHECK_SERVICE_NOTICE);
+
+            isTodoBaseAPI.createTodoTask(todoDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return Result.ok("下发成功！");
     }
 

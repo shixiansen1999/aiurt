@@ -1,24 +1,39 @@
 package com.aiurt.modules.sparepart.service.impl;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.modules.sparepart.entity.*;
+import com.aiurt.common.constant.CommonTodoStatus;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
+import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
+import com.aiurt.modules.sparepart.entity.SparePartScrap;
 import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartScrapMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartScrapService;
+import com.aiurt.modules.todo.dto.TodoDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -35,6 +50,12 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
     private SparePartOutOrderMapper sparePartOutOrderMapper;
     @Autowired
     private ISparePartReturnOrderService sparePartReturnOrderService;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private ISTodoBaseAPI isTodoBaseAPI;
     /**
      * 查询列表
      * @param page
@@ -56,23 +77,98 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
     public Result<?> update(SparePartScrap sparePartScrap) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SparePartScrap scrap = getById(sparePartScrap.getId());
-        if(sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_3)){
+        if (sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_3)) {
             sparePartScrap.setConfirmId(user.getUsername());
             sparePartScrap.setConfirmTime(new Date());
 
             //更新已出库库存数量,做减法
-            List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode,sparePartScrap.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode,sparePartScrap.getWarehouseCode()));
-            if(!orderList.isEmpty()){
-                for(int i =0;i<orderList.size();i++){
+            List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode, sparePartScrap.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode, sparePartScrap.getWarehouseCode()));
+            if (!orderList.isEmpty()) {
+                for (int i = 0; i < orderList.size(); i++) {
                     SparePartOutOrder order = orderList.get(i);
-                    if(Integer.parseInt(order.getUnused())>=scrap.getNum()){
-                        Integer number = Integer.parseInt(order.getUnused())-scrap.getNum();
-                        order.setUnused(number+"");
+                    if (Integer.parseInt(order.getUnused()) >= scrap.getNum()) {
+                        Integer number = Integer.parseInt(order.getUnused()) - scrap.getNum();
+                        order.setUnused(number + "");
                         sparePartReturnOrderService.updateOrder(order);
-                    }else{
+                    } else {
                         return Result.error("剩余数量不足！");
                     }
                 }
+            }
+
+            try {
+                String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
+
+                //发送通知
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件报废申请" + DateUtil.today(), null);
+
+                //构建消息模板
+                HashMap<String, Object> map = new HashMap<>();
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, scrap.getId());
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
+                map.put("materialCode",scrap.getMaterialCode());
+                map.put("name",scrap.getName());
+                map.put("num",scrap.getNum());
+                LoginUser userByName = sysBaseApi.getUserByName(scrap.getCreateBy());
+                map.put("realName",userByName.getRealname());
+                map.put("scrapTime",DateUtil.format(scrap.getScrapTime(),"yyyy-MM-dd HH:mm:ss"));
+
+                messageDTO.setData(map);
+                //业务类型，消息类型，消息模板编码，摘要，发布内容
+                messageDTO.setTemplateCode(CommonConstant.SPAREPARTSCRAP_SERVICE_NOTICE);
+                SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+                messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+                messageDTO.setMsgAbstract("备件报废申请");
+                messageDTO.setPublishingContent("备件报废申请，请确认");
+                messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+                sysBaseApi.sendTemplateMessage(messageDTO);
+                //发送待办
+                TodoDTO todoDTO = new TodoDTO();
+                todoDTO.setData(map);
+                SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
+                todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
+                todoDTO.setTitle("备件报废申请" + DateUtil.today());
+                todoDTO.setMsgAbstract("备件报废申请");
+                todoDTO.setPublishingContent("备件报废申请，请确认");
+                todoDTO.setCurrentUserName(userName);
+                todoDTO.setBusinessKey(scrap.getId());
+                todoDTO.setBusinessType(TodoBusinessTypeEnum.MATERIAL_WAREHOUSING.getType());
+                todoDTO.setCurrentUserName(userName);
+                todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
+                todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+                todoDTO.setTemplateCode(CommonConstant.SPAREPARTSCRAP_SERVICE_NOTICE);
+
+                isTodoBaseAPI.createTodoTask(todoDTO);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                LoginUser userByName = sysBaseApi.getUserByName(scrap.getCreateBy());
+                //发送通知
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(),userByName.getUsername(), "备件报废申请-确认" + DateUtil.today(), null);
+
+                //构建消息模板
+                HashMap<String, Object> map = new HashMap<>();
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, scrap.getId());
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
+                map.put("materialCode",scrap.getMaterialCode());
+                map.put("name",scrap.getName());
+                map.put("num",scrap.getNum());
+                map.put("realName",userByName.getRealname());
+                map.put("scrapTime",DateUtil.format(scrap.getScrapTime(),"yyyy-MM-dd HH:mm:ss"));
+
+                messageDTO.setData(map);
+                //业务类型，消息类型，消息模板编码，摘要，发布内容
+                messageDTO.setTemplateCode(CommonConstant.SPAREPARTSCRAP_SERVICE_NOTICE);
+                SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+                messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+                messageDTO.setMsgAbstract("备件报废申请-确认");
+                messageDTO.setPublishingContent("备件报废申请通过");
+                messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+                sysBaseApi.sendTemplateMessage(messageDTO);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         sparePartScrapMapper.updateById(sparePartScrap);

@@ -53,6 +53,12 @@ public enum TodoBusinessTypeEnum {
     FAULT_HANG_UP("fault_hang_up"),
     FAULT_RESULT("fault_result"),
     /**
+     * 物资出入库
+     */
+    MATERIAL_WAREHOUSING("material_warehousing"),
+
+
+    /**
      * 固定资产盘点
      */
     FIXED_ASSETS("fixed_assets");

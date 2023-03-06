@@ -37,6 +37,10 @@ public enum TodoTaskTypeEnum {
      */
     FIXED_ASSETS("fixed_assets","","固定资产流程"),
     /**
+     * 设备申领
+     */
+    SPARE_PART("spare_part","","物资出入库流程"),
+    /**
      * 工作票
      */
     BD_WORK_TITCK("bd_work_titck","","工作票流程");

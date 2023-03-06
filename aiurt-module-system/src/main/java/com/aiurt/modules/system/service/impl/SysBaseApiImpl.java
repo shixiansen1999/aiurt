@@ -50,6 +50,9 @@ import com.aiurt.modules.sm.entity.CsSafetyAttention;
 import com.aiurt.modules.sm.entity.SafetyRelatedForm;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.sm.mapper.SafetyRelatedFormMapper;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.mapper.SparePartApplyMapper;
+import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
@@ -216,7 +219,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Autowired
     @Lazy
     private FlowApiService flowApiService;
-
+    @Autowired
+    private SparePartApplyMapper sparePartApplyMapper;
+    @Autowired
+    private SparePartStockInfoMapper sparePartStockInfoMapper;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -802,6 +808,20 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         queryWrapper.eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0);
         queryWrapper.orderByAsc(CsLine::getSort);
         return lineMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public String getDepartByWarehouseCode(String applyWarehouseCode) {
+        return sparePartApplyMapper.getDepartByWarehouseCode(applyWarehouseCode);
+    }
+
+    @Override
+    public String getWarehouseNameByCode(String warehouseCode) {
+        LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SparePartStockInfo::getOrganizationId,warehouseCode);
+        wrapper.eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
+        SparePartStockInfo one = sparePartStockInfoMapper.selectOne(wrapper);
+        return one.getWarehouseName();
     }
 
     @Override
@@ -2644,9 +2664,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             message.setIsMarkdown(isMarkdown);
             message.setContent(content);
         }
-        if(StrUtil.isBlank(message.getContent())){
+        /*if(StrUtil.isBlank(message.getContent())){
             throw new AiurtBootException("发送消息失败,消息内容为空！");
-        }
+        }*/
         if(StrUtil.isBlank(type)){
             throw new AiurtBootException("发送消息失败,消息发送渠道没有配置！");
         }

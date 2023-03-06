@@ -76,6 +76,10 @@ public interface SysParamCodeConstant {
      * 物资出入库发送渠道
      */
     String SPAREPART_MESSAGE = "sparepart_message";
+    /**
+     * 物资出入库发送渠道（待办）
+     */
+    String SPAREPART_MESSAGE_PROCESS= "sparepart_message_process";
 
     /**
      * 故障

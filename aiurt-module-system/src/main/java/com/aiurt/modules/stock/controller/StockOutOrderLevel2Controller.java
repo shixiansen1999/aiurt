@@ -1,5 +1,10 @@
 package com.aiurt.modules.stock.controller;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -14,12 +19,19 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -38,6 +50,10 @@ public class StockOutOrderLevel2Controller {
     private IStockOutOrderLevel2Service iStockOutOrderLevel2Service;
 	@Autowired
 	private IStockLevel2CheckService iStockLevel2CheckService;
+	@Autowired
+	private ISysBaseAPI sysBaseApi;
+	@Autowired
+	private ISysParamAPI iSysParamAPI;
     /**
      * 分页列表查询
      *
@@ -105,6 +121,33 @@ public class StockOutOrderLevel2Controller {
 				return Result.error("盘点任务执行期间，物资暂时无法进行出入库操作");
 			}
 			iStockOutOrderLevel2Service.confirmOutOrder(sparePartApply, stockOutOrderLevel2);
+
+			try {
+				LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+				//根据仓库编号获取仓库组织机构code
+				String orgCode = sysBaseApi.getDepartByWarehouseCode(sparePartApply.getApplyWarehouseCode());
+				String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.MATERIAL_CLERK));
+
+				//发送通知
+				MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "二级库出库" + DateUtil.today(), null);
+
+				//构建消息模板
+				HashMap<String, Object> map = new HashMap<>();
+				map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartApply.getId());
+
+				messageDTO.setData(map);
+				//业务类型，消息类型，消息模板编码，摘要，发布内容
+				messageDTO.setTemplateCode(CommonConstant.SPAREPARTAPPLY_SERVICE_NOTICE);
+				SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+				messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+				messageDTO.setMsgAbstract("备件申领通过");
+				messageDTO.setPublishingContent("备件申领到库，请尽快确认");
+				messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+				sysBaseApi.sendTemplateMessage(messageDTO);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
 			return Result.ok("出库成功！");
 		}catch (Exception e){
 		    e.printStackTrace();

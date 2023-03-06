@@ -1015,5 +1015,17 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<CsLine> getAllLine();
+    /**
+     * 根据仓库编号获取仓库组织机构code
+     * @param applyWarehouseCode
+     * @return
+     */
+    String getDepartByWarehouseCode(String applyWarehouseCode);
+    /**
+     * 根据仓库编号获取仓库名称
+     * @param warehouseCode
+     * @return
+     */
+    String getWarehouseNameByCode(String warehouseCode);
 }
 
