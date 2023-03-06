@@ -41,4 +41,6 @@ public class ExamineDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "提交签名")
     private String confirmUrl;
+    /**验收标记 验收0，审核1*/
+    private Integer acceptanceRemark;
 }

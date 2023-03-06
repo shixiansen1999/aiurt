@@ -574,8 +574,6 @@ public interface CommonConstant {
  public static final String BPM_SERVICE_NOTICE_PROCESS = "bpm_service_notice_process";
  /** 消息模板：固定资产业务通知 */
  public static final String FIXED_ASSETS_SERVICE_NOTICE = "fixed_assets_service_notice";
- /** 消息模板：固定资产业务通知-驳回 */
- public static final String FIXED_ASSETS_SERVICE_NOTICE_REJECT = "fixed_assets_service_notice_reject";
  /** 消息模板：工作日志业务通知 */
  public static final String WORK_LOG_SERVICE_NOTICE = "work_log_service_notice";
  /** 消息模板：周计划业务通知 */
@@ -585,9 +583,9 @@ public interface CommonConstant {
  /** 消息模板：设备申领 */
  public static final String SPAREPARTAPPLY_SERVICE_NOTICE = "sparepart_service_notice";
  /** 消息模板：备件出库 */
- public static final String SPAREPARTOUTORDER_SERVICE_NOTICE = "SPAREPARTOUTORDER_SERVICE_NOTICE";
+ public static final String SPAREPARTOUTORDER_SERVICE_NOTICE = "sparepartoutorder_service_notice";
  /** 消息模板：备件退库 */
- public static final String SPAREPARTRETURNORDER_SERVICE_NOTICE = "sparepartreturnorder_service_notice";
+ public static final String SPAREPARTRETURN_SERVICE_NOTICE = "sparepartreturn_service_notice";
  /** 消息模板：备件借出 */
  public static final String SPAREPARTLEND_SERVICE_NOTICE = "sparepartlend_service_notice";
  /** 消息模板：备件归还 */

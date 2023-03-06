@@ -1479,7 +1479,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
             }
             // 给检修人驳回发消息
-            sendBackMessage(repairTask1);
+            sendBackMessage(repairTask1,examineDTO.getAcceptanceRemark());
         }
     }
 
@@ -1487,7 +1487,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
      * 发送消息
      * @param repairTask1
      */
-    private void sendBackMessage(RepairTask repairTask1) {
+    private void sendBackMessage(RepairTask repairTask1,Integer remark) {
         List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().eq(RepairTaskUser::getRepairTaskCode, repairTask1.getCode()).eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
         if(CollUtil.isNotEmpty(repairTaskUsers)){
             String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
@@ -1498,7 +1498,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                 //发送通知
                 try {
-                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, "检修任务-审核驳回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
+                    String title = null;
+                    if (remark == 1) {
+                        title = "检修任务-审核驳回" + DateUtil.today();
+                    } else {
+                        title = "检修任务-验收驳回" + DateUtil.today();
+                    }
+                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, title, null, CommonConstant.MSG_CATEGORY_5);
                     RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                     RepairTask repairTask = repairTaskMapper.selectById(repairTask1.getId());
                     if (ObjectUtil.isEmpty(repairTask)) {

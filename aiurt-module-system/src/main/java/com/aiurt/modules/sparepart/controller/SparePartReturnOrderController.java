@@ -152,7 +152,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 
 			messageDTO.setData(map);
 			//业务类型，消息类型，消息模板编码，摘要，发布内容
-			messageDTO.setTemplateCode(CommonConstant.SPAREPARTRETURNORDER_SERVICE_NOTICE);
+			messageDTO.setTemplateCode(CommonConstant.SPAREPARTRETURN_SERVICE_NOTICE);
 			SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
 			messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
 			messageDTO.setMsgAbstract("备件退库申请");
@@ -173,7 +173,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 			todoDTO.setCurrentUserName(userName);
 			todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
 			todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
-			todoDTO.setTemplateCode(CommonConstant.SPAREPARTRETURNORDER_SERVICE_NOTICE);
+			todoDTO.setTemplateCode(CommonConstant.SPAREPARTRETURN_SERVICE_NOTICE);
 
 			isTodoBaseAPI.createTodoTask(todoDTO);
 		} catch (Exception e) {
@@ -214,7 +214,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 
 			messageDTO.setData(map);
 			//业务类型，消息类型，消息模板编码，摘要，发布内容
-			messageDTO.setTemplateCode(CommonConstant.SPAREPARTRETURNORDER_SERVICE_NOTICE);
+			messageDTO.setTemplateCode(CommonConstant.SPAREPARTRETURN_SERVICE_NOTICE);
 			SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
 			messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
 			messageDTO.setMsgAbstract("备件退库申请");

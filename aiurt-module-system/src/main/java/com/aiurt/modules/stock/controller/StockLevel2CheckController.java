@@ -26,7 +26,6 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -173,8 +172,8 @@ public class StockLevel2CheckController {
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, stockLevel2Check.getId());
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
             map.put("stockCheckCode",stockLevel2Check.getStockCheckCode());
-            SysDepartModel departByOrgCode = sysBaseApi.getDepartByOrgCode(stockLevel2Check.getOrgCode());
-            map.put("departName", departByOrgCode.getDepartName());
+            String warehouseName= sysBaseApi.getWarehouseNameByCode(stockLevel2Check.getWarehouseCode());
+            map.put("warehouseName",warehouseName);
             LoginUser userByName = sysBaseApi.getUserByName(stockLevel2Check.getCheckerId());
             map.put("checkName", userByName.getRealname());
             map.put("time", DateUtil.format(stockLevel2Check.getPlanStartTime(), "yyyy-MM-dd HH:mm:ss"));
