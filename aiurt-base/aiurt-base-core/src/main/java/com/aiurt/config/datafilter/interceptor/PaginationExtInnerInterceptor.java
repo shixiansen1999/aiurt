@@ -18,6 +18,7 @@ import com.baomidou.mybatisplus.core.toolkit.ParameterUtils;
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.pagination.DialectModel;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.plugins.pagination.dialects.IDialect;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.OrderByElement;
@@ -29,21 +30,27 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
+/**
+ * @author zc
+ */
 public class PaginationExtInnerInterceptor extends PaginationInnerInterceptor {
 
+	@Override
 	public void beforeQuery(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
 		IPage<?> page = (IPage)ParameterUtils.findPage(parameter).orElse(null);
 		if (null != page) {
 			boolean addOrdered = false;
 			String buildSql = boundSql.getSql();
-			List<OrderItem> orders = page.orders();
+			// 删除page 排序
+			/*List<OrderItem> orders = page.orders();
 			if (CollectionUtils.isNotEmpty(orders)) {
 				addOrdered = true;
 				buildSql = this.concatOrderBy(buildSql, orders);
-			}
+			}*/
 
 			List<OrderItem> orderFileds = findOrderFiled(parameter);
-			if (CollectionUtils.isNotEmpty(orderFileds)){//用户排序字段不为空
+			if (CollectionUtils.isNotEmpty(orderFileds)){
+				//用户排序字段不为空
 				buildSql = "select * from ( "+ buildSql + " ) page ";
 				buildSql = this.concatOrderBy(buildSql, orderFileds);
 			}
@@ -78,18 +85,50 @@ public class PaginationExtInnerInterceptor extends PaginationInnerInterceptor {
 		if (parameterObject instanceof Map) {
 			List<OrderItem> orders = new ArrayList<>();
 			Map<?, ?> parameterMap = (Map)parameterObject;
-			Object condition = parameterMap.get("condition");
+
+			// page 排序
+			Object page = null;
+			try {
+				page = parameterMap.getOrDefault("page", null);
+			} catch (Exception e) {
+				try {
+					page = parameterMap.getOrDefault("pageList", null);
+				} catch (Exception exception) {
+					// do nothing
+				}
+			}
+			if (Objects.nonNull(page) && page instanceof Page) {
+				Page p = (Page) page;
+				List orderList = p.orders();
+				if (CollectionUtils.isNotEmpty(orderList)) {
+					p.setOrders(new ArrayList<>());
+					return orderList;
+				}
+			}
+
+			// 手写sql,
+			Object condition = null;
+			try {
+				condition = parameterMap.get("condition");
+			} catch (Exception e) {
+				// do nothing
+			}
+			if (Objects.isNull(condition)) {
+				return Collections.emptyList();
+			}
+
 			if (condition instanceof BaseEntity){
 				BaseEntity baseEntity = (BaseEntity) condition;
 				if (Objects.nonNull(baseEntity.getColumn())&&!baseEntity.getColumn().contains(",")){
 					String column = baseEntity.getColumn();
 					String order = baseEntity.getOrder();
-					OrderItem orderItem = new OrderItem();
-					orderItem.setColumn(StrUtil.toUnderlineCase(column));
-					orderItem.setAsc("desc".equalsIgnoreCase(order)?false:true);
-					orders.add(orderItem);
+					if (StrUtil.isBlank(column) || StrUtil.isBlank(order)) {
+						OrderItem orderItem = new OrderItem();
+						orderItem.setColumn(StrUtil.toUnderlineCase(column));
+						orderItem.setAsc("desc".equalsIgnoreCase(order)?false:true);
+						orders.add(orderItem);
+					}
 				}
-
 			}
 			return orders;
 		}
