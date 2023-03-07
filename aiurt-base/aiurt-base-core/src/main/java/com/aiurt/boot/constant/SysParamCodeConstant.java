@@ -148,4 +148,14 @@ public interface SysParamCodeConstant {
      */
     String WORKLOG = "worklog";
 
+    /**
+     * 物资出入库流程
+     */
+    String SPARE_PART = "spare_part";
+
+    /**
+     * 物资出入库
+     */
+    String MATERIAL = "material";
+
 }

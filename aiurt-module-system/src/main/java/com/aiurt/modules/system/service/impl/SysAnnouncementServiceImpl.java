@@ -191,6 +191,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		pictureCode.add(SysParamCodeConstant.WEEK_PLAN);
 		pictureCode.add(SysParamCodeConstant.SITUATION);
 		pictureCode.add(SysParamCodeConstant.WORKLOG);
+		pictureCode.add(SysParamCodeConstant.MATERIAL);
 
 		//业务消息处理
 		SysAnnmentTypeEnum[] typeValues = SysAnnmentTypeEnum.values();
@@ -405,6 +406,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		}
 		if (SysParamCodeConstant.BD_WORK_TITCK.equals(type)) {
 			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.BD_WORK_TITCK);
+			sysMessageTypeDTO.setValue(sysParamModel.getValue());
+		}
+		if (SysParamCodeConstant.SPARE_PART.equals(type)) {
+			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SPARE_PART);
 			sysMessageTypeDTO.setValue(sysParamModel.getValue());
 		}
 		return sysMessageTypeDTO;
