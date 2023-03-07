@@ -433,7 +433,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			return Result.error("存在子节点，无法删除");
 		}
 		deviceType.setDelFlag(CommonConstant.DEL_FLAG_1);
-		deviceTypeService.updateById(deviceType);
+		deviceTypeService.removeById(deviceType);
+//		deviceTypeService.updateById(deviceType);
 		//删除设备组成
 		LambdaQueryWrapper<DeviceCompose> comWrapper = new LambdaQueryWrapper<>();
 		comWrapper.eq(DeviceCompose::getDeviceTypeCode,deviceType.getCode());
@@ -442,7 +443,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		if(!comList.isEmpty()){
 			comList.forEach(com->{
 				com.setDelFlag(CommonConstant.DEL_FLAG_1);
-				deviceComposeService.updateById(com);
+				deviceComposeService.removeById(com);
 			});
 		}
 		return Result.OK("删除成功!");

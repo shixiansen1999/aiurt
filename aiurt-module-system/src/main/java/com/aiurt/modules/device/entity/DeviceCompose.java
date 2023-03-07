@@ -95,8 +95,8 @@ public class DeviceCompose implements Serializable {
     @ApiModelProperty(value = "更新人")
     private String updateBy;
 	/**删除标志*/
-	@Excel(name = "删除标志", width = 15)
-    @ApiModelProperty(value = "删除标志")
+    @Excel(name = "删除状态 0-未删除 1-已删除", width = 15)
+    @ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
     @TableLogic
     private Integer delFlag;
 
