@@ -105,6 +105,8 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
         fault.setIsStopService(dto.getIsStopService());
         //抄送人
         fault.setRemindUserName(dto.getRemindUserName());
+        //附件
+        fault.setPath(dto.getPath());
         fault.setRepairCode(dto.getRepairCode());
         if (StringUtils.isNotBlank(dto.getLocation())) {
             fault.setDetailLocation(dto.getLocation());
