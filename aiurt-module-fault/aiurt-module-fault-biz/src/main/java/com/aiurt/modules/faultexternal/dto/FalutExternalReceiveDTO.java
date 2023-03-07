@@ -1,5 +1,6 @@
-package com.aiurt.modules.faultexternal.entity;
+package com.aiurt.modules.faultexternal.dto;
 
+import com.aiurt.modules.faultexternal.entity.FaultExternal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
