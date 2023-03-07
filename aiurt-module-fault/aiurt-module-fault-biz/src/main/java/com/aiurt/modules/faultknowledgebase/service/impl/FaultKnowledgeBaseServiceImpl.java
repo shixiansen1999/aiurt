@@ -150,11 +150,11 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             }
         });
         //正序
-        String asc = "asc";
+       /* String asc = "asc";
         if (asc.equals(faultKnowledgeBase.getOrder())) {
             List<FaultKnowledgeBase> reportList = faultKnowledgeBases.stream().sorted(Comparator.comparing(FaultKnowledgeBase::getCreateTime)).collect(Collectors.toList());
             return page.setRecords(reportList);
-        }
+        }*/
 
         return page.setRecords(faultKnowledgeBases);
     }
@@ -189,12 +189,12 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             }
         });
         //正序
-        String asc = "asc";
+       /* String asc = "asc";
         if (asc.equals(faultKnowledgeBase.getOrder())) {
             List<FaultKnowledgeBase> reportList = faultKnowledgeBases.stream().sorted(Comparator.comparing(FaultKnowledgeBase::getCreateTime)).collect(Collectors.toList());
             return reportList;
         }
-
+*/
         return faultKnowledgeBases;
     }
 

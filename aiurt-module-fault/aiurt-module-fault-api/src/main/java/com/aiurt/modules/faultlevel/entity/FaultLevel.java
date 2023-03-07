@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.modules.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -29,7 +30,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="fault_level对象", description="故障等级")
-public class FaultLevel implements Serializable {
+public class FaultLevel extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键id*/
