@@ -1,6 +1,7 @@
 package com.aiurt.config.datafilter.interceptor;
 
 import com.aiurt.config.datafilter.handler.PlusDataPermissionHandler;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
 import com.baomidou.mybatisplus.extension.parser.JsqlParserSupport;
 import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
@@ -15,6 +16,7 @@ import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -71,6 +73,7 @@ public class PlusDataPermissionInterceptor extends JsqlParserSupport implements 
         Expression sqlSegment = dataPermissionHandler.getSqlSegment(plainSelect.getWhere(), mappedStatementId);
         if (null != sqlSegment) {
             plainSelect.setWhere(sqlSegment);
+            Collections.emptyList();
         }
     }
 }
