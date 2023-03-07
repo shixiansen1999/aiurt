@@ -146,7 +146,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
                 todoDTO.setBusinessKey(sparePartLend.getId());
                 todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_LEND.getType());
                 todoDTO.setCurrentUserName(userName);
-                todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
+                todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_LEND.getType());
                 todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
                 todoDTO.setTemplateCode(CommonConstant.SPAREPARTLEND_SERVICE_NOTICE);
 
