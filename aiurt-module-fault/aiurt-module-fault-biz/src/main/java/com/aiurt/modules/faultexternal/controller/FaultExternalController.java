@@ -4,7 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.faultexternal.dto.FaultExternalDTO;
-import com.aiurt.modules.faultexternal.entity.FalutExternalReceiveDTO;
+import com.aiurt.modules.faultexternal.dto.FalutExternalReceiveDTO;
 import com.aiurt.modules.faultexternal.entity.FaultExternal;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
