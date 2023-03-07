@@ -2776,6 +2776,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                     // 系统消息要解析Markdown
                     message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
                 }
+                message.setBusKey(announcement.getBusId());
+                message.setBusType(announcement.getBusType());
                 qywxSendMsgHandle.sendMessage(message);
             }
         }

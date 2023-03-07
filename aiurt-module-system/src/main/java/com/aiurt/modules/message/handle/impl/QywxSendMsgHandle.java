@@ -74,7 +74,8 @@ public class QywxSendMsgHandle implements ISendMsgHandle {
 			} else {
 				sysAnnouncement.setMsgAbstract(s);
 			}
-
+			sysAnnouncement.setBusId(messageDTO.getBusKey());
+			sysAnnouncement.setBusType(messageDTO.getBusType());
 			wechatEnterpriseService.sendTextCardMessage(sysAnnouncement,true);
 		} catch (Exception e) {
 			e.printStackTrace();
