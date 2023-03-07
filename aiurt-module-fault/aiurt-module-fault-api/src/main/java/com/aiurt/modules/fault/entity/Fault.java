@@ -1,6 +1,7 @@
 package com.aiurt.modules.fault.entity;
 
 import com.aiurt.common.aspect.annotation.*;
+import com.aiurt.modules.base.BaseEntity;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -366,5 +367,15 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "故障详细位置")
     private String detailLocation;
 
+    public static void main(String[] args) {
+        Fault fault = new Fault();
 
+        if (fault instanceof BaseEntity) {
+            System.out.println("1111111");
+        }
+
+        if (fault instanceof  DictEntity) {
+            System.out.println("2222222");
+        }
+    }
 }

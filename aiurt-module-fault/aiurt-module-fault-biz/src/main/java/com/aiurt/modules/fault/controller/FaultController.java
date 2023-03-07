@@ -6,6 +6,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.base.PageOrderGenerator;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
@@ -127,6 +128,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
         QueryWrapper<Fault> queryWrapper = QueryGenerator.initQueryWrapper(fault, req.getParameterMap());
         Page<Fault> page = new Page<>(pageNo, pageSize);
+        PageOrderGenerator.initPage(page, null, fault);
         //修改查询条件
         queryWrapper.apply(StrUtil.isNotBlank(stationCode), "(line_code = {0} or station_code = {0} or station_position_code = {0})", stationCode);
         queryWrapper.apply(StrUtil.isNotBlank(fault.getDevicesIds()), "(code in (select fault_code from fault_device where device_code like  concat('%', {0}, '%')))", fault.getDevicesIds());
@@ -137,6 +139,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         if (StrUtil.isNotBlank(statusCondition)) {
             queryWrapper.in("status", StrUtil.split(statusCondition, ','));
         }
+
         // 故障等级
         queryWrapper.eq(StrUtil.isNotBlank(f), "fault_level", f);
         IPage<Fault> pageList = faultService.page(page, queryWrapper);

@@ -175,9 +175,9 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     private List<String> faultCodeList;
 
     /**排序方式*/
-    @ApiModelProperty(value = "排序方式")
+  /*  @ApiModelProperty(value = "排序方式")
     @TableField(exist = false)
-    private String order;
+    private String order;*/
 
     /**
      *分词，故障推荐解决方案使用
