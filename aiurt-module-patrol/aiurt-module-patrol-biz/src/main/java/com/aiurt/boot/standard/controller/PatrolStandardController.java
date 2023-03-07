@@ -223,7 +223,8 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
     * @param patrolStandard
     */
 	@ApiOperation(value="巡检标准表导出", notes="巡检标准表导出")
-		@RequestMapping(value = "/exportXls",method = RequestMethod.GET)
+	@PermissionData(pageComponent = "standard/PatrolList")
+	@RequestMapping(value = "/exportXls",method = RequestMethod.GET)
     public void exportXls(HttpServletRequest request, HttpServletResponse response, PatrolStandard patrolStandard) {
           patrolStandardService.exportXls(request,response, patrolStandard);
     }
