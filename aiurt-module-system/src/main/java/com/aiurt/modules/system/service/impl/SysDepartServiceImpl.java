@@ -455,7 +455,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 					return imporReturnRes(errorLines, successLines, tipMessage, false, null);
 				}
 
-				Map<String,SysDepart> departMap = new HashMap<>();
+				Map<String,SysDepart> departMap = new LinkedHashMap<>();
 				//数据校验
 				for (SysDepartModel model : sysDepartModelList) {
 					if (ObjectUtil.isNotEmpty(model)) {
