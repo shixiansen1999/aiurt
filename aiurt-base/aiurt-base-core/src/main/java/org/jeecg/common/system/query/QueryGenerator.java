@@ -190,7 +190,7 @@ public class QueryGenerator {
 			}
 		}
 		// 排序逻辑 处理
-		doMultiFieldsOrder(queryWrapper, parameterMap);
+		//doMultiFieldsOrder(queryWrapper, parameterMap);
 
 		//高级查询
 		doSuperQuery(queryWrapper, parameterMap, fieldColumnMap);
