@@ -188,7 +188,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		pictureCode.add(SysParamCodeConstant.PATROL);
 		pictureCode.add(SysParamCodeConstant.EMERGENCY);
 		pictureCode.add(SysParamCodeConstant.TRAIN);
-		pictureCode.add(SysParamCodeConstant.WEEK_PLAN);
+		pictureCode.add(SysParamCodeConstant.OPERATE);
 		pictureCode.add(SysParamCodeConstant.SITUATION);
 		pictureCode.add(SysParamCodeConstant.WORKLOG);
 		pictureCode.add(SysParamCodeConstant.MATERIAL);
@@ -247,7 +247,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
 			}
 			sysMessageTypeDTO.setMessageFlag("1");
-			if(!("bpm").equals(sysMessageTypeDTO.getBusType()) && messageSize != 0){
+			if(!("bpm").equals(sysMessageTypeDTO.getBusType()) && size != 0){
 				list.add(sysMessageTypeDTO);
 			}
 		}
@@ -283,6 +283,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			}
 			// 统计长度
 			List<SysAnnouncementSendDTO> value = entry.getValue();
+			int size = value.size();
 			int messageSize = 0;
 			if(CollUtil.isNotEmpty(value)){
 				List<SysAnnouncementSendDTO> messageList = value.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getMsgCategory() != null && sysAnnouncementSendDTO.getReadFlag().equals("0")).collect(Collectors.toList());
@@ -300,7 +301,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
 			}
 			sysMessageTypeDTO.setMessageFlag("1");
-			if(messageSize !=0){
+			if(size !=0){
 				list.add(sysMessageTypeDTO);
 			}
 		}
@@ -350,7 +351,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				}
 			}
 			sysMessageTypeDTO.setMessageFlag("2");
-			if(!("bpmn").equals(sysMessageTypeDTO.getBusType()) && messageSize != 0){
+			if(!("bpmn").equals(sysMessageTypeDTO.getBusType()) && size != 0){
 				list.add(sysMessageTypeDTO);
 			}
 		}
