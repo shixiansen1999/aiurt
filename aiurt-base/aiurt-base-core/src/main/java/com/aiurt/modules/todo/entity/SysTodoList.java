@@ -161,4 +161,12 @@ public class SysTodoList implements Serializable {
 
     private String processCode;
 
+    /**
+     * 排序时间
+     */
+    @TableField(exist = false)
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private java.util.Date intervalTime;
+
 }
