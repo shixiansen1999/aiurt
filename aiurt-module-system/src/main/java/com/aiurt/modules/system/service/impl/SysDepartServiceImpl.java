@@ -193,6 +193,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
 		query.eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0.toString());
 		query.orderByAsc(SysDepart::getDepartOrder);
+		query.orderByDesc(SysDepart::getCreateTime);
 		List<SysDepart> list = this.list(query);
 		// 调用wrapTreeDataToTreeList方法生成树状数据
 		List<DepartIdModel> listResult = FindsDepartsChildrenUtil.wrapTreeDataToDepartIdTreeList(list);
