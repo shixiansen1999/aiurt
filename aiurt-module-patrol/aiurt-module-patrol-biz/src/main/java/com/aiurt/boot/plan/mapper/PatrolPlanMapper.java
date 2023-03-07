@@ -6,6 +6,7 @@ import com.aiurt.boot.plan.dto.QuerySiteDto;
 import com.aiurt.boot.plan.dto.StandardDTO;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.standard.dto.StationDTO;
+import com.aiurt.boot.task.dto.GeneralReturn;
 import com.aiurt.boot.task.dto.MajorDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.modules.device.entity.Device;
@@ -236,4 +237,11 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
    * @return
    */
   List<String> selectBySites(@Param("code") String code);
+
+  /**
+   * 前端返回通用格式-组织机构
+   * @param orgCodes
+   * @return
+   */
+  List<GeneralReturn> getOrgCodeName(@Param("orgCodes")List<String> orgCodes);
 }

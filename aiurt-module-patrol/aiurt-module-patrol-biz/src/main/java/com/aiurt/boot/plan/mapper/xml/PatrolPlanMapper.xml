@@ -358,4 +358,15 @@
            d.plan_code = #{code}
           AND d.del_flag = 0
     </select>
+    <select id="getOrgCodeName" resultType="com.aiurt.boot.task.dto.GeneralReturn">
+        select org_code as value,
+        depart_name as label
+        from sys_depart
+        <if test="orgCodes != null and orgCodes.size() != 0">
+            where org_code in
+            <foreach collection="orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
 </mapper>

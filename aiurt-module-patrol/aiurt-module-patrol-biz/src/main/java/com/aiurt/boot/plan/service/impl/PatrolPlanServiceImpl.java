@@ -17,6 +17,7 @@ import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
+import com.aiurt.boot.task.dto.GeneralReturn;
 import com.aiurt.boot.task.dto.MajorDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.common.constant.CommonConstant;
@@ -107,6 +108,10 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         list1.forEach(l -> {
             List<String> mechanismNames = sysBaseApi.queryOrgNamesByOrgCodes(baseMapper.selectMechanismNames(l.getCode()));
             l.setMechanismName(String.join(";",mechanismNames));
+            List<GeneralReturn> orgCodeName = baseMapper.getOrgCodeName(baseMapper.selectMechanismNames(l.getCode()));
+            if (CollectionUtil.isNotEmpty(orgCodeName)){
+                l.setOrgCodeList(orgCodeName);
+            }
             List<String> professionName  = sysBaseApi.getCsMajorNamesByCodes(baseMapper.selectProfessionCodes(l.getId()));
             if (CollectionUtil.isNotEmpty(professionName)){
                 l.setProfessionName(String.join(";",professionName));
