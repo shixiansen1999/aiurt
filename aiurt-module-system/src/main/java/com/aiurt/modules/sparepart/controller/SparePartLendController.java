@@ -173,7 +173,8 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 			 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, one.getId());
 			 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
 			 map.put("materialCode",one.getMaterialCode());
-			 map.put("name",one.getName());
+			 String materialName= sysBaseApi.getMaterialNameByCode(one.getMaterialCode());
+			 map.put("name",materialName);
 			 map.put("backNum",one.getBackNum());
 			 String warehouseName= sysBaseApi.getWarehouseNameByCode(one.getBackWarehouseCode());
 			 map.put("warehouseName",warehouseName);

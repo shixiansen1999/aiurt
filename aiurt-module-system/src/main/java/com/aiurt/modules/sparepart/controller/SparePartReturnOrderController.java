@@ -144,7 +144,8 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 			map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartReturnOrder.getId());
 			map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
 			map.put("materialCode",sparePartReturnOrder.getMaterialCode());
-			map.put("name",sparePartReturnOrder.getName());
+			String materialName= sysBaseApi.getMaterialNameByCode(sparePartReturnOrder.getMaterialCode());
+			map.put("name",materialName);
 			map.put("num",sparePartReturnOrder.getNum());
 			String warehouseName= sysBaseApi.getWarehouseNameByCode(sparePartReturnOrder.getWarehouseCode());
 			map.put("warehouseName",warehouseName);
@@ -196,7 +197,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 		SparePartReturnOrder one = sparePartReturnOrderService.getById(sparePartReturnOrder.getId());
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		try {
-			LoginUser userById = sysBaseApi.getUserById(one.getUserId());
+			LoginUser userById = sysBaseApi.getUserByName(one.getUserId());
 
 			//发送通知
 			MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件退库申请" + DateUtil.today(), null);
@@ -206,7 +207,8 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 			map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, one.getId());
 			map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
 			map.put("materialCode",one.getMaterialCode());
-			map.put("name",one.getName());
+			String materialName= sysBaseApi.getMaterialNameByCode(one.getMaterialCode());
+			map.put("name",materialName);
 			map.put("num",one.getNum());
 			String warehouseName= sysBaseApi.getWarehouseNameByCode(one.getWarehouseCode());
 			map.put("warehouseName",warehouseName);

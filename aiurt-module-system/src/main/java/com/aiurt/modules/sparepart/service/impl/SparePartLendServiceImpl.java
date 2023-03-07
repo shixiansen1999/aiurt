@@ -119,7 +119,8 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
                 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartLend.getId());
                 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
                 map.put("materialCode",sparePartLend.getMaterialCode());
-                map.put("name",sparePartLend.getName());
+                String materialName= sysBaseApi.getMaterialNameByCode(sparePartLend.getMaterialCode());
+                map.put("name",materialName);
                 map.put("lendNum",sparePartLend.getLendNum());
                 String warehouseName= sysBaseApi.getWarehouseNameByCode(sparePartLend.getLendWarehouseCode());
                 map.put("warehouseName",warehouseName);
@@ -217,7 +218,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrderService.save(sparePartInOrder);
 
         try {
-            LoginUser userById = sysBaseApi.getUserById(partLend.getLendPerson());
+            LoginUser userById = sysBaseApi.getUserByName(partLend.getLendPerson());
 
             //发送通知
             MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件借出申请" + DateUtil.today(), null);
@@ -227,7 +228,8 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, partLend.getId());
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
             map.put("materialCode",partLend.getMaterialCode());
-            map.put("name",partLend.getName());
+            String materialName= sysBaseApi.getMaterialNameByCode(partLend.getMaterialCode());
+            map.put("name",materialName);
             map.put("lendNum",partLend.getLendNum());
             String warehouseName= sysBaseApi.getWarehouseNameByCode(partLend.getLendWarehouseCode());
             map.put("warehouseName",warehouseName);
@@ -292,7 +294,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getBackPerson())).getOrgCode());
         sparePartOutOrderService.save(sparePartOutOrder);
         try {
-            LoginUser userById = sysBaseApi.getUserById(partLend.getLendPerson());
+            LoginUser userById = sysBaseApi.getUserByName(partLend.getBackPerson());
             //发送通知
             MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件归还-确认" + DateUtil.today(), null);
 
@@ -301,7 +303,8 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, partLend.getId());
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
             map.put("materialCode",partLend.getMaterialCode());
-            map.put("name",partLend.getName());
+            String materialName= sysBaseApi.getMaterialNameByCode(partLend.getMaterialCode());
+            map.put("name",materialName);
             map.put("backNum",partLend.getBackNum());
             String warehouseName= sysBaseApi.getWarehouseNameByCode(partLend.getLendWarehouseCode());
             map.put("warehouseName",warehouseName);
