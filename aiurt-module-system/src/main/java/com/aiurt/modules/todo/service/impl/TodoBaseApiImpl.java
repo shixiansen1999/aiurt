@@ -188,6 +188,12 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
                 } else {
                     messageDTO.setBusType(sysTodoList.getProcessCode());
                 }
+                messageDTO.setBusKey(sysTodoList.getBusinessKey());
+                if (sysTodoList.getBusinessType() != null) {
+                    messageDTO.setBusType(sysTodoList.getBusinessType());
+                } else {
+                    messageDTO.setBusType(sysTodoList.getProcessCode());
+                }
                 qywxSendMsgHandle.sendMessage(messageDTO);
             }
         }
