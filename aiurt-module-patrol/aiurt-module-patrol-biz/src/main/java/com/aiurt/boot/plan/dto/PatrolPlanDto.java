@@ -5,6 +5,7 @@ import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.task.dto.GeneralReturn;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -124,4 +125,8 @@ public class PatrolPlanDto  extends PatrolPlan {
     */
    @TableField(exist = false)
    List<String> planCodes;
+
+   @ApiModelProperty(value = "前端返回格式-组织机构")
+   @TableField(exist = false)
+   private List<GeneralReturn> orgCodeList;
 }
