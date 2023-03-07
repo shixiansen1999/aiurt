@@ -123,7 +123,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         }
         List<String> orgCodes = list1.stream().map(s -> s.getOrgCode()).collect(Collectors.toList());
         List<String> majorCodes = list2.stream().map(s -> s.getMajorCode()).collect(Collectors.toList());
-        IPage<InspectionStrategyDTO> list = baseMapper.selectPageList(page, inspectionStrategyDTO, orgCodes, majorCodes,sysUser.getUsername());
+        IPage<InspectionStrategyDTO> list = baseMapper.selectPageList(page, inspectionStrategyDTO, orgCodes, majorCodes, sysUser.getUsername());
 
         if (ObjectUtil.isNotEmpty(list)) {
             List<InspectionStrategyDTO> records = list.getRecords();
@@ -241,10 +241,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         if (CollUtil.isNotEmpty(inspectionCodeDto)) {
             // 跟设备类型相关的是否选择了设备
             inspectionCodeDto.forEach(re -> {
-                InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
-                        new LambdaQueryWrapper<InspectionCode>()
-                                .eq(InspectionCode::getCode, re.getCode())
-                                .eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+                InspectionCode inspectionCode = inspectionCodeMapper.selectOne(new LambdaQueryWrapper<InspectionCode>().eq(InspectionCode::getCode, re.getCode()).eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
                 if (ObjectUtil.isEmpty(inspectionCode)) {
                     throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
                 }
@@ -289,9 +286,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         redisTemplate.delete(String.format("sys:cache:dictTable::SimpleKey [%s,%s]", "inspection_strategy,name,code", strategy.getCode()));
 
         // 把原来的组织机构信息删除
-        inspectionStrOrgRelMapper.delete(new LambdaQueryWrapper<InspectionStrOrgRel>()
-                .eq(InspectionStrOrgRel::getInspectionStrCode, strategy.getCode())
-                .eq(InspectionStrOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        inspectionStrOrgRelMapper.delete(new LambdaQueryWrapper<InspectionStrOrgRel>().eq(InspectionStrOrgRel::getInspectionStrCode, strategy.getCode()).eq(InspectionStrOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         // 更新检修策略的组织机构信息
         List<String> mechanismCodes = inspectionStrategyDTO.getMechanismCodes();
@@ -303,9 +298,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         });
 
         // 把原来的站所信息删除
-        inspectionStrStaRelMapper.delete(new LambdaQueryWrapper<InspectionStrStaRel>()
-                .eq(InspectionStrStaRel::getInspectionStrCode, strategy.getCode())
-                .eq(InspectionStrStaRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        inspectionStrStaRelMapper.delete(new LambdaQueryWrapper<InspectionStrStaRel>().eq(InspectionStrStaRel::getInspectionStrCode, strategy.getCode()).eq(InspectionStrStaRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         // 更新检修策略站所关联表信息
         List<StationDTO> siteCodes = inspectionStrategyDTO.getSiteCodes();
@@ -319,10 +312,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         });
 
         // 把原来的检修计划策略标准关联表信息删除
-        List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(
-                new LambdaQueryWrapper<InspectionStrRel>()
-                        .eq(InspectionStrRel::getInspectionStrCode, strategy.getCode())
-                        .eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(new LambdaQueryWrapper<InspectionStrRel>().eq(InspectionStrRel::getInspectionStrCode, strategy.getCode()).eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         if (CollUtil.isNotEmpty(inspectionStrRels)) {
             List<String> collect = inspectionStrRels.stream().map(InspectionStrRel::getId).collect(Collectors.toList());
@@ -366,14 +356,10 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             String strategyCode = strategy.getCode();
 
             // 删除策略站所关联表数据
-            new UpdateWrapper<InspectionStrStaRel>().lambda()
-                    .eq(InspectionStrStaRel::getInspectionStrCode, strategyCode)
-                    .set(InspectionStrStaRel::getDelFlag, CommonConstant.DEL_FLAG_1);
+            new UpdateWrapper<InspectionStrStaRel>().lambda().eq(InspectionStrStaRel::getInspectionStrCode, strategyCode).set(InspectionStrStaRel::getDelFlag, CommonConstant.DEL_FLAG_1);
 
             // 删除策略组织机构关联表数据
-            new UpdateWrapper<InspectionStrOrgRel>().lambda()
-                    .eq(InspectionStrOrgRel::getInspectionStrCode, strategyCode)
-                    .set(InspectionStrOrgRel::getDelFlag, CommonConstant.DEL_FLAG_1);
+            new UpdateWrapper<InspectionStrOrgRel>().lambda().eq(InspectionStrOrgRel::getInspectionStrCode, strategyCode).set(InspectionStrOrgRel::getDelFlag, CommonConstant.DEL_FLAG_1);
 
             // 查询检修计划策略标准关联表数据
             QueryWrapper<InspectionStrRel> strRelWrapper = new QueryWrapper<>();
@@ -402,10 +388,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         }
 
         // 站点信息
-        List<InspectionStrStaRel> repairPoolStationRels = inspectionStrStaRelMapper.selectList(
-                new LambdaQueryWrapper<InspectionStrStaRel>()
-                        .eq(InspectionStrStaRel::getInspectionStrCode, ins.getCode())
-                        .eq(InspectionStrStaRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<InspectionStrStaRel> repairPoolStationRels = inspectionStrStaRelMapper.selectList(new LambdaQueryWrapper<InspectionStrStaRel>().eq(InspectionStrStaRel::getInspectionStrCode, ins.getCode()).eq(InspectionStrStaRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isNotEmpty(repairPoolStationRels)) {
             List<StationDTO> arr = new ArrayList<>();
             repairPoolStationRels.forEach(re -> {
@@ -431,25 +414,17 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         }
 
         // 检修计划关联检修标准信息
-        List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(
-                new LambdaQueryWrapper<InspectionStrRel>()
-                        .eq(InspectionStrRel::getInspectionStrCode, ins.getCode())
-                        .eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(new LambdaQueryWrapper<InspectionStrRel>().eq(InspectionStrRel::getInspectionStrCode, ins.getCode()).eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         // 检修标准信息
         if (CollUtil.isNotEmpty(inspectionStrRels)) {
             List<InspectionCodeDTO> temp = new ArrayList<>();
             inspectionStrRels.forEach(sl -> {
-                InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
-                        new LambdaQueryWrapper<InspectionCode>()
-                                .eq(InspectionCode::getCode, sl.getInspectionStaCode())
-                                .eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+                InspectionCode inspectionCode = inspectionCodeMapper.selectOne(new LambdaQueryWrapper<InspectionCode>().eq(InspectionCode::getCode, sl.getInspectionStaCode()).eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
 
                 if (ObjectUtil.isNotEmpty(inspectionCode)) {
                     // 判断是否指定了设备
-                    List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(
-                            new LambdaQueryWrapper<InspectionStrDeviceRel>()
-                                    .eq(InspectionStrDeviceRel::getInspectionStrRelId, sl.getId()));
+                    List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(new LambdaQueryWrapper<InspectionStrDeviceRel>().eq(InspectionStrDeviceRel::getInspectionStrRelId, sl.getId()));
                     inspectionCode.setSpecifyDevice(CollUtil.isNotEmpty(inspectionStrDeviceRels) ? "是" : "否");
 
                     InspectionCodeDTO inspectionCodeDTO = new InspectionCodeDTO();
@@ -515,16 +490,10 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
         // 检修标准
         List<InspectionCode> inspectionCodes = new ArrayList<>();
-        List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(
-                new LambdaQueryWrapper<InspectionStrRel>()
-                        .eq(InspectionStrRel::getInspectionStrCode, ins.getCode())
-                        .eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(new LambdaQueryWrapper<InspectionStrRel>().eq(InspectionStrRel::getInspectionStrCode, ins.getCode()).eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isNotEmpty(inspectionStrRels)) {
             List<String> collect = inspectionStrRels.stream().map(InspectionStrRel::getInspectionStaCode).collect(Collectors.toList());
-            inspectionCodes = inspectionCodeMapper.selectList(
-                    new LambdaQueryWrapper<InspectionCode>()
-                            .in(InspectionCode::getCode, collect)
-                            .eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+            inspectionCodes = inspectionCodeMapper.selectList(new LambdaQueryWrapper<InspectionCode>().in(InspectionCode::getCode, collect).eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
         }
 
         // 组织结构
@@ -579,19 +548,13 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         }
 
         // 检修标准
-        List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(
-                new LambdaQueryWrapper<InspectionStrRel>()
-                        .eq(InspectionStrRel::getInspectionStrCode, ins.getCode())
-                        .eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(new LambdaQueryWrapper<InspectionStrRel>().eq(InspectionStrRel::getInspectionStrCode, ins.getCode()).eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(inspectionStrRels)) {
             throw new AiurtBootException("请先配置检修标准");
         }
 
         // 组织机构
-        Long orgCount = inspectionStrOrgRelMapper.selectCount(
-                new LambdaQueryWrapper<InspectionStrOrgRel>()
-                        .eq(InspectionStrOrgRel::getInspectionStrCode, ins.getCode())
-                        .eq(InspectionStrOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        Long orgCount = inspectionStrOrgRelMapper.selectCount(new LambdaQueryWrapper<InspectionStrOrgRel>().eq(InspectionStrOrgRel::getInspectionStrCode, ins.getCode()).eq(InspectionStrOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (orgCount < 1) {
             throw new AiurtBootException("请先配置组织机构");
         }
@@ -622,10 +585,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         InspectionStrategy ins = checkInspectionStrategy(id);
         QueryWrapper<RepairPool> wrapper = new QueryWrapper<>();
         // 当前策略生成的计划、当前结束时间往后的，并且待指派的的检修计划将会删除
-        wrapper.eq("inspection_str_code", ins.getCode())
-                .eq("del_flag", CommonConstant.DEL_FLAG_0)
-                .eq("status", InspectionConstant.TO_BE_ASSIGNED)
-                .ge("end_time", DateUtil.now());
+        wrapper.eq("inspection_str_code", ins.getCode()).eq("del_flag", CommonConstant.DEL_FLAG_0).eq("status", InspectionConstant.TO_BE_ASSIGNED).ge("end_time", DateUtil.now());
         List<RepairPool> list = repairPoolMapper.selectList(wrapper);
         if (CollUtil.isNotEmpty(list)) {
             repairPoolMapper.deleteBatchIds(list.stream().map(RepairPool::getId).collect(Collectors.toList()));
@@ -637,8 +597,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
     @Override
     public List<Device> viewDetails(String code) {
-        InspectionStrRel inspectionstrRel = inspectionStrRelMapper.selectOne(Wrappers.<InspectionStrRel>lambdaQuery()
-                .eq(InspectionStrRel::getInspectionStaCode, code));
+        InspectionStrRel inspectionstrRel = inspectionStrRelMapper.selectOne(Wrappers.<InspectionStrRel>lambdaQuery().eq(InspectionStrRel::getInspectionStaCode, code));
         List<Device> list = baseMapper.viewDetails(inspectionstrRel.getId());
         return list;
     }
@@ -668,17 +627,11 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
      */
     @Override
     public IPage<RepairDeviceDTO> queryDeviceByCodeAndId(Page<RepairDeviceDTO> page, String inspectionStrCode, String inspectionStaCode) {
-        InspectionStrRel inspectionStrRel = inspectionStrRelMapper.selectOne(
-                new LambdaQueryWrapper<InspectionStrRel>()
-                        .eq(InspectionStrRel::getInspectionStrCode, inspectionStrCode)
-                        .eq(InspectionStrRel::getInspectionStaCode, inspectionStaCode)
-                        .eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        InspectionStrRel inspectionStrRel = inspectionStrRelMapper.selectOne(new LambdaQueryWrapper<InspectionStrRel>().eq(InspectionStrRel::getInspectionStrCode, inspectionStrCode).eq(InspectionStrRel::getInspectionStaCode, inspectionStaCode).eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         if (ObjectUtil.isNotEmpty(inspectionStrRel)) {
             // 查询对应的设备
-            List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(
-                    new LambdaQueryWrapper<InspectionStrDeviceRel>()
-                            .eq(InspectionStrDeviceRel::getInspectionStrRelId, inspectionStrRel.getId()));
+            List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(new LambdaQueryWrapper<InspectionStrDeviceRel>().eq(InspectionStrDeviceRel::getInspectionStrRelId, inspectionStrRel.getId()));
 
             // 分页处理设备信息
             if (CollUtil.isNotEmpty(inspectionStrDeviceRels)) {
@@ -739,8 +692,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         List<InspectionStrategyExcelDTO> pageList = this.getinspectionStrategyList(inspectionStrategyDTO);
 
         // 封装excel表格
-        Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams("检修策略列表", "检修策略列表"),
-                InspectionStrategyExcelDTO.class, pageList);
+        Workbook workbook = ExcelExportUtil.exportExcel(new ExportParams("检修策略列表", "检修策略列表"), InspectionStrategyExcelDTO.class, pageList);
 
         // 从response中获取输出流
         try (OutputStream os = response.getOutputStream();) {
@@ -794,9 +746,6 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             // excel表格数据
             List<InspectionStyImportExcelDTO> list = null;
             try {
-                // 记录校验得到的错误信息
-                StringBuilder errorMessage = new StringBuilder();
-
                 list = ExcelImportUtil.importExcel(file.getInputStream(), InspectionStyImportExcelDTO.class, params);
 
                 // 空表格直接返回
@@ -805,6 +754,8 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                 }
                 // 校验数据
                 for (InspectionStyImportExcelDTO inspectionStyImportExcelDTO : list) {
+                    // 记录校验得到的错误信息
+                    StringBuilder errorMessage = new StringBuilder();
                     InspectionStrategyDTO inspectionStrategyDTO = new InspectionStrategyDTO();
                     // 校验检修策略
                     this.checkData(errorMessage, inspectionStyImportExcelDTO, inspectionStrategyDTO);
@@ -947,7 +898,6 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             return false;
         }
         List<InspectionImportExcelDTO> inspectionExcelDTOList = inspectionStyImportExcelDTO.getInspectionExcelDTOList();
-
         // 封装检修标准到inspectionStrategyDTO检修策略实体
         List<InspectionCodeDTO> inspectionCodeDtoList = CollUtil.newArrayList();
 
@@ -958,18 +908,15 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
             // 错误信息
             StringBuilder errorMessage = new StringBuilder();
-            List<InspectionCode> inspectionCodes = inspectionCodeMapper.selectList(new LambdaQueryWrapper<InspectionCode>()
-                    .eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0)
-                    .eq(InspectionCode::getTitle, inspectionImportExcelDTO.getTitle())
-                    .eq(InspectionCode::getCode, inspectionImportExcelDTO.getCode()));
+            List<InspectionCode> inspectionCodes = inspectionCodeMapper.selectList(new LambdaQueryWrapper<InspectionCode>().eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0).eq(InspectionCode::getTitle, inspectionImportExcelDTO.getTitle()).eq(InspectionCode::getCode, inspectionImportExcelDTO.getCode()));
             if (CollUtil.isEmpty(inspectionCodes)) {
-                errorMessage.append("该检修标准在系统中不存在，");
+                errorMessage.append("该检修标准在系统中不存在或没有填写检修标准，");
             }
 
             // 周期类型必须跟检修策略保持一致
-            InspectionCode inspectionCode = inspectionCodes.get(0);
+            InspectionCode inspectionCode = new InspectionCode();
             if (ObjectUtil.isNotEmpty(inspectionStyImportExcelDTO.getType()) && CollUtil.isNotEmpty(inspectionCodes)) {
-
+                 inspectionCode = inspectionCodes.get(0);
                 if (ObjectUtil.isNotEmpty(inspectionStrategyDTO.getType()) && !inspectionStrategyDTO.getType().equals(inspectionCode.getType())) {
                     errorMessage.append("该检修标准的检修周期与检修策略的检修周期不一致，");
                 }
@@ -996,10 +943,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                             }
 
                             // 如果设备存在系统，校验设备=是否是检修标准的设备类型+是否是该检修策略的站点中的
-                            if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice())
-                                    && ObjectUtil.isNotEmpty(inspectionCode.getType())
-                                    && CollUtil.isNotEmpty(inspectionStrategyDTO.getSiteCodes())
-                            ) {
+                            if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && ObjectUtil.isNotEmpty(inspectionCode.getType()) && CollUtil.isNotEmpty(inspectionStrategyDTO.getSiteCodes())) {
                                 List<String> stationList = inspectionStrategyDTO.getSiteCodes().stream().map(StationDTO::getStationCode).collect(Collectors.toList());
                                 if (!inspectionCode.getDeviceTypeCode().equals(deviceCodes.getDeviceTypeCode()) || !stationList.contains(deviceCodes.getStationCode())) {
                                     String errormessage = String.format("编码为%s的设备的类型不属于检修标准中的设备类型或设备的站点不属于检修策略的站点，", device);
@@ -1060,7 +1004,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         } else {
             Map<String, String> inspectionCycleTypeMap = Optional.ofNullable(sysBaseApi.getDictItems(DictConstant.INSPECTION_CYCLE_TYPE)).orElse(CollUtil.newArrayList()).stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue));
             if (StrUtil.isEmpty(inspectionCycleTypeMap.get(inspectionStyImportExcelDTO.getType()))) {
-                errorMessage.append("检修周期类型格式错误,");
+                errorMessage.append("检修周期类型格式错误，");
             } else {
                 inspectionStrategyDTO.setType(Integer.parseInt(inspectionCycleTypeMap.get(inspectionStyImportExcelDTO.getType())));
             }
@@ -1072,6 +1016,13 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                     errorMessage.append("周期策略必须填写或格式错误，");
                 } else {
                     switch (inspectionStyImportExcelDTO.getType()) {
+                        case "半月检":
+                            if (tactics < 1 || tactics > 2) {
+                                errorMessage.append("检修周期类型半月检的周期策略范围是1~2");
+                            } else {
+                                inspectionStrategyDTO.setTactics(tactics);
+                            }
+                            break;
                         case "月检":
                             if (tactics < 1 || tactics > 4) {
                                 errorMessage.append("检修周期类型月检的周期策略范围是1~4");
@@ -1101,7 +1052,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                             }
                             break;
                         case "年检":
-                            if (tactics < 1 || tactics > 8) {
+                            if (tactics < 1 || tactics > 48) {
                                 errorMessage.append("检修周期类型年检的周期策略范围是1~48");
                             } else {
                                 inspectionStrategyDTO.setTactics(tactics);
@@ -1150,7 +1101,9 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             }
         }
 
-        if (ObjectUtil.isNotEmpty(inspectionStyImportExcelDTO.getWorkType())) {
+        if (ObjectUtil.isEmpty(inspectionStyImportExcelDTO.getWorkType())) {
+            errorMessage.append("作业类型必须填写，");
+        } else {
             Map<String, String> workTypeMap = Optional.ofNullable(sysBaseApi.getDictItems(DictConstant.WORK_TYPE)).orElse(CollUtil.newArrayList()).stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue));
             if (ObjectUtil.isNotEmpty(workTypeMap.get(inspectionStyImportExcelDTO.getWorkType()))) {
                 inspectionStrategyDTO.setWorkType(Integer.parseInt(workTypeMap.get(inspectionStyImportExcelDTO.getWorkType())));
