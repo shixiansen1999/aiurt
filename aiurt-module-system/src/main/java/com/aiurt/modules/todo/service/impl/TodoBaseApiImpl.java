@@ -165,17 +165,17 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
         BeanUtil.copyProperties(sysTodoList, messageDTO);
         for (String messageType : messageTypes) {
             //update-end-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
-            if(MessageTypeEnum.XT.toString().equals(messageType)){
+            if(MessageTypeEnum.XT.getType().equals(messageType)){
                 webSocket.pushMessage("please update the to-do list");
-            }else if(MessageTypeEnum.YJ.toString().equals(messageType)){
+            }else if(MessageTypeEnum.YJ.getType().equals(messageType)){
                 if (messageDTO.isMarkdown()) {
                     // 邮件消息要解析Markdown
                     messageDTO.setContent(HTMLUtils.parseMarkdown(messageDTO.getContent()));
                 }
                 emailSendMsgHandle.sendMessage(messageDTO);
-            }else if(MessageTypeEnum.DD.toString().equals(messageType)){
+            }else if(MessageTypeEnum.DD.getType().equals(messageType)){
                 ddSendMsgHandle.sendMessage(messageDTO);
-            }else if(MessageTypeEnum.QYWX.toString().equals(messageType)){
+            }else if(MessageTypeEnum.QYWX.getType().equals(messageType)){
                 if (messageDTO.isMarkdown()) {
                     // 系统消息要解析Markdown
                     messageDTO.setContent(HTMLUtils.parseMarkdown(messageDTO.getContent()));

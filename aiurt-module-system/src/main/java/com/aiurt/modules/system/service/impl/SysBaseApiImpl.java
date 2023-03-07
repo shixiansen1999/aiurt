@@ -2756,22 +2756,22 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         //根据发送渠道发送消息
         for (String messageType : messageTypes) {
             //update-end-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
-            if(MessageTypeEnum.XT.toString().equals(messageType)){
+            if(MessageTypeEnum.XT.getType().equals(messageType)){
                 if (message.isMarkdown()) {
                     // 系统消息要解析Markdown
                     message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
                 }
                 systemSendMsgHandle.sendMessage(message);
-            }else if(MessageTypeEnum.YJ.toString().equals(messageType)){
+            }else if(MessageTypeEnum.YJ.getType().equals(messageType)){
                 if (message.isMarkdown()) {
                     // 邮件消息要解析Markdown
                     message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
                 }
                 emailSendMsgHandle.sendMessage(message);
-            }else if(MessageTypeEnum.DD.toString().equals(messageType)){
+            }else if(MessageTypeEnum.DD.getType().equals(messageType)){
 
                 ddSendMsgHandle.sendMessage(message);
-            }else if(MessageTypeEnum.QYWX.toString().equals(messageType)){
+            }else if(MessageTypeEnum.QYWX.getType().equals(messageType)){
                 if (message.isMarkdown()) {
                     // 系统消息要解析Markdown
                     message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
