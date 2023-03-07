@@ -1,29 +1,25 @@
 package com.aiurt.modules.faultexternal.controller;
 
-import java.util.Arrays;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.faultexternal.dto.FaultExternalDTO;
 import com.aiurt.modules.faultexternal.entity.FalutExternalReceiveDTO;
 import com.aiurt.modules.faultexternal.entity.FaultExternal;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 
  /**
  * @Description: 调度系统故障
@@ -72,7 +68,8 @@ public class FaultExternalController extends BaseController<FaultExternal, IFaul
 	@ApiOperation(value="调度系统故障-添加", notes="调度系统故障-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FalutExternalReceiveDTO falutExternalReceiveDTO) {
-		if (falutExternalReceiveDTO.getCode() == "200") {
+		String code = "200";
+		if (StrUtil.equals(falutExternalReceiveDTO.getCode(), code)) {
 			faultExternalService.save(falutExternalReceiveDTO.getData());
 			return Result.OK("添加成功！");
 		} else {
