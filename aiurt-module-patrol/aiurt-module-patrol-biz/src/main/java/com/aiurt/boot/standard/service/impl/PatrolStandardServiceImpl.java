@@ -85,10 +85,6 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     private PatrolStandardOrgMapper standardOrgMapper;
     @Override
     public IPage<PatrolStandardDto> pageList(Page page, PatrolStandard patrolStandard) {
-//        if(ObjectUtil.isNotEmpty(patrolStandard.getOrgCodes())){
-//            List<String> list = StrUtil.splitTrim(patrolStandard.getOrgCodes(), ",");
-//            inspectionCodeDTO.setOrgList(list);
-//        }
         List<PatrolStandardDto> page1 = patrolStandardMapper.pageList(page, patrolStandard);
         // 以下包含的代码权限拦截局部过滤
         boolean filter = GlobalThreadLocal.setDataFilter(false);
@@ -112,9 +108,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     @Override
     public IPage<PatrolStandardDto> pageLists(Page page, PatrolStandardDto patrolStandard) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Set<String> userRoleSet = sysBaseApi.getUserRoleSet(sysUser.getUsername());
         List<CsUserMajorModel> list = new ArrayList<>();
-        if (!userRoleSet.contains("admin")) {
+        if (!sysUser.getRoleCodes().contains("admin")) {
             list = sysBaseApi.getMajorByUserId(sysUser.getId());
         }
         List<PatrolStandardDto> page1 = patrolStandardMapper.pageLists(page, patrolStandard, patrolStandard.getStations(), list.stream().map(s -> s.getMajorCode()).collect(Collectors.toList()));
@@ -135,6 +130,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     @Override
     public void exportXls(HttpServletRequest request, HttpServletResponse response, PatrolStandard patrolStandard) {
         List<PatrolStandard> patrolStandardList = patrolStandardMapper.getList(patrolStandard);
+        boolean filter = GlobalThreadLocal.setDataFilter(false);
         for (PatrolStandard standard : patrolStandardList) {
             translate(standard, null);
             List<PatrolStandardItems> patrolStandardItemsList = patrolStandardItemsMapper.selectList(new LambdaQueryWrapper<PatrolStandardItems>()
@@ -179,6 +175,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         } catch (IOException e) {
             e.printStackTrace();
         }
+        GlobalThreadLocal.setDataFilter(filter);
     }
 
     /**
