@@ -204,8 +204,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             List<String> enclosures = repairTaskEnclosureMapper.getByRepairTaskId(e.getId());
             for (String enclosure:enclosures){
                 RepairTaskEnclosure repairTaskEnclosure = repairTaskEnclosureMapper.getByResultId(enclosure);
-                if (repairTaskEnclosure!=null ||!repairTaskEnclosure.getUrl().isEmpty()){
-                    e.setPath(repairTaskEnclosure.getUrl());
+                if (repairTaskEnclosure!=null){
+                    if (!repairTaskEnclosure.getUrl().isEmpty()){
+                        e.setPath(repairTaskEnclosure.getUrl());
+                    }
                 }
             }
 
