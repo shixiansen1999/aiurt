@@ -108,9 +108,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     @Override
     public IPage<PatrolStandardDto> pageLists(Page page, PatrolStandardDto patrolStandard) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Set<String> userRoleSet = sysBaseApi.getUserRoleSet(sysUser.getUsername());
         List<CsUserMajorModel> list = new ArrayList<>();
-        if (!userRoleSet.contains("admin")) {
+        if (!sysUser.getRoleCodes().contains("admin")) {
             list = sysBaseApi.getMajorByUserId(sysUser.getId());
         }
         List<PatrolStandardDto> page1 = patrolStandardMapper.pageLists(page, patrolStandard, patrolStandard.getStations(), list.stream().map(s -> s.getMajorCode()).collect(Collectors.toList()));
