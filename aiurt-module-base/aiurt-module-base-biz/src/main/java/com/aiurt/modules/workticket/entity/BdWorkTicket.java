@@ -1,6 +1,7 @@
 package com.aiurt.modules.workticket.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -29,7 +30,7 @@ import java.util.List;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="bd_work_ticket对象", description="bd_work_ticket")
-public class BdWorkTicket implements Serializable {
+public class BdWorkTicket extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/

@@ -27,8 +27,8 @@
         AND ari.TASK_ID_ = a.ID_
         AND (a.assignee_ = '' or a.assignee_ is null)
         ))
-        <if test="bdWorkTicket.id!=null and bdWorkTicket.id!=''">
-            and bwt.id = #{bdWorkTicket.id}
+        <if test="condition.id!=null and condition.id!=''">
+            and bwt.id = #{condition.id}
         </if>
         order by a.CREATE_TIME_ desc
     </select>
@@ -79,37 +79,37 @@
         LEFT JOIN act_re_procdef arp on arp.ID_ = ahp.PROC_DEF_ID_
         LEFt JOIN  cs_station cs on bwt.station = cs.id
         where 1 =1
-        <if test="workTicketReqDTO.processName!=null and workTicketReqDTO.processName!=''">
-            and arp.NAME_  like concat('%',#{workTicketReqDTO.processName},'%')
+        <if test="condition.processName!=null and condition.processName!=''">
+            and arp.NAME_  like concat('%',#{condition.processName},'%')
         </if>
-        <if test="workTicketReqDTO.createTime!=null  and workTicketReqDTO.endTime!=null">
-            and bwt.create_time &gt;= #{workTicketReqDTO.createTime}
-            and bwt.create_time &lt;= #{workTicketReqDTO.endTime}
+        <if test="condition.createTime!=null  and condition.endTime!=null">
+            and bwt.create_time &gt;= #{condition.createTime}
+            and bwt.create_time &lt;= #{condition.endTime}
         </if>
-        <if test="workTicketReqDTO.ticketFiller!=null and workTicketReqDTO.ticketFiller!=''">
-            and bwt.ticket_filler = #{workTicketReqDTO.ticketFiller}
+        <if test="condition.ticketFiller!=null and condition.ticketFiller!=''">
+            and bwt.ticket_filler = #{condition.ticketFiller}
         </if>
-        <if test="workTicketReqDTO.workLeader!=null and workTicketReqDTO.workLeader!=''">
-            and bwt.work_leader = #{workTicketReqDTO.workLeader}
+        <if test="condition.workLeader!=null and condition.workLeader!=''">
+            and bwt.work_leader = #{condition.workLeader}
         </if>
-        <if test="workTicketReqDTO.signeUser!=null and workTicketReqDTO.signeUser!=''">
-            and bwt.signe_user =#{workTicketReqDTO.signeUser}
+        <if test="condition.signeUser!=null and condition.signeUser!=''">
+            and bwt.signe_user =#{condition.signeUser}
         </if>
-        <if test="workTicketReqDTO.workTicketCode!=null and workTicketReqDTO.workTicketCode!=''">
-            and bwt.work_ticket_code  like concat('%',#{workTicketReqDTO.workTicketCode},'%')
+        <if test="condition.workTicketCode!=null and condition.workTicketCode!=''">
+            and bwt.work_ticket_code  like concat('%',#{condition.workTicketCode},'%')
         </if>
-        <if test="workTicketReqDTO.workAddressContent!=null   and workTicketReqDTO.workAddressContent!=''">
-            and bwt.work_address_content  like concat('%',#{workTicketReqDTO.workAddressContent},'%')
+        <if test="condition.workAddressContent!=null   and condition.workAddressContent!=''">
+            and bwt.work_address_content  like concat('%',#{condition.workAddressContent},'%')
         </if>
-        <if test="workTicketReqDTO.state!=null and workTicketReqDTO.state!=0">
-            and bwt.state = #{workTicketReqDTO.state}
+        <if test="condition.state!=null and condition.state!=0">
+            and bwt.state = #{condition.state}
         </if>
-        <if test="workTicketReqDTO.stationName != null and workTicketReqDTO.stationName != ''">
-            and bwt.station = #{workTicketReqDTO.stationName}
+        <if test="condition.stationName != null and condition.stationName != ''">
+            and bwt.station = #{condition.stationName}
         </if>
-        <if test="workTicketReqDTO.workFillerList != null and workTicketReqDTO.workFillerList.size()>0">
+        <if test="condition.workFillerList != null and condition.workFillerList.size()>0">
             and bwt.ticket_filler in
-            <foreach collection="workTicketReqDTO.workFillerList" item="item" separator="," open="(" close=")">
+            <foreach collection="condition.workFillerList" item="item" separator="," open="(" close=")">
                 #{item}
             </foreach>
         </if>

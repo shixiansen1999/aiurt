@@ -25,7 +25,7 @@ public interface BdWorkTicketMapper extends BaseMapper<BdWorkTicket> {
      * @param bdWorkTicket
      * @return
      */
-    List<BdWorkTicket> queryPageList(@Param("pageList") Page<BdWorkTicket> pageList, @Param("userName") String userName, @Param("bdWorkTicket") BdWorkTicket bdWorkTicket);
+    List<BdWorkTicket> queryPageList(@Param("pageList") Page<BdWorkTicket> pageList, @Param("userName") String userName, @Param("condition") BdWorkTicket bdWorkTicket);
 
     /**
      * 历史任务
@@ -33,7 +33,7 @@ public interface BdWorkTicketMapper extends BaseMapper<BdWorkTicket> {
      * @param workTicketReqDTO
      * @return
      */
-    List<WorkTicketResDTO> historyGet(@Param("pageList") Page<WorkTicketResDTO> pageList, @Param("workTicketReqDTO") WorkTicketReqDTO workTicketReqDTO);
+    List<WorkTicketResDTO> historyGet(@Param("pageList") Page<WorkTicketResDTO> pageList, @Param("condition") WorkTicketReqDTO workTicketReqDTO);
 
     @Select("select org_id from sys_user where realname =#{realName}")
     List<String> getTeamIdList(String ticketFiller);
