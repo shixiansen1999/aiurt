@@ -15,7 +15,7 @@ public enum SysAnnmentTypeEnum {
      */
     FAULT("fault", "component","","故障业务消息"),
     /**
-     * 故障
+     * 周计划
      */
     OPERATE_PLAN("operate_plan", "component","","周计划业务消息"),
     /**
@@ -56,9 +56,33 @@ public enum SysAnnmentTypeEnum {
      */
     PATROL_AUDIT("patrol_audit", "component","","巡视业务消息"),
     /**
-     *物资出入库
+     *备件归还
      */
-    MATERIAL_WAREHOUSING("material_warehousing", "component","","物资出入库消息"),
+    SPAREPART_LEND_RETURN("sparepart_lend_return", "component","","物资出入库消息"),
+    /**
+     *备件出库
+     */
+    SPAREPART_OUT("sparepart_out", "component","","物资出入库消息"),
+    /**
+     *备件退库
+     */
+    SPAREPART_BACK("sparepart_back", "component","","物资出入库消息"),
+    /**
+     *备件借出
+     */
+    SPAREPART_LEND("sparepart_lend","component","","物资出入库消息"),
+    /**
+     *备件申领
+     */
+    SPAREPART_APPLY("sparepart_apply","component","","物资出入库消息"),
+    /**
+     *2级库盘点
+     */
+    SPAREPART_STOCKLEVEL2CHECK("sparepart_stocklevel2check","component","","物资出入库消息"),
+    /**
+     *2级库出库
+     */
+    SPAREPART_STOCKLEVEL2SECONDARY("sparepart_stockLevel2Secondary","component","","物资出入库消息"),
 
     BDOPERATEPLANDECLARATIONFORM("planFromSearch", "component", "prodManage/weekAuditing",""),
 

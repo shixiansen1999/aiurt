@@ -37,7 +37,7 @@ public enum TodoTaskTypeEnum {
      */
     FIXED_ASSETS("fixed_assets","","固定资产流程"),
     /**
-     * 设备申领
+     * 物资出入库
      */
     SPARE_PART("spare_part","","物资出入库流程"),
     /**

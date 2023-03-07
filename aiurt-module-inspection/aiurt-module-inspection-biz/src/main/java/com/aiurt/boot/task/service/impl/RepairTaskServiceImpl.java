@@ -1297,7 +1297,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     todoDTO.setPublishingContent("检修任务审核待验收");
                     createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_RECEIPT.getType(), repairTask.getId(), "检修任务验收", "", "", todoDTO, repairTask, realNames, null);
 
-                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),currentUserName, "检修任务-验收" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
+                    /*MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),currentUserName, "检修任务-验收" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                     RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                     BeanUtil.copyProperties(repairTask,repairTaskMessageDTO);
                     //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -1305,7 +1305,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
                     messageDTO.setMsgAbstract("检修任务验收");
                     messageDTO.setPublishingContent("检修任务审核待验收");
-                    sendMessage(messageDTO,realNames,null,repairTaskMessageDTO);
+                    sendMessage(messageDTO,realNames,null,repairTaskMessageDTO);*/
                 }
             }
         } catch (Exception e) {
@@ -1569,13 +1569,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     //构建消息模板
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("errorContent",repairTask1.getErrorContent());
-                    messageDTO.setData(map);
+                    /*messageDTO.setData(map);
                     //业务类型，消息类型，消息模板编码，摘要，发布内容
                     repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION.getType());
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_REJECT);
                     messageDTO.setMsgAbstract("检修任务审核驳回");
                     messageDTO.setPublishingContent("检修任务审核驳回，请重新处理");
-                    sendMessage(messageDTO,realNames,null,repairTaskMessageDTO);
+                    sendMessage(messageDTO,realNames,null,repairTaskMessageDTO);*/
 
                     TodoDTO todoDTO = new TodoDTO();
                     todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_REJECT);

@@ -691,11 +691,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             BeanUtil.copyProperties(fault,faultMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-            messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+            /*messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("接收到新的故障维修任务");
             messageDTO.setPublishingContent("接收到新的故障维修任务，请尽快维修，并维修后填写维修记录");
 
-            sendMessage(messageDTO,faultMessageDTO);
+            sendMessage(messageDTO,faultMessageDTO);*/
             // 待办任务
             TodoDTO todoDTO = new TodoDTO();
             todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
@@ -758,7 +758,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             todoDTO.setMsgAbstract("指派故障被退回");
             todoDTO.setPublishingContent("指派的维修任务被退回，请尽快重新指派");
             sendTodo(refuseAssignmentDTO.getFaultCode(), RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
-            // 消息通知，发送给指派人
+            /*// 消息通知，发送给指派人
             MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAssignUserName(), "故障退回" + DateUtil.today(), null);
 
             messageDTO.setData(map);
@@ -768,7 +768,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             messageDTO.setMsgAbstract("指派故障被退回");
             messageDTO.setPublishingContent("指派的维修任务被退回，请尽快重新指派");
 
-            sendMessage(messageDTO,faultMessageDTO);
+            sendMessage(messageDTO,faultMessageDTO);*/
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -946,7 +946,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 sendTodo(faultCode, null, faultRepairRecord.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
 
                 // 消息通知，发送给指派人
-                MessageDTO messageDTO = new MessageDTO(user.getUsername(), faultRepairRecord.getAppointUserName(), "故障挂起审核驳回" + DateUtil.today(), null);
+               /* MessageDTO messageDTO = new MessageDTO(user.getUsername(), faultRepairRecord.getAppointUserName(), "故障挂起审核驳回" + DateUtil.today(), null);
 
                 messageDTO.setData(map);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -955,7 +955,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 messageDTO.setMsgAbstract("挂起申请被驳回");
                 messageDTO.setPublishingContent("您申请的故障挂起申请被驳回，关联故障编号："+faultCode);
 
-                sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO,faultMessageDTO);*/
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1205,7 +1205,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
                 String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
 
-                //发送通知
+                /*//发送通知
                 MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),name, "故障指派" + DateUtil.today(), null);
 
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -1214,7 +1214,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 messageDTO.setMsgAbstract("有一个新的故障维修任务");
                 messageDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
 
-                sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO,faultMessageDTO);*/
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1458,7 +1458,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 // 审核
                 sendTodo(faultCode, null, fault.getAppointUserName(), "故障维修处理", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
 
-                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAppointUserName(), "维修确认驳回" + DateUtil.today(), null);
+                /*MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAppointUserName(), "维修确认驳回" + DateUtil.today(), null);
 
                 messageDTO.setData(map);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -1467,7 +1467,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 messageDTO.setMsgAbstract("维修确认被驳回");
                 messageDTO.setPublishingContent("故障维修确认被退回，请重新处理");
 
-                sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO,faultMessageDTO);*/
             } catch (Exception e) {
                 e.printStackTrace();
             }
