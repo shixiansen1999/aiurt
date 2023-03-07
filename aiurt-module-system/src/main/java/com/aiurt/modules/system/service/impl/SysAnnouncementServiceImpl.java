@@ -482,8 +482,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				if(StrUtil.isEmpty(s)){
 					record.setTaskType(null);
 				}else{
-					String type = StrUtil.splitTrim(s, "_").get(0);
-					record.setTaskType(type);
+					record.setTaskType(s);
 				}
 			}
 			return businessList;

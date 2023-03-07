@@ -172,7 +172,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 			todoDTO.setBusinessKey(sparePartReturnOrder.getId());
 			todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_BACK.getType());
 			todoDTO.setCurrentUserName(userName);
-			todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
+			todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_BACK.getType());
 			todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
 			todoDTO.setTemplateCode(CommonConstant.SPAREPARTRETURN_SERVICE_NOTICE);
 
