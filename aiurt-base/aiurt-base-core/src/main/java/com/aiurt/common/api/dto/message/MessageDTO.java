@@ -80,7 +80,14 @@ public class MessageDTO implements Serializable {
      * 发送消息id
      */
     protected String messageId;
-
+    /**
+     * 企业微信跳转业务id
+     */
+    protected String busKey;
+    /**
+     * 企业微信跳转业务类型
+     */
+    protected String busType;
 
     //-----------------------------------------------------------------------
     //update-begin---author:taoyan ---date:20220705  for：支持自定义推送类型，邮件、钉钉、企业微信、系统消息-----------

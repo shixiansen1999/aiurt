@@ -180,6 +180,12 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
                     // 系统消息要解析Markdown
                     messageDTO.setContent(HTMLUtils.parseMarkdown(messageDTO.getContent()));
                 }
+                messageDTO.setBusKey(sysTodoList.getBusinessKey());
+                if (sysTodoList.getBusinessType() != null) {
+                    messageDTO.setBusType(sysTodoList.getBusinessType());
+                } else {
+                    messageDTO.setBusType(sysTodoList.getProcessCode());
+                }
                 qywxSendMsgHandle.sendMessage(messageDTO);
             }
         }
