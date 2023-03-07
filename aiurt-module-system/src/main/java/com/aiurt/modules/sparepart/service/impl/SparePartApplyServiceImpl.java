@@ -236,7 +236,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             todoDTO.setCurrentUserName(userName);
             todoDTO.setBusinessKey(partApply.getId());
             todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_APPLY.getType());
-            todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
+            todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_APPLY.getType());
             todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
             todoDTO.setTemplateCode(CommonConstant.SPAREPARTAPPLY_SERVICE_NOTICE);
 

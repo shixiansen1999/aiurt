@@ -139,7 +139,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 			todoDTO.setBusinessKey(sparePartScrap.getId());
 			todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_LEND.getType());
 			todoDTO.setCurrentUserName(userName);
-			todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
+			todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_LEND.getType());
 			todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
 			todoDTO.setTemplateCode(CommonConstant.SPAREPARTSCRAP_SERVICE_NOTICE);
 

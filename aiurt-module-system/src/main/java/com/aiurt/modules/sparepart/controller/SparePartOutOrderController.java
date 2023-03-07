@@ -176,7 +176,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
            todoDTO.setBusinessKey(sparePartOutOrder.getId());
            todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_OUT.getType());
            todoDTO.setCurrentUserName(userName);
-           todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
+           todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_OUT.getType());
            todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
            todoDTO.setTemplateCode(CommonConstant.SPAREPARTOUTORDER_SERVICE_NOTICE);
 
