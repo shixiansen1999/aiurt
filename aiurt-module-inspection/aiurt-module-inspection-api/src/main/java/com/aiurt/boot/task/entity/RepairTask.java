@@ -374,4 +374,12 @@ public class RepairTask extends BaseEntity {
     @Excel(name = "归档状态", width = 15)
     @ApiModelProperty(value = "归档状态：0未归档 1已归档")
     private Integer ecmStatus;
+    /**备注*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "备注")
+    private String content;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "附件")
+    private String path;
 }
