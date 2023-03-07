@@ -148,7 +148,8 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartOutOrder.getId());
            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
            map.put("materialCode",sparePartOutOrder.getMaterialCode());
-           map.put("name",sparePartOutOrder.getName());
+           String materialName= sysBaseApi.getMaterialNameByCode(sparePartOutOrder.getMaterialCode());
+           map.put("name",materialName);
            map.put("num",sparePartOutOrder.getNum());
            String warehouseName= sysBaseApi.getWarehouseNameByCode(sparePartOutOrder.getWarehouseCode());
            map.put("warehouseName",warehouseName);
@@ -199,7 +200,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
        SparePartOutOrder one = sparePartOutOrderService.getById(sparePartOutOrder.getId());
        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
        try {
-           LoginUser userById = sysBaseApi.getUserById(one.getApplyUserId());
+           LoginUser userById = sysBaseApi.getUserByName(one.getApplyUserId());
            //发送通知
            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件出库-确认" + DateUtil.today(), null);
 
@@ -208,7 +209,8 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, one.getId());
            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
            map.put("materialCode",one.getMaterialCode());
-           map.put("name",one.getName());
+           String materialName= sysBaseApi.getMaterialNameByCode(one.getMaterialCode());
+           map.put("name",materialName);
            map.put("num",one.getNum());
            String warehouseName= sysBaseApi.getWarehouseNameByCode(one.getWarehouseCode());
            map.put("warehouseName",warehouseName);

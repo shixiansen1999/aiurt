@@ -8,6 +8,7 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.stock.entity.StockLevel2Check;
 import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
@@ -127,17 +128,15 @@ public class StockOutOrderLevel2Controller {
 				//根据仓库编号获取仓库组织机构code
 				String orgCode = sysBaseApi.getDepartByWarehouseCode(sparePartApply.getApplyWarehouseCode());
 				String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
-
 				//发送通知
 				MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "二级库出库" + DateUtil.today(), null);
 
 				//构建消息模板
 				HashMap<String, Object> map = new HashMap<>();
 				map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartApply.getId());
-
+				map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
 				messageDTO.setData(map);
 				//业务类型，消息类型，消息模板编码，摘要，发布内容
-				messageDTO.setTemplateCode(CommonConstant.SPAREPARTAPPLY_SERVICE_NOTICE);
 				SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
 				messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
 				messageDTO.setMsgAbstract("备件申领通过");

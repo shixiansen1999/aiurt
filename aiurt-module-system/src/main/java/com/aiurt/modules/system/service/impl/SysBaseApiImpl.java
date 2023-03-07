@@ -31,6 +31,8 @@ import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.mapper.MaterialBaseMapper;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.message.handle.impl.DdSendMsgHandle;
 import com.aiurt.modules.message.handle.impl.EmailSendMsgHandle;
@@ -223,6 +225,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private SparePartApplyMapper sparePartApplyMapper;
     @Autowired
     private SparePartStockInfoMapper sparePartStockInfoMapper;
+    @Autowired
+    private MaterialBaseMapper materialBaseMapper;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -818,10 +822,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getWarehouseNameByCode(String warehouseCode) {
         LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SparePartStockInfo::getOrganizationId,warehouseCode);
+        wrapper.eq(SparePartStockInfo::getWarehouseCode,warehouseCode);
         wrapper.eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
         SparePartStockInfo one = sparePartStockInfoMapper.selectOne(wrapper);
         return one.getWarehouseName();
+    }
+
+    @Override
+    public String getMaterialNameByCode(String materialCode) {
+        LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MaterialBase::getCode,materialCode);
+        wrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
+        MaterialBase one = materialBaseMapper.selectOne(wrapper);
+        return one.getName();
     }
 
     @Override
