@@ -282,13 +282,13 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, fixedAssetsCheck.getId());
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.ASSET_CHECKER.getType());
 
-            MessageDTO messageDTO = new MessageDTO();
+            /*MessageDTO messageDTO = new MessageDTO();
             messageDTO.setData(map);
             messageDTO.setTitle("固定资产盘点"+DateUtil.today());
             messageDTO.setTemplateCode(CommonConstant.FIXED_ASSETS_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("固定资产盘点");
             messageDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
-            sendMessage(messageDTO,fixedAssetsCheck,orgCodes);
+            sendMessage(messageDTO,fixedAssetsCheck,orgCodes);*/
 
             TodoDTO todoDTO = new TodoDTO();
             todoDTO.setData(map);

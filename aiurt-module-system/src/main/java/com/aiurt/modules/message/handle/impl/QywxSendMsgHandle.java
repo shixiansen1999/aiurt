@@ -66,13 +66,14 @@ public class QywxSendMsgHandle implements ISendMsgHandle {
 				content = content.substring(0, i);
 			}
 			String s = content.replaceAll("<br/>", "</div><div>");
-			s= "<div>"+s+"</div>";
+			String s1 = s.replaceAll("<p>", "<div>");
+			String s2 = s1.replaceAll("</p>", "</div>");
 
 			if (StrUtil.isNotEmpty(publishingContent)) {
 				publishingContent = "<div>" + publishingContent + "</div>" + "<br/>";
-				sysAnnouncement.setMsgAbstract(publishingContent + s);
+				sysAnnouncement.setMsgAbstract(publishingContent + s2);
 			} else {
-				sysAnnouncement.setMsgAbstract(s);
+				sysAnnouncement.setMsgAbstract(s2);
 			}
 			sysAnnouncement.setBusId(messageDTO.getBusKey());
 			sysAnnouncement.setBusType(messageDTO.getBusType());

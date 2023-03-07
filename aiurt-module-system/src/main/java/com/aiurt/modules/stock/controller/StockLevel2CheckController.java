@@ -170,7 +170,7 @@ public class StockLevel2CheckController {
             //构建消息模板
             HashMap<String, Object> map = new HashMap<>();
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, stockLevel2Check.getId());
-            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_STOCKLEVEL2CHECK.getType());
             map.put("stockCheckCode",stockLevel2Check.getStockCheckCode());
             String warehouseName= sysBaseApi.getWarehouseNameByCode(stockLevel2Check.getWarehouseCode());
             map.put("warehouseName",warehouseName);
@@ -199,7 +199,7 @@ public class StockLevel2CheckController {
             todoDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
             todoDTO.setCurrentUserName(stockLevel2Check.getCheckerId());
             todoDTO.setBusinessKey(stockLevel2Check.getId());
-            todoDTO.setBusinessType(TodoBusinessTypeEnum.MATERIAL_WAREHOUSING.getType());
+            todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_STOCKLEVEL2CHECK.getType());
             todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
             todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
             todoDTO.setTemplateCode(CommonConstant.STOCKLEVEL2CHECK_SERVICE_NOTICE);

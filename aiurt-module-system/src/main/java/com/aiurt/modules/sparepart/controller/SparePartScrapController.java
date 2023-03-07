@@ -109,7 +109,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 			//构建消息模板
 			HashMap<String, Object> map = new HashMap<>();
 			map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartScrap.getId());
-			map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
+			map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_LEND.getType());
 			map.put("materialCode",sparePartScrap.getMaterialCode());
 			String materialName= sysBaseApi.getMaterialNameByCode(sparePartScrap.getMaterialCode());
 			map.put("name",materialName);
@@ -120,13 +120,13 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 
 			messageDTO.setData(map);
 			//业务类型，消息类型，消息模板编码，摘要，发布内容
-			messageDTO.setTemplateCode(CommonConstant.SPAREPARTSCRAP_SERVICE_NOTICE);
+			/*messageDTO.setTemplateCode(CommonConstant.SPAREPARTSCRAP_SERVICE_NOTICE);
 			SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
 			messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
 			messageDTO.setMsgAbstract("备件报废申请");
 			messageDTO.setPublishingContent("备件报废申请，请确认");
 			messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
-			sysBaseApi.sendTemplateMessage(messageDTO);
+			sysBaseApi.sendTemplateMessage(messageDTO);*/
 			//发送待办
 			TodoDTO todoDTO = new TodoDTO();
 			todoDTO.setData(map);
@@ -137,7 +137,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 			todoDTO.setPublishingContent("备件报废申请，请确认");
 			todoDTO.setCurrentUserName(userName);
 			todoDTO.setBusinessKey(sparePartScrap.getId());
-			todoDTO.setBusinessType(TodoBusinessTypeEnum.MATERIAL_WAREHOUSING.getType());
+			todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_LEND.getType());
 			todoDTO.setCurrentUserName(userName);
 			todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
 			todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
