@@ -168,6 +168,31 @@ public class ShiroConfig {
         // 设置大屏的url
         Set<String> bigSet = new HashSet<>();
         bigSet.add("/fault/faultInformation/getLargeFaultDataInfo");
+        bigSet.add("/sys/dict/getDictItems/");
+        bigSet.add("/situation/sysInfoList/list");
+        bigSet.add("/syntheticalpanel/positionPanel/queryById");
+        bigSet.add("/patrolScreen/statisticsDetails");
+        bigSet.add("/syntheticalpanel/positionPanel/list");
+        bigSet.add("/patrolScreen/importantData");
+        bigSet.add("/schedule/scheduleRecord/overviewInfo");
+        bigSet.add("/fault/faultInformation/queryLargeFaultInformation");
+        bigSet.add("/fault/faultInformation/getLargeFaultInfo");
+        bigSet.add("/fault/faultInformation/getLargeLineFaultInfo");
+        bigSet.add("/fault/faultInformation/getLargeFaultTime");
+        bigSet.add("/fault/faultInformation/getSystemReliability");
+        bigSet.add("/plan/bigscreen/getInspectionDataPage");
+        bigSet.add("/schedule/scheduleRecord/getTodayOndutyDetail");
+        bigSet.add("/schedule/scheduleRecord/getTotalPepoleDetail");
+        bigSet.add("/schedule/scheduleRecord/getTotalTeamDetail");
+        bigSet.add("/fault/faultInformation/getLargeFaultDatails");
+        bigSet.add("/fault/faultInformation/getLargeFaultDataDatails");
+        bigSet.add("/fault/faultInformation/getFaultAnalysis");
+        bigSet.add("/fault/faultInformation/getFaultLevelInfo");
+        bigSet.add("/fault/faultInformation/getYearFault");
+        bigSet.add("/fault/faultInformation/getSystemYearFault");
+        bigSet.add("fault/faultInformation/queryLargeFaultDataCount");
+        bigSet.add("/plan/bigscreen/getTeamPortraitDetails");
+        bigSet.add("/plan/bigscreen/getTeamPortrait");
 
         JwtFilter jwtFilter = new JwtFilter(cloudServer == null);
         jwtFilter.setBigScreenUrlSet(bigSet);
