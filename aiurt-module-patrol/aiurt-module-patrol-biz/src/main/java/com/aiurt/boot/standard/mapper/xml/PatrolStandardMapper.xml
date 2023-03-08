@@ -9,8 +9,9 @@
         left join cs_subsystem c on patrol_standard.subsystem_code =c.system_code AND c.del_flag=0
         left join device_type d on patrol_standard.device_type_code =d.code AND d.del_flag=0
         left join sys_user f on patrol_standard.create_by = f.username and f.del_flag =0
+        left join patrol_standard_org pso ON patrol_standard.`code` = pso.standard_code and pso.del_flag=0
         where patrol_standard.del_flag =0
-        AND patrol_standard.`code` IN ( SELECT standard_code FROM patrol_standard_org WHERE del_flag = 0 )
+        and pso.org_code is not null
         <if test="patrolStandard.name !=null ">
             AND patrol_standard.name LIKE CONCAT ('%', #{patrolStandard.name}, '%')
         </if>
@@ -34,6 +35,12 @@
         </if>
         <if test="patrolStandard.status !=null ">
             AND patrol_standardstatus = #{patrolStandard.status}
+        </if>
+        <if test="patrolStandard.codes != null and patrolStandard.codes.size() > 0">
+            and patrol_standard.code in
+            <foreach collection="patrolStandard.codes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
         order by patrol_standard.create_time desc
     </select>

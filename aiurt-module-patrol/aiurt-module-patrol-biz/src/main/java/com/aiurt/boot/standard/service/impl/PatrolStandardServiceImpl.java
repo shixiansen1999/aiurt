@@ -23,6 +23,7 @@ import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -85,6 +86,15 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     private PatrolStandardOrgMapper standardOrgMapper;
     @Override
     public IPage<PatrolStandardDto> pageList(Page page, PatrolStandard patrolStandard) {
+        // 数据权限过滤
+        List<String> stadardCode = new ArrayList<>();
+        try {
+            stadardCode = this.standardDataPermissionFilter();
+            patrolStandard.setCodes(stadardCode);
+        } catch (Exception e) {
+            return page;
+        }
+
         List<PatrolStandardDto> page1 = patrolStandardMapper.pageList(page, patrolStandard);
         // 以下包含的代码权限拦截局部过滤
         boolean filter = GlobalThreadLocal.setDataFilter(false);
@@ -103,6 +113,14 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         // 以上包含的代码权限拦截局部过滤
         GlobalThreadLocal.setDataFilter(filter);
         return page.setRecords(page1);
+    }
+
+    private List<String> standardDataPermissionFilter() {
+        List<String> standardCodesByOrg = standardOrgMapper.getStandardCodeByUserOrg();
+        if (CollectionUtil.isEmpty(standardCodesByOrg)) {
+            throw new AiurtBootException("无组织机构数据！");
+        }
+        return standardCodesByOrg;
     }
 
     @Override
