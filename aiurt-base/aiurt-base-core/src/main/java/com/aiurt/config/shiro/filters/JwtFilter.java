@@ -84,29 +84,31 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         }
         // update-end--Author:lvdandan Date:20210105 for：JT-355 OA聊天添加token验证，获取token参数
         //
-        String requestURI = WebUtils.getPathWithinApplication(WebUtils.toHttp(request));
-        RedisUtil redisUtil = SpringContextUtils.getBean(RedisUtil.class);
+        if (StrUtil.isBlank(token.get())) {
+            String requestURI = WebUtils.getPathWithinApplication(WebUtils.toHttp(request));
+            RedisUtil redisUtil = SpringContextUtils.getBean(RedisUtil.class);
 
-        CommonAPI commonApi = SpringContextUtils.getBean(CommonAPI.class);
-        // 判断是否是大屏的数据, 外部范围给的是
-        bigScreenUrlSet.forEach(path->{
-            if (pathsMatch(requestURI, path)) {
-                String redisToken = redisUtil.getStr(CommonConstant.PREFIX_USER_TOKEN + "bigScreen");
-                if (StrUtil.isBlank(redisToken)) {
-                    // 默认登录
-                    LoginUser loginUser = commonApi.getUserByName("admin");
-                    redisToken  = JwtUtil.sign(loginUser.getUsername(), loginUser.getPassword());
+            CommonAPI commonApi = SpringContextUtils.getBean(CommonAPI.class);
+            // 判断是否是大屏的数据, 外部范围给的是
+            bigScreenUrlSet.forEach(path->{
+                if (pathsMatch(requestURI, path)) {
+                    String redisToken = redisUtil.getStr(CommonConstant.PREFIX_USER_TOKEN + "bigScreen");
+                    if (StrUtil.isBlank(redisToken)) {
+                        // 默认登录
+                        LoginUser loginUser = commonApi.getUserByName("admin");
+                        redisToken  = JwtUtil.sign(loginUser.getUsername(), loginUser.getPassword());
 
-                    // 保存到redis
-                    redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + "bigScreen", redisToken);
-                    redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + "bigScreen", JwtUtil.EXPIRE_TIME);
-                    redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + redisToken, redisToken);
-                    redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + redisToken, JwtUtil.EXPIRE_TIME *2 / 1000);
+                        // 保存到redis
+                        redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + "bigScreen", redisToken);
+                        redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + "bigScreen", JwtUtil.EXPIRE_TIME);
+                        redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + redisToken, redisToken);
+                        redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + redisToken, JwtUtil.EXPIRE_TIME *2 / 1000);
+                    }
+                    token.set(redisToken);
+                    return;
                 }
-                token.set(redisToken);
-                return;
-            }
-        });
+            });
+        }
 
         JwtToken jwtToken = new JwtToken(token.get());
         // 提交给realm进行登入，如果错误他会抛出异常并被捕获
