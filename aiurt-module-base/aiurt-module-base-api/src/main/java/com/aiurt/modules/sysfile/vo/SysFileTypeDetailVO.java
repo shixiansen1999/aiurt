@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -61,4 +62,7 @@ public class SysFileTypeDetailVO extends SysFileType implements Serializable {
 
 	@ApiModelProperty("可在线编辑")
 	private Set<SimpUserVO> onlineEditing;
+
+	@ApiModelProperty("可在线编辑筛选")
+	private List<String> editUsersCode;
 }

@@ -419,7 +419,14 @@ public class CommonCtroller {
     @GetMapping("/sysuser/queryDepartUserTree")
     @ApiOperation("根据机构人员树")
     public Result<List<SelectTable>> queryDepartUserTree(@RequestParam(value = "majorId",required = false) String majorId) {
-        List<SelectTable> tables = commonService.queryDepartUserTree(null, null,majorId);
+        List<SelectTable> tables = commonService.queryDepartUserTree(null, null,majorId,null);
+        return Result.OK(tables);
+    }
+
+    @GetMapping("/sysuser/filterDepartUserTree")
+    @ApiOperation("根据机构人员树")
+    public Result<List<SelectTable>> filterDepartUserTree(@RequestParam(value = "majorId",required = false) String majorId,@RequestParam List<String> keys) {
+        List<SelectTable> tables = commonService.queryDepartUserTree(null, null,majorId,keys);
         return Result.OK(tables);
     }
 
