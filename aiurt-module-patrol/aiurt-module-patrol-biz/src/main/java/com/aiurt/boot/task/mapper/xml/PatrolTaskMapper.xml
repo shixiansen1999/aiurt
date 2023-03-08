@@ -29,6 +29,9 @@ FROM
 		AND t1.discard_status = 0
 		AND cs.del_flag = 0
 		AND cl.del_flag = 0
+        <if test="patrolTaskDTO.lineCode != null and patrolTaskDTO.lineCode !=''">
+            AND cl.line_code = #{patrolTaskDTO.lineCode}
+        </if>
 		AND t1.id NOT IN (
 		SELECT
 			id
