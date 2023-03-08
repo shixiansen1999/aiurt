@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class PageOrderGenerator {
-    private static final String ORDER_TYPE_ASC = "ASC";
+    public static final String ORDER_TYPE_ASC = "ASC";
 
 
     /**

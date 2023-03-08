@@ -1,12 +1,19 @@
 package com.aiurt.config.datafilter.interceptor;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.base.BaseEntity;
+import com.aiurt.modules.base.PageOrderGenerator;
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLStatement;
 import com.alibaba.druid.sql.dialect.mysql.visitor.MySqlSchemaStatVisitor;
@@ -126,7 +133,7 @@ public class PaginationExtInnerInterceptor extends PaginationInnerInterceptor {
 			// 缓存sql
 			if (condition instanceof BaseEntity){
 				BaseEntity baseEntity = (BaseEntity) condition;
-				if (Objects.nonNull(baseEntity.getColumn())&&!baseEntity.getColumn().contains(",")){
+				if (Objects.nonNull(baseEntity)&&Objects.nonNull(baseEntity.getColumn())){
 					String column = baseEntity.getColumn();
 					String order = baseEntity.getOrder();
 					if (StrUtil.isNotBlank(column) || StrUtil.isNotBlank(order)) {
@@ -139,6 +146,7 @@ public class PaginationExtInnerInterceptor extends PaginationInnerInterceptor {
 						orderItem.setAsc("desc".equalsIgnoreCase(order)?false:true);
 						orders.add(orderItem);
 					}
+
 				}
 			}
 			return orders;
