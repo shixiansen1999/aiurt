@@ -209,7 +209,7 @@
 				and stl.todo_type = #{todoType}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and (stl.task_type = #{busType}
+				and (stl.task_type LIKE concat('%',#{busType},'%')
 				or stl.process_code like concat('%',#{busType},'%'))
 			</if>
 		</where>
@@ -244,7 +244,7 @@
 				and stl.todo_type = #{todoType}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and (stl.task_type = #{busType}
+				and (stl.task_type LIKE concat('%',#{busType},'%')
 				or stl.process_code like concat('%',#{busType},'%'))
 			</if>
 		</where>
