@@ -2,7 +2,6 @@ package com.aiurt.modules.faultexternal.service;
 
 import com.aiurt.modules.fault.dto.RepairRecordDTO;
 import com.aiurt.modules.faultexternal.dto.FaultExternalDTO;
-import com.aiurt.modules.faultexternal.entity.FalutExternalReceiveDTO;
 import com.aiurt.modules.faultexternal.entity.FaultExternal;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;

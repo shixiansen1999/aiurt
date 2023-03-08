@@ -188,9 +188,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		pictureCode.add(SysParamCodeConstant.PATROL);
 		pictureCode.add(SysParamCodeConstant.EMERGENCY);
 		pictureCode.add(SysParamCodeConstant.TRAIN);
-		pictureCode.add(SysParamCodeConstant.WEEK_PLAN);
+		pictureCode.add(SysParamCodeConstant.OPERATE);
 		pictureCode.add(SysParamCodeConstant.SITUATION);
 		pictureCode.add(SysParamCodeConstant.WORKLOG);
+		pictureCode.add(SysParamCodeConstant.MATERIAL);
 
 		//业务消息处理
 		SysAnnmentTypeEnum[] typeValues = SysAnnmentTypeEnum.values();
@@ -228,10 +229,22 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			int size = typeList.size();
 			int messageSize = readFlagList.size();
 			sysMessageTypeDTO.setCount(messageSize);
+			//设置排序时间
+			if (CollUtil.isNotEmpty(typeList)) {
+				for (SysAnnouncementSendDTO sysAnnouncementSendDTO : typeList) {
+					Date createTime = sysAnnouncementSendDTO.getCreateTime();
+					Date updateTime = sysAnnouncementSendDTO.getUpdateTime();
+					if (ObjectUtil.isNotEmpty(updateTime)) {
+						sysAnnouncementSendDTO.setIntervalTime(updateTime);
+					} else {
+						sysAnnouncementSendDTO.setIntervalTime(createTime);
+					}
+				}
+			}
 			//给内容赋值
 			if(size != 0) {
 				//根据时间排序，最近的在上面
-				typeList = typeList.stream().sorted(Comparator.comparing(SysAnnouncementSendDTO::getCreateTime).reversed()).collect(Collectors.toList());
+				typeList = typeList.stream().sorted(Comparator.comparing(SysAnnouncementSendDTO::getIntervalTime).reversed()).collect(Collectors.toList());
 			}
 			if(CollUtil.isNotEmpty(typeList)) {
 				String msgContent = typeList.get(0).getMsgContent();
@@ -239,14 +252,14 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			}
 			//获取时间，在对list进行排序
 			if(size != 0) {
-				Collections.sort(typeList, ((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime())));
+				Collections.sort(typeList, ((o1, o2) -> o2.getIntervalTime().compareTo(o1.getIntervalTime())));
 			}
 			if(CollUtil.isNotEmpty(typeList)){
 				SysAnnouncementSendDTO lastSysAnnouncementSendDTO = typeList.get(0);
-				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
+				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getIntervalTime());
 			}
 			sysMessageTypeDTO.setMessageFlag("1");
-			if(!("bpm").equals(sysMessageTypeDTO.getBusType()) && messageSize != 0){
+			if(!("bpm").equals(sysMessageTypeDTO.getBusType()) && size != 0){
 				list.add(sysMessageTypeDTO);
 			}
 		}
@@ -282,24 +295,37 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			}
 			// 统计长度
 			List<SysAnnouncementSendDTO> value = entry.getValue();
+			int size = value.size();
 			int messageSize = 0;
 			if(CollUtil.isNotEmpty(value)){
 				List<SysAnnouncementSendDTO> messageList = value.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getMsgCategory() != null && sysAnnouncementSendDTO.getReadFlag().equals("0")).collect(Collectors.toList());
 				messageSize = messageList.size();
 			}
 			sysMessageTypeDTO.setCount(messageSize);
+			//设置排序时间
+			if (CollUtil.isNotEmpty(value)) {
+				for (SysAnnouncementSendDTO sysAnnouncementSendDTO : value) {
+					Date createTime = sysAnnouncementSendDTO.getCreateTime();
+					Date updateTime = sysAnnouncementSendDTO.getUpdateTime();
+					if (ObjectUtil.isNotEmpty(updateTime)) {
+						sysAnnouncementSendDTO.setIntervalTime(updateTime);
+					} else {
+						sysAnnouncementSendDTO.setIntervalTime(createTime);
+					}
+				}
+			}
 			//给内容赋值
-			value=value.stream().sorted(Comparator.comparing(SysAnnouncementSendDTO::getCreateTime).reversed()).collect(Collectors.toList());
+			value=value.stream().sorted(Comparator.comparing(SysAnnouncementSendDTO::getIntervalTime).reversed()).collect(Collectors.toList());
 			String msgContent = value.get(0).getMsgContent();
 			sysMessageTypeDTO.setTitleContent(msgContent);
 			//获取时间，在对list进行排序
-			Collections.sort(value,((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime())));
+			Collections.sort(value,((o1, o2) -> o2.getIntervalTime().compareTo(o1.getIntervalTime())));
 			if(CollUtil.isNotEmpty(value)) {
 				SysAnnouncementSendDTO lastSysAnnouncementSendDTO = value.get(0);
-				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
+				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getIntervalTime());
 			}
 			sysMessageTypeDTO.setMessageFlag("1");
-			if(messageSize !=0){
+			if(size !=0){
 				list.add(sysMessageTypeDTO);
 			}
 		}
@@ -328,28 +354,34 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			int size = typeList.size();
 			int messageSize = readFlagList.size();
 			sysMessageTypeDTO.setCount(messageSize);
+			//设置排序时间
+			if (CollUtil.isNotEmpty(typeList)) {
+				for (SysTodoList sysTodoList : typeList) {
+					Date createTime = sysTodoList.getCreateTime();
+					Date updateTime = sysTodoList.getUpdateTime();
+					if (ObjectUtil.isNotEmpty(updateTime)) {
+						sysTodoList.setIntervalTime(updateTime);
+					} else {
+						sysTodoList.setIntervalTime(createTime);
+					}
+				}
+			}
 			//给内容赋值
 			if(size != 0){
-				typeList=typeList.stream().sorted(Comparator.comparing(SysTodoList::getCreateTime).reversed()).collect(Collectors.toList());
+				typeList=typeList.stream().sorted(Comparator.comparing(SysTodoList::getIntervalTime).reversed()).collect(Collectors.toList());
 				String msgContent = typeList.get(0).getTaskName();
 				sysMessageTypeDTO.setTitleContent(msgContent);
 			}
 			//获取时间，在对list进行排序
 			if(size !=0){
-				Collections.sort(typeList,((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime())));
+				Collections.sort(typeList,((o1, o2) -> o2.getIntervalTime().compareTo(o1.getIntervalTime())));
 			}
 			if(CollUtil.isNotEmpty(typeList)) {
 				SysTodoList sysTodoList = typeList.get(0);
-				Date s = sysTodoList.getUpdateTime();
-				String updateTime = DateUtil.formatDateTime(s);
-				if(StrUtil.isNotBlank(updateTime)){
-					sysMessageTypeDTO.setIntervalTime(s);
-				}else{
-					sysMessageTypeDTO.setIntervalTime(sysTodoList.getCreateTime());
-				}
+				sysMessageTypeDTO.setIntervalTime(sysTodoList.getIntervalTime());
 			}
 			sysMessageTypeDTO.setMessageFlag("2");
-			if(!("bpmn").equals(sysMessageTypeDTO.getBusType()) && messageSize != 0){
+			if(!("bpmn").equals(sysMessageTypeDTO.getBusType()) && size != 0){
 				list.add(sysMessageTypeDTO);
 			}
 		}
@@ -407,6 +439,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.BD_WORK_TITCK);
 			sysMessageTypeDTO.setValue(sysParamModel.getValue());
 		}
+		if (SysParamCodeConstant.SPARE_PART.equals(type)) {
+			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SPARE_PART);
+			sysMessageTypeDTO.setValue(sysParamModel.getValue());
+		}
 		return sysMessageTypeDTO;
 	}
 
@@ -432,6 +468,8 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			for (SysMessageInfoDTO record : records) {
 				if (ObjectUtil.isEmpty(record.getReceiveTime())) {
 					record.setReceiveTime(record.getIntervalTime());
+				}else{
+					record.setIntervalTime(record.getReceiveTime());
 				}
 				//系统公告和系统消息，特情取消去办理
 				if(StrUtil.isNotEmpty(record.getMsgCategory()) && StrUtil.isEmpty(record.getTaskType()) || SysAnnmentTypeEnum.SITUATION.getType().equals(record.getTaskType())){
@@ -444,8 +482,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				if(StrUtil.isEmpty(s)){
 					record.setTaskType(null);
 				}else{
-					String type = StrUtil.splitTrim(s, "_").get(0);
-					record.setTaskType(type);
+					record.setTaskType(s);
 				}
 			}
 			return businessList;
@@ -469,6 +506,8 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			for (SysMessageInfoDTO record : records) {
 				if (ObjectUtil.isEmpty(record.getReceiveTime())) {
 					record.setReceiveTime(record.getIntervalTime());
+				}else{
+					record.setIntervalTime(record.getReceiveTime());
 				}
 				//系统公告和系统消息，特情取消去办理
 				if(StrUtil.isNotEmpty(record.getMsgCategory()) && StrUtil.isEmpty(record.getTaskType()) || SysAnnmentTypeEnum.SITUATION.getType().equals(record.getTaskType())){

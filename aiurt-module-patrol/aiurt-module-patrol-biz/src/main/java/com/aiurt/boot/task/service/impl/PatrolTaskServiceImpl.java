@@ -459,12 +459,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             map.put("rejectReason",patrolTask.getRejectReason());
             messageDTO.setData(map);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
-            patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_AUDIT.getType());
+            /*patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_AUDIT.getType());
             messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE_REJECT);
             messageDTO.setMsgAbstract("巡视任务审核驳回");
             messageDTO.setPublishingContent("巡视任务审核驳回，请重新处理");
             String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
-            sendMessage(messageDTO,realNames,null,patrolMessageDTO);
+            sendMessage(messageDTO,realNames,null,patrolMessageDTO);*/
 
             TodoDTO todoDTO = new TodoDTO();
             todoDTO.setTitle("审核驳回"+DateUtil.today());
@@ -1180,11 +1180,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
                     BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
                     //业务类型，消息类型，消息模板编码，摘要，发布内容
-                    patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
+                    /*patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
                     messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
                     messageDTO.setMsgAbstract("巡视任务完成");
                     messageDTO.setPublishingContent("巡视任务已完成，请确认");
-                    sendMessage(messageDTO,realNames,null,patrolMessageDTO);
+                    sendMessage(messageDTO,realNames,null,patrolMessageDTO);*/
                     //发送代办
                     TodoDTO todoDTO = new TodoDTO();
                     todoDTO.setData(map);

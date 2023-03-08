@@ -2,13 +2,9 @@ package com.aiurt.modules.sparepart.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.constant.CommonTodoStatus;
-import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
-import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartScrap;
@@ -16,7 +12,6 @@ import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartScrapMapper;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartScrapService;
-import com.aiurt.modules.todo.dto.TodoDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -31,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -97,53 +91,6 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
             }
 
             try {
-                String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
-
-                //发送通知
-                MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件报废申请" + DateUtil.today(), null);
-
-                //构建消息模板
-                HashMap<String, Object> map = new HashMap<>();
-                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, scrap.getId());
-                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
-                map.put("materialCode",scrap.getMaterialCode());
-                map.put("name",scrap.getName());
-                map.put("num",scrap.getNum());
-                LoginUser userByName = sysBaseApi.getUserByName(scrap.getCreateBy());
-                map.put("realName",userByName.getRealname());
-                map.put("scrapTime",DateUtil.format(scrap.getScrapTime(),"yyyy-MM-dd HH:mm:ss"));
-
-                messageDTO.setData(map);
-                //业务类型，消息类型，消息模板编码，摘要，发布内容
-                messageDTO.setTemplateCode(CommonConstant.SPAREPARTSCRAP_SERVICE_NOTICE);
-                SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
-                messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-                messageDTO.setMsgAbstract("备件报废申请");
-                messageDTO.setPublishingContent("备件报废申请，请确认");
-                messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
-                sysBaseApi.sendTemplateMessage(messageDTO);
-                //发送待办
-                TodoDTO todoDTO = new TodoDTO();
-                todoDTO.setData(map);
-                SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
-                todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
-                todoDTO.setTitle("备件报废申请" + DateUtil.today());
-                todoDTO.setMsgAbstract("备件报废申请");
-                todoDTO.setPublishingContent("备件报废申请，请确认");
-                todoDTO.setCurrentUserName(userName);
-                todoDTO.setBusinessKey(scrap.getId());
-                todoDTO.setBusinessType(TodoBusinessTypeEnum.MATERIAL_WAREHOUSING.getType());
-                todoDTO.setCurrentUserName(userName);
-                todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
-                todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
-                todoDTO.setTemplateCode(CommonConstant.SPAREPARTSCRAP_SERVICE_NOTICE);
-
-                isTodoBaseAPI.createTodoTask(todoDTO);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            try {
                 LoginUser userByName = sysBaseApi.getUserByName(scrap.getCreateBy());
                 //发送通知
                 MessageDTO messageDTO = new MessageDTO(user.getUsername(),userByName.getUsername(), "备件报废申请-确认" + DateUtil.today(), null);
@@ -151,12 +98,13 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
                 //构建消息模板
                 HashMap<String, Object> map = new HashMap<>();
                 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, scrap.getId());
-                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_SCRAP.getType());
                 map.put("materialCode",scrap.getMaterialCode());
-                map.put("name",scrap.getName());
+                String materialName= sysBaseApi.getMaterialNameByCode(scrap.getMaterialCode());
+                map.put("name",materialName);
                 map.put("num",scrap.getNum());
                 map.put("realName",userByName.getRealname());
-                map.put("scrapTime",DateUtil.format(scrap.getScrapTime(),"yyyy-MM-dd HH:mm:ss"));
+                map.put("scrapTime", DateUtil.format(scrap.getScrapTime(),"yyyy-MM-dd HH:mm:ss"));
 
                 messageDTO.setData(map);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容

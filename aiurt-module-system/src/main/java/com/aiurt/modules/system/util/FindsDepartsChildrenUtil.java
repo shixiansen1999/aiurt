@@ -63,7 +63,13 @@ public class FindsDepartsChildrenUtil {
         List<SysDepartTreeModel> records = new ArrayList<>();
         for (int i = 0; i < recordList.size(); i++) {
             SysDepart depart = recordList.get(i);
-            records.add(new SysDepartTreeModel(depart));
+            List<SysDepart> collect = recordList.stream().filter(r -> r.getId().equals(depart.getParentId())).collect(Collectors.toList());
+            if (CollUtil.isEmpty(collect)) {
+                depart.setParentId("");
+                records.add(new SysDepartTreeModel(depart));
+            }else{
+                records.add(new SysDepartTreeModel(depart));
+            }
         }
         findChildren(records, idList);
         return idList;

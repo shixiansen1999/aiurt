@@ -12,4 +12,10 @@
             </foreach>
         </if>
     </select>
+
+    <select id="getStandardCodeByUserOrg" resultType="java.lang.String">
+        select distinct standard_code
+        from patrol_standard_org
+        where del_flag = 0
+    </select>
 </mapper>

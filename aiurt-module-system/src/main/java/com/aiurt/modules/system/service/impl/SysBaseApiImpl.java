@@ -31,6 +31,8 @@ import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.mapper.MaterialBaseMapper;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.message.handle.impl.DdSendMsgHandle;
 import com.aiurt.modules.message.handle.impl.EmailSendMsgHandle;
@@ -223,6 +225,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private SparePartApplyMapper sparePartApplyMapper;
     @Autowired
     private SparePartStockInfoMapper sparePartStockInfoMapper;
+    @Autowired
+    private MaterialBaseMapper materialBaseMapper;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -818,10 +822,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getWarehouseNameByCode(String warehouseCode) {
         LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SparePartStockInfo::getOrganizationId,warehouseCode);
+        wrapper.eq(SparePartStockInfo::getWarehouseCode,warehouseCode);
         wrapper.eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
         SparePartStockInfo one = sparePartStockInfoMapper.selectOne(wrapper);
         return one.getWarehouseName();
+    }
+
+    @Override
+    public String getMaterialNameByCode(String materialCode) {
+        LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MaterialBase::getCode,materialCode);
+        wrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
+        MaterialBase one = materialBaseMapper.selectOne(wrapper);
+        return one.getName();
     }
 
     @Override
@@ -2743,26 +2756,28 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         //根据发送渠道发送消息
         for (String messageType : messageTypes) {
             //update-end-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
-            if(MessageTypeEnum.XT.toString().equals(messageType)){
+            if(MessageTypeEnum.XT.getType().equals(messageType)){
                 if (message.isMarkdown()) {
                     // 系统消息要解析Markdown
                     message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
                 }
                 systemSendMsgHandle.sendMessage(message);
-            }else if(MessageTypeEnum.YJ.toString().equals(messageType)){
+            }else if(MessageTypeEnum.YJ.getType().equals(messageType)){
                 if (message.isMarkdown()) {
                     // 邮件消息要解析Markdown
                     message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
                 }
                 emailSendMsgHandle.sendMessage(message);
-            }else if(MessageTypeEnum.DD.toString().equals(messageType)){
+            }else if(MessageTypeEnum.DD.getType().equals(messageType)){
 
                 ddSendMsgHandle.sendMessage(message);
-            }else if(MessageTypeEnum.QYWX.toString().equals(messageType)){
+            }else if(MessageTypeEnum.QYWX.getType().equals(messageType)){
                 if (message.isMarkdown()) {
                     // 系统消息要解析Markdown
                     message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
                 }
+                message.setBusKey(announcement.getBusId());
+                message.setBusType(announcement.getBusType());
                 qywxSendMsgHandle.sendMessage(message);
             }
         }

@@ -1027,5 +1027,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getWarehouseNameByCode(String warehouseCode);
+
+    /**
+     * 根据物资编号获取物资名称
+     * @param materialCode
+     * @return
+     */
+    String getMaterialNameByCode(String materialCode);
 }
 

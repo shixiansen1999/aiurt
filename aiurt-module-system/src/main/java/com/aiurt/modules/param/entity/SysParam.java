@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -51,6 +50,9 @@ public class SysParam implements Serializable {
 	/**参数说明*/
     @ApiModelProperty(value = "参数说明")
     private String description;
+    /**字典编码*/
+    @ApiModelProperty(value = "字典编码")
+    private String dictCode ;
 
 
 	/**删除状态： 0未删除 1已删除*/

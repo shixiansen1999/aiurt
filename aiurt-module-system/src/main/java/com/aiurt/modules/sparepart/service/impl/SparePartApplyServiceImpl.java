@@ -207,7 +207,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             //构建消息模板
             HashMap<String, Object> map = new HashMap<>();
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, partApply.getId());
-            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.MATERIAL_WAREHOUSING.getType());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_APPLY.getType());
             map.put("code",partApply.getCode());
             map.put("applyNumber",partApply.getApplyNumber());
             map.put("applyUserId",user.getRealname());
@@ -218,13 +218,13 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
 
             messageDTO.setData(map);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
-            messageDTO.setTemplateCode(CommonConstant.SPAREPARTAPPLY_SERVICE_NOTICE);
+            /*messageDTO.setTemplateCode(CommonConstant.SPAREPARTAPPLY_SERVICE_NOTICE);
             SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
             messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
             messageDTO.setMsgAbstract("备件申领");
             messageDTO.setPublishingContent("班组申请物资，请确认");
             messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
-            sysBaseApi.sendTemplateMessage(messageDTO);
+            sysBaseApi.sendTemplateMessage(messageDTO);*/
             //发送待办
             TodoDTO todoDTO = new TodoDTO();
             todoDTO.setData(map);
@@ -235,8 +235,8 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             todoDTO.setPublishingContent("班组申请物资，请确认");
             todoDTO.setCurrentUserName(userName);
             todoDTO.setBusinessKey(partApply.getId());
-            todoDTO.setBusinessType(TodoBusinessTypeEnum.MATERIAL_WAREHOUSING.getType());
-            todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
+            todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_APPLY.getType());
+            todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_APPLY.getType());
             todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
             todoDTO.setTemplateCode(CommonConstant.SPAREPARTAPPLY_SERVICE_NOTICE);
 

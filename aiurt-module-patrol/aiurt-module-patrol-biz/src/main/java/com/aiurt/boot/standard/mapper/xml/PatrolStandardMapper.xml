@@ -9,8 +9,9 @@
         left join cs_subsystem c on patrol_standard.subsystem_code =c.system_code AND c.del_flag=0
         left join device_type d on patrol_standard.device_type_code =d.code AND d.del_flag=0
         left join sys_user f on patrol_standard.create_by = f.username and f.del_flag =0
+        left join patrol_standard_org pso ON patrol_standard.`code` = pso.standard_code and pso.del_flag=0
         where patrol_standard.del_flag =0
-        AND patrol_standard.`code` IN ( SELECT standard_code FROM patrol_standard_org WHERE del_flag = 0 )
+        and pso.org_code is not null
         <if test="patrolStandard.name !=null ">
             AND patrol_standard.name LIKE CONCAT ('%', #{patrolStandard.name}, '%')
         </if>
@@ -34,6 +35,12 @@
         </if>
         <if test="patrolStandard.status !=null ">
             AND patrol_standardstatus = #{patrolStandard.status}
+        </if>
+        <if test="patrolStandard.codes != null and patrolStandard.codes.size() > 0">
+            and patrol_standard.code in
+            <foreach collection="patrolStandard.codes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
         order by patrol_standard.create_time desc
     </select>
@@ -141,27 +148,42 @@
         SELECT COUNT(psi.standard_id AND psi.standard_id=#{id} AND psi.del_flag=0 OR NULL) FROM patrol_standard_items psi WHERE 1=1
     </select>
     <select id="getList" resultType="com.aiurt.boot.standard.entity.PatrolStandard">
-    select p.*
-    from (select ps.*,(select realname from sys_user where ps.create_by = username and del_flag = 0)as reanlname
-    from patrol_standard ps) as p
-    where p.del_flag =0
+        select patrol_standard.*,b.major_name as professionName, c.system_name as subsystemName ,d.name as deviceTypeName
+        from patrol_standard as patrol_standard
+        left join cs_major b on patrol_standard.profession_code =b.major_code AND b.del_flag=0
+        left join cs_subsystem c on patrol_standard.subsystem_code =c.system_code AND c.del_flag=0
+        left join device_type d on patrol_standard.device_type_code =d.code AND d.del_flag=0
+        left join sys_user f on patrol_standard.create_by = f.username and f.del_flag =0
+        where patrol_standard.del_flag =0
+        AND patrol_standard.`code` IN ( SELECT standard_code FROM patrol_standard_org WHERE del_flag = 0 )
         <if test="patrolStandard.name !=null ">
-           and  p.name like CONCAT('%',' #{patrolStandard.name}','%')
-            AND patrol_standard.name LIKE CONCAT ('%',, '%')
+            AND patrol_standard.name LIKE CONCAT ('%', #{patrolStandard.name}, '%')
         </if>
-        <if test="patrolStandard.code !=null ">
-           and p.code like CONCAT('%',#{patrolStandard.code},'%')
+        <if test="patrolStandard.id !=null ">
+            AND patrol_standard.id = #{patrolStandard.id}
+        </if>
+        <if test="patrolStandard.deviceTypeCode !=null ">
+            AND patrol_standard.device_type_code = #{patrolStandard.deviceTypeCode}
         </if>
         <if test="patrolStandard.professionCode !=null ">
-            and p.profession_code  = #{patrolStandard.professionCode}
-        </if>
-        <if test="patrolStandard.createBy !=null ">
-            and p.reanlname like CONCAT('%',#{patrolStandard.createBy},'%')
+            AND patrol_standard.profession_code = #{patrolStandard.professionCode}
         </if>
         <if test="patrolStandard.subsystemCode !=null ">
-            and p.subsystem_code  = #{patrolStandard.subsystemCode}
+            AND patrol_standard.subsystem_code = #{patrolStandard.subsystemCode}
         </if>
-        order by p.create_time desc
+        <if test="patrolStandard.code !=null ">
+            AND patrol_standard.code  LIKE CONCAT ('%', #{patrolStandard.code}, '%')
+        </if>
+        <if test="patrolStandard.createBy !=null ">
+            AND f.realname LIKE CONCAT ('%', #{patrolStandard.createBy}, '%')
+        </if>
+        <if test="patrolStandard.selections != null and patrolStandard.selections.size() != 0">
+            AND patrol_standard.id in
+            <foreach collection="patrolStandard.selections" item="item" open="(" separator="," close=")">
+            #{item}
+            </foreach>
+        </if>
+        order by patrol_standard.create_time desc
     </select>
     <select id="querySysDict" resultType="org.jeecg.common.system.vo.DictModel">
          SELECT sd.dict_name as text,sd.dict_code as value
