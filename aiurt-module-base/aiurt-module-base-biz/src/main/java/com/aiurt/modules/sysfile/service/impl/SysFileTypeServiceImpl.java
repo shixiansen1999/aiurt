@@ -830,9 +830,12 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
 							if (loginUsers != null && loginUsers.size() > 0) {
 								Set<SimpUserVO> userList = new HashSet<>();
+								List<String> userIds = new ArrayList<>();
 								for (LoginUser sysUser : loginUsers) {
 									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+									userIds.add(sysUser.getId());
 								}
+								vo.setEditUsersCode(userIds);
 								vo.setPrimaryOnlineEditing(userList);
 							}
 						});

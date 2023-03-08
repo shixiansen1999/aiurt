@@ -27,6 +27,10 @@ public class SimpUserVO implements Serializable {
 	@ApiModelProperty(value = "上传标记")
 	private Integer uploadTag;
 
+
+	@ApiModelProperty(value = "人员key")
+	private String userKey;
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {

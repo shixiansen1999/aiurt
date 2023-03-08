@@ -47,7 +47,7 @@ public class CommonServiceImpl implements ICommonService {
      * @return
      */
     @Override
-    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId,String majorId) {
+    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId,String majorId,List<String> keys) {
         LambdaQueryWrapper<SysDepart> queryWrapper = new LambdaQueryWrapper<>();
         if (CollectionUtil.isNotEmpty(orgIds)) {
             queryWrapper.in(SysDepart::getId, orgIds);
@@ -84,7 +84,16 @@ public class CommonServiceImpl implements ICommonService {
             resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
         }
         dealUser(resultList, ignoreUserId,majorId);
-        return resultList;
+        List<SelectTable> tableList = screenTree(resultList, keys);
+
+        return tableList;
+//        return resultList;
+    }
+
+    @Override
+    public List<SelectTable> getTreeBySysUser(SysUser sysUser) {
+//        sysDepartService
+        return null;
     }
 
     @Override
@@ -172,5 +181,101 @@ public class CommonServiceImpl implements ICommonService {
             list.addAll(list.size(), tableList);
             child.setChildren(list);
         }
+    }
+
+    private List<SelectTable> screenTree(List<SelectTable> tableList,List<String> keys){
+        List<SelectTable> list = new ArrayList<>();
+        if (listIsNotEmpty(tableList)&&keys!=null){
+            for (SelectTable table:tableList){
+                List<SelectTable> tableChildren = table.getChildren();
+                //递归筛选完成后的返回的需要添加的数据
+                SelectTable fiterTree = getFiterTree(table,tableChildren,keys);
+                if (isNotEmpty(fiterTree)){
+                    list.add(fiterTree);
+                }
+            }
+        }else {
+            return tableList;
+        }
+        return list;
+    }
+
+    public static SelectTable getFiterTree(SelectTable table,List<SelectTable> tableChildren,List<String> keys){
+        //作为筛选条件的判断值
+        String key = table.getKey();
+        //有子集时继续向下寻找
+        if (listIsNotEmpty(tableChildren)){
+            List<SelectTable> addTable = new ArrayList<>();
+            for (SelectTable newTable:tableChildren){
+                List<SelectTable> children = newTable.getChildren();
+                SelectTable fiterTree = getFiterTree(newTable, children, keys);
+
+                //当子集筛选完不为空时添加
+                if (isNotEmpty(fiterTree)){
+                    addTable.add(fiterTree);
+                }
+            }
+            //子集满足条件筛选时集合不为空时，替换对象集合内容并返回当前对象
+            if (listIsNotEmpty(addTable)) {
+                table.setChildren(addTable);
+                return table;
+                //当前对象子集对象不满足条件时，判断当前对象自己是否满足筛选条件，满足设置子集集合为空，并返回当前对象
+            }else if (listIsEmpty(addTable)&& keys.contains(key)){
+                table.setChildren(null);
+                return table;
+            }else {
+                return null;
+            }
+        }else {
+            if (keys.contains(key)){
+                return table;
+            }else {
+                return null;
+            }
+        }
+
+    }
+
+    public static boolean listIsEmpty(Collection list){
+        return  (null == list || list.size() == 0);
+    }
+
+    /**
+     * 判断集合非空
+     * @param list 需要判断的集合
+     * @return 集合非空时返回 true
+     */
+    public static boolean listIsNotEmpty(Collection list){
+        return !listIsEmpty(list);
+    }
+
+    /**
+     * 判断对象为null或空时
+     * @param object 对象
+     * @return 对象为空或null时返回 true
+     */
+    public static boolean isEmpty(Object object) {
+        if (object == null) {
+            return (true);
+        }
+        if ("".equals(object)) {
+            return (true);
+        }
+        if ("null".equals(object)) {
+            return (true);
+        }
+        return (false);
+    }
+
+    /**
+     * 判断对象非空
+     * @param object 对象
+     * @return 对象为非空时返回 true
+     */
+    public static boolean isNotEmpty(Object object) {
+        if (object != null && !object.equals("") && !object.equals("null")) {
+            return (true);
+        }
+        return (false);
     }
 }
