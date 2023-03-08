@@ -14,6 +14,7 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartLend;
+import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import com.aiurt.modules.sparepart.service.ISparePartLendService;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.todo.dto.TodoDTO;
