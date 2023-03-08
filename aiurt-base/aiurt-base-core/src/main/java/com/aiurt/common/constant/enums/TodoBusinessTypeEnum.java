@@ -70,6 +70,10 @@ public enum TodoBusinessTypeEnum {
      */
     SPAREPART_LEND("sparepart_lend"),
     /**
+     *备件借出
+     */
+    SPAREPART_SCRAP("sparepart_scrap"),
+    /**
      *备件申领
      */
     SPAREPART_APPLY("sparepart_apply"),
