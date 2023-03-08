@@ -177,6 +177,20 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //作业类型
             e.setWorkTypeName(sysBaseApi.translateDict(DictConstant.WORK_TYPE, String.valueOf(e.getWorkType())));
 
+            //备注
+            e.setContent(e.getErrorContent());
+
+            //附件
+            List<String> enclosures = repairTaskEnclosureMapper.getByRepairTaskId(e.getId());
+            for (String enclosure:enclosures){
+                RepairTaskEnclosure repairTaskEnclosure = repairTaskEnclosureMapper.getByResultId(enclosure);
+                if (repairTaskEnclosure!=null){
+                    if (!repairTaskEnclosure.getUrl().isEmpty()){
+                        e.setPath(repairTaskEnclosure.getUrl());
+                    }
+                }
+            }
+
             if (e.getCode() != null) {
                 //根据检修任务code查询
                 List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(
@@ -1461,6 +1475,20 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         // 修改验收待办任务的状态
         isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.INSPECTION_RECEIPT.getType(), repairTask.getId(), loginUser.getUsername(), CommonTodoStatus.DONE_STATUS_1);
 
+        //添加附件
+        List<String> enclosures = repairTaskEnclosureMapper.getByRepairTaskId(examineDTO.getId());
+        for (String enclosure : enclosures){
+            RepairTaskEnclosure repairTaskEnclosure = repairTaskEnclosureMapper.getByResultId(enclosure);
+            RepairTaskEnclosure taskEnclosure = new RepairTaskEnclosure();
+            if (repairTaskEnclosure==null ){
+                taskEnclosure.setUrl(examineDTO.getPath());
+                taskEnclosure.setRepairTaskResultId(enclosure);
+                repairTaskEnclosureMapper.insert(taskEnclosure);
+            } else if(repairTaskEnclosure.getUrl().isEmpty()){
+                repairTaskEnclosure.setUrl(examineDTO.getPath());
+                repairTaskEnclosureMapper.updateById(repairTaskEnclosure);
+            }
+        }
         status(examineDTO, loginUser, realName, repairTask1, repairTask.getRepairPoolId());
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT)) {
             setId(examineDTO, repairTask1, loginUser, realName, repairTask.getRepairPoolId());

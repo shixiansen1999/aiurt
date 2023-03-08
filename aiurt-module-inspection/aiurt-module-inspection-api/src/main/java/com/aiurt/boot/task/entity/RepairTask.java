@@ -352,4 +352,13 @@ public class RepairTask implements Serializable {
     @TableField(exist = false)
     private List<String> codeList;
 
+    /**备注*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "备注")
+    private String content;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "附件")
+    private String path;
+
 }
