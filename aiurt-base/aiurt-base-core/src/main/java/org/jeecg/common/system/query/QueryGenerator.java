@@ -1120,7 +1120,7 @@ public class QueryGenerator {
 	 * @param name
 	 * @return
 	 */
-	private static String getTableFieldName(Class<?> clazz, String name) {
+	public static String getTableFieldName(Class<?> clazz, String name) {
 		try {
 			//如果字段加注解了@TableField(exist = false),不走DB查询
 			Field field = null;
