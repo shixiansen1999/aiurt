@@ -83,6 +83,10 @@ public enum SysAnnmentTypeEnum {
      *2级库出库
      */
     SPAREPART_STOCKLEVEL2SECONDARY("sparepart_stockLevel2Secondary","component","","物资出入库消息"),
+    /**
+     *备件借出
+     */
+    SPAREPART_SCRAP("sparepart_scrap","component","","物资出入库消息"),
 
     BDOPERATEPLANDECLARATIONFORM("planFromSearch", "component", "prodManage/weekAuditing",""),
 

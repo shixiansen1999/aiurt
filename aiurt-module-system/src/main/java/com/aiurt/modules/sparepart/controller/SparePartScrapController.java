@@ -11,7 +11,6 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
-import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartLend;
@@ -139,9 +138,9 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 			todoDTO.setPublishingContent("备件报废申请，请确认");
 			todoDTO.setCurrentUserName(userName);
 			todoDTO.setBusinessKey(sparePartScrap.getId());
-			todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_LEND.getType());
+			todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_SCRAP.getType());
 			todoDTO.setCurrentUserName(userName);
-			todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_LEND.getType());
+			todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_SCRAP.getType());
 			todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
 			todoDTO.setTemplateCode(CommonConstant.SPAREPARTSCRAP_SERVICE_NOTICE);
 

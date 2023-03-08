@@ -1,12 +1,13 @@
 package com.aiurt.modules.message.controller;
 
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.message.entity.MsgParams;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.message.service.ISysMessageTemplateService;
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -14,7 +15,9 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -22,7 +25,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
-import java.util.Map;
+import java.util.HashMap;
 
 /**
  * @Description: 消息模板
@@ -40,7 +43,8 @@ public class SysMessageTemplateController extends BaseController<SysMessageTempl
 
 	@Autowired
 	private ISysBaseAPI sysBaseApi;
-
+	@Autowired
+	private ISysParamAPI iSysParamAPI;
 	/**
 	 * 分页列表查询
 	 *
@@ -156,10 +160,18 @@ public class SysMessageTemplateController extends BaseController<SysMessageTempl
 			md.setToUser(msgParams.getReceiver());
 			md.setType(msgParams.getMsgType());
 			String testData = msgParams.getTestData();
-			if(StrUtil.isNotBlank(testData)){
+			/*if(StrUtil.isNotBlank(testData)){
 				Map<String, Object> data = JSON.parseObject(testData, Map.class);
 				md.setData(data);
-			}
+			}*/
+			HashMap<String, Object> map = new HashMap<>();
+			map.put("testtime", "2023-03-08");
+			map.put("testname", "123456789");
+			map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID,"1632926394282512386");
+			map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.INSPECTION.getType());
+			md.setData(map);
+			SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPECIAL_INFO_MESSAGE);
+			md.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
 			sysBaseApi.sendTemplateMessage(md);
 			return result.success("消息发送成功！");
 		} catch (Exception e) {
