@@ -749,7 +749,6 @@ public class LoginController {
 		}
 		String username = sysUser.getUsername();
 		String password = sysUser.getPassword();
-		System.out.println(username+":"+password);
 		// 生成token
 		String token = JwtUtil.sign(username, password);
 		// 设置token缓存有效时间
