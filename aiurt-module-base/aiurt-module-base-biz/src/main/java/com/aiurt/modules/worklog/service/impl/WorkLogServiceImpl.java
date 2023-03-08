@@ -22,6 +22,7 @@ import com.aiurt.common.util.ArchiveUtils;
 import com.aiurt.common.util.PdfUtil;
 import com.aiurt.common.util.RoleAdditionalUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.worklog.constans.WorkLogConstans;
@@ -386,6 +387,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     private IPage<WorkLogResult> getWorkLogResultIPage(IPage<WorkLogResult> page, WorkLogParam param) {
         IPage<WorkLogResult> result = depotMapper.queryWorkLog(page, param);
         List<WorkLogResult> records = result.getRecords();
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         //todo 待处理
        List<CsStation> stationList = iSysBaseAPI.queryAllStation();
        //todo 后期修改
@@ -589,6 +591,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 record.setContent("无");
             }
         }
+        GlobalThreadLocal.setDataFilter(b);
         return result;
     }
 
