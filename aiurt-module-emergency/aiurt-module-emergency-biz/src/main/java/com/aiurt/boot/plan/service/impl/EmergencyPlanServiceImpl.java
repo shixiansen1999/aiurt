@@ -598,7 +598,7 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
         planDto.setEmergencyTeamName(teamName);
         planDto.setEmergencyPlanDisposalProcedure(procedureList);
         planDto.setEmergencyPlanAtt(recordAttList);
-
+        planDto.setModelKey("emergency_plan");
 
         return planDto;
     }

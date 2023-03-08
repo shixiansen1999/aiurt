@@ -144,7 +144,7 @@ spring:
 #          url: jdbc:mysql://8.134.200.31:3306/aiurt-platform?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
 #          username: root
 #          password: Tomcat6626#
-          url: jdbc:mysql://192.168.1.29:3306/aiurt-platform-test?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+          url: jdbc:mysql://192.168.1.29:3306/aiurt-platform?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
           username: root
           password: 1qaz@2wsx
           driver-class-name: com.mysql.cj.jdbc.Driver

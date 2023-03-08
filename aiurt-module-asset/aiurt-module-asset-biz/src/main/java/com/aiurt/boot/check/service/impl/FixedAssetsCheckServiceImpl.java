@@ -359,6 +359,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
 
         checkVO.setCategorys(categorys);
         checkVO.setDepts(depts);
+        checkVO.setModelKey("fixed_assets_check");
         return checkVO;
     }
 
