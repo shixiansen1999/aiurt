@@ -31,7 +31,7 @@
     <select id="getLineStaionCode" resultType="java.lang.String">
         select t1.line_code
         from cs_station t1
-        where t1.station_code = #{sc}
+        where t1.del_flag = 0 and t1.station_code = #{sc}
     </select>
     <select id="getStationInfo" resultType="com.aiurt.boot.statistics.dto.IndexStationDTO">
         SELECT DISTINCT
