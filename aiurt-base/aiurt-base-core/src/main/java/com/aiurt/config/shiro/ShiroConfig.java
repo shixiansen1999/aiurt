@@ -164,7 +164,14 @@ public class ShiroConfig {
         Map<String, Filter> filterMap = new HashMap<String, Filter>(1);
         //如果cloudServer为空 则说明是单体 需要加载跨域配置【微服务跨域切换】
         Object cloudServer = env.getProperty(CommonConstant.CLOUD_SERVER_KEY);
-        filterMap.put("jwt", new JwtFilter(cloudServer==null));
+
+        // 设置大屏的url
+        Set<String> bigSet = new HashSet<>();
+        bigSet.add("/fault/faultInformation/getLargeFaultDataInfo");
+
+        JwtFilter jwtFilter = new JwtFilter(cloudServer == null);
+        jwtFilter.setBigScreenUrlSet(bigSet);
+        filterMap.put("jwt", jwtFilter);
         shiroFilterFactoryBean.setFilters(filterMap);
         // <!-- 过滤链定义，从上向下顺序执行，一般将/**放在最为下边
         filterChainDefinitionMap.put("/**", "jwt");
@@ -180,7 +187,6 @@ public class ShiroConfig {
     public DefaultWebSecurityManager securityManager(ShiroRealm myRealm) {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(myRealm);
-
         /*
          * 关闭shiro自带的session，详情见文档
          * http://shiro.apache.org/session-management.html#SessionManagement-
