@@ -42,6 +42,7 @@ import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author zc
@@ -50,7 +51,7 @@ public class PaginationExtInnerInterceptor extends PaginationInnerInterceptor {
 
 	@Override
 	public void beforeQuery(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
-		IPage<?> page = (IPage)ParameterUtils.findPage(parameter).orElse(null);
+		IPage<?> page = (IPage) ParameterUtils.findPage(parameter).orElse(null);
 		if (null != page) {
 			boolean addOrdered = false;
 			String buildSql = boundSql.getSql();
@@ -63,9 +64,9 @@ public class PaginationExtInnerInterceptor extends PaginationInnerInterceptor {
 			}
 
 			List<OrderItem> orderFileds = findOrderFiled(parameter);
-			if (CollectionUtils.isNotEmpty(orderFileds)){
+			if (CollectionUtils.isNotEmpty(orderFileds)) {
 				//用户排序字段不为空
-				buildSql = "select * from ( "+ buildSql + " ) page ";
+				buildSql = "select * from ( " + buildSql + " ) page ";
 				buildSql = this.concatOrderBy(buildSql, orderFileds);
 			}
 
@@ -75,7 +76,8 @@ public class PaginationExtInnerInterceptor extends PaginationInnerInterceptor {
 					PluginUtils.mpBoundSql(boundSql).sql(buildSql);
 				}
 
-			} else {
+			}
+			else {
 				this.handlerLimit(page, _limit);
 				IDialect dialect = this.findIDialect(executor);
 				Configuration configuration = ms.getConfiguration();
@@ -95,63 +97,86 @@ public class PaginationExtInnerInterceptor extends PaginationInnerInterceptor {
 	 * @param parameterObject 查询参数
 	 * @return
 	 */
-	private List<OrderItem> findOrderFiled(Object parameterObject){
-		if (parameterObject instanceof Map) {
-			List<OrderItem> orders = new ArrayList<>();
-			Map<?, ?> parameterMap = (Map)parameterObject;
+	private List<OrderItem> findOrderFiled(Object parameterObject) {
+		if (parameterObject != null) {
+			if (parameterObject instanceof Map) {
+				Map parameterMap = (Map) parameterObject;
+				return findOrderFiledBySql(parameterMap);
 
-			// page 排序, PageOrderGenerator initPage方式
-			Object page = null;
-			try {
-				page = parameterMap.getOrDefault("page", null);
-			} catch (Exception e) {
-				try {
-					page = parameterMap.getOrDefault("pageList", null);
-				} catch (Exception exception) {
-					// do nothing
-				}
+			} else if (parameterObject instanceof IPage) {
+				IPage page = (IPage)parameterObject;
+				return findOrderFieldByPage(page);
 			}
-			if (Objects.nonNull(page) && page instanceof Page) {
-				Page p = (Page) page;
-				List orderList = p.orders();
-				if (CollectionUtils.isNotEmpty(orderList)) {
-					p.setOrders(new ArrayList<>());
-					return orderList;
-				}
-			}
-
-			// 手写sql, 参数是condition方式
-			Object condition = null;
-			try {
-				condition = parameterMap.get("condition");
-			} catch (Exception e) {
-				// do nothing
-			}
-			if (Objects.isNull(condition)) {
-				return Collections.emptyList();
-			}
-			// 缓存sql
-			if (condition instanceof BaseEntity){
-				BaseEntity baseEntity = (BaseEntity) condition;
-				if (Objects.nonNull(baseEntity)&&Objects.nonNull(baseEntity.getColumn())){
-					String column = baseEntity.getColumn();
-					String order = baseEntity.getOrder();
-					if (StrUtil.isNotBlank(column) || StrUtil.isNotBlank(order)) {
-						// 字典翻译处理
-						if(column.endsWith(CommonConstant.DICT_TEXT_SUFFIX)) {
-							column = column.substring(0, column.lastIndexOf(CommonConstant.DICT_TEXT_SUFFIX));
-						}
-						OrderItem orderItem = new OrderItem();
-						orderItem.setColumn(StrUtil.toUnderlineCase(column));
-						orderItem.setAsc("desc".equalsIgnoreCase(order)?false:true);
-						orders.add(orderItem);
-					}
-
-				}
-			}
-			return orders;
 		}
 		return Collections.emptyList();
 	}
 
+	/**
+	 * initPage方式
+	 * @param page
+	 * @return
+	 */
+	@Nullable
+	private List<OrderItem> findOrderFieldByPage(IPage page) {
+		// page 排序, PageOrderGenerator initPage方式
+		List<OrderItem> orderItems = null;
+		if (Objects.nonNull(page)){
+			orderItems = page.orders();
+		}
+
+		return orderItems;
+	}
+
+	/**
+	 * 自定义sql方式
+	 * @param parameterMap
+	 * @return
+	 */
+	private List<OrderItem> findOrderFiledBySql(Map parameterMap) {
+		// 手写sql, 参数是condition方式
+		List<OrderItem> orders = new ArrayList<>();
+		Object condition = null;
+		try {
+			condition = parameterMap.get("condition");
+		}
+		catch (Exception e) {
+			// do nothing
+		}
+		if (Objects.isNull(condition)) {
+			return Collections.emptyList();
+		}
+		// 缓存sql
+		if (condition instanceof BaseEntity) {
+			BaseEntity baseEntity = (BaseEntity) condition;
+			if (Objects.nonNull(baseEntity) && Objects.nonNull(baseEntity.getColumn())) {
+				String column = baseEntity.getColumn();
+				String order = baseEntity.getOrder();
+
+				if (StrUtil.isNotBlank(column) || StrUtil.isNotBlank(order)) {
+					List<String> columnList = StrUtil.split(column, ',');
+					List<OrderItem> orderList = columnList.stream().map(v -> {
+						v = StrUtil.toUnderlineCase(v);//将字段的驼峰转换成下划线
+						// 字典翻译处理
+						if (v.endsWith(CommonConstant.DICT_TEXT_SUFFIX)) {
+							v = v.substring(0, v.lastIndexOf(CommonConstant.DICT_TEXT_SUFFIX));
+						}
+
+						OrderItem item = new OrderItem();
+						item.setColumn(v);
+						if (StrUtil.indexOfIgnoreCase(order, PageOrderGenerator.ORDER_TYPE_ASC) >= 0) {
+							item.setAsc(true);
+						}
+						else {
+							item.setAsc(false);
+						}
+						return item;
+					}).collect(Collectors.toList());
+
+					orders.addAll(orderList);
+
+				}
+			}
+		}
+		return orders;
+	}
 }

@@ -87,7 +87,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @return
      */
     @AutoLog(value = "查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = PERMISSION_URL)
-    @ApiOperation(value = "分页列表查询", notes = "fault-分页列表查询")
+    @ApiOperation(value = "fault-分页列表查询", notes = "fault-分页列表查询")
     @GetMapping(value = "/list")
     @PermissionData(pageComponent = "fault/FaultList", appComponent="Breakdown/BreakdownList")
     public Result<IPage<Fault>> queryPageList(Fault fault,
