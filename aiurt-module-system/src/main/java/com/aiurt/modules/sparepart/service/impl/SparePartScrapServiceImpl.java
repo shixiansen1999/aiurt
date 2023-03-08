@@ -98,7 +98,7 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
                 //构建消息模板
                 HashMap<String, Object> map = new HashMap<>();
                 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, scrap.getId());
-                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_LEND.getType());
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_SCRAP.getType());
                 map.put("materialCode",scrap.getMaterialCode());
                 String materialName= sysBaseApi.getMaterialNameByCode(scrap.getMaterialCode());
                 map.put("name",materialName);

@@ -373,7 +373,7 @@ support:
   #档案类型Id
   archivesTypeId: 3d74878a-5c31-43b4-a024-188e0a3be725
   #企业微信跳转域名
-  messageUrl: http://aiurt.svstrong.com:12680
+  messageUrl: https://192.168.1.29:3004/#
 swsc:
   host: http://116.62.143.85/#/
 
