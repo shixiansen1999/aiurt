@@ -1,22 +1,26 @@
 package com.aiurt.modules.sparepart.controller;
 
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
-import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
-import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
-import com.aiurt.modules.sparepart.entity.SparePartLend;
 import com.aiurt.modules.sparepart.entity.SparePartScrap;
 import com.aiurt.modules.sparepart.service.ISparePartScrapService;
 import com.aiurt.modules.todo.dto.TodoDTO;
+import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.service.ISysDepartService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -64,6 +68,10 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	 private ISysBaseAPI sysBaseApi;
 	 @Autowired
 	 private ISTodoBaseAPI isTodoBaseAPI;
+
+	@Autowired
+	private ISysDepartService sysDepartService;
+
 	/**
 	 * 分页列表查询
 	 *
@@ -150,6 +158,38 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 		}
 
 		return Result.OK("添加成功！");
+	}
+
+
+	 /**
+	  * 查询出所有的存放位置，生成存放位置规则：组织机构名称+材料库
+	  * @param id
+	  * @return
+	  */
+	@AutoLog(value = "查询存放位置", operateType = 1, operateTypeAlias = "添加备件报废-查询存放位置", permissionUrl = "/sparepart/sparePartScrap/list")
+	@ApiOperation(value = "spare_part_scrap-查询存放位置", notes = "spare_part_scrap-查询存放位置")
+	@GetMapping(value = "/queryAllLocation")
+	public Result<List<String>> queryAllLocation(@RequestParam(name = "id", required = false) String id) {
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		Result<List<String>> result = new Result<>();
+		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
+		query.orderByAsc(SysDepart::getOrgCode);
+		if(oConvertUtils.isNotEmpty(id)){
+			String[] arr = id.split(",");
+			query.in(SysDepart::getId,arr);
+		}
+		List<SysDepart> ls = this.sysDepartService.list(query);
+		String temp = "材料库";
+		String local = user.getOrgName() + temp;
+		List<String> collect = ls.stream().filter(t -> StrUtil.isNotBlank(t.getDepartName())).map(t -> t.getDepartName() + temp)
+				.filter(t -> !StrUtil.equals(t, local))
+				.collect(Collectors.toList());
+		// 将登录用户所属组织机构材料库默认放在第一个索引位置
+		collect.remove(local);
+		collect.add(0,local);
+		result.setSuccess(true);
+		result.setResult(collect);
+		return result;
 	}
 
 	/**
