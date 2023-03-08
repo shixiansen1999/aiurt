@@ -133,8 +133,30 @@ public class PaginationExtInnerInterceptor extends PaginationInnerInterceptor {
 	 * @return
 	 */
 	private List<OrderItem> findOrderFiledBySql(Map parameterMap) {
-		// 手写sql, 参数是condition方式
+
 		List<OrderItem> orders = new ArrayList<>();
+		// page 排序
+		Object page = null;
+		try {
+			page = parameterMap.getOrDefault("page", null);
+		} catch (Exception e) {
+			try {
+				page = parameterMap.getOrDefault("pageList", null);
+			} catch (Exception exception) {
+				// do nothing
+			}
+		}
+		if (Objects.nonNull(page) && page instanceof Page) {
+			Page p = (Page) page;
+			List orderList = p.orders();
+			if (CollectionUtils.isNotEmpty(orderList)) {
+				p.setOrders(new ArrayList<>());
+				orders.addAll(orderList);
+			}
+		}
+
+		// 手写sql, 参数是condition方式
+
 		Object condition = null;
 		try {
 			condition = parameterMap.get("condition");
@@ -143,7 +165,7 @@ public class PaginationExtInnerInterceptor extends PaginationInnerInterceptor {
 			// do nothing
 		}
 		if (Objects.isNull(condition)) {
-			return Collections.emptyList();
+			return orders;
 		}
 		// 缓存sql
 		if (condition instanceof BaseEntity) {
@@ -151,29 +173,33 @@ public class PaginationExtInnerInterceptor extends PaginationInnerInterceptor {
 			if (Objects.nonNull(baseEntity) && Objects.nonNull(baseEntity.getColumn())) {
 				String column = baseEntity.getColumn();
 				String order = baseEntity.getOrder();
-
+				List<OrderItem> orderItemList = new ArrayList<>();
 				if (StrUtil.isNotBlank(column) || StrUtil.isNotBlank(order)) {
 					List<String> columnList = StrUtil.split(column, ',');
-					List<OrderItem> orderList = columnList.stream().map(v -> {
-						v = StrUtil.toUnderlineCase(v);//将字段的驼峰转换成下划线
-						// 字典翻译处理
-						if (v.endsWith(CommonConstant.DICT_TEXT_SUFFIX)) {
-							v = v.substring(0, v.lastIndexOf(CommonConstant.DICT_TEXT_SUFFIX));
-						}
+					List<String> orderList = StrUtil.split(order, ',');
+					// 多字段排序，column 以及order 大小必须相等， 一一对应
+					if (CollectionUtils.isNotEmpty(columnList) && CollectionUtils.isNotEmpty(orderList)
+							&& (orderList.size() == columnList.size())) {
+						for (int i = 0; i < columnList.size(); i++) {
+							String v = columnList.get(i);
+							// 字典翻译处理
+							if (v.endsWith(CommonConstant.DICT_TEXT_SUFFIX)) {
+								v = v.substring(0, v.lastIndexOf(CommonConstant.DICT_TEXT_SUFFIX));
+							}
+							//将字段的驼峰转换成下划线
+							v = StrUtil.toUnderlineCase(v);
 
-						OrderItem item = new OrderItem();
-						item.setColumn(v);
-						if (StrUtil.indexOfIgnoreCase(order, PageOrderGenerator.ORDER_TYPE_ASC) >= 0) {
-							item.setAsc(true);
+							OrderItem item = new OrderItem();
+							item.setColumn(v);
+							if (StrUtil.indexOfIgnoreCase(orderList.get(i), PageOrderGenerator.ORDER_TYPE_ASC) >= 0) {
+								item.setAsc(true);
+							} else {
+								item.setAsc(false);
+							}
+							orderItemList.add(item);
 						}
-						else {
-							item.setAsc(false);
-						}
-						return item;
-					}).collect(Collectors.toList());
-
-					orders.addAll(orderList);
-
+						orders.addAll(orderItemList);
+					}
 				}
 			}
 		}
