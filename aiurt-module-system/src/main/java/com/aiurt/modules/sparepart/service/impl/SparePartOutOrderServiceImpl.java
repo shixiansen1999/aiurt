@@ -59,6 +59,16 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     public List<SparePartOutOrder> selectList(Page page, SparePartOutOrder sparePartOutOrder){
         return sparePartOutOrderMapper.readAll(page,sparePartOutOrder);
     }
+
+    /**
+     * 查询列表
+     * @param sparePartOutOrder
+     * @return
+     */
+    @Override
+    public List<SparePartOutOrder> selectListById( SparePartOutOrder sparePartOutOrder){
+        return sparePartOutOrderMapper.readAll(sparePartOutOrder);
+    }
     /**
      * 查询已出库的物资编号
      * @param page

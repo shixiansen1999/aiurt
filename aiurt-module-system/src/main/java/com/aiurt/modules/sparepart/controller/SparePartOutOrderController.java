@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.RoleConstant;
@@ -244,6 +245,14 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
    @GetMapping(value = "/queryById")
    public Result<SparePartOutOrder> queryById(@RequestParam(name="id",required=true) String id) {
        SparePartOutOrder sparePartOutOrder = sparePartOutOrderService.getById(id);
+
+       List<SparePartOutOrder> list = sparePartOutOrderService.selectListById(sparePartOutOrder);
+       list = list.stream().filter(sparePartOutOrder1 -> sparePartOutOrder1.getId().equals(id)).distinct().collect(Collectors.toList());
+       if(CollUtil.isNotEmpty(list)){
+           for (SparePartOutOrder partOutOrder : list) {
+               sparePartOutOrder = partOutOrder;
+           }
+       }
        if(sparePartOutOrder==null) {
            return Result.error("未找到对应数据");
        }

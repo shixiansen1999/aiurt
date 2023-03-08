@@ -11,6 +11,7 @@ import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -204,6 +205,20 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	@GetMapping(value = "/queryById")
 	public Result<SparePartApply> queryById(@RequestParam(name="id",required=true) String id) {
 		SparePartApply sparePartApply = sparePartApplyService.getById(id);
+
+		List<SparePartApply> list = sparePartApplyService.selectListById(sparePartApply);
+		List<SparePartApplyMaterial> applyMaterials = sparePartApplyMaterialService.selectList();
+		list.forEach(apply ->{
+			List<SparePartApplyMaterial> materials = applyMaterials.stream().filter(meterials -> meterials.getApplyId().equals(apply.getId()) ).collect(Collectors.toList());
+
+			apply.setStockLevel2List(materials);
+		});
+		list = list.stream().filter(sparePartApply1 -> sparePartApply1.getId().equals(id)).distinct().collect(Collectors.toList());
+		if(CollUtil.isNotEmpty(list)){
+			for (SparePartApply partApply : list) {
+				sparePartApply = partApply;
+			}
+		}
 		if(sparePartApply==null) {
 			return Result.error("未找到对应数据");
 		}

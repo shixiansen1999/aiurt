@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.RoleConstant;
@@ -14,6 +15,7 @@ import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartLend;
+import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import com.aiurt.modules.sparepart.service.ISparePartLendService;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.todo.dto.TodoDTO;
@@ -248,6 +250,13 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	@GetMapping(value = "/queryById")
 	public Result<SparePartLend> queryById(@RequestParam(name="id",required=true) String id) {
 		SparePartLend sparePartLend = sparePartLendService.getById(id);
+		List<SparePartLend> list = sparePartLendService.selectListById(sparePartLend);
+		list = list.stream().filter(sparePartLend1 -> sparePartLend1.getId().equals(id)).distinct().collect(Collectors.toList());
+		if(CollUtil.isNotEmpty(list)){
+			for (SparePartLend partLend : list) {
+				sparePartLend = partLend;
+			}
+		}
 		if(sparePartLend==null) {
 			return Result.error("未找到对应数据");
 		}

@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.RoleConstant;
@@ -13,6 +14,7 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
@@ -256,6 +258,13 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	@GetMapping(value = "/queryById")
 	public Result<SparePartReturnOrder> queryById(@RequestParam(name="id",required=true) String id) {
 		SparePartReturnOrder sparePartReturnOrder = sparePartReturnOrderService.getById(id);
+		List<SparePartReturnOrder> list = sparePartReturnOrderService.selectListById(sparePartReturnOrder);
+		list = list.stream().filter(sparePartReturnOrder1 -> sparePartReturnOrder1.getId().equals(id)).distinct().collect(Collectors.toList());
+		if(CollUtil.isNotEmpty(list)){
+			for (SparePartReturnOrder partReturnOrder : list) {
+				sparePartReturnOrder = partReturnOrder;
+			}
+		}
 		if(sparePartReturnOrder==null) {
 			return Result.error("未找到对应数据");
 		}

@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.RoleConstant;
@@ -13,6 +14,7 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.sparepart.entity.SparePartLend;
 import com.aiurt.modules.sparepart.entity.SparePartScrap;
 import com.aiurt.modules.sparepart.service.ISparePartScrapService;
 import com.aiurt.modules.todo.dto.TodoDTO;
@@ -195,6 +197,13 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	@GetMapping(value = "/queryById")
 	public Result<SparePartScrap> queryById(@RequestParam(name="id",required=true) String id) {
 		SparePartScrap sparePartScrap = sparePartScrapService.getById(id);
+		List<SparePartScrap> list = sparePartScrapService.selectListById(sparePartScrap);
+		list = list.stream().filter(sparePartScrap1 -> sparePartScrap1.getId().equals(id)).distinct().collect(Collectors.toList());
+		if(CollUtil.isNotEmpty(list)){
+			for (SparePartScrap partScrap : list) {
+				sparePartScrap = partScrap;
+			}
+		}
 		if(sparePartScrap==null) {
 			return Result.error("未找到对应数据");
 		}

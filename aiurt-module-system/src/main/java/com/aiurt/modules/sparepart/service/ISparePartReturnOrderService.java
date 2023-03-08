@@ -23,6 +23,13 @@ public interface ISparePartReturnOrderService extends IService<SparePartReturnOr
      * @return
      */
     List<SparePartReturnOrder> selectList(Page page, SparePartReturnOrder sparePartReturnOrder);
+
+    /**
+     * 查询列表不分页
+     * @param sparePartReturnOrder
+     * @return
+     */
+    List<SparePartReturnOrder> selectListById( SparePartReturnOrder sparePartReturnOrder);
     /**
      * 编辑
      *
