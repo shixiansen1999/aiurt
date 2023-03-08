@@ -183,10 +183,12 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //附件
             List<String> enclosures = repairTaskEnclosureMapper.getByRepairTaskId(e.getId());
             for (String enclosure:enclosures){
-                RepairTaskEnclosure repairTaskEnclosure = repairTaskEnclosureMapper.getByResultId(enclosure);
+                List<RepairTaskEnclosure> repairTaskEnclosure = repairTaskEnclosureMapper.getByResultId(enclosure);
                 if (repairTaskEnclosure!=null){
-                    if (!repairTaskEnclosure.getUrl().isEmpty()){
-                        e.setPath(repairTaskEnclosure.getUrl());
+                    for (RepairTaskEnclosure list: repairTaskEnclosure){
+                        if (list.getUrl().isEmpty()){
+                            e.setPath(list.getUrl());
+                        }
                     }
                 }
             }
@@ -1478,15 +1480,19 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         //添加附件
         List<String> enclosures = repairTaskEnclosureMapper.getByRepairTaskId(examineDTO.getId());
         for (String enclosure : enclosures){
-            RepairTaskEnclosure repairTaskEnclosure = repairTaskEnclosureMapper.getByResultId(enclosure);
+            List<RepairTaskEnclosure> repairTaskEnclosure = repairTaskEnclosureMapper.getByResultId(enclosure);
             RepairTaskEnclosure taskEnclosure = new RepairTaskEnclosure();
             if (repairTaskEnclosure==null ){
                 taskEnclosure.setUrl(examineDTO.getPath());
                 taskEnclosure.setRepairTaskResultId(enclosure);
                 repairTaskEnclosureMapper.insert(taskEnclosure);
-            } else if(repairTaskEnclosure.getUrl().isEmpty()){
-                repairTaskEnclosure.setUrl(examineDTO.getPath());
-                repairTaskEnclosureMapper.updateById(repairTaskEnclosure);
+            } else {
+                for (RepairTaskEnclosure list:repairTaskEnclosure){
+                    if(list.getUrl().isEmpty()){
+                        list.setUrl(examineDTO.getPath());
+                        repairTaskEnclosureMapper.updateById(list);
+                    }
+                }
             }
         }
         status(examineDTO, loginUser, realName, repairTask1, repairTask.getRepairPoolId());
