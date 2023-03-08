@@ -200,7 +200,7 @@ public class StockLevel2CheckController {
             todoDTO.setCurrentUserName(stockLevel2Check.getCheckerId());
             todoDTO.setBusinessKey(stockLevel2Check.getId());
             todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_STOCKLEVEL2CHECK.getType());
-            todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
+            todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_STOCKLEVEL2CHECK.getType());
             todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
             todoDTO.setTemplateCode(CommonConstant.STOCKLEVEL2CHECK_SERVICE_NOTICE);
 

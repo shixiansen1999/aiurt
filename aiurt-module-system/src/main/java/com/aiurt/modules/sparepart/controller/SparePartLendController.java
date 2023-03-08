@@ -200,7 +200,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 			 todoDTO.setBusinessKey(sparePartLend.getId());
 			 todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_LEND_RETURN.getType());
 			 todoDTO.setCurrentUserName(userName);
-			 todoDTO.setTaskType(TodoTaskTypeEnum.SPARE_PART.getType());
+			 todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_LEND_RETURN.getType());
 			 todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
 			 todoDTO.setTemplateCode(CommonConstant.SPAREPARTBACK_SERVICE_NOTICE);
 
