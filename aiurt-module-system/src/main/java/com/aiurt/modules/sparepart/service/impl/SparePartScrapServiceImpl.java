@@ -61,6 +61,15 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
         return sparePartScrapMapper.readAll(page,sparePartScrap);
     }
     /**
+     * 查询列表不分页
+     * @param sparePartScrap
+     * @return
+     */
+    @Override
+    public List<SparePartScrap> selectListById( SparePartScrap sparePartScrap){
+        return sparePartScrapMapper.readAll(sparePartScrap);
+    }
+    /**
      * 修改
      *
      * @param sparePartScrap

@@ -25,4 +25,11 @@ public interface SparePartReturnOrderMapper extends BaseMapper<SparePartReturnOr
      * @return
      */
     List<SparePartReturnOrder> readAll(Page page, @Param("order") SparePartReturnOrder sparePartReturnOrder);
+
+    /**
+     * 查询所有数据不分页
+     * @param sparePartReturnOrder
+     * @return
+     */
+    List<SparePartReturnOrder> readAll(@Param("order") SparePartReturnOrder sparePartReturnOrder);
 }

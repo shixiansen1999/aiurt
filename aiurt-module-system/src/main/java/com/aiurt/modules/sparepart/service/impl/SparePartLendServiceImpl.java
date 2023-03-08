@@ -83,6 +83,15 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         return sparePartLendMapper.readAll(page,sparePartLend);
     }
     /**
+     * 查询列表
+     * @param sparePartLend
+     * @return
+     */
+    @Override
+    public List<SparePartLend> selectListById( SparePartLend sparePartLend){
+        return sparePartLendMapper.readAll(sparePartLend);
+    }
+    /**
      * 添加
      *
      * @param sparePartLend

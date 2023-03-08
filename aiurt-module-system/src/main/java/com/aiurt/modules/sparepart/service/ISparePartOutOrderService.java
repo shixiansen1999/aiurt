@@ -22,6 +22,13 @@ public interface ISparePartOutOrderService extends IService<SparePartOutOrder> {
      * @return
      */
     List<SparePartOutOrder> selectList(Page page, SparePartOutOrder sparePartOutOrder);
+
+    /**
+     * 查询列表不分页
+     * @param sparePartOutOrder
+     * @return
+     */
+    List<SparePartOutOrder> selectListById(SparePartOutOrder sparePartOutOrder);
     /**
      * 查询已出库的物资编号
      * @param page

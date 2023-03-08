@@ -27,4 +27,10 @@ public interface SparePartLendMapper extends BaseMapper<SparePartLend> {
      * @return
      */
     List<SparePartLend> readAll(Page page, @Param("lend") SparePartLend sparePartLend);
+    /**
+     * 读取所有
+     * @param sparePartLend
+     * @return
+     */
+    List<SparePartLend> readAll(@Param("lend") SparePartLend sparePartLend);
 }

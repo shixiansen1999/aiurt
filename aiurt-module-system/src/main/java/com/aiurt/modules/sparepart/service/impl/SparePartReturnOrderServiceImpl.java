@@ -62,6 +62,22 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         }
         return list;
     }
+
+    /**
+     * 查询列表不分页
+     * @param sparePartReturnOrder
+     * @return
+     */
+    @Override
+    public List<SparePartReturnOrder> selectListById(SparePartReturnOrder sparePartReturnOrder){
+        List<SparePartReturnOrder> sparePartReturnOrders = sparePartReturnOrderMapper.readAll(sparePartReturnOrder);
+        List<SparePartReturnOrder> list = new ArrayList<>();
+        if (CollUtil.isNotEmpty(sparePartReturnOrders)){
+            List<SparePartReturnOrder> collect = sparePartReturnOrders.stream().distinct().collect(Collectors.toList());
+            list.addAll(collect);
+        }
+        return list;
+    }
     /**
      * 修改
      *

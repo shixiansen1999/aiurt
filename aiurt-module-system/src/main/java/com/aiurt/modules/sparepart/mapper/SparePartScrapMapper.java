@@ -26,4 +26,10 @@ public interface SparePartScrapMapper extends BaseMapper<SparePartScrap> {
      * @return
      */
     List<SparePartScrap> readAll(Page page, @Param("scrap") SparePartScrap sparePartScrap);
+    /**
+     * 查询所有数据不分页
+     * @param sparePartScrap
+     * @return
+     */
+    List<SparePartScrap> readAll(@Param("scrap") SparePartScrap sparePartScrap);
 }

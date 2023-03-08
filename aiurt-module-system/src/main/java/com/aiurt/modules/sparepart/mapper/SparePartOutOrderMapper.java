@@ -29,6 +29,13 @@ public interface SparePartOutOrderMapper extends BaseMapper<SparePartOutOrder> {
     List<SparePartOutOrder> readAll(Page page, @Param("out") SparePartOutOrder sparePartOutOrder);
 
     /**
+     * 查询数据详情
+     * @param sparePartOutOrder
+     * @return
+     */
+    List<SparePartOutOrder> readAll( @Param("out") SparePartOutOrder sparePartOutOrder);
+
+    /**
      * 查询已出库的物资编号
      * @param page
      * @param sparePartOutOrder

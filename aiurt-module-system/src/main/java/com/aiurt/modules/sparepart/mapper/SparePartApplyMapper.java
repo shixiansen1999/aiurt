@@ -34,6 +34,13 @@ public interface SparePartApplyMapper extends BaseMapper<SparePartApply> {
     List<SparePartApply> readAll(Page page,@Param("sparePartApply")  SparePartApply sparePartApply);
 
     /**
+     * 读取所有
+     * @param sparePartApply
+     * @return
+     */
+    List<SparePartApply> readAll(@Param("sparePartApply")  SparePartApply sparePartApply);
+
+    /**
      * 根据仓库编号获取仓库组织机构code
      * @param applyWarehouseCode
      * @return

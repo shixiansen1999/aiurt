@@ -88,6 +88,16 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     public List<SparePartApply> selectList(Page page, SparePartApply sparePartApply){
         return sparePartApplyMapper.readAll(page,sparePartApply);
     }
+
+    /**
+     * 不分页列表查询
+     * @param sparePartApply
+     * @return
+     */
+    @Override
+    public List<SparePartApply> selectListById(SparePartApply sparePartApply){
+        return sparePartApplyMapper.readAll(sparePartApply);
+    }
     /**
      * 添加
      *

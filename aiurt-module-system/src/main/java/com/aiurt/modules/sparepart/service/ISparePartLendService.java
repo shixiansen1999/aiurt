@@ -24,6 +24,12 @@ public interface ISparePartLendService extends IService<SparePartLend> {
      */
     List<SparePartLend> selectList(Page page, SparePartLend sparePartLend);
     /**
+     * 查询列表不分页
+     * @param sparePartLend
+     * @return
+     */
+    List<SparePartLend> selectListById(SparePartLend sparePartLend);
+    /**
      * 添加
      *
      * @param sparePartLend
