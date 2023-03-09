@@ -88,7 +88,7 @@ public class SysPermissionController {
     @ApiOperation(value = "加载所有菜单数据节点", notes = "加载所有菜单数据节点")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public Result<List<SysPermissionTree>> list(@RequestParam(name = "isApp", required = false, defaultValue = "0") Integer isApp,
-                                                @RequestParam(name = "name", required = false, defaultValue = "0") String name) {
+                                                @RequestParam(name = "name", required = false) String name) {
         long start = System.currentTimeMillis();
         Result<List<SysPermissionTree>> result = new Result<>();
         try {
