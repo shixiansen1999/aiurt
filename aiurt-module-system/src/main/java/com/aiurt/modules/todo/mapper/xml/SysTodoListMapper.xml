@@ -37,9 +37,9 @@
 
     </select>
 
-    <select id="queryBpmnLast" resultType="com.aiurt.modules.todo.entity.SysTodoList" parameterType="java.util.List">
+    <select id="queryBpmnLast" resultType="com.aiurt.modules.todo.entity.SysTodoList" >
         select * from sys_todo_list
-        where 1=1
+        where 1=1 and  FIND_IN_SET( #{userName}, current_user_name )
         <if test="list != null and list.size() != 0">
             and ( process_code in
             <foreach collection="list" item="item" close=")" open="(" separator=",">
@@ -51,6 +51,6 @@
             #{item}
         </foreach>
         )
-        limit 1
+        ORDER BY update_time desc, create_time DESC limit 1
     </select>
 </mapper>

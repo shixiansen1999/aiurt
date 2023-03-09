@@ -251,5 +251,72 @@
 		order by stl.create_time desc
 	</select>
 
+	<select id="queryTypeCount" resultType="com.aiurt.modules.system.dto.SysAnnouncementTypeCountDTO">
+		SELECT
+				t2.bus_type,
+				t2.titile,
+				COUNT(t1.id) as count,
+				COUNT(IF(t1.read_flag='0',1,NULL)) as unread_count
+		FROM
+				sys_announcement_send t1
+						LEFT JOIN sys_announcement t2 ON t1.annt_id = t2.id
+		WHERE
+				t2.titile IS NOT NULL
+		  and t2.bus_type != 'bpm' and t2.bus_type is not NULL and t1.user_id = #{userId}
+		GROUP BY  t2.bus_type
 
+		UNION
+
+		SELECT
+				t2.process_code bus_type,
+				t2.titile,
+				COUNT(t1.id) as count,
+				COUNT(IF(t1.read_flag='0',1,NULL)) as unread_count
+		FROM
+				sys_announcement_send t1
+						LEFT JOIN sys_announcement t2 ON t1.annt_id = t2.id
+		WHERE
+				t2.titile IS NOT NULL
+		  and t2.bus_type = 'bpm' and t2.process_code is not NULL and t1.user_id = #{userId}
+		GROUP BY  t2.process_code
+
+	</select>
+
+	<select id="queryLast" resultType="com.aiurt.modules.system.entity.SysAnnouncementSend">
+		select * from sys_announcement_send where user_id = #{userId}
+		<if test="list != null and list.size() != 0">
+			and annt_id in (
+				select id from sys_announcement where 1=1
+				and (bus_type in
+					<foreach collection="list" separator="," open="(" close=")" item="item">
+						#{item}
+					</foreach>
+					or
+					process_code in
+					<foreach collection="list" separator="," open="(" close=")" item="item">
+						#{item}
+					</foreach>
+				)
+			)
+		</if>
+		<if test="msgCategory != null and msgCategory != ''">
+			and annt_id in (select id from sys_announcement where msg_category = #{msgCategory} )
+		</if>
+		order by update_time desc, create_time desc limit 1
+	</select>
+
+	<select id="queryBNullTypeCount" resultType="com.aiurt.modules.system.dto.SysAnnouncementTypeCountDTO">
+		SELECT
+				t2.msg_category bus_type,
+				t2.titile,
+				COUNT(t1.id) as count,
+				COUNT(IF(t1.read_flag='0',1,NULL)) as unread_count
+		FROM
+				sys_announcement_send t1
+						LEFT JOIN sys_announcement t2 ON t1.annt_id = t2.id
+		WHERE
+				t2.titile IS NOT NULL
+		  and t2.bus_type is null  and t1.user_id =  #{userId}
+	  GROUP BY  t2.msg_category
+	</select>
 </mapper>
