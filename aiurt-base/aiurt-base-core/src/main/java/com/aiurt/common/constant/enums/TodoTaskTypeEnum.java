@@ -1,5 +1,6 @@
 package com.aiurt.common.constant.enums;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.util.oConvertUtils;
 
 /**
@@ -43,7 +44,7 @@ public enum TodoTaskTypeEnum {
     /**
      * 工作票
      */
-    BD_WORK_TITCK("bd_work_titck","","工作票流程");
+    BD_WORK_TITCK("bd_work_ti","","工作票流程");
 
 
 
@@ -102,6 +103,18 @@ public enum TodoTaskTypeEnum {
         for (TodoTaskTypeEnum val : values()) {
             if (val.getType().equals(type)) {
                 return val;
+            }
+        }
+        return null;
+    }
+
+    public static TodoTaskTypeEnum getByTypeV2(String type) {
+        if (oConvertUtils.isEmpty(type)) {
+            return null;
+        }
+        for (TodoTaskTypeEnum flowConditionTypeEnum : TodoTaskTypeEnum.values()) {
+            if (StrUtil.contains(type, flowConditionTypeEnum.getType())) {
+                return flowConditionTypeEnum;
             }
         }
         return null;

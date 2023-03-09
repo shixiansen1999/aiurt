@@ -2,4 +2,55 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.todo.mapper.SysTodoListMapper">
 
+    <select id="queryBpmn" resultType="com.aiurt.modules.todo.dto.SysTodoCountDTO">
+        SELECT
+            COUNT( id ) count,
+            COUNT(if(todo_type='0',1,null)) as undo_count,
+            task_type,
+            process_code,
+            process_name,
+            business_type
+        FROM
+                sys_todo_list
+        WHERE
+                FIND_IN_SET( #{userName}, current_user_name )
+          AND task_type = 'bpmn'
+          AND process_code IS NOT NULL
+        GROUP BY
+                task_type,
+                process_code
+        UNION
+        SELECT
+            COUNT( id ) count,
+            COUNT(IF( todo_type = '0', 1, NULL )) AS undo_count,
+            task_type,
+            task_type AS process_code,
+             NULL,
+             business_type
+        FROM
+             sys_todo_list
+        WHERE
+            FIND_IN_SET( #{userName}, current_user_name )
+        AND task_type != 'bpmn'
+        AND title IS NOT NULL
+        GROUP BY task_type
+
+    </select>
+
+    <select id="queryBpmnLast" resultType="com.aiurt.modules.todo.entity.SysTodoList" parameterType="java.util.List">
+        select * from sys_todo_list
+        where 1=1
+        <if test="list != null and list.size() != 0">
+            and ( process_code in
+            <foreach collection="list" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+        </if>
+            or task_type in
+        <foreach collection="list" item="item" close=")" open="(" separator=",">
+            #{item}
+        </foreach>
+        )
+        limit 1
+    </select>
 </mapper>

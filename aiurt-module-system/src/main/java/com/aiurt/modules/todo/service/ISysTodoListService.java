@@ -1,10 +1,12 @@
 package com.aiurt.modules.todo.service;
 
+import com.aiurt.modules.todo.dto.SysTodoCountDTO;
 import com.aiurt.modules.todo.dto.TaskModuleDTO;
 import com.aiurt.modules.todo.entity.SysTodoList;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -31,4 +33,21 @@ public interface ISysTodoListService extends IService<SysTodoList> {
      * @return
      */
     List<TaskModuleDTO> queryTaskModuleList(SysTodoList sysTodoList);
+
+    /**
+     * 查询流程的代办统计
+     * @param userName
+     * @return
+     */
+    List<SysTodoCountDTO> queryBpmn(String userName);
+
+    /**
+     *
+     * @param list
+     * @return
+     */
+    SysTodoList queryBpmnLast(List<String> list);
+
+
+
 }

@@ -20,8 +20,10 @@ import com.aiurt.modules.system.entity.SysAnnouncementSend;
 import com.aiurt.modules.system.mapper.SysAnnouncementMapper;
 import com.aiurt.modules.system.mapper.SysAnnouncementSendMapper;
 import com.aiurt.modules.system.service.ISysAnnouncementService;
+import com.aiurt.modules.todo.dto.SysTodoCountDTO;
 import com.aiurt.modules.todo.entity.SysTodoList;
 import com.aiurt.modules.todo.mapper.SysTodoListMapper;
+import com.aiurt.modules.todo.service.ISysTodoListService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -59,7 +61,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 	private SysTodoListMapper sysTodoListMapper;
 
 	@Resource
-	private SysParamMapper sysParamMapper;
+	private ISysTodoListService sysTodoListService;
 
 	@Resource
 	private ISysParamAPI sysParamAPI;
@@ -173,14 +175,12 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String userId = loginUser.getId();
 		String username = loginUser.getUsername();
-		//获取当前登录人所有业务消息
+		/*//获取当前登录人所有业务消息
 		List<SysAnnouncementSendDTO> sysAnnouncementSendDTOS = sysAnnouncementMapper.queryAnnouncement(userId);
 		//获取当前登录人待办消息(业务消息)消息类型为null
 		List<SysAnnouncementSendDTO> sysAnnouncementSendList = sysAnnouncementMapper.queryAnnouncementByNull(userId);
 
 
-		//获取当前登录人所有流程消息
-		List<SysTodoList> sysTodoLists = sysAnnouncementMapper.queryTodoList(username);
 		//头像集合
         List<String> pictureCode = new ArrayList<>();
 		pictureCode.add(SysParamCodeConstant.FAULT);
@@ -328,78 +328,48 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			if(size !=0){
 				list.add(sysMessageTypeDTO);
 			}
-		}
+		}*/
 
-		//流程消息处理
-		TodoTaskTypeEnum[] values = TodoTaskTypeEnum.values();
-		//遍历消息类型枚举
-		for (TodoTaskTypeEnum value : values) {
-			String type = value.getType();
-			String module = value.getModule();
-			SysMessageTypeDTO sysMessageTypeDTO = new SysMessageTypeDTO();
-			List<SysTodoList> typeList= sysTodoLists.stream().filter(sysTodoList -> sysTodoList.getTaskType() != null && sysTodoList.getTaskType().contains(type)).collect(Collectors.toList());
-			List<SysTodoList> bpmnList = sysTodoLists.stream().filter(sysTodoList -> sysTodoList.getProcessCode() != null && sysTodoList.getProcessCode().contains(type)).collect(Collectors.toList());
-			typeList.addAll(bpmnList);
-			//所有未处理的流程消息
-			List<SysTodoList> readFlagList= sysTodoLists.stream().filter(sysTodoList -> sysTodoList.getTaskType() != null && sysTodoList.getTodoType().equals("0") && sysTodoList.getTaskType().contains(type)).collect(Collectors.toList());
-			List<SysTodoList> readFlagBpmList = sysTodoLists.stream().filter(sysTodoList -> sysTodoList.getProcessCode() != null && sysTodoList.getTodoType().equals("0") && sysTodoList.getProcessCode().contains(type)).collect(Collectors.toList());
-			readFlagList.addAll(readFlagBpmList);
-			//设置流程名称
-			sysMessageTypeDTO.setTitle(module);
-			//设置不同类型流程图片
-			sysMessageTypeDTO = setPicture(sysMessageTypeDTO, type);
-			//设置流程类型
-			sysMessageTypeDTO.setBusType(type);
-			// 统计长度
-			int size = typeList.size();
-			int messageSize = readFlagList.size();
-			sysMessageTypeDTO.setCount(messageSize);
-			//设置排序时间
-			if (CollUtil.isNotEmpty(typeList)) {
-				for (SysTodoList sysTodoList : typeList) {
-					Date createTime = sysTodoList.getCreateTime();
-					Date updateTime = sysTodoList.getUpdateTime();
-					if (ObjectUtil.isNotEmpty(updateTime)) {
-						sysTodoList.setIntervalTime(updateTime);
-					} else {
-						sysTodoList.setIntervalTime(createTime);
-					}
-				}
-			}
-			//给内容赋值
-			if(size != 0){
-				typeList=typeList.stream().sorted(Comparator.comparing(SysTodoList::getIntervalTime).reversed()).collect(Collectors.toList());
-				String msgContent = typeList.get(0).getTaskName();
-				sysMessageTypeDTO.setTitleContent(msgContent);
-			}
-			//获取时间，在对list进行排序
-			if(size !=0){
-				Collections.sort(typeList,((o1, o2) -> o2.getIntervalTime().compareTo(o1.getIntervalTime())));
-			}
-			if(CollUtil.isNotEmpty(typeList)) {
-				SysTodoList sysTodoList = typeList.get(0);
-				sysMessageTypeDTO.setIntervalTime(sysTodoList.getIntervalTime());
-			}
-			sysMessageTypeDTO.setMessageFlag("2");
-			if(!("bpmn").equals(sysMessageTypeDTO.getBusType()) && size != 0){
-				list.add(sysMessageTypeDTO);
-			}
-		}
+		// bpmn类型,processCode 为空历史数据不展示了
+		List<SysTodoCountDTO> sysTodoCountDTOS = sysTodoListService.queryBpmn(username);
 
-		//list去重，数量相加
-		Map<String, SysMessageTypeDTO> productMap = new HashMap<String, SysMessageTypeDTO>(32);
-		for (SysMessageTypeDTO product : list)
-		{
-			if (productMap.containsKey(product.getTitle()))
-			{
-				product.setCount(productMap.get(product.getTitle()).getCount());
+		Map<String, List<SysTodoCountDTO>> bpmnMap = sysTodoCountDTOS.stream().collect(Collectors.groupingBy(sysTodoCountDTO -> {
+			String processCode = sysTodoCountDTO.getProcessCode();
+			TodoTaskTypeEnum todoTaskTypeEnum = TodoTaskTypeEnum.getByTypeV2(processCode);
+			if (Objects.isNull(todoTaskTypeEnum)) {
+				return processCode;
+			} else {
+				return todoTaskTypeEnum.getType();
 			}
-			productMap.put(product.getTitle(), product);
-		}
-		list.clear();// 清空栈内存
-		for (Map.Entry<String, SysMessageTypeDTO> entry : productMap.entrySet()) {
-			list.add(entry.getValue());
-		}
+		}));
+
+		List<SysMessageTypeDTO> bpmnList = new ArrayList<>();
+		bpmnMap.forEach((type, dtoList)->{
+			SysTodoCountDTO sysTodoCountDTO = dtoList.get(0);
+			int sum = dtoList.stream().mapToInt(SysTodoCountDTO::getUndoCount).sum();
+			TodoTaskTypeEnum typeEnum = TodoTaskTypeEnum.getByType(type);
+
+			SysMessageTypeDTO typeDTO = SysMessageTypeDTO.builder()
+					.count(sum)
+					.messageFlag("2")
+					.title(Objects.isNull(typeEnum)? sysTodoCountDTO.getProcessName():typeEnum.getModule())
+					.busType(Objects.isNull(typeEnum)? sysTodoCountDTO.getProcessCode(): typeEnum.getType())
+					.build();
+
+			setPicture(typeDTO, type);
+
+			// 查询最近一条的时间
+			List<String> stringList = dtoList.stream().map(SysTodoCountDTO::getProcessCode).collect(Collectors.toList());
+
+			SysTodoList sysTodoList = sysTodoListService.queryBpmnLast(stringList);
+			if (Objects.nonNull(sysTodoList)) {
+				typeDTO.setIntervalTime(Objects.isNull(sysTodoList.getUpdateTime())? sysTodoList.getCreateTime():sysTodoList.getUpdateTime());
+			}
+			bpmnList.add(typeDTO);
+		});
+
+		list.addAll(bpmnList);
+
 		//list根据创建时间排序
 		list = list.stream().sorted(Comparator.comparing(SysMessageTypeDTO::getIntervalTime).reversed()).collect(Collectors.toList());
 		//集合设置id

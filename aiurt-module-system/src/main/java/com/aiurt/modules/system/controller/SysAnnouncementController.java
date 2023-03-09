@@ -571,8 +571,8 @@ public class SysAnnouncementController {
     @ApiOperation(value="消息中心-消息类型", notes="消息中心-消息类型")
     @GetMapping(value = "/queryAnnouncementCount")
     public Result<List<SysMessageTypeDTO>> queryMessageType(){
-        List<SysMessageTypeDTO> list = sysAnnouncementService.queryMessageType();
-        return Result.ok(list);
+        // List<SysMessageTypeDTO> list = sysAnnouncementService.queryMessageType();
+        return Result.ok(Collections.emptyList());
     }
 
     @AutoLog(value = "消息中心-业务消息类型-详情")
