@@ -126,6 +126,8 @@ public class SearchServiceImpl implements ISearchService {
             // 处理高亮字段
             Map<String, HighlightField> highlightFields = hit.getHighlightFields();
             DocumentManageResponseDTO documentManageResponseDTO = buildHighlight(hit, DocumentManageResponseDTO.class);
+            // 标题高亮
+            documentManageResponseDTO.setTitle(documentManageResponseDTO.getName());
             if (MapUtils.isNotEmpty(highlightFields) && highlightFields.containsKey(EsConstant.ATTACHMENT_CONTENT)) {
                 HighlightField highlightField = highlightFields.get(EsConstant.ATTACHMENT_CONTENT);
                 if (ObjectUtil.isNotEmpty(highlightField)) {
@@ -349,7 +351,10 @@ public class SearchServiceImpl implements ISearchService {
         }
         searchResponsList = CollUtil.newArrayList();
         for (SearchHit hit : hits.getHits()) {
-            searchResponsList.add(buildHighlight(hit, SearchResponseDTO.class));
+            SearchResponseDTO searchResponseDTO = buildHighlight(hit, SearchResponseDTO.class);
+            // 处理标题高亮
+            searchResponseDTO.setTitle(searchResponseDTO.getFaultPhenomenon());
+            searchResponsList.add(searchResponseDTO);
         }
 
         // 结果记录
@@ -463,7 +468,8 @@ public class SearchServiceImpl implements ISearchService {
             for (String sortStr : sortList) {
                 String[] sortStrs = sortStr.split(CommonConstant.UNDER_LINE_SEPARATOR);
                 SortOrder order = EsConstant.SORT_ORDER_ASC.equalsIgnoreCase(sortStrs[1]) ? SortOrder.ASC : SortOrder.DESC;
-                builder.sort(sortStrs[0], order);
+                // 驼峰转换
+                builder.sort(StrUtil.toUnderlineCase(sortStrs[0]), order);
             }
         }
     }
