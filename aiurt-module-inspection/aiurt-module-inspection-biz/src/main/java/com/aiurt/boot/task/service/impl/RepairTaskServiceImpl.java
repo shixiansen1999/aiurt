@@ -1482,7 +1482,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         for (String enclosure : enclosures){
             List<RepairTaskEnclosure> repairTaskEnclosure = repairTaskEnclosureMapper.getByResultId(enclosure);
             RepairTaskEnclosure taskEnclosure = new RepairTaskEnclosure();
-            if (repairTaskEnclosure==null ){
+            if (repairTaskEnclosure.size()==0 ){
                 taskEnclosure.setUrl(examineDTO.getPath());
                 taskEnclosure.setRepairTaskResultId(enclosure);
                 repairTaskEnclosureMapper.insert(taskEnclosure);
