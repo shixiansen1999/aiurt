@@ -336,6 +336,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
         }
         // 分页数据
         Page<FaultTimeoutLevelDTO> page = new Page<>(faultTimeoutLevelReq.getPageNo(), faultTimeoutLevelReq.getPageSize());
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String[] split = user.getRoleCodes().split(",");
         List<String> roleCodes = CollUtil.newArrayList(split);
@@ -364,11 +365,14 @@ public class FaultCountServiceImpl implements IFaultCountService {
 //        faultTimeoutLevelReq.setOrgList(ordCode);
         //通过真实姓名模糊查询username
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultTimeoutLevelReq.getAppointUserName());
+         GlobalThreadLocal.setDataFilter(b);
         List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq,majors,stationCodeList,lv1Hours,lv2Hours,lv3Hours,userNameByRealName);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultTimeoutLevelDTO faultDatum : faultData) {
                 //查找设备编码
+                boolean b1 = GlobalThreadLocal.setDataFilter(false);
                 List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
+                GlobalThreadLocal.setDataFilter(b1);
                 if(CollUtil.isNotEmpty(faultDeviceList)){
                     for (FaultDevice faultDevice : faultDeviceList) {
                         faultDatum.setDeviceCode(faultDevice.getDeviceCode());
