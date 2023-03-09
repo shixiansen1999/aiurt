@@ -70,7 +70,7 @@ public class QywxSendMsgHandle implements ISendMsgHandle {
 			String s2 = s1.replaceAll("</p>", "</div>");
 
 			if (StrUtil.isNotEmpty(publishingContent)) {
-				publishingContent = "<div>" + publishingContent + "</div>" + "<br/>";
+				//publishingContent = "<div>" + publishingContent + "</div>" + "<br/>";
 				sysAnnouncement.setMsgAbstract(publishingContent + s2);
 			} else {
 				sysAnnouncement.setMsgAbstract(s2);
