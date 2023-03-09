@@ -181,7 +181,7 @@ public enum SysAnnmentTypeEnum {
         }
         for (SysAnnmentTypeEnum val : values()) {
             String valType = val.getType();
-            if (StrUtil.contains(type, valType)); {
+            if (StrUtil.contains(type, valType)){
               return val;
             }
         }
