@@ -1,7 +1,9 @@
 package com.aiurt.boot.controller;
 
+import com.aiurt.boot.mapper.EsMapper;
 import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.service.IFileAnalysisService;
+import com.aiurt.boot.utils.ElasticsearchClientUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -32,6 +34,7 @@ public class FileAnalysisController {
     @Autowired
     private IFileAnalysisService fileAnalysisService;
 
+
     @ApiOperation(value = "解析并保存上传文件数据", notes = "解析并保存上传文件数据")
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public Result<?> upload(@RequestParam @ApiParam(name = "file", value = "文件") MultipartFile file,
@@ -52,6 +55,13 @@ public class FileAnalysisController {
             return Result.ok("同步完成！");
         }
         return Result.OK("存在以下记录的文件同步失败！", list);
+    }
+
+    @ApiOperation(value = "同步数据到es", notes = "同步数据到es")
+    @RequestMapping(value = "/syncData", method = RequestMethod.GET)
+    public Result<?> syncData(String index) throws IOException {
+        fileAnalysisService.syncData(index);
+        return Result.OK("保存成功！");
     }
 
 }

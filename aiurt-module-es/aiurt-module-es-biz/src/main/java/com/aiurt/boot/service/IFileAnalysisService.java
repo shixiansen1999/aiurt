@@ -29,4 +29,10 @@ public interface IFileAnalysisService {
      * @param response
      */
     List<String> syncCanonicalKnowledgeBase(HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 同步数据到es
+     * @param index
+     */
+    void syncData(String index);
 }
