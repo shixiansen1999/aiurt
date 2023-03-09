@@ -1,6 +1,9 @@
 package com.aiurt.modules.fault.mapper;
 
 
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.fault.entity.DeviceChangeSparePart;
 import com.aiurt.modules.faultanalysisreport.dto.SpareConsumeDTO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -15,6 +18,7 @@ import java.util.List;
  * @Date:   2022-06-28
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface DeviceChangeSparePartMapper extends BaseMapper<DeviceChangeSparePart> {
 
     /**
@@ -32,5 +36,8 @@ public interface DeviceChangeSparePartMapper extends BaseMapper<DeviceChangeSpar
      * @param endDate   结束时间
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "mb.sys_org_code")
+    })
     List<SpareConsumeDTO> querySpareConsume(@Param("startDate")Date startDate, @Param("endDate")Date endDate);
 }
