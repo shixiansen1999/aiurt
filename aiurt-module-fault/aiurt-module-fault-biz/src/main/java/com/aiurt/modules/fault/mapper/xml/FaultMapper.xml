@@ -211,7 +211,9 @@
         <if test="stationCode != null and stationCode != ''">
             and c.station_code = #{stationCode}
         </if>
-
+        <if test="sysOrgCode != null and sysOrgCode != ''">
+            and su.org_code = #{sysOrgCode}
+        </if>
     </select>
 
     <select id="getFault" resultType="com.aiurt.modules.faultanalysisreport.dto.FaultDTO">

@@ -1,7 +1,5 @@
 package com.aiurt.modules.fault.mapper;
 
-import com.aiurt.common.aspect.annotation.DataColumn;
-import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
@@ -98,7 +96,8 @@ public interface FaultMapper extends BaseMapper<Fault> {
       * @return
       */
      List<String> selectUserNameByComplex(@Param("roleCodeList") List<String> roleCodeList,@Param("majorCode") String majorCode,
-                                          @Param("subSystemCode")String subSystemCode,  @Param("stationCode")String stationCode);
+                                          @Param("subSystemCode")String subSystemCode,  @Param("stationCode")String stationCode,
+                                          @Param("sysOrgCode")String sysOrgCode);
 
 
     /**
