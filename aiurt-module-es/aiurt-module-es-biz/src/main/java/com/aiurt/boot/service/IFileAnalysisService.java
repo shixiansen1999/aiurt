@@ -17,4 +17,10 @@ public interface IFileAnalysisService {
      * @return
      */
     String upload(MultipartFile file, String path, String typeId);
+
+    /**
+     * 同步数据到es
+     * @param index
+     */
+    void syncData(String index);
 }

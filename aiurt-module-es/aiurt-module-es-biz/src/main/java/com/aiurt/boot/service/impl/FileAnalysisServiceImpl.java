@@ -5,7 +5,10 @@ import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
 import com.aiurt.boot.EsFileAPI;
 import com.aiurt.boot.constant.EsConstant;
+import com.aiurt.boot.mapper.EsMapper;
 import com.aiurt.boot.service.IFileAnalysisService;
+import com.aiurt.boot.utils.ElasticsearchClientUtil;
+import com.aiurt.modules.search.dto.FaultKnowledgeBaseDTO;
 import com.aiurt.modules.search.dto.FileDataDTO;
 import com.aiurt.modules.search.entity.FileAnalysisData;
 import com.alibaba.fastjson.JSON;
@@ -24,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.List;
 
 /**
  * @author cgkj
@@ -38,7 +42,10 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
     @Autowired
     @Qualifier("restHighLevelClient")
     private RestHighLevelClient client;
-
+    @Autowired
+    private ElasticsearchClientUtil elasticsearchClientUtil;
+    @Autowired
+    private EsMapper esMapper;
     @Override
     public String upload(MultipartFile file, String path, String typeId) {
         FileAnalysisData analysisData = new FileAnalysisData();
@@ -67,6 +74,12 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
             e.printStackTrace();
         }
         return id;
+    }
+
+    @Override
+    public void syncData(String index) {
+        List<FaultKnowledgeBaseDTO> list = esMapper.selectList();
+        elasticsearchClientUtil.createBulkDocument(index,list);
     }
 
     /**
