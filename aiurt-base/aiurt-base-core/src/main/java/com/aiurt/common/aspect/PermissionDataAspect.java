@@ -194,7 +194,7 @@ public class PermissionDataAspect {
             }
             if (DataPermRuleType.TYPE_DEPT_ONLY.equals(customPermission.getRuleConditions())) {
                 if (!dataPermMap.containsKey(customPermission.getRuleConditions())) {
-                    dataPermMap.put(customPermission.getRuleConditions(), sysUser.getOrgCode());
+                    dataPermMap.put(customPermission.getRuleConditions(), "'"+sysUser.getOrgCode()+"'");
                 }
             }
             if (DataPermRuleType.TYPE_MANAGE_LINE_ONLY.equals(customPermission.getRuleConditions())) {
