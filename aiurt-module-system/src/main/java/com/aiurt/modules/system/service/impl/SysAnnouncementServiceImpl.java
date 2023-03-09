@@ -482,7 +482,18 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				if(StrUtil.isEmpty(s)){
 					record.setTaskType(null);
 				}else{
-					record.setTaskType(s);
+					String type = StrUtil.splitTrim(s, "_").get(0);
+					if(type.equals("patrol") || type.equals("inspection")){
+						record.setTaskType(type);
+					}
+					if(type.equals("asset")){
+						record.setTaskType("fixed");
+					}
+					if("bpm".equals(s)){
+						String processCode = record.getProcessCode();
+						String taskType = StrUtil.splitTrim(processCode, "_").get(0);
+						record.setTaskType(taskType);
+					}
 				}
 			}
 			return businessList;
