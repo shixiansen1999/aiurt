@@ -1,10 +1,8 @@
 package com.aiurt.modules.system.controller;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.category.dto.FixedAssetsCategoryDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
@@ -17,7 +15,6 @@ import com.aiurt.modules.system.entity.SysDepartPermission;
 import com.aiurt.modules.system.entity.SysPermission;
 import com.aiurt.modules.system.entity.SysPermissionDataRule;
 import com.aiurt.modules.system.entity.SysRolePermission;
-import com.aiurt.modules.system.model.SysDepartTreeModel;
 import com.aiurt.modules.system.model.SysPermissionTree;
 import com.aiurt.modules.system.model.TreeModel;
 import com.aiurt.modules.system.service.*;
@@ -98,6 +95,9 @@ public class SysPermissionController {
             LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
             query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SysPermission::getIsApp, isApp);
             query.orderByAsc(SysPermission::getSortNo);
+            if (StrUtil.isNotEmpty(name)) {
+                query.like(SysPermission::getUrl, name).or().like(SysPermission::getComponent, name);
+            }
             List<SysPermission> list = sysPermissionService.list(query);
             List<SysPermissionTree> treeList = new ArrayList<>();
             getTreeList(treeList, list, null);
