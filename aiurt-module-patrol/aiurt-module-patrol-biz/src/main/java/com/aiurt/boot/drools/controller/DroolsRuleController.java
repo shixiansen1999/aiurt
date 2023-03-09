@@ -1,40 +1,26 @@
 package com.aiurt.boot.drools.controller;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.boot.drools.util.DroolsUtil;
+import com.aiurt.common.constant.CommonConstant;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.apache.logging.log4j.util.Strings;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.boot.drools.entity.DroolsRule;
 import com.aiurt.boot.drools.service.IDroolsRuleService;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import com.aiurt.common.system.base.controller.BaseController;
 import org.kie.api.runtime.KieSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -83,7 +69,10 @@ public class DroolsRuleController extends BaseController<DroolsRule, IDroolsRule
                                                    @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                    @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                    HttpServletRequest req) {
-        QueryWrapper<DroolsRule> queryWrapper = QueryGenerator.initQueryWrapper(droolsRule, req.getParameterMap());
+//        QueryWrapper<DroolsRule> queryWrapper = QueryGenerator.initQueryWrapper(droolsRule, req.getParameterMap());
+        LambdaQueryWrapper<DroolsRule> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(DroolsRule::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.like(Strings.isNotBlank(droolsRule.getName()), DroolsRule::getName, droolsRule.getName());
         Page<DroolsRule> page = new Page<DroolsRule>(pageNo, pageSize);
         IPage<DroolsRule> pageList = droolsRuleService.page(page, queryWrapper);
         return Result.OK(pageList);
@@ -105,20 +94,34 @@ public class DroolsRuleController extends BaseController<DroolsRule, IDroolsRule
         if (droolsRuleService.queryByName(droolsRule.getName()) != null) {
             return Result.error("规则名称已存在，请换个名称");
         }
+        // 验证规则
+        try {
+            KieSession kieSession = DroolsUtil.reload(droolsRule.getRule());
+            kieSession.dispose();
+        } catch (Exception e) {
+            return Result.error("规则验证失败");
+        }
         droolsRuleService.save(droolsRule);
         return Result.OK("添加成功！");
     }
 
     /**
-     * 编辑
+     * 根据Id编辑
      *
      * @param droolsRule
      * @return
      */
-    @AutoLog(value = "drools_rule-编辑")
-    @ApiOperation(value = "drools_rule-编辑", notes = "drools_rule-编辑")
-    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<String> edit(@RequestBody DroolsRule droolsRule) {
+    @AutoLog(value = "drools_rule-根据Id编辑")
+    @ApiOperation(value = "drools_rule-根据Id编辑", notes = "drools_rule-根据Id编辑")
+    @RequestMapping(value = "/editById", method = {RequestMethod.PUT, RequestMethod.POST})
+    public Result<String> editById(@RequestBody DroolsRule droolsRule) {
+        // 验证规则
+        try {
+            KieSession kieSession = DroolsUtil.reload(droolsRule.getRule());
+            kieSession.dispose();
+        } catch (Exception e) {
+            return Result.error("规则验证失败");
+        }
         droolsRuleService.updateById(droolsRule);
         return Result.OK("编辑成功!");
     }
