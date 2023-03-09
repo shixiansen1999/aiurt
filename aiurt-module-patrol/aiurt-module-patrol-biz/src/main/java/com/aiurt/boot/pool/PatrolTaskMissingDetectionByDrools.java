@@ -149,7 +149,6 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
             kieSession.fireAllRules();
 
             if (l.getOmitStatus().equals(PatrolConstant.OMIT_STATUS)) {
-                missNum.getAndAdd(1);
                 boolean update = patrolTaskService.updateById(l);
                 if (update) {
                     missNum.getAndAdd(1);
