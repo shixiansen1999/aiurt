@@ -51,6 +51,7 @@ public class FaultStatisticsController {
     }
 
     @ApiOperation(value = "首页-备件消耗排行榜", notes = "首页-备件消耗排行榜")
+    @PermissionData(pageComponent = "dashboard/Analysis")
     @RequestMapping(value = "/getSpareConsume", method = RequestMethod.GET)
     @ApiImplicitParams({
             @ApiImplicitParam(name = "type", value = "1-4:表示1-4季度，5-6：半年，年度", required = true, paramType = "query")
