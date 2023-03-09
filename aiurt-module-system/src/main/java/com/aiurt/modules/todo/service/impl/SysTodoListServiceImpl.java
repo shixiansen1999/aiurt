@@ -107,8 +107,8 @@ public class SysTodoListServiceImpl extends ServiceImpl<SysTodoListMapper, SysTo
      * @return
      */
     @Override
-    public SysTodoList queryBpmnLast(List<String> list) {
-        return baseMapper.queryBpmnLast(list);
+    public SysTodoList queryBpmnLast(List<String> list, String userName) {
+        return baseMapper.queryBpmnLast(list, userName);
     }
 
     /**

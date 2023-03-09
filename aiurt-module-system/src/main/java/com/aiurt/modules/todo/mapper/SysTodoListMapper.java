@@ -25,5 +25,5 @@ public interface SysTodoListMapper extends BaseMapper<SysTodoList> {
      */
     List<SysTodoCountDTO> queryBpmn(@Param("userName") String userName);
 
-    SysTodoList queryBpmnLast(@Param("list") List<String> list);
+    SysTodoList queryBpmnLast(@Param("list") List<String> list, @Param("userName")String userName);
 }

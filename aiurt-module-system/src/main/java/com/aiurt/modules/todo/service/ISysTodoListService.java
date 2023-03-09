@@ -46,7 +46,7 @@ public interface ISysTodoListService extends IService<SysTodoList> {
      * @param list
      * @return
      */
-    SysTodoList queryBpmnLast(List<String> list);
+    SysTodoList queryBpmnLast(List<String> list, String userName);
 
 
 

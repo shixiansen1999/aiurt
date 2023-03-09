@@ -1,5 +1,7 @@
 package com.aiurt.common.util;
 
+import cn.hutool.core.util.StrUtil;
+
 /**
  * 系统公告自定义跳转方式
  * @author: jeecg-boot
@@ -170,5 +172,19 @@ public enum SysAnnmentTypeEnum {
 
     public void setModule(String module) {
         this.module = module;
+    }
+
+
+    public static SysAnnmentTypeEnum getByTypeV2(String type) {
+        if (oConvertUtils.isEmpty(type)) {
+            return null;
+        }
+        for (SysAnnmentTypeEnum val : values()) {
+            String valType = val.getType();
+            if (StrUtil.contains(type, valType)); {
+              return val;
+            }
+        }
+        return null;
     }
 }
