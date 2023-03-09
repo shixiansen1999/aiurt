@@ -3,6 +3,7 @@ package com.aiurt.boot.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.URLUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
 import com.aiurt.boot.dto.ExcelExportDTO;
@@ -20,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -40,21 +42,8 @@ public class ExportExcelServiceImpl implements ExportExcelService {
             excelName = "download";
         }
 
-        // 请求数据地址获取数据
+        String dataStr = this.getUrlData(excelExportDTO);
         List<LinkedList<String>> exportData = new LinkedList<>();
-
-        HttpRequest httpRequest = HttpUtil.createGet(excelExportDTO.getDataUrl());
-        if (RequestMethod.POST.name().equalsIgnoreCase(excelExportDTO.getMethod())) {
-            httpRequest = HttpUtil.createPost(excelExportDTO.getDataUrl());
-            // GET请求消息中的有效负载（即 body）没有定义的语义；在GET请求上发送有效负载主体可能会导致某些现有实现拒绝该请求。
-            if (StrUtil.isNotEmpty(excelExportDTO.getReqBody())) {
-                httpRequest.body(excelExportDTO.getReqBody());
-            }
-        }
-        httpRequest.header("Content-Type", "application/json")
-                .header("X-Access-Token", excelExportDTO.getToken());
-        String dataStr = httpRequest.execute().body();
-
         Result result = JSONObject.parseObject(dataStr, Result.class);
         Object obj = result.getResult();
         if (Integer.valueOf(200).equals(result.getCode()) && ObjectUtil.isNotEmpty(obj)) {
@@ -93,6 +82,54 @@ public class ExportExcelServiceImpl implements ExportExcelService {
             log.error("导出Excel文档发生异常！", e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 请求数据地址获取数据
+     *
+     * @param excelExportDTO
+     * @return
+     */
+    private String getUrlData(ExcelExportDTO excelExportDTO) {
+        String dataUrl = excelExportDTO.getDataUrl();
+        String url = this.urlHandling(dataUrl);
+        HttpRequest httpRequest = HttpUtil.createGet(url);
+        if (RequestMethod.POST.name().equalsIgnoreCase(excelExportDTO.getMethod())) {
+            httpRequest = HttpUtil.createPost(excelExportDTO.getDataUrl());
+            // GET请求消息中的有效负载（即 body）没有定义的语义；在GET请求上发送有效负载主体可能会导致某些现有实现拒绝该请求。
+            if (StrUtil.isNotEmpty(excelExportDTO.getReqBody())) {
+                httpRequest.body(excelExportDTO.getReqBody());
+            }
+        }
+        httpRequest.header("Content-Type", "application/json")
+                .header("X-Access-Token", excelExportDTO.getToken());
+        String dataStr = httpRequest.execute().body();
+        return dataStr;
+    }
+
+    /**
+     * 地址处理
+     *
+     * @param dataUrl
+     * @return
+     */
+    private String urlHandling(String dataUrl) {
+        // 处理前端传过来为空或空字符串的参数
+        String[] url = StrUtil.split(dataUrl, "?");
+        if (StrUtil.isBlank(url[1])) {
+            return url[0];
+        }
+        Map<String, Object> map = new HashMap<String, Object>(16);
+        String[] params = url[1].split("&");
+        for (int i = 0; i < params.length; i++) {
+            String[] param = params[i].split("=");
+            if (2 == param.length) {
+                map.put(param[0], param[1]);
+            }
+        }
+        String urlParam = URLUtil.buildQuery(map, Charset.defaultCharset());
+        String fullPath = url[0] + "?" + urlParam;
+        return fullPath;
     }
 
     /**
