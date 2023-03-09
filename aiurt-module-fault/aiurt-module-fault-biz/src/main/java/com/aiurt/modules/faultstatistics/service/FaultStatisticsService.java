@@ -5,6 +5,7 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.aiurt.modules.fault.dto.FaultStatisticsDTO;
@@ -91,7 +92,9 @@ public class FaultStatisticsService {
                 sub = ListUtil.sub(number, FaultConstant.FAULT_START, Integer.parseInt(String.valueOf(number.size())));
                 //子系统
             }
+            boolean b = GlobalThreadLocal.setDataFilter(false);
             subList(faultStatisticsDTO, sub);
+            GlobalThreadLocal.setDataFilter(b);
         }
         return faultStatisticsDTO;
     }
