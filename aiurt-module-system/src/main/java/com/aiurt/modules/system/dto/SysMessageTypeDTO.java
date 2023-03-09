@@ -8,7 +8,10 @@ package com.aiurt.modules.system.dto;/**
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
@@ -18,6 +21,9 @@ import org.springframework.format.annotation.DateTimeFormat;
  * @date: 2023-02-16 14:26
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class SysMessageTypeDTO {
     @ApiModelProperty(value = "主键id")
     private String id;
