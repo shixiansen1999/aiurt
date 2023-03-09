@@ -163,6 +163,8 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
         List<String> messageTypes = StrUtil.splitTrim(type, ",");
         MessageDTO messageDTO = new MessageDTO();
         BeanUtil.copyProperties(sysTodoList, messageDTO);
+        messageDTO.setToUser(sysTodoList.getCurrentUserName());
+        messageDTO.setIsMarkdown(sysTodoList.getMarkdown());
         for (String messageType : messageTypes) {
             //update-end-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
             if(MessageTypeEnum.XT.getType().equals(messageType)){
@@ -178,7 +180,7 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             }else if(MessageTypeEnum.QYWX.getType().equals(messageType)){
                 if (messageDTO.isMarkdown()) {
                     // 系统消息要解析Markdown
-                    messageDTO.setContent(HTMLUtils.parseMarkdown(messageDTO.getContent()));
+                    messageDTO.setContent(HTMLUtils.parseMarkdown(sysTodoList.getMsgContent()));
                 }
                 messageDTO.setBusKey(sysTodoList.getBusinessKey());
                 if (sysTodoList.getBusinessType() != null) {
