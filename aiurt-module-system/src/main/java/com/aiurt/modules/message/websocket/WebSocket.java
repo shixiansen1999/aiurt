@@ -92,7 +92,9 @@ public class WebSocket {
                 }
                 //update-end-author:taoyan date:20211012 for: websocket报错 https://gitee.com/jeecg/jeecg-boot/issues/I4C0MU
             } catch (Exception e) {
-                e.printStackTrace();
+               log.error(e.getMessage(), e);
+                sessionPool.remove(this.userId);
+                webSockets.remove(this);
             }
         }
     }
