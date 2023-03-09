@@ -3,9 +3,15 @@ package com.aiurt.boot.service.impl;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.EsFileAPI;
 import com.aiurt.boot.constant.EsConstant;
+import com.aiurt.boot.mapper.FileAnalysisMapper;
 import com.aiurt.boot.service.IFileAnalysisService;
+import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.MinioUtil;
+import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.search.dto.FileDataDTO;
 import com.aiurt.modules.search.entity.FileAnalysisData;
 import com.alibaba.fastjson.JSON;
@@ -17,13 +23,21 @@ import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author cgkj
@@ -34,6 +48,15 @@ import java.util.Base64;
 @Slf4j
 @Service
 public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI {
+
+    @Value(value = "${jeecg.path.upload}")
+    private String uploadPath;
+
+    @Autowired
+    private FileAnalysisMapper fileAnalysisMapper;
+
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
 
     @Autowired
     @Qualifier("restHighLevelClient")
@@ -67,6 +90,91 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
             e.printStackTrace();
         }
         return id;
+    }
+
+    @Override
+    public List<String> syncCanonicalKnowledgeBase(HttpServletRequest request, HttpServletResponse response) {
+        // 查询数据库获取规范知识库的记录
+        List<FileDataDTO> files = fileAnalysisMapper.syncCanonicalKnowledgeBase();
+        List<String> error = new ArrayList<>();
+        // 根据记录的文件地址获取文件并解析
+        FileAnalysisData analysis = null;
+        for (FileDataDTO file : files) {
+            analysis = new FileAnalysisData();
+            analysis.setId(file.getId());
+            analysis.setAddress(file.getAddress());
+            analysis.setTypeId(file.getTyepId());
+            analysis.setName(file.getName());
+            analysis.setFormat(file.getFormat());
+            String content = null;
+            try {
+                byte[] bytes = this.getBytes(file);
+                content = this.byteEncodeToString(bytes);
+                analysis.setContent(content);
+            } catch (Exception e) {
+                content = this.byteEncodeToString("".getBytes());
+                error.add(file.getId());
+                e.printStackTrace();
+            }
+            analysis.setContent(content);
+            IndexRequest indexRequest = this.extractingFiles(analysis);
+            IndexResponse indexResponse = null;
+            try {
+                indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return error;
+    }
+
+    private byte[] getBytes(FileDataDTO fileData) throws IOException {
+        byte[] bytes = null;
+        String attName = null;
+        String filePath = null;
+        String url = fileData.getAddress();
+        filePath = StrUtil.subBefore(url, "?", false);
+
+        filePath = filePath.replace("..", "").replace("../", "");
+        if (filePath.endsWith(SymbolConstant.COMMA)) {
+            filePath = filePath.substring(0, filePath.length() - 1);
+        }
+
+        SysAttachment sysAttachment = iSysBaseAPI.getFilePath(filePath);
+        InputStream inputStream = null;
+
+        if (Objects.isNull(sysAttachment)) {
+            File file = new File(filePath);
+            if (!file.exists()) {
+                throw new AiurtBootException("文件不存在..");
+            }
+            if (StrUtil.isBlank(fileData.getName())) {
+                attName = file.getName();
+            } else {
+                attName = fileData.getName();
+            }
+            inputStream = new BufferedInputStream(new FileInputStream(filePath));
+            bytes = StreamUtils.copyToByteArray(inputStream);
+            //关闭流
+            inputStream.close();
+
+        } else {
+            if (StrUtil.equalsIgnoreCase("minio", sysAttachment.getType())) {
+                inputStream = MinioUtil.getMinioFile("platform", sysAttachment.getFilePath());
+            } else {
+                String imgPath = uploadPath + File.separator + sysAttachment.getFilePath();
+                File file = new File(imgPath);
+                if (!file.exists()) {
+
+                    throw new RuntimeException("文件[" + imgPath + "]不存在..");
+                }
+                inputStream = new BufferedInputStream(new FileInputStream(imgPath));
+            }
+            bytes = StreamUtils.copyToByteArray(inputStream);
+            //关闭流
+            inputStream.close();
+        }
+        return bytes;
     }
 
     /**

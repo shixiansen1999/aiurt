@@ -1,5 +1,6 @@
 package com.aiurt.boot.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.service.IFileAnalysisService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -12,7 +13,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author cgkj
@@ -35,6 +39,19 @@ public class FileAnalysisController {
                             @ApiParam(name = "typeId", value = "文件类型ID") String typeId) throws IOException {
         String id = fileAnalysisService.upload(file, path, typeId);
         return Result.OK("保存成功！", id);
+    }
+
+    /**
+     * 同步规范知识库的数据和文档数据
+     */
+    @ApiOperation(value = "同步规范知识库的数据和文档数据", notes = "同步规范知识库的数据和文档数据")
+    @RequestMapping(value = "/syncCanonicalKnowledgeBase", method = RequestMethod.POST)
+    public Result<?> syncCanonicalKnowledgeBase(HttpServletRequest request, HttpServletResponse response) {
+        List<String> list = fileAnalysisService.syncCanonicalKnowledgeBase(request, response);
+        if (CollUtil.isEmpty(list)) {
+            return Result.ok("同步完成！");
+        }
+        return Result.OK("存在以下记录的文件同步失败！", list);
     }
 
 }
