@@ -234,6 +234,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		sysAnnouncementTypeCountDTOS.stream().forEach(typeCountDTO->{
 			SysMessageTypeDTO sysMessageTypeDTO = new SysMessageTypeDTO();
 			sysMessageTypeDTO.setCount(typeCountDTO.getCount());
+			sysMessageTypeDTO.setMessageFlag("1");
 			String key = typeCountDTO.getBusType();
 
 			if("1".equals(key)){
