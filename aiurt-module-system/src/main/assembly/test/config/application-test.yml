@@ -163,7 +163,7 @@ spring:
     password: 1qaz@2wsx
     port: 6379
   elasticsearch:
-    uris: http://192.168.1.29:9200
+    uris: http://192.168.1.29:9201
     connection-timeout: 3000
     socket-timeout: 5000
 #mybatis plus 设置
@@ -215,7 +215,7 @@ jeecg:
   # ElasticSearch 6设置
   elasticsearch:
     cluster-name: jeecg-ES
-    cluster-nodes: 192.168.1.29:9200
+    cluster-nodes: 192.168.1.29:9201
     check-enabled: false
   # 表单设计器配置
   desform:
