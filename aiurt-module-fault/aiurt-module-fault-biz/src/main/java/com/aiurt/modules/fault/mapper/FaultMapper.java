@@ -1,7 +1,5 @@
 package com.aiurt.modules.fault.mapper;
 
-import com.aiurt.common.aspect.annotation.DataColumn;
-import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
