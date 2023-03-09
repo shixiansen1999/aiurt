@@ -17,7 +17,7 @@ public enum SysAnnmentTypeEnum {
     /**
      * 周计划
      */
-    OPERATE_PLAN("operate_plan", "component","","周计划业务消息"),
+    OPERATE_PLAN("week_plan", "component","","周计划业务消息"),
     /**
      * 应急
      */
