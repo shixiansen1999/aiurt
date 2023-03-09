@@ -6,6 +6,7 @@ import com.aiurt.common.constant.DataBaseConstant;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.RedisUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
@@ -123,6 +124,11 @@ public class JwtUtil {
 	 */
 	public static String getUserNameByToken(HttpServletRequest request) throws AiurtBootException {
 		String accessToken = request.getHeader("X-Access-Token");
+
+		if (StrUtil.isBlank(accessToken)) {
+			RedisUtil redisUtil = SpringContextUtils.getBean(RedisUtil.class);
+			accessToken = redisUtil.getStr(CommonConstant.PREFIX_USER_TOKEN + "bigScreen");
+		}
 		String username = getUsername(accessToken);
 		if (oConvertUtils.isEmpty(username)) {
 			throw new AiurtBootException("未获取到用户");

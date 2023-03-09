@@ -95,14 +95,18 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
                     String redisToken = redisUtil.getStr(CommonConstant.PREFIX_USER_TOKEN + "bigScreen");
                     if (StrUtil.isBlank(redisToken)) {
                         // 默认登录
-                        LoginUser loginUser = commonApi.getUserByName("admin");
-                        redisToken  = JwtUtil.sign(loginUser.getUsername(), loginUser.getPassword());
+                        try {
+                            LoginUser loginUser = commonApi.getUserByName("admin");
+                            redisToken  = JwtUtil.sign(loginUser.getUsername(), loginUser.getPassword());
 
-                        // 保存到redis
-                        redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + "bigScreen", redisToken);
-                        redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + "bigScreen", JwtUtil.EXPIRE_TIME);
-                        redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + redisToken, redisToken);
-                        redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + redisToken, JwtUtil.EXPIRE_TIME *2 / 1000);
+                            // 保存到redis
+                            redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + "bigScreen", redisToken);
+                            redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + "bigScreen", JwtUtil.EXPIRE_TIME * 2/1000);
+                            redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + redisToken, redisToken);
+                            redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + redisToken, JwtUtil.EXPIRE_TIME *2 / 1000);
+                        } catch (Exception e) {
+                          log.error(e.getMessage(), e);
+                        }
                     }
                     token.set(redisToken);
                     return;
