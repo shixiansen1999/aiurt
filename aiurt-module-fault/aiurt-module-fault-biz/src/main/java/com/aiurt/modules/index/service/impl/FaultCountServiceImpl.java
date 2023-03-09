@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
@@ -74,6 +75,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
         if (ObjectUtil.isEmpty(startDate) || ObjectUtil.isEmpty(endDate)) {
             return  setDefault();
         }
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String[] split = user.getRoleCodes().split(",");
         List<String> roleCodes = CollUtil.newArrayList(split);
@@ -85,22 +87,22 @@ public class FaultCountServiceImpl implements IFaultCountService {
         if(roleCodes.size()>0) {
             isAdmin = true;
         }
-        List<String> ordCode = null;
+//        List<String> ordCode = null;
         List<String> majors = null;
         List<String> stationCodeList = null;
         if (!isAdmin) {
             List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
             majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
 
-            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-
-            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+//            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
+//
+//            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
 
             List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
 
             stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
         }
-
+        GlobalThreadLocal.setDataFilter(b);
 
 
         //将符合条件的故障数据查出
@@ -108,9 +110,9 @@ public class FaultCountServiceImpl implements IFaultCountService {
         queryWrapper.ge(Fault::getApprovalPassTime, DateUtil.beginOfDay(startDate));
         queryWrapper.le(Fault::getApprovalPassTime, DateUtil.endOfDay(endDate));
 
-        if (CollUtil.isNotEmpty(ordCode)) {
-            queryWrapper.in(Fault::getSysOrgCode, ordCode);
-        }
+//        if (CollUtil.isNotEmpty(ordCode)) {
+//            queryWrapper.in(Fault::getSysOrgCode, ordCode);
+//        }
 
         if (CollUtil.isNotEmpty(majors)) {
             queryWrapper.in(Fault::getMajorCode, majors);
@@ -122,7 +124,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
 
         List<Fault> faultList = faultService.list(queryWrapper);
 
-
+        boolean b1 = GlobalThreadLocal.setDataFilter(false);
         //故障总数
         faultIndexDTO.setSum(CollUtil.isNotEmpty(faultList)?faultList.size():0L);
         //已解决数
@@ -169,6 +171,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
             }
 
         }
+        GlobalThreadLocal.setDataFilter(b1);
         return faultIndexDTO;
     }
 
@@ -202,6 +205,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
         // 分页数据
         Page<FaultCountInfoDTO> page = new Page<>(faultCountInfoReq.getPageNo(), faultCountInfoReq.getPageSize());
         //权限控制
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String[] split = user.getRoleCodes().split(",");
         List<String> roleCodes = CollUtil.newArrayList(split);
@@ -213,16 +217,16 @@ public class FaultCountServiceImpl implements IFaultCountService {
         if(roleCodes.size()>0) {
             isAdmin = true;
         }
-        List<String> ordCode = null;
+//        List<String> ordCode = null;
         List<String> majors = null;
         List<String> stationCodeList = null;
         if (!isAdmin) {
             List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
             majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
 
-            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-
-            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+//            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
+//
+//            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
 
             List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
 
@@ -230,11 +234,14 @@ public class FaultCountServiceImpl implements IFaultCountService {
         }
 
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultCountInfoReq.getAppointUserName());
-        List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq, ordCode, majors, stationCodeList,userNameByRealName);
+        GlobalThreadLocal.setDataFilter(b);
+        List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq, majors, stationCodeList,userNameByRealName);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultCountInfoDTO faultDatum : faultData) {
                 //查找设备编码
+                boolean b1 = GlobalThreadLocal.setDataFilter(false);
                 List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
+                GlobalThreadLocal.setDataFilter(b1);
                 if(CollUtil.isNotEmpty(faultDeviceList)){
                     for (FaultDevice faultDevice : faultDeviceList) {
                         faultDatum.setDeviceCode(faultDevice.getDeviceCode());
@@ -264,6 +271,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
         // 分页数据
         Page<FaultCountInfosDTO> page = new Page<>(faultCountInfoReq.getPageNo(), faultCountInfoReq.getPageSize());
         //权限控制
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String[] split = user.getRoleCodes().split(",");
         List<String> roleCodes = CollUtil.newArrayList(split);
@@ -275,16 +283,16 @@ public class FaultCountServiceImpl implements IFaultCountService {
         if(roleCodes.size()>0) {
             isAdmin = true;
         }
-        List<String> ordCode = null;
+//        List<String> ordCode = null;
         List<String> majors = null;
         List<String> stationCodeList = null;
         if (!isAdmin) {
             List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
             majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
 
-            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-
-            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+//            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
+//
+//            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
 
             List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
 
@@ -292,11 +300,14 @@ public class FaultCountServiceImpl implements IFaultCountService {
         }
         //通过真实姓名模糊查询username
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultCountInfoReq.getAppointUserName());
-        List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq, ordCode, majors, stationCodeList,userNameByRealName);
+        GlobalThreadLocal.setDataFilter(b);
+        List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq, majors, stationCodeList,userNameByRealName);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultCountInfosDTO faultDatum : faultData) {
                 //查找设备编码
+                boolean b1 = GlobalThreadLocal.setDataFilter(false);
                 List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
+                GlobalThreadLocal.setDataFilter(b1);
                 if(CollUtil.isNotEmpty(faultDeviceList)){
                     for (FaultDevice faultDevice : faultDeviceList) {
                         faultDatum.setDeviceCode(faultDevice.getDeviceCode());
@@ -335,22 +346,22 @@ public class FaultCountServiceImpl implements IFaultCountService {
         if(roleCodes.size()>0) {
             isAdmin = true;
         }
-        List<String> ordCode = null;
+//        List<String> ordCode = null;
         List<String> majors = null;
         List<String> stationCodeList = null;
         if (!isAdmin) {
             List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
             majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
 
-            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-
-            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+//            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
+//
+//            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
 
             List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
 
             stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
         }
-        faultTimeoutLevelReq.setOrgList(ordCode);
+//        faultTimeoutLevelReq.setOrgList(ordCode);
         //通过真实姓名模糊查询username
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultTimeoutLevelReq.getAppointUserName());
         List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq,majors,stationCodeList,lv1Hours,lv2Hours,lv3Hours,userNameByRealName);
