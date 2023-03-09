@@ -255,10 +255,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 String majorCode = fault.getMajorCode();
                 String subSystemCode = fault.getSubSystemCode();
                 String stationCode = fault.getStationCode();
-
-                userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(roleCode, ','), majorCode, subSystemCode, stationCode);
+                String sysOrgCode = fault.getSysOrgCode();
+                userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(roleCode, ','), majorCode, subSystemCode, stationCode,sysOrgCode);
             }else {
-                userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(roleCode, ','), null, null, null);
+                userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(roleCode, ','), null, null, null,null);
             }
             todoDTO.setCurrentUserName(userName);
         }else {
@@ -626,20 +626,22 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_ASSIGN.getType(), faultCode, user.getUsername(), "1");
         // 发送消息，告诉工班长已指派, // 工班长
        // sendMessage(user, faultCode, fault.getAssignUserName(), String.format("故障【%s】已被【%s】领取!", faultCode, user.getRealname()));
-        String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode());
+        //String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode());
 
         try {
-            //发送通知
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(),receiveUserName, "故障领取" + DateUtil.today(), null);
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
             BeanUtil.copyProperties(fault,faultMessageDTO);
+
+            /*//发送通知
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),receiveUserName, "故障领取" + DateUtil.today(), null);
+
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
             messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("故障被主动领取");
             messageDTO.setPublishingContent("故障被主动领取，维修人请尽快维修，并维修后填写维修记录");
 
-            sendMessage(messageDTO,faultMessageDTO);
+            sendMessage(messageDTO,faultMessageDTO);*/
 
             // 维修待办
             TodoDTO todoDTO = new TodoDTO();
@@ -803,7 +805,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         saveLog(user, "开始维修", code, FaultStatusEnum.REPAIR.getStatus(), null);
 
         // 发送给指派人
-        String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode());
+        String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode(),fault.getSysOrgCode());
 
 
         // 消息通知，发送给指派人
@@ -1203,7 +1205,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 todoDTO.setMsgAbstract("有一个新的故障维修任务");
                 todoDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
                 sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
-                String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
+                //String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
 
                 /*//发送通知
                 MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),name, "故障指派" + DateUtil.today(), null);
@@ -1230,10 +1232,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             try {
                 TodoDTO todoDTO = new TodoDTO();
                 todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-                todoDTO.setTitle("维修确认");
-                todoDTO.setMsgAbstract("维修完成");
-                todoDTO.setPublishingContent("故障维修确认无误");
-                sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
+                todoDTO.setTitle("维修待审核");
+                todoDTO.setMsgAbstract("维修待审核");
+                todoDTO.setPublishingContent("故障维修完成待审核");
+                sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1418,7 +1420,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 List<String> list = StrUtil.split(remindUserName, ',');
                 userNameSet.addAll(list);
             }
-            String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
+            String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null,null);
             if (StrUtil.isNotBlank(name)) {
                 List<String> list = StrUtil.splitTrim(",", name);
                 userNameSet.addAll(list);
@@ -1791,13 +1793,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @param roleCode 角色编码
      * @return 人员账号用逗号隔开
      */
-    private String getUserNameByOrgCodeAndRoleCode(List<String> roleCode,String majorCode, String subSystemCode, String stationCode) {
+    private String getUserNameByOrgCodeAndRoleCode(List<String> roleCode,String majorCode, String subSystemCode, String stationCode,String sysOrgCode) {
         if (CollUtil.isEmpty(roleCode)) {
             return "";
         }
-        List<String> result = baseMapper.selectUserNameByComplex(roleCode, majorCode, subSystemCode, stationCode);
+        List<String> result = baseMapper.selectUserNameByComplex(roleCode, majorCode, subSystemCode, stationCode,sysOrgCode);
         if (CollUtil.isEmpty(result)) {
-            result = baseMapper.selectUserNameByComplex(roleCode, null, null, null);
+            result = baseMapper.selectUserNameByComplex(roleCode, null, null, null,null);
         }
         return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
     }
