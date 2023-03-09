@@ -191,20 +191,24 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			String busType = dto.getBusType();
 			SysAnnmentTypeEnum sysAnnmentTypeEnum = SysAnnmentTypeEnum.getByTypeV2(busType);
 			if (Objects.isNull(sysAnnmentTypeEnum)) {
-				return dto.getTitile();
+				return null;
 			} else {
 				return sysAnnmentTypeEnum.getModule();
 			}
 		}));
+
 		List<SysMessageTypeDTO> messageList = new ArrayList<>();
+		busTypeMap.remove(null);
 		busTypeMap.forEach((module, dtoList)->{
 			SysAnnouncementTypeCountDTO countDTO = dtoList.get(0);
+			int sum = dtoList.stream().mapToInt(SysAnnouncementTypeCountDTO::getUnreadCount).sum();
 			List<String> busTypeList = dtoList.stream().map(SysAnnouncementTypeCountDTO::getBusType).collect(Collectors.toList());
 			String busType = countDTO.getBusType();
 			String type = StrUtil.splitTrim(busType, "_").get(0);
 			SysMessageTypeDTO typeDTO = SysMessageTypeDTO.builder()
 					.busType(type)
 					.messageFlag("1")
+					.count(sum)
 					.title(module).build();
 
 			if (pictureCode.contains(type)) {
@@ -229,6 +233,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		//bus_type为空的数据
 		sysAnnouncementTypeCountDTOS.stream().forEach(typeCountDTO->{
 			SysMessageTypeDTO sysMessageTypeDTO = new SysMessageTypeDTO();
+			sysMessageTypeDTO.setCount(typeCountDTO.getCount());
 			String key = typeCountDTO.getBusType();
 
 			if("1".equals(key)){
