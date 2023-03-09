@@ -1,5 +1,7 @@
 package com.aiurt.modules.fault.mapper;
 
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
@@ -54,7 +56,7 @@ public interface FaultMapper extends BaseMapper<Fault> {
 
 
      /**
-      *
+      * 故障发生次数列表
       * @param startDate
       * @param endDate
       * @return
