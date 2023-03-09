@@ -5,6 +5,7 @@ import com.aiurt.boot.index.dto.TaskDetailsDTO;
 import com.aiurt.boot.index.dto.TaskDetailsReq;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
@@ -79,6 +80,7 @@ public class FaultCountController {
      */
     @AutoLog(value = "首页-故障概况统计")
     @ApiOperation(value="故障概况统计", notes="故障概况统计")
+    @PermissionData(pageComponent = "dashboard/Analysis")
     @GetMapping(value = "/queryFaultCount")
     public Result<FaultIndexDTO> queryFaultCount(@ApiParam(name = "startDate", value = "开始日期") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                                 @ApiParam(name = "endDate", value = "结束日期") @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate){
@@ -94,6 +96,7 @@ public class FaultCountController {
      */
     @AutoLog(value = "首页-故障概况详情(总数和已解决)", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-故障概况详情(总数和已解决)", notes = "首页-故障概况详情(总数和已解决)")
+    @PermissionData(pageComponent = "dashboard/Analysis")
     @RequestMapping(value = "/getFaultCountInfo", method = RequestMethod.GET)
     public Result<IPage<FaultCountInfoDTO>> getFaultCountInfo(@Validated FaultCountInfoReq faultCountInfoReq)
     {
@@ -103,6 +106,7 @@ public class FaultCountController {
 
     @AutoLog(value = "首页-故障概况详情(未解决和挂起数)", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-故障概况详情(未解决和挂起数)", notes = "首页-故障概况详情(未解决和挂起数)")
+    @PermissionData(pageComponent = "dashboard/Analysis")
     @RequestMapping(value = "/getFaultCountInfos", method = RequestMethod.GET)
     public Result<IPage<FaultCountInfosDTO>> getFaultCountInfos(@Validated FaultCountInfoReq faultCountInfoReq)
     {
@@ -119,6 +123,7 @@ public class FaultCountController {
      */
     @AutoLog(value = "首页-故障超时等级详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-故障超时等级详情", notes = "首页-故障超时等级详情")
+    @PermissionData(pageComponent = "dashboard/Analysis")
     @RequestMapping(value = "/getFaultLevelInfo", method = RequestMethod.GET)
     public Result<IPage<FaultTimeoutLevelDTO>> getFaultLevelInfo(@Validated FaultTimeoutLevelReq faultTimeoutLevelReq)
     {
