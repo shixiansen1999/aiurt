@@ -103,7 +103,7 @@
 				and sas.user_id = #{userId}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and (sa.bus_type LIKE concat('%',#{busType},'%')
+				and (sa.titile is not null and sa.bus_type LIKE concat('%',#{busType},'%')
 				or sa.process_code like concat('%',#{busType},'%'))
 			</if>
 			<if test="busType ==null or busType ==''">
@@ -149,7 +149,7 @@
 				and sas.user_id = #{userId}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and (sa.bus_type LIKE concat('%',#{busType},'%')
+				and (sa.titile is not null and sa.bus_type LIKE concat('%',#{busType},'%')
 				or sa.process_code like concat('%',#{busType},'%'))
 			</if>
 			<if test="busType ==null or busType ==''">
@@ -209,7 +209,7 @@
 				and stl.todo_type = #{todoType}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and (stl.task_type is not null and stl.task_type LIKE concat('%',#{busType},'%')
+				and (stl.title is not null and stl.task_type LIKE concat('%',#{busType},'%')
 				or stl.process_code like concat('%',#{busType},'%'))
 			</if>
 		</where>
@@ -244,7 +244,7 @@
 				and stl.todo_type = #{todoType}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and (stl.task_type is not null and stl.task_type LIKE concat('%',#{busType},'%')
+				and (stl.title is not null and stl.task_type LIKE concat('%',#{busType},'%')
 				or stl.process_code like concat('%',#{busType},'%'))
 			</if>
 		</where>
@@ -262,7 +262,7 @@
 						LEFT JOIN sys_announcement t2 ON t1.annt_id = t2.id
 		WHERE
 				t2.titile IS NOT NULL
-		  and t2.bus_type != 'bpm' and t2.bus_type is not NULL and t1.user_id = #{userId}
+		  and t2.bus_type != 'bpm' and t2.titile is not null and t2.bus_type is not NULL and t1.user_id = #{userId}
 		GROUP BY  t2.bus_type
 
 		UNION
