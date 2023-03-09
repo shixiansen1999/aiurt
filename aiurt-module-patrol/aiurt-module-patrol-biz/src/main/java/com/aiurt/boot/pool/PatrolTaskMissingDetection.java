@@ -144,10 +144,9 @@ public class PatrolTaskMissingDetection implements Job {
                         map.put("patrolTaskName",l.getName());
                         List<String>  station = patrolTaskStationMapper.getStationByTaskCode(l.getCode());
                         map.put("patrolStation", CollUtil.join(station,","));
-                        if (ObjectUtil.isNotEmpty(l.getStartTime()) && ObjectUtil.isNotEmpty(l.getEndTime())) {
-                            String date = DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd");
-                            map.put("patrolTaskTime",date+" "+DateUtil.format(l.getStartTime(),"HH:mm")+"-"+date+" "+DateUtil.format(l.getEndTime(),"HH:mm"));
-                        }
+                        String date = DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd");
+                        map.put("patrolTaskTime",date);
+
                         QueryWrapper<PatrolTaskUser> wrapper = new QueryWrapper<>();
                         wrapper.lambda().eq(PatrolTaskUser::getTaskCode, l.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
                         List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(wrapper);
