@@ -89,8 +89,26 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
      * 周一和周五0点检测漏检的任务
      */
     private void taskDetection() throws Exception {
+        // 不一定是周一和周五，这个要读取配置
+        // 读取配置，看是哪一天执行检测漏检的任务
+        SysParamModel patrolWeekDaysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_WEEKDAYS);
+        List<Integer> weekdayNums = null;
+        if (patrolWeekDaysParamModel != null && patrolWeekDaysParamModel.getValue() != null) {
+            // 系统配置里面，1周一 2周二...7周日，转化成hutool的DateUtil里面的 1表示周日，2表示周一
+            weekdayNums = StrUtil.splitTrim(patrolWeekDaysParamModel.getValue(), ",")
+                    .stream().map(item -> {
+                        int num = Integer.parseInt(item) + 1;
+                        if (num == 8) {
+                            return 1;
+                        } else {
+                            return num;
+                        }
+                    }).collect(Collectors.toList());
+        }
+
         DroolsRule patrolTaskOmitRule = droolsRuleService.queryByName("patrol_task_omit_rule");
         KieSession kieSession = DroolsUtil.reload(patrolTaskOmitRule.getRule());
+        kieSession.setGlobal("weekdayNums", weekdayNums);
 
         // 获取以下状态为0待指派、1待确认、2待执行、3已退回、4执行中的任务
         List<Integer> status = Arrays.asList(PatrolConstant.TASK_INIT, PatrolConstant.TASK_CONFIRM,
