@@ -326,7 +326,7 @@ public class SysFileController {
 		FileDataDTO fileDataDTO = new FileDataDTO();
         fileDataDTO.setId(String.valueOf(sysFile.getId()));
         fileDataDTO.setName(sysFile.getName());
-        fileDataDTO.setTyepId(String.valueOf(sysFile.getTypeId()));
+        fileDataDTO.setTypeId(String.valueOf(sysFile.getTypeId()));
         fileDataDTO.setFormat(sysFile.getType());
         fileDataDTO.setAddress(sysFile.getUrl());
 		fileDataDTO.setFileBytes(bytes);

@@ -1,0 +1,17 @@
+PUT /_ingest/pipeline/attachment
+{
+  "description": "Extract attachment information",
+  "processors": [
+    {
+      "attachment": {
+        "field": "content",
+        "ignore_missing": true
+      }
+    },
+    {
+      "remove": {
+        "field": "content"
+      }
+    }
+  ]
+}

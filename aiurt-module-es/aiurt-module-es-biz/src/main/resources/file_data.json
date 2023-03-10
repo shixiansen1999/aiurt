@@ -18,7 +18,7 @@
       "format":{
         "type": "keyword"
       },
-      "type_id":{
+      "typeId":{
         "type": "keyword"
       },
       "address":{

@@ -10,11 +10,13 @@ import com.aiurt.boot.mapper.EsMapper;
 import com.aiurt.boot.mapper.FileAnalysisMapper;
 import com.aiurt.boot.service.IFileAnalysisService;
 import com.aiurt.boot.utils.ElasticsearchClientUtil;
+import com.aiurt.boot.utils.ElasticsearchClientUtil;
 import com.aiurt.modules.search.dto.FaultKnowledgeBaseDTO;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.MinioUtil;
 import com.aiurt.modules.basic.entity.SysAttachment;
+import com.aiurt.modules.search.dto.FaultKnowledgeBaseDTO;
 import com.aiurt.modules.search.dto.FileDataDTO;
 import com.aiurt.modules.search.entity.FileAnalysisData;
 import com.alibaba.fastjson.JSON;
@@ -37,11 +39,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Objects;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author cgkj
@@ -69,6 +67,7 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
     private ElasticsearchClientUtil elasticsearchClientUtil;
     @Autowired
     private EsMapper esMapper;
+
     @Override
     public String upload(MultipartFile file, String path, String typeId) {
         FileAnalysisData analysisData = new FileAnalysisData();
@@ -110,26 +109,35 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
             analysis = new FileAnalysisData();
             analysis.setId(file.getId());
             analysis.setAddress(file.getAddress());
-            analysis.setTypeId(file.getTyepId());
+            analysis.setTypeId(file.getTypeId());
             analysis.setName(file.getName());
             analysis.setFormat(file.getFormat());
             String content = null;
             try {
-                byte[] bytes = this.getBytes(file);
-                content = this.byteEncodeToString(bytes);
-                analysis.setContent(content);
+                if (Arrays.asList("xls", "xlsx", "doc", "docx", "pdf", "txt").contains(file.getFormat().toLowerCase())) {
+                    byte[] bytes = this.getBytes(file);
+                    content = this.byteEncodeToString(bytes);
+                    analysis.setContent(content);
+                } else {
+                    content = this.byteEncodeToString("".getBytes());
+                }
             } catch (Exception e) {
                 content = this.byteEncodeToString("".getBytes());
-                error.add(file.getId());
-                e.printStackTrace();
             }
             analysis.setContent(content);
             IndexRequest indexRequest = this.extractingFiles(analysis);
             IndexResponse indexResponse = null;
             try {
-                indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
-            } catch (IOException e) {
-                e.printStackTrace();
+                client.index(indexRequest, RequestOptions.DEFAULT);
+            } catch (Exception e) {
+                try {
+                    // 文件内容存在问题时，保存其他字段数据
+                    analysis.setContent(this.byteEncodeToString("".getBytes()));
+                    client.index(this.extractingFiles(analysis), RequestOptions.DEFAULT);
+                } catch (Exception ex) {
+                }
+                log.debug("记录的文件异常！ID:{}", file.getId());
+                error.add(file.getId());
             }
         }
         return error;
@@ -146,7 +154,6 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
         if (filePath.endsWith(SymbolConstant.COMMA)) {
             filePath = filePath.substring(0, filePath.length() - 1);
         }
-
         SysAttachment sysAttachment = iSysBaseAPI.getFilePath(filePath);
         InputStream inputStream = null;
 
@@ -164,7 +171,6 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
             bytes = StreamUtils.copyToByteArray(inputStream);
             //关闭流
             inputStream.close();
-
         } else {
             if (StrUtil.equalsIgnoreCase("minio", sysAttachment.getType())) {
                 inputStream = MinioUtil.getMinioFile("platform", sysAttachment.getFilePath());
@@ -172,7 +178,6 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
                 String imgPath = uploadPath + File.separator + sysAttachment.getFilePath();
                 File file = new File(imgPath);
                 if (!file.exists()) {
-
                     throw new RuntimeException("文件[" + imgPath + "]不存在..");
                 }
                 inputStream = new BufferedInputStream(new FileInputStream(imgPath));
@@ -211,7 +216,7 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
         FileAnalysisData analysisData = new FileAnalysisData();
         analysisData.setId(fileDataDTO.getId());
         analysisData.setAddress(fileDataDTO.getAddress());
-        analysisData.setTypeId(fileDataDTO.getTyepId());
+        analysisData.setTypeId(fileDataDTO.getTypeId());
         analysisData.setName(fileDataDTO.getName());
         analysisData.setFormat(fileDataDTO.getFormat());
         analysisData.setContent(content);
@@ -240,7 +245,7 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
 
         analysisData.setId(fileDataDTO.getId());
         analysisData.setAddress(fileDataDTO.getAddress());
-        analysisData.setTypeId(fileDataDTO.getTyepId());
+        analysisData.setTypeId(fileDataDTO.getTypeId());
         analysisData.setName(fileDataDTO.getName());
         analysisData.setFormat(fileDataDTO.getFormat());
         analysisData.setContent(content);
