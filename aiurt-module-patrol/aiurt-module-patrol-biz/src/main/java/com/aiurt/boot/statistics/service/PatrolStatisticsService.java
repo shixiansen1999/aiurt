@@ -278,6 +278,7 @@ public class PatrolStatisticsService {
             //下面禁用数据权限
             boolean b= GlobalThreadLocal.setDataFilter(false);
             pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO, departList,standards);
+            GlobalThreadLocal.setDataFilter(b);
 
         }
         pageList.getRecords().stream().forEach(l -> {
