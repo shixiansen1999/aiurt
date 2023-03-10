@@ -22,8 +22,6 @@ public interface ICommonService {
      */
     public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId,String majorId,List<String> keys);
 
-    public List<SelectTable> getTreeBySysUser(SysUser sysUser);
-
     /**
      * 查询设备
      * @param deviceDTO
