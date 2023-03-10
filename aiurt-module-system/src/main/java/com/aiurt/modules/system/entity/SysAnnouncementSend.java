@@ -5,6 +5,7 @@ import java.util.Date;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -48,4 +49,7 @@ public class SysAnnouncementSend implements Serializable {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private java.util.Date updateTime;
+    /**通告内容*/
+	@TableField(exist = false)
+	private java.lang.String titleContent;
 }

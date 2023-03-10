@@ -164,6 +164,6 @@ public interface SysParamCodeConstant {
     /**
      * 施工计划通知
      */
-    String OPERATE = "operate";
+    String Week = "week";
 
 }

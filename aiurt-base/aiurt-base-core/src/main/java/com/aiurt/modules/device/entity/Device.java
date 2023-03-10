@@ -160,7 +160,7 @@ public class Device extends DictEntity {
 	/**负责班组*/
 	@Excel(name = "负责班组", width = 15,needMerge = true)
 	@ApiModelProperty(value = "负责班组")
-	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "org_code")
+	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
 	@DeptFilterColumn
 	private  String  orgCode;
 	/**负责班组名称*/
