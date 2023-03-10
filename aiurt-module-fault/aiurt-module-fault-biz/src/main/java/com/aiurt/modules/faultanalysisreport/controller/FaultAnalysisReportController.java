@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultanalysisreport.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -218,6 +219,15 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 			 @ApiResponse(code = 200, message = "OK", response = FaultDTO.class)
 	 })
 	 public Result<FaultDTO> getDetail(String id) {
+		 FaultAnalysisReport report = faultAnalysisReportService.getById(id);
+		 if (ObjectUtil.isNotEmpty(report)) {
+			 LambdaQueryWrapper<Fault> wrapper = new LambdaQueryWrapper<>();
+			 wrapper.eq(Fault::getCode, report.getFaultCode());
+			 Fault fault = faultService.getBaseMapper().selectOne(wrapper);
+			 FaultDTO detail = faultAnalysisReportService.getDetail(fault.getId());
+			 return Result.OK(detail);
+		 }
+
 		 FaultDTO detail = faultAnalysisReportService.getDetail(id);
 		 return Result.OK(detail);
 	 }

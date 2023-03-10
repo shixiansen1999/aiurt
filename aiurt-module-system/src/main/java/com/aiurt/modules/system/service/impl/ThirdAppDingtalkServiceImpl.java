@@ -729,6 +729,11 @@ public class ThirdAppDingtalkServiceImpl implements IThirdAppService {
         return this.sendMessage(message, false);
     }
 
+    @Override
+    public SyncInfoVo syncWeChatToLocal() {
+        return null;
+    }
+
     /**
      * 发送消息
      *
