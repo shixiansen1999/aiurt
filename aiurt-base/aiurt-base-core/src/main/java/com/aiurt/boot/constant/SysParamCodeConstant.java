@@ -9,6 +9,10 @@ public interface SysParamCodeConstant {
      */
     String PATROL_SCHEDULING = "patrol_scheduling";
     /**
+     * 巡检星期，星期几执行检测漏检
+     */
+    String PATROL_WEEKDAYS = "patrol_weekdays";
+    /**
      * 检修模块是否关联排班标识
      */
     String INSPECTION_SCHEDULING = "inspection_scheduling";
