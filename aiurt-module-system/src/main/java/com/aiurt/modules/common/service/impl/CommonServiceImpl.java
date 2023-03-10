@@ -90,11 +90,6 @@ public class CommonServiceImpl implements ICommonService {
 //        return resultList;
     }
 
-    @Override
-    public List<SelectTable> getTreeBySysUser(SysUser sysUser) {
-//        sysDepartService
-        return null;
-    }
 
     @Override
     public List<SelectTable> queryDevice(DeviceDTO deviceDTO) {
