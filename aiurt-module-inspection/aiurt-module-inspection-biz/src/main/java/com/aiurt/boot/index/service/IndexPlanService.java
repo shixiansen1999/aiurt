@@ -208,7 +208,6 @@ public class IndexPlanService {
         if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(codeByOrgCode) || CollUtil.isEmpty(repairPoolRels)) {
             return result;
         }
-        boolean b = GlobalThreadLocal.setDataFilter(false);
         // 用于判断是否是一整月的查询
         // 如果是一整个月查询，那么返回的dayBegin是这个月的第一周的开始时间，dayEnd是这个月最后一周的结束时间
         JudgeIsMonthQuery judgeIsMonthQuery = new JudgeIsMonthQuery(taskDetailsReq.getStartTime(), taskDetailsReq.getEndTime()).invoke();
@@ -217,6 +216,7 @@ public class IndexPlanService {
 
         List<TaskDetailsDTO> detailsDTOList = indexPlanMapper.getGropuByData(taskDetailsReq.getType(), page, taskDetailsReq, codeByOrgCode, repairPoolRels);
 
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         // 查询出符合条件的检修详情数据
         if (CollUtil.isNotEmpty(detailsDTOList)) {
             for (TaskDetailsDTO taskDetailsDTO : detailsDTOList) {
@@ -243,6 +243,7 @@ public class IndexPlanService {
                 }
             }
         }
+        GlobalThreadLocal.setDataFilter(b);
         page.setRecords(detailsDTOList);
         return page;
     }
