@@ -2506,16 +2506,18 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         String typeName = sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairTaskMessageDTO.getType()));
         map.put("repairTaskName",typeName+repairTaskMessageDTO.getCode());
         List<String> codes = repairTaskMapper.getRepairTaskStation(repairTaskMessageDTO.getId());
-        Map<String, String> stationNameByCode = iSysBaseAPI.getStationNameByCode(codes);
-        StringBuilder stringBuilder = new StringBuilder();
-        for (Map.Entry<String, String> entry : stationNameByCode.entrySet()) {
-            stringBuilder.append(entry.getValue());
-            stringBuilder.append(",");
+        if (CollUtil.isNotEmpty(codes)) {
+            Map<String, String> stationNameByCode = iSysBaseAPI.getStationNameByCode(codes);
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Map.Entry<String, String> entry : stationNameByCode.entrySet()) {
+                stringBuilder.append(entry.getValue());
+                stringBuilder.append(",");
+            }
+            if (stringBuilder.length() > 0) {
+                stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            }
+            map.put("repairStation",stringBuilder.toString());
         }
-        if (stringBuilder.length() > 0) {
-            stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-        }
-        map.put("repairStation",stringBuilder.toString());
         map.put("repairTaskTime",DateUtil.format(repairTaskMessageDTO.getStartTime(),"yyyy-MM-dd HH:mm")+"-"+DateUtil.format(repairTaskMessageDTO.getEndTime(),"yyyy-MM-dd HH:mm"));
         if (StrUtil.isNotEmpty(realNames)) {
             map.put("repairName", realNames);

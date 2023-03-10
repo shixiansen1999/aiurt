@@ -8,25 +8,33 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.boot.drools.entity.DroolsRule;
+import com.aiurt.boot.drools.service.IDroolsRuleService;
+import com.aiurt.boot.drools.util.DroolsUtil;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskOrganization;
+import com.aiurt.boot.task.entity.PatrolTaskStandard;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.PatrolTaskStationMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskUserMapper;
 import com.aiurt.boot.task.service.IPatrolTaskOrganizationService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.aiurt.boot.task.service.IPatrolTaskStandardService;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.modules.todo.dto.TodoDTO;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
+import org.kie.api.runtime.KieSession;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -39,13 +47,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
- * 巡检任务漏检定时检测
+ * 巡检任务漏检定时检测，使用drools的规则引擎判断是否漏检
  *
  * @author cgkj0
  */
 @Slf4j
 @Component
-public class PatrolTaskMissingDetection implements Job {
+public class PatrolTaskMissingDetectionByDrools implements Job {
 
     @Autowired
     private IPatrolTaskService patrolTaskService;
@@ -61,21 +69,28 @@ public class PatrolTaskMissingDetection implements Job {
     private PatrolTaskStationMapper patrolTaskStationMapper;
     @Autowired
     private PatrolTaskUserMapper patrolTaskUserMapper;
+    @Autowired
+    private IDroolsRuleService droolsRuleService;
+    @Autowired
+    private IPatrolTaskStandardService patrolTaskStandardService;
 
+    @SneakyThrows
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void execute(JobExecutionContext context) throws JobExecutionException {
         taskDetection();
     }
 
-    public void execute() {
+    public void execute() throws Exception {
         taskDetection();
     }
 
     /**
      * 周一和周五0点检测漏检的任务
      */
-    private void taskDetection() {
+    private void taskDetection() throws Exception {
+        DroolsRule patrolTaskOmitRule = droolsRuleService.queryByName("patrol_task_omit_rule");
+        KieSession kieSession = DroolsUtil.reload(patrolTaskOmitRule.getRule());
 
         // 获取以下状态为0待指派、1待确认、2待执行、3已退回、4执行中的任务
         List<Integer> status = Arrays.asList(PatrolConstant.TASK_INIT, PatrolConstant.TASK_CONFIRM,
@@ -108,16 +123,32 @@ public class PatrolTaskMissingDetection implements Job {
             if (null == l.getPatrolDate()) {
                 return;
             }
-            Date patrolDate = l.getPatrolDate();
-            if (ObjectUtil.isNotEmpty(l.getEndTime())) {
-                String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
-                patrolDate = DateUtil.parse(DateUtil.format(patrolDate, "yyyy-MM-dd " + endTime));
+//            Date patrolDate = l.getPatrolDate();
+//            if (ObjectUtil.isNotEmpty(l.getEndTime())) {
+//                String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
+//                patrolDate = DateUtil.parse(DateUtil.format(patrolDate, "yyyy-MM-dd " + endTime));
+//            }
+//            // 当前时间
+//            Date now = new Date();
+//            int compare = DateUtil.compare(now, patrolDate);
+//            if (compare >= 0) {
+//                l.setOmitStatus(PatrolConstant.OMIT_STATUS);
+            // 这里使用drools规则判断是否是漏检
+            LambdaQueryWrapper<PatrolTaskStandard> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(PatrolTaskStandard::getTaskId, l.getId());
+            queryWrapper.eq(PatrolTaskStandard::getDelFlag, CommonConstant.DEL_FLAG_0);
+            List<PatrolTaskStandard> list = patrolTaskStandardService.list(queryWrapper);
+            PatrolTaskStandard patrolTaskStandard = null;
+            if (list.size() > 0) {
+                patrolTaskStandard = list.get(0); // 使用到patrolTaskStandard是因为里面有专业Code
             }
-            // 当前时间
-            Date now = new Date();
-            int compare = DateUtil.compare(now, patrolDate);
-            if (compare >= 0) {
-                l.setOmitStatus(PatrolConstant.OMIT_STATUS);
+            // 注入fact对象
+            kieSession.insert(patrolTaskStandard);
+            kieSession.insert(l);
+            // 执行规则
+            kieSession.fireAllRules();
+
+            if (l.getOmitStatus().equals(PatrolConstant.OMIT_STATUS)) {
                 boolean update = patrolTaskService.updateById(l);
                 if (update) {
                     missNum.getAndAdd(1);
@@ -144,9 +175,10 @@ public class PatrolTaskMissingDetection implements Job {
                         map.put("patrolTaskName",l.getName());
                         List<String>  station = patrolTaskStationMapper.getStationByTaskCode(l.getCode());
                         map.put("patrolStation", CollUtil.join(station,","));
-                        String date = DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd");
-                        map.put("patrolTaskTime",date);
-
+                        if (ObjectUtil.isNotEmpty(l.getStartTime()) && ObjectUtil.isNotEmpty(l.getEndTime())) {
+                            String date = DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd");
+                            map.put("patrolTaskTime",date+" "+DateUtil.format(l.getStartTime(),"HH:mm")+"-"+date+" "+DateUtil.format(l.getEndTime(),"HH:mm"));
+                        }
                         QueryWrapper<PatrolTaskUser> wrapper = new QueryWrapper<>();
                         wrapper.lambda().eq(PatrolTaskUser::getTaskCode, l.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
                         List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(wrapper);
@@ -174,5 +206,6 @@ public class PatrolTaskMissingDetection implements Job {
             }
         });
         log.info("存在{}条任务记录漏检,并更新为已漏检状态！", missNum.get());
+        kieSession.dispose();  // 关闭会话
     }
 }

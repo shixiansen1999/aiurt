@@ -125,7 +125,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             String replace = StrUtil.replace(msgContent, "<p>", "");
             String replace1 = StrUtil.replace(replace, "</p>", "");
             announcement.setMsgContent(replace1);
-            bdInfoListService.getOrgNames(announcement);
+            bdInfoListService.getUserNames(announcement);
         }
         result.setSuccess(true);
         result.setResult(pageList);

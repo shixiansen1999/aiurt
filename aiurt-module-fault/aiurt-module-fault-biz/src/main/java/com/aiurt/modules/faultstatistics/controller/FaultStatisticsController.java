@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultstatistics.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.fault.dto.FaultStatisticsDTO;
 import com.aiurt.modules.faultanalysisreport.dto.SpareConsumeDTO;
 import com.aiurt.modules.faultstatistics.service.FaultStatisticsService;
@@ -41,6 +42,7 @@ public class FaultStatisticsController {
      */
     @AutoLog(value = "首页-故障单统计", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-故障单统计", notes = "首页-故障单统计")
+    @PermissionData(pageComponent = "dashboard/Analysis")
     @RequestMapping(value = "/faultList", method = RequestMethod.GET)
     public Result<FaultStatisticsDTO> getFaultList(@ApiParam(name = "startDate", value = "开始日期") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                                 @ApiParam(name = "endDate", value = "结束日期") @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
@@ -49,6 +51,7 @@ public class FaultStatisticsController {
     }
 
     @ApiOperation(value = "首页-备件消耗排行榜", notes = "首页-备件消耗排行榜")
+    @PermissionData(pageComponent = "dashboard/Analysis")
     @RequestMapping(value = "/getSpareConsume", method = RequestMethod.GET)
     @ApiImplicitParams({
             @ApiImplicitParam(name = "type", value = "1-4:表示1-4季度，5-6：半年，年度", required = true, paramType = "query")

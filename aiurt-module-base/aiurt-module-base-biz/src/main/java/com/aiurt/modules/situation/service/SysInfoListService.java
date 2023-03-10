@@ -18,5 +18,5 @@ public interface SysInfoListService extends IService<SysAnnouncement> {
      * 获取指定范围
      * @param announcement
      */
-    void getOrgNames(SysAnnouncement announcement);
+    void getUserNames(SysAnnouncement announcement);
 }

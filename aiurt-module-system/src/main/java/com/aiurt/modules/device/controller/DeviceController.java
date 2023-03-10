@@ -375,4 +375,72 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
     public void exportXls(Device device, HttpServletRequest request, HttpServletResponse response) {
           deviceService.exportXls(device,request,response);
     }
+
+
+    /**
+     * 设备分布情况
+     * @param pageNo
+     * @param pageSize
+     * @param deviceId
+     * @param code
+     * @param name
+     * @param status
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "设备管理-设备台账管理-查看-设备分布情况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")
+    @ApiOperation(value = "设备管理-设备台账管理-查看-设备分布情况", notes = "设备管理-设备台账管理-查看-设备分布情况")
+    @GetMapping(value = "/queryEquipmentDistribution")
+    public Result<IPage<Device>> queryEquipmentDistribution(
+            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+            @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+            @RequestParam(name = "id", required = true) String deviceId,
+            @RequestParam(name = "code", required = false) String code,
+            @RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "status", required = false) String status,
+            HttpServletRequest req) {
+        Result<IPage<Device>> result = new Result<IPage<Device>>();
+        Page<Device> page = new Page<Device>(pageNo, pageSize);
+        //查询设备类型
+        Device device = deviceService.getOne(new LambdaQueryWrapper<Device>().eq(Device::getId,deviceId)
+                .eq(Device::getDelFlag, 0).last("limit 1"));
+        String deviceTypeCode = device.getDeviceTypeCode();
+        QueryWrapper<Device> queryWrapper = new QueryWrapper<>();
+        if(code != null && !"".equals(code)){
+            queryWrapper.like("code", code);
+        }
+        if(name != null && !"".equals(name)){
+            queryWrapper.like("name", name);
+        }
+        if(status != null && !"".equals(status)){
+            queryWrapper.eq("status", status);
+        }
+        queryWrapper.eq("device_type_code",deviceTypeCode).eq("del_flag", CommonConstant.DEL_FLAG_0);
+        Page<Device> pageList = deviceService.page(page, queryWrapper);
+        List<Device> records = pageList.getRecords();
+        if(records != null && records.size()>0){
+            for(Device d : records){
+                //线路
+                String lineCode = d.getLineCode()==null?"":d.getLineCode();
+                //站点
+                String stationCode = d.getStationCode()==null?"":d.getStationCode();
+                //位置
+                String positionCode = d.getPositionCode()==null?"":d.getPositionCode();
+                String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
+                String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
+                String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
+                String positionCodeCcName = lineCodeName ;
+                if(stationCodeName != null && !"".equals(stationCodeName)){
+                    positionCodeCcName +=  CommonConstant.SYSTEM_SPLIT_STR + stationCodeName  ;
+                }
+                if(!"".equals(positionCodeName) && positionCodeName != null){
+                    positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
+                }
+                d.setPositionCodeCcName(positionCodeCcName);
+            }
+        }
+        result.setSuccess(true);
+        result.setResult(pageList);
+        return result;
+    }
 }

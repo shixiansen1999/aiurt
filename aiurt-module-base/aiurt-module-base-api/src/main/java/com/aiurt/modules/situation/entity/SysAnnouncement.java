@@ -160,8 +160,8 @@ public class SysAnnouncement implements Serializable {
      * 指定接收范围
      **/
     @TableField(exist = false)
-    @Excel(name = "指定接收范围", width = 15, dicCode = "orgNames")
-    private String orgNames;
+    @Excel(name = "指定接收范围", width = 15, dicCode = "userNames")
+    private String userNames;
 
     /**
      * 查询发布时间的起始时间
