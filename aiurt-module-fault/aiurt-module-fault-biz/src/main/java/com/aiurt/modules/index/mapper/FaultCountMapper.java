@@ -1,6 +1,9 @@
 package com.aiurt.modules.index.mapper;
 
 import cn.hutool.core.date.DateTime;
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -16,6 +19,7 @@ import java.util.List;
  * @author: qkx
  * @date: 2022年09月05日 15:51
  */
+@EnableDataPerm
 public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
     /**
      * 故障统计
@@ -63,6 +67,9 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @param dateTime
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "f.sys_org_code")
+    })
     List<Fault> getDailyFaultNum(@Param("dateTime")DateTime dateTime);
 
     /**

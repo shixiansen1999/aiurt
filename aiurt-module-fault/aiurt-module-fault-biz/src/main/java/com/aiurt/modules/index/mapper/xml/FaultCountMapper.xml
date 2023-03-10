@@ -186,8 +186,8 @@
     </select>
 
     <select id="getDailyFaultNum" resultType="com.aiurt.modules.fault.entity.Fault">
-        select * from fault
-        where status = 12  and date_format(end_time ,'%Y-%m-%d') =date_format(#{dateTime} ,'%Y-%m-%d')
+        select f.* from fault f
+        where f.status = 12  and date_format(f.end_time ,'%Y-%m-%d') =date_format(#{dateTime} ,'%Y-%m-%d')
     </select>
 
     <select id="getMainFaultCondition" resultType="com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO">

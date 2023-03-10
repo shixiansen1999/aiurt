@@ -10,6 +10,9 @@ import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.boot.task.entity.RepairTaskResult;
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -24,6 +27,7 @@ import java.util.Set;
  * @Date: 2022-06-22
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
@@ -188,6 +192,9 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @param dateTime
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "rtor.org_code")
+    })
     List<RepairPoolDetailsDTO> inspectionNumByDay(@Param("dateTime") DateTime dateTime);
 
     /**

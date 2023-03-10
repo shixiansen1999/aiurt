@@ -3,22 +3,22 @@
 <mapper namespace="com.aiurt.modules.dailyschedule.mapper.DailyScheduleMapper">
 
     <select id="queryDailyScheduleList" resultType="com.aiurt.modules.dailyschedule.entity.DailySchedule">
-        select a.*, DATE_FORMAT(a.add_time, '%Y/%m/%d') as addTimeAlias
-        FROM  daily_schedule a
+        select *, DATE_FORMAT(add_time, '%Y/%m/%d') as addTimeAlias
+        FROM  daily_schedule
         where 1=1
         <if test="year!=null">
-           and DATE_FORMAT(a.add_time, '%Y') = #{year}
+           and DATE_FORMAT(add_time, '%Y') = #{year}
         </if>
         <if test="month != null">
-            and DATE_FORMAT(a.add_time, '%c') = #{month}
+            and DATE_FORMAT(add_time, '%c') = #{month}
         </if>
         <if test="day != null ">
-            and DATE_FORMAT(a.add_time, '%e') = #{day}
+            and DATE_FORMAT(add_time, '%e') = #{day}
         </if>
 
         <if test=" userId != null and userId != ''">
             and  (
-               find_in_set(#{userId}, a.notify_user_id)>0
+               find_in_set(#{userId},notify_user_id)>0
             )
         </if>
         <if test="addTime != null">
