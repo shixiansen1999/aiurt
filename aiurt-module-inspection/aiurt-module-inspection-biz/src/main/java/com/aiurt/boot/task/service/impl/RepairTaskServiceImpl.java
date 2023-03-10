@@ -1273,10 +1273,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             sendAcceptanceMessage(repairTask);
         }
-
-        // 修改审核待办任务的状态
-        isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.INSPECTION_CONFIRM.getType(), repairTask.getId(), loginUser.getUsername(), CommonTodoStatus.DONE_STATUS_1);
-
         // 创建验收待办任务
         try {
             if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) && repairTask.getIsReceipt().equals(InspectionConstant.IS_EFFECT)) {
@@ -1685,7 +1681,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), user.getUsername(), "检修任务-退回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                     RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                     BeanUtil.copyProperties(repairTask,repairTaskMessageDTO);
-                    repairTaskMessageDTO.setId(repairTask.getRepairPoolId());
+                    repairTaskMessageDTO.setId(repairTask.getId());
                     //构建消息模板
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("returnReason",examineDTO.getContent());
