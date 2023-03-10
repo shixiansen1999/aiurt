@@ -93,6 +93,7 @@ public class PatrolStatisticsController {
     @AutoLog(value = "首页-获取首页的日程的巡检列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-获取首页的日程的巡检列表", notes = "首页-获取首页的日程的巡检列表")
     @RequestMapping(value = "/getScheduleList", method = {RequestMethod.GET, RequestMethod.POST})
+    @PermissionData(pageComponent = "dashboard/Analysis")
     public Result<IPage<ScheduleTask>> getScheduleList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                        @Validated IndexScheduleDTO indexScheduleDTO) {

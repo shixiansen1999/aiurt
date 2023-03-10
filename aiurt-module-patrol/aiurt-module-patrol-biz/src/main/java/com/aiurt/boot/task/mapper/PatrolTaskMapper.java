@@ -207,10 +207,10 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * 获取首页的日程的巡检列表
      * @param page
      * @param indexScheduleDTO
-     * @param departList
+     * @param patrolTaskOrganizations
      * @return
      */
-    IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, @Param("condition") IndexScheduleDTO indexScheduleDTO, @Param("departList") List<CsUserDepartModel> departList);
+    IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, @Param("condition") IndexScheduleDTO indexScheduleDTO, @Param("patrolTaskOrganizations") List<PatrolTaskOrganization> patrolTaskOrganizations);
 
     /**
      * 获取首页指定日期范围的任务列表
