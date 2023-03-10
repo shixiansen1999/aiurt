@@ -345,12 +345,14 @@ public class PatrolStatisticsService {
         if (ObjectUtil.isNotEmpty(indexScheduleDTO.getIsAllData()) && ALLDATA.equals(indexScheduleDTO.getIsAllData())) {
             pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, null);
         } else {
-            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            if (ObjectUtil.isEmpty(loginUser)) {
-                throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
-            }
-            List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
-            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, departList);
+//            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+//            if (ObjectUtil.isEmpty(loginUser)) {
+//                throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
+//            }
+//            List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
+            //数据权限
+            List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO,patrolTaskOrganizations);
         }
 
         pageList.getRecords().stream().forEach(l -> {
