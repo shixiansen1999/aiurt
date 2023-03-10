@@ -87,4 +87,11 @@ public interface IThirdAppService {
      */
     boolean sendMessage(MessageDTO message);
 
+
+    /**
+     * 同步本地用户的企业微信账号
+     * @param
+     * @return
+     * */
+    SyncInfoVo syncWeChatToLocal();
 }

@@ -2,6 +2,8 @@ package com.aiurt.modules.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpUtil;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.util.JwtUtil;
@@ -931,4 +933,55 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
         }
     }
 
+    @Override
+    public SyncInfoVo syncWeChatToLocal() {
+        SyncInfoVo syncInfo = new SyncInfoVo();
+        String accessToken = this.getAccessToken();
+        if (accessToken == null) {
+            syncInfo.addFailInfo("accessToken获取失败！");
+            return syncInfo;
+        }
+        //查询本地用户
+        List<SysUser> sysUsersList = userMapper.selectList(Wrappers.emptyWrapper());
+        // 循环判断新用户和需要更新的用户
+        for (SysUser user : sysUsersList) {
+            if (StrUtil.isNotEmpty(user.getPhone())) {
+                /*
+                 * 判断是否已经用户已经和企业微信关联
+                 *1.通过用户手机去企业微信查询是否存在账号
+                 *2.如果有则判断本地是否已经同步过，同步过则更新，没有同步过则新增第三方关联数据
+                 * 请确保手机号的正确性，若出错的次数超出企业规模人数的20%，会导致1天不可调用。
+                 */
+                String weChatUserName = null;
+
+                String URL = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserid?access_token="+accessToken;
+                HttpRequest httpRequest = HttpUtil.createGet(URL);
+                String body = "{\"mobile\":"+user.getPhone()+"}";
+                httpRequest.body(body);
+                String dataStr = httpRequest.execute().body();
+                if (StrUtil.isNotEmpty(dataStr)) {
+                    JSONObject jsonObject = JSONObject.parseObject(dataStr);
+                    Object code = jsonObject.get("code");
+                    if (ObjectUtil.isNotEmpty(code) && Integer.valueOf(200).equals(code)) {
+                        weChatUserName = (String) jsonObject.get("userid");
+                    }
+                }
+
+                if (StrUtil.isNotEmpty(weChatUserName)) {
+                    //到此说明系统用户匹配到企业微信用户
+                    SysThirdAccount sysThirdAccount = sysThirdAccountService.getOneByThirdUserId(weChatUserName, THIRD_TYPE);
+                    this.thirdAccountSaveOrUpdate(sysThirdAccount, user.getId(), weChatUserName);
+                    String str = String.format("用户 %s(%s) 更新成功！", user.getUsername(), user.getRealname());
+                    syncInfo.addSuccessInfo(str);
+                } else {
+                    String str = String.format("用户 %s(%s) 同步失败！错误信息：%s", user.getUsername(), user.getRealname(), "没有在企业微信找到该用户");
+                    syncInfo.addFailInfo(str);
+                }
+            } else {
+                String str = String.format("用户 %s(%s) 同步失败！错误信息：%s", user.getUsername(), user.getRealname(), "没有填写手机号");
+                syncInfo.addFailInfo(str);
+            }
+        }
+        return syncInfo;
+    }
 }
