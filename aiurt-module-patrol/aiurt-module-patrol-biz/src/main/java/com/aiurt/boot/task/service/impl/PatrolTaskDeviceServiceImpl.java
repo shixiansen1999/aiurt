@@ -53,6 +53,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     @Autowired
     private PatrolAccompanyMapper patrolAccompanyMapper;
     @Autowired
+    private PatrolSamplePersonMapper patrolSamplePersonMapper;
+    @Autowired
     private PatrolCheckResultMapper patrolCheckResultMapper;
     @Autowired
     private PatrolTaskStandardMapper patrolTaskStandardMapper;
@@ -186,6 +188,11 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining("；"));
             e.setUserName(userName);
             e.setAccompanyName(accompanyDTOList);
+            // 设置抽检人信息
+            List<PatrolSamplePerson> samplePersonList = patrolSamplePersonMapper.getSamplePersonList(e.getPatrolNumber());
+            String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(";"));
+            e.setSamplePersonName(samplePersonName);
+            e.setSamplePersonList(samplePersonList);
             List<PatrolCheckResult> list = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
             List<PatrolCheckResult> rightCheck = list.stream().filter(s -> s.getCheckResult() != null && 1 == s.getCheckResult()).collect(Collectors.toList());
             List<PatrolCheckResult> aberrant = list.stream().filter(s -> s.getCheckResult() != null && 0 == s.getCheckResult()).collect(Collectors.toList());
@@ -562,6 +569,11 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining("；"));
             e.setUserName(userName);
             e.setAccompanyName(accompanyDTOList);
+            // 设置抽检人信息
+            List<PatrolSamplePerson> samplePersonList = patrolSamplePersonMapper.getSamplePersonList(e.getPatrolNumber());
+            String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(";"));
+            e.setSamplePersonName(samplePersonName);
+            e.setSamplePersonList(samplePersonList);
             List<PatrolCheckResult> list = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
             List<PatrolCheckResult> rightCheck = list.stream().filter(s -> s.getCheckResult() != null && 1 == s.getCheckResult()).collect(Collectors.toList());
             List<PatrolCheckResult> aberrant = list.stream().filter(s -> s.getCheckResult() != null && 0 == s.getCheckResult()).collect(Collectors.toList());

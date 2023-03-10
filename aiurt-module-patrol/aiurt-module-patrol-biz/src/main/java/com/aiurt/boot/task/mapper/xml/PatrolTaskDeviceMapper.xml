@@ -281,4 +281,13 @@
         where ptd.del_flag = 0
           and ptd.task_id = #{taskId}
     </select>
+
+    <select id="getSamplePersonNameByTaskId" resultType="java.lang.String">
+        select group_concat(distinct psp.username) as samplePersonName
+        from patrol_task_device ptd
+            join patrol_sample_person psp on ptd.patrol_number = psp.task_device_code and psp.del_flag = 0
+        where
+            ptd.del_flag = 0
+            and ptd.task_id = #{taskId}
+    </select>
 </mapper>

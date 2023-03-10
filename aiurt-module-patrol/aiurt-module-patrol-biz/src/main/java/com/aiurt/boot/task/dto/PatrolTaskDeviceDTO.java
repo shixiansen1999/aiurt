@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.dto;
 
+import com.aiurt.boot.task.entity.PatrolSamplePerson;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -136,6 +137,13 @@ public class PatrolTaskDeviceDTO {
     @ApiModelProperty(value = "巡检位置")
     @TableField(exist = false)
     private java.lang.String  inspectionPosition;
+    @Excel(name = "抽检人", width = 15)
+    @ApiModelProperty(value = "抽检人")
+    @TableField(exist = false)
+    private String samplePersonName;
+    @Excel(name = "抽检人的信息", width = 15)
+    @ApiModelProperty(value = "抽检人的信息")
+    private List <PatrolSamplePerson> samplePersonList;
     /**巡检自定义位置*/
     @Excel(name = "巡检自定义位置", width = 15)
     @ApiModelProperty(value = "巡检自定义位置")
