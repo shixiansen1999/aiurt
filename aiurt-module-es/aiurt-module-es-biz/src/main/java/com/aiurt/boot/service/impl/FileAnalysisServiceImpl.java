@@ -19,6 +19,8 @@ import com.aiurt.modules.search.dto.FileDataDTO;
 import com.aiurt.modules.search.entity.FileAnalysisData;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -99,7 +101,31 @@ public class FileAnalysisServiceImpl implements IFileAnalysisService, EsFileAPI 
     @Override
     public void syncData(String index) {
         List<FaultKnowledgeBaseDTO> list = esMapper.selectList();
-        elasticsearchClientUtil.createBulkDocument(index, list);
+
+        for (FaultKnowledgeBaseDTO faultKnowledgeBaseDTO : list) {
+            IndexRequest request = new IndexRequest(index);
+            request.source(JSON.toJSONString(faultKnowledgeBaseDTO), XContentType.JSON);
+            request.id(faultKnowledgeBaseDTO.getId());
+            try {
+                client.index(request, RequestOptions.DEFAULT);
+            } catch (IOException e) {
+                log.error("创建文档失败！", e);
+            }
+        }
+//
+//        BulkRequest request = new BulkRequest();
+////        request.timeout();
+//        for (FaultKnowledgeBaseDTO obj : list) {
+//            IndexRequest source = new IndexRequest(index).source(JSON.toJSONString(obj), XContentType.JSON);
+//            source.id(obj.getId());
+//            request.add(source);
+//        }
+//        try {
+//            BulkResponse response = client.bulk(request, RequestOptions.DEFAULT);
+//        } catch (IOException e) {
+//            log.error("批量插入文档存在异常！", e);
+//        }
+//        elasticsearchClientUtil.createBulkDocument(index,list);
     }
 
     @Override

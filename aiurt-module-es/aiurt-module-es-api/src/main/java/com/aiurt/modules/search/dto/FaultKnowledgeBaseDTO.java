@@ -27,6 +27,7 @@ public class FaultKnowledgeBaseDTO implements Serializable {
 	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
+    @Field(name="id")
     private String id;
 	/**故障知识分类编码*/
 	@Excel(name = "故障知识分类编码", width = 15)

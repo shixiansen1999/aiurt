@@ -56,7 +56,7 @@ public class EsConstant {
     /**
      * 规范知识库文档类型id
      */
-    public static final String TYPE_ID = "type_id";
+    public static final String TYPE_ID = "typeId";
     /**
      * 规范知识库文档名称
      */
