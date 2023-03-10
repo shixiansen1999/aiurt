@@ -196,6 +196,12 @@ public class ShiroConfig {
         bigSet.add("/fault/faultInformation/queryLargeFaultDataCount");
         bigSet.add("/plan/bigscreen/getTeamPortraitDetails");
         bigSet.add("/plan/bigscreen/getTeamPortrait");
+        bigSet.add("/plan/bigscreen/getTaskCompletion");
+        bigSet.add("/plan/bigscreen/overviewInfo");
+        bigSet.add("/plan/bigscreen/getInspectionDataNoPage");
+        bigSet.add("/patrolScreen/statisticsGraph");
+        bigSet.add("/patrolScreen/statistics");
+        bigSet.add("/patrolScreen/statisticsTaskInfo");
 
         bigSet.add("/faultknowledgebase/**");
         bigSet.add("/faultknowledgebasetype/**");
