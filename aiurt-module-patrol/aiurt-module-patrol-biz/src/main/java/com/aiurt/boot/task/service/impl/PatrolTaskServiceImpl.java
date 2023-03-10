@@ -207,6 +207,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<String> subsystemInfo = patrolPlanMapper.getSubsystemInfoByPlanId(taskParam.getId());
         // 同行人
         String accompanyUserName = patrolTaskDeviceMapper.getAccompanyUserByTaskId(taskParam.getId());
+        // 抽检人
+        String samplePersonName = patrolTaskDeviceMapper.getSamplePersonNameByTaskId(taskParam.getId());
 
         taskParam.setDepartInfo(organizationInfo);
         taskParam.setStationInfo(stationInfo);
@@ -214,6 +216,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         taskParam.setMajorInfo(majorInfo);
         taskParam.setSubsystemInfo(subsystemInfo);
         taskParam.setAccompanyName(accompanyUserName);
+        taskParam.setSamplePersonName(samplePersonName);
         if (StrUtil.isNotEmpty(taskParam.getEndUserId())) {
             taskParam.setEndUsername(patrolTaskMapper.getUsername(taskParam.getEndUserId()));
         }

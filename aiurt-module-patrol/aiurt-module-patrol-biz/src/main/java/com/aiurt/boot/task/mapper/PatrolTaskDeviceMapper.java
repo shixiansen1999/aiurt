@@ -198,4 +198,11 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     String getAccompanyUserByTaskId(@Param("taskId") String taskId);
+
+    /**
+     * 根据任务id获取任务下所有抽检人名称
+     * @param taskId
+     * @return
+     */
+    String getSamplePersonNameByTaskId(String taskId);
 }
