@@ -99,6 +99,7 @@ public class IndexPlanController {
      */
     @AutoLog(value = "首页-日代办事项", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-日代办事项", notes = "首页-日代办事项")
+    @PermissionData(pageComponent = "dashboard/Analysis")
     @RequestMapping(value = "/getUserSchedule", method = RequestMethod.GET)
     public Result<List<DayTodoDTO>> getUserSchedule(@ApiParam(value = "年份") @RequestParam(name = "year") Integer year,
                                                     @ApiParam(value = "月份") @RequestParam(name = "month") Integer month

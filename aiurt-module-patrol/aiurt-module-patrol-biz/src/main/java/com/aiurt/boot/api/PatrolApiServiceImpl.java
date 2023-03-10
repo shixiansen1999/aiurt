@@ -1,6 +1,7 @@
 package com.aiurt.boot.api;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -16,6 +17,7 @@ import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
+import com.aiurt.boot.task.entity.PatrolTaskOrganization;
 import com.aiurt.boot.task.mapper.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -42,6 +44,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
     private PatrolTaskMapper patrolTaskMapper;
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
+    @Autowired
+    private PatrolTaskOrganizationMapper patrolTaskOrganizationMapper;
     @Autowired
     private PatrolStandardMapper patrolStandardMapper;
     @Autowired
@@ -71,10 +75,21 @@ public class PatrolApiServiceImpl implements PatrolApi {
         instance.set(Calendar.DAY_OF_MONTH, instance.getActualMaximum(Calendar.DAY_OF_MONTH));
         // 所在月的最后一天
         Date lastDay = DateUtil.parse(DateUtil.format(instance.getTime(), "yyyy-MM-dd 23:59:59"));
+
+        QueryWrapper<PatrolTaskOrganization> patrolTaskOrganizationQueryWrapper = new QueryWrapper<>();
+        patrolTaskOrganizationQueryWrapper.lambda().eq(PatrolTaskOrganization::getDelFlag,0);
+        List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(patrolTaskOrganizationQueryWrapper);
+
         QueryWrapper<PatrolTask> taskWrapper = new QueryWrapper<>();
         taskWrapper.lambda().eq(PatrolTask::getDelFlag, 0)
                 .eq(PatrolTask::getStatus, PatrolConstant.TASK_COMPLETE)
                 .between(PatrolTask::getPatrolDate, firstDay, lastDay);
+        if (CollectionUtil.isNotEmpty(patrolTaskOrganizations)){
+            List<String> collect = patrolTaskOrganizations.stream().map(PatrolTaskOrganization::getTaskCode).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect)){
+                taskWrapper.lambda().in(PatrolTask::getCode,collect);
+            }
+        }
         List<PatrolTask> taskList = patrolTaskMapper.selectList(taskWrapper);
 
         instance.set(year, month - 1, 1);

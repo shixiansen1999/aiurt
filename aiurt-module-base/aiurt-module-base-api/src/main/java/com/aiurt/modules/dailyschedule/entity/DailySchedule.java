@@ -1,5 +1,6 @@
 package com.aiurt.modules.dailyschedule.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -54,6 +55,7 @@ public class DailySchedule  extends DictEntity implements Serializable {
     private Date updateTime;
 	/**所属部门*/
     @ApiModelProperty(value = "所属部门")
+    @DeptFilterColumn
     private String sysOrgCode;
 	/**添加人*/
 	@Excel(name = "添加人", width = 15)

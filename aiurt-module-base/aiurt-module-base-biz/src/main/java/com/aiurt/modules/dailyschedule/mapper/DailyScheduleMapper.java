@@ -3,6 +3,7 @@ package com.aiurt.modules.dailyschedule.mapper;
 import java.util.Date;
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -13,6 +14,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @Date:   2022-09-08
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface DailyScheduleMapper extends BaseMapper<DailySchedule> {
 
 
