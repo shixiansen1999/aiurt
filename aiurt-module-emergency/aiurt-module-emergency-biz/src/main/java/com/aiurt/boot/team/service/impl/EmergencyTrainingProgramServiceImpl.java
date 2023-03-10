@@ -142,6 +142,14 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         emergencyTrainingProgram.setOrgCode(user.getOrgCode());
         this.save(emergencyTrainingProgram);
+
+        List<EmergencyTrainingTeam> emergencyTrainingTeamList = emergencyTrainingProgram.getEmergencyTrainingTeamList();
+        if (CollUtil.isNotEmpty(emergencyTrainingTeamList)) {
+            for (EmergencyTrainingTeam emergencyTrainingTeam : emergencyTrainingTeamList) {
+                emergencyTrainingTeam.setEmergencyTrainingProgramId(emergencyTrainingProgram.getId());
+                emergencyTrainingTeamService.save(emergencyTrainingTeam);
+            }
+        }
         try {
             //下发发送消息通知
             if (TeamConstant.PUBLISH.equals(emergencyTrainingProgram.getSaveFlag())) {
@@ -149,13 +157,6 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-        List<EmergencyTrainingTeam> emergencyTrainingTeamList = emergencyTrainingProgram.getEmergencyTrainingTeamList();
-        if (CollUtil.isNotEmpty(emergencyTrainingTeamList)) {
-            for (EmergencyTrainingTeam emergencyTrainingTeam : emergencyTrainingTeamList) {
-                emergencyTrainingTeam.setEmergencyTrainingProgramId(emergencyTrainingProgram.getId());
-                emergencyTrainingTeamService.save(emergencyTrainingTeam);
-            }
         }
         return Result.OK(result);
     }
