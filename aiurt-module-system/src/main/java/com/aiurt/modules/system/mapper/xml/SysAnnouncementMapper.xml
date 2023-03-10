@@ -283,9 +283,12 @@
 	</select>
 
 	<select id="queryLast" resultType="com.aiurt.modules.system.entity.SysAnnouncementSend">
-		select * from sys_announcement_send where user_id = #{userId}
+		select sas.*,sa.msg_abstract as titleContent
+		from sys_announcement_send sas
+		left join sys_announcement sa on sa.id = sas.annt_id
+		where sas.user_id = #{userId}
 		<if test="list != null and list.size() != 0">
-			and annt_id in (
+			and sas.annt_id in (
 				select id from sys_announcement where 1=1
 				and (bus_type in
 					<foreach collection="list" separator="," open="(" close=")" item="item">
@@ -300,9 +303,9 @@
 			)
 		</if>
 		<if test="msgCategory != null and msgCategory != ''">
-			and annt_id in (select id from sys_announcement where msg_category = #{msgCategory} )
+			and sas.annt_id in (select id from sys_announcement where msg_category = #{msgCategory} )
 		</if>
-		order by update_time desc, create_time desc limit 1
+		order by sas.update_time desc, sas.create_time desc limit 1
 	</select>
 
 	<select id="queryBNullTypeCount" resultType="com.aiurt.modules.system.dto.SysAnnouncementTypeCountDTO">

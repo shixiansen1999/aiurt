@@ -182,7 +182,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		pictureCode.add(SysParamCodeConstant.PATROL);
 		pictureCode.add(SysParamCodeConstant.EMERGENCY);
 		pictureCode.add(SysParamCodeConstant.TRAIN);
-		pictureCode.add(SysParamCodeConstant.OPERATE);
+		pictureCode.add(SysParamCodeConstant.Week);
 		pictureCode.add(SysParamCodeConstant.SITUATION);
 		pictureCode.add(SysParamCodeConstant.WORKLOG);
 		pictureCode.add(SysParamCodeConstant.MATERIAL);
@@ -190,8 +190,8 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		Map<String, List<SysAnnouncementTypeCountDTO>> busTypeMap = announcementTypeCountDTOList.stream().collect(Collectors.groupingBy(dto -> {
 			String busType = dto.getBusType();
 			SysAnnmentTypeEnum sysAnnmentTypeEnum = SysAnnmentTypeEnum.getByTypeV2(busType);
-			if (Objects.isNull(sysAnnmentTypeEnum)) {
-				return null;
+			if (Objects.nonNull(sysAnnmentTypeEnum)) {
+				return dto.getTitile();
 			} else {
 				return sysAnnmentTypeEnum.getModule();
 			}
@@ -205,6 +205,9 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			List<String> busTypeList = dtoList.stream().map(SysAnnouncementTypeCountDTO::getBusType).collect(Collectors.toList());
 			String busType = countDTO.getBusType();
 			String type = StrUtil.splitTrim(busType, "_").get(0);
+            //查询最近的一条数据
+			SysAnnouncementSend sysAnnouncementSend = baseMapper.queryLast(userId, busTypeList, null);
+
 			SysMessageTypeDTO typeDTO = SysMessageTypeDTO.builder()
 					.busType(type)
 					.messageFlag("1")
@@ -218,11 +221,9 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				}
 			}
 
-
-			SysAnnouncementSend sysAnnouncementSend = baseMapper.queryLast(userId, busTypeList, null);
-
 			if (Objects.nonNull(sysAnnouncementSend)) {
 				typeDTO.setIntervalTime(Objects.isNull(sysAnnouncementSend.getUpdateTime())?sysAnnouncementSend.getCreateTime(): sysAnnouncementSend.getUpdateTime());
+				typeDTO.setTitleContent(sysAnnouncementSend.getTitleContent());
 			}
 			messageList.add(typeDTO);
 		});
@@ -265,6 +266,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 
 			if (Objects.nonNull(sysAnnouncementSend)) {
 				sysMessageTypeDTO.setIntervalTime(Objects.isNull(sysAnnouncementSend.getUpdateTime())?sysAnnouncementSend.getCreateTime(): sysAnnouncementSend.getUpdateTime());
+				sysMessageTypeDTO.setTitleContent(sysAnnouncementSend.getTitleContent());
 			}
 			messageList.add(sysMessageTypeDTO);
 		});
@@ -305,6 +307,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			SysTodoList sysTodoList = sysTodoListService.queryBpmnLast(stringList, username);
 			if (Objects.nonNull(sysTodoList)) {
 				typeDTO.setIntervalTime(Objects.isNull(sysTodoList.getUpdateTime())? sysTodoList.getCreateTime():sysTodoList.getUpdateTime());
+				typeDTO.setTitleContent(sysTodoList.getTaskName());
 			}
 			bpmnList.add(typeDTO);
 		});
