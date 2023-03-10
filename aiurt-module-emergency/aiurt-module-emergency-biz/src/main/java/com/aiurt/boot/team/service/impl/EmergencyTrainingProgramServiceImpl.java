@@ -134,7 +134,7 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         String result = "添加成功！";
         if (TeamConstant.PUBLISH.equals(emergencyTrainingProgram.getSaveFlag())) {
             emergencyTrainingProgram.setStatus(TeamConstant.WAIT_COMPLETE);
-            publish(emergencyTrainingProgram);
+           // publish(emergencyTrainingProgram);
             result = "下发成功！";
         } else {
             emergencyTrainingProgram.setStatus(TeamConstant.WAIT_PUBLISH);
@@ -142,6 +142,14 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         emergencyTrainingProgram.setOrgCode(user.getOrgCode());
         this.save(emergencyTrainingProgram);
+        try {
+            //下发发送消息通知
+            if (TeamConstant.PUBLISH.equals(emergencyTrainingProgram.getSaveFlag())) {
+                publish(emergencyTrainingProgram);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         List<EmergencyTrainingTeam> emergencyTrainingTeamList = emergencyTrainingProgram.getEmergencyTrainingTeamList();
         if (CollUtil.isNotEmpty(emergencyTrainingTeamList)) {
             for (EmergencyTrainingTeam emergencyTrainingTeam : emergencyTrainingTeamList) {
