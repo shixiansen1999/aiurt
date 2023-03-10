@@ -135,8 +135,28 @@ public class PaginationExtInnerInterceptor extends PaginationInnerInterceptor {
 	private List<OrderItem> findOrderFiledBySql(Map parameterMap) {
 
 		List<OrderItem> orders = new ArrayList<>();
-		// 手写sql, 参数是condition方式
 
+		// page 排序
+		Object page = null;
+		try {
+			page = parameterMap.getOrDefault("page", null);
+		} catch (Exception e) {
+			try {
+				page = parameterMap.getOrDefault("pageList", null);
+			} catch (Exception exception) {
+				// do nothing
+			}
+		}
+		if (Objects.nonNull(page) && page instanceof Page) {
+			Page p = (Page) page;
+			List orderList = p.orders();
+			if (CollectionUtils.isNotEmpty(orderList)) {
+				p.setOrders(new ArrayList<>());
+				orders.addAll(orderList);
+			}
+		}
+
+		// 手写sql, 参数是condition方式
 		Object condition = null;
 		try {
 			condition = parameterMap.get("condition");
