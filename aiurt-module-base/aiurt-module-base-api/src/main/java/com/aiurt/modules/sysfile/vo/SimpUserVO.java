@@ -43,6 +43,7 @@ public class SimpUserVO implements Serializable {
 		return Objects.equals(userId, that.userId) && Objects.equals(userName, that.userName);
 	}
 
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(userId, userName);
