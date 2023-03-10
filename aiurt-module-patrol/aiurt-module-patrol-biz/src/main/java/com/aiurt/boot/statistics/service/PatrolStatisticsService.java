@@ -81,7 +81,9 @@ public class PatrolStatisticsService {
 //            }
 //            departList = sysBaseApi.getDepartByUserId(loginUser.getId());
 //        }
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         List<PatrolTaskStandard> standards = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0));
+        GlobalThreadLocal.setDataFilter(b);
         List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
         boolean openClose = GlobalThreadLocal.setDataFilter(false);
         List<PatrolTask> list = patrolTaskMapper.getOverviewInfo(newStartDate, newEndDate, departList,standards);
