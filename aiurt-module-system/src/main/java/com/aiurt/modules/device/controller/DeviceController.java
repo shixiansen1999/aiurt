@@ -120,9 +120,10 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
                 d.setPositionCodeCcName(positionCodeCcName);
             }
         }
-        result.setSuccess(true);
-        result.setResult(pageList);
-        return result;
+//        result.setSuccess(true);
+//        result.setResult(pageList);
+//        return result;
+        return Result.ok(pageList);
     }
 
     /**
