@@ -1,5 +1,6 @@
 package com.aiurt.boot.pool;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -132,7 +133,7 @@ public class PatrolTaskMissingDetection implements Job {
                     try {
                         TodoDTO todoDTO = new TodoDTO();
                         todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
-                        todoDTO.setTitle("巡视任务-漏检");
+                        todoDTO.setTitle("巡视任务-漏检"+DateUtil.today());
                         todoDTO.setMsgAbstract("巡视任务-漏检");
                         todoDTO.setPublishingContent("巡视任务漏检，请尽快处置");
                         SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
@@ -141,12 +142,11 @@ public class PatrolTaskMissingDetection implements Job {
                         HashMap<String, Object> map = new HashMap<>();
                         map.put("code",l.getCode());
                         map.put("patrolTaskName",l.getName());
-                        String station = patrolTaskStationMapper.getStationByTaskCode(l.getCode());
-                        map.put("patrolStation",station);
-                        if (ObjectUtil.isNotEmpty(l.getStartTime()) && ObjectUtil.isNotEmpty(l.getEndTime())) {
-                            String date = DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd");
-                            map.put("patrolTaskTime",date+" "+DateUtil.format(l.getStartTime(),"HH:mm")+"-"+date+" "+DateUtil.format(l.getEndTime(),"HH:mm"));
-                        }
+                        List<String>  station = patrolTaskStationMapper.getStationByTaskCode(l.getCode());
+                        map.put("patrolStation", CollUtil.join(station,","));
+                        String date = DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd");
+                        map.put("patrolTaskTime",date);
+
                         QueryWrapper<PatrolTaskUser> wrapper = new QueryWrapper<>();
                         wrapper.lambda().eq(PatrolTaskUser::getTaskCode, l.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
                         List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(wrapper);
@@ -157,6 +157,7 @@ public class PatrolTaskMissingDetection implements Job {
                             map.put("patrolName", realNames);
 
                         }
+                        todoDTO.setData(map);
                         todoDTO.setProcessDefinitionName("巡视管理");
                         todoDTO.setTaskName(l.getName() + "(漏巡待处理)");
                         todoDTO.setBusinessKey(l.getId());

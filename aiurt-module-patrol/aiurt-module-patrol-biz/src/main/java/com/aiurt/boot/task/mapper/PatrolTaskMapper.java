@@ -18,6 +18,7 @@ import com.aiurt.boot.statistics.model.IndexTaskInfo;
 import com.aiurt.boot.statistics.model.PatrolCondition;
 import com.aiurt.boot.statistics.model.PatrolIndexTask;
 import com.aiurt.boot.statistics.model.ScheduleTask;
+import com.aiurt.boot.task.dto.GeneralReturn;
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
@@ -445,4 +446,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     PatrolTaskDTO getDetail(@Param("id")String id);
+
+    /**
+     * 前端返回通用格式-组织机构
+     * @param orgCodes
+     * @return
+     */
+    List<GeneralReturn> getOrgCodeName(@Param("orgCodes")List<String> orgCodes);
 }

@@ -73,6 +73,7 @@ public class WorkLogResult {
     @ApiModelProperty(value = "故障报修")
     private  String  faultContent;
 
+    @ApiModelProperty(value = "巡检修内容")
     private String patrolRepairContent;
 
     /**工作内容*/
@@ -160,6 +161,11 @@ public class WorkLogResult {
     /**接班人id*/
     @ApiModelProperty(value = "接班人id")
     private  String  succeedId;
+
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "接班人确认时间")
+    private String succeedTime;
 
     /**配合施工时间*/
     @ApiModelProperty(value = "配合施工时间")
@@ -278,10 +284,18 @@ public class WorkLogResult {
     @ApiModelProperty(value = "班组")
     private  String  OrgName;
 
+    @ApiModelProperty(value = "附件链接")
+    private String url;
+
+    @ApiModelProperty(value = "归档状态(0:未归档，1:已归档)")
+    private Integer ecmStatus;
+
     @TableField(exist = false)
+    @ApiModelProperty("密级")
     private String secert;
 
     @TableField(exist = false)
+    @ApiModelProperty(value = "保管期限")
     private String secertduration;
 
     @TableField(exist = false)

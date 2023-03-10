@@ -34,27 +34,25 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @param faultTimeoutLevelReq
      * @return
      */
-    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level, @Param("page") Page<FaultTimeoutLevelDTO> page, @Param("faultTimeoutLevelReq") FaultTimeoutLevelReq faultTimeoutLevelReq,@Param("majorByUserId")List<String> majorByUserId,@Param("stationCodeList")List<String> stationCodeList,@Param("lv1Hours") Integer lv1Hours,@Param("lv2Hours") Integer lv2Hours,@Param("lv3Hours") Integer lv3Hours);
+    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level, @Param("page") Page<FaultTimeoutLevelDTO> page, @Param("faultTimeoutLevelReq") FaultTimeoutLevelReq faultTimeoutLevelReq,@Param("majorByUserId")List<String> majorByUserId,@Param("stationCodeList")List<String> stationCodeList,@Param("lv1Hours") Integer lv1Hours,@Param("lv2Hours") Integer lv2Hours,@Param("lv3Hours") Integer lv3Hours,@Param("userNameByRealName")List<String> userNameByRealName);
 
     /**
      * 故障概况统计详情(总数和已解决)分页
      * @param type
      * @param page
      * @param faultCountInfoReq
-     * @param ordList
      * @return
      */
-    List<FaultCountInfoDTO> getFaultCountInfo(@Param("type") Integer type, @Param("page") Page<FaultCountInfoDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq,@Param("ordList") List<String> ordList,@Param("majorByUserId")List<String> majorByUserId,@Param("stationCodeList")List<String> stationCodeList,@Param("userNameByRealName")List<String> userNameByRealName);
+    List<FaultCountInfoDTO> getFaultCountInfo(@Param("type") Integer type, @Param("page") Page<FaultCountInfoDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq,/**@Param("ordList") List<String> ordList*/@Param("majorByUserId")List<String> majorByUserId,@Param("stationCodeList")List<String> stationCodeList,@Param("userNameByRealName")List<String> userNameByRealName);
 
     /**
      * 故障概况统计详情(未解决和挂起)分页
      * @param type
      * @param page
      * @param faultCountInfoReq
-     * @param ordList
      * @return
      */
-    List<FaultCountInfosDTO> getFaultCountInfos(@Param("type") Integer type, @Param("page") Page<FaultCountInfosDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq,@Param("ordList") List<String> ordList,@Param("majorByUserId")List<String> majorByUserId,@Param("stationCodeList")List<String> stationCodeList,@Param("userNameByRealName")List<String> userNameByRealName);
+    List<FaultCountInfosDTO> getFaultCountInfos(@Param("type") Integer type, @Param("page") Page<FaultCountInfosDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq,/**@Param("ordList") List<String> ordList*/@Param("majorByUserId")List<String> majorByUserId,@Param("stationCodeList")List<String> stationCodeList,@Param("userNameByRealName")List<String> userNameByRealName);
 
 
 

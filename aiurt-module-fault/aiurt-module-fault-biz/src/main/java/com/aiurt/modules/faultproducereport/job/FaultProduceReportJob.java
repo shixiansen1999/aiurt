@@ -17,10 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.time.DateUtils;
 
@@ -28,37 +30,67 @@ import org.apache.commons.lang.time.DateUtils;
  * 每日定时任务：定时生成生产日报数据
  * 每日系统自动生成生产日报数据，添加入三个表：fault_produce_report、fault_produce_report_line、fault_produce_report_line_detail
  */
-@Component
-@RequiredArgsConstructor
 @Slf4j
+@Component
+//@RequiredArgsConstructor
 public class FaultProduceReportJob implements Job {
-    private final IFaultService iFaultService;
-    private final IFaultProduceReportService faultProduceReportService;
-    private final ISysBaseAPI iSysBaseAPI;
-    private final IFaultProduceReportLineService iFaultProduceReportLineService;
-    private final IFaultRepairRecordService iFaultRepairRecordService;
-    private final IFaultProduceReportLineDetailService iFaultProduceReportLineDetailService;
+    @Autowired
+    private IFaultService iFaultService;
+    @Autowired
+    private IFaultProduceReportService faultProduceReportService;
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
+    @Autowired
+    private IFaultProduceReportLineService iFaultProduceReportLineService;
+    @Autowired
+    private IFaultRepairRecordService iFaultRepairRecordService;
+    @Autowired
+    private IFaultProduceReportLineDetailService iFaultProduceReportLineDetailService;
 
     /**
-     * 每天系统自动生成生产日报数据并（每个专业就是一条生产日报数据）
-     * 执行的时候，是统计昨天一整天的故障数据
+     * 参数的格式： 统计截止时间/统计多少个小时内的
+     * 举例1：
+     *      09:00:00/24   (表示统计昨天09:00:00到今天09:00:00的数据（统计24小时内的数据）)
+     * 举例2：
+     *      09:00:00/9    (表示统计今天00:00:00到今天09:00:00的数据（统计9小时内的数据）)
+     * 举例3：
+     *      00:00:00/24  (表示统计昨天00:00:00到今天00:00:00的数据（即统计昨天一天的数据）)
+     * 注：例子里的 “今天” 是系统运行时候的时间
      */
+    private String parameter;
+
+    public void setParameter(String parameter) {
+        this.parameter = parameter;
+    }
+
     @SneakyThrows
     @Override
     public void execute(JobExecutionContext jobExecutionContext){
-//        log.info("自动生成生产日报数据任务执行啦...");
+        log.info("自动生成生产日报数据任务执行啦...");
+//        String parameter = "00:00:00/24";
+        boolean matches = Pattern.matches("\\d{2}:\\d{2}:\\d{2}/\\d+", parameter);
+        if (!matches) {
+            // 参数格式错误
+            log.info("生产日报-数据生成-参数格式错误");
+            return;
+        }
+        String[] parameterSplit = parameter.split("/");
+        // 参数的截止时间
+        String paramEndTime = parameterSplit[0];
+        // 参数的取多少个小时内的数据
+        String paramInterval = parameterSplit[1];
+
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String[] pattern = new String[]{"yyyy-MM-dd HH:mm:ss"};
-        // 统计时间(昨天)，统计开始时间、结束时间
-        Date yesterdayDate = DateUtils.addDays(new Date(), -1);
-        Date statisticsDate = yesterdayDate;
-        String yesterdayString = dateFormat.format(yesterdayDate);
-//        String begin = "2022-01-23";
-//        String end = "2023-02-23";
-//        Date beginDate = DateUtils.parseDate(begin + " 00:00:00", pattern);
-//        Date endDate = DateUtils.parseDate(end + " 23:59:59", pattern);
-        Date beginDate = DateUtils.parseDate(yesterdayString + " 00:00:00", pattern);
-        Date endDate = DateUtils.parseDate(yesterdayString + " 23:59:59", pattern);
+        // 系统运行的日期，即今天日期
+        String todayString = dateFormat.format(new Date());
+        // 统计截止时间：当前日期+截止时间
+        String endTimeString = todayString + " " + paramEndTime;
+        Date endDate = DateUtils.parseDate(endTimeString, pattern);
+        // 统计开始时间：统计截止时间-统计的时间间隔
+        Date beginDate = DateUtils.addHours(endDate, -Integer.parseInt(paramInterval));
+        // 统计日期，就是统计开始时间的日期
+        Date statisticsDate = beginDate;
 
         // 查询故障保修单:
         // 查询条件：审核通过(status=12)&approval_pass_time(审核通过时间)在统计时间范围内(昨天的00:00:00到昨天的23:59:59)
@@ -85,8 +117,8 @@ public class FaultProduceReportJob implements Job {
             FaultProduceReport report = new FaultProduceReport();
             report.setMajorCode(majorCodeKey);  // 专业编码
             report.setStatisticsDate(statisticsDate);  // 统计日期
-            report.setStartTime(beginDate);  // 开始统计日期，是昨天的00:00:00
-            report.setEndTime(endDate); // 结束统计日期
+            report.setStartTime(beginDate);  // 统计开始时间
+            report.setEndTime(endDate); // 统计截止时间
             report.setState(0);  // 状态、不知道那个数字表示开始，先置为0
 
             List<Fault> faults = map.get(majorCodeKey);
@@ -133,7 +165,7 @@ public class FaultProduceReportJob implements Job {
                     reportLineDetail.setLineCode(reportLineKey);  // 线路编码
                     reportLineDetail.setLineName(lineNameCodeMap.get(reportLineKey));  // 线路名称
                     reportLineDetail.setFaultCode(LineFault.getCode());  // 故障编码
-                    reportLineDetail.setFaultPhenomenon(LineFault.getFaultPhenomenon());  // 故障现象
+                    reportLineDetail.setFaultPhenomenon(LineFault.getSymptoms());  // 故障现象
                     // 处理情况 -- 根据故障编码查询故障维修单（时间排序）
                     LambdaQueryWrapper<FaultRepairRecord> qw = new LambdaQueryWrapper<>();
                     qw.eq(FaultRepairRecord::getFaultCode, LineFault.getCode());

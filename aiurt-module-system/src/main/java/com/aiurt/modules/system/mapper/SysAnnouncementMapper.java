@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.modules.system.dto.SysAnnouncementSendDTO;
+import com.aiurt.modules.system.dto.SysAnnouncementTypeCountDTO;
 import com.aiurt.modules.system.dto.SysMessageInfoDTO;
 import com.aiurt.modules.system.entity.SysAnnouncement;
 import com.aiurt.modules.system.entity.SysAnnouncementSend;
@@ -95,4 +96,25 @@ public interface SysAnnouncementMapper extends BaseMapper<SysAnnouncement> {
      */
     List<SysMessageInfoDTO> queryAllTodoList(@Param("userName")String userName,@Param("todoType")String todoType,@Param("keyWord")String keyWord,@Param("busType")String busType);
 
+    /**
+     * 消息统计
+     * @param userId
+     * @return
+     */
+    List<SysAnnouncementTypeCountDTO> queryTypeCount(@Param("userId") String userId);
+
+    /**
+     *
+     * @param userId
+     * @return
+     */
+    List<SysAnnouncementTypeCountDTO> queryBNullTypeCount(@Param("userId") String userId);
+
+    /**
+     * 查询最近的一条
+     * @param userId
+     * @param busTypeList
+     * @return
+     */
+    SysAnnouncementSend queryLast(@Param("userId") String userId, @Param("list") List<String> busTypeList, @Param("msgCategory") String msgCategory);
 }

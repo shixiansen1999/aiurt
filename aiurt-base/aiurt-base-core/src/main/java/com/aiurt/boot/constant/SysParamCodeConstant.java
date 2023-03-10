@@ -21,6 +21,10 @@ public interface SysParamCodeConstant {
      */
     String FIXED_ASSETS_MESSAGE = "fixed_assets_message";
     /**
+     * 固定资产业务消息发送渠道(代办)
+     */
+    String FIXED_ASSETS_MESSAGE_PROCESS = "fixed_assets_message_process";
+    /**
      * 特情消息发送渠道
      */
     String SPECIAL_INFO_MESSAGE = "special_info_message";
@@ -33,7 +37,7 @@ public interface SysParamCodeConstant {
      */
     String FAULT_MESSAGE = "fault_message";
     /**
-     * 故障消息发送渠道(代办)
+     * 故障消息发送渠道(待办)
      */
     String FAULT_MESSAGE_PROCESS = "fault_message_process";
     /**
@@ -41,7 +45,7 @@ public interface SysParamCodeConstant {
      */
     String PATROL_MESSAGE = "patrol_message";
     /**
-     * 巡视消息发送渠道（代办）
+     * 巡视消息发送渠道（待办）
      */
     String PATROL_MESSAGE_PROCESS = "patrol_message_process";
     /**
@@ -49,7 +53,7 @@ public interface SysParamCodeConstant {
      */
     String REPAIR_MESSAGE = "repair_message";
     /**
-     * 检修消息发送渠道（代办）
+     * 检修消息发送渠道（待办）
      */
     String REPAIR_MESSAGE_PROCESS = "repair_message_process";
     /**
@@ -68,29 +72,37 @@ public interface SysParamCodeConstant {
      * 流程消息发送渠道
      */
     String BPM_MESSAGE = "bpm_message";
+    /**
+     * 物资出入库发送渠道
+     */
+    String SPAREPART_MESSAGE = "sparepart_message";
+    /**
+     * 物资出入库发送渠道（待办）
+     */
+    String SPAREPART_MESSAGE_PROCESS= "sparepart_message_process";
 
     /**
-     * 故障
+     * 故障通知
      */
     String FAULT = "fault";
     /**
-     * 检修
+     * 检修通知
      */
     String INSPECTION = "inspection";
     /**
-     * 应急
+     * 应急通知
      */
     String EMERGENCY = "emergency";
     /**
-     * 巡视
+     * 巡视通知
      */
     String PATROL = "patrol";
     /**
-     * 施工
+     * 施工流程待办
      */
     String WEEK_PLAN = "week_plan";
     /**
-     * 培训
+     * 培训业务
      */
     String TRAIN = "train";
     /**
@@ -106,19 +118,19 @@ public interface SysParamCodeConstant {
      */
     String SYS_MESSAGE = "sys_message";
     /**
-     * 故障
+     * 故障流程
      */
     String FAULT_FLOW = "fault_flow";
     /**
-     * 检修
+     * 检修流程
      */
     String INSPECTION_FLOW = "inspection_flow";
     /**
-     * 应急
+     * 应急流程
      */
     String EMERGENCY_FLOW = "emergency_flow";
     /**
-     * 巡视
+     * 巡视流程
      */
     String PATROL_FLOW = "patrol_flow";
     /**
@@ -135,5 +147,19 @@ public interface SysParamCodeConstant {
      * 工作日志
      */
     String WORKLOG = "worklog";
+
+    /**
+     * 物资出入库流程
+     */
+    String SPARE_PART = "spare_part";
+
+    /**
+     * 物资出入库
+     */
+    String MATERIAL = "material";
+    /**
+     * 施工计划通知
+     */
+    String OPERATE = "operate";
 
 }

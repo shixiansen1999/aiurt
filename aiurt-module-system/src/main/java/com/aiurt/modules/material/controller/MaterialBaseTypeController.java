@@ -207,7 +207,7 @@ public class MaterialBaseTypeController {
                     csSubsystem.setIsRemove(false);
                 }
             }
-            csSubsystem.setMaterialBaseTypeList(sysList);
+            csSubsystem.setChildren(sysList);
             csSubsystem.setTitle(csSubsystem.getSystemName());
             csSubsystem.setValue(csSubsystem.getSystemCode());
         });
@@ -230,7 +230,10 @@ public class MaterialBaseTypeController {
                     major.setIsRemove(false);
                 }
             }
-            major.setChildren(sysList);
+            List children = new ArrayList();
+            children.addAll(sysList);
+            children.addAll(sysListType);
+            major.setChildren(children);
             major.setMaterialBaseTypeList(sysListType);
             major.setTitle(major.getMajorName());
             major.setValue(major.getMajorCode());

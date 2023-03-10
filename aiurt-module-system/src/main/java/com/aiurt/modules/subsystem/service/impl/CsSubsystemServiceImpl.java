@@ -16,7 +16,6 @@ import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.mapper.CsUserSubsystemMapper;
-import com.aiurt.modules.system.model.SysPermissionTree;
 import com.aiurt.modules.system.service.ISysUserService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -654,25 +653,29 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         }
         return null;
     }
+
+    /**
+     * 导入名字校验
+     * @param realName
+     * @return
+     */
     private List<SysUser> isNUllUsers(String  realName) {
-        if(ObjectUtil.isNotEmpty(realName))
-        {
-            String[] arr = realName.split(",");
-            for(String userName :arr){
-                //判断是否存在
-                List<SysUser> users = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getRealname, userName));
-                if(CollUtil.isNotEmpty(users))
-                {
-                    List<SysUser> userList  = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getRealname, userName));
-                    return  userList;
-                }
-                else
-                {
-                   return  null;
-                }
+        if(ObjectUtil.isEmpty(realName)) {
+            return  CollUtil.newArrayList();
+        }
+        List<SysUser> userList = new ArrayList<>();
+        String[] arr = realName.split(",");
+        for(String userName :arr){
+            SysUser sysUser = sysUserService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getRealname, userName).eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+            //一个不存在，就判断导入名字有问题,直接返回空集合
+            if(ObjectUtil.isNotEmpty(sysUser)) {
+                return  CollUtil.newArrayList();
+            }
+            else {
+                userList.add(sysUser);
             }
         }
-        return  null;
+        return  userList;
         }
     public static Result<?> imporReturnRes(int errorLines,int successLines,String tipMessage,boolean isType,String url) throws IOException {
         if(isType)

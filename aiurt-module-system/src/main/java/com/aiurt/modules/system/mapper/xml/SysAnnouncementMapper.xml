@@ -43,12 +43,11 @@
 	</select>
 
 	<select id="queryAnnouncement" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysAnnouncementSendDTO">
-      select sa.*
+      select sa.*,sas.read_flag as readFlag
       from sys_announcement sa
       left join sys_announcement_send sas on sas.annt_id = sa.id
       <where>
-		  sas.read_flag = 0
-           and sa.del_flag = 0
+               sa.del_flag = 0
 		  <if test="userId!=null and userId!=''">
                 and sas.user_id = #{userId}
 		  </if>
@@ -56,11 +55,11 @@
 	</select>
 
 	<select id="queryAnnouncementByNull" parameterType="Date" resultType="com.aiurt.modules.system.dto.SysAnnouncementSendDTO">
-		select sa.* from sys_announcement sa
+		select sa.* ,sas.read_flag as readFlag
+		from sys_announcement sa
 		left join sys_announcement_send sas on sas.annt_id = sa.id
 		<where>
-			sas.read_flag = 0
-			and sa.del_flag = 0
+			 sa.del_flag = 0
 			<if test="userId!=null and userId!=''">
 				and sas.user_id = #{userId}
 			</if>
@@ -72,9 +71,8 @@
 		select stl.*
 		from sys_todo_list stl
 		<where>
-			stl.todo_type = 0
 			<if test="userName!=null and userName!=''">
-				and find_in_set(#{userName},stl.current_user_name)
+			 find_in_set(#{userName},stl.current_user_name)
 			</if>
 		</where>
 	</select>
@@ -94,6 +92,8 @@
 		sa.msg_abstract as msgAbstract,
 		sa.publishing_content as publishingContent,
 		sa.bus_type as taskType,
+		sa.process_name as processName,
+		sa.process_code as processCode,
 		sas.read_flag as readFlag
 		from sys_announcement sa
 		left join sys_announcement_send sas on sas.annt_id = sa.id
@@ -103,7 +103,8 @@
 				and sas.user_id = #{userId}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and sa.bus_type LIKE concat('%',#{busType},'%')
+				and (sa.titile is not null and sa.bus_type LIKE concat('%',#{busType},'%')
+				or sa.process_code like concat('%',#{busType},'%'))
 			</if>
 			<if test="busType ==null or busType ==''">
 				and isNull(sa.bus_type)
@@ -148,9 +149,10 @@
 				and sas.user_id = #{userId}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and sa.bus_type LIKE concat('%',#{busType},'%')
+				and (sa.titile is not null and sa.bus_type LIKE concat('%',#{busType},'%')
+				or sa.process_code like concat('%',#{busType},'%'))
 			</if>
-			<if test="busType ==null and busType ==''">
+			<if test="busType ==null or busType ==''">
 				and isNull(sa.bus_type)
 			</if>
 			<if test="keyWord!=null and keyWord!=''">
@@ -207,7 +209,7 @@
 				and stl.todo_type = #{todoType}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and (stl.task_type = #{busType}
+				and (stl.title is not null and stl.task_type LIKE concat('%',#{busType},'%')
 				or stl.process_code like concat('%',#{busType},'%'))
 			</if>
 		</where>
@@ -242,12 +244,79 @@
 				and stl.todo_type = #{todoType}
 			</if>
 			<if test="busType!=null and busType!=''">
-				and (stl.task_type = #{busType}
+				and (stl.title is not null and stl.task_type LIKE concat('%',#{busType},'%')
 				or stl.process_code like concat('%',#{busType},'%'))
 			</if>
 		</where>
 		order by stl.create_time desc
 	</select>
 
+	<select id="queryTypeCount" resultType="com.aiurt.modules.system.dto.SysAnnouncementTypeCountDTO">
+		SELECT
+				t2.bus_type,
+				t2.titile,
+				COUNT(t1.id) as count,
+				COUNT(IF(t1.read_flag='0',1,NULL)) as unread_count
+		FROM
+				sys_announcement_send t1
+						LEFT JOIN sys_announcement t2 ON t1.annt_id = t2.id
+		WHERE
+				t2.titile IS NOT NULL
+		  and t2.bus_type != 'bpm' and t2.titile is not null and t2.bus_type is not NULL and t1.user_id = #{userId}
+		GROUP BY  t2.bus_type
 
+		UNION
+
+		SELECT
+				t2.process_code bus_type,
+				t2.titile,
+				COUNT(t1.id) as count,
+				COUNT(IF(t1.read_flag='0',1,NULL)) as unread_count
+		FROM
+				sys_announcement_send t1
+						LEFT JOIN sys_announcement t2 ON t1.annt_id = t2.id
+		WHERE
+				t2.titile IS NOT NULL
+		  and t2.bus_type = 'bpm' and t2.process_code is not NULL and t1.user_id = #{userId}
+		GROUP BY  t2.process_code
+
+	</select>
+
+	<select id="queryLast" resultType="com.aiurt.modules.system.entity.SysAnnouncementSend">
+		select * from sys_announcement_send where user_id = #{userId}
+		<if test="list != null and list.size() != 0">
+			and annt_id in (
+				select id from sys_announcement where 1=1
+				and (bus_type in
+					<foreach collection="list" separator="," open="(" close=")" item="item">
+						#{item}
+					</foreach>
+					or
+					process_code in
+					<foreach collection="list" separator="," open="(" close=")" item="item">
+						#{item}
+					</foreach>
+				)
+			)
+		</if>
+		<if test="msgCategory != null and msgCategory != ''">
+			and annt_id in (select id from sys_announcement where msg_category = #{msgCategory} )
+		</if>
+		order by update_time desc, create_time desc limit 1
+	</select>
+
+	<select id="queryBNullTypeCount" resultType="com.aiurt.modules.system.dto.SysAnnouncementTypeCountDTO">
+		SELECT
+				t2.msg_category bus_type,
+				t2.titile,
+				COUNT(t1.id) as count,
+				COUNT(IF(t1.read_flag='0',1,NULL)) as unread_count
+		FROM
+				sys_announcement_send t1
+						LEFT JOIN sys_announcement t2 ON t1.annt_id = t2.id
+		WHERE
+				t2.titile IS NOT NULL
+		  and t2.bus_type is null  and t1.user_id =  #{userId}
+	  GROUP BY  t2.msg_category
+	</select>
 </mapper>

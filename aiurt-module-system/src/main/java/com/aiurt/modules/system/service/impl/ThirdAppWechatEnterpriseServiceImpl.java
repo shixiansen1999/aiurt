@@ -1,11 +1,11 @@
 package com.aiurt.modules.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.util.JwtUtil;
 import com.aiurt.common.util.PasswordUtil;
-import com.aiurt.common.util.RestUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.thirdapp.ThirdAppConfig;
 import com.aiurt.modules.system.entity.*;
@@ -36,6 +36,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
@@ -66,7 +67,8 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
     private ISysPositionService sysPositionService;
     @Autowired
     private SysAnnouncementSendMapper sysAnnouncementSendMapper;
-
+    @Value("${support.messageUrl}")
+    private String messageUrl ;
     /**
      * 第三方APP类型，当前固定为 wechat_enterprise
      */
@@ -390,7 +392,7 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
              * 2. 本地表里没有，就先用手机号判断，不通过再用username判断。
              */
             SysThirdAccount sysThirdAccount = sysThirdAccountService.getOneByThirdUserId(qwUser.getUserid(), THIRD_TYPE);
-            List<SysUser> collect = sysUsersList.stream().filter(user -> (qwUser.getMobile().equals(user.getPhone()) || qwUser.getUserid().equals(user.getUsername()))
+            List<SysUser> collect = sysUsersList.stream().filter(user -> qwUser.getUserid().equals(user.getUsername())
                                                                 ).collect(Collectors.toList());
 
             if (collect != null && collect.size() > 0) {
@@ -814,7 +816,21 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
         TextCardEntity entity = new TextCardEntity();
         entity.setTitle(announcement.getTitile());
         entity.setDescription(oConvertUtils.getString(announcement.getMsgAbstract(),"空"));
-        entity.setUrl(RestUtil.getBaseUrl() + "/sys/annountCement/show/" + announcement.getId());
+
+        String busType = announcement.getBusType();
+        if (StrUtil.isNotEmpty(busType)) {
+            if (busType.contains("fault")) {
+                entity.setUrl(messageUrl+"/Breakdown/BreakdownDetail/"+announcement.getBusId());
+            } else if (busType.contains("patrol")||busType.contains("patrol_assign")) {
+                entity.setUrl(messageUrl+"/Inspection/detail?id="+announcement.getBusId());
+            } else if (busType.contains("inspection")||busType.contains("inspection_assign")) {
+                entity.setUrl(messageUrl+"/Task/list/detail/"+announcement.getBusId());
+            } else if (busType.contains("worklog")) {
+                entity.setUrl(messageUrl + "/WorkLog/detail/" + announcement.getBusId());
+            } else {
+                entity.setUrl(messageUrl + "/news/GoMobile");
+            }
+        }
         textCard.setTextcard(entity);
         return JwMessageAPI.sendTextCardMessage(textCard, accessToken);
     }

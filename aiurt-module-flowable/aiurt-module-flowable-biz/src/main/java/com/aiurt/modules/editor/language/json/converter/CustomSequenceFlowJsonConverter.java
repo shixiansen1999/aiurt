@@ -1,24 +1,34 @@
 package com.aiurt.modules.editor.language.json.converter;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
+import com.aiurt.modules.common.enums.FlowConditionEnum;
+import com.aiurt.modules.common.enums.FlowConditionTypeEnum;
 import com.aiurt.modules.constants.FlowConstant;
+import com.aiurt.modules.modeler.dto.FlowConditionDTO;
+import com.aiurt.modules.modeler.entity.ActOperationEntity;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import liquibase.pro.packaged.V;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.*;
 import org.flowable.editor.language.json.converter.*;
 import org.flowable.editor.language.json.converter.util.JsonConverterUtil;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
  * @author fgw
  */
+@Slf4j
 public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
 
     private static final String CUSTOM_CONDITION = "customCondition";
@@ -164,12 +174,63 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         // 优化的条件表达式修改, "flowCondition":[{},{}]
         List<ExtensionElement> flowConditionElementList = extensionElements.getOrDefault(FlowModelAttConstant.FLOW_CONDITION, new ArrayList<>());
         if (CollUtil.isNotEmpty(flowConditionElementList)) {
+            ArrayNode arrayNode = super.objectMapper.createArrayNode();
             flowConditionElementList.stream().forEach(extensionElement -> {
-              //  extensionElement
+
+                ObjectNode objectNode = super.objectMapper.createObjectNode();
+                Class clazz = FlowConditionDTO.class;
+                Field[] fields = clazz.getDeclaredFields();
+                Arrays.stream(fields).filter(field -> !StrUtil.equals("serialVersionUID", field.getName())).forEach(field -> {
+                    objectNode.put(field.getName(), extensionElement.getAttributeValue(null, field.getName()));
+                });
+                arrayNode.add(objectNode);
             });
+            // 设计 <![CDATA[${var:equals(name,"李四") && var:lt(money, 100)}]]
+            try {
+                String condition = super.objectMapper.writeValueAsString(arrayNode);
+                List<FlowConditionDTO> dtoList = JSONObject.parseArray(condition, FlowConditionDTO.class);
+                StringBuilder exp = new StringBuilder();
+                for (int i = 0; i < dtoList.size(); i++) {
+                    FlowConditionDTO flowConditionDTO = dtoList.get(i);
+                    // 为空，不为空, 还要考虑类型 ${var:value(
+                    exp.append("${var:").append(flowConditionDTO.getCondition()).append("(");
+                    if (StrUtil.equalsAnyIgnoreCase(flowConditionDTO.getCondition(), FlowConditionEnum.IS_NOT_EMPTY.getCode(), FlowConditionEnum.EMPTY.getCode())) {
+                        exp.append(flowConditionDTO.getCode()).append(")");
+                        // 等于，不等于
+                    }else if (StrUtil.equalsAnyIgnoreCase(flowConditionDTO.getCondition(), FlowConditionEnum.EQ.getCode(), FlowConditionEnum.NOT_EQUALS.getCode())) {
+                        exp.append(flowConditionDTO.getCode()).append(",");
+                        // 字符串
+                        if (StrUtil.equalsAnyIgnoreCase(flowConditionDTO.getType(), FlowConditionTypeEnum.STRING.getCode())) {
+                           exp.append("\"").append(flowConditionDTO.getValue()).append("\")");
+                        } else {
+                           exp.append(flowConditionDTO.getValue()).append(")");
+                        }
+
+                    } else if (StrUtil.equalsAnyIgnoreCase(flowConditionDTO.getCondition(), FlowConditionEnum.CONTAINS_ANY.getCode())) {
+                        exp.append(flowConditionDTO.getCode()).append(",");
+                        // 字符串
+                        if (StrUtil.equalsAnyIgnoreCase(flowConditionDTO.getType(), FlowConditionTypeEnum.STRING.getCode())) {
+                            exp.append("\"").append(flowConditionDTO.getValue()).append("\")");
+                        } else {
+                            String value = flowConditionDTO.getValue();
+                            List<String> list = StrUtil.split(value, ';');
+                            String join = StrUtil.join("\",\"", list);
+                            exp.append("\"").append(join).append("\")");
+                        }
+                        // 大于，大于等于 ，小于，小于等于
+                    } else {
+                        exp.append(flowConditionDTO.getCode()).append(",").append(flowConditionDTO.getValue()).append(")");
+                    }
+                    if (dtoList.size()-1 != i) {
+                        exp.append(" ").append(flowConditionDTO.getCondition()).append(" ");
+                    }
+                }
+                propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, String.format("<![CDATA[%s]]", exp.toString()));
+            } catch (JsonProcessingException e) {
+                log.error(e.getMessage(), e);
+            }
+            flowNode.set(FlowModelAttConstant.FLOW_CONDITION, arrayNode);
         }
-
-
         flowNode.set(EDITOR_SHAPE_PROPERTIES, propertiesNode);
         shapesArrayNode.add(flowNode);
     }
@@ -191,6 +252,30 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
                 addExtansionPropertiesElemt(elementNode, sequenceFlow, PROPERTY);
                 addExtansionPropertiesElemt(elementNode, sequenceFlow, CUSTOM_CONDITION);
                 addExtansionPropertiesElemt(elementNode, sequenceFlow, SERVICE);
+
+                // 流转条件
+                JsonNode expansionNode = elementNode.get(FlowModelAttConstant.FLOW_CONDITION);
+               // JsonNode expansionNode = JsonConverterUtil.getProperty(FlowModelAttConstant.FLOW_CONDITION, elementNode);
+                if (Objects.nonNull(expansionNode)) {
+                    String json = super.objectMapper.writeValueAsString(expansionNode);
+                    log.info("json->{}",json);
+                    JSONArray jsonArray = JSONObject.parseArray(json);
+                    for (int i = 0; i < jsonArray.size(); i++) {
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        ExtensionElement ee = new ExtensionElement();
+                        ee.setName(FlowModelAttConstant.FLOW_CONDITION);
+                        ee.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
+                        ee.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
+                        Set<String> keySet = jsonObject.keySet();
+                        keySet.stream().forEach(key-> {
+                            ExtensionAttribute attribute = new ExtensionAttribute();
+                            attribute.setName(key);
+                            attribute.setValue(jsonObject.getString(key));
+                            ee.addAttribute(attribute);
+                        });
+                        flowElement.addExtensionElement(ee);
+                    }
+                }
             }
         } catch (JsonProcessingException e) {
             e.printStackTrace();

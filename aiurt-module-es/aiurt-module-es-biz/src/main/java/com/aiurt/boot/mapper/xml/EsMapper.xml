@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.boot.mapper.EsMapper">
+    <resultMap type="com.aiurt.modules.search.dto.FaultKnowledgeBaseDTO" id="faultKnowledgeBaseDTOResult">
+        <result property="id"    column="id"    />
+        <result property="knowledge_base_type_code"    column="knowledge_base_type_code"    />
+        <result property="fault_phenomenon"    column="fault_phenomenon"    />
+        <result property="fault_reason"    column="fault_reason"    />
+        <result property="solution"    column="solution"    />
+        <result property="fault_codes"    column="fault_codes"    />
+        <result property="create_time"    column="create_time"    />
+        <result property="method"    column="method"    />
+        <result property="major_code"    column="major_code"    />
+        <result property="device_type_code"    column="device_type_code"    />
+        <result property="tools"    column="tools"    />
+        <result property="file_path"    column="file_path"    />
+        <result property="status"    column="status"    />
+    </resultMap>
+    <select id="selectList" resultMap="faultKnowledgeBaseDTOResult">
+        select id,knowledge_base_type_code,fault_phenomenon,fault_reason,solution,
+            fault_codes,create_time,method,major_code,device_type_code,tools,file_path,status from fault_knowledge_base where del_flag = 0
+    </select>
+</mapper>

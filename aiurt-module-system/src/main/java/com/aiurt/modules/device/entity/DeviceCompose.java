@@ -2,6 +2,7 @@ package com.aiurt.modules.device.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -94,8 +95,9 @@ public class DeviceCompose implements Serializable {
     @ApiModelProperty(value = "更新人")
     private String updateBy;
 	/**删除标志*/
-	@Excel(name = "删除标志", width = 15)
-    @ApiModelProperty(value = "删除标志")
+    @Excel(name = "删除状态 0-未删除 1-已删除", width = 15)
+    @ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
+    @TableLogic
     private Integer delFlag;
 
 }

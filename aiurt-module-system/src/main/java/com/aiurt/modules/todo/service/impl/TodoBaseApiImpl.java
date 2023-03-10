@@ -7,6 +7,7 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.HTMLUtils;
 import com.aiurt.common.util.dynamic.db.FreemarkerParseFactory;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
@@ -120,11 +121,12 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             return;
         }
         //处理消息模板
+        String content = null;
         String templateCode = sysTodoList.getTemplateCode();
         if(StrUtil.isNotBlank(templateCode)){
             SysMessageTemplate templateEntity = getTemplateEntity(templateCode);
             boolean isMarkdown = CommonConstant.MSG_TEMPLATE_TYPE_MD.equals(templateEntity.getTemplateType());
-            String content = templateEntity.getTemplateContent();
+            content = templateEntity.getTemplateContent();
             if(StrUtil.isNotBlank(content) && null!=sysTodoList.getData()){
                 content = FreemarkerParseFactory.parseTemplateContent(content, sysTodoList.getData(), isMarkdown);
             }
@@ -155,22 +157,37 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             webSocket.pushMessage("please update the to-do list");
         }
         String type = sysTodoList.getType();
+        if(StrUtil.isBlank(type)){
+            throw new AiurtBootException("发送消息失败,消息发送渠道没有配置！");
+        }
         List<String> messageTypes = StrUtil.splitTrim(type, ",");
         MessageDTO messageDTO = new MessageDTO();
         BeanUtil.copyProperties(sysTodoList, messageDTO);
+        messageDTO.setToUser(sysTodoList.getCurrentUserName());
+        messageDTO.setIsMarkdown(sysTodoList.getMarkdown());
         for (String messageType : messageTypes) {
             //update-end-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
-            if(MessageTypeEnum.XT.toString().equals(messageType)){
+            if(MessageTypeEnum.XT.getType().equals(messageType)){
                 webSocket.pushMessage("please update the to-do list");
-            }else if(MessageTypeEnum.YJ.toString().equals(messageType)){
+            }else if(MessageTypeEnum.YJ.getType().equals(messageType)){
                 if (messageDTO.isMarkdown()) {
                     // 邮件消息要解析Markdown
                     messageDTO.setContent(HTMLUtils.parseMarkdown(messageDTO.getContent()));
                 }
                 emailSendMsgHandle.sendMessage(messageDTO);
-            }else if(MessageTypeEnum.DD.toString().equals(messageType)){
+            }else if(MessageTypeEnum.DD.getType().equals(messageType)){
                 ddSendMsgHandle.sendMessage(messageDTO);
-            }else if(MessageTypeEnum.QYWX.toString().equals(messageType)){
+            }else if(MessageTypeEnum.QYWX.getType().equals(messageType)){
+                if (messageDTO.isMarkdown()) {
+                    // 系统消息要解析Markdown
+                    messageDTO.setContent(HTMLUtils.parseMarkdown(sysTodoList.getMsgContent()));
+                }
+                messageDTO.setBusKey(sysTodoList.getBusinessKey());
+                if (sysTodoList.getBusinessType() != null) {
+                    messageDTO.setBusType(sysTodoList.getBusinessType());
+                } else {
+                    messageDTO.setBusType(sysTodoList.getProcessCode());
+                }
                 qywxSendMsgHandle.sendMessage(messageDTO);
             }
         }

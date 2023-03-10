@@ -90,6 +90,9 @@ public class SysMessageInfoDTO extends DictEntity {
     @ApiModelProperty("流程编码")
     private String processCode;
 
+    @ApiModelProperty("是否办理")
+    private Boolean deal;
+
 
 
 

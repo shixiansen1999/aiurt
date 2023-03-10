@@ -21,11 +21,11 @@
             <artifactId>aiurt-module-es-api</artifactId>
             <version>3.2.0</version>
         </dependency>
-        <dependency>
-            <groupId>cn.easy-es</groupId>
-            <artifactId>easy-es-boot-starter</artifactId>
-            <version>1.1.0</version>
-        </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>cn.easy-es</groupId>-->
+        <!--            <artifactId>easy-es-boot-starter</artifactId>-->
+        <!--            <version>1.1.0</version>-->
+        <!--        </dependency>-->
     </dependencies>
 
     <build>

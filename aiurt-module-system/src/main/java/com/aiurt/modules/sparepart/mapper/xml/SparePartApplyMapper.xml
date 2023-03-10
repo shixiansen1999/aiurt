@@ -45,4 +45,8 @@
         </where>
         order by spare_part_apply.create_time desc
     </select>
+
+    <select id="getDepartByWarehouseCode" resultType="java.lang.String">
+        select `org_code` from spare_part_stock_info where warehouse_code = #{applyWarehouseCode}
+    </select>
 </mapper>

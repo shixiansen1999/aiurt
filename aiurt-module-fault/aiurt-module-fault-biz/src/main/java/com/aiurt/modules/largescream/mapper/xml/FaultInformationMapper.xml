@@ -403,31 +403,33 @@
     </select>
 
     <select id="getFaultData" resultType="com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO">
-        select * from fault
+        select f.*,fk.name as faultPhenomenonTypeName
+        from fault f
+        left join fault_knowledge_base_type fk on f.fault_phenomenon = fk.code
         <where>
             <if test="level == 1">
-                AND status &lt;&gt; 12
-                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=#{lv1hours}
+                AND f.status &lt;&gt; 12
+                and TIMESTAMPDIFF(HOUR,f.happen_time,now()) &gt;=#{lv1hours}
             </if>
             <if test="level == 2">
-                AND status &lt;&gt; 12
-                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=#{lv2hours}
-                and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; #{lv1hours}
+                AND f.status &lt;&gt; 12
+                and TIMESTAMPDIFF(HOUR,f.happen_time,now()) &gt;=#{lv2hours}
+                and TIMESTAMPDIFF(HOUR,f.happen_time,now()) &lt; #{lv1hours}
             </if>
             <if test="level == 3">
-                AND status &lt;&gt; 12
-                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=#{lv3hours}
-                and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; #{lv2hours}
+                AND f.status &lt;&gt; 12
+                and TIMESTAMPDIFF(HOUR,f.happen_time,now()) &gt;=#{lv3hours}
+                and TIMESTAMPDIFF(HOUR,f.happen_time,now()) &lt; #{lv2hours}
             </if>
             <if test="lineCode != null and lineCode != ''">
-                and line_code  = #{lineCode}
+                and f.line_code  = #{lineCode}
             </if>
             <if test="startDate!=null and endDate!=null">
-                and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{startDate},'%Y-%m-%d')
-                and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
+                and date_format(f.approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{startDate},'%Y-%m-%d')
+                and date_format(f.approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
             </if>
             <if test="majors != null and majors.size>0 ">
-                and major_code in
+                and f.major_code in
                 <foreach collection="majors" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>

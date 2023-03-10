@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.system.mapper.SysDictMapper;
+import com.aiurt.modules.todo.dto.SysTodoCountDTO;
 import com.aiurt.modules.todo.dto.TaskModuleDTO;
 import com.aiurt.modules.todo.entity.SysTodoList;
 import com.aiurt.modules.todo.mapper.SysTodoListMapper;
@@ -88,6 +89,26 @@ public class SysTodoListServiceImpl extends ServiceImpl<SysTodoListMapper, SysTo
             result.add(temp);
         }
         return result;
+    }
+
+    /**
+     * 查询流程的代办统计
+     *
+     * @param userName
+     * @return
+     */
+    @Override
+    public List<SysTodoCountDTO> queryBpmn(String userName) {
+        return baseMapper.queryBpmn(userName);
+    }
+
+    /**
+     * @param list
+     * @return
+     */
+    @Override
+    public SysTodoList queryBpmnLast(List<String> list, String userName) {
+        return baseMapper.queryBpmnLast(list, userName);
     }
 
     /**

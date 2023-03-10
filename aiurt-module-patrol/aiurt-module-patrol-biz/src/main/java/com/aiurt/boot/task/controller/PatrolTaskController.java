@@ -1,8 +1,13 @@
 package com.aiurt.boot.task.controller;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
@@ -28,16 +33,20 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,6 +68,9 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     private IPatrolTaskUserService patrolTaskUserService;
     @Resource
     private ArchiveUtils archiveUtils;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
+
 
     /**
      * PC巡检任务列表-巡视任务池
@@ -330,13 +342,17 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "巡检漏检任务处理-处置", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/pollingCheck/dispose")
     @ApiOperation(value = "巡检漏检任务处理-处置", notes = "巡检漏检任务处理-处置")
     @PostMapping(value = "/dispose")
-    public Result<String> taskDispose(@ApiParam(name = "id", value = "任务记录ID") @RequestParam("id") String id,
-                                      @ApiParam(name = "omitExplain", value = "漏检说明") @RequestParam("omitExplain") String omitExplain) {
-        PatrolTask task = patrolTaskService.getById(id);
-        if (ObjectUtil.isEmpty(task)) {
+    public Result<String> taskDispose(@ApiParam(name = "id", value = "任务记录ID") @RequestParam(value = "id") String id,
+                                      @ApiParam(name = "omitExplain", value = "漏检说明") @RequestParam(value = "omitExplain",required = false) String omitExplain) {
+        List<String> stringList = new ArrayList<>();
+        if (StrUtil.isNotBlank(id)){
+            stringList = Arrays.asList(id.split(","));
+        }
+        List<PatrolTask> patrolTasks = patrolTaskService.listByIds(stringList);
+        if (CollectionUtil.isEmpty(patrolTasks)) {
             return Result.error("记录不存在！");
         }
-        int record = patrolTaskService.taskDispose(task, omitExplain);
+        int record = patrolTaskService.taskDispose(patrolTasks, omitExplain);
         return Result.OK("成功处置" + record + "条漏检任务记录！", null);
     }
 
@@ -631,4 +647,75 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.ok("删除成功");
     }
 
+    @AutoLog(value = "PC巡检任务列表-巡视任务综合查询导出", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/exportXls")
+    @ApiOperation(value = "PC巡检任务列表-巡视任务综合查询导出", notes = "PC巡检任务列表-巡视任务综合查询导出")
+    @PermissionData(pageComponent = "pollingCheck/PatrolSynthesizeList")
+    @RequestMapping(value = "/exportXls")
+    public ModelAndView exportXls(HttpServletRequest request,LeadingOutDTO leadingOutDTO) {
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+
+        //处理查询参数
+        PatrolTaskParam patrolTaskParam = new PatrolTaskParam();
+        if(StrUtil.isNotBlank(leadingOutDTO.getCode())){
+            patrolTaskParam.setCodeList(Arrays.asList(leadingOutDTO.getCode().split(",")));
+        }
+        //导出返回的数据集
+        List<LeadingOutDTO> list = new ArrayList<>();
+
+        //查询的数据
+        Page<PatrolTaskParam> page = new Page<PatrolTaskParam>(1, Integer.MAX_VALUE);
+        IPage<PatrolTaskParam> pageList = patrolTaskService.getTaskList(page, patrolTaskParam);
+        pageList.getRecords().forEach(e->{
+            //处理数据
+            LeadingOutDTO outDTO = new LeadingOutDTO();
+            outDTO.setName(e.getName());
+            String patrolTaskStatus = sysBaseApi.translateDict("patrol_task_status", Convert.toStr(e.getStatus()));
+            outDTO.setStatusName(StrUtil.isNotBlank(patrolTaskStatus) ? patrolTaskStatus : "");
+            outDTO.setCode(e.getCode());
+            if(e.getSource()!=null){
+                String patrolTaskAccess = sysBaseApi.translateDict("patrol_task_access", Convert.toStr(e.getSource()));
+                outDTO.setSourceName(StrUtil.isNotBlank(patrolTaskAccess) ? patrolTaskAccess : "");
+            }
+            if (CollectionUtil.isNotEmpty(e.getUserInfo())){
+                List<String> collect = e.getUserInfo().stream().map(PatrolTaskUser::getUserName).collect(Collectors.toList());
+                String join = StrUtil.join(";",collect);
+                outDTO.setInspectorName(join);
+            }
+            if (e.getPatrolDate()!=null){
+                String s = DateUtil.formatDate(e.getPatrolDate());
+                outDTO.setPatrolDate(s);
+            }
+            if (e.getStartTime()!=null && e.getEndTime()!=null){
+                String format = DateUtil.format(e.getStartTime(), "HH:mm");
+                String format1 = DateUtil.format(e.getEndTime(), "HH:mm");
+                outDTO.setStartAndEndTime(format+"~"+format1);
+
+            }
+            if (CollectionUtil.isNotEmpty(e.getStationInfo())){
+                List<String> collect = e.getStationInfo().stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.toList());
+                String join = StrUtil.join(";",collect);
+                outDTO.setStationName(join);
+            }
+            if (CollectionUtil.isNotEmpty(e.getDepartInfo())){
+                List<String> collect = e.getDepartInfo().stream().map(PatrolTaskOrganizationDTO::getDepartName).collect(Collectors.toList());
+                String join = StrUtil.join(";",collect);
+                outDTO.setDepartName(join);
+            }
+            if (e.getDiscardStatus()!=null){
+                String patrolCheck = sysBaseApi.translateDict("patrol_check", Convert.toStr(e.getDiscardStatus()));
+                outDTO.setDiscardStatusName(patrolCheck);
+            }
+            if (e.getOmitStatus()!=null){
+                String patrolCheck = sysBaseApi.translateDict("patrol_check", Convert.toStr(e.getOmitStatus()));
+                outDTO.setOmitStatusName(patrolCheck);
+            }
+            list.add(outDTO);
+        });
+        //导出文件名称
+        mv.addObject(NormalExcelConstants.FILE_NAME, "巡视任务综合");
+        mv.addObject(NormalExcelConstants.CLASS, LeadingOutDTO.class);
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("巡视任务综合",  "导出信息", ExcelType.XSSF));
+        mv.addObject(NormalExcelConstants.DATA_LIST, list);
+        return  mv;
+    }
 }

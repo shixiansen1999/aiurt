@@ -2,28 +2,44 @@ package com.aiurt.modules.common.enums;
 
 import cn.hutool.core.util.StrUtil;
 
+/**
+ * @author fgw
+ */
+
 public enum SystemVariableEnum {
 
     /**
-     *
+     * 发起人角色
      */
-    SYS_ROLE("sys_role", "角色"),
+    SYS_ROLE_START("sys_role_start", "role", "发起人角色"),
+
     /**
-     * 机构
+     * 发起人所属机构
      */
-    SYS_DEPT("sys_dept", "机构");
+    SYS_DEPT_START("sys_dept_start","role", "发起人所属机构"),
+    /**
+     *  上一步的办理人角色
+     */
+    SYS_ROLE_DEAL("sys_role_deal","dept", "上一步的办理人角色"),
+    /**
+     * 上一步的办理人所属机构
+     */
+    SYS_DEPT_DEAL("sys_dept_deal","dept", "上一步的办理人所属机构");
 
 
     private String code;
+
+    private String type;
 
 
     private String name;
 
 
 
-    private SystemVariableEnum(String code, String name){
+    private SystemVariableEnum(String code,String type, String name){
         this.code = code;
         this.name = name;
+        this.type = type;
     }
 
     public String getCode() {
@@ -34,6 +50,10 @@ public enum SystemVariableEnum {
 
     public String getName() {
         return name;
+    }
+
+    public String getType() {
+        return this.type;
     }
 
 

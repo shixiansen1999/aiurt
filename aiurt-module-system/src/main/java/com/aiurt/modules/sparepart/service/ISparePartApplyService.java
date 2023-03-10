@@ -62,4 +62,11 @@ public interface ISparePartApplyService extends IService<SparePartApply> {
      * @return
      */
     List<SparePartApply> selectList(Page page, SparePartApply sparePartApply);
+
+    /**
+     * 不分页列表查询
+     * @param sparePartApply
+     * @return
+     */
+    List<SparePartApply> selectListById(SparePartApply sparePartApply);
 }

@@ -13,6 +13,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -223,4 +226,18 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @return
      */
     IPage<SystemInformationDTO> getSystemInformation(SystemInformationDTO systemInformationDTO);
+
+    /**
+     * 检修归档
+     * @param repairTask
+     * @return
+     */
+    void archRepairTask(RepairTask repairTask, String token, String archiveUserId, String refileFolderId, String realname, String sectId);
+
+    /**
+     * 检修归档导出pdf
+     * @param repairTask
+     * @return
+     */
+    void exportPdf(HttpServletRequest request, RepairTask repairTask, HttpServletResponse response) throws IOException;
 }

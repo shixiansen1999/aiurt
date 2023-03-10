@@ -135,6 +135,15 @@ public class SysAnnouncementSendDTO implements Serializable {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private java.util.Date updateTime;
+
+    /**
+     * 排序时间
+     */
+    @TableField(exist = false)
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private java.util.Date intervalTime;
+
     /**
      * 指定用户
      **/

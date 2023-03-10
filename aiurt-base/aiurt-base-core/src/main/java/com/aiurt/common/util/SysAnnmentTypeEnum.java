@@ -1,5 +1,7 @@
 package com.aiurt.common.util;
 
+import cn.hutool.core.util.StrUtil;
+
 /**
  * 系统公告自定义跳转方式
  * @author: jeecg-boot
@@ -15,9 +17,9 @@ public enum SysAnnmentTypeEnum {
      */
     FAULT("fault", "component","","故障业务消息"),
     /**
-     * 故障
+     * 周计划
      */
-    OPERATE_PLAN("operate_plan", "component","","周计划业务消息"),
+    OPERATE_PLAN("week_plan", "component","","周计划业务消息"),
     /**
      * 应急
      */
@@ -26,7 +28,7 @@ public enum SysAnnmentTypeEnum {
     /**
      * 特情
      */
-    SITUATION("situation", "component","","特情"),
+    SITUATION("situation", "component","","特情消息"),
     /**
      * 培训年计划
      */
@@ -55,13 +57,49 @@ public enum SysAnnmentTypeEnum {
      * 巡视审核
      */
     PATROL_AUDIT("patrol_audit", "component","","巡视业务消息"),
+    /**
+     *备件归还
+     */
+    SPAREPART_LEND_RETURN("sparepart_lend_return", "component","","物资出入库消息"),
+    /**
+     *备件出库
+     */
+    SPAREPART_OUT("sparepart_out", "component","","物资出入库消息"),
+    /**
+     *备件退库
+     */
+    SPAREPART_BACK("sparepart_back", "component","","物资出入库消息"),
+    /**
+     *备件借出
+     */
+    SPAREPART_LEND("sparepart_lend","component","","物资出入库消息"),
+    /**
+     *备件申领
+     */
+    SPAREPART_APPLY("sparepart_apply","component","","物资出入库消息"),
+    /**
+     *2级库盘点
+     */
+    SPAREPART_STOCKLEVEL2CHECK("sparepart_stocklevel2check","component","","物资出入库消息"),
+    /**
+     *2级库出库
+     */
+    SPAREPART_STOCKLEVEL2SECONDARY("sparepart_stockLevel2Secondary","component","","物资出入库消息"),
+    /**
+     *备件借出
+     */
+    SPAREPART_SCRAP("sparepart_scrap","component","","物资出入库消息"),
 
     BDOPERATEPLANDECLARATIONFORM("planFromSearch", "component", "prodManage/weekAuditing",""),
 
     /**
      * 通知成为资产盘点人
      */
-    ASSET_CHECKER("asset_checker", "component","",""),
+    ASSET_CHECKER("asset_checker", "component","","固定资产盘点"),
+    /**
+     * 固定资产审核
+     */
+    ASSET_AUDIT("asset_audit", "component","","固定资产盘点"),
     /**
     /**
      * 工作流跳转链接我的办公
@@ -134,5 +172,19 @@ public enum SysAnnmentTypeEnum {
 
     public void setModule(String module) {
         this.module = module;
+    }
+
+
+    public static SysAnnmentTypeEnum getByTypeV2(String type) {
+        if (oConvertUtils.isEmpty(type)) {
+            return null;
+        }
+        for (SysAnnmentTypeEnum val : values()) {
+            String valType = val.getType();
+            if (StrUtil.contains(type, valType)){
+              return val;
+            }
+        }
+        return null;
     }
 }

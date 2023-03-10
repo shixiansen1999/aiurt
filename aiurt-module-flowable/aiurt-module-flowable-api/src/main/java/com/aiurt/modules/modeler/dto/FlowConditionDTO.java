@@ -41,4 +41,9 @@ public class FlowConditionDTO implements Serializable {
      * 关系
      */
     private String relation;
+
+    /**
+     * 数字类型
+     */
+    private String type;
 }

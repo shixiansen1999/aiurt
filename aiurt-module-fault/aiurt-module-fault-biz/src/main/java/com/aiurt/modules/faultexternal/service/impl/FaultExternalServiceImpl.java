@@ -2,38 +2,24 @@ package com.aiurt.modules.faultexternal.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 
-import cn.hutool.core.date.DateUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.enums.ProcessLinkEnum;
 import com.aiurt.common.enums.RepairWayEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.fault.dto.RepairRecordDTO;
 import com.aiurt.modules.fault.entity.Fault;
-import com.aiurt.modules.fault.entity.OperationProcess;
-import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
-import com.aiurt.modules.fault.entity.OperationProcess;
-import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
-import com.aiurt.modules.fault.mapper.OperationProcessMapper;
 import com.aiurt.modules.fault.service.IFaultService;
-import com.aiurt.modules.faultenclosure.entity.FaultEnclosure;
-import com.aiurt.modules.faultenclosure.mapper.FaultEnclosureMapper;
 import com.aiurt.modules.faultexternal.dto.FaultExternalDTO;
-import com.aiurt.modules.faultexternal.entity.FalutExternalReceiveDTO;
 import com.aiurt.modules.faultexternal.entity.FaultExternal;
 import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
-import com.aiurt.modules.worklog.entity.Station;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.swagger.models.auth.In;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
-import org.checkerframework.common.value.qual.StringVal;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +34,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @Description: 调度系统故障
@@ -100,6 +85,28 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
         fault.setFaultPhenomenon(dto.getFaultPhenomenon());
 //        fault.setFaultType(dto.getFaultType());
         fault.setFaultLevel(dto.getFaultLevel());
+        //紧急程度
+        fault.setUrgency(dto.getUrgency());
+        //是否委外
+        fault.setIsOutsource(dto.getIsOutsource());
+        //接报人
+        fault.setReceiveUserName(dto.getReceiveUserName());
+        //报修组织机构
+        fault.setFaultApplicantDept(dto.getFaultApplicantDept());
+        //报修方式
+        fault.setFaultModeCode(dto.getFaultModeCode());
+        //所属子系统
+        fault.setSubSystemCode(dto.getSubSystemCode());
+        //是否影响行车
+        fault.setAffectDrive(dto.getAffectDrive());
+        //是否影响客运服务
+        fault.setAffectPassengerService(dto.getAffectPassengerService());
+        //是否停止服务
+        fault.setIsStopService(dto.getIsStopService());
+        //抄送人
+        fault.setRemindUserName(dto.getRemindUserName());
+        //附件
+        fault.setPath(dto.getPath());
         fault.setRepairCode(dto.getRepairCode());
         if (StringUtils.isNotBlank(dto.getLocation())) {
             fault.setDetailLocation(dto.getLocation());
@@ -147,7 +154,7 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
         if (faultExternal != null) {
             faultExternal.setFaultcode(code);
             faultExternal.setStatus(1);
-            this.updateById(faultExternal);
+            faultExternalMapper.updateById(faultExternal);
         }
     }
 

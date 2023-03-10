@@ -10,6 +10,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
@@ -228,7 +229,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
     */
 	@AutoLog(value = "故障知识库-导出excel", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识库-导出excel", notes="故障知识库-导出excel")
-    @RequestMapping(value = "/exportXls")
+    @RequestMapping(value = "/exportXls",method = RequestMethod.GET)
     public void exportXls(HttpServletRequest request,
 						  HttpServletResponse response,
 						  FaultKnowledgeBase faultKnowledgeBase) {
@@ -237,13 +238,27 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 
 		List<FaultKnowledgeBaseDTO> faultKnowledgeBaseDTOList = new ArrayList<>();
 
-        if (CollUtil.isNotEmpty(faultKnowledgeBases)){
-			faultKnowledgeBases.forEach(e->{
-				FaultKnowledgeBaseDTO faultKnowledgeBaseDTO = new FaultKnowledgeBaseDTO();
-				BeanUtil.copyProperties(e,faultKnowledgeBaseDTO);
-				faultKnowledgeBaseDTOList.add(faultKnowledgeBaseDTO);
-			});
+		// 过滤选中数据
+		String selections = request.getParameter("selections");
+		if (oConvertUtils.isNotEmpty(selections)) {
+			List<String> selectionList = Arrays.asList(selections.split(","));
+			List<FaultKnowledgeBase> collect = faultKnowledgeBases.stream().filter(item -> selectionList.contains(item.getId())).collect(Collectors.toList());
+			if (CollUtil.isNotEmpty(collect)) {
+				collect.forEach(e -> {
+					FaultKnowledgeBaseDTO faultKnowledgeBaseDTO = new FaultKnowledgeBaseDTO();
+					BeanUtil.copyProperties(e, faultKnowledgeBaseDTO);
+					faultKnowledgeBaseDTOList.add(faultKnowledgeBaseDTO);
+				});
+			}
+		} else {
+			if (CollUtil.isNotEmpty(faultKnowledgeBases)){
+				faultKnowledgeBases.forEach(e->{
+					FaultKnowledgeBaseDTO faultKnowledgeBaseDTO = new FaultKnowledgeBaseDTO();
+					BeanUtil.copyProperties(e,faultKnowledgeBaseDTO);
+					faultKnowledgeBaseDTOList.add(faultKnowledgeBaseDTO);
+				});
 
+			}
 		}
 
         if (CollUtil.isNotEmpty(faultKnowledgeBaseDTOList)){

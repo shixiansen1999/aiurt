@@ -33,8 +33,14 @@ public class ExamineDTO {
     @ApiModelProperty(value = "备注")
     private String content;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "附件")
+    private String path;
+
     /**提交签名*/
     @TableField(exist = false)
     @ApiModelProperty(value = "提交签名")
     private String confirmUrl;
+    /**验收标记 验收0，审核1*/
+    private Integer acceptanceRemark;
 }

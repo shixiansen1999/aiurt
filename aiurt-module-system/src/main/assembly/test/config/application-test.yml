@@ -163,7 +163,7 @@ spring:
     password: 1qaz@2wsx
     port: 6379
   elasticsearch:
-    uris: http://192.168.1.29:9200
+    uris: http://192.168.1.29:9201
     connection-timeout: 3000
     socket-timeout: 5000
 #mybatis plus 设置
@@ -215,7 +215,7 @@ jeecg:
   # ElasticSearch 6设置
   elasticsearch:
     cluster-name: jeecg-ES
-    cluster-nodes: 127.0.0.1:9200
+    cluster-nodes: 192.168.1.29:9201
     check-enabled: false
   # 表单设计器配置
   desform:
@@ -357,6 +357,7 @@ support:
     pic: /home/data/pic
     exportPatrolPath: /data/wwwroot/support/test/
     exportWorkLogPath: /data/wwwroot/support/test/
+    exportRepairTaskPath: /data/wwwroot/support/test/
   downFilePath:
     #先存到本地
     materialBasicInfoPath: G:\changchunguidao\swsc-copsms-admin\src\main\resources\template\物资基础信息导入模板.xlsx
@@ -372,7 +373,8 @@ support:
   IntegrationKey: 46aa92ec-66af-4818-b7c1-8495a9bd7f17
   #档案类型Id
   archivesTypeId: 3d74878a-5c31-43b4-a024-188e0a3be725
-
+  #企业微信跳转域名
+  messageUrl: http://aiurt.svstrong.com:12680/#
 swsc:
   host: http://116.62.143.85/#/
 
@@ -409,6 +411,7 @@ aiurt:
     key: ddb048301e3d8a730dbe7cbe5d90a6fd
     # 城市编码
     city: 220100
+# 机器人wsdl服务地址
 robot:
   wsdl:
     address: http://2.0.1.16:11456?wsdl

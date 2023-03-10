@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
@@ -10,17 +11,16 @@ import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.param.mapper.SysParamMapper;
-import com.aiurt.modules.system.dto.SysAnnouncementPageDTO;
-import com.aiurt.modules.system.dto.SysAnnouncementSendDTO;
-import com.aiurt.modules.system.dto.SysMessageInfoDTO;
-import com.aiurt.modules.system.dto.SysMessageTypeDTO;
+import com.aiurt.modules.system.dto.*;
 import com.aiurt.modules.system.entity.SysAnnouncement;
 import com.aiurt.modules.system.entity.SysAnnouncementSend;
 import com.aiurt.modules.system.mapper.SysAnnouncementMapper;
 import com.aiurt.modules.system.mapper.SysAnnouncementSendMapper;
 import com.aiurt.modules.system.service.ISysAnnouncementService;
+import com.aiurt.modules.todo.dto.SysTodoCountDTO;
 import com.aiurt.modules.todo.entity.SysTodoList;
 import com.aiurt.modules.todo.mapper.SysTodoListMapper;
+import com.aiurt.modules.todo.service.ISysTodoListService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -58,7 +58,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 	private SysTodoListMapper sysTodoListMapper;
 
 	@Resource
-	private SysParamMapper sysParamMapper;
+	private ISysTodoListService sysTodoListService;
 
 	@Resource
 	private ISysParamAPI sysParamAPI;
@@ -172,205 +172,145 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String userId = loginUser.getId();
 		String username = loginUser.getUsername();
-		//获取当前登录人待办消息(业务消息)
-		List<SysAnnouncementSendDTO> sysAnnouncementSendDTOS = sysAnnouncementMapper.queryAnnouncement(userId);
-		//获取当前登录人待办消息(业务消息)消息类型为null
-		List<SysAnnouncementSendDTO> sysAnnouncementSendList = sysAnnouncementMapper.queryAnnouncementByNull(userId);
+		//获取当前登录人所有业务消息
+		List<SysAnnouncementTypeCountDTO> announcementTypeCountDTOList = baseMapper.queryTypeCount(userId);
 
-		//获取当前登录人待办消息(流程消息)
-		List<SysTodoList> sysTodoLists = sysAnnouncementMapper.queryTodoList(username);
 		//头像集合
-        List<String> pictureCode = new ArrayList<>();
+        Set<String> pictureCode = new HashSet<>();
 		pictureCode.add(SysParamCodeConstant.FAULT);
 		pictureCode.add(SysParamCodeConstant.INSPECTION);
 		pictureCode.add(SysParamCodeConstant.PATROL);
 		pictureCode.add(SysParamCodeConstant.EMERGENCY);
 		pictureCode.add(SysParamCodeConstant.TRAIN);
-		pictureCode.add(SysParamCodeConstant.WEEK_PLAN);
+		pictureCode.add(SysParamCodeConstant.OPERATE);
 		pictureCode.add(SysParamCodeConstant.SITUATION);
 		pictureCode.add(SysParamCodeConstant.WORKLOG);
+		pictureCode.add(SysParamCodeConstant.MATERIAL);
 
-		//业务消息处理
-		SysAnnmentTypeEnum[] typeValues = SysAnnmentTypeEnum.values();
-		//遍历消息类型枚举
-		for (SysAnnmentTypeEnum value : typeValues) {
-			String type = value.getType();
-			String module = value.getModule();
-			SysMessageTypeDTO sysMessageTypeDTO = new SysMessageTypeDTO();
-			List<SysAnnouncementSendDTO> typeList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getBusType() != null && sysAnnouncementSendDTO.getBusType().contains(type)).collect(Collectors.toList());
-			List<SysAnnouncementSendDTO> bpmList = sysAnnouncementSendDTOS.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getProcessCode() != null && sysAnnouncementSendDTO.getProcessCode().contains(type)).collect(Collectors.toList());
-			typeList.addAll(bpmList);
-
-			sysMessageTypeDTO.setTitle(module);
-			//设置消息类型
-			int index = type.indexOf('_');
-			if(index !=-1){
-				String sub = type.substring(0, index);
-				sysMessageTypeDTO.setBusType(sub);
-			}else{
-				sysMessageTypeDTO.setBusType(type);
+		Map<String, List<SysAnnouncementTypeCountDTO>> busTypeMap = announcementTypeCountDTOList.stream().collect(Collectors.groupingBy(dto -> {
+			String busType = dto.getBusType();
+			SysAnnmentTypeEnum sysAnnmentTypeEnum = SysAnnmentTypeEnum.getByTypeV2(busType);
+			if (Objects.isNull(sysAnnmentTypeEnum)) {
+				return null;
+			} else {
+				return sysAnnmentTypeEnum.getModule();
 			}
-			//给不同类型赋值不同图片
-			for (String pCode : pictureCode) {
-				if(pCode.equals(type)){
-					SysParamModel sysParamModel = sysParamAPI.selectByCode(pCode);
-					sysMessageTypeDTO.setValue(sysParamModel.getValue());
+		}));
+
+		List<SysMessageTypeDTO> messageList = new ArrayList<>();
+		busTypeMap.remove(null);
+		busTypeMap.forEach((module, dtoList)->{
+			SysAnnouncementTypeCountDTO countDTO = dtoList.get(0);
+			int sum = dtoList.stream().mapToInt(SysAnnouncementTypeCountDTO::getUnreadCount).sum();
+			List<String> busTypeList = dtoList.stream().map(SysAnnouncementTypeCountDTO::getBusType).collect(Collectors.toList());
+			String busType = countDTO.getBusType();
+			String type = StrUtil.splitTrim(busType, "_").get(0);
+			SysMessageTypeDTO typeDTO = SysMessageTypeDTO.builder()
+					.busType(type)
+					.messageFlag("1")
+					.count(sum)
+					.title(module).build();
+
+			if (pictureCode.contains(type)) {
+				SysParamModel sysParamModel = sysParamAPI.selectByCode(type);
+				if (Objects.nonNull(sysParamModel)) {
+					typeDTO.setValue(sysParamModel.getValue());
 				}
-
 			}
 
-			// 统计长度
-			int size = typeList.size();
-			sysMessageTypeDTO.setCount(size);
-			//给内容赋值
-			if(size != 0) {
-				//根据时间排序，最近的在上面
-				typeList = typeList.stream().sorted(Comparator.comparing(SysAnnouncementSendDTO::getCreateTime).reversed()).collect(Collectors.toList());
+
+			SysAnnouncementSend sysAnnouncementSend = baseMapper.queryLast(userId, busTypeList, null);
+
+			if (Objects.nonNull(sysAnnouncementSend)) {
+				typeDTO.setIntervalTime(Objects.isNull(sysAnnouncementSend.getUpdateTime())?sysAnnouncementSend.getCreateTime(): sysAnnouncementSend.getUpdateTime());
 			}
-			if(CollUtil.isNotEmpty(typeList)) {
-				String msgContent = typeList.get(0).getMsgContent();
-				sysMessageTypeDTO.setTitleContent(msgContent);
-			}
-			//获取时间，在对list进行排序
-			if(size != 0) {
-				Collections.sort(typeList, ((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime())));
-			}
-			if(CollUtil.isNotEmpty(typeList)){
-				SysAnnouncementSendDTO lastSysAnnouncementSendDTO = typeList.get(0);
-				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
-			}
-			sysMessageTypeDTO.setMessageFlag("1");
-			if(!("bpm").equals(sysMessageTypeDTO.getBusType()) && size != 0){
-				list.add(sysMessageTypeDTO);
-			}
-		}
+			messageList.add(typeDTO);
+		});
+
+		//获取当前登录人待办消息(业务消息)消息类型为null
+		List<SysAnnouncementTypeCountDTO> sysAnnouncementTypeCountDTOS = baseMapper.queryBNullTypeCount(userId);
 
 		//bus_type为空的数据
-		Map<String, List<SysAnnouncementSendDTO>> collect2 = sysAnnouncementSendList.stream().filter(sysAnnouncementSendDTO -> sysAnnouncementSendDTO.getMsgCategory() != null).collect(Collectors.groupingBy(SysAnnouncementSendDTO::getMsgCategory));
-		for (Map.Entry<String, List<SysAnnouncementSendDTO>> entry : collect2.entrySet()) {
+		sysAnnouncementTypeCountDTOS.stream().forEach(typeCountDTO->{
 			SysMessageTypeDTO sysMessageTypeDTO = new SysMessageTypeDTO();
-			// 通过key拿名称
-			String key = entry.getKey();
+			sysMessageTypeDTO.setCount(typeCountDTO.getCount());
+			sysMessageTypeDTO.setMessageFlag("1");
+			String key = typeCountDTO.getBusType();
+
 			if("1".equals(key)){
 				sysMessageTypeDTO.setTitle("系统公告");
 				sysMessageTypeDTO.setBusType(null);
 				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SYS_ANNOUNCEMENT);
 				sysMessageTypeDTO.setValue(sysParamModel.getValue());
 				sysMessageTypeDTO.setMsgCategory("1");
-			}
-			if("2".equals(key)){
+			} else  if("2".equals(key)){
 				sysMessageTypeDTO.setTitle("系统消息");
 				//设置消息类型
 				sysMessageTypeDTO.setBusType(null);
 				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SYS_MESSAGE);
 				sysMessageTypeDTO.setValue(sysParamModel.getValue());
 				sysMessageTypeDTO.setMsgCategory("2");
-			}
-			if("3".equals(key)){
+			} else if ("3".equals(key)){
 				sysMessageTypeDTO.setTitle("特情消息");
 				//设置消息类型
 				sysMessageTypeDTO.setBusType("situation");
 				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SITUATION);
 				sysMessageTypeDTO.setValue(sysParamModel.getValue());
 				sysMessageTypeDTO.setMsgCategory("3");
+			}else {
+				// donothing
 			}
-			// 统计长度
-			List<SysAnnouncementSendDTO> value = entry.getValue();
-			int size = value.size();
-			sysMessageTypeDTO.setCount(size);
-			//给内容赋值
-			value=value.stream().sorted(Comparator.comparing(SysAnnouncementSendDTO::getCreateTime).reversed()).collect(Collectors.toList());
-			String msgContent = value.get(0).getMsgContent();
-			sysMessageTypeDTO.setTitleContent(msgContent);
-			//获取时间，在对list进行排序
-			Collections.sort(value,((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime())));
-			if(CollUtil.isNotEmpty(value)) {
-				SysAnnouncementSendDTO lastSysAnnouncementSendDTO = value.get(0);
-				sysMessageTypeDTO.setIntervalTime(lastSysAnnouncementSendDTO.getCreateTime());
-			}
-			sysMessageTypeDTO.setMessageFlag("1");
-			list.add(sysMessageTypeDTO);
-		}
 
-		//流程消息处理
-		TodoTaskTypeEnum[] values = TodoTaskTypeEnum.values();
-		//遍历消息类型枚举
-		for (TodoTaskTypeEnum value : values) {
-			String type = value.getType();
-			String module = value.getModule();
-			SysMessageTypeDTO sysMessageTypeDTO = new SysMessageTypeDTO();
-			List<SysTodoList> typeList= sysTodoLists.stream().filter(sysTodoList -> sysTodoList.getTaskType() != null && sysTodoList.getTaskType().contains(type)).collect(Collectors.toList());
-			List<SysTodoList> bpmnList = sysTodoLists.stream().filter(sysTodoList -> sysTodoList.getProcessCode() != null && sysTodoList.getProcessCode().contains(type)).collect(Collectors.toList());
-			typeList.addAll(bpmnList);
+			SysAnnouncementSend sysAnnouncementSend = baseMapper.queryLast(userId, null, key);
 
-			sysMessageTypeDTO.setTitle(module);
-			//设置消息类型和头像
-			if (SysParamCodeConstant.FAULT.equals(type)) {
-				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.FAULT_FLOW);
-				sysMessageTypeDTO.setValue(sysParamModel.getValue());
+			if (Objects.nonNull(sysAnnouncementSend)) {
+				sysMessageTypeDTO.setIntervalTime(Objects.isNull(sysAnnouncementSend.getUpdateTime())?sysAnnouncementSend.getCreateTime(): sysAnnouncementSend.getUpdateTime());
 			}
-			if (SysParamCodeConstant.PATROL.equals(type)) {
-				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.PATROL_FLOW);
-				sysMessageTypeDTO.setValue(sysParamModel.getValue());
-			}
-			if (SysParamCodeConstant.INSPECTION.equals(type)) {
-				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_FLOW);
-				sysMessageTypeDTO.setValue(sysParamModel.getValue());
-			}
-			if (SysParamCodeConstant.EMERGENCY.equals(type)) {
-				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.EMERGENCY_FLOW);
-				sysMessageTypeDTO.setValue(sysParamModel.getValue());
-			}
-			if (SysParamCodeConstant.WEEK_PLAN.equals(type)) {
-				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.WEEK_PLAN);
-				sysMessageTypeDTO.setValue(sysParamModel.getValue());
-			}
-			if (SysParamCodeConstant.FIXED_ASSETS.equals(type)) {
-				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.FIXED_ASSETS);
-				sysMessageTypeDTO.setValue(sysParamModel.getValue());
-			}
-			if (SysParamCodeConstant.BD_WORK_TITCK.equals(type)) {
-				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.BD_WORK_TITCK);
-				sysMessageTypeDTO.setValue(sysParamModel.getValue());
-			}
-			sysMessageTypeDTO.setBusType(type);
-			// 统计长度
-			int size = typeList.size();
-			sysMessageTypeDTO.setCount(size);
-			//给内容赋值
-			if(size != 0){
-				typeList=typeList.stream().sorted(Comparator.comparing(SysTodoList::getCreateTime).reversed()).collect(Collectors.toList());
-				String msgContent = typeList.get(0).getTaskName();
-				sysMessageTypeDTO.setTitleContent(msgContent);
-			}
-			//获取时间，在对list进行排序
-			if(size !=0){
-				Collections.sort(typeList,((o1, o2) -> o2.getCreateTime().compareTo(o1.getCreateTime())));
-			}
-			if(CollUtil.isNotEmpty(typeList)) {
-				SysTodoList sysTodoList = typeList.get(0);
-				sysMessageTypeDTO.setIntervalTime(sysTodoList.getCreateTime());
-			}
-			sysMessageTypeDTO.setMessageFlag("2");
-			if(!("bpmn").equals(sysMessageTypeDTO.getBusType()) && size != 0){
-				list.add(sysMessageTypeDTO);
-			}
-		}
+			messageList.add(sysMessageTypeDTO);
+		});
 
-		//list去重，数量相加
-		Map<String, SysMessageTypeDTO> productMap = new HashMap<String, SysMessageTypeDTO>(32);
-		for (SysMessageTypeDTO product : list)
-		{
-			if (productMap.containsKey(product.getTitle()))
-			{
-				product.setCount(product.getCount() + productMap.get(product.getTitle()).getCount());
+		list.addAll(messageList);
+
+		// bpmn类型,processCode 为空历史数据不展示了
+		List<SysTodoCountDTO> sysTodoCountDTOS = sysTodoListService.queryBpmn(username);
+
+		Map<String, List<SysTodoCountDTO>> bpmnMap = sysTodoCountDTOS.stream().collect(Collectors.groupingBy(sysTodoCountDTO -> {
+			String processCode = sysTodoCountDTO.getProcessCode();
+			TodoTaskTypeEnum todoTaskTypeEnum = TodoTaskTypeEnum.getByTypeV2(processCode);
+			if (Objects.isNull(todoTaskTypeEnum)) {
+				return processCode;
+			} else {
+				return todoTaskTypeEnum.getType();
 			}
-			productMap.put(product.getTitle(), product);
-		}
-		list.clear();// 清空栈内存
-		for (Map.Entry<String, SysMessageTypeDTO> entry : productMap.entrySet()) {
-			list.add(entry.getValue());
-		}
+		}));
+
+		List<SysMessageTypeDTO> bpmnList = new ArrayList<>();
+		bpmnMap.forEach((type, dtoList)->{
+			SysTodoCountDTO sysTodoCountDTO = dtoList.get(0);
+			int sum = dtoList.stream().mapToInt(SysTodoCountDTO::getUndoCount).sum();
+			TodoTaskTypeEnum typeEnum = TodoTaskTypeEnum.getByType(type);
+
+			SysMessageTypeDTO typeDTO = SysMessageTypeDTO.builder()
+					.count(sum)
+					.messageFlag("2")
+					.title(Objects.isNull(typeEnum)? sysTodoCountDTO.getProcessName():typeEnum.getModule())
+					.busType(Objects.isNull(typeEnum)? sysTodoCountDTO.getProcessCode(): typeEnum.getType())
+					.build();
+
+			setPicture(typeDTO, type);
+
+			// 查询最近一条的时间
+			List<String> stringList = dtoList.stream().map(SysTodoCountDTO::getProcessCode).collect(Collectors.toList());
+
+			SysTodoList sysTodoList = sysTodoListService.queryBpmnLast(stringList, username);
+			if (Objects.nonNull(sysTodoList)) {
+				typeDTO.setIntervalTime(Objects.isNull(sysTodoList.getUpdateTime())? sysTodoList.getCreateTime():sysTodoList.getUpdateTime());
+			}
+			bpmnList.add(typeDTO);
+		});
+
+		list.addAll(bpmnList);
+
 		//list根据创建时间排序
 		list = list.stream().sorted(Comparator.comparing(SysMessageTypeDTO::getIntervalTime).reversed()).collect(Collectors.toList());
 		//集合设置id
@@ -378,6 +318,43 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			list.get(i).setId(String.valueOf(i));
 		}
 		return list;
+	}
+
+	public SysMessageTypeDTO setPicture(SysMessageTypeDTO sysMessageTypeDTO,String type){
+		//设置消息类型和头像
+		if (SysParamCodeConstant.FAULT.equals(type)) {
+			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.FAULT_FLOW);
+			sysMessageTypeDTO.setValue(sysParamModel.getValue());
+		}
+		if (SysParamCodeConstant.PATROL.equals(type)) {
+			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.PATROL_FLOW);
+			sysMessageTypeDTO.setValue(sysParamModel.getValue());
+		}
+		if (SysParamCodeConstant.INSPECTION.equals(type)) {
+			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_FLOW);
+			sysMessageTypeDTO.setValue(sysParamModel.getValue());
+		}
+		if (SysParamCodeConstant.EMERGENCY.equals(type)) {
+			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.EMERGENCY_FLOW);
+			sysMessageTypeDTO.setValue(sysParamModel.getValue());
+		}
+		if (SysParamCodeConstant.WEEK_PLAN.equals(type)) {
+			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.WEEK_PLAN);
+			sysMessageTypeDTO.setValue(sysParamModel.getValue());
+		}
+		if (SysParamCodeConstant.FIXED_ASSETS.equals(type)) {
+			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.FIXED_ASSETS);
+			sysMessageTypeDTO.setValue(sysParamModel.getValue());
+		}
+		if (SysParamCodeConstant.BD_WORK_TITCK.equals(type)) {
+			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.BD_WORK_TITCK);
+			sysMessageTypeDTO.setValue(sysParamModel.getValue());
+		}
+		if (SysParamCodeConstant.SPARE_PART.equals(type)) {
+			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SPARE_PART);
+			sysMessageTypeDTO.setValue(sysParamModel.getValue());
+		}
+		return sysMessageTypeDTO;
 	}
 
 	@Override
@@ -388,11 +365,46 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		//业务数据
 		if ("1".equals(messageFlag)) {
 			IPage<SysMessageInfoDTO> businessList = sysAnnouncementMapper.queryAnnouncementInfo(page, userId, keyWord, busType, msgCategory);
-			//接收时间为空，则接收时间等于创建时间
+			//设置bpmn类型的数据的返回类型为各自模块类型
 			List<SysMessageInfoDTO> records = businessList.getRecords();
+			SysAnnmentTypeEnum[] values = SysAnnmentTypeEnum.values();
+			for (SysAnnmentTypeEnum value : values) {
+				String type = value.getType();
+				List<SysMessageInfoDTO> collect = records.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getProcessCode() != null && SysAnnmentTypeEnum.BPM.getType().equals(sysMessageInfoDTO.getTaskType()) && sysMessageInfoDTO.getProcessCode().contains(type)).collect(Collectors.toList());
+				for (SysMessageInfoDTO sysMessageInfoDTO : collect) {
+					sysMessageInfoDTO.setTaskType(type);
+				}
+			}
+			//接收时间为空，则接收时间等于创建时间
 			for (SysMessageInfoDTO record : records) {
 				if (ObjectUtil.isEmpty(record.getReceiveTime())) {
 					record.setReceiveTime(record.getIntervalTime());
+				}else{
+					record.setIntervalTime(record.getReceiveTime());
+				}
+				//系统公告和系统消息，特情取消去办理
+				if(StrUtil.isNotEmpty(record.getMsgCategory()) && StrUtil.isEmpty(record.getTaskType()) || SysAnnmentTypeEnum.SITUATION.getType().equals(record.getTaskType())){
+					record.setDeal(false);
+				}else{
+					record.setDeal(true);
+				}
+				//设置类型
+				String s = record.getTaskType();
+				if(StrUtil.isEmpty(s)){
+					record.setTaskType(null);
+				}else{
+					String type = StrUtil.splitTrim(s, "_").get(0);
+					if(type.equals("patrol") || type.equals("inspection")){
+						record.setTaskType(type);
+					}
+					if(type.equals("asset")){
+						record.setTaskType("fixed");
+					}
+					if("bpm".equals(s)){
+						String processCode = record.getProcessCode();
+						String taskType = StrUtil.splitTrim(processCode, "_").get(0);
+						record.setTaskType(taskType);
+					}
 				}
 			}
 			return businessList;
@@ -401,6 +413,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		else if ("2".equals(messageFlag)) {
 			//流程数据
 			IPage<SysMessageInfoDTO> flowList = sysAnnouncementMapper.queryTodoListInfo(page, username, todoType, keyWord, busType);
+			//设置bpmn类型的数据的返回类型为各自模块类型
 			List<SysMessageInfoDTO> records = flowList.getRecords();
 			TodoTaskTypeEnum[] values = TodoTaskTypeEnum.values();
 				for (TodoTaskTypeEnum value : values) {
@@ -415,6 +428,14 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			for (SysMessageInfoDTO record : records) {
 				if (ObjectUtil.isEmpty(record.getReceiveTime())) {
 					record.setReceiveTime(record.getIntervalTime());
+				}else{
+					record.setIntervalTime(record.getReceiveTime());
+				}
+				//系统公告和系统消息，特情取消去办理
+				if(StrUtil.isNotEmpty(record.getMsgCategory()) && StrUtil.isEmpty(record.getTaskType()) || SysAnnmentTypeEnum.SITUATION.getType().equals(record.getTaskType())){
+					record.setDeal(false);
+				}else{
+					record.setDeal(true);
 				}
 			}
 			return flowList;
@@ -436,28 +457,8 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			//查找最远的未读消息
 			Optional<SysMessageInfoDTO> min = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getReadFlag().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
 			int number = collect.size();
-			//查找最远的未读消息
-			int pageNum = 0;
-			String seq = null;
-			String id = null;
-			if(min.isPresent()){
-				SysMessageInfoDTO sysMessageInfoDTO = min.get();
-				 seq = sysMessageInfoDTO.getSeq();
-				 //去除末尾加.0的情况
-				String s = subZeroAndDot(seq);
-				int num = Integer.parseInt(s);
-				//计算所在页码
-				long size = page.getSize();
-				pageNum = Math.toIntExact(num / size);
-				if(num%size !=0){
-					pageNum = pageNum+1;
-				}
-				 id = sysMessageInfoDTO.getId();
-			}
-			sysAnnouncementPageDTO.setId(id);
-			sysAnnouncementPageDTO.setPageNumber(pageNum);
-			sysAnnouncementPageDTO.setSeq(seq);
-			sysAnnouncementPageDTO.setDateNumber(number);
+			//计算所在页码，数量
+			sysAnnouncementPageDTO = queryPageNumberInfo(min,sysAnnouncementPageDTO,number,page);
 			return sysAnnouncementPageDTO;
 		}
 		//流程业务
@@ -466,48 +467,44 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementMapper.queryAllTodoList(username, todoType, keyWord, busType);
 			//获取未办理的条数
 			List<SysMessageInfoDTO> collect = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).collect(Collectors.toList());
-			int number = collect.size();
+			int number =collect.size();
 			//查找最远的流程消息
 			Optional<SysMessageInfoDTO> min = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).min(Comparator.comparing(SysMessageInfoDTO::getIntervalTime));
-			int pageNum = 0;
-			String seq = null;
-			String id = null;
-			if (min.isPresent()) {
-				SysMessageInfoDTO sysMessageInfoDTO = min.get();
-				seq = sysMessageInfoDTO.getSeq();
-				//去除末尾加.0的情况
-				String s = subZeroAndDot(seq);
-				int num = Integer.parseInt(s);
-				//计算所在页码
-				long size = page.getSize();
-				pageNum = Math.toIntExact(num / size);
-				if(num%size !=0){
-					pageNum = pageNum+1;
-				}
-				id = sysMessageInfoDTO.getId();
-			}
-			sysAnnouncementPageDTO.setId(id);
-			sysAnnouncementPageDTO.setPageNumber(pageNum);
-			sysAnnouncementPageDTO.setSeq(seq);
-			sysAnnouncementPageDTO.setDateNumber(number);
+			sysAnnouncementPageDTO = queryPageNumberInfo(min,sysAnnouncementPageDTO,number,page);
 			return sysAnnouncementPageDTO;
 		}
 		return null;
 	}
-
-	/**
-	 * 使用java正则表达式去掉多余的.与0
-	 * @param s
-	 * @return
-	 */
-	public static String subZeroAndDot(String s){
-		if(s.indexOf(".") > 0){
-			//去掉多余的0
-			s = s.replaceAll("0+?$", "");
-			//如最后一位是.则去掉
-			s = s.replaceAll("[.]$", "");
+	public SysAnnouncementPageDTO queryPageNumberInfo(Optional<SysMessageInfoDTO> min,SysAnnouncementPageDTO sysAnnouncementPageDTO,int number,Page<Object> page){
+		//计算最远的未处理的流程消息的页码
+		int pageNum = 0;
+		String seq = null;
+		String id = null;
+		if (min.isPresent()) {
+			SysMessageInfoDTO sysMessageInfoDTO = min.get();
+			seq = sysMessageInfoDTO.getSeq();
+			//去除末尾加.0的情况
+			String s = seq;
+			if(s.indexOf(".") > 0){
+				//去掉多余的0
+				s = s.replaceAll("0+?$", "");
+				//如最后一位是.则去掉
+				s = s.replaceAll("[.]$", "");
+			}
+			int num = Integer.parseInt(s);
+			//计算所在页码
+			long size = page.getSize();
+			pageNum = Math.toIntExact(num / size);
+			if(num%size !=0){
+				pageNum = pageNum+1;
+			}
+			id = sysMessageInfoDTO.getId();
 		}
-		return s;
+		sysAnnouncementPageDTO.setId(id);
+		sysAnnouncementPageDTO.setPageNumber(pageNum);
+		sysAnnouncementPageDTO.setSeq(seq);
+		sysAnnouncementPageDTO.setDateNumber(number);
+		return sysAnnouncementPageDTO;
 	}
 
 

@@ -3,6 +3,8 @@ package com.aiurt.modules.sparepart.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.mapper.SparePartInOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
@@ -49,6 +51,9 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
 
     @Autowired
     private ISparePartStockInfoService sparePartStockInfoService;
+
+    @Autowired
+    private IMaterialBaseService materialBaseService;
     /**
      * 查询列表
      * @param page
@@ -58,6 +63,16 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     @Override
     public List<SparePartOutOrder> selectList(Page page, SparePartOutOrder sparePartOutOrder){
         return sparePartOutOrderMapper.readAll(page,sparePartOutOrder);
+    }
+
+    /**
+     * 查询列表
+     * @param sparePartOutOrder
+     * @return
+     */
+    @Override
+    public List<SparePartOutOrder> selectListById( SparePartOutOrder sparePartOutOrder){
+        return sparePartOutOrderMapper.readAll(sparePartOutOrder);
     }
     /**
      * 查询已出库的物资编号
@@ -158,6 +173,14 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         queryWrapper.eq(SparePartOutOrder::getMaterialCode, materialCode)
                 .in(SparePartOutOrder::getWarehouseCode, wareHouseCodeList).eq(SparePartOutOrder::getStatus, 2);
         List<SparePartOutOrder> outOrders = baseMapper.selectList(queryWrapper);
+        outOrders.stream().forEach(sparePartOutOrder -> {
+            MaterialBase materialBase = materialBaseService.selectByCode(sparePartOutOrder.getMaterialCode());
+            if (Objects.nonNull(materialBase)) {
+                sparePartOutOrder.setName(materialBase.getName());
+            }
+        });
+
+        // 备件名称
         return outOrders;
     }
 }

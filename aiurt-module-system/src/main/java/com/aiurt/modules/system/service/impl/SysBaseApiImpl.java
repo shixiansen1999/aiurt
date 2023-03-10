@@ -31,6 +31,8 @@ import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.mapper.MaterialBaseMapper;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.message.handle.impl.DdSendMsgHandle;
 import com.aiurt.modules.message.handle.impl.EmailSendMsgHandle;
@@ -50,6 +52,9 @@ import com.aiurt.modules.sm.entity.CsSafetyAttention;
 import com.aiurt.modules.sm.entity.SafetyRelatedForm;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.sm.mapper.SafetyRelatedFormMapper;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.mapper.SparePartApplyMapper;
+import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
@@ -216,7 +221,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Autowired
     @Lazy
     private FlowApiService flowApiService;
-
+    @Autowired
+    private SparePartApplyMapper sparePartApplyMapper;
+    @Autowired
+    private SparePartStockInfoMapper sparePartStockInfoMapper;
+    @Autowired
+    private MaterialBaseMapper materialBaseMapper;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -794,6 +804,37 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<String> getUserNameByRealName(String realName) {
         return sysUserRoleMapper.getUserNameByRealName(realName);
+    }
+
+    @Override
+    public List<CsLine> getAllLine() {
+        LambdaQueryWrapper<CsLine> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.orderByAsc(CsLine::getSort);
+        return lineMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public String getDepartByWarehouseCode(String applyWarehouseCode) {
+        return sparePartApplyMapper.getDepartByWarehouseCode(applyWarehouseCode);
+    }
+
+    @Override
+    public String getWarehouseNameByCode(String warehouseCode) {
+        LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SparePartStockInfo::getWarehouseCode,warehouseCode);
+        wrapper.eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
+        SparePartStockInfo one = sparePartStockInfoMapper.selectOne(wrapper);
+        return one.getWarehouseName();
+    }
+
+    @Override
+    public String getMaterialNameByCode(String materialCode) {
+        LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MaterialBase::getCode,materialCode);
+        wrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
+        MaterialBase one = materialBaseMapper.selectOne(wrapper);
+        return one.getName();
     }
 
     @Override
@@ -1854,7 +1895,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public JSONObject getCsMajorByCode(String majorCode) {
         LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsMajor::getMajorCode, majorCode).last("limit 1");
+        wrapper.eq(CsMajor::getMajorCode, majorCode).eq(CsMajor::getDelFlag,CommonConstant.DEL_FLAG_0).last("limit 1");
         CsMajor csMajor = majorService.getBaseMapper().selectOne(wrapper);
         if (Objects.isNull(csMajor)) {
             return null;
@@ -2625,40 +2666,118 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         String type = message.getType();
         //update-begin-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
         String templateCode = message.getTemplateCode();
+        String content = null;
         if(StrUtil.isNotBlank(templateCode)){
             SysMessageTemplate templateEntity = getTemplateEntity(templateCode);
             boolean isMarkdown =CommonConstant.MSG_TEMPLATE_TYPE_MD.equals(templateEntity.getTemplateType());
-            String content = templateEntity.getTemplateContent();
+            content = templateEntity.getTemplateContent();
             if(StrUtil.isNotBlank(content) && null!=message.getData()){
                 content = FreemarkerParseFactory.parseTemplateContent(content, message.getData(), isMarkdown);
             }
             message.setIsMarkdown(isMarkdown);
             message.setContent(content);
         }
-        if(StrUtil.isBlank(message.getContent())){
+        /*if(StrUtil.isBlank(message.getContent())){
             throw new AiurtBootException("发送消息失败,消息内容为空！");
-        }
+        }*/
         if(StrUtil.isBlank(type)){
             throw new AiurtBootException("发送消息失败,消息发送渠道没有配置！");
         }
         List<String> messageTypes = StrUtil.splitTrim(type, ",");
+
+        //保存信息
+        Map<String,Object> data = message.getData();
+        SysAnnouncement announcement = new SysAnnouncement();
+        announcement.setProcessName(message.getProcessName());
+        announcement.setProcessCode(message.getProcessCode());
+        if(data!=null){
+            // 任务节点ID
+            Object taskId = data.get(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID);
+            if(taskId!=null){
+                announcement.setBusId(taskId.toString());
+                // announcement.setBusType(Vue3MessageHrefEnum.BPM_TASK.getBusType());
+            }
+            Object busType = data.get(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE);
+            if (busType != null) {
+                announcement.setBusType(busType.toString());
+                announcement.setOpenType(SysAnnmentTypeEnum.getByType(busType.toString()).getOpenType());
+                announcement.setOpenPage(SysAnnmentTypeEnum.getByType(busType.toString()).getOpenPage());
+            }
+        }
+        //摘要信息
+        announcement.setMsgAbstract(message.getMsgAbstract());
+        announcement.setPublishingContent(message.getPublishingContent());
+        announcement.setTitile(message.getTitle());
+        announcement.setMsgContent(message.getContent());
+        announcement.setSender(message.getFromUser());
+        if (StringUtils.isNotBlank(message.getPriority())) {
+            announcement.setPriority(message.getPriority());
+        } else {
+            announcement.setPriority(com.aiurt.common.constant.CommonConstant.PRIORITY_M);
+        }
+        announcement.setMsgType(org.jeecg.common.constant.CommonConstant.MSG_TYPE_UESR);
+        announcement.setSendStatus(org.jeecg.common.constant.CommonConstant.HAS_SEND);
+        announcement.setSendTime(new Date());
+        announcement.setMsgCategory(message.getCategory());
+        announcement.setDelFlag(String.valueOf(org.jeecg.common.constant.CommonConstant.DEL_FLAG_0));
+        announcement.setUserIds(message.getToUser());
+        announcement.setStartTime(message.getStartTime());
+        announcement.setEndTime(message.getEndTime());
+        announcement.setLevel(message.getLevel());
+        announcement.setProcessCode(message.getProcessCode());
+        announcement.setProcessName(message.getProcessName());
+        sysAnnouncementMapper.insert(announcement);
+
+        // 2.插入用户通告阅读标记表记录
+        String userId = message.getToUser();
+        String[] userIds = userId.split(",");
+        String anntId = announcement.getId();
+        for(int i=0;i<userIds.length;i++) {
+            if(org.jeecg.common.util.oConvertUtils.isNotEmpty(userIds[i])) {
+                SysUser sysUser = userMapper.getUserByName(userIds[i]);
+                if(sysUser==null) {
+                    continue;
+                }
+                SysAnnouncementSend announcementSend = new SysAnnouncementSend();
+                announcementSend.setAnntId(anntId);
+                announcementSend.setUserId(sysUser.getId());
+                announcementSend.setReadFlag(org.jeecg.common.constant.CommonConstant.NO_READ_FLAG);
+                sysAnnouncementSendMapper.insert(announcementSend);
+                JSONObject obj = new JSONObject();
+                obj.put(WebsocketConst.MSG_CMD, WebsocketConst.CMD_USER);
+                obj.put(WebsocketConst.MSG_USER_ID, sysUser.getId());
+                obj.put(WebsocketConst.MSG_ID, announcement.getId());
+                obj.put(WebsocketConst.MSG_TXT, message.getTitle());
+                webSocket.sendMessage(sysUser.getId(), obj.toJSONString());
+            }
+        }
+        message.setMessageId(anntId);
+
+        //根据发送渠道发送消息
         for (String messageType : messageTypes) {
             //update-end-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
-            if(MessageTypeEnum.XT.toString().equals(messageType)){
+            if(MessageTypeEnum.XT.getType().equals(messageType)){
                 if (message.isMarkdown()) {
                     // 系统消息要解析Markdown
                     message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
                 }
                 systemSendMsgHandle.sendMessage(message);
-            }else if(MessageTypeEnum.YJ.toString().equals(messageType)){
+            }else if(MessageTypeEnum.YJ.getType().equals(messageType)){
                 if (message.isMarkdown()) {
                     // 邮件消息要解析Markdown
                     message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
                 }
                 emailSendMsgHandle.sendMessage(message);
-            }else if(MessageTypeEnum.DD.toString().equals(messageType)){
+            }else if(MessageTypeEnum.DD.getType().equals(messageType)){
+
                 ddSendMsgHandle.sendMessage(message);
-            }else if(MessageTypeEnum.QYWX.toString().equals(messageType)){
+            }else if(MessageTypeEnum.QYWX.getType().equals(messageType)){
+                if (message.isMarkdown()) {
+                    // 系统消息要解析Markdown
+                    message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
+                }
+                message.setBusKey(announcement.getBusId());
+                message.setBusType(announcement.getBusType());
                 qywxSendMsgHandle.sendMessage(message);
             }
         }

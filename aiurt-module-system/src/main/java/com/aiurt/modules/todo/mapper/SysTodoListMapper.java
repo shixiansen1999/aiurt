@@ -1,6 +1,7 @@
 package com.aiurt.modules.todo.mapper;
 
 
+import com.aiurt.modules.todo.dto.SysTodoCountDTO;
 import com.aiurt.modules.todo.entity.SysTodoList;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -17,4 +18,12 @@ import java.util.List;
  */
 public interface SysTodoListMapper extends BaseMapper<SysTodoList> {
 
+    /**
+     *
+     * @param userName
+     * @return
+     */
+    List<SysTodoCountDTO> queryBpmn(@Param("userName") String userName);
+
+    SysTodoList queryBpmnLast(@Param("list") List<String> list, @Param("userName")String userName);
 }

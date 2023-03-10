@@ -357,6 +357,7 @@ support:
     pic: /home/data/pic
     exportPatrolPath: /data/wwwroot/support/test/
     exportWorkLogPath: /data/wwwroot/support/test/
+    exportRepairTaskPath: /data/wwwroot/support/test/
   downFilePath:
     #先存到本地
     materialBasicInfoPath: G:\changchunguidao\swsc-copsms-admin\src\main\resources\template\物资基础信息导入模板.xlsx
@@ -372,7 +373,8 @@ support:
   IntegrationKey: 46aa92ec-66af-4818-b7c1-8495a9bd7f17
   #档案类型Id
   archivesTypeId: 3d74878a-5c31-43b4-a024-188e0a3be725
-
+  #企业微信跳转域名
+  messageUrl: http://aiurt.svstrong.com:12680/#
 swsc:
   host: http://116.62.143.85/#/
 

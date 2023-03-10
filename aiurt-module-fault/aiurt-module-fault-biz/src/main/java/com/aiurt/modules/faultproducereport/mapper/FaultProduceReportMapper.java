@@ -30,4 +30,5 @@ public interface FaultProduceReportMapper extends BaseMapper<FaultProduceReport>
      */
     List<FaultProduceReportDTO> queryPageAuditList(@Param("pageList") Page<FaultProduceReportDTO> pageList, @Param("userName") String userName, @Param("majorCodeList") List<String> majorCodeList, @Param("beginDay") String beginDay, @Param("endDay") String endDay);
 
+    List<String> selectIdList(@Param("majorCodeList") List<String> majorCodeList, @Param("beginDay") String beginDay, @Param("endDay") String endDay);
 }

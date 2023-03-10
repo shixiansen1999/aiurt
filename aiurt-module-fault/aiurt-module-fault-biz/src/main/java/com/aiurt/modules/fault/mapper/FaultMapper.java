@@ -54,7 +54,7 @@ public interface FaultMapper extends BaseMapper<Fault> {
 
 
      /**
-      *
+      * 故障发生次数列表
       * @param startDate
       * @param endDate
       * @return
@@ -96,7 +96,8 @@ public interface FaultMapper extends BaseMapper<Fault> {
       * @return
       */
      List<String> selectUserNameByComplex(@Param("roleCodeList") List<String> roleCodeList,@Param("majorCode") String majorCode,
-                                          @Param("subSystemCode")String subSystemCode,  @Param("stationCode")String stationCode);
+                                          @Param("subSystemCode")String subSystemCode,  @Param("stationCode")String stationCode,
+                                          @Param("sysOrgCode")String sysOrgCode);
 
 
     /**

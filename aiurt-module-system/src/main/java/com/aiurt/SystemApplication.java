@@ -1,6 +1,5 @@
 package com.aiurt;
 
-import cn.easyes.starter.register.EsMapperScan;
 import com.aiurt.common.util.oConvertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -18,17 +17,17 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
-* 单体启动类（采用此类启动为单体模式）
-* 特别提醒:
-* 1.需要集成mongodb请删除 exclude={MongoAutoConfiguration.class}
-* 2.切换微服务 勾选profile的SpringCloud，这个类就无法启动，启动会报错
+ * 单体启动类（采用此类启动为单体模式）
+ * 特别提醒:
+ * 1.需要集成mongodb请删除 exclude={MongoAutoConfiguration.class}
+ * 2.切换微服务 勾选profile的SpringCloud，这个类就无法启动，启动会报错
+ *
  * @author fgw
-*/
+ */
 @Slf4j
 @SpringBootApplication
-@EnableAutoConfiguration(exclude={MongoAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
-@ComponentScan({"com.aiurt","org.jeecg"})
-@EsMapperScan("com.aiurt.boot.mapper")
+@EnableAutoConfiguration(exclude = {MongoAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
+@ComponentScan({"com.aiurt", "org.jeecg"})
 public class SystemApplication extends SpringBootServletInitializer {
 
     @Override

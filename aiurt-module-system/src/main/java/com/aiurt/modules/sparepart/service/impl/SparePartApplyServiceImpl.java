@@ -1,41 +1,51 @@
 package com.aiurt.modules.sparepart.service.impl;
 
 
-import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.enums.MaterialApplyStatusEnum;
-import com.aiurt.common.enums.MaterialTypeEnum;
-import com.aiurt.modules.position.mapper.CsStationPositionMapper;
+import com.aiurt.common.constant.CommonTodoStatus;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
+import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.sparepart.entity.SparePartApplyMaterial;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
-import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
 import com.aiurt.modules.sparepart.mapper.SparePartApplyMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartApplyMaterialMapper;
 import com.aiurt.modules.sparepart.service.ISparePartApplyMaterialService;
 import com.aiurt.modules.sparepart.service.ISparePartApplyService;
 import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
-import com.aiurt.modules.stock.entity.*;
-import com.aiurt.modules.stock.mapper.StockInOrderLevel2Mapper;
+import com.aiurt.modules.stock.entity.StockLevel2Info;
+import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
+import com.aiurt.modules.stock.entity.StockOutboundMaterials;
 import com.aiurt.modules.stock.mapper.StockLevel2InfoMapper;
 import com.aiurt.modules.stock.mapper.StockOutOrderLevel2Mapper;
 import com.aiurt.modules.stock.mapper.StockOutboundMaterialsMapper;
 import com.aiurt.modules.system.entity.SysDepart;
-import com.aiurt.modules.system.mapper.SysDepartMapper;
 import com.aiurt.modules.system.service.ISysDepartService;
+import com.aiurt.modules.todo.dto.TodoDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -61,7 +71,12 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     private StockLevel2InfoMapper stockLevel2InfoMapper;
     @Autowired
     private ISysDepartService iSysDepartService;
-
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private ISTodoBaseAPI isTodoBaseAPI;
 
     /**
      * 分页列表查询
@@ -72,6 +87,16 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     @Override
     public List<SparePartApply> selectList(Page page, SparePartApply sparePartApply){
         return sparePartApplyMapper.readAll(page,sparePartApply);
+    }
+
+    /**
+     * 不分页列表查询
+     * @param sparePartApply
+     * @return
+     */
+    @Override
+    public List<SparePartApply> selectListById(SparePartApply sparePartApply){
+        return sparePartApplyMapper.readAll(sparePartApply);
     }
     /**
      * 添加
@@ -106,7 +131,6 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             });
             sparePartApplyMaterialService.saveBatch(sparePartApply.getStockLevel2List());
         }
-
         return Result.OK("添加成功！");
     }
     /**
@@ -176,6 +200,60 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             stockOutboundMaterials.setApplyOutput(applyMaterial.getApplyNum());
             stockOutboundMaterialsMapper.insert(stockOutboundMaterials);
         });
+        try {
+            LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(SparePartStockInfo::getOrganizationId,user.getOrgId());
+            wrapper.eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
+            SparePartStockInfo info = sparePartStockInfoService.getOne(wrapper);
+
+            //根据仓库编号获取仓库组织机构code
+            String orgCode = sparePartApplyMapper.getDepartByWarehouseCode(partApply.getApplyWarehouseCode());
+            String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.MATERIAL_CLERK));
+
+            //发送通知
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "设备申领" + DateUtil.today(), null);
+
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, partApply.getId());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_APPLY.getType());
+            map.put("code",partApply.getCode());
+            map.put("applyNumber",partApply.getApplyNumber());
+            map.put("applyUserId",user.getRealname());
+            map.put("applyTime",DateUtil.format(partApply.getApplyTime(),"yyyy-MM-dd HH:mm"));
+            if(null!=info){
+                map.put("warehouseName",info.getWarehouseName());
+            }
+
+            messageDTO.setData(map);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            /*messageDTO.setTemplateCode(CommonConstant.SPAREPARTAPPLY_SERVICE_NOTICE);
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+            messageDTO.setMsgAbstract("备件申领");
+            messageDTO.setPublishingContent("班组申请物资，请确认");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+            sysBaseApi.sendTemplateMessage(messageDTO);*/
+            //发送待办
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setData(map);
+            SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
+            todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
+            todoDTO.setTitle("设备申领" + DateUtil.today());
+            todoDTO.setMsgAbstract("备件申领");
+            todoDTO.setPublishingContent("班组申请物资，请确认");
+            todoDTO.setCurrentUserName(userName);
+            todoDTO.setBusinessKey(partApply.getId());
+            todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_APPLY.getType());
+            todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_APPLY.getType());
+            todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+            todoDTO.setTemplateCode(CommonConstant.SPAREPARTAPPLY_SERVICE_NOTICE);
+
+            isTodoBaseAPI.createTodoTask(todoDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return Result.OK("提交成功！");
     }
 

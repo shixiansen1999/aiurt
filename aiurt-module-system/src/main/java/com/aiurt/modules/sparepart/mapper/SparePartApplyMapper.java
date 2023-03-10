@@ -1,15 +1,13 @@
 package com.aiurt.modules.sparepart.mapper;
 
-import java.util.List;
-
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
-
-import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @Description: spare_part_apply
@@ -34,4 +32,19 @@ public interface SparePartApplyMapper extends BaseMapper<SparePartApply> {
      * @return
      */
     List<SparePartApply> readAll(Page page,@Param("sparePartApply")  SparePartApply sparePartApply);
+
+    /**
+     * 读取所有
+     * @param sparePartApply
+     * @return
+     */
+    List<SparePartApply> readAll(@Param("sparePartApply")  SparePartApply sparePartApply);
+
+    /**
+     * 根据仓库编号获取仓库组织机构code
+     * @param applyWarehouseCode
+     * @return
+     */
+    String getDepartByWarehouseCode(@Param("applyWarehouseCode")String applyWarehouseCode);
+
 }

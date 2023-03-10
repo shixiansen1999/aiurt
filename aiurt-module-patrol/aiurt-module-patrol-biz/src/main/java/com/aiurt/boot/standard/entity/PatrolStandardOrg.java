@@ -1,5 +1,6 @@
 package com.aiurt.boot.standard.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -39,6 +40,7 @@ public class PatrolStandardOrg implements Serializable {
 	/**组织编码，关联sys_depart的org_code*/
 	@Excel(name = "组织编码，关联sys_depart的org_code", width = 15)
     @ApiModelProperty(value = "组织编码，关联sys_depart的org_code")
+    @DeptFilterColumn
     private String orgCode;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)

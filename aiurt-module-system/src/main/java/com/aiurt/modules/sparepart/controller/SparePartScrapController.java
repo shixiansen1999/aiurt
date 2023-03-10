@@ -1,37 +1,54 @@
 package com.aiurt.modules.sparepart.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
-import io.swagger.annotations.ApiParam;
-import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
+import com.aiurt.common.constant.CommonTodoStatus;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
+import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.sparepart.entity.SparePartScrap;
 import com.aiurt.modules.sparepart.service.ISparePartScrapService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.aiurt.modules.todo.dto.TodoDTO;
+import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.service.ISysDepartService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
+
 
  /**
  * @Description: spare_part_scrap
@@ -47,6 +64,15 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	@Autowired
 	private ISparePartScrapService sparePartScrapService;
 
+	@Autowired
+	private ISysDepartService sysDepartService;
+
+	 @Autowired
+	 private ISysParamAPI iSysParamAPI;
+	 @Autowired
+	 private ISysBaseAPI sysBaseApi;
+	 @Autowired
+	 private ISTodoBaseAPI isTodoBaseAPI;
 	/**
 	 * 分页列表查询
 	 *
@@ -84,7 +110,87 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 		sparePartScrap.setSysOrgCode(user.getOrgCode());
 		sparePartScrap.setStatus(CommonConstant.SPARE_PART_SCRAP_STATUS_2);
 		sparePartScrapService.save(sparePartScrap);
+		try {
+			String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
+
+			//发送通知
+			MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件报废申请" + DateUtil.today(), null);
+
+			//构建消息模板
+			HashMap<String, Object> map = new HashMap<>();
+			map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartScrap.getId());
+			map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_LEND.getType());
+			map.put("materialCode",sparePartScrap.getMaterialCode());
+			String materialName= sysBaseApi.getMaterialNameByCode(sparePartScrap.getMaterialCode());
+			map.put("name",materialName);
+			map.put("num",sparePartScrap.getNum());
+			LoginUser userByName = sysBaseApi.getUserByName(sparePartScrap.getCreateBy());
+			map.put("realName",userByName.getRealname());
+			map.put("scrapTime", DateUtil.format(sparePartScrap.getScrapTime(),"yyyy-MM-dd HH:mm:ss"));
+
+			messageDTO.setData(map);
+			//业务类型，消息类型，消息模板编码，摘要，发布内容
+			/*messageDTO.setTemplateCode(CommonConstant.SPAREPARTSCRAP_SERVICE_NOTICE);
+			SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+			messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+			messageDTO.setMsgAbstract("备件报废申请");
+			messageDTO.setPublishingContent("备件报废申请，请确认");
+			messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+			sysBaseApi.sendTemplateMessage(messageDTO);*/
+			//发送待办
+			TodoDTO todoDTO = new TodoDTO();
+			todoDTO.setData(map);
+			SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
+			todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
+			todoDTO.setTitle("备件报废申请" + DateUtil.today());
+			todoDTO.setMsgAbstract("备件报废申请");
+			todoDTO.setPublishingContent("备件报废申请，请确认");
+			todoDTO.setCurrentUserName(userName);
+			todoDTO.setBusinessKey(sparePartScrap.getId());
+			todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_SCRAP.getType());
+			todoDTO.setCurrentUserName(userName);
+			todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_SCRAP.getType());
+			todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+			todoDTO.setTemplateCode(CommonConstant.SPAREPARTSCRAP_SERVICE_NOTICE);
+
+			isTodoBaseAPI.createTodoTask(todoDTO);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		return Result.OK("添加成功！");
+	}
+
+
+	 /**
+	  * 查询出所有的存放位置，生成存放位置规则：组织机构名称+材料库
+	  * @param id
+	  * @return
+	  */
+	@AutoLog(value = "查询存放位置", operateType = 1, operateTypeAlias = "添加备件报废-查询存放位置", permissionUrl = "/sparepart/sparePartScrap/list")
+	@ApiOperation(value = "spare_part_scrap-查询存放位置", notes = "spare_part_scrap-查询存放位置")
+	@GetMapping(value = "/queryAllLocation")
+	public Result<List<String>> queryAllLocation(@RequestParam(name = "id", required = false) String id) {
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		Result<List<String>> result = new Result<>();
+		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
+		query.orderByAsc(SysDepart::getOrgCode);
+		if(oConvertUtils.isNotEmpty(id)){
+			String[] arr = id.split(",");
+			query.in(SysDepart::getId,arr);
+		}
+		List<SysDepart> ls = this.sysDepartService.list(query);
+		String temp = "材料库";
+		String local = user.getOrgName() + temp;
+		List<String> collect = ls.stream().filter(t -> StrUtil.isNotBlank(t.getDepartName())).map(t -> t.getDepartName() + temp)
+				.filter(t -> !StrUtil.equals(t, local))
+				.collect(Collectors.toList());
+		// 将登录用户所属组织机构材料库默认放在第一个索引位置
+		collect.remove(local);
+		collect.add(0,local);
+		result.setSuccess(true);
+		result.setResult(collect);
+		return result;
 	}
 
 	/**
@@ -131,6 +237,13 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	@GetMapping(value = "/queryById")
 	public Result<SparePartScrap> queryById(@RequestParam(name="id",required=true) String id) {
 		SparePartScrap sparePartScrap = sparePartScrapService.getById(id);
+		List<SparePartScrap> list = sparePartScrapService.selectListById(sparePartScrap);
+		list = list.stream().filter(sparePartScrap1 -> sparePartScrap1.getId().equals(id)).distinct().collect(Collectors.toList());
+		if(CollUtil.isNotEmpty(list)){
+			for (SparePartScrap partScrap : list) {
+				sparePartScrap = partScrap;
+			}
+		}
 		if(sparePartScrap==null) {
 			return Result.error("未找到对应数据");
 		}

@@ -580,7 +580,20 @@ public interface CommonConstant {
  public static final String OPERATE_PLAN_SERVICE_NOTICE = "operate_plan_service_notice";
  /** 消息模板：系统通告业务通知 */
  public static final String ANNOUNCEMENT_SERVICE_NOTICE = "announcement_service_notice";
-
+ /** 消息模板：设备申领 */
+ public static final String SPAREPARTAPPLY_SERVICE_NOTICE = "sparepart_service_notice";
+ /** 消息模板：备件出库 */
+ public static final String SPAREPARTOUTORDER_SERVICE_NOTICE = "sparepartoutorder_service_notice";
+ /** 消息模板：备件退库 */
+ public static final String SPAREPARTRETURN_SERVICE_NOTICE = "sparepartreturn_service_notice";
+ /** 消息模板：备件借出 */
+ public static final String SPAREPARTLEND_SERVICE_NOTICE = "sparepartlend_service_notice";
+ /** 消息模板：备件归还 */
+ public static final String SPAREPARTBACK_SERVICE_NOTICE = "sparepartback_service_notice";
+ /** 消息模板：备件报废 */
+ public static final String SPAREPARTSCRAP_SERVICE_NOTICE = "sparepartscrap_service_notice";
+ /** 消息模板：二级库盘点 */
+ public static final String STOCKLEVEL2CHECK_SERVICE_NOTICE = "stocklevel2check_service_notice";
  /**
   * 下划线分隔符
   */

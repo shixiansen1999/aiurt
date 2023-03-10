@@ -59,6 +59,9 @@ public class PatrolTaskDTO
     @Excel(name = "组织机构code", width = 15)
     @ApiModelProperty(value = "组织机构code")
     private List<String> orgCodeList;
+    @Excel(name = "前端返回格式-组织机构", width = 15)
+    @ApiModelProperty(value = "前端返回格式-组织机构")
+    private List<GeneralReturn> orgCodes;
     @Excel(name = "组织机构名称", width = 15)
     @ApiModelProperty(value = "组织机构名称")
     private String organizationName;

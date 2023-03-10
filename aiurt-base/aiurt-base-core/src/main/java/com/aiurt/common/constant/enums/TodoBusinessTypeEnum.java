@@ -51,10 +51,41 @@ public enum TodoBusinessTypeEnum {
      * 故障挂起
      */
     FAULT_HANG_UP("fault_hang_up"),
-    FAULT_RESULT("fault_result")
-    ;
+    FAULT_RESULT("fault_result"),
+    /**
+     *备件归还
+     */
+    SPAREPART_LEND_RETURN("sparepart_lend_return"),
 
+    /**
+     *备件出库
+     */
+    SPAREPART_OUT("sparepart_out"),
+    /**
+     *备件退库
+     */
+    SPAREPART_BACK("sparepart_back"),
+    /**
+     *备件借出
+     */
+    SPAREPART_LEND("sparepart_lend"),
+    /**
+     *备件借出
+     */
+    SPAREPART_SCRAP("sparepart_scrap"),
+    /**
+     *备件申领
+     */
+    SPAREPART_APPLY("sparepart_apply"),
+    /**
+     *2级库盘点
+     */
+    SPAREPART_STOCKLEVEL2CHECK("sparepart_stocklevel2check"),
 
+    /**
+     * 固定资产盘点
+     */
+    FIXED_ASSETS("fixed_assets");
 
     /**
      * 业务类型(email:邮件 bpm:流程)

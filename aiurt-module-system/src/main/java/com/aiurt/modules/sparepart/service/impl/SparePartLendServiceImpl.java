@@ -1,8 +1,16 @@
 package com.aiurt.modules.sparepart.service.impl;
 
-import com.aiurt.common.constant.CacheConstant;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.CommonTodoStatus;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
+import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.mapper.SparePartLendMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
@@ -14,18 +22,24 @@ import com.aiurt.modules.sparepart.service.ISparePartStockService;
 import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.mapper.SysUserMapper;
 import com.aiurt.modules.system.service.ISysDepartService;
+import com.aiurt.modules.todo.dto.TodoDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -52,6 +66,12 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
     private ISparePartInOrderService sparePartInOrderService;
     @Autowired
     private ISysDepartService sysDepartService;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private ISTodoBaseAPI isTodoBaseAPI;
     /**
      * 查询列表
      * @param page
@@ -61,6 +81,15 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
     @Override
     public List<SparePartLend> selectList(Page page, SparePartLend sparePartLend){
         return sparePartLendMapper.readAll(page,sparePartLend);
+    }
+    /**
+     * 查询列表
+     * @param sparePartLend
+     * @return
+     */
+    @Override
+    public List<SparePartLend> selectListById( SparePartLend sparePartLend){
+        return sparePartLendMapper.readAll(sparePartLend);
     }
     /**
      * 添加
@@ -85,6 +114,55 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
             sparePartLend.setEntryOrgCode(sysDepartService.getById(sparePartStockInfo.getOrganizationId()).getOrgCode());
             sparePartLend.setExitOrgCode(sysDepartService.getById(lendStockInfo.getOrganizationId()).getOrgCode());
             sparePartLendMapper.insert(sparePartLend);
+
+            try {
+                //根据仓库编号获取仓库组织机构code
+                String orgCode = sysBaseApi.getDepartByWarehouseCode(sparePartLend.getLendWarehouseCode());
+                String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
+
+                //发送通知
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件借出申请" + DateUtil.today(), null);
+
+                //构建消息模板
+                HashMap<String, Object> map = new HashMap<>();
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartLend.getId());
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_LEND.getType());
+                map.put("materialCode",sparePartLend.getMaterialCode());
+                String materialName= sysBaseApi.getMaterialNameByCode(sparePartLend.getMaterialCode());
+                map.put("name",materialName);
+                map.put("lendNum",sparePartLend.getLendNum());
+                String warehouseName= sysBaseApi.getWarehouseNameByCode(sparePartLend.getLendWarehouseCode());
+                map.put("warehouseName",warehouseName);
+
+                messageDTO.setData(map);
+                //业务类型，消息类型，消息模板编码，摘要，发布内容
+                /*messageDTO.setTemplateCode(CommonConstant.SPAREPARTLEND_SERVICE_NOTICE);
+                SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+                messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+                messageDTO.setMsgAbstract("备件借出申请");
+                messageDTO.setPublishingContent("备件借出申请，请确认");
+                messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+                sysBaseApi.sendTemplateMessage(messageDTO);*/
+                //发送待办
+                TodoDTO todoDTO = new TodoDTO();
+                todoDTO.setData(map);
+                SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
+                todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
+                todoDTO.setTitle("备件借出申请" + DateUtil.today());
+                todoDTO.setMsgAbstract("备件借出申请");
+                todoDTO.setPublishingContent("备件借出申请，请确认");
+                todoDTO.setCurrentUserName(userName);
+                todoDTO.setBusinessKey(sparePartLend.getId());
+                todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_LEND.getType());
+                todoDTO.setCurrentUserName(userName);
+                todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_LEND.getType());
+                todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+                todoDTO.setTemplateCode(CommonConstant.SPAREPARTLEND_SERVICE_NOTICE);
+
+                isTodoBaseAPI.createTodoTask(todoDTO);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return Result.OK("添加成功！");
         }else{
             return Result.error("当前所在班组没有备件仓库！");
@@ -147,6 +225,36 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrder.setConfirmTime(date);
         sparePartInOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgCode());
         sparePartInOrderService.save(sparePartInOrder);
+
+        try {
+            LoginUser userById = sysBaseApi.getUserByName(partLend.getLendPerson());
+
+            //发送通知
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件借出申请" + DateUtil.today(), null);
+
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, partLend.getId());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_LEND.getType());
+            map.put("materialCode",partLend.getMaterialCode());
+            String materialName= sysBaseApi.getMaterialNameByCode(partLend.getMaterialCode());
+            map.put("name",materialName);
+            map.put("lendNum",partLend.getLendNum());
+            String warehouseName= sysBaseApi.getWarehouseNameByCode(partLend.getLendWarehouseCode());
+            map.put("warehouseName",warehouseName);
+
+            messageDTO.setData(map);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            messageDTO.setTemplateCode(CommonConstant.SPAREPARTLEND_SERVICE_NOTICE);
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+            messageDTO.setMsgAbstract("备件借出申请确认");
+            messageDTO.setPublishingContent("备件借出申请通过");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+            sysBaseApi.sendTemplateMessage(messageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return Result.OK("操作成功！");
     }
     /**
@@ -194,6 +302,34 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrder.setStatus(CommonConstant.SPARE_PART_OUT_ORDER_STATUS_2);
         sparePartOutOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getBackPerson())).getOrgCode());
         sparePartOutOrderService.save(sparePartOutOrder);
+        try {
+            LoginUser userById = sysBaseApi.getUserByName(partLend.getBackPerson());
+            //发送通知
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件归还-确认" + DateUtil.today(), null);
+
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, partLend.getId());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_LEND_RETURN.getType());
+            map.put("materialCode",partLend.getMaterialCode());
+            String materialName= sysBaseApi.getMaterialNameByCode(partLend.getMaterialCode());
+            map.put("name",materialName);
+            map.put("backNum",partLend.getBackNum());
+            String warehouseName= sysBaseApi.getWarehouseNameByCode(partLend.getLendWarehouseCode());
+            map.put("warehouseName",warehouseName);
+
+            messageDTO.setData(map);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            messageDTO.setTemplateCode(CommonConstant.SPAREPARTBACK_SERVICE_NOTICE);
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+            messageDTO.setMsgAbstract("备件归还申请确认");
+            messageDTO.setPublishingContent("备件归还申请通过");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+            sysBaseApi.sendTemplateMessage(messageDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return Result.OK("操作成功！");
     }
 

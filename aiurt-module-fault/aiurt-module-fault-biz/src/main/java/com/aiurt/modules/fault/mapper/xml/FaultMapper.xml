@@ -128,15 +128,15 @@
 
     <select id="selectBySubSystemCode" resultType="com.aiurt.modules.fault.dto.FaultFrequencyDTO">
         SELECT sub_system_code as subSystemCode,
-               count(*)        AS number
-        FROM fault t2
+               count(*) AS number
+        FROM fault
         <where>
             1 = 1
             <if test="startDate != null">
-                and DATE_FORMAT(t2.happen_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+                and DATE_FORMAT(happen_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate}, '%Y-%m-%d')
             </if>
             <if test="endDate != null">
-                and  DATE_FORMAT(t2.happen_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+                and  DATE_FORMAT(happen_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate}, '%Y-%m-%d')
             </if>
         </where>
         GROUP BY sub_system_code
@@ -211,7 +211,9 @@
         <if test="stationCode != null and stationCode != ''">
             and c.station_code = #{stationCode}
         </if>
-
+        <if test="sysOrgCode != null and sysOrgCode != ''">
+            and su.org_code = #{sysOrgCode}
+        </if>
     </select>
 
     <select id="getFault" resultType="com.aiurt.modules.faultanalysisreport.dto.FaultDTO">

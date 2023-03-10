@@ -147,4 +147,5 @@ public class PatrolTaskParam extends PatrolTask {
     @Excel(name = "任务同行人", width = 15)
     @ApiModelProperty(value = "任务同行人")
     private String accompanyName;
+
 }

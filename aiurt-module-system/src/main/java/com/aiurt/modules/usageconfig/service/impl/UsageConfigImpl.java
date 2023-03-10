@@ -1,4 +1,5 @@
 package com.aiurt.modules.usageconfig.service.impl;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.constant.CommonConstant;
@@ -59,6 +60,9 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
         if (Objects.isNull(startTime) || Objects.isNull(endTime)) {
             startTime = DateUtil.beginOfDay(new Date());
             endTime = DateUtil.endOfDay(new Date());
+        }else {
+            startTime = DateUtil.parse(DateUtil.formatDate(startTime)+" 00:00:00");
+            endTime = DateUtil.parse(DateUtil.formatDate(endTime)+" 23:59:59");
         }
 
         Page<UsageStatDTO> pageList = new Page<>(usageConfigParamDTO.getPageNo(),usageConfigParamDTO.getPageSize());
@@ -115,12 +119,17 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
 
     @Override
     public ModelAndView exportXls(HttpServletRequest request, UsageConfig usageConfig) {
+        String string;
+        String string3;
         List<UsageConfig> list = new ArrayList<>();
         Date startTime = usageConfig.getStartTime();
         Date endTime = usageConfig.getEndTime();
         if (Objects.isNull(startTime) || Objects.isNull(endTime)) {
             startTime = DateUtil.beginOfDay(new Date());
             endTime = DateUtil.endOfDay(new Date());
+        }else {
+            startTime = DateUtil.parse(DateUtil.formatDate(startTime)+" 00:00:00");
+            endTime = DateUtil.parse(DateUtil.formatDate(endTime)+" 23:59:59");
         }
 
         Date finalStartTime = startTime;
@@ -180,11 +189,20 @@ public class UsageConfigImpl extends ServiceImpl<UsageConfigMapper, UsageConfig>
             String exportField = "name,total,newAddNum";
             mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
         }
+        String string1 = DateUtil.formatDate(startTime);
+        String string2 = DateUtil.formatDate(endTime);
+        if (usageConfig.getParentTag()==0 && usageConfig.getSign()==0){
+            string = "【"+string1+"~"+string2+"】"+"基础数据项统计明细";
+            string3 = "基础数据项统计明细";
+        }else {
+            string = "【"+string1+"~"+string2+"】"+"业务数据项统计明细";
+            string3 = "业务数据项统计明细";
+        }
 
         //导出文件名称
-        mv.addObject(NormalExcelConstants.FILE_NAME, "数据概览");
+        mv.addObject(NormalExcelConstants.FILE_NAME, string);
         mv.addObject(NormalExcelConstants.CLASS, UsageConfig.class);
-        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("数据概览",  "导出信息", ExcelType.XSSF));
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams(string,  string3, ExcelType.XSSF));
         mv.addObject(NormalExcelConstants.DATA_LIST, list);
         return mv;
     }

@@ -46,6 +46,11 @@
         <!--        </dependency>-->
         <dependency>
             <groupId>com.aiurt.boot</groupId>
+            <artifactId>aiurt-module-report-biz</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aiurt.boot</groupId>
             <artifactId>aiurt-module-patrol-biz</artifactId>
             <version>3.2.0</version>
         </dependency>

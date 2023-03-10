@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -13,6 +14,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: patrol_task
@@ -40,6 +42,10 @@ public class PatrolTask implements Serializable {
     @Excel(name = "任务编号", width = 15)
     @ApiModelProperty(value = "任务编号")
     private java.lang.String code;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "任务编号，导出使用参数")
+    private List<String> codeList;
     /**
      * 计划编号
      */

@@ -2,4 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.RepairTaskEnclosureMapper">
 
+
+    <select id="getByRepairTaskId" resultType="java.lang.String">
+        SELECT rtr.id from
+                          repair_task_result as rtr,
+                          repair_task_device_rel as rtdr
+        where
+            rtr.task_device_rel_id=rtdr.id
+          and rtdr.repair_task_id=#{id}
+    </select>
+
+    <select id="getByResultId" resultType="com.aiurt.boot.task.entity.RepairTaskEnclosure">
+        SELECT * from repair_task_enclosure as rte
+                 where rte.repair_task_result_id=#{id}
+    </select>
 </mapper>

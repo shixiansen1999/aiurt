@@ -128,6 +128,12 @@ public class MaterialBaseType extends DictEntity {
 	@TableField(exist = false)
 	private  List<MaterialBaseType>  materialBaseTypeList;
 
+	/**children子集*/
+	@Excel(name = "children子集", width = 15)
+	@ApiModelProperty(value = "children子集")
+	@TableField(exist = false)
+	private  List<MaterialBaseType> children ;
+
 	@ApiModelProperty(value = "备用字段")
 	@TableField(exist = false)
 	private String byType = "wzfl";

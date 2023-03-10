@@ -132,6 +132,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         }
         String typeCodeCc = getCcStr(deviceType);
         deviceType.setCodeCc(typeCodeCc);
+        deviceType.setRemark(deviceType.getRemark());
         deviceTypeService.save(deviceType);
         //添加设备组成
         if(null!=deviceType.getDeviceComposeList()){

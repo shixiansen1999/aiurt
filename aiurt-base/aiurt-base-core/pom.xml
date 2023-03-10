@@ -285,9 +285,7 @@
 		<dependency>
 			<groupId>com.luhuiguo</groupId>
 			<artifactId>aspose-cells</artifactId>
-			<version>8.5.2</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/aspose-cells-8.5.2.jar</systemPath>
+			<version>23.1</version>
 		</dependency>
 	</dependencies>
 </project>

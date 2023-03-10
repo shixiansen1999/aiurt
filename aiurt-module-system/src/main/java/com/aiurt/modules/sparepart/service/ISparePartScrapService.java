@@ -24,6 +24,12 @@ public interface ISparePartScrapService extends IService<SparePartScrap> {
      */
     List<SparePartScrap> selectList(Page page, SparePartScrap sparePartScrap);
     /**
+     * 查询列表不分页
+     * @param sparePartScrap
+     * @return
+     */
+    List<SparePartScrap> selectListById(SparePartScrap sparePartScrap);
+    /**
      * 编辑
      *
      * @param sparePartScrap

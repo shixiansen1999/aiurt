@@ -2,6 +2,9 @@ package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import io.lettuce.core.dynamic.annotation.Param;
+
+import java.util.List;
 
 /**
  * @Description: repair_task_enclosure
@@ -10,5 +13,9 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @Version: V1.0
  */
 public interface RepairTaskEnclosureMapper extends BaseMapper<RepairTaskEnclosure> {
+
+    List<String> getByRepairTaskId(@Param("id") String id);
+
+    RepairTaskEnclosure getByResultId(@Param("id") String id);
 
 }

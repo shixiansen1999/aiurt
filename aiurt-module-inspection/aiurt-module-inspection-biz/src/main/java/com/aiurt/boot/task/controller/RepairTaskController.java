@@ -21,24 +21,31 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.ArchiveUtils;
+import com.alibaba.druid.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.baomidou.mybatisplus.core.toolkit.Wrappers.update;
 
 /**
  * @Description: 检修任务
@@ -62,6 +69,9 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 
     @Autowired
     private IRepairTaskEnclosureService repairTaskEnclosureService;
+
+    @Autowired
+    private ArchiveUtils archiveUtils;
 
 
     /**
@@ -325,6 +335,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     @ApiOperation(value = "检修任务-审核", notes = "检修任务-审核")
     @PostMapping(value = "/toExamine")
     public Result<String> toExamine(@RequestBody ExamineDTO examineDTO) {
+        examineDTO.setAcceptanceRemark(1);
         repairTaskService.toExamine(examineDTO);
         return Result.OK("操作成功！");
     }
@@ -339,6 +350,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     @ApiOperation(value = "检修任务-验收", notes = "检修任务-验收")
     @PostMapping(value = "/acceptance")
     public Result<String> acceptance(@RequestBody ExamineDTO examineDTO) {
+        examineDTO.setAcceptanceRemark(0);
         repairTaskService.acceptance(examineDTO);
         return Result.OK("操作成功！");
     }
@@ -507,4 +519,61 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
         return Result.OK(systemInformation);
     }
 
+    @AutoLog("检修归档")
+    @RequestMapping(value = "/archiveRepair")
+    @ApiOperation(value = "检修归档", notes = "检修归档")
+    public Result<?> archiveRepair(HttpServletRequest request, @RequestBody List<RepairTask> data,HttpServletResponse response) {
+        if (data == null || data.size() == 0) {
+            return Result.error("没有选择要归档的文件");
+        }
+        //获取token先看有没有归档权限
+        String token = null;
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        try {
+            token = archiveUtils.getToken(sysUser.getUsername());
+            System.out.println(token);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("系统异常");
+        }
+        if (StringUtils.isEmpty(token)) {
+            return Result.error("没有归档权限");
+        }
+        //获取登录用户信息
+        Map userInfo = archiveUtils.getArchiveUser(sysUser.getUsername(), token);
+        if (ObjectUtil.isEmpty(userInfo)) {
+            return Result.error("没有归档权限");
+        }
+        //通过id获取档案类型信息，拿到refileFolderId
+        Map typeInfo = archiveUtils.getTypeInfoById(token);
+        String refileFolderId = typeInfo.get("refileFolderId").toString();
+        //逐条归档
+        String finalToken = token;
+        String finalArchiveUserId = userInfo.get("ID").toString();
+        String username = userInfo.get("Name").toString();
+        String sectId = typeInfo.get("sectId").toString();
+        data.forEach(repairTask -> {
+            repairTaskService.archRepairTask(repairTask, finalToken, finalArchiveUserId, refileFolderId, username, sectId);
+            try {
+                repairTaskService.exportPdf(request,repairTask,response);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        });
+        return Result.ok("归档成功");
+    }
+
+    /**
+     * 导出pdf
+     *
+     * @param repairTask
+     */
+    /*@AutoLog(value = "检修导出pdf")
+    @ApiOperation(value = "检修导出pdf", notes = "检修导出pdf")
+    @GetMapping(value = "/exportPdf")
+    public  void exportPdf(HttpServletRequest request,RepairTask repairTask,HttpServletResponse response) throws IOException {
+
+        repairTaskService.exportPdf(request,repairTask,response);
+    }*/
 }

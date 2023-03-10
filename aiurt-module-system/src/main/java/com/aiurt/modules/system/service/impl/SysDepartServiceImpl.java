@@ -193,6 +193,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
 		query.eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0.toString());
 		query.orderByAsc(SysDepart::getDepartOrder);
+		query.orderByDesc(SysDepart::getCreateTime);
 		List<SysDepart> list = this.list(query);
 		// 调用wrapTreeDataToTreeList方法生成树状数据
 		List<DepartIdModel> listResult = FindsDepartsChildrenUtil.wrapTreeDataToDepartIdTreeList(list);
@@ -214,6 +215,20 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 			// 先判断该对象有无父级ID,有则意味着不是最高级,否则意味着是最高级
 			// 获取父级ID
 			String parentId = sysDepart.getParentId();
+			// 更新排序的序号
+			List<SysDepart> departs = this.lambdaQuery().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0)
+					.in(SysDepart::getParentId, parentId)
+					.orderByDesc(SysDepart::getDepartOrder)
+					.last("limit 1")
+					.list();
+			if (CollectionUtil.isNotEmpty(departs)) {
+				SysDepart depart = departs.stream().findFirst().orElse(new SysDepart());
+				Integer order = depart.getDepartOrder();
+				sysDepart.setDepartOrder(1);
+				if (ObjectUtil.isNotEmpty(order)) {
+					sysDepart.setDepartOrder(order + 1);
+				}
+			}
 			//update-begin--Author:baihailong  Date:20191209 for：部门编码规则生成器做成公用配置
 			JSONObject formData = new JSONObject();
 			formData.put("parentId", parentId);
@@ -440,7 +455,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 					return imporReturnRes(errorLines, successLines, tipMessage, false, null);
 				}
 
-				Map<String,SysDepart> departMap = new HashMap<>();
+				Map<String,SysDepart> departMap = new LinkedHashMap<>();
 				//数据校验
 				for (SysDepartModel model : sysDepartModelList) {
 					if (ObjectUtil.isNotEmpty(model)) {

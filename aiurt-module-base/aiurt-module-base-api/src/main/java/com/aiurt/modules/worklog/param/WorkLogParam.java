@@ -46,6 +46,11 @@ public class WorkLogParam {
      */
     private  String  departId;
 
+    /**
+     * 提交人班组code
+     */
+    private  String  departCode;
+
     @ApiModelProperty(value = "权限班组集合(后台处理)")
     private List<String> departList;
 

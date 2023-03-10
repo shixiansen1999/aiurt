@@ -32,7 +32,7 @@ public class FileDataDTO {
      * 文件类型ID
      */
     @ApiModelProperty(value = "文件类型ID")
-    private String tyepId;
+    private String typeId;
     /**
      * 文件存储地址(即数据库存的地址)
      */

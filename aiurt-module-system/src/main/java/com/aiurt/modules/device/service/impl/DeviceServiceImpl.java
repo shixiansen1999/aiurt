@@ -212,11 +212,13 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		if(deviceTypeCodeCc.contains(CommonConstant.SYSTEM_SPLIT_STR)){
 			List<String> strings = Arrays.asList(deviceTypeCodeCc.split(CommonConstant.SYSTEM_SPLIT_STR));
 			for(String typecode : strings){
-				DeviceType deviceType = deviceTypeMapper.selectOne(new QueryWrapper<DeviceType>().eq("code",typecode));
+				DeviceType deviceType = deviceTypeMapper.selectOne(new QueryWrapper<DeviceType>().eq("code",typecode)
+						.lambda().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0));
 				deviceTypeCodeCcName += deviceType==null?"":deviceType.getName()+CommonConstant.SYSTEM_SPLIT_STR;
 			}
 		}else{
-			DeviceType deviceType = deviceTypeMapper.selectOne(new QueryWrapper<DeviceType>().eq("code",deviceTypeCodeCc));
+			DeviceType deviceType = deviceTypeMapper.selectOne(new QueryWrapper<DeviceType>().eq("code",deviceTypeCodeCc)
+					.lambda().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0));
 			deviceTypeCodeCcName += deviceType==null?"":deviceType.getName()+CommonConstant.SYSTEM_SPLIT_STR;
 		}
 		if(deviceTypeCodeCcName.contains(CommonConstant.SYSTEM_SPLIT_STR)){

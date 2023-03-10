@@ -12,6 +12,7 @@ import com.aiurt.modules.faultproducereportline.service.IFaultProduceReportLineS
 import com.aiurt.modules.faultproducereportlinedetail.dto.FaultProduceReportLineDetailDTO;
 import com.aiurt.modules.faultproducereportlinedetail.entity.FaultProduceReportLineDetail;
 import com.aiurt.modules.faultproducereportlinedetail.service.IFaultProduceReportLineDetailService;
+import com.aiurt.modules.position.entity.CsLine;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -31,6 +32,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -61,7 +63,7 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
     @AutoLog(value = "生产日报-获取当前登录用户的专业")
     @ApiOperation(value = "生产日报-获取当前登录用户的专业", notes = "生产日报-获取当前登录用户的专业")
     @GetMapping("/getLoginUserMajors")
-    public Result<List<CsUserMajorModel>> getLoginUserMajors(){
+    public Result<List<CsUserMajorModel>> getLoginUserMajors() {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserMajorModel> CsUserMajorModelList = iSysBaseAPI.getMajorByUserId(user.getId());
         return Result.OK(CsUserMajorModelList);
@@ -81,10 +83,10 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
     @ApiOperation(value = "生产日报-分页列表查询", notes = "生产日报-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<FaultProduceReportDTO>> queryPageList(FaultProduceReport faultProduceReport,
-                                                           String beginDay, String endDay,
-                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                           HttpServletRequest req) {
+                                                              String beginDay, String endDay,
+                                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                              HttpServletRequest req) {
         // 自己写查询
         Page<FaultProduceReportDTO> pageList = new Page<>(pageNo, pageSize);
         return faultProduceReportService.queryPageList(pageList, faultProduceReport, beginDay, endDay);
@@ -104,10 +106,10 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
     @ApiOperation(value = "生产日报-审核分页列表查询", notes = "生产日报-审核分页列表查询")
     @GetMapping(value = "/AuditList")
     public Result<IPage<FaultProduceReportDTO>> queryPageAuditList(FaultProduceReport faultProduceReport,
-                                                           String beginDay, String endDay,
-                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                           HttpServletRequest req) {
+                                                                   String beginDay, String endDay,
+                                                                   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                   HttpServletRequest req) {
         // 自己写查询
         Page<FaultProduceReportDTO> pageList = new Page<>(pageNo, pageSize);
         return faultProduceReportService.queryPageAuditList(pageList, faultProduceReport, beginDay, endDay);
@@ -124,8 +126,9 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
     @PostMapping(value = "/workSubmit")
     public Result<FaultProduceReport> workSubmit(@RequestBody FaultProduceReport faultProduceReport) {
         faultProduceReportService.workSubmit(faultProduceReport);
-        return Result.OK("提交成功") ;
+        return Result.OK("提交成功");
     }
+
     /**
      * 添加
      *
@@ -221,10 +224,29 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
             reportDTO.setSubmitUserRealname(submitUser.getRealname());
         }
 
-        // 2、再查询出该生产日报的线路故障数据，
-        LambdaQueryWrapper<FaultProduceReportLine> reportLineLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        reportLineLambdaQueryWrapper.eq(FaultProduceReportLine::getFaultProduceReportId, report.getId());
-        List<FaultProduceReportLine> reportLineList = iFaultProduceReportLineService.list(reportLineLambdaQueryWrapper);
+        // 2.1 查询出所有线路
+        List<CsLine> lineList = iSysBaseAPI.getAllLine();
+        // 2.2 遍历每一条线路，并转化成reportLine，要放入reportDTO里面
+        List<FaultProduceReportLine> reportLineList = lineList.stream().map(csLine -> {
+            // 新建一个reportLine
+            FaultProduceReportLine reportLine = new FaultProduceReportLine();
+            // 看这条线路是不是在线路故障表里面
+            LambdaQueryWrapper<FaultProduceReportLine> reportLineLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            reportLineLambdaQueryWrapper.eq(FaultProduceReportLine::getFaultProduceReportId, report.getId());
+            reportLineLambdaQueryWrapper.eq(FaultProduceReportLine::getLineCode, csLine.getLineCode());
+            FaultProduceReportLine queryReportLine = iFaultProduceReportLineService.getOne(reportLineLambdaQueryWrapper);
+            if (queryReportLine != null) {
+                // 这条线路在线路故障表里面，直接复制
+                BeanUtils.copyProperties(queryReportLine, reportLine);
+            } else {
+                reportLine.setTotalNum(0);
+                reportLine.setDelayNum(0);
+                reportLine.setLineCode(csLine.getLineCode());
+                reportLine.setLineName(csLine.getLineName());
+            }
+            return reportLine;
+        }).collect(Collectors.toList());
+
         // 将reportLineList放入reportDTO
         reportDTO.setReportLineList(reportLineList);
         // 3、根据生产日报id查询出故障清单数据，转为reportLineDetailDTO后存入reportLineDetailDTOList
@@ -242,7 +264,7 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
             reportLineDetailDTO.setMajorName(finalMajorName); // 设置专业名称
             // 设置三个是否的中文
             List<DictModel> reportStateList = iSysBaseAPI.getDictItems("fault_yn");
-            reportStateList.forEach(dictModel->{
+            reportStateList.forEach(dictModel -> {
                 if (item.getAffectDrive().toString().equals(dictModel.getValue())) {
                     reportLineDetailDTO.setAffectDriveName(dictModel.getText());
                 }
@@ -281,6 +303,32 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, FaultProduceReport.class);
+    }
+
+    /**
+     * 导出excel
+     * @param faultProduceReportDTO
+     * @param request
+     * @param response
+     * @throws IOException
+     */
+    @ApiOperation(value = "生产日报-exportExcel", notes = "生产日报-exportExcel")
+    @GetMapping("/exportExcel")
+    public void exportExcel(FaultProduceReportDTO faultProduceReportDTO, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        faultProduceReportService.exportExcel(faultProduceReportDTO, request, response);
+    }
+
+    /**
+     * 多个excel的情况，导出zip压缩包
+     * @param faultProduceReportDTO
+     * @param request
+     * @param response
+     * @throws IOException
+     */
+    @ApiOperation(value = "生产日报-exportZip", notes = "生产日报-exportZip")
+    @GetMapping("/exportZip")
+    public void exportZip(FaultProduceReportDTO faultProduceReportDTO, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        faultProduceReportService.exportZip(faultProduceReportDTO, request, response);
     }
 
 }

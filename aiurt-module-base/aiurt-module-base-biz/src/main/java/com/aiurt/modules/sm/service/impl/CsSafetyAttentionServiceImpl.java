@@ -1,6 +1,7 @@
 package com.aiurt.modules.sm.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.ImportExcelUtil;
@@ -248,7 +249,9 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
             wrapper.eq(SafetyRelatedForm::getDelFlag,0);
             List<SafetyRelatedForm> list = safetyRelatedFormMapper.selectList(wrapper);
             List<String> str = list.stream().map(l-> l.getSafetyAttentionId()).collect(Collectors.toList());
-            csSafetyAttentions = baseMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>().in(CsSafetyAttention::getId,str));
+            if (CollectionUtil.isNotEmpty(str)){
+                csSafetyAttentions = baseMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>().in(CsSafetyAttention::getId,str));
+            }
         }else {
             //没有修改按照专业子系统查询
             LambdaQueryWrapper<CsSafetyAttention> wrapper1 = new LambdaQueryWrapper<CsSafetyAttention>();

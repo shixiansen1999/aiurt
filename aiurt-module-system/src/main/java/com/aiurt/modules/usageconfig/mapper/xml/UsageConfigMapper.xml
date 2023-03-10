@@ -2,12 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.usageconfig.mapper.UsageConfigMapper">
     <select id="getList" resultType="com.aiurt.modules.usageconfig.dto.UsageConfigDTO">
-        select *
-        from sys_usage_config
-    </select>
+    select *
+    from sys_usage_config
+    order by sort
+</select>
     <select id="getAllList" resultType="com.aiurt.modules.usageconfig.dto.UsageConfigDTO">
         select *
         from sys_usage_config
+        order by sort
     </select>
     <select id="getTotal" resultType="java.lang.Long">
         select
@@ -37,35 +39,43 @@
     </select>
 
     <select id="getChildrenList" resultType="com.aiurt.modules.usageconfig.entity.UsageConfig">
-        SELECT
-                *
+        SELECT *
         FROM
                 ( SELECT * FROM sys_usage_config WHERE pid > 0 ORDER BY pid, id DESC ) realname_sorted,
                 ( SELECT @pv := #{id} ) initialisation
         WHERE
                 (
                         FIND_IN_SET( pid, @pv COLLATE utf8mb4_general_ci )> 0
-                                AND @pv := concat( @pv, ',', id ));
+                                AND @pv := concat( @pv, ',', id ))
+        order by sort;
     </select>
 
     <select id="selectByPage" resultType="com.aiurt.modules.usageconfig.dto.UsageStatDTO">
-        SELECT
-            id,pid, `name` as tile_name, table_name, sta_condition
+        SELECT id,
+               pid,
+               `name` as tile_name,
+               table_name,
+               sta_condition
         FROM
             sys_usage_config
         WHERE
             pid IN (SELECT id from sys_usage_config where `code` = #{code})
           AND state = 1
+        order by sort
     </select>
 
 
     <select id="selectByPages" resultType="com.aiurt.modules.usageconfig.entity.UsageConfig">
-        SELECT
-        id,pid, `name` as name, table_name, sta_condition
+        SELECT id,
+               pid,
+               `name` as name,
+               table_name,
+               sta_condition
         FROM
         sys_usage_config
         WHERE
         pid IN (SELECT id from sys_usage_config where `code` = #{code})
         AND state = 1
+        order by sort
     </select>
 </mapper>

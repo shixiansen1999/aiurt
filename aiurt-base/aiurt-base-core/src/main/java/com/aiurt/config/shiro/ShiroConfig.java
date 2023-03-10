@@ -164,7 +164,39 @@ public class ShiroConfig {
         Map<String, Filter> filterMap = new HashMap<String, Filter>(1);
         //如果cloudServer为空 则说明是单体 需要加载跨域配置【微服务跨域切换】
         Object cloudServer = env.getProperty(CommonConstant.CLOUD_SERVER_KEY);
-        filterMap.put("jwt", new JwtFilter(cloudServer==null));
+
+        // 设置大屏的url
+        Set<String> bigSet = new HashSet<>();
+        bigSet.add("/fault/faultInformation/getLargeFaultDataInfo");
+        bigSet.add("/sys/dict/getDictItems/");
+        bigSet.add("/situation/sysInfoList/list");
+        bigSet.add("/syntheticalpanel/positionPanel/queryById");
+        bigSet.add("/patrolScreen/statisticsDetails");
+        bigSet.add("/syntheticalpanel/positionPanel/list");
+        bigSet.add("/patrolScreen/importantData");
+        bigSet.add("/schedule/scheduleRecord/overviewInfo");
+        bigSet.add("/fault/faultInformation/queryLargeFaultInformation");
+        bigSet.add("/fault/faultInformation/getLargeFaultInfo");
+        bigSet.add("/fault/faultInformation/getLargeLineFaultInfo");
+        bigSet.add("/fault/faultInformation/getLargeFaultTime");
+        bigSet.add("/fault/faultInformation/getSystemReliability");
+        bigSet.add("/plan/bigscreen/getInspectionDataPage");
+        bigSet.add("/schedule/scheduleRecord/getTodayOndutyDetail");
+        bigSet.add("/schedule/scheduleRecord/getTotalPepoleDetail");
+        bigSet.add("/schedule/scheduleRecord/getTotalTeamDetail");
+        bigSet.add("/fault/faultInformation/getLargeFaultDatails");
+        bigSet.add("/fault/faultInformation/getLargeFaultDataDatails");
+        bigSet.add("/fault/faultInformation/getFaultAnalysis");
+        bigSet.add("/fault/faultInformation/getFaultLevelInfo");
+        bigSet.add("/fault/faultInformation/getYearFault");
+        bigSet.add("/fault/faultInformation/getSystemYearFault");
+        bigSet.add("fault/faultInformation/queryLargeFaultDataCount");
+        bigSet.add("/plan/bigscreen/getTeamPortraitDetails");
+        bigSet.add("/plan/bigscreen/getTeamPortrait");
+
+        JwtFilter jwtFilter = new JwtFilter(cloudServer == null);
+        jwtFilter.setBigScreenUrlSet(bigSet);
+        filterMap.put("jwt", jwtFilter);
         shiroFilterFactoryBean.setFilters(filterMap);
         // <!-- 过滤链定义，从上向下顺序执行，一般将/**放在最为下边
         filterChainDefinitionMap.put("/**", "jwt");
@@ -180,7 +212,6 @@ public class ShiroConfig {
     public DefaultWebSecurityManager securityManager(ShiroRealm myRealm) {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(myRealm);
-
         /*
          * 关闭shiro自带的session，详情见文档
          * http://shiro.apache.org/session-management.html#SessionManagement-

@@ -4,14 +4,12 @@ import com.aiurt.boot.weeklyplan.dto.*;
 import com.aiurt.boot.weeklyplan.entity.BdOperatePlanDeclarationForm;
 import com.aiurt.boot.weeklyplan.entity.BdOperatePlanStateChange;
 import com.aiurt.boot.weeklyplan.entity.BdStation;
-import com.aiurt.modules.train.task.dto.UserDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.SysUserRoleModel;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;

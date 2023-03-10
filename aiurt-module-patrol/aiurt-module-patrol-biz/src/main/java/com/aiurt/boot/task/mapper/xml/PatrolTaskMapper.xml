@@ -29,6 +29,9 @@ FROM
 		AND t1.discard_status = 0
 		AND cs.del_flag = 0
 		AND cl.del_flag = 0
+        <if test="patrolTaskDTO.lineCode != null and patrolTaskDTO.lineCode !=''">
+            AND cl.line_code = #{patrolTaskDTO.lineCode}
+        </if>
 		AND t1.id NOT IN (
 		SELECT
 			id
@@ -193,6 +196,12 @@ FROM
         </if>
         <if test="patrolTask.code != null and patrolTask.code != ''">
             and pt.code like concat('%', #{patrolTask.code}, '%')
+        </if>
+         <if test="patrolTask.codeList != null">
+            and pt.code in
+             <foreach collection="patrolTask.codeList" item="item" open="(" separator="," close=")">
+                 #{item}
+             </foreach>
         </if>
         <if test="patrolTask.statusArray != null">
             and pt.status in
@@ -1353,6 +1362,17 @@ FROM
                 where t1.del_flag = 0
         <if test="id != null and id != ''">
             and t1.id = #{id}
+        </if>
+    </select>
+    <select id="getOrgCodeName" resultType="com.aiurt.boot.task.dto.GeneralReturn">
+    select org_code as value,
+           depart_name as label
+    from sys_depart
+        <if test="orgCodes != null and orgCodes.size() != 0">
+    where org_code in
+         <foreach collection="orgCodes" item="item" open="(" separator="," close=")">
+        #{item}
+         </foreach>
         </if>
     </select>
 </mapper>

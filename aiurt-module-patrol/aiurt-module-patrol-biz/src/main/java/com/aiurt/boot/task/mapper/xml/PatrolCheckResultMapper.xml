@@ -49,10 +49,12 @@
         <if test="taskDeviceId != null and taskDeviceId !=''">
             and task_device_id = #{taskDeviceId}
         </if>
+        order by pcr.order
     </select>
     <select id="getCheckResult" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
     select t1.*
     from patrol_check_result t1
     where t1.task_device_id = #{taskDeviceId}
+    order by t1.order
     </select>
 </mapper>
