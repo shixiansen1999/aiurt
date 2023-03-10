@@ -1,12 +1,14 @@
 package com.aiurt.modules.faultknowledgebase.dto;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.common.system.base.annotation.ExcelExtend;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 
 /**
  * @author zwl
@@ -67,4 +69,10 @@ public class FaultKnowledgeBaseDTO {
     @ApiModelProperty(value = "携带工具")
     @TableField(exist = false)
     private String tools;
+    /**创建日期*/
+    @Excel(name = "创建时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "创建日期")
+    private Date createTime;
 }
