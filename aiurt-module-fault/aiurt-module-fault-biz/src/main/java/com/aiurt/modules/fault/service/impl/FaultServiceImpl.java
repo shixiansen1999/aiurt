@@ -1416,8 +1416,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 userNameSet.add(fault.getApprovalUserName());
             }
             String remindUserName = fault.getRemindUserName();
+            String faultApplicant = fault.getFaultApplicant();
             if (StrUtil.isNotBlank(remindUserName)) {
                 List<String> list = StrUtil.split(remindUserName, ',');
+                userNameSet.addAll(list);
+            }
+            if (StrUtil.isNotBlank(faultApplicant)) {
+                List<String> list = StrUtil.split(faultApplicant, ',');
                 userNameSet.addAll(list);
             }
             String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null,null);
