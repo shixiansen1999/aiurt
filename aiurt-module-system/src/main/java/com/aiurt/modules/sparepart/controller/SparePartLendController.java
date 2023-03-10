@@ -11,11 +11,9 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
-import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartLend;
-import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import com.aiurt.modules.sparepart.service.ISparePartLendService;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.todo.dto.TodoDTO;
@@ -173,11 +171,11 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 			 //构建消息模板
 			 HashMap<String, Object> map = new HashMap<>();
 			 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, one.getId());
-			 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_LEND_RETURN.getType());
+			 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_RETURN.getType());
 			 map.put("materialCode",one.getMaterialCode());
 			 String materialName= sysBaseApi.getMaterialNameByCode(one.getMaterialCode());
 			 map.put("name",materialName);
-			 map.put("backNum",one.getBackNum());
+			 map.put("backNum",sparePartLend.getBackNum());
 			 String warehouseName= sysBaseApi.getWarehouseNameByCode(one.getBackWarehouseCode());
 			 map.put("warehouseName",warehouseName);
 

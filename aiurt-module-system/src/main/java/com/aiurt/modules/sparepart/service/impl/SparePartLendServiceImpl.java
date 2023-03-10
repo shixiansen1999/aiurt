@@ -8,7 +8,6 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
-import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.*;
@@ -130,7 +129,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
                 map.put("materialCode",sparePartLend.getMaterialCode());
                 String materialName= sysBaseApi.getMaterialNameByCode(sparePartLend.getMaterialCode());
                 map.put("name",materialName);
-                map.put("lendNum",sparePartLend.getLendNum());
+                map.put("lendNum",sparePartLend.getBorrowNum());
                 String warehouseName= sysBaseApi.getWarehouseNameByCode(sparePartLend.getLendWarehouseCode());
                 map.put("warehouseName",warehouseName);
 
@@ -239,7 +238,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
             map.put("materialCode",partLend.getMaterialCode());
             String materialName= sysBaseApi.getMaterialNameByCode(partLend.getMaterialCode());
             map.put("name",materialName);
-            map.put("lendNum",partLend.getLendNum());
+            map.put("lendNum",sparePartLend.getLendNum());
             String warehouseName= sysBaseApi.getWarehouseNameByCode(partLend.getLendWarehouseCode());
             map.put("warehouseName",warehouseName);
 
@@ -310,11 +309,11 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
             //构建消息模板
             HashMap<String, Object> map = new HashMap<>();
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, partLend.getId());
-            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_LEND_RETURN.getType());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_RETURN.getType());
             map.put("materialCode",partLend.getMaterialCode());
             String materialName= sysBaseApi.getMaterialNameByCode(partLend.getMaterialCode());
             map.put("name",materialName);
-            map.put("backNum",partLend.getBackNum());
+            map.put("backNum",sparePartLend.getBackNum());
             String warehouseName= sysBaseApi.getWarehouseNameByCode(partLend.getLendWarehouseCode());
             map.put("warehouseName",warehouseName);
 

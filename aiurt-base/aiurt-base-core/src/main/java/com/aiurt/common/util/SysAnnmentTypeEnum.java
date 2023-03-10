@@ -60,7 +60,7 @@ public enum SysAnnmentTypeEnum {
     /**
      *备件归还
      */
-    SPAREPART_LEND_RETURN("sparepart_lend_return", "component","","物资出入库消息"),
+    SPAREPART_RETURN("sparepart_return", "component","","物资出入库消息"),
     /**
      *备件出库
      */
