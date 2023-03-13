@@ -193,6 +193,8 @@ public class ShiroConfig {
         bigSet.add("fault/faultInformation/queryLargeFaultDataCount");
         bigSet.add("/plan/bigscreen/getTeamPortraitDetails");
         bigSet.add("/plan/bigscreen/getTeamPortrait");
+        bigSet.add("/faultknowledgebase/**");
+        bigSet.add("/faultknowledgebasetype/**");
 
         JwtFilter jwtFilter = new JwtFilter(cloudServer == null);
         jwtFilter.setBigScreenUrlSet(bigSet);
