@@ -411,7 +411,7 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
 
                 this.thirdAccountSaveOrUpdate(sysThirdAccount, updateSysUser.getId(), qwUser.getUserid());
                 // 更新完成，直接跳到下一次外部循环继续
-            }/*else{
+            }else{
                 // 没匹配到用户则走新增逻辑
                 SysUser newSysUser = this.qwUserToSysUser(qwUser);
                 try {
@@ -422,7 +422,7 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
                     this.syncUserCollectErrInfo(e, qwUser, syncInfo);
                 }
                 this.thirdAccountSaveOrUpdate(sysThirdAccount, newSysUser.getId(), qwUser.getUserid());
-            }*/
+            }
         }
         return syncInfo;
     }

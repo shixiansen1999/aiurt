@@ -76,6 +76,8 @@ public class QywxSendMsgHandle implements ISendMsgHandle {
 				} else {
 					sysAnnouncement.setMsgAbstract(s2);
 				}
+			} else {
+				sysAnnouncement.setMsgAbstract(publishingContent);
 			}
 			sysAnnouncement.setBusId(messageDTO.getBusKey());
 			sysAnnouncement.setBusType(messageDTO.getBusType());
