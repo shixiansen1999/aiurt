@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.schedule.dto.*;
 import com.aiurt.modules.schedule.entity.*;
 import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
@@ -156,6 +157,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         List<SysUserScheduleDTO> result = baseMapper.getStaffOnDuty(page, scheduleRecordDTO);
 
         // 补充人员角色，工区，工区位置，工区负责人
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         if (CollUtil.isNotEmpty(result)) {
             for (SysUserScheduleDTO sysUserScheduleDTO : result) {
                 // 角色
@@ -174,6 +176,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                 }
             }
         }
+        GlobalThreadLocal.setDataFilter(b);
         return page.setRecords(result);
     }
 
