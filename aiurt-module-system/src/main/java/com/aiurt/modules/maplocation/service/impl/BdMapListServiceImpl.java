@@ -363,26 +363,21 @@ public class BdMapListServiceImpl extends ServiceImpl<BdMapListMapper, CurrentTe
                 result.add(assign);
             });
         }
-        if (StrUtil.isNotEmpty(userId)&&stateId==null){
-            List<AssignUserDTO> list = new ArrayList<>();
-         list =  result.stream().filter(l->l.getId().equals(userId)).collect(Collectors.toList());
-         return list;
+        List<AssignUserDTO>list = result;
+        if (StrUtil.isNotEmpty(userId) && stateId==null){
+            list =  list.stream().filter(l->l.getId().equals(userId)).collect(Collectors.toList());
         }
         if(stateId!=null){
             if (1 == stateId){
-            List<AssignUserDTO> list1 = new ArrayList<>();
-            list1 =  result.stream().filter(l->l.getNum()==2).collect(Collectors.toList());
+                list =  list.stream().filter(l->l.getNum()==2).collect(Collectors.toList());
                 if (StrUtil.isNotEmpty(userId)){
-                    list1 =  list1.stream().filter(l->l.getId().equals(userId)).collect(Collectors.toList());
+                    list =  list.stream().filter(l->l.getId().equals(userId)).collect(Collectors.toList());
                 }
-            return list1;
         }else if (0==stateId){
-            List<AssignUserDTO> list2 = new ArrayList<>();
-            list2 =  result.stream().filter(l->l.getNum()==1).collect(Collectors.toList());
-            return list2;
+                list =  list.stream().filter(l->l.getNum()==1).collect(Collectors.toList());
         }}
-        result.stream().sorted(Comparator.comparing(AssignUserDTO::getNum)).collect(Collectors.toList());
-        return result;
+        list.stream().sorted(Comparator.comparing(AssignUserDTO::getNum)).collect(Collectors.toList());
+        return list;
     }
 
     /**
