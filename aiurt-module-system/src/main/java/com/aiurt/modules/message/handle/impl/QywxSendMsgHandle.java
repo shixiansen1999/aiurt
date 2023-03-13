@@ -61,19 +61,21 @@ public class QywxSendMsgHandle implements ISendMsgHandle {
 			sysAnnouncement.setTitile(messageDTO.getTitle());
 			String publishingContent = messageDTO.getPublishingContent();
 			String content = messageDTO.getContent();
-			if (content.endsWith("<br/>")) {
-				int i = content.lastIndexOf("<br/>");
-				content = content.substring(0, i);
-			}
-			String s = content.replaceAll("<br/>", "</div><div>");
-			String s1 = s.replaceAll("<p>", "<div>");
-			String s2 = s1.replaceAll("</p>", "</div>");
+			if (StrUtil.isNotEmpty(content)) {
+				if (content.endsWith("<br/>")) {
+					int i = content.lastIndexOf("<br/>");
+					content = content.substring(0, i);
+				}
+				String s = content.replaceAll("<br/>", "</div><div>");
+				String s1 = s.replaceAll("<p>", "<div>");
+				String s2 = s1.replaceAll("</p>", "</div>");
 
-			if (StrUtil.isNotEmpty(publishingContent)) {
-				//publishingContent = "<div>" + publishingContent + "</div>" + "<br/>";
-				sysAnnouncement.setMsgAbstract(publishingContent + s2);
-			} else {
-				sysAnnouncement.setMsgAbstract(s2);
+				if (StrUtil.isNotEmpty(publishingContent)) {
+					//publishingContent = "<div>" + publishingContent + "</div>" + "<br/>";
+					sysAnnouncement.setMsgAbstract(publishingContent + s2);
+				} else {
+					sysAnnouncement.setMsgAbstract(s2);
+				}
 			}
 			sysAnnouncement.setBusId(messageDTO.getBusKey());
 			sysAnnouncement.setBusType(messageDTO.getBusType());

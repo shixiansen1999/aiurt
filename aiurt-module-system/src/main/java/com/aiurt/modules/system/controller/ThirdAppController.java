@@ -73,8 +73,8 @@ public class ThirdAppController {
     @GetMapping("/sync/wechatEnterprise/user/toLocal")
     public Result syncWechatEnterpriseUserToLocal(@RequestParam(value = "ids", required = false) String ids) {
         if (thirdAppConfig.isWechatEnterpriseEnabled()) {
-            //SyncInfoVo syncInfo = wechatEnterpriseService.syncThirdAppUserToLocal();
-            SyncInfoVo syncInfo = wechatEnterpriseService.syncWeChatToLocal();
+            SyncInfoVo syncInfo = wechatEnterpriseService.syncThirdAppUserToLocal();
+            //SyncInfoVo syncInfo = wechatEnterpriseService.syncWeChatToLocal();
             if (syncInfo.getFailInfo().size() == 0) {
                 return Result.OK("同步成功", syncInfo);
             } else {

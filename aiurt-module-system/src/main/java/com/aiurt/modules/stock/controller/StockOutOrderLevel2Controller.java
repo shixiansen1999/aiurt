@@ -133,7 +133,7 @@ public class StockOutOrderLevel2Controller {
 
 				//构建消息模板
 				HashMap<String, Object> map = new HashMap<>();
-				map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartApply.getId());
+				map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, stockOutOrderLevel2.getId());
 				map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_STOCKLEVEL2SECONDARY.getType());
 				messageDTO.setData(map);
 				//业务类型，消息类型，消息模板编码，摘要，发布内容
