@@ -1,11 +1,9 @@
 package com.aiurt.boot.task.controller;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
@@ -45,7 +43,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -717,5 +714,21 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("巡视任务综合",  "导出信息", ExcelType.XSSF));
         mv.addObject(NormalExcelConstants.DATA_LIST, list);
         return  mv;
+    }
+
+    /**
+     *打印巡视详情
+     *
+     * @param id
+     * @param req
+     * @return author lkj
+     */
+    @AutoLog(value = "巡检任务表-打印巡视详情", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
+    @ApiOperation(value = "巡检任务表-打印巡视详情", notes = "巡检任务表-打印巡视详情")
+    @GetMapping(value = "/printPatrolTaskById")
+    public Result<PrintPatrolTaskDTO> printPatrolTaskById(@RequestParam(name="id",required=true) String id,
+                                                      HttpServletRequest req) {
+        PrintPatrolTaskDTO printPatrolTaskDTO = patrolTaskService.printPatrolTaskById(id);
+        return Result.OK(printPatrolTaskDTO);
     }
 }
