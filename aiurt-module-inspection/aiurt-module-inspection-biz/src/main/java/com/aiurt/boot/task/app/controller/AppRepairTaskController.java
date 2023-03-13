@@ -1,7 +1,6 @@
 package com.aiurt.boot.task.app.controller;
 
 
-import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.OrgDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
@@ -321,13 +320,14 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     public Result<String> edit(@RequestBody RepairTaskDeviceRel repairTaskDeviceRel) {
         RepairTaskDeviceRel repairTaskDeviceRel1 = repairTaskDeviceRelService.getById(repairTaskDeviceRel.getId());
         // 同步更新检修任务的开始时间
-        if (ObjectUtil.isNotEmpty(repairTaskDeviceRel1)) {
+        // 测试要求：检修任务的开始时间为任务点击执行开始的时间
+        /*if (ObjectUtil.isNotEmpty(repairTaskDeviceRel1)) {
             RepairTask repairTask = repairTaskService.getBaseMapper().selectById(repairTaskDeviceRel1.getRepairTaskId());
             if (ObjectUtil.isNotEmpty(repairTask) && ObjectUtil.isEmpty(repairTask.getBeginTime())) {
                 repairTask.setBeginTime(new Date());
                 repairTaskService.getBaseMapper().updateById(repairTask);
             }
-        }
+        }*/
 
         // 更新检修单上的开始时间
         if (repairTaskDeviceRel1.getStartTime() != null) {
