@@ -184,10 +184,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		pictureCode.add(SysParamCodeConstant.PATROL);
 		pictureCode.add(SysParamCodeConstant.EMERGENCY);
 		pictureCode.add(SysParamCodeConstant.TRAIN);
-		pictureCode.add(SysParamCodeConstant.Week);
+		pictureCode.add(SysParamCodeConstant.WEEK);
 		pictureCode.add(SysParamCodeConstant.SITUATION);
 		pictureCode.add(SysParamCodeConstant.WORKLOG);
-		pictureCode.add(SysParamCodeConstant.MATERIAL);
+		pictureCode.add(SysParamCodeConstant.SPAREPART);
 
 		Map<String, List<SysAnnouncementTypeCountDTO>> busTypeMap = announcementTypeCountDTOList.stream().collect(Collectors.groupingBy(dto -> {
 			String busType = dto.getBusType();
@@ -282,7 +282,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			String processCode = sysTodoCountDTO.getProcessCode();
 			TodoTaskTypeEnum todoTaskTypeEnum = TodoTaskTypeEnum.getByTypeV2(processCode);
 			if (Objects.nonNull(todoTaskTypeEnum)) {
-				return todoTaskTypeEnum.getModule();
+				return todoTaskTypeEnum.getType();
 			} else {
 				return processCode;
 			}
@@ -355,7 +355,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.BD_WORK_TITCK);
 			sysMessageTypeDTO.setValue(sysParamModel.getValue());
 		}
-		if (SysParamCodeConstant.SPARE_PART.equals(type)) {
+		if (SysParamCodeConstant.SPAREPART.equals(type)) {
 			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SPARE_PART);
 			sysMessageTypeDTO.setValue(sysParamModel.getValue());
 		}
