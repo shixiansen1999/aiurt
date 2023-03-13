@@ -3,7 +3,7 @@
 <mapper namespace="com.aiurt.boot.standard.mapper.PatrolStandardMapper">
 
     <select id="pageList" resultType="com.aiurt.boot.standard.dto.PatrolStandardDto">
-        select patrol_standard.*,b.major_name as professionName, c.system_name as subsystemName ,d.name as deviceTypeName
+        select DISTINCT patrol_standard.*,b.major_name as professionName, c.system_name as subsystemName ,d.name as deviceTypeName
                from patrol_standard as patrol_standard
         left join cs_major b on patrol_standard.profession_code =b.major_code AND b.del_flag=0
         left join cs_subsystem c on patrol_standard.subsystem_code =c.system_code AND c.del_flag=0
