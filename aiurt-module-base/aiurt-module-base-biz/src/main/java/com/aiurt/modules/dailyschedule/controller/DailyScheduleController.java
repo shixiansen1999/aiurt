@@ -3,6 +3,7 @@ package com.aiurt.modules.dailyschedule.controller;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
@@ -72,6 +73,7 @@ public class DailyScheduleController extends BaseController<DailySchedule, IDail
 
 	 @ApiOperation(value="日程安排-首页-详情", notes="日程安排-首页-详情")
 	 @GetMapping(value = "/queryList")
+	 @PermissionData(pageComponent = "dashboard/Analysis")
 	 public Result<List<DailySchedule>> queryList(@ApiParam(value = "日期")@DateTimeFormat(pattern="yyyy-MM-dd") @RequestParam(value = "addTime") Date addTime) {
 		 List<DailySchedule> resultList = dailyScheduleService.queryList(addTime);
 		 return Result.OK(resultList);

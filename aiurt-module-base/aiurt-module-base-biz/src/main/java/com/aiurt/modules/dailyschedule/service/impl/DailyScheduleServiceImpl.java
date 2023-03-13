@@ -41,7 +41,9 @@ public class DailyScheduleServiceImpl extends ServiceImpl<DailyScheduleMapper, D
     public List<DailySchedule> queryList(Date addTime) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<DailySchedule> dailyScheduleList = dailyScheduleMapper.queryDailyScheduleList(addTime,null,null,null, loginUser.getUsername());
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         dealUserInfo(dailyScheduleList);
+        GlobalThreadLocal.setDataFilter(b);
         return dailyScheduleList;
     }
 
