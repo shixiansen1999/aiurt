@@ -120,6 +120,7 @@ public class IndexPlanController {
     @AutoLog(value = "首页-代办事项检修情况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-代办事项检修情况", notes = "首页-代办事项检修情况")
     @RequestMapping(value = "/getMaintenanceSituation", method = RequestMethod.GET)
+    @PermissionData(pageComponent = "dashboard/Analysis")
     public Result<IPage<RepairPoolDetailsDTO>> getMaintenanceSituation(@ApiParam(name = "startDate", value = "开始日期yyyy-MM-dd") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                                                        @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
