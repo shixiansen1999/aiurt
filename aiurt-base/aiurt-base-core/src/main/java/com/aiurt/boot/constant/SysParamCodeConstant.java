@@ -156,10 +156,10 @@ public interface SysParamCodeConstant {
     /**
      * 物资出入库
      */
-    String MATERIAL = "material";
+    String SPAREPART = "sparepart";
     /**
      * 施工计划通知
      */
-    String Week = "week";
+    String WEEK = "week";
 
 }
