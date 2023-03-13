@@ -40,7 +40,6 @@ import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
@@ -1350,6 +1349,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         // 待执行状态才可以执行
         if (InspectionConstant.PENDING.equals(repairTask.getStatus())) {
             repairTask.setStatus(InspectionConstant.IN_EXECUTION);
+            repairTask.setBeginTime(new Date());
             repairTaskMapper.updateById(repairTask);
 
             // 修改对应检修计划状态
