@@ -1,5 +1,6 @@
 package com.aiurt.modules.fault.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -41,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @Description: fault
@@ -195,6 +197,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             //如果存在故障分析则返回true
             if (ObjectUtil.isNotNull(faultAnalysisReport)) {
                 fault1.setIsFaultAnalysisReport(true);
+            }
+
+            if (CollUtil.isNotEmpty(faultDeviceList)) {
+                List<String> collect = faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList());
+                fault1.setDeviceName(CollUtil.join(collect,","));
             }
         });
 
