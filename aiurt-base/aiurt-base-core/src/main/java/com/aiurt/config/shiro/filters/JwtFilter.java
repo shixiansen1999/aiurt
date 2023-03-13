@@ -91,7 +91,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
             CommonAPI commonApi = SpringContextUtils.getBean(CommonAPI.class);
             // 判断是否是大屏的数据, 外部范围给的是
             bigScreenUrlSet.forEach(path->{
-                if (pathsMatch(requestURI, path)) {
+                if (pathsMatch(path,requestURI)) {
                     String redisToken = redisUtil.getStr(CommonConstant.PREFIX_USER_TOKEN + "bigScreen");
                     if (StrUtil.isBlank(redisToken)) {
                         // 默认登录

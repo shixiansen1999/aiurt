@@ -149,6 +149,8 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/sys/autograph/**", "anon");//JVxeTable无痕刷新示例
         filterChainDefinitionMap.put("/sys/queryVersionInfo", "anon");//JVxeTable无痕刷新示例
         filterChainDefinitionMap.put("/sys/common/getSysFileKey", "anon");//在线编辑获取key
+        //大屏统计
+        filterChainDefinitionMap.put("/task/repairTask/getSystemInformation", "anon");
 
         //wps
         filterChainDefinitionMap.put("/v1/**","anon");
@@ -168,7 +170,8 @@ public class ShiroConfig {
         // 设置大屏的url
         Set<String> bigSet = new HashSet<>();
         bigSet.add("/fault/faultInformation/getLargeFaultDataInfo");
-        bigSet.add("/sys/dict/getDictItems/");
+        bigSet.add("/system/index/getWeatherInfo");
+        bigSet.add("/sys/dict/getDictItems/**");
         bigSet.add("/situation/sysInfoList/list");
         bigSet.add("/syntheticalpanel/positionPanel/queryById");
         bigSet.add("/patrolScreen/statisticsDetails");
@@ -190,11 +193,20 @@ public class ShiroConfig {
         bigSet.add("/fault/faultInformation/getFaultLevelInfo");
         bigSet.add("/fault/faultInformation/getYearFault");
         bigSet.add("/fault/faultInformation/getSystemYearFault");
-        bigSet.add("fault/faultInformation/queryLargeFaultDataCount");
+        bigSet.add("/fault/faultInformation/queryLargeFaultDataCount");
         bigSet.add("/plan/bigscreen/getTeamPortraitDetails");
         bigSet.add("/plan/bigscreen/getTeamPortrait");
+
         bigSet.add("/faultknowledgebase/**");
         bigSet.add("/faultknowledgebasetype/**");
+
+        bigSet.add("/plan/bigscreen/getTaskCompletion");
+        bigSet.add("/plan/bigscreen/overviewInfo");
+        bigSet.add("/plan/bigscreen/getInspectionDataNoPage");
+        bigSet.add("/patrolScreen/statisticsGraph");
+        bigSet.add("/patrolScreen/statistics");
+        bigSet.add("/patrolScreen/statisticsTaskInfo");
+
 
         JwtFilter jwtFilter = new JwtFilter(cloudServer == null);
         jwtFilter.setBigScreenUrlSet(bigSet);
