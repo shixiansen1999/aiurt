@@ -281,7 +281,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		Map<String, List<SysTodoCountDTO>> bpmnMap = sysTodoCountDTOS.stream().collect(Collectors.groupingBy(sysTodoCountDTO -> {
 			String processCode = sysTodoCountDTO.getProcessCode();
 			TodoTaskTypeEnum todoTaskTypeEnum = TodoTaskTypeEnum.getByTypeV2(processCode);
-			if (Objects.isNull(todoTaskTypeEnum)) {
+			if (Objects.nonNull(todoTaskTypeEnum)) {
 				return todoTaskTypeEnum.getModule();
 			} else {
 				return processCode;
