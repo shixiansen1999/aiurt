@@ -263,6 +263,7 @@
 		WHERE
 				t2.titile IS NOT NULL
 		  and t2.bus_type != 'bpm' and t2.titile is not null and t2.bus_type is not NULL and t1.user_id = #{userId}
+		  and t2.del_flag = 0
 		GROUP BY  t2.bus_type
 
 		UNION
@@ -278,34 +279,45 @@
 		WHERE
 				t2.titile IS NOT NULL
 		  and t2.bus_type = 'bpm' and t2.process_code is not NULL and t1.user_id = #{userId}
+		  and t2.del_flag = 0
 		GROUP BY  t2.process_code
 
 	</select>
 
 	<select id="queryLast" resultType="com.aiurt.modules.system.entity.SysAnnouncementSend">
-		select sas.*,sa.msg_abstract as titleContent
+		select sas.*,if(sa.msg_abstract !=null,sa.msg_abstract,sa.titile) as titleContent,
+		sa.create_time as createTime,
+		sa.update_time as updateTime
 		from sys_announcement_send sas
 		left join sys_announcement sa on sa.id = sas.annt_id
 		where sas.user_id = #{userId}
-		<if test="list != null and list.size() != 0">
-			and sas.annt_id in (
-				select id from sys_announcement where 1=1
+		<choose>
+			<when test="list != null and list.size() != 0">
+				and sas.annt_id in (
+				select id from sys_announcement where 1=1 and del_flag = 0
 				and (bus_type in
-					<foreach collection="list" separator="," open="(" close=")" item="item">
-						#{item}
-					</foreach>
-					or
-					process_code in
-					<foreach collection="list" separator="," open="(" close=")" item="item">
-						#{item}
-					</foreach>
+				<foreach collection="list" separator="," open="(" close=")" item="item">
+					#{item}
+				</foreach>
+				or
+				process_code in
+				<foreach collection="list" separator="," open="(" close=")" item="item">
+					#{item}
+				</foreach>
 				)
-			)
-		</if>
+				)
+			</when>
+			<otherwise>
+				and sas.annt_id in (
+				select id from sys_announcement where 1=1 and del_flag = 0
+				and isNull(bus_type)
+				)
+			</otherwise>
+		</choose>
 		<if test="msgCategory != null and msgCategory != ''">
-			and sas.annt_id in (select id from sys_announcement where msg_category = #{msgCategory} )
+			and sas.annt_id in (select id from sys_announcement where msg_category = #{msgCategory} and del_flag = 0 )
 		</if>
-		order by sas.update_time desc, sas.create_time desc limit 1
+		order by if(sa.update_time != null,sa.update_time,sa.create_time) desc limit 1
 	</select>
 
 	<select id="queryBNullTypeCount" resultType="com.aiurt.modules.system.dto.SysAnnouncementTypeCountDTO">
@@ -320,6 +332,7 @@
 		WHERE
 				t2.titile IS NOT NULL
 		  and t2.bus_type is null  and t1.user_id =  #{userId}
+		  and t2.del_flag = 0
 	  GROUP BY  t2.msg_category
 	</select>
 </mapper>
