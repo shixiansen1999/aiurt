@@ -113,5 +113,12 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
     WorkLogDetailResult queryWorkLogById(String id);
 
     List<LogCountResult> selectOrgLogCount(@Param("param") LogCountParam param);
+
+    /**
+     * 查找最新的未完成事项
+     * @param departList
+     * @return
+     */
+    String getUnfinishedMatters(@Param("departList")List<String> departList);
 }
 

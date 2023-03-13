@@ -136,5 +136,11 @@ public interface IWorkLogService extends IService<WorkLog> {
     Map getTodayJobContent(String nowday);
 
     void archWorkLog(WorkLogResult workLogResult, String token, String archiveUserId, String refileFolderId, String realname, String sectId);
+
+    /**
+     * 最新的未完成事项
+     * @return
+     */
+    Result<String> getUnfinishedMatters();
 }
 

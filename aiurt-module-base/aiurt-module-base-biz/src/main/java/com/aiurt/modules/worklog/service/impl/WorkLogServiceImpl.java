@@ -125,7 +125,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setOrgId(loginUser.getOrgId());
         depot.setSubmitId(userId);
         depot.setCreateBy(userId);
-
+        depot.setUnfinishedMatters(dto.getUnfinishedMatters());
         depot.setFaultContent(dto.getFaultContent());
 
         //根据当前登录人id获取巡视待办消息
@@ -822,7 +822,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setPatrolRepairContent(dto.getPatrolRepairContent());
         workLog.setAssortContent(dto.getAssortContent());
         workLog.setStatus(dto.getStatus());
-
+        workLog.setUnfinishedMatters(dto.getUnfinishedMatters());
         //工作内容赋值
         workLog.setIsDisinfect(dto.getIsDisinfect());
         workLog.setIsClean(dto.getIsClean());
@@ -1155,6 +1155,22 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
     }
 
+    @Override
+    public Result<String> getUnfinishedMatters() {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        boolean admin = SecurityUtils.getSubject().hasRole("admin");
+        List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
+        List<String> departList = new ArrayList<>();
+        if (!admin) {
+            if (CollUtil.isNotEmpty(departByUserId)) {
+                departList = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+            } else {
+                return null;
+            }
+        }
+        String unfinishedMatters  = depotMapper.getUnfinishedMatters(departList);
+        return  Result.ok(unfinishedMatters);
+    }
 
     @Override
     public WorkLogDetailResult queryWorkLogDetail(String id) {
@@ -1259,6 +1275,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         if (ObjectUtil.isEmpty(content1)) {
             workLog.setContent("无");
         }
+        //workLog.setAntiepidemicWork(stringBuffer.toString());
         workLog.setSchedule(schedule);
         return workLog;
     }
