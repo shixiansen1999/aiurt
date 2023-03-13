@@ -430,6 +430,14 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
                 String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
                 String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
                 String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
+                String positionCodeCc = lineCode ;
+                if(stationCode!= null && !"".equals(stationCode)){
+                    positionCodeCc += CommonConstant.SYSTEM_SPLIT_STR + stationCode;
+                }
+
+                if (!"".equals(positionCode) && positionCode != null) {
+                    positionCodeCc += CommonConstant.SYSTEM_SPLIT_STR + positionCode;
+                }
                 String positionCodeCcName = lineCodeName ;
                 if(stationCodeName != null && !"".equals(stationCodeName)){
                     positionCodeCcName +=  CommonConstant.SYSTEM_SPLIT_STR + stationCodeName  ;
@@ -438,6 +446,7 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
                     positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
                 }
                 d.setPositionCodeCcName(positionCodeCcName);
+                d.setPositionCodeCc(positionCodeCc);
             }
         }
         result.setSuccess(true);
