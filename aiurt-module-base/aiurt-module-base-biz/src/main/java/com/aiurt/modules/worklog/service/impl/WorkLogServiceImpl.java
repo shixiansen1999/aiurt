@@ -237,9 +237,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             HashMap<String, Object> map = new HashMap<>();
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, dto.getId());
             map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
-            map.put("msgContent", "工作日志上报");
             messageDTO.setData(map);
-            messageDTO.setTemplateCode(com.aiurt.common.constant.CommonConstant.WORK_LOG_SERVICE_NOTICE);
+
             SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_MESSAGE);
             messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
             messageDTO.setMsgAbstract("工作日志上报");

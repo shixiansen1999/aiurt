@@ -1,13 +1,18 @@
 package com.aiurt.modules.worklog.controller;
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.result.*;
 import com.aiurt.common.util.ArchiveUtils;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
 import com.aiurt.modules.worklog.entity.WorkLog;
@@ -24,7 +29,11 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.constant.CommonConstant;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -44,10 +53,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -66,7 +72,10 @@ public class WorkLogController {
 
     @Resource
     private ArchiveUtils archiveUtils;
-
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
     /**
      * 工作日志上报-分页列表查询
      * @param pageNo
@@ -375,6 +384,27 @@ public class WorkLogController {
             }
             byId.setConfirmStatus(1).setSucceedTime(new Date());
             workLogDepotService.updateById(byId);
+
+            try {
+
+                LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                String userName = iSysBaseAPI.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(sysUser.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
+
+                //发送通知
+                MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(), userName, "工作日志确认" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_8);
+                //构建消息模板
+                HashMap<String, Object> map = new HashMap<>();
+                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, id);
+                map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
+                messageDTO.setData(map);
+                SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_MESSAGE);
+                messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+                messageDTO.setMsgAbstract("工作日志确认");
+                messageDTO.setPublishingContent("今日工作日志已确认");
+                iSysBaseAPI.sendTemplateMessage(messageDTO);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return Result.ok("确认成功");
 
         }else {
