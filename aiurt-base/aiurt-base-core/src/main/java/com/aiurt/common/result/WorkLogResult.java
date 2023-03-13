@@ -79,12 +79,12 @@ public class WorkLogResult {
     /**工作内容*/
     @Excel(name = "工作内容", width = 15)
     @ApiModelProperty(value = "工作内容")
-    private  Object  workContent;
+    private  String  workContent;
 
     /**交接班内容*/
     @Excel(name = "交接班内容", width = 15)
     @ApiModelProperty(value = "交接班内容")
-    private  Object  content;
+    private  String  content;
 
     /**提交时间*/
     @Excel(name = "提交时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
@@ -167,6 +167,10 @@ public class WorkLogResult {
     @ApiModelProperty(value = "接班人确认时间")
     private String succeedTime;
 
+    @Excel(name = "施工时间", width = 15)
+    @ApiModelProperty(value = "施工时间")
+    private String constructTime;
+
     /**配合施工时间*/
     @ApiModelProperty(value = "配合施工时间")
     private  String  assortTime;
@@ -197,7 +201,7 @@ public class WorkLogResult {
 
     /**配合施工内容*/
     @ApiModelProperty(value = "配合施工内容")
-    private  Object  assortContent;
+    private  String  assortContent;
     @ApiModelProperty(value = "配合施工内容")
     private String urlList;
 
@@ -234,19 +238,19 @@ public class WorkLogResult {
 
     /**应急情况说明*/
     @ApiModelProperty(value = "应急情况说明")
-    private  Object  emergencyDisposalContent;
+    private  String  emergencyDisposalContent;
 
     /**文件宣贯*/
     @ApiModelProperty(value = "文件宣贯")
-    private  Object documentPublicityContent;
+    private  String documentPublicityContent;
 
     /**其他工作内容*/
     @ApiModelProperty(value = "其他工作内容")
-    private  Object  otherWorkContent;
+    private  String  otherWorkContent;
 
     /**注意事项*/
     @ApiModelProperty(value = "注意事项")
-    private  Object  note;
+    private  String  note;
 
     /**交班人id*/
     @ApiModelProperty(value = "交班人id")
@@ -300,5 +304,7 @@ public class WorkLogResult {
 
     @TableField(exist = false)
     private String duration;
-
+    /**未完成事项*/
+    @ApiModelProperty(value = "未完成事项")
+    private  String  unfinishedMatters;
 }

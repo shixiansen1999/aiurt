@@ -106,7 +106,7 @@ public class WorkLog {
     @ApiModelProperty(value = "工作内容")
     @TableField(exist = false)
     //@NotNull(message = "工作内容不能为空")
-    private  Object  workContent;
+    private  String  workContent;
 
     /**是否已落实工区消毒(0:否，1：是)*/
     @Excel(name = "是否已落实工区消毒(0:否，1：是)", width = 15)
@@ -136,22 +136,22 @@ public class WorkLog {
     /**应急情况说明*/
     @Excel(name = "应急情况说明", width = 15)
     @ApiModelProperty(value = "应急情况说明")
-    private  Object  emergencyDisposalContent;
+    private  String  emergencyDisposalContent;
 
     /**文件宣贯*/
     @Excel(name = "文件宣贯", width = 15)
     @ApiModelProperty(value = "文件宣贯")
-    private  Object documentPublicityContent;
+    private  String documentPublicityContent;
 
     /**其他工作内容*/
     @Excel(name = "其他工作内容", width = 15)
     @ApiModelProperty(value = "其他工作内容")
-    private  Object  otherWorkContent;
+    private  String  otherWorkContent;
 
     /**注意事项*/
     @Excel(name = "注意事项", width = 15)
     @ApiModelProperty(value = "注意事项")
-    private  Object  note;
+    private  String  note;
 
     /**交班人id*/
     @Excel(name = "交班人id", width = 15)
@@ -161,7 +161,7 @@ public class WorkLog {
     /**交接班内容*/
     @Excel(name = "交接班内容", width = 15)
     @ApiModelProperty(value = "交接班内容")
-    private  Object  content;
+    private  String  content;
 
     /**附件链接*/
     @Excel(name = "附件链接", width = 15)
@@ -227,6 +227,10 @@ public class WorkLog {
     @ApiModelProperty(value = "修改人")
     private  String  updateBy;
 
+    @Excel(name = "施工时间", width = 15)
+    @ApiModelProperty(value = "施工时间")
+    private String constructTime;
+
     /**配合施工时间*/
     @Excel(name = "配合施工时间", width = 15)
     @ApiModelProperty(value = "配合施工时间")
@@ -255,7 +259,7 @@ public class WorkLog {
     /**配合施工内容*/
     @Excel(name = "配合施工内容", width = 15)
     @ApiModelProperty(value = "配合施工内容")
-    private  Object  assortContent;
+    private  String  assortContent;
 
     @ApiModelProperty(value = "巡检修内容")
     private String patrolRepairContent;

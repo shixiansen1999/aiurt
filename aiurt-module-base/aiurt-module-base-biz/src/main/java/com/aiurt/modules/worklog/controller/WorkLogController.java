@@ -153,7 +153,7 @@ public class WorkLogController {
     public Result<WorkLog> add(@RequestBody WorkLogDTO dto, HttpServletRequest req) {
         Result<WorkLog> result = new Result<WorkLog>();
         try {
-            if (dto.getId() != null){
+            if (StrUtil.isNotEmpty(dto.getId())){
                 WorkLog workLog = workLogDepotService.getById(dto.getId());
                 //如果工作日志已经提交，则不能再保存
                 if (workLog.getStatus()==1&&dto.getStatus()==0){
