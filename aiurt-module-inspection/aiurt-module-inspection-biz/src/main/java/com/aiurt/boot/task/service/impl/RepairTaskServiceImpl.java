@@ -1368,6 +1368,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         // 待执行状态才可以执行
         if (InspectionConstant.PENDING.equals(repairTask.getStatus())) {
             repairTask.setStatus(InspectionConstant.IN_EXECUTION);
+            repairTask.setBeginTime(new Date());
             repairTaskMapper.updateById(repairTask);
 
             // 修改对应检修计划状态

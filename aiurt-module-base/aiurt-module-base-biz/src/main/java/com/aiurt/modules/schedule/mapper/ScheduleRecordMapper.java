@@ -1,6 +1,8 @@
 package com.aiurt.modules.schedule.mapper;
 
 
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
 import com.aiurt.modules.schedule.dto.SysTotalTeamDTO;
@@ -83,6 +85,9 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
      * @param scheduleRecordDTO
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "su.orgCode")
+    })
     List<SysUserScheduleDTO> getStaffOnDuty(@Param("page") Page<SysUserScheduleDTO> page, @Param("scheduleRecordDTO") ScheduleRecordDTO scheduleRecordDTO);
 
     /**

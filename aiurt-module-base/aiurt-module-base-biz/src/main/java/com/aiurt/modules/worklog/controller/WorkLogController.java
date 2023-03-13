@@ -144,7 +144,7 @@ public class WorkLogController {
     public Result<WorkLog> add(@RequestBody WorkLogDTO dto, HttpServletRequest req) {
         Result<WorkLog> result = new Result<WorkLog>();
         try {
-            if (dto.getId() != null){
+            if (StrUtil.isNotEmpty(dto.getId())){
                 WorkLog workLog = workLogDepotService.getById(dto.getId());
                 //如果工作日志已经提交，则不能再保存
                 if (workLog.getStatus()==1&&dto.getStatus()==0){
@@ -353,6 +353,19 @@ public class WorkLogController {
         result.setResult(detailById);
         return result;
     }
+
+    /**
+     * 查询当最新的未完成事项（当前登录人所拥有的部门权限）
+     * @return
+     */
+    @AutoLog(value = "查询当最新的未完成事项")
+    @ApiOperation(value="查询当最新的未完成事项", notes="查询当最新的未完成事项")
+    @GetMapping(value = "/getLastUnfinishedMatters")
+    public Result<String> getUnfinishedMatters() {
+
+        return workLogDepotService.getUnfinishedMatters();
+    }
+
     /**
      * 工作日志确认
      * @param id

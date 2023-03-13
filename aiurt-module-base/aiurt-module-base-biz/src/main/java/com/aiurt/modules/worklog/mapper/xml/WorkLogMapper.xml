@@ -223,4 +223,16 @@
         where d.depart_name not in ('公安消防班组','通信分部')
         ORDER BY department asc
     </select>
+    <select id="getUnfinishedMatters" resultType="java.lang.String">
+    select unfinished_matters
+    from t_work_log
+    where del_flag = 0
+    <if test="departList !=null and departList.size() >0">
+    AND org_id IN
+           <foreach collection="departList" separator="," open="(" close=")" item="id">
+                #{id}
+           </foreach>
+    </if>
+   order by create_time desc limit 1
+    </select>
 </mapper>
