@@ -1867,4 +1867,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
         sysBaseApi.sendTemplateMessage(messageDTO);
     }
+
+
+    @Override
+    public PrintPatrolTaskDTO printPatrolTaskById(String id) {
+
+        return null;
+    }
 }
