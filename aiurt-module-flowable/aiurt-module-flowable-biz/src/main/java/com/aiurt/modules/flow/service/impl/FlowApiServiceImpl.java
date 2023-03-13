@@ -519,27 +519,43 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
 
         Task task = this.getProcessInstanceActiveTask(processInstanceId, taskId);
+        String taskDefinitionKey = "";
 
-        ProcessInstance processInstance = getProcessInstance(processInstanceId);
+        if (Objects.nonNull(task)) {
+            taskDefinitionKey = task.getTaskDefinitionKey();
+        }
+
+        // 任务结束了
+        if (Objects.isNull(task) && StrUtil.isNotBlank(taskId)) {
+
+            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskId(taskId).singleResult();
+            if (Objects.nonNull(taskInstance)) {
+                taskDefinitionKey = taskInstance.getTaskDefinitionKey();
+            }
+        }
+
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        //ProcessInstance processInstance = getProcessInstance(processInstanceId);
 
 
-        if (task == null || Objects.isNull(processInstance)) {
+        if (Objects.isNull(historicProcessInstance) || StrUtil.isBlank(taskDefinitionKey)) {
             throw new AiurtBootException("数据验证失败，指定的任务Id，请刷新后重试！");
         }
 
-        if (StrUtil.isBlank(processDefinitionId)) {
-            processDefinitionId = task.getProcessDefinitionId();
+        if (StrUtil.isBlank(processDefinitionId) ) {
+            processDefinitionId = historicProcessInstance.getProcessDefinitionId();
         }
 
+
         ActCustomTaskExt flowTaskExt =
-                customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, task.getTaskDefinitionKey());
+                customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId,taskDefinitionKey);
         if (flowTaskExt != null) {
             // 判断为办理人才返回操作按钮
             if (StrUtil.isNotBlank(flowTaskExt.getOperationListJson()) && this.isAssigneeOrCandidate(task)) {
                 String operationListJson = flowTaskExt.getOperationListJson();
                 List<ActOperationEntity> objectList = JSON.parseArray(operationListJson, ActOperationEntity.class);
                 // 过滤，只有驳回后才能取消
-                boolean back = flowElementUtil.isBackToFirstTask(processDefinitionId, task.getTaskDefinitionKey(), processInstanceId);
+                boolean back = flowElementUtil.isBackToFirstTask(processDefinitionId, taskDefinitionKey, processInstanceId);
                 if (!back) {
                     objectList = objectList.stream().filter(entity -> !StrUtil.equalsIgnoreCase(entity.getType(), FlowApprovalType.CANCEL)).collect(Collectors.toList());
                 }
@@ -580,8 +596,8 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
         }
 
-        taskInfoDTO.setTaskKey(task.getTaskDefinitionKey());
-        taskInfoDTO.setProcessName(processInstance.getProcessDefinitionName());
+        taskInfoDTO.setTaskKey(taskDefinitionKey);
+        taskInfoDTO.setProcessName(historicProcessInstance.getProcessDefinitionName());
         return taskInfoDTO;
     }
 
@@ -710,6 +726,9 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     public boolean isAssigneeOrCandidate(TaskInfo task) {
+        if (Objects.isNull(task)) {
+            return false;
+        }
         LoginUser loginUser = checkLogin();
         String username = loginUser.getUsername();
 
@@ -1845,7 +1864,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
         // 判断是否是表单设计器，
-        taskInfoDTO.setRouterName(one.getRouterName());
+        taskInfoDTO.setRouterName(one.getBusinessUrl());
 
         taskInfoDTO.setBusData(actCustomBusinessData.getData());
         return taskInfoDTO;
