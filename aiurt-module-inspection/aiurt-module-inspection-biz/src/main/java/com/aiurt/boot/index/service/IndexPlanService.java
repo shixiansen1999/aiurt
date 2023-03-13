@@ -19,9 +19,11 @@ import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
 import com.aiurt.boot.plan.entity.RepairPoolRel;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.task.entity.RepairTask;
+import com.aiurt.boot.task.entity.RepairTaskOrgRel;
 import com.aiurt.boot.task.entity.RepairTaskStationRel;
 import com.aiurt.boot.task.entity.RepairTaskUser;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
+import com.aiurt.boot.task.mapper.RepairTaskOrgRelMapper;
 import com.aiurt.boot.task.mapper.RepairTaskStationRelMapper;
 import com.aiurt.boot.task.mapper.RepairTaskUserMapper;
 import com.aiurt.common.constant.CommonConstant;
@@ -61,6 +63,8 @@ public class IndexPlanService {
     private RepairPoolStationRelMapper repairPoolStationRelMapper;
     @Resource
     private IndexPlanMapper indexPlanMapper;
+    @Resource
+    private RepairTaskOrgRelMapper repairTaskOrgRelMapper;
     @Resource
     private RepairTaskMapper repairTaskMapper;
     @Resource
@@ -486,7 +490,13 @@ public class IndexPlanService {
             }
         }
 
+        List<RepairTaskOrgRel> taskOrgRelList = repairTaskOrgRelMapper.selectList(new LambdaQueryWrapper<RepairTaskOrgRel>().eq(RepairTaskOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isNotEmpty(taskOrgRelList)){
+            List<String> collect = taskOrgRelList.stream().map(RepairTaskOrgRel::getRepairTaskCode).collect(Collectors.toList());
+            taskCode.addAll(collect);
+        }
         List<RepairPoolDetailsDTO> result = repairTaskMapper.selectRepairPoolList(page, startDate, stationCode, taskCode);
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         if (CollUtil.isNotEmpty(result)) {
             for (RepairPoolDetailsDTO repairPool : result) {
                 String planCode = repairPool.getCode();
@@ -509,6 +519,7 @@ public class IndexPlanService {
 
             }
         }
+        GlobalThreadLocal.setDataFilter(b);
         return page.setRecords(result);
     }
 

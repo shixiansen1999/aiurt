@@ -472,6 +472,7 @@ public class ScheduleRecordController {
      */
     @AutoLog(value = "首页-根据日期查询班次情况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-根据日期查询班次情况", notes = "首页-根据日期查询班次情况")
+    @PermissionData(pageComponent = "dashboard/Analysis")
     @RequestMapping(value = "/getStaffOnDuty", method = RequestMethod.GET)
     public Result<IPage<SysUserScheduleDTO>> getStaffOnDuty(@Validated ScheduleRecordDTO scheduleRecordDTO
     ) {
