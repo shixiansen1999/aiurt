@@ -145,7 +145,7 @@ public class SysAnnouncementController {
                 StringBuilder str = new StringBuilder();
                 for (String s : split) {
                     if (!Objects.isNull(s)) {
-                        LoginUser userById = sysBaseApi.getUserById(s);
+                        LoginUser userById = sysBaseApi.getUserByName(s);
                         if (!ObjectUtils.isEmpty(userById)) {
                             str.append(userById.getRealname()).append(",");
                         }
