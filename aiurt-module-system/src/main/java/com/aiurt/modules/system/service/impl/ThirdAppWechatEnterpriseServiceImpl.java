@@ -817,7 +817,7 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
         textCard.setTouser(this.getTouser(usernameString, isToAll));
         TextCardEntity entity = new TextCardEntity();
         entity.setTitle(announcement.getTitile());
-        entity.setDescription(oConvertUtils.getString(announcement.getMsgAbstract(),"空"));
+        entity.setDescription(oConvertUtils.getString(announcement.getMsgAbstract(),""));
 
         String busType = announcement.getBusType();
         if (StrUtil.isNotEmpty(busType)) {
