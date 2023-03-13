@@ -193,5 +193,8 @@ public class WorkLogDTO extends WorkLogResult {
     private String patrolRepairContent;
 
     private Boolean editFlag;
+    /**未完成事项*/
+    @ApiModelProperty(value = "未完成事项")
+    private  String  unfinishedMatters;
 
 }

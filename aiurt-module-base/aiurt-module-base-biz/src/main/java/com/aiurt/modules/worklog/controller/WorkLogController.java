@@ -353,6 +353,19 @@ public class WorkLogController {
         result.setResult(detailById);
         return result;
     }
+
+    /**
+     * 查询当最新的未完成事项（当前登录人所拥有的部门权限）
+     * @return
+     */
+    @AutoLog(value = "查询当最新的未完成事项")
+    @ApiOperation(value="查询当最新的未完成事项", notes="查询当最新的未完成事项")
+    @GetMapping(value = "/getLastUnfinishedMatters")
+    public Result<String> getUnfinishedMatters() {
+
+        return workLogDepotService.getUnfinishedMatters();
+    }
+
     /**
      * 工作日志确认
      * @param id

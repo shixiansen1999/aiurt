@@ -264,7 +264,9 @@ public class WorkLog {
     @ApiModelProperty(value = "巡检修内容")
     private String patrolRepairContent;
 
-
+    /**未完成事项*/
+    @ApiModelProperty(value = "未完成事项")
+    private  String  unfinishedMatters;
 
     public static final String ID = "id";
     private static final String PATROL_CODE = "patrol_code";
