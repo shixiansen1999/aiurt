@@ -193,9 +193,9 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			String busType = dto.getBusType();
 			SysAnnmentTypeEnum sysAnnmentTypeEnum = SysAnnmentTypeEnum.getByTypeV2(busType);
 			if (Objects.nonNull(sysAnnmentTypeEnum)) {
-				return dto.getTitile();
-			} else {
 				return sysAnnmentTypeEnum.getModule();
+			} else {
+				return dto.getTitile();
 			}
 		}));
 
@@ -215,7 +215,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 					.messageFlag("1")
 					.count(sum)
 					.title(module).build();
-
+            //设置头像图片
 			if (pictureCode.contains(type)) {
 				SysParamModel sysParamModel = sysParamAPI.selectByCode(type);
 				if (Objects.nonNull(sysParamModel)) {
@@ -236,7 +236,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		//bus_type为空的数据
 		sysAnnouncementTypeCountDTOS.stream().forEach(typeCountDTO->{
 			SysMessageTypeDTO sysMessageTypeDTO = new SysMessageTypeDTO();
-			sysMessageTypeDTO.setCount(typeCountDTO.getCount());
+			sysMessageTypeDTO.setCount(typeCountDTO.getUnreadCount());
 			sysMessageTypeDTO.setMessageFlag("1");
 			String key = typeCountDTO.getBusType();
 
@@ -282,9 +282,9 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			String processCode = sysTodoCountDTO.getProcessCode();
 			TodoTaskTypeEnum todoTaskTypeEnum = TodoTaskTypeEnum.getByTypeV2(processCode);
 			if (Objects.isNull(todoTaskTypeEnum)) {
-				return processCode;
+				return todoTaskTypeEnum.getModule();
 			} else {
-				return todoTaskTypeEnum.getType();
+				return processCode;
 			}
 		}));
 

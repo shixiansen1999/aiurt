@@ -51,6 +51,6 @@
             #{item}
         </foreach>
         )
-        ORDER BY update_time desc, create_time DESC limit 1
+        ORDER BY if(update_time != null,update_time,create_time) DESC limit 1
     </select>
 </mapper>
