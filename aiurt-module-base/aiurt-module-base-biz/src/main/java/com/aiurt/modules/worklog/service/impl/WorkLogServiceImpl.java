@@ -168,6 +168,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
         depot.setLogTime(dto.getLogTime());
         depot.setDelFlag(0);
+        depot.setConstructTime(dto.getConstructTime());
         depot.setAssortTime(dto.getAssortTime());
         depot.setAssortLocation(dto.getAssortLocation());
         depot.setAssortUnit(dto.getAssortUnit());
@@ -812,6 +813,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setWorkContent(dto.getWorkContent());
         workLog.setContent(dto.getContent());
         workLog.setSucceedId(dto.getSucceedId());
+        workLog.setConstructTime(dto.getConstructTime());
         workLog.setAssortTime(dto.getAssortTime());
         workLog.setAssortLocation(dto.getAssortLocation());
         workLog.setAssortIds(dto.getAssortIds());

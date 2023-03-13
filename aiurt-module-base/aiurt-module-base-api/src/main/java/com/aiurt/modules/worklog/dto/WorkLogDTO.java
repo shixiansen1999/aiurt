@@ -50,7 +50,7 @@ public class WorkLogDTO extends WorkLogResult {
 
     /**工作内容*/
     @ApiModelProperty(value = "工作内容")
-    private  Object  workContent;
+    private  String  workContent;
 
     /**是否已落实工区消毒(0:否，1：是)*/
     @ApiModelProperty(value = "是否已落实工区消毒(0:否，1：是)")
@@ -74,19 +74,19 @@ public class WorkLogDTO extends WorkLogResult {
 
     /**应急情况说明*/
     @ApiModelProperty(value = "应急情况说明")
-    private  Object  emergencyDisposalContent;
+    private  String  emergencyDisposalContent;
 
     /**文件宣贯*/
     @ApiModelProperty(value = "文件宣贯")
-    private  Object documentPublicityContent;
+    private  String documentPublicityContent;
 
     /**其他工作内容*/
     @ApiModelProperty(value = "其他工作内容")
-    private  Object  otherWorkContent;
+    private  String  otherWorkContent;
 
     /**注意事项*/
     @ApiModelProperty(value = "注意事项")
-    private  Object  note;
+    private  String  note;
 
     /**交班人id*/
     @ApiModelProperty(value = "交班人id")
@@ -179,7 +179,7 @@ public class WorkLogDTO extends WorkLogResult {
     /**配合施工内容*/
     @Excel(name = "配合施工内容", width = 15)
     @ApiModelProperty(value = "配合施工内容")
-    private  Object  assortContent;
+    private  String  assortContent;
 
     /**附件列表*/
     @ApiModelProperty(value = "附件列表")
