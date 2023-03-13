@@ -94,7 +94,10 @@
 		sa.bus_type as taskType,
 		sa.process_name as processName,
 		sa.process_code as processCode,
-		sas.read_flag as readFlag
+		sas.read_flag as readFlag,
+		sa.task_id as taskId,
+		sa.process_definition_key as processDefinitionKey,
+		sa.process_instance_id as processInstanceId
 		from sys_announcement sa
 		left join sys_announcement_send sas on sas.annt_id = sa.id
 		<where>

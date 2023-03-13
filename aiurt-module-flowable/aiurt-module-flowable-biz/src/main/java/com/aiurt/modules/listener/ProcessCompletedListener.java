@@ -5,7 +5,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
-import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
@@ -111,6 +110,9 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                     map.put("creatBy",userByName.getRealname());
                     map.put("creatTime",format);
                     messageDTO.setData(map);
+                    messageDTO.setTaskId(executionEntity.getId());
+                    messageDTO.setProcessInstanceId(executionEntity.getProcessInstanceId());
+                    messageDTO.setProcessDefinitionKey(executionEntity.getProcessDefinitionKey());
 
                     messageDTO.setTitle(historicProcessInstance.getProcessDefinitionName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"));
                     messageDTO.setFromUser( loginUser.getUsername());

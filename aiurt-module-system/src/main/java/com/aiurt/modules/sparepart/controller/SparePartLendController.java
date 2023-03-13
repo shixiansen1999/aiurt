@@ -176,7 +176,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 			 String materialName= sysBaseApi.getMaterialNameByCode(one.getMaterialCode());
 			 map.put("name",materialName);
 			 map.put("backNum",sparePartLend.getBackNum());
-			 String warehouseName= sysBaseApi.getWarehouseNameByCode(one.getBackWarehouseCode());
+			 String warehouseName= sysBaseApi.getWarehouseNameByCode(one.getLendWarehouseCode());
 			 map.put("warehouseName",warehouseName);
 
 			 /*messageDTO.setData(map);
