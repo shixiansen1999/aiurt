@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.dto.UserTeamParameter;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
@@ -19,6 +20,7 @@ import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.entity.PatrolTaskOrganization;
 import com.aiurt.boot.task.mapper.*;
+import com.aiurt.common.constant.CommonConstant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.shiro.SecurityUtils;
@@ -132,6 +134,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
 
             StringBuilder content = new StringBuilder();
             StringBuilder code = new StringBuilder();
+            String string = null;
             //获取这个任务下的工单所对应的站点
             if (CollUtil.isNotEmpty(taskDeviceList)) {
                 List<PatrolTaskDevice> collect = taskDeviceList.stream().distinct().collect(Collectors.toList());
@@ -139,7 +142,13 @@ public class PatrolApiServiceImpl implements PatrolApi {
                     String lineName = iSysBaseAPI.getPosition(patrolTaskDevice.getLineCode());
                     String stationName = iSysBaseAPI.getPosition(patrolTaskDevice.getStationCode());
                     LoginUser userById = iSysBaseAPI.getUserById(patrolTaskDevice.getUserId());
-                    content.append(lineName).append("通信专业车站各系统专用设备").append("-").append(stationName).append(" ").append(" 巡视人:").append(userById.getRealname()).append("。").append('\n');
+                    if (StrUtil.isNotBlank(patrolTaskDevice.getTaskId())){
+                        PatrolTask patrolTask = patrolTaskMapper.selectOne(new LambdaQueryWrapper<PatrolTask>().eq(PatrolTask::getDelFlag,CommonConstant.DEL_FLAG_0).eq(PatrolTask::getId, patrolTaskDevice.getTaskId()));
+                        if (ObjectUtil.isNotNull(patrolTask)){
+                            string = patrolTask.getName();
+                        }
+                    }
+                    content.append(lineName).append(string).append("-").append(stationName).append(" ").append(" 巡视人:").append(userById.getRealname()).append("。").append('\n');
                     code.append(patrolTaskDevice.getTaskCode()).append(",");
                 }
             }
