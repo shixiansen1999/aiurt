@@ -163,4 +163,16 @@ public class InspectionCode extends DictEntity implements Serializable {
     @ApiModelProperty(value = "工器具清单")
     private String workToolsList;
 
+    @Excel(name = "类型：0应急、车载、2正线、3车辆段 ", width = 15)
+    @ApiModelProperty(value = "类型：0应急、车载、2正线、3车辆段 ")
+    @Dict(dicCode = "repair_type")
+    private Integer repairType;
+
+    @Excel(name = "类型：0应急、车载、2正线、3车辆段 ", width = 15)
+    @TableField(exist = false)
+    private String repairTypeValue;
+
+
+
+
 }

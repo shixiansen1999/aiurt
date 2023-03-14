@@ -106,6 +106,11 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         List<InspectionCodeDTO> inspectionCodeDTOS = baseMapper.pageList(page,inspectionCodeDTO);
         GlobalThreadLocal.setDataFilter(false);
         inspectionCodeDTOS.forEach(i->{
+            //字典翻译
+            List<DictModel> repairTypeValue = sysBaseApi.getDictItems("repair_type");
+            repairTypeValue= repairTypeValue.stream().filter(f -> (String.valueOf(i.getRepairType())).equals(f.getValue())).collect(Collectors.toList());
+            String value = repairTypeValue.stream().map(DictModel::getText).collect(Collectors.joining());
+            i.setRepairTypeValue(value);
             i.setNumber(baseMapper.number(i.getCode()));
             List<InspectionCoOrgRel> orgRelList = inspectionCoOrgRelMapper.selectList(new LambdaQueryWrapper<InspectionCoOrgRel>().eq(InspectionCoOrgRel::getInspectionCoCode, i.getCode()));
             if(CollUtil.isNotEmpty(orgRelList)){
@@ -282,6 +287,8 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         ExcelSelectListUtil.selectList(workbook, "检查值类型", 14, 14, requiredDictModels);
         List<DictModel> requiredModels = bean.queryDictItemsByCode("patrol_item_required");
         ExcelSelectListUtil.selectList(workbook, "检查值是否必填", 15, 15, requiredModels);
+        List<DictModel> repairTypeModels = bean.queryDictItemsByCode("repair_type");
+        ExcelSelectListUtil.selectList(workbook, "车辆类型", 16, 16, repairTypeModels);
         Integer modules = 2;
         List<DictModel> modelList = inspectionCodeMapper.querySysDict(modules);
         ExcelSelectListUtil.selectList(workbook, "关联数据字典", 16, 16, modelList);

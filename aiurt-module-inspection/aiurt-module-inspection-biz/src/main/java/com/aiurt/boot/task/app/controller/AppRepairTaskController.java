@@ -230,6 +230,15 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
         return Result.OK("填写成功");
     }
 
+    @AutoLog(value = "填写检修单上的抽检人")
+    @ApiOperation(value = "填写检修单上的抽检人", notes = "填写检修单上的抽检人")
+    @PostMapping(value = "/writeSampling")
+    public Result<?> writeSampling(@RequestParam @ApiParam(value = "检修单code", name = "code", required = true) String code,
+                                   @RequestParam @ApiParam(value = "抽检人，多个用英文逗号隔开", name = "samplingId", required = true) String samplingId) {
+        repairTaskService.writeSampling(code,samplingId);
+        return Result.OK("填写成功");
+    }
+
     /**
      * 填写检修单上的检修位置
      *
