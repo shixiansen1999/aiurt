@@ -12,6 +12,7 @@ import com.aiurt.boot.check.vo.CheckUserVO;
 import com.aiurt.boot.check.vo.FixedAssetsCheckVO;
 import com.aiurt.boot.record.entity.FixedAssetsCheckRecord;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -21,6 +22,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
@@ -48,7 +50,8 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
     private IFixedAssetsCheckService fixedAssetsCheckService;
     @Autowired
     private ISysBaseAPI sysBaseApi;
-
+    @Autowired
+    private ISTodoBaseAPI isTodoBaseAPI;
     /**
      * 固定资产盘点任务信息表-分页列表查询
      *
@@ -334,4 +337,17 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
         return super.importExcel(request, response, FixedAssetsCheck.class);
     }
 
+    /**
+     * 固定资产待办消息更新下发状态
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "固定资产待办消息更新下发状态")
+    @ApiOperation(value = "固定资产待办消息更新下发状态", notes = "固定资产待办消息更新下发状态")
+    @GetMapping(value = "/changeStatus")
+    public void changeStatus(@RequestParam(name = "id") String id) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        // 更新待办
+        isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.FIXED_ASSETS.getType(),id, user.getUsername(), "1");
+    }
 }
