@@ -103,7 +103,7 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
             try {
                 LoginUser userByName = sysBaseApi.getUserByName(scrap.getCreateBy());
                 //发送通知
-                MessageDTO messageDTO = new MessageDTO(user.getUsername(),userByName.getUsername(), "备件报废申请-确认" + DateUtil.today(), null);
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(),userByName.getUsername(), "备件报废成功" + DateUtil.today(), null);
 
                 //构建消息模板
                 HashMap<String, Object> map = new HashMap<>();

@@ -137,7 +137,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 			String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
 
 			//发送通知
-			MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件退库申请" + DateUtil.today(), null);
+			MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件退库-确认" + DateUtil.today(), null);
 
 			//构建消息模板
 			HashMap<String, Object> map = new HashMap<>();
@@ -165,7 +165,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 			todoDTO.setData(map);
 			SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
 			todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
-			todoDTO.setTitle("备件退库申请" + DateUtil.today());
+			todoDTO.setTitle("备件退库-确认" + DateUtil.today());
 			todoDTO.setMsgAbstract("备件退库申请");
 			todoDTO.setPublishingContent("备件退库申请，请确认");
 			todoDTO.setCurrentUserName(userName);
@@ -200,7 +200,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 			LoginUser userById = sysBaseApi.getUserByName(one.getUserId());
 
 			//发送通知
-			MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件退库申请" + DateUtil.today(), null);
+			MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件退库成功" + DateUtil.today(), null);
 
 			//构建消息模板
 			HashMap<String, Object> map = new HashMap<>();
@@ -219,7 +219,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 			messageDTO.setTemplateCode(CommonConstant.SPAREPARTRETURN_SERVICE_NOTICE);
 			SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
 			messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-			messageDTO.setMsgAbstract("备件退库申请");
+			messageDTO.setMsgAbstract("备件出库申请通过");
 			messageDTO.setPublishingContent("备件退库申请通过");
 			messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
 			sysBaseApi.sendTemplateMessage(messageDTO);

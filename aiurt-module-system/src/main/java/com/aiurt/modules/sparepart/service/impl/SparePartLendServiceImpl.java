@@ -120,7 +120,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
                 String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
 
                 //发送通知
-                MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件借出申请" + DateUtil.today(), null);
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件借出-确认" + DateUtil.today(), null);
 
                 //构建消息模板
                 HashMap<String, Object> map = new HashMap<>();
@@ -147,7 +147,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
                 todoDTO.setData(map);
                 SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
                 todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
-                todoDTO.setTitle("备件借出申请" + DateUtil.today());
+                todoDTO.setTitle("备件借出-确认" + DateUtil.today());
                 todoDTO.setMsgAbstract("备件借出申请");
                 todoDTO.setPublishingContent("备件借出申请，请确认");
                 todoDTO.setCurrentUserName(userName);
@@ -229,7 +229,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
             LoginUser userById = sysBaseApi.getUserByName(partLend.getLendPerson());
 
             //发送通知
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件借出申请" + DateUtil.today(), null);
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件借出成功" + DateUtil.today(), null);
 
             //构建消息模板
             HashMap<String, Object> map = new HashMap<>();
@@ -306,7 +306,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         try {
             LoginUser userById = sysBaseApi.getUserByName(partLend.getBackPerson());
             //发送通知
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件归还-确认" + DateUtil.today(), null);
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件归还成功" + DateUtil.today(), null);
 
             //构建消息模板
             HashMap<String, Object> map = new HashMap<>();

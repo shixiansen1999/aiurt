@@ -133,7 +133,7 @@ public class PatrolTaskMissingDetection implements Job {
                     try {
                         TodoDTO todoDTO = new TodoDTO();
                         todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
-                        todoDTO.setTitle("巡视任务-漏检"+DateUtil.today());
+                        todoDTO.setTitle("巡视任务-漏检处置"+DateUtil.today());
                         todoDTO.setMsgAbstract("巡视任务-漏检");
                         todoDTO.setPublishingContent("巡视任务漏检，请尽快处置");
                         SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);

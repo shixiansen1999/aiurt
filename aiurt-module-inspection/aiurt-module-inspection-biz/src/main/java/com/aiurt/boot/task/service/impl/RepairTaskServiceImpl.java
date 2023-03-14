@@ -1307,7 +1307,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                 //发送通知
                 try {
-                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),usernames, "检修任务-审核" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
+                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),usernames, "检修任务-验收" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                     RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                     BeanUtil.copyProperties(repairTask1,repairTaskMessageDTO);
                     //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -1433,9 +1433,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     TodoDTO todoDTO = new TodoDTO();
                     todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
                     todoDTO.setTitle("检修任务-审核" + DateUtil.today());
-                    todoDTO.setMsgAbstract("检修任务审核");
-                    todoDTO.setPublishingContent("您有一条检修任务审核");
+                    todoDTO.setMsgAbstract("检修任务完成");
+                    todoDTO.setPublishingContent("检修任务已完成，请确认");
                     createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_CONFIRM.getType(), repairTask.getId(), "检修任务审核", "", "", todoDTO, repairTask, realNames, null);
+
                 }
             }
         } catch (Exception e) {
@@ -1572,7 +1573,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
                     TodoDTO todoDTO = new TodoDTO();
                     todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_REJECT);
-                    todoDTO.setTitle("检修任务-审核驳回" + DateUtil.today());
+                    todoDTO.setTitle(title);
                     todoDTO.setMsgAbstract("检修任务审核驳回");
                     todoDTO.setPublishingContent("检修任务审核驳回，请重新处理");
                     todoDTO.setData(map);
@@ -1613,7 +1614,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                 //发送通知
                 try {
-                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, "检修任务-验收" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
+                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, "检修任务-验收通过" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                     RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                     RepairTask repairTask = repairTaskMapper.selectById(repairTask1.getId());
                     if (ObjectUtil.isEmpty(repairTask)) {
@@ -1861,9 +1862,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
                 TodoDTO todoDTO = new TodoDTO();
                 todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
-                todoDTO.setTitle("检修任务-领取" + DateUtil.today());
-                todoDTO.setMsgAbstract("领取检修任务");
-                todoDTO.setPublishingContent("您领取了一条检修任务，请尽快检修");
+                todoDTO.setTitle("检修任务-检修" + DateUtil.today());
+                todoDTO.setMsgAbstract("检修任务接收");
+                todoDTO.setPublishingContent("主动领取检修任务，请在检修任务计划执行日期开展检修工作");
 
                 createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(),repairTask.getId(), "执行检修任务", "", "",todoDTO,repairTask,realNames,null);
             }
@@ -2238,9 +2239,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     }
                     TodoDTO todoDTO = new TodoDTO();
                     todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
-                    todoDTO.setTitle("检修任务-待执行" + DateUtil.today());
-                    todoDTO.setMsgAbstract("检修任务待执行");
-                    todoDTO.setPublishingContent("您有一条检修任务待执行");
+                    todoDTO.setTitle("检修任务-检修" + DateUtil.today());
+                    todoDTO.setMsgAbstract("检修任务接收");
+                    todoDTO.setPublishingContent("接收到新的检修任务，请在检修任务计划执行日期开展检修工作");
                     createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(), repairTask.getId(), "执行检修任务", "", "", todoDTO, repairTask, realNames, null);
                 }
             } catch (Exception e) {

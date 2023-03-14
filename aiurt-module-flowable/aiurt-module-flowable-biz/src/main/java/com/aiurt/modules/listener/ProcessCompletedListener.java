@@ -99,6 +99,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                             String name = StrUtil.contains(one.getName(), "流程") ? one.getName() : one.getName()+"流程";
                             messageDTO.setProcessName(name);
                         }
+                        messageDTO.setProcessDefinitionKey(one.getModelKey());
                        // map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,processDefinitionIdList.get(0));
                     }
                     String startUserId = historicProcessInstance.getStartUserId();
@@ -112,7 +113,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                     messageDTO.setData(map);
                     messageDTO.setTaskId(executionEntity.getId());
                     messageDTO.setProcessInstanceId(executionEntity.getProcessInstanceId());
-                    messageDTO.setProcessDefinitionKey(executionEntity.getProcessDefinitionKey());
+
 
                     messageDTO.setTitle(historicProcessInstance.getProcessDefinitionName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"));
                     messageDTO.setFromUser( loginUser.getUsername());

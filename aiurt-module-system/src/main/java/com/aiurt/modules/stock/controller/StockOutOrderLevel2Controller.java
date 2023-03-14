@@ -133,7 +133,7 @@ public class StockOutOrderLevel2Controller {
 				String orgCode = sysBaseApi.getDepartByWarehouseCode(sparePartApply.getApplyWarehouseCode());
 				String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
 				//发送通知
-				MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "二级库出库" + DateUtil.today(), null);
+				MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件入库确认" + DateUtil.today(), null);
 
 				//构建消息模板
 				HashMap<String, Object> map = new HashMap<>();
