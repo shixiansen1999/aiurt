@@ -206,9 +206,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 // 自检
                 sendTodo(fault.getCode(), null, user.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
             } else {
-                todoDTO.setTitle("故障维修任务");
+                todoDTO.setTitle("故障上报审核");
                 todoDTO.setMsgAbstract("有新的故障信息");
-                todoDTO.setPublishingContent("有新的维修任务");
+                todoDTO.setPublishingContent("有新的故障信息，请审核");
                 sendTodo(fault.getCode(), RoleConstant.PRODUCTION, null, "故障上报审核", TodoBusinessTypeEnum.FAULT_APPROVAL.getType(),todoDTO,faultMessageDTO);
             }
 
