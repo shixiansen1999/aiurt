@@ -110,6 +110,23 @@
         </choose>
         ORDER BY fac.create_time DESC
     </select>
+
+    <select id="queryById" resultType="com.aiurt.boot.check.vo.FixedAssetsCheckVO">
+        select fac.*,
+        ahp.PROC_INST_ID_ as process_instance_id,
+        ara.ID_ as task_id,
+        ara.NAME_ as task_name,
+        arp.KEY_ as model_key
+        from fixed_assets_check fac
+        Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fac.id
+        LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
+        LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+        where fac.del_flag = 0
+        <if test="id != null and id != ''">
+            and fac.id = #{id}
+        </if>
+    </select>
+
     <select id="checkUserInfo" resultType="com.aiurt.boot.check.vo.CheckUserVO">
         select distinct check_id
         from fixed_assets_check

@@ -51,6 +51,13 @@ public interface FixedAssetsCheckMapper extends BaseMapper<FixedAssetsCheck> {
     IPage<FixedAssetsCheckVO> pageList(@Param("page") Page<FixedAssetsCheckVO> page, @Param("condition") FixedAssetsCheckDTO fixedAssetsCheckDTO);
 
     /**
+     * 固定资产盘点任务信息表-分页列表查询
+     * @param id
+     * @return
+     */
+    FixedAssetsCheckVO queryById(String id);
+
+    /**
      * 固定资产盘点任务记录-记录的盘点人下拉接口
      *
      * @return

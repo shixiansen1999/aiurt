@@ -29,6 +29,8 @@ public interface ConstructionWeekPlanCommandMapper extends BaseMapper<Constructi
     IPage<ConstructionWeekPlanCommandVO> queryPageList(@Param("page") Page<ConstructionWeekPlanCommandVO> page,
                                                        @Param("condition") ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO);
 
+   ConstructionWeekPlanCommandVO queryById(String id);
+
     /**
      * 待办审核
      *
