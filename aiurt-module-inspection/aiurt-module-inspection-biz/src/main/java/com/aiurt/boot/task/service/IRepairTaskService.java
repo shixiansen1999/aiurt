@@ -171,6 +171,8 @@ public interface IRepairTaskService extends IService<RepairTask> {
      */
     void writePeerPeople(String code, String peerId);
 
+    void writeSampling(String code, String samplingId);
+
     /**
      * 填写检修单上的检修位置
      *

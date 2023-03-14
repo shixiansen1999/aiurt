@@ -349,6 +349,10 @@ public class RepairTask extends BaseEntity {
     @TableField(exist = false)
     private String peerName;
 
+    @ApiModelProperty(value = "抽检人名称")
+    @TableField(exist = false)
+    private String samplingName;
+
     @ApiModelProperty(value = "检修编码")
     @TableField(exist = false)
     private List<String> codeList;

@@ -140,6 +140,11 @@ public class CheckListDTO {
     @TableField(exist = false)
     private String peer;
 
+    /**抽检人*/
+    @ApiModelProperty(value = "抽检人")
+    @TableField(exist = false)
+    private String sampling;
+
     /**检修时长*/
     @ApiModelProperty(value = "检修时长")
     @TableField(exist = false)
@@ -245,6 +250,11 @@ public class CheckListDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "同行人列表")
     private List<ColleaguesDTO> realList;
+
+    /**抽检人列表*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "抽检人列表")
+    private List<ColleaguesDTO> samplingList;
 
     /**站点编码*/
     @TableField(exist = false)
