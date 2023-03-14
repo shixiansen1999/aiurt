@@ -25,6 +25,7 @@ import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskOrganization;
 import com.aiurt.boot.task.entity.PatrolTaskStandard;
+import com.aiurt.boot.task.entity.TemperatureHumidity;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -453,4 +454,6 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<GeneralReturn> getOrgCodeName(@Param("orgCodes")List<String> orgCodes);
+
+    List<TemperatureHumidity> getTemAndHum(@Param("date")String orgCodes);
 }
