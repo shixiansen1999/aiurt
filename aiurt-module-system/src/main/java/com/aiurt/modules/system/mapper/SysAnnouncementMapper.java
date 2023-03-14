@@ -58,7 +58,7 @@ public interface SysAnnouncementMapper extends BaseMapper<SysAnnouncement> {
      * @param page
      * @param userId
      * @param keyWord
-     * @param busType
+     * @param busTypeList
      * @param msgCategory
      * @return
      */
@@ -69,7 +69,7 @@ public interface SysAnnouncementMapper extends BaseMapper<SysAnnouncement> {
      * 查询当前登录人未读的公告详情不分页
      * @param userId
      * @param keyWord
-     * @param busType
+     * @param busTypeList
      * @param msgCategory
      * @return
      */
@@ -81,7 +81,7 @@ public interface SysAnnouncementMapper extends BaseMapper<SysAnnouncement> {
      * @param userName
      * @param todoType
      * @param keyWord
-     * @param busType
+     * @param busTypeList
      * @return
      */
     IPage<SysMessageInfoDTO> queryTodoListInfo(@Param("page") Page<SysMessageInfoDTO> page,@Param("userName")String userName,@Param("todoType")String todoType,@Param("keyWord")String keyWord,@Param("busTypeList")List<String> busTypeList);
@@ -89,9 +89,9 @@ public interface SysAnnouncementMapper extends BaseMapper<SysAnnouncement> {
     /**
      * 查询流程消息的详情不分页
      * @param userName
-     * @param keyWord
-     * @param busType
      * @param todoType
+     * @param keyWord
+     * @param busTypeList
      * @return
      */
     List<SysMessageInfoDTO> queryAllTodoList(@Param("userName")String userName,@Param("todoType")String todoType,@Param("keyWord")String keyWord,@Param("busTypeList")List<String> busTypeList);
