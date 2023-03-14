@@ -97,9 +97,14 @@ public enum SysAnnmentTypeEnum {
      */
     ASSET_CHECKER("asset_checker", "component","","固定资产盘点"),
     /**
-     * 固定资产审核
+     * 固定资产消息通知
      */
     ASSET_AUDIT("asset_audit", "component","","固定资产盘点"),
+    /**
+     * 固定资产盘点结果审核
+     */
+    FIXED_ASSETS_CHECK("fixed_assets_check", "component","","固定资产盘点"),
+
     /**
     /**
      * 工作流跳转链接我的办公

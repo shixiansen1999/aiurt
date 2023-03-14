@@ -356,10 +356,13 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
                 dept.setOrgName(sysBaseApi.getDepartNameByOrgCode(dept.getOrgCode()));
             }
         });
+        FixedAssetsCheckVO fixedAssetsCheckVO = fixedAssetsCheckMapper.queryById(id);
+        String processInstanceId = fixedAssetsCheckVO.getProcessInstanceId();
 
         checkVO.setCategorys(categorys);
         checkVO.setDepts(depts);
         checkVO.setModelKey("fixed_assets_check");
+        checkVO.setProcessInstanceId(processInstanceId);
         return checkVO;
     }
 

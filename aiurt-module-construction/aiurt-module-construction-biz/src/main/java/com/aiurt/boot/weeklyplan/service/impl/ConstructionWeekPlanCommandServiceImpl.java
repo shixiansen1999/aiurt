@@ -227,6 +227,8 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         if (constructionWeekPlanCommand == null) {
             throw new AiurtBootException("未找到对应数据");
         }
+        ConstructionWeekPlanCommandVO constructionWeekPlanCommandVO = constructionWeekPlanCommandMapper.queryById(id);
+        String processInstanceId = constructionWeekPlanCommandVO.getProcessInstanceId();
         // 辅站信息
         List<ConstructionCommandAssist> assists = constructionCommandAssistService.lambdaQuery()
                 .eq(ConstructionCommandAssist::getPlanId, id).list();
@@ -245,6 +247,8 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
             });
             constructionWeekPlanCommand.setConstructionAssist(assists);
         }
+        constructionWeekPlanCommand.setModelKey("week_plan_construction");
+        constructionWeekPlanCommand.setProcessInstanceId(processInstanceId);
         return constructionWeekPlanCommand;
     }
 

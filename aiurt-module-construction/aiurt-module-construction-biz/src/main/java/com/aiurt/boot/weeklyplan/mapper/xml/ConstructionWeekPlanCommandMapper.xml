@@ -42,6 +42,23 @@
         order by cwpc.create_time desc
     </select>
 
+    <select id="queryById" resultType="com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO">
+        select cwpc.*,
+        ahp.PROC_INST_ID_ as process_instance_id,
+        ara.ID_           as task_id,
+        ara.NAME_         as task_name,
+        arp.KEY_          as model_key
+        from construction_week_plan_command cwpc
+        Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = cwpc.id
+        LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
+        LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+        where cwpc.del_flag = 0
+        and ahp.ID_ is not null
+        <if test="id != null and id != ''">
+            and cwpc.id = #{id}
+        </if>
+    </select>
+
     <select id="queryWorkToDo" resultType="com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO">
         select cwpc.*,
                ahp.PROC_INST_ID_ as process_instance_id,
