@@ -62,7 +62,7 @@ public interface SysAnnouncementMapper extends BaseMapper<SysAnnouncement> {
      * @param msgCategory
      * @return
      */
-    IPage<SysMessageInfoDTO> queryAnnouncementInfo(@Param("page") Page<SysMessageInfoDTO> page, @Param("userId")String userId, @Param("keyWord")String keyWord, @Param("busType")String busType, @Param("msgCategory")String msgCategory);
+    IPage<SysMessageInfoDTO> queryAnnouncementInfo(@Param("page") Page<SysMessageInfoDTO> page, @Param("userId")String userId, @Param("keyWord")String keyWord, @Param("busTypeList")List<String> busTypeList, @Param("msgCategory")String msgCategory);
 
 
     /**
@@ -73,7 +73,7 @@ public interface SysAnnouncementMapper extends BaseMapper<SysAnnouncement> {
      * @param msgCategory
      * @return
      */
-    List<SysMessageInfoDTO> queryAllAnnouncement(@Param("userId")String userId, @Param("keyWord")String keyWord, @Param("busType")String busType, @Param("msgCategory")String msgCategory);
+    List<SysMessageInfoDTO> queryAllAnnouncement(@Param("userId")String userId, @Param("keyWord")String keyWord, @Param("busTypeList")List<String> busTypeList, @Param("msgCategory")String msgCategory);
 
     /**
      * 查询流程消息的详情
@@ -84,7 +84,7 @@ public interface SysAnnouncementMapper extends BaseMapper<SysAnnouncement> {
      * @param busType
      * @return
      */
-    IPage<SysMessageInfoDTO> queryTodoListInfo(@Param("page") Page<SysMessageInfoDTO> page,@Param("userName")String userName,@Param("todoType")String todoType,@Param("keyWord")String keyWord,@Param("busType")String busType);
+    IPage<SysMessageInfoDTO> queryTodoListInfo(@Param("page") Page<SysMessageInfoDTO> page,@Param("userName")String userName,@Param("todoType")String todoType,@Param("keyWord")String keyWord,@Param("busTypeList")List<String> busTypeList);
 
     /**
      * 查询流程消息的详情不分页
@@ -94,7 +94,7 @@ public interface SysAnnouncementMapper extends BaseMapper<SysAnnouncement> {
      * @param todoType
      * @return
      */
-    List<SysMessageInfoDTO> queryAllTodoList(@Param("userName")String userName,@Param("todoType")String todoType,@Param("keyWord")String keyWord,@Param("busType")String busType);
+    List<SysMessageInfoDTO> queryAllTodoList(@Param("userName")String userName,@Param("todoType")String todoType,@Param("keyWord")String keyWord,@Param("busTypeList")List<String> busTypeList);
 
     /**
      * 消息统计

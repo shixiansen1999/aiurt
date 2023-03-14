@@ -105,11 +105,21 @@
 			<if test="userId!=null and userId!=''">
 				and sas.user_id = #{userId}
 			</if>
-			<if test="busType!=null and busType!=''">
-				and (sa.titile is not null and sa.bus_type LIKE concat('%',#{busType},'%')
-				or sa.process_code like concat('%',#{busType},'%'))
+			<if test="busTypeList!=null and busTypeList.size()!=0">
+
+				and (
+				(sa.titile is not null and sa.bus_type in
+				<foreach collection="busTypeList" open="(" close=")" item="item" separator=",">
+						#{item}
+					</foreach>
+				) or
+				sa.process_code in
+				<foreach collection="busTypeList" open="(" close=")" item="item" separator=",">
+					#{item}
+				</foreach>
+				)
 			</if>
-			<if test="busType ==null or busType ==''">
+			<if test="busTypeList == null or busTypeList.size() == 0">
 				and isNull(sa.bus_type)
 			</if>
 			<if test="keyWord!=null and keyWord!=''">
@@ -151,11 +161,21 @@
 			<if test="userId!=null and userId!=''">
 				and sas.user_id = #{userId}
 			</if>
-			<if test="busType!=null and busType!=''">
-				and (sa.titile is not null and sa.bus_type LIKE concat('%',#{busType},'%')
-				or sa.process_code like concat('%',#{busType},'%'))
+			<if test="busTypeList!=null and busTypeList.size()!=0">
+
+				and (
+				(sa.titile is not null and sa.bus_type in
+				<foreach collection="busTypeList" open="(" close=")" item="item" separator=",">
+					#{item}
+				</foreach>
+				) or
+				sa.process_code in
+				<foreach collection="busTypeList" open="(" close=")" item="item" separator=",">
+					#{item}
+				</foreach>
+				)
 			</if>
-			<if test="busType ==null or busType ==''">
+			<if test="busTypeList ==null or busTypeList.size() == 0">
 				and isNull(sa.bus_type)
 			</if>
 			<if test="keyWord!=null and keyWord!=''">
@@ -211,9 +231,18 @@
 			<if test="todoType!=null and todoType!=''">
 				and stl.todo_type = #{todoType}
 			</if>
-			<if test="busType!=null and busType!=''">
-				and (stl.title is not null and stl.task_type LIKE concat('%',#{busType},'%')
-				or stl.process_code like concat('%',#{busType},'%'))
+			<if test="busTypeList!=null and busTypeList.size()>0 ">
+				and (
+					(stl.title is not null and stl.task_type in
+						<foreach collection="busTypeList" separator="," item="item" close=")" open="(" >
+							#{item}
+						</foreach>
+					)
+					or stl.process_code in
+					<foreach collection="busTypeList" separator="," item="item" close=")" open="(" >
+						#{item}
+					</foreach>
+				)
 			</if>
 		</where>
 		order by stl.create_time desc
@@ -246,9 +275,18 @@
 			<if test="todoType!=null and todoType!=''">
 				and stl.todo_type = #{todoType}
 			</if>
-			<if test="busType!=null and busType!=''">
-				and (stl.title is not null and stl.task_type LIKE concat('%',#{busType},'%')
-				or stl.process_code like concat('%',#{busType},'%'))
+			<if test="busTypeList!=null and busTypeList.size()>0 ">
+				and (
+				(stl.title is not null and stl.task_type in
+				<foreach collection="busTypeList" separator="," item="item" close=")" open="(" >
+					#{item}
+				</foreach>
+				)
+				or stl.process_code in
+				<foreach collection="busTypeList" separator="," item="item" close=")" open="(" >
+					#{item}
+				</foreach>
+				)
 			</if>
 		</where>
 		order by stl.create_time desc
