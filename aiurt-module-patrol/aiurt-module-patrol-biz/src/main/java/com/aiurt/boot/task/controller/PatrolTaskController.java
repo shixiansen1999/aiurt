@@ -723,7 +723,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return author lkj
      */
-    @AutoLog(value = "巡检任务表-打印巡视详情", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
+    @AutoLog(value = "巡检任务表-打印巡视详情")
     @ApiOperation(value = "巡检任务表-打印巡视详情", notes = "巡检任务表-打印巡视详情")
     @GetMapping(value = "/printPatrolTaskById")
     public Result<PrintPatrolTaskDTO> printPatrolTaskById(@RequestParam(name="id",required=true) String id,

@@ -5,10 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
-import com.aiurt.boot.task.dto.CheckListDTO;
-import com.aiurt.boot.task.dto.RepairTaskDTO;
-import com.aiurt.boot.task.dto.RepairTaskStationDTO;
-import com.aiurt.boot.task.dto.SystemInformationDTO;
+import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
@@ -25,7 +22,6 @@ import com.aiurt.common.util.ArchiveUtils;
 import com.alibaba.druid.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
@@ -38,14 +34,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import static com.baomidou.mybatisplus.core.toolkit.Wrappers.update;
 
 /**
  * @Description: 检修任务
@@ -576,4 +572,20 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 
         repairTaskService.exportPdf(request,repairTask,response);
     }*/
+
+    /**
+     *检修任务表-打印检修详情
+     *
+     * @param id
+     * @param req
+     * @return author lkj
+     */
+    @AutoLog(value = "检修任务表-打印检修详情")
+    @ApiOperation(value = "检修任务表-打印检修详情", notes = "检修任务表-打印检修详情")
+    @GetMapping(value = "/printRepairTaskById")
+    public Result<PrintRepairTaskDTO> printRepairTaskById(@RequestParam(name="id",required=true) String id,
+                                                          HttpServletRequest req) {
+        PrintRepairTaskDTO printPatrolTaskDTO = repairTaskService.printRepairTaskById(id);
+        return Result.OK(printPatrolTaskDTO);
+    }
 }

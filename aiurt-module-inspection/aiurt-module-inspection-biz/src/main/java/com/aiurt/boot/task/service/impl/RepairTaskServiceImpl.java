@@ -2671,4 +2671,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         workbook.close();
         PdfUtil.excel2pdf(exportRepairTaskPath);
     }
+
+    @Override
+    public PrintRepairTaskDTO printRepairTaskById(String id) {
+
+
+        return null;
+    }
 }
