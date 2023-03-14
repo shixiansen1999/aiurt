@@ -155,7 +155,8 @@ public class PatrolTaskMissingDetection implements Job {
                             List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
                             String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                             map.put("patrolName", realNames);
-
+                        }else {
+                            map.put("patrolName", "-");
                         }
                         todoDTO.setData(map);
                         todoDTO.setProcessDefinitionName("巡视管理");
