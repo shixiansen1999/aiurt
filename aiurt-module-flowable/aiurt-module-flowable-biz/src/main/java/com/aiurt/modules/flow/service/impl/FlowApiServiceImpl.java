@@ -1339,7 +1339,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
 
             // 更新待办
-            todoBaseApi.updateBpmnTaskState(task.getId(), processInstance.getBusinessKey(), loginUser.getUsername(), "1");
+            todoBaseApi.updateBpmnTaskState(task.getId(), processInstance.getProcessInstanceId(), loginUser.getUsername(), "1");
         }
 
         // 暂时处理先 todo
