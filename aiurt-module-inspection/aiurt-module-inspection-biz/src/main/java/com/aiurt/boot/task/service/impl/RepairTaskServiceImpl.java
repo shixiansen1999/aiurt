@@ -1571,7 +1571,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairTaskEnclosureMapper.insert(taskEnclosure);
             } else {
                 for (RepairTaskEnclosure list:repairTaskEnclosure){
-                    if(list.getUrl().isEmpty()){
+                    if(StrUtil.isNotBlank(list.getUrl())){
                         list.setUrl(examineDTO.getPath());
                         repairTaskEnclosureMapper.updateById(list);
                     }
