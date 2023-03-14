@@ -101,6 +101,41 @@ public class Schedule {
     @ApiModelProperty(value = "更新时间")
     private Date updateTime;
 
+    /**
+     * 班次换班频率
+     */
+    @Excel(name = "班次换班频率", width = 15)
+    @ApiModelProperty(value = "班次换班频率")
+    private Integer changeFrequency;
+
+    /**
+     *是否跳过周末
+     */
+    @Excel(name = "是否跳过周末", width = 15)
+    @ApiModelProperty(value = "是否跳过周末")
+    private Boolean isSkipWeekend;
+
+    /**
+     *节假日是否调整
+     */
+    @Excel(name = "节假日是否调整", width = 15)
+    @ApiModelProperty(value = "节假日是否调整")
+    private Boolean isHolidayAdjustment;
+
+    /**
+     * 调整前班次id
+     */
+    @Excel(name = "调整前班次id", width = 15)
+    @ApiModelProperty(value = "调整前班次id")
+    private Integer beforeItemId;
+
+    /**
+     * 调整后班次id
+     */
+    @Excel(name = "调整后班次id", width = 15)
+    @ApiModelProperty(value = "调整后班次id")
+    private Integer afterItemId;
+
     @TableField(exist = false)
     private String userName;
 

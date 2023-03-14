@@ -105,6 +105,8 @@
                su.realname username,
                cl.line_name,
                cs.station_name,
+               pts.subsystem_code,
+               css.system_name as subsystemName,
                ptd.*
         FROM patrol_task_device ptd
                      JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
@@ -119,6 +121,8 @@
                 AND su.del_flag = 0
                      LEFT JOIN device d ON ptd.device_code = d.`code`
                 AND d.del_flag = 0
+                     LEFT JOIN cs_subsystem css ON css.system_code = pts.subsystem_code
+                AND css.del_flag = 0
                 WHERE
                 ptd.del_flag = 0
         <if test="patrolNumber != null and patrolNumber != ''">
