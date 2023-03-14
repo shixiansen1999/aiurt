@@ -163,7 +163,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 		 SparePartLend one = sparePartLendService.getById(sparePartLend.getId());
 		 try {
 			 //根据仓库编号获取仓库组织机构code
-			 String orgCode = sysBaseApi.getDepartByWarehouseCode(one.getBackWarehouseCode());
+			 String orgCode = sysBaseApi.getDepartByWarehouseCode(one.getLendWarehouseCode());
 			 String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
 
 			 //发送通知

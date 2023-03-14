@@ -870,8 +870,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     QueryWrapper<PatrolTaskUser> userQueryWrapper = new QueryWrapper<>();
                     userQueryWrapper.lambda().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode());
                     List<PatrolTaskUser> userList = patrolTaskUserMapper.selectList(userQueryWrapper);
-                    String realNames = userList.stream().map(PatrolTaskUser::getUserName).collect(Collectors.joining());
-                    sendMessage(messageDTO,realNames,null,patrolMessageDTO);
+                    List<String> list = userList.stream().map(PatrolTaskUser::getUserName).collect(Collectors.toList());
+                    sendMessage(messageDTO,CollUtil.join(list,","),null,patrolMessageDTO);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -1223,6 +1223,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     todoDTO.setUrl(PatrolMessageUrlConstant.AUDIT_URL);
                     todoDTO.setAppUrl(PatrolMessageUrlConstant.AUDIT_APP_URL);
                     isTodoBaseAPI.createTodoTask(todoDTO);
+
+                    // 更新待办
+                    isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_EXECUTE.getType(), patrolTaskDTO.getId(), sysUser.getUsername(), "1");
                 }
             } catch (Exception e) {
                 e.printStackTrace();

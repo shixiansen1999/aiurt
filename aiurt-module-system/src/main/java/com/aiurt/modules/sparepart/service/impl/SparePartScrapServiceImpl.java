@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartScrap;
@@ -124,6 +125,8 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
                 messageDTO.setPublishingContent("备件报废申请通过");
                 messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
                 sysBaseApi.sendTemplateMessage(messageDTO);
+                // 更新待办
+                isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.SPAREPART_SCRAP.getType(), scrap.getId(), user.getUsername(), "1");
             } catch (Exception e) {
                 e.printStackTrace();
             }
