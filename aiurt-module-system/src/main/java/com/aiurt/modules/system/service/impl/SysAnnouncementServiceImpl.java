@@ -443,6 +443,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				}else{
 					record.setDeal(true);
 				}
+				//固定资产下发需要给另外的类型
+				if(StrUtil.isEmpty(record.getProcessInstanceId()) && record.getTaskType().equals(TodoTaskTypeEnum.FIXED_ASSETS)){
+					record.setTaskType("fixed");
+				}
 			}
 			return flowList;
 		}
