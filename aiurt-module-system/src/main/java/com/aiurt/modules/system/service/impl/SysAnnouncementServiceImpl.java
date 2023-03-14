@@ -297,7 +297,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		bpmnMap.forEach((type, dtoList)->{
 			SysTodoCountDTO sysTodoCountDTO = dtoList.get(0);
 			int sum = dtoList.stream().mapToInt(SysTodoCountDTO::getUndoCount).sum();
-			TodoTaskTypeEnum typeEnum = TodoTaskTypeEnum.getByType(type);
+			TodoTaskEnum typeEnum = TodoTaskEnum.getByType(type);
 
 			SysMessageTypeDTO typeDTO = SysMessageTypeDTO.builder()
 					.count(sum)
