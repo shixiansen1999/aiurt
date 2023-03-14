@@ -1381,5 +1381,6 @@ FROM
         DATE_SUB(#{date},INTERVAL 30 DAY) <![CDATA[ <= ]]> date(create_time)
         AND
         create_time <![CDATA[ <= ]]> #{date}
+        order by create_time esc
     </select>
 </mapper>
