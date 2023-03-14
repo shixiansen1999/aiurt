@@ -45,7 +45,7 @@ public enum TodoTaskEnum {
     /**
      * 物资出入库
      */
-    SPARE_PART("sparepart",  Arrays.asList("sparepart_return", "sparepart_out", "sparepart_back", "sparepart_lend", "sparepart_apply", "sparepart_stocklevel2check", "sparepart_stockLevel2Secondary", "sparepart_scrap"),"物资出入库流程"),
+    SPARE_PART("sparepart",  Arrays.asList("sparepart_return", "sparepart_out", "sparepart_back", "sparepart_lend", "sparepart_apply", "sparepart_stocklevel2check", "sparepart_stockLevel2Secondary", "sparepart_scrap", "sparepart_lend_return"),"物资出入库流程"),
     /**
      * 工作票
      */
@@ -123,6 +123,9 @@ public enum TodoTaskEnum {
         for (TodoTaskEnum flowConditionTypeEnum : TodoTaskEnum.values()) {
             List<String> resultList = flowConditionTypeEnum.getList();
             if (CollUtil.isNotEmpty(resultList) && resultList.contains(type)) {
+                return flowConditionTypeEnum;
+            }
+            if (StrUtil.equalsIgnoreCase(type, flowConditionTypeEnum.getType())) {
                 return flowConditionTypeEnum;
             }
         }

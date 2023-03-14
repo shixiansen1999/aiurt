@@ -376,7 +376,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		//业务数据
 		if ("1".equals(messageFlag)) {
 			SysAnnmentEnum annmentEnum = SysAnnmentEnum.getByType(busType);
-			List<String> enumList = null;
+			List<String> enumList = new ArrayList<>();
 			if (Objects.nonNull(annmentEnum)) {
 				enumList = annmentEnum.getList();
 			}
@@ -438,7 +438,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				busTypeList = todoTaskEnum.getList();
 			}
 
-			if (CollUtil.isEmpty(busTypeList)) {
+			if (CollUtil.isEmpty(busTypeList) && StrUtil.isNotBlank(busType)) {
 				busTypeList = Collections.singletonList(busType);
 			}
 			//流程数据
@@ -512,7 +512,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				busTypeList = todoTaskEnum.getList();
 			}
 
-			if (CollUtil.isEmpty(busTypeList)) {
+			if (CollUtil.isEmpty(busTypeList) && StrUtil.isNotBlank(busType)) {
 				busTypeList = Collections.singletonList(busType);
 			}
 			//流程数据
