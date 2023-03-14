@@ -400,6 +400,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				if(StrUtil.isEmpty(s)){
 					record.setTaskType(null);
 				}else{
+					record.setOriginalType(s);
 					String type = StrUtil.splitTrim(s, "_").get(0);
 					if(type.equals("patrol") || type.equals("inspection")){
 						record.setTaskType(type);
