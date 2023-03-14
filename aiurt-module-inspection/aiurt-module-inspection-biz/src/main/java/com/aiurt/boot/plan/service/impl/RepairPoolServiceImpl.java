@@ -683,7 +683,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 String usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
                 //发送通知
                 try {
-                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),usernames, "检修任务-指派" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
+                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),usernames, "检修任务-接收" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
 
                     //构建消息模板
                     HashMap<String, Object> map = new HashMap<>();

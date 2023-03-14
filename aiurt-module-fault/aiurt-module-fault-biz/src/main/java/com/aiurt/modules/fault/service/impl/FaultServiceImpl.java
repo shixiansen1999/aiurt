@@ -216,7 +216,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             String remindUserName = fault.getRemindUserName();
             if (StrUtil.isNotBlank(remindUserName)) {
                 //发送通知
-                MessageDTO messageDTO = new MessageDTO(user.getUsername(),remindUserName, "故障上报" + DateUtil.today(), null);
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(),remindUserName, "故障上报审核" + DateUtil.today(), null);
 
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
                 faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
@@ -353,7 +353,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             if (b) {
                 TodoDTO todoDTO = new TodoDTO();
                 todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-                todoDTO.setTitle("故障上报审核");
+                todoDTO.setTitle("故障上报审核通过");
                 todoDTO.setMsgAbstract("有新的故障信息");
                 todoDTO.setPublishingContent("有新的故障信息，请尽快安排维修");
                 // 审批通过 新增任务， 该线路或者是工班长，指派任务
@@ -560,7 +560,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
         //发送通知
         try {
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(),loginUser.getUsername(), "故障指派" + DateUtil.today(), null);
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),loginUser.getUsername(), "故障接收确认" + DateUtil.today(), null);
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
             BeanUtil.copyProperties(fault,faultMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -626,27 +626,26 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_ASSIGN.getType(), faultCode, user.getUsername(), "1");
         // 发送消息，告诉工班长已指派, // 工班长
        // sendMessage(user, faultCode, fault.getAssignUserName(), String.format("故障【%s】已被【%s】领取!", faultCode, user.getRealname()));
-        //String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode());
+        String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode(),user.getOrgCode());
 
         try {
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
             BeanUtil.copyProperties(fault,faultMessageDTO);
 
-            /*//发送通知
+            //发送通知
             MessageDTO messageDTO = new MessageDTO(user.getUsername(),receiveUserName, "故障领取" + DateUtil.today(), null);
 
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
             messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("故障被主动领取");
-            messageDTO.setPublishingContent("故障被主动领取，维修人请尽快维修，并维修后填写维修记录");
-
-            sendMessage(messageDTO,faultMessageDTO);*/
+            messageDTO.setPublishingContent("故障被"+user.getRealname()+"主动领取");
+            sendMessage(messageDTO,faultMessageDTO);
 
             // 维修待办
             TodoDTO todoDTO = new TodoDTO();
             todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-            todoDTO.setTitle("故障领取");
+            todoDTO.setTitle("故障维修");
             todoDTO.setMsgAbstract("故障被主动领取");
             todoDTO.setPublishingContent("故障被主动领取，维修人请尽快维修，并维修后填写维修记录");
             sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
@@ -688,7 +687,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         //发送通知
         try {
-            MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAssignUserName(), "故障接收" + DateUtil.today(), null);
+            MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAssignUserName(), "故障维修" + DateUtil.today(), null);
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
             BeanUtil.copyProperties(fault,faultMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -867,7 +866,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             TodoDTO todoDTO = new TodoDTO();
             todoDTO.setData(map);
             todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_HANGUP);
-            todoDTO.setTitle("故障挂起");
+            todoDTO.setTitle("故障挂起审核");
             todoDTO.setMsgAbstract("故障挂起申请");
             todoDTO.setPublishingContent("故障挂起申请，请确认");
 
@@ -922,7 +921,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         try {
             if (flag) {
                 // 消息通知，发送给指派人
-                MessageDTO messageDTO = new MessageDTO(user.getUsername(), faultRepairRecord.getAppointUserName(), "故障挂起审核" + DateUtil.today(), null);
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(), faultRepairRecord.getAppointUserName(), "故障挂起审核通过" + DateUtil.today(), null);
                 FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
                 BeanUtil.copyProperties(fault,faultMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -1432,7 +1431,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
             //  发送消息
             try {
-                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), CollUtil.join(userNameSet,",") , "维修确认" + DateUtil.today(), null);
+                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), CollUtil.join(userNameSet,",") , "维修完成" + DateUtil.today(), null);
                 FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
                 BeanUtil.copyProperties(fault,faultMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容

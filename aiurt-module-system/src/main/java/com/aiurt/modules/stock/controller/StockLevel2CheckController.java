@@ -9,7 +9,6 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
-import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.stock.entity.StockLevel2Check;
@@ -178,9 +177,7 @@ public class StockLevel2CheckController {
             map.put("checkName", userByName.getRealname());
             map.put("time", DateUtil.format(stockLevel2Check.getPlanStartTime(), "yyyy-MM-dd HH:mm:ss"));
             messageDTO.setData(map);
-
-
-            messageDTO.setData(map);
+           /*
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             messageDTO.setTemplateCode(CommonConstant.STOCKLEVEL2CHECK_SERVICE_NOTICE);
             SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
@@ -188,13 +185,13 @@ public class StockLevel2CheckController {
             messageDTO.setMsgAbstract("2级库物资盘点");
             messageDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
             messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
-            sysBaseApi.sendTemplateMessage(messageDTO);
+            sysBaseApi.sendTemplateMessage(messageDTO);*/
             //发送待办
             TodoDTO todoDTO = new TodoDTO();
             todoDTO.setData(map);
             SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
             todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
-            todoDTO.setTitle("2级库盘点" + DateUtil.today());
+            todoDTO.setTitle("二级库盘点" + DateUtil.today());
             todoDTO.setMsgAbstract("2级库物资盘点");
             todoDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
             todoDTO.setCurrentUserName(stockLevel2Check.getCheckerId());

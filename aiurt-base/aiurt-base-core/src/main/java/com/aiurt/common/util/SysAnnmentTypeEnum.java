@@ -46,6 +46,10 @@ public enum SysAnnmentTypeEnum {
      */
     INSPECTION("inspection", "component","","检修业务消息"),
     /**
+     * 检修退回
+     */
+    INSPECTION_RETURN("inspection_return", "component","","检修业务消息"),
+    /**
      * 检修指派
      */
     INSPECTION_ASSIGN("inspection_assign", "component","","检修业务消息"),
@@ -97,9 +101,14 @@ public enum SysAnnmentTypeEnum {
      */
     ASSET_CHECKER("asset_checker", "component","","固定资产盘点"),
     /**
-     * 固定资产审核
+     * 固定资产消息通知
      */
     ASSET_AUDIT("asset_audit", "component","","固定资产盘点"),
+    /**
+     * 固定资产盘点结果审核
+     */
+    FIXED_ASSETS_CHECK("fixed_assets_check", "component","","固定资产盘点"),
+
     /**
     /**
      * 工作流跳转链接我的办公

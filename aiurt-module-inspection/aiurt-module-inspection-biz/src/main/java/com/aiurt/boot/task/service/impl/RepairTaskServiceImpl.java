@@ -1307,7 +1307,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                 //发送通知
                 try {
-                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),usernames, "检修任务-审核" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
+                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(),usernames, "检修任务-验收" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                     RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                     BeanUtil.copyProperties(repairTask1,repairTaskMessageDTO);
                     //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -1315,6 +1315,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
                     messageDTO.setMsgAbstract("检修任务审核");
                     messageDTO.setPublishingContent("检修任务审核通过");
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTaskMessageDTO.getId());
+                    messageDTO.setData(map);
                     sendMessage(messageDTO,realNames,null,repairTaskMessageDTO);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1433,9 +1436,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     TodoDTO todoDTO = new TodoDTO();
                     todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
                     todoDTO.setTitle("检修任务-审核" + DateUtil.today());
-                    todoDTO.setMsgAbstract("检修任务审核");
-                    todoDTO.setPublishingContent("您有一条检修任务审核");
+                    todoDTO.setMsgAbstract("检修任务完成");
+                    todoDTO.setPublishingContent("检修任务已完成，请确认");
                     createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_CONFIRM.getType(), repairTask.getId(), "检修任务审核", "", "", todoDTO, repairTask, realNames, null);
+
                 }
             }
         } catch (Exception e) {
@@ -1572,7 +1576,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
                     TodoDTO todoDTO = new TodoDTO();
                     todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_REJECT);
-                    todoDTO.setTitle("检修任务-审核驳回" + DateUtil.today());
+                    todoDTO.setTitle(title);
                     todoDTO.setMsgAbstract("检修任务审核驳回");
                     todoDTO.setPublishingContent("检修任务审核驳回，请重新处理");
                     todoDTO.setData(map);
@@ -1613,7 +1617,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                 //发送通知
                 try {
-                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, "检修任务-验收" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
+                    MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), usernames, "检修任务-验收通过" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                     RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                     RepairTask repairTask = repairTaskMapper.selectById(repairTask1.getId());
                     if (ObjectUtil.isEmpty(repairTask)) {
@@ -1625,6 +1629,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
                     messageDTO.setMsgAbstract("检修任务审核");
                     messageDTO.setPublishingContent("检修任务审核通过");
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTaskMessageDTO.getId());
+                    messageDTO.setData(map);
                     sendMessage(messageDTO,realNames,null,repairTaskMessageDTO);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1672,17 +1679,18 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), user.getUsername(), "检修任务-退回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                     RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                     BeanUtil.copyProperties(repairTask,repairTaskMessageDTO);
-                    repairTaskMessageDTO.setId(repairTask.getRepairPoolId());
                     //构建消息模板
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("returnReason",examineDTO.getContent());
                     messageDTO.setData(map);
                     //业务类型，消息类型，消息模板编码，摘要，发布内容
-                    repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION.getType());
+                    repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION_RETURN.getType());
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_RETURN);
                     messageDTO.setMsgAbstract("检修任务退回");
                     messageDTO.setPublishingContent("检修任务退回，请重新安排");
                     List<String> userNames = repairTaskUserss.stream().map(RepairTaskUser::getName).collect(Collectors.toList());
+                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTask.getRepairPoolId());
+                    messageDTO.setData(map);
                     sendMessage(messageDTO,CollUtil.join(userNames,","),null,repairTaskMessageDTO);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1861,9 +1869,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
                 TodoDTO todoDTO = new TodoDTO();
                 todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
-                todoDTO.setTitle("检修任务-领取" + DateUtil.today());
-                todoDTO.setMsgAbstract("领取检修任务");
-                todoDTO.setPublishingContent("您领取了一条检修任务，请尽快检修");
+                todoDTO.setTitle("检修任务-检修" + DateUtil.today());
+                todoDTO.setMsgAbstract("检修任务接收");
+                todoDTO.setPublishingContent("主动领取检修任务，请在检修任务计划执行日期开展检修工作");
 
                 createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(),repairTask.getId(), "执行检修任务", "", "",todoDTO,repairTask,realNames,null);
             }
@@ -2238,9 +2246,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     }
                     TodoDTO todoDTO = new TodoDTO();
                     todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
-                    todoDTO.setTitle("检修任务-待执行" + DateUtil.today());
-                    todoDTO.setMsgAbstract("检修任务待执行");
-                    todoDTO.setPublishingContent("您有一条检修任务待执行");
+                    todoDTO.setTitle("检修任务-检修" + DateUtil.today());
+                    todoDTO.setMsgAbstract("检修任务接收");
+                    todoDTO.setPublishingContent("接收到新的检修任务，请在检修任务计划执行日期开展检修工作");
                     createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(), repairTask.getId(), "执行检修任务", "", "", todoDTO, repairTask, realNames, null);
                 }
             } catch (Exception e) {
@@ -2407,6 +2415,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 Set<RepairTaskDeviceRel> list = new HashSet<>(taskDeviceRelList);
                 StringBuilder content = new StringBuilder();
                 StringBuilder code = new StringBuilder();
+                String string = null;
 
                 if (CollUtil.isNotEmpty(list)) {
                     HashMap<String, Map<StringBuilder, StringBuilder>> hashMap = new HashMap<>();
@@ -2434,8 +2443,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                             int i = c.get(Calendar.WEEK_OF_YEAR);
                             deviceRel.setWeeks(i);
                         }
-
-                        StringBuilder append1 = lineStation.append(lineName).append("-").append(stationName).append(" ").append("第").append(deviceRel.getWeeks()).append("周检修任务").append(" ").append(" 检修人:");
+                        if (StrUtil.isNotBlank(deviceRel.getRepairTaskId())){
+                            List<RepairTaskStandardRel> repairTaskStandardRelList = repairTaskStandardRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStandardRel>().eq(RepairTaskStandardRel::getRepairTaskId, deviceRel.getRepairTaskId()));
+                            if(CollUtil.isNotEmpty(repairTaskStandardRelList)){
+                                List<String> collect = repairTaskStandardRelList.stream().map(RepairTaskStandardRel::getTitle).collect(Collectors.toList());
+                                string = CollUtil.join(collect, ",");
+                            }
+                        }
+                        StringBuilder append1 = lineStation.append(lineName).append("-").append(stationName).append(string).append("第").append(deviceRel.getWeeks()).append("周检修任务").append(" ").append(" 检修人:");
                         StringBuilder append2 = staffName.append(userById.getRealname());
                         //同检修任务下的，不同工单中的，同线路站点的不同检修人要合并起来
                         Map<StringBuilder, StringBuilder> mapList = hashMap.get(deviceRel.getTaskCode());
@@ -2525,7 +2540,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         } else {
             map.put("repairName",realName);
         }
-        map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTaskMessageDTO.getId());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, repairTaskMessageDTO.getBusType());
         messageDTO.setData(map);
         SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.REPAIR_MESSAGE);

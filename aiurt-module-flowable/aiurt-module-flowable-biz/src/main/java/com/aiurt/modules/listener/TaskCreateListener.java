@@ -190,7 +190,6 @@ public class TaskCreateListener implements FlowableEventListener {
             bpmnTodoDTO.setTaskId(taskEntity.getId());
             bpmnTodoDTO.setProcessInstanceId(taskEntity.getProcessInstanceId());
             String processDefinitionId = taskEntity.getProcessDefinitionId();
-            bpmnTodoDTO.setProcessDefinitionKey(processDefinitionId);
             bpmnTodoDTO.setTaskName(taskEntity.getName());
             bpmnTodoDTO.setBusinessKey(instance.getBusinessKey());
             bpmnTodoDTO.setCurrentUserName(StrUtil.join(",", userNameList));
@@ -221,6 +220,7 @@ public class TaskCreateListener implements FlowableEventListener {
                     bpmnTodoDTO.setProcessName(name);
                     messageDTO.setProcessCode(one.getModelKey());
                     messageDTO.setProcessName(name);
+                    bpmnTodoDTO.setProcessDefinitionKey(one.getModelKey());
                 }
                 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,processDefinitionIdList.get(0));
             }

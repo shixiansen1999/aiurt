@@ -188,6 +188,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		pictureCode.add(SysParamCodeConstant.SITUATION);
 		pictureCode.add(SysParamCodeConstant.WORKLOG);
 		pictureCode.add(SysParamCodeConstant.SPAREPART);
+		pictureCode.add(SysParamCodeConstant.ASSET);
 
 		Map<String, List<SysAnnouncementTypeCountDTO>> busTypeMap = announcementTypeCountDTOList.stream().collect(Collectors.groupingBy(dto -> {
 			String busType = dto.getBusType();
@@ -215,6 +216,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 					.messageFlag("1")
 					.count(sum)
 					.title(module).build();
+
             //设置头像图片
 			if (pictureCode.contains(type)) {
 				SysParamModel sysParamModel = sysParamAPI.selectByCode(type);
@@ -309,7 +311,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			SysTodoList sysTodoList = sysTodoListService.queryBpmnLast(stringList, username);
 			if (Objects.nonNull(sysTodoList)) {
 				typeDTO.setIntervalTime(Objects.isNull(sysTodoList.getUpdateTime())? sysTodoList.getCreateTime():sysTodoList.getUpdateTime());
-				typeDTO.setTitleContent(sysTodoList.getTaskName());
+				typeDTO.setTitleContent(Objects.isNull(sysTodoList.getTaskName())?sysTodoList.getPublishingContent():sysTodoList.getTaskName());
 			}
 			bpmnList.add(typeDTO);
 		});
@@ -398,6 +400,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				if(StrUtil.isEmpty(s)){
 					record.setTaskType(null);
 				}else{
+					record.setOriginalType(s);
 					String type = StrUtil.splitTrim(s, "_").get(0);
 					if(type.equals("patrol") || type.equals("inspection")){
 						record.setTaskType(type);
@@ -441,6 +444,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 					record.setDeal(false);
 				}else{
 					record.setDeal(true);
+				}
+				//固定资产下发需要给另外的类型
+				if(StrUtil.isEmpty(record.getProcessInstanceId()) && record.getTaskType().equals(TodoTaskTypeEnum.FIXED_ASSETS.getType())){
+					record.setTaskType("fixed");
 				}
 			}
 			return flowList;

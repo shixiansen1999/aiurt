@@ -162,11 +162,11 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 		 SparePartLend one = sparePartLendService.getById(sparePartLend.getId());
 		 try {
 			 //根据仓库编号获取仓库组织机构code
-			 String orgCode = sysBaseApi.getDepartByWarehouseCode(one.getBackWarehouseCode());
+			 String orgCode = sysBaseApi.getDepartByWarehouseCode(one.getLendWarehouseCode());
 			 String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
 
 			 //发送通知
-			 MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件归还申请" + DateUtil.today(), null);
+			 MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件归还-确认" + DateUtil.today(), null);
 
 			 //构建消息模板
 			 HashMap<String, Object> map = new HashMap<>();
@@ -193,7 +193,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 			 todoDTO.setData(map);
 			 SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
 			 todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
-			 todoDTO.setTitle("备件归还申请" + DateUtil.today());
+			 todoDTO.setTitle("备件归还-确认" + DateUtil.today());
 			 todoDTO.setMsgAbstract("备件归还申请");
 			 todoDTO.setPublishingContent("备件归还申请，请确认");
 			 todoDTO.setCurrentUserName(userName);
