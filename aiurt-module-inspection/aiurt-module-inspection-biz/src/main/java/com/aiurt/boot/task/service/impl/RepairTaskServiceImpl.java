@@ -2495,6 +2495,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 Set<RepairTaskDeviceRel> list = new HashSet<>(taskDeviceRelList);
                 StringBuilder content = new StringBuilder();
                 StringBuilder code = new StringBuilder();
+                String string = null;
 
                 if (CollUtil.isNotEmpty(list)) {
                     HashMap<String, Map<StringBuilder, StringBuilder>> hashMap = new HashMap<>();
@@ -2522,8 +2523,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                             int i = c.get(Calendar.WEEK_OF_YEAR);
                             deviceRel.setWeeks(i);
                         }
-
-                        StringBuilder append1 = lineStation.append(lineName).append("-").append(stationName).append(" ").append("第").append(deviceRel.getWeeks()).append("周检修任务").append(" ").append(" 检修人:");
+                        if (StrUtil.isNotBlank(deviceRel.getRepairTaskId())){
+                            List<RepairTaskStandardRel> repairTaskStandardRelList = repairTaskStandardRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStandardRel>().eq(RepairTaskStandardRel::getRepairTaskId, deviceRel.getRepairTaskId()));
+                            if(CollUtil.isNotEmpty(repairTaskStandardRelList)){
+                                List<String> collect = repairTaskStandardRelList.stream().map(RepairTaskStandardRel::getTitle).collect(Collectors.toList());
+                                string = CollUtil.join(collect, ",");
+                            }
+                        }
+                        StringBuilder append1 = lineStation.append(lineName).append("-").append(stationName).append(string).append("第").append(deviceRel.getWeeks()).append("周检修任务").append(" ").append(" 检修人:");
                         StringBuilder append2 = staffName.append(userById.getRealname());
                         //同检修任务下的，不同工单中的，同线路站点的不同检修人要合并起来
                         Map<StringBuilder, StringBuilder> mapList = hashMap.get(deviceRel.getTaskCode());
