@@ -34,6 +34,8 @@ public class RepairTaskMessageDTO {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "计划结束时间，精确到分钟")
     private java.util.Date endTime;
+
+    private java.lang.String repairPoolId;
     /**
      * 业务类型
      */
