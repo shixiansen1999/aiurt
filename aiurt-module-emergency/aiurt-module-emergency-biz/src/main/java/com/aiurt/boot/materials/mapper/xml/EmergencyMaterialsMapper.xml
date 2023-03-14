@@ -120,7 +120,8 @@
         t2.position_code as positionCode,
         t2.user_id as patrolId,
         t2.department_code as patrolTeamCode,
-        t2.inspection_results as checkResult
+        t2.inspection_results as checkResult,
+        t2.create_time
        from
 	   emergency_materials_invoices t2
         <where>
