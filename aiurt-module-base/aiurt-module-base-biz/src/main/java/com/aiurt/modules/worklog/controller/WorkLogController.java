@@ -93,9 +93,9 @@ public class WorkLogController {
         Result<IPage<WorkLogResult>> result = new Result<IPage<WorkLogResult>>();
         Page<WorkLogResult> page = new Page<WorkLogResult>(pageNo, pageSize);
         IPage<WorkLogResult> pageList = workLogDepotService.pageList(page,param,req);
-        result.setSuccess(true);
-        result.setResult(pageList);
-        return result;
+        /*result.setSuccess(true);
+        result.setResult(pageList);*/
+        return Result.ok(pageList);
     }
 
     /**
@@ -116,9 +116,9 @@ public class WorkLogController {
         Result<IPage<WorkLogResult>> result = new Result<IPage<WorkLogResult>>();
         Page<WorkLogResult> page = new Page<WorkLogResult>(pageNo, pageSize);
         IPage<WorkLogResult> pageList = workLogDepotService.queryConfirmList(page,param,req);
-        result.setSuccess(true);
-        result.setResult(pageList);
-        return result;
+        /*result.setSuccess(true);
+        result.setResult(pageList);*/
+        return Result.ok(pageList);
     }
 
     /**
@@ -186,10 +186,10 @@ public class WorkLogController {
         WorkLogResult detailResult = new WorkLogResult();
         if (ObjectUtils.isNotEmpty(workLog)){
             detailResult = workLogDepotService.getDetailById(workLog.getId());
-            result.setResult(detailResult);
+            //result.setResult(detailResult);
         }
 
-        return result;
+        return Result.ok(detailResult);
     }
 
     /**
@@ -271,12 +271,14 @@ public class WorkLogController {
         Result<WorkLog> result = new Result<WorkLog>();
         WorkLog workLogDepot = workLogDepotService.getById(id);
         if(workLogDepot==null) {
-            result.error500("未找到对应实体");
+            //result.error500("未找到对应实体");
+            return Result.error("未找到对应实体");
         }else {
-            result.setResult(workLogDepot);
-            result.setSuccess(true);
+            /*result.setResult(workLogDepot);
+            result.setSuccess(true);*/
+            return Result.ok(workLogDepot);
         }
-        return result;
+        //return result;
     }
 
     /**
@@ -344,8 +346,8 @@ public class WorkLogController {
         }else {
             detailById.setEditFlag(true);
         }
-        result.setResult(detailById);
-        return result;
+        //result.setResult(detailById);
+        return Result.ok(detailById);
     }
 
     /**
@@ -359,8 +361,8 @@ public class WorkLogController {
     public Result<WorkLogDetailResult> queryWorkLogDetail(@RequestParam String id) {
         Result<WorkLogDetailResult> result = new Result<WorkLogDetailResult>();
         WorkLogDetailResult detailById = workLogDepotService.queryWorkLogDetail(id);
-        result.setResult(detailById);
-        return result;
+        // result.setResult(detailById);
+        return Result.ok(detailById);
     }
 
     /**
@@ -475,8 +477,8 @@ public class WorkLogController {
     public Result<List<LogCountResult>> getLogCount(LogCountParam param) {
         Result<List<LogCountResult>> result = new Result<>();
         List<LogCountResult> logCount = workLogDepotService.getLogCount(param);
-        result.setResult(logCount);
-        return result;
+        //result.setResult(logCount);
+        return Result.ok(logCount);
     }
 
     /**
@@ -503,8 +505,8 @@ public class WorkLogController {
     public Result getTodayJobContent(@RequestParam(name = "nowday", required = false) String nowday) {
         Result<Map> result = new Result<>();
         Map map = workLogDepotService.getTodayJobContent(nowday);
-        result.setResult(map);
-        return result;
+        //result.setResult(map);
+        return Result.ok(map);
     }
 
 
