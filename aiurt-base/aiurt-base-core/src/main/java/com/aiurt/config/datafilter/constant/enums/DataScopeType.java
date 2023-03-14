@@ -27,37 +27,37 @@ public enum DataScopeType {
     /**
      * 查看管理专业
      */
-    TYPE_MANAGE_MAJOR_ONLY("TYPE_MANAGE_MAJOR_ONLY", " #{#majorName} IN ( #{@sdss.getMajorByUserIdStr( #sysUser.id )} ) ", " 1<![CDATA[ <> ]]>1"),
+    TYPE_MANAGE_MAJOR_ONLY("TYPE_MANAGE_MAJOR_ONLY", " #{#majorName} IN ( #{@sdss.getMajorByUserIdStr( #sysUser.id )} ) ", " 1=0"),
 
     /**
      * 查看管理子系统
      */
-    TYPE_MANAGE_SYSTEM_ONLY("TYPE_MANAGE_SYSTEM_ONLY", " #{#systemName} IN ( #{@sdss.getSubsystemByUserIdStr( #sysUser.id )} )", " 1<![CDATA[ <> ]]>1"),
+    TYPE_MANAGE_SYSTEM_ONLY("TYPE_MANAGE_SYSTEM_ONLY", " #{#systemName} IN ( #{@sdss.getSubsystemByUserIdStr( #sysUser.id )} )", " 1=0"),
 
     /**
      * 查看管理部门
      */
-    TYPE_MANAGE_DEPT("TYPE_MANAGE_DEPT", " #{#deptName} IN ( #{@sdss.getDepartByUserIdStr( #sysUser.id )})", " 1<![CDATA[ <> ]]>1"),
+    TYPE_MANAGE_DEPT("TYPE_MANAGE_DEPT", " #{#deptName} IN ( #{@sdss.getDepartByUserIdStr( #sysUser.id )})", " 1=0"),
 
     /**
      * 查看当前部门
      */
-    TYPE_DEPT_ONLY("TYPE_DEPT_ONLY", " #{#deptName} = #{#sysUser.orgCode} ", " 1<![CDATA[ <> ]]>1 "),
+    TYPE_DEPT_ONLY("TYPE_DEPT_ONLY", " #{#deptName} = #{#sysUser.orgCode} ", " 1=0"),
 
     /**
      * 查看管理线路
      */
-    TYPE_MANAGE_STATION_ONLY("TYPE_MANAGE_STATION_ONLY", "", " 1<![CDATA[ <> ]]>1 "),
+    TYPE_MANAGE_STATION_ONLY("TYPE_MANAGE_STATION_ONLY", "", " 1=0"),
 
     /**
      * 仅查看管理站点
      */
-    TYPE_USER_ONLY("TYPE_USER_ONLY", " #{#stationName} IN ( #{@sdss.getStationByUserIdStr( #sysUser.id )}) ", " 1<![CDATA[ <> ]]>1 "),
+    TYPE_USER_ONLY("TYPE_USER_ONLY", " #{#stationName} IN ( #{@sdss.getStationByUserIdStr( #sysUser.id )}) ", " 1=0"),
 
     /**
      * 仅查看当前用户
      */
-    TYPE_MANAGE_LINE_ONLY("TYPE_MANAGE_LINE_ONLY", " #{#userName} = #{#sysUser.id} ", " 1<![CDATA[ <> ]]>1 ");
+    TYPE_MANAGE_LINE_ONLY("TYPE_MANAGE_LINE_ONLY", " #{#userName} = #{#sysUser.id} ", " 1=0");
 
     private final String code;
 
