@@ -2300,7 +2300,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         }
         map.put("repairStation",stringBuilder.toString());
-        map.put("repairTaskTime",DateUtil.format(repairTask1.getStartTime(),"yyyy-MM-dd HH:mm")+"-"+DateUtil.format(repairTask1.getEndTime(),"yyyy-MM-dd HH:mm"));
+        if (repairTask1.getEndTime() != null) {
+            map.put("repairTaskTime",DateUtil.format(repairTask1.getStartTime(),"yyyy-MM-dd HH:mm")+"-"+DateUtil.format(repairTask1.getEndTime(),"yyyy-MM-dd HH:mm"));
+        }else {
+            map.put("repairTaskTime",DateUtil.format(repairTask1.getStartTime(),"yyyy-MM-dd HH:mm"));
+        }
         if (StrUtil.isNotEmpty(realNames)) {
             map.put("repairName", realNames);
         } else {
@@ -2511,7 +2515,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             map.put("repairStation",stringBuilder.toString());
         }
-        map.put("repairTaskTime",DateUtil.format(repairTaskMessageDTO.getStartTime(),"yyyy-MM-dd HH:mm")+"-"+DateUtil.format(repairTaskMessageDTO.getEndTime(),"yyyy-MM-dd HH:mm"));
+        if (repairTaskMessageDTO.getEndTime() != null) {
+            map.put("repairTaskTime",DateUtil.format(repairTaskMessageDTO.getStartTime(),"yyyy-MM-dd HH:mm")+"-"+DateUtil.format(repairTaskMessageDTO.getEndTime(),"yyyy-MM-dd HH:mm"));
+        }else {
+            map.put("repairTaskTime",DateUtil.format(repairTaskMessageDTO.getStartTime(),"yyyy-MM-dd HH:mm"));
+        }
         if (StrUtil.isNotEmpty(realNames)) {
             map.put("repairName", realNames);
         } else {
