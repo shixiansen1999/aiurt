@@ -217,4 +217,12 @@ public class BdTrainTaskPage {
 	@ApiModelProperty(value = "培训对象ids")
 	@TableField(exist = false)
 	private List<String> userIds;
+
+	@ApiModelProperty(value = "pageNo")
+	@TableField(exist = false)
+	private Integer pageNo;
+
+	@ApiModelProperty(value = "pageSize")
+	@TableField(exist = false)
+	private Integer pageSize;
 }
