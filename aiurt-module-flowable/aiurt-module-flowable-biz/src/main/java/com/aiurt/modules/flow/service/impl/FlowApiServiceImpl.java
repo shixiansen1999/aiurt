@@ -65,6 +65,7 @@ import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
@@ -129,7 +130,9 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Autowired
     private IActCustomVariableService variableService;
 
-
+    @Autowired
+    @Lazy
+    private ISTodoBaseAPI todoBaseApi;
     /**
      * @param startBpmnDTO
      * @return
@@ -1334,6 +1337,9 @@ public class FlowApiServiceImpl implements FlowApiService {
             actCustomTaskComment.setApprovalType(FlowApprovalType.CANCEL);
             actCustomTaskComment.setCreateRealname(loginUser.getUsername());
             customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
+
+            // 更新待办
+            todoBaseApi.updateBpmnTaskState(task.getId(), processInstance.getBusinessKey(), loginUser.getUsername(), "1");
         }
 
         // 暂时处理先 todo

@@ -1768,7 +1768,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     map.put("returnReason",examineDTO.getContent());
                     messageDTO.setData(map);
                     //业务类型，消息类型，消息模板编码，摘要，发布内容
-                    repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION.getType());
+                    repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION_RETURN.getType());
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_RETURN);
                     messageDTO.setMsgAbstract("检修任务退回");
                     messageDTO.setPublishingContent("检修任务退回，请重新安排");
