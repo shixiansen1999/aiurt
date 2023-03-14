@@ -3,6 +3,7 @@ package com.aiurt.modules.schedule.controller;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.schedule.service.IScheduleItemService;
 import com.aiurt.modules.schedule.entity.ScheduleItem;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -78,9 +79,9 @@ public class ScheduleItemController {
         Page<ScheduleItem> page = new Page<ScheduleItem>(pageNo, pageSize);
         queryWrapper.eq("del_flag",0);
         IPage<ScheduleItem> pageList = scheduleItemService.page(page, queryWrapper);
-        result.setSuccess(true);
-        result.setResult(pageList);
-        return result;
+        /*result.setSuccess(true);
+        result.setResult(pageList);*/
+        return Result.ok(pageList);
     }
 
     /**
@@ -201,12 +202,14 @@ public class ScheduleItemController {
         Result<ScheduleItem> result = new Result<ScheduleItem>();
         ScheduleItem scheduleItem = scheduleItemService.getById(id);
         if (scheduleItem == null) {
-            result.onnull("未找到对应实体");
+            //result.onnull("未找到对应实体");
+            return Result.error(CommonConstant.SC_NULL_2005, "未找到对应实体");
         } else {
-            result.setResult(scheduleItem);
-            result.setSuccess(true);
+            //result.setResult(scheduleItem);
+            //result.setSuccess(true);
+            return Result.ok(scheduleItem);
         }
-        return result;
+        //return result;
     }
 
     /**
@@ -291,9 +294,9 @@ public class ScheduleItemController {
             String string1 = "1".equals(string) ? "次日" : "";
             e.setComposition(e.getName()+"（"+format1+"-"+ string1+format2+")");
         });
-        result.setResult(itemList);
-        result.setSuccess(true);
-        return result;
+        //result.setResult(itemList);
+        //result.setSuccess(true);
+        return Result.ok(itemList);
     }
 
 }
