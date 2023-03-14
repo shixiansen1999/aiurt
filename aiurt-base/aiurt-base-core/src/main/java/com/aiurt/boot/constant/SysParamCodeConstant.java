@@ -138,9 +138,13 @@ public interface SysParamCodeConstant {
      */
     String PATROL_FLOW = "patrol_flow";
     /**
-     * 固定资产
+     * 固定资产流程
      */
     String FIXED_ASSETS = "fixed_assets";
+    /**
+     * 固定资产
+     */
+    String ASSET = "asset";
 
     /**
      * 工作票
