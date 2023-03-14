@@ -130,4 +130,12 @@ public class PatrolScreenController {
         List<TemperatureHumidity> list = screenService.getTemAndHum(date);
         return Result.ok(list);
     }
+
+    @AutoLog(value = "大屏巡视模块-温湿度", operateType = 1, operateTypeAlias = "查询")
+    @ApiOperation(value = "大屏巡视模块-温湿度", notes = "大屏巡视模块-温湿度")
+    @RequestMapping(value = "/temAndHumTest", method = {RequestMethod.GET})
+    public Result<List<TemperatureHumidity>> getTemAndHumTest(@ApiParam(name = "date", value = "当天时间") String date) {
+        List<TemperatureHumidity> list = screenService.getTemAndHumTest(date);
+        return Result.ok(list);
+    }
 }
