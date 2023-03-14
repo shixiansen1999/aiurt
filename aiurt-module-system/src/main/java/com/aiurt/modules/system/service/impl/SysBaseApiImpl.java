@@ -2764,6 +2764,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         announcement.setLevel(message.getLevel());
         announcement.setProcessCode(message.getProcessCode());
         announcement.setProcessName(message.getProcessName());
+        announcement.setTaskId(message.getTaskId());
+        announcement.setProcessInstanceId(message.getProcessInstanceId());
+        announcement.setProcessDefinitionKey(message.getProcessDefinitionKey());
         sysAnnouncementMapper.insert(announcement);
 
         // 2.插入用户通告阅读标记表记录
