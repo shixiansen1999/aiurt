@@ -9,7 +9,9 @@ import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.*;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.entity.TemperatureHumidity;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
+import com.aiurt.boot.task.mapper.TemperatureHumidityMapper;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -192,6 +194,16 @@ public class PatrolScreenService {
         return list;
     }
 
+
+
+    public List<TemperatureHumidity> getTemAndHum(String date){
+        if (date!=null){
+            List<TemperatureHumidity> temAndHum = patrolTaskMapper.getTemAndHum(date);
+            return temAndHum;
+        }else {
+        }
+        return null;
+    }
     /**
      * 大屏巡视模块-巡视任务完成情况
      *

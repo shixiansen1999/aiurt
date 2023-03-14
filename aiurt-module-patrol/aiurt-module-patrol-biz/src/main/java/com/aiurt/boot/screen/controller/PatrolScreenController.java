@@ -1,10 +1,8 @@
 package com.aiurt.boot.screen.controller;
 
-import com.aiurt.boot.screen.model.ScreenImportantData;
-import com.aiurt.boot.screen.model.ScreenStatistics;
-import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
-import com.aiurt.boot.screen.model.ScreenStatisticsTask;
+import com.aiurt.boot.screen.model.*;
 import com.aiurt.boot.screen.service.PatrolScreenService;
+import com.aiurt.boot.task.entity.TemperatureHumidity;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.util.List;
 /**
  * @author JB
@@ -118,6 +115,19 @@ public class PatrolScreenController {
     @RequestMapping(value = "/statisticsGraph", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<List<ScreenStatisticsGraph>> getStatisticsPieGraph(@ApiParam(name = "lineCode", value = "线路编号,多选的话英文逗号分割") String lineCode) {
         List<ScreenStatisticsGraph> list = screenService.getStatisticsGraph(lineCode);
+        return Result.ok(list);
+    }
+
+    /**
+     * 大屏巡视模块-温湿度
+     *
+     * @return
+     */
+    @AutoLog(value = "大屏巡视模块-温湿度", operateType = 1, operateTypeAlias = "查询")
+    @ApiOperation(value = "大屏巡视模块-温湿度", notes = "大屏巡视模块-温湿度")
+    @RequestMapping(value = "/temAndHum", method = {RequestMethod.GET})
+    public Result<List<TemperatureHumidity>> getTemAndHum(@ApiParam(name = "date", value = "当天时间") String date) {
+        List<TemperatureHumidity> list = screenService.getTemAndHum(date);
         return Result.ok(list);
     }
 }

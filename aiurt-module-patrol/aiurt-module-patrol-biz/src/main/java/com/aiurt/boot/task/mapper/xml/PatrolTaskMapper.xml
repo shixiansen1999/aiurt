@@ -1375,4 +1375,11 @@ FROM
          </foreach>
         </if>
     </select>
+    <select id="getTemAndHum" resultType="com.aiurt.boot.task.entity.TemperatureHumidity">
+        SELECT *from `temperature_humidity`
+        where
+        DATE_SUB(#{date},INTERVAL 30 DAY) <![CDATA[ <= ]]> date(create_time)
+        AND
+        create_time <![CDATA[ <= ]]> #{date}
+    </select>
 </mapper>
