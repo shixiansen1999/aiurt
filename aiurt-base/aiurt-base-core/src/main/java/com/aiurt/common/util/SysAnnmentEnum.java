@@ -23,11 +23,11 @@ public enum SysAnnmentEnum {
     /**
      * 周计划
      */
-    OPERATE_PLAN("week", "component","","周计划业务消息", Arrays.asList("week_plan_construction", "supplementary_plan")),
+    OPERATE_PLAN("week", "component","","施工管理消息", Arrays.asList("week_plan_construction", "supplementary_plan")),
     /**
      * 应急
      */
-    EMERGENCY("emergency", "component","","应急业务消息", Arrays.asList("emergency_plan", "emergency_year_plan")),
+    EMERGENCY("emergency", "component","","应急业务消息", Arrays.asList("emergency","emergency_plan", "emergency_year_plan")),
 
     /**
      * 特情
@@ -56,7 +56,7 @@ public enum SysAnnmentEnum {
      *备件归还
      */
     SPAREPART("sparepart", "component","","物资出入库消息",
-            Arrays.asList("sparepart_return", "sparepart_out", "sparepart_back", "sparepart_lend", "sparepart_apply", "sparepart_stocklevel2check", "sparepart_stockLevel2Secondary", "sparepart_scrap")),
+            Arrays.asList("sparepart_return", "sparepart_out", "sparepart_back", "sparepart_lend", "sparepart_apply", "sparepart_stocklevel2check", "sparepart_stockLevel2Secondary", "sparepart_scrap", "sparepart_lend_return")),
 
 
 
@@ -157,6 +157,9 @@ public enum SysAnnmentEnum {
             List<String> resultList = val.getList();
             if (CollUtil.isNotEmpty(resultList) && resultList.contains(type)){
               return val;
+            }
+            if (StrUtil.equalsIgnoreCase(val.getType(), type)) {
+                return val;
             }
         }
         return null;
