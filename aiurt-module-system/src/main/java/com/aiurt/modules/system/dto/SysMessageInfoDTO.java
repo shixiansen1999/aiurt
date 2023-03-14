@@ -93,6 +93,9 @@ public class SysMessageInfoDTO extends DictEntity {
     @ApiModelProperty("是否办理")
     private Boolean deal;
 
+    @ApiModelProperty("任务分类类型")
+    private String originalType;
+
 
 
 
