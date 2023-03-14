@@ -207,6 +207,11 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
     private List<InspectionCodeExcelDTO> getinspectionStrategyList(InspectionCodeExcelDTO inspectionCodeExcelDto) {
         List<InspectionCodeExcelDTO> inspectionCodeList = inspectionCodeMapper.getList(inspectionCodeExcelDto);
         for (InspectionCodeExcelDTO dto : inspectionCodeList) {
+            //检修表类型
+            List<DictModel> repairType = sysBaseApi.getDictItems("repair_type");
+            repairType = repairType.stream().filter(f -> (String.valueOf(dto.getRepairType())).equals(f.getValue())).collect(Collectors.toList());
+            String repairValue = repairType.stream().map(DictModel::getText).collect(Collectors.joining());
+            dto.setRepairTypeValue(repairValue);
             //检修周期类型
             List<DictModel> inspectionType = sysBaseApi.getDictItems("inspection_cycle_type");
             inspectionType= inspectionType.stream().filter(f -> (String.valueOf(dto.getType())).equals(f.getValue())).collect(Collectors.toList());
