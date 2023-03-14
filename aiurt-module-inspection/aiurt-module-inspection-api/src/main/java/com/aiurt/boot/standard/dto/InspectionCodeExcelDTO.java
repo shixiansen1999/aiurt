@@ -146,4 +146,8 @@ public class InspectionCodeExcelDTO extends DictEntity  {
     @TableField(exist = false)
     private List<InspectionCodeContentDTO> inspectionCodeContentDTOList;
 
+    @Excel(name = "类型：0应急、车载、2正线、3车辆段 ", width = 15)
+    @ApiModelProperty(value = "类型：0应急、车载、2正线、3车辆段 ")
+    private Integer repairType;
+
 }

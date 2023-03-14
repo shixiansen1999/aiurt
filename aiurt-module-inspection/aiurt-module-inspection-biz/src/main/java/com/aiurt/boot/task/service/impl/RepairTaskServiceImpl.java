@@ -93,6 +93,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Autowired
     private RepairTaskPeerRelMapper repairTaskPeerRelMapper;
     @Autowired
+    private RepairTaskSamplingMapper repairTaskSamplingMapper;
+    @Autowired
     private RepairTaskUserMapper repairTaskUserMapper;
     @Autowired
     private RepairTaskOrgRelMapper repairTaskOrgRelMapper;
@@ -176,6 +178,25 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
                 }
                 e.setPeerName(stringBuffer.toString());
+            }
+
+            //查询抽检人
+            List<RepairTaskSampling> repairTaskSampling = repairTaskSamplingMapper.selectList(
+                    new LambdaQueryWrapper<RepairTaskSampling>()
+                            .eq(RepairTaskSampling::getRepairTaskDeviceCode, e.getOverhaulCode()));
+
+            //抽检名称集合
+            List<String> collect4 = repairTaskSampling.stream().map(RepairTaskSampling::getRealName).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect4)) {
+                StringBuffer stringBuffer = new StringBuffer();
+                for (String t : collect4) {
+                    stringBuffer.append(t);
+                    stringBuffer.append(",");
+                }
+                if (stringBuffer.length() > 0) {
+                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                }
+                e.setSamplingName(stringBuffer.toString());
             }
 
             //检修周期类型
@@ -953,6 +974,21 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 checkListDTO.setRealList(realList);
             }
 
+            //抽查人列表
+            List<RepairTaskSampling> repairTaskSampling = repairTaskSamplingMapper.selectList(
+                    new LambdaQueryWrapper<RepairTaskSampling>()
+                            .eq(RepairTaskSampling::getRepairTaskDeviceCode, checkListDTO.getResultCode()));
+            if (CollectionUtil.isNotEmpty(repairTaskSampling)) {
+                List<ColleaguesDTO> samplingList = new ArrayList<>();
+                repairTaskSampling.forEach(p -> {
+                    ColleaguesDTO colleaguesDTO = new ColleaguesDTO();
+                    colleaguesDTO.setRealId(p.getUserId());
+                    colleaguesDTO.setRealName(p.getRealName());
+                    samplingList.add(colleaguesDTO);
+                });
+                checkListDTO.setSamplingList(samplingList);
+            }
+
             //组织机构
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             if (sysUser.getOrgCode() != null) {
@@ -972,6 +1008,20 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
                 }
                 checkListDTO.setPeer(stringBuffer.toString());
+            }
+
+            //抽捡人名称
+            List<String> collect4 = repairTaskSampling.stream().map(RepairTaskSampling::getRealName).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect4)) {
+                StringBuffer stringBuffer = new StringBuffer();
+                for (String t : collect3) {
+                    stringBuffer.append(t);
+                    stringBuffer.append(",");
+                }
+                if (stringBuffer.length() > 0) {
+                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                }
+                checkListDTO.setSampling(stringBuffer.toString());
             }
         }
 
@@ -2061,6 +2111,38 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 rel.setRealName(ObjectUtil.isNotEmpty(sysBaseApi.getUserById(userId)) ? sysBaseApi.getUserById(userId).getRealname() : "");
                 rel.setRepairTaskDeviceCode(repairTaskDeviceRel.getCode());
                 repairTaskPeerRelMapper.insert(rel);
+            });
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void writeSampling(String code, String samplingId) {
+        RepairTaskDeviceRel repairTaskDeviceRel = repairTaskDeviceRelMapper.selectOne(
+                new LambdaQueryWrapper<RepairTaskDeviceRel>()
+                        .eq(RepairTaskDeviceRel::getCode, code)
+                        .eq(RepairTaskDeviceRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+        if (ObjectUtil.isEmpty(repairTaskDeviceRel)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+
+        // 校验什么情况下可以填写抽检人
+        check(repairTaskDeviceRel.getId());
+
+        repairTaskSamplingMapper.delete(
+                new LambdaQueryWrapper<RepairTaskSampling>()
+                        .eq(RepairTaskSampling::getRepairTaskDeviceCode, repairTaskDeviceRel.getCode()));
+
+        // 更新抽检人
+        if (StrUtil.isNotEmpty(samplingId)) {
+            List<String> userIdS = StrUtil.split(samplingId, ',');
+            userIdS.forEach(userId -> {
+                RepairTaskSampling sampling = new RepairTaskSampling();
+                sampling.setUserId(userId);
+                sampling.setRealName(ObjectUtil.isNotEmpty(sysBaseApi.getUserById(userId)) ? sysBaseApi.getUserById(userId).getRealname() : "");
+                sampling.setRepairTaskDeviceCode(repairTaskDeviceRel.getCode());
+                repairTaskSamplingMapper.insert(sampling);
             });
         }
     }
