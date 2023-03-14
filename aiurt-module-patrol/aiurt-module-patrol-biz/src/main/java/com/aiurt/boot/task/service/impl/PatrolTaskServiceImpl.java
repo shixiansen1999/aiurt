@@ -4,6 +4,7 @@ package com.aiurt.boot.task.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -1905,7 +1906,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         c.setCheckUserName(userName);
 
                         PrintDetailDTO printDetailDTO = new PrintDetailDTO();
-
+                        printDetailDTO.setContent(c.getContent() + ":" + c.getQualityStandard());
+                        if (c.getInputType() == 0) {
+                            printDetailDTO.setResult(Convert.toStr(c.getCheckResult()));
+                        }else if (c.getInputType() == 1){
+                            printDetailDTO.setResult(c.getCheckDictName());
+                        }else {
+                            printDetailDTO.setResult(c.getWriteValue());
+                        }
+                        printDetailDTO.setRemark(c.getRemark());
                         printDetailList.add(printDetailDTO);
                     }
 
