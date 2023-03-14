@@ -251,6 +251,8 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
             messageDTO.setPublishingContent("备件借出申请通过");
             messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
             sysBaseApi.sendTemplateMessage(messageDTO);
+            // 更新待办
+            isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.SPAREPART_LEND.getType(), partLend.getId(), user.getUsername(), "1");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -326,6 +328,8 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
             messageDTO.setPublishingContent("备件归还申请通过");
             messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
             sysBaseApi.sendTemplateMessage(messageDTO);
+            // 更新待办
+            isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.SPAREPART_LEND_RETURN.getType(), partLend.getId(), user.getUsername(), "1");
         } catch (Exception e) {
             e.printStackTrace();
         }
