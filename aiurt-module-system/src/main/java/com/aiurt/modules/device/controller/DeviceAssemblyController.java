@@ -1,5 +1,6 @@
 package com.aiurt.modules.device.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.DeviceAssembly;
@@ -100,7 +101,9 @@ public class DeviceAssemblyController {
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
             DeviceAssembly deviceAssembly = iDeviceAssemblyService.getById(id);
-            iDeviceAssemblyService.removeById(deviceAssembly);
+            if (ObjectUtil.isNotEmpty(deviceAssembly)) {
+                iDeviceAssemblyService.removeById(id);
+            }
         } catch (Exception e) {
             log.error("删除失败", e.getMessage());
             return Result.error("删除失败!");
