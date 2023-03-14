@@ -9,8 +9,6 @@ import lombok.Data;
 @Data
 public class PrintDetailDTO {
 
-    @ApiModelProperty(value = "子系统")
-    private String systemName;
 
     @ApiModelProperty(value = "巡视内容及标准")
     private String content;

@@ -9,10 +9,9 @@ import java.util.List;
  * @author LKJ
  */
 @Data
-public class PrintStationDTO {
-
-    @ApiModelProperty(value = "巡视地点")
-    private String stationName;
+public class PrintSystemDTO {
+    @ApiModelProperty(value = "系统名称")
+    private String systemName;
     @ApiModelProperty(value = "巡视内容")
-    private List<PrintSystemDTO> printSystemDTOS;
+    private List<PrintDetailDTO> printDetailDTOS;
 }

@@ -2,6 +2,9 @@ package com.aiurt.boot.task.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.List;
+
 /**
  * @author LKJ
  */
@@ -23,5 +26,6 @@ public class PrintPatrolTaskDTO {
     @ApiModelProperty(value = "提交时间")
     private String submitTime;
 
+    private List<PrintStationDTO> printStationDTOList;
 
 }
