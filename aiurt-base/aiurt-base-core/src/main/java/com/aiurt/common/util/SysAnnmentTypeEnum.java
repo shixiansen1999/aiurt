@@ -46,6 +46,10 @@ public enum SysAnnmentTypeEnum {
      */
     INSPECTION("inspection", "component","","检修业务消息"),
     /**
+     * 检修退回
+     */
+    INSPECTION_RETURN("inspection_return", "component","","检修业务消息"),
+    /**
      * 检修指派
      */
     INSPECTION_ASSIGN("inspection_assign", "component","","检修业务消息"),
