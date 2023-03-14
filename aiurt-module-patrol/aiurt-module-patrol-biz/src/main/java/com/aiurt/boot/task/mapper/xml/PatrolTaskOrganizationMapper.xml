@@ -46,7 +46,7 @@
     </select>
     <select id="getOrgInfo" resultType="com.aiurt.boot.statistics.dto.IndexOrgDTO">
         SELECT DISTINCT
-        pto.org_code,
+        pto.org_code as orgCode,
         sd.depart_name orgName
         FROM
         patrol_task_organization pto

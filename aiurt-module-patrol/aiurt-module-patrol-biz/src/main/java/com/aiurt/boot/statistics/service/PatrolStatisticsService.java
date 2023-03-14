@@ -281,6 +281,7 @@ public class PatrolStatisticsService {
             GlobalThreadLocal.setDataFilter(b);
 
         }
+        boolean b1= GlobalThreadLocal.setDataFilter(false);
         pageList.getRecords().stream().forEach(l -> {
             String taskCode = l.getCode();
             // 巡视用户信息
@@ -326,6 +327,7 @@ public class PatrolStatisticsService {
             l.setAbnormalDictName(abnormalDictName);
             l.setStatusDictName(statusDictName);
         });
+         GlobalThreadLocal.setDataFilter(b1);
         return pageList;
     }
 
