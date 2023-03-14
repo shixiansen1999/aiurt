@@ -191,7 +191,7 @@ public class StockLevel2CheckController {
             todoDTO.setData(map);
             SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
             todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
-            todoDTO.setTitle("2级库盘点" + DateUtil.today());
+            todoDTO.setTitle("二级库盘点" + DateUtil.today());
             todoDTO.setMsgAbstract("2级库物资盘点");
             todoDTO.setPublishingContent("请在计划开始时间内盘点，并填写盘点记录结果");
             todoDTO.setCurrentUserName(stockLevel2Check.getCheckerId());
