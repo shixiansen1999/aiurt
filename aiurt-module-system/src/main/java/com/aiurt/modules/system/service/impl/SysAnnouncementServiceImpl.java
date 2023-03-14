@@ -216,6 +216,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 					.messageFlag("1")
 					.count(sum)
 					.title(module).build();
+
             //设置头像图片
 			if (pictureCode.contains(type)) {
 				SysParamModel sysParamModel = sysParamAPI.selectByCode(type);
@@ -444,7 +445,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 					record.setDeal(true);
 				}
 				//固定资产下发需要给另外的类型
-				if(StrUtil.isEmpty(record.getProcessInstanceId()) && record.getTaskType().equals(TodoTaskTypeEnum.FIXED_ASSETS)){
+				if(StrUtil.isEmpty(record.getProcessInstanceId()) && record.getTaskType().equals(TodoTaskTypeEnum.FIXED_ASSETS.getType())){
 					record.setTaskType("fixed");
 				}
 			}

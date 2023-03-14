@@ -268,4 +268,18 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private Date updateTime;
+
+    /**
+     * 实例id
+     */
+    @ApiModelProperty(value = "实例id")
+    @TableField(exist = false)
+    private String processInstanceId;
+
+    /**
+     * 模板key，流程标识
+     */
+    @ApiModelProperty(value = "模板key，流程标识")
+    @TableField(exist = false)
+    private String modelKey;
 }
