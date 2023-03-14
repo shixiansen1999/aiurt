@@ -247,4 +247,12 @@ public class BdExamPaper implements Serializable {
     @ApiModelProperty(value = "考试有效期")
     @TableField(exist = false)
     private Integer examValidityPeriod;
+
+    @ApiModelProperty(value = "pageNo")
+    @TableField(exist = false)
+    private Integer pageNo;
+
+    @ApiModelProperty(value = "pageSize")
+    @TableField(exist = false)
+    private Integer pageSize;
 }

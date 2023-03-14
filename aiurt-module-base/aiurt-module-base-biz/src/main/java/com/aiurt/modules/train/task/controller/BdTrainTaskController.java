@@ -255,12 +255,14 @@ public class BdTrainTaskController {
 	 @AutoLog(value = "讲师授课任务-任务查询-web")
 	 @ApiOperation(value="讲师授课任务-任务查询-web", notes="讲师授课任务-任务查询-web")
 	 @PostMapping(value = "/getTeacherTaskByIds")
-	 public Result<?> getTeacherTaskByIds(@RequestBody BdTrainTask condition,
-										 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-										 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
+	 public Result<?> getTeacherTaskByIds(@RequestBody BdTrainTask condition) {
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 condition.setTeacherId(sysUser.getId());
-		 Page<BdTrainTask> pageList = new Page<>(pageNo, pageSize);
+		 if (condition.getPageNo()==null||condition.getPageSize()==null){
+			 condition.setPageNo(1);
+			 condition.setPageSize(10);
+		 }
+		 Page<BdTrainTask> pageList = new Page<>(condition.getPageNo(), condition.getPageSize());
 		 Page<BdTrainTask> task = bdTrainTaskService.getTaskByIds(pageList,condition);
 		 return Result.OK(task);
 	 }
