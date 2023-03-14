@@ -188,6 +188,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		pictureCode.add(SysParamCodeConstant.SITUATION);
 		pictureCode.add(SysParamCodeConstant.WORKLOG);
 		pictureCode.add(SysParamCodeConstant.SPAREPART);
+		pictureCode.add(SysParamCodeConstant.ASSET);
 
 		Map<String, List<SysAnnouncementTypeCountDTO>> busTypeMap = announcementTypeCountDTOList.stream().collect(Collectors.groupingBy(dto -> {
 			String busType = dto.getBusType();
@@ -309,7 +310,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			SysTodoList sysTodoList = sysTodoListService.queryBpmnLast(stringList, username);
 			if (Objects.nonNull(sysTodoList)) {
 				typeDTO.setIntervalTime(Objects.isNull(sysTodoList.getUpdateTime())? sysTodoList.getCreateTime():sysTodoList.getUpdateTime());
-				typeDTO.setTitleContent(sysTodoList.getTaskName());
+				typeDTO.setTitleContent(Objects.isNull(sysTodoList.getTaskName())?sysTodoList.getPublishingContent():sysTodoList.getTaskName());
 			}
 			bpmnList.add(typeDTO);
 		});
