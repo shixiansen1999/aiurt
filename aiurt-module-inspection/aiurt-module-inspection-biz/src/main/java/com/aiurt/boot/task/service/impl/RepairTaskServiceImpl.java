@@ -1572,6 +1572,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
                     messageDTO.setMsgAbstract("检修任务审核");
                     messageDTO.setPublishingContent("检修任务审核通过");
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTaskMessageDTO.getId());
+                    messageDTO.setData(map);
                     sendMessage(messageDTO,realNames,null,repairTaskMessageDTO);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1619,16 +1622,17 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), user.getUsername(), "检修任务-退回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                     RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                     BeanUtil.copyProperties(repairTask,repairTaskMessageDTO);
-                    repairTaskMessageDTO.setId(repairTask.getRepairPoolId());
                     //构建消息模板
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("returnReason",examineDTO.getContent());
                     messageDTO.setData(map);
                     //业务类型，消息类型，消息模板编码，摘要，发布内容
-                    repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION.getType());
+                    repairTaskMessageDTO.setBusType(SysAnnmentTypeEnum.INSPECTION_RETURN.getType());
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_RETURN);
                     messageDTO.setMsgAbstract("检修任务退回");
                     messageDTO.setPublishingContent("检修任务退回，请重新安排");
+                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTask.getRepairPoolId());
+                    messageDTO.setData(map);
                     List<String> userNames = repairTaskUserss.stream().map(RepairTaskUser::getName).collect(Collectors.toList());
                     sendMessage(messageDTO,CollUtil.join(userNames,","),null,repairTaskMessageDTO);
                 } catch (Exception e) {
@@ -2511,7 +2515,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         } else {
             map.put("repairName",realName);
         }
-        map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTaskMessageDTO.getId());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, repairTaskMessageDTO.getBusType());
         messageDTO.setData(map);
         SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.REPAIR_MESSAGE);
