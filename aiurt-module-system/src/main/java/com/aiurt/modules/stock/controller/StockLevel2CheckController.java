@@ -12,9 +12,12 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.stock.entity.StockLevel2Check;
+import com.aiurt.modules.stock.entity.StockLevel2Info;
 import com.aiurt.modules.stock.service.IStockLevel2CheckService;
+import com.aiurt.modules.stock.service.IStockLevel2InfoService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.aiurt.modules.todo.dto.TodoDTO;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -57,6 +60,8 @@ public class StockLevel2CheckController {
     private ISysParamAPI iSysParamAPI;
     @Autowired
     private ISTodoBaseAPI isTodoBaseAPI;
+    @Autowired
+    private IStockLevel2InfoService iStockLevel2InfoService;
     /**
      * 分页列表查询
      *
@@ -171,8 +176,9 @@ public class StockLevel2CheckController {
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, stockLevel2Check.getId());
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_STOCKLEVEL2CHECK.getType());
             map.put("stockCheckCode",stockLevel2Check.getStockCheckCode());
-            String warehouseName= sysBaseApi.getWarehouseNameByCode(stockLevel2Check.getWarehouseCode());
-            map.put("warehouseName",warehouseName);
+            LambdaQueryWrapper<StockLevel2Info> queryWrapper = new LambdaQueryWrapper<>();
+            StockLevel2Info one = iStockLevel2InfoService.getOne(queryWrapper.eq(StockLevel2Info::getWarehouseCode, stockLevel2Check.getWarehouseCode()).eq(StockLevel2Info::getDelFlag, 0));
+            map.put("warehouseName",one.getWarehouseName());
             LoginUser userByName = sysBaseApi.getUserByName(stockLevel2Check.getCheckerId());
             map.put("checkName", userByName.getRealname());
             map.put("time", DateUtil.format(stockLevel2Check.getPlanStartTime(), "yyyy-MM-dd HH:mm:ss"));
