@@ -159,7 +159,7 @@ public interface SysParamCodeConstant {
     /**
      * 物资出入库流程
      */
-    String SPARE_PART = "spare_part";
+    String SPAREPART_FLOW = "sparepart_flow";
 
     /**
      * 物资出入库

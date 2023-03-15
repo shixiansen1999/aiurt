@@ -1,5 +1,6 @@
 package com.aiurt.modules.param.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.param.entity.SysParam;
 import com.aiurt.modules.param.mapper.SysParamMapper;
@@ -23,8 +24,11 @@ public class SysParamAPIImpl implements ISysParamAPI {
         wrapper.lambda().eq(SysParam::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .eq(SysParam::getCode, code)
                 .last("limit 1");
-        SysParam sysParam = Optional.of(sysParamMapper.selectOne(wrapper)).orElseGet(SysParam::new);
+        SysParam sysParam = sysParamMapper.selectOne(wrapper);
         SysParamModel paramModel = new SysParamModel();
+        if(ObjectUtil.isEmpty(sysParam)){
+            return paramModel;
+        }
         BeanUtils.copyProperties(sysParam, paramModel);
         return paramModel;
     }
