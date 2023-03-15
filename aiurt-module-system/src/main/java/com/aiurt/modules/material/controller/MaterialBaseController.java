@@ -1,6 +1,7 @@
 package com.aiurt.modules.material.controller;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -141,6 +142,9 @@ public class MaterialBaseController {
         List<MaterialBase> records = pageList.getRecords();
         if(records != null && records.size()>0){
             for(MaterialBase materialBase1 : records){
+                if (StrUtil.isNotBlank(materialBase1.getPrice())){
+                    materialBase1.setPrice("0");
+                }
                 MaterialBase translate = iMaterialBaseService.translate(materialBase1);
                 BeanUtils.copyProperties(translate, materialBase1);
             }
