@@ -34,6 +34,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -180,6 +181,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<String> edit(FaultDTO faultDTO) {
         FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
         faultAnalysisReport.setStatus(FaultConstant.PENDING);
@@ -204,6 +206,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<String> addDetail(FaultDTO faultDTO) {
         if (StrUtil.isEmpty(faultDTO.getCode())) {
             return Result.error("故障编号不能为空");
@@ -321,6 +324,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         this.updateById(analysisReport);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public String startProcess(FaultDTO faultDTO){
         String id = faultDTO.getId();
         FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
