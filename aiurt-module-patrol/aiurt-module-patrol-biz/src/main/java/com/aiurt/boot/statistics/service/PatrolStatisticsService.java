@@ -1,11 +1,14 @@
 package com.aiurt.boot.statistics.service;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.PatrolDictCode;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.statistics.dto.*;
 import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.entity.PatrolTask;
@@ -23,9 +26,11 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecg.common.util.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,6 +60,8 @@ public class PatrolStatisticsService {
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
     @Autowired
     private PatrolTaskStandardMapper patrolTaskStandardMapper;
+    @Autowired
+    private ISysParamAPI sysParamApi;
     /**
      * 权限过滤标识
      */
@@ -131,24 +138,74 @@ public class PatrolStatisticsService {
      * @return
      */
     public List<Date> getOmitDateScope(Date date) {
-        // 参数日期所在周的周一
-        Date monday = DateUtils.getWeekStartTime(date);
-        ZoneId zoneId = ZoneId.systemDefault();
-        LocalDate localDate = monday.toInstant().atZone(zoneId).toLocalDate();
-        if (Calendar.FRIDAY == DateUtil.dayOfWeek(date) || Calendar.SATURDAY == DateUtil.dayOfWeek(date)
-                || Calendar.SUNDAY == DateUtil.dayOfWeek(date)) {
-            // 周一往后3天，星期四
-            Date thursday = Date.from(localDate.plusDays(3).atStartOfDay().atZone(zoneId).toInstant());
-            return Arrays.asList(DateUtil.parse(DateUtil.format(monday, "yyyy-MM-dd 00:00:00")),
-                    DateUtil.parse(DateUtil.format(thursday, "yyyy-MM-dd 23:59:59")));
-        } else {
-            // 周一往前3天，星期五
-            Date friday = Date.from(localDate.minusDays(3).atStartOfDay().atZone(zoneId).toInstant());
-            // 周一往前1天，星期天
-            Date sunday = Date.from(localDate.minusDays(1).atStartOfDay().atZone(zoneId).toInstant());
-            return Arrays.asList(DateUtil.parse(DateUtil.format(friday, "yyyy-MM-dd 00:00:00")),
-                    DateUtil.parse(DateUtil.format(sunday, "yyyy-MM-dd 23:59:59")));
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_WEEKDAYS);
+        String value = sysParamModel.getValue();
+        String[] split = StrUtil.split( value,",");
+        List<Date> patrolList = new ArrayList();
+        List<Integer> weekList = new ArrayList();
+        //传入时间一周数据,当前日期所在周
+        Date format = DateUtils.getWeekStartTime(date);
+        DateTime monday = DateUtil.parse(DateUtil.format(format, "yyyy-MM-dd 00:00:00"));
+        DateTime tuesDay = DateUtil.offsetDay(monday, 1);
+        DateTime wedDay = DateUtil.offsetDay(monday, 2);
+        DateTime thDay = DateUtil.offsetDay(monday, 3);
+        DateTime friDay = DateUtil.offsetDay(monday, 4);
+        DateTime saDay = DateUtil.offsetDay(monday, 5);
+        DateTime sunDay = DateUtil.offsetDay(monday, 6);
+        //所在周检修日期
+        for (String s : split) {
+            if(("1").equals(s)){
+                patrolList.add(monday);
+            }
+            if(("2").equals(s)){
+                patrolList.add(tuesDay);
+            }
+            if(("3").equals(s)){
+                patrolList.add(wedDay);
+            }
+            if(("4").equals(s)){
+                patrolList.add(thDay);
+            }
+            if(("5").equals(s)){
+                patrolList.add(friDay);
+            }
+            if(("6").equals(s)){
+                patrolList.add(saDay);
+            }
+            if(("7").equals(s)){
+                patrolList.add(sunDay);
+            }
         }
+        //检修开始和结束时间
+        Date firstDate = patrolList.stream().min(Comparator.comparingLong(Date::getTime)).get();
+        Date secondDate =patrolList.stream().max(Comparator.comparingLong(Date::getTime)).get();
+        long betweenDay = DateUtil.between(firstDate, secondDate, DateUnit.DAY);
+
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDate localDate = firstDate.toInstant().atZone(zoneId).toLocalDate();
+        if( date.after(firstDate) && date.before(secondDate)){
+            // 周一往前3天，星期五
+            Date start = Date.from(localDate.minusDays(7-betweenDay).atStartOfDay().atZone(zoneId).toInstant());
+            // 周一往前1天，星期天
+            Date end = Date.from(localDate.minusDays(1).atStartOfDay().atZone(zoneId).toInstant());
+            return Arrays.asList(DateUtil.parse(DateUtil.format(start, "yyyy-MM-dd 00:00:00")),
+                    DateUtil.parse(DateUtil.format(end, "yyyy-MM-dd 23:59:59")));
+        }else{
+            if(date.before(firstDate)){
+                Date start = Date.from(localDate.minusDays(7).atStartOfDay().atZone(zoneId).toInstant());
+                // 周一往前1天，星期天
+                Date end = Date.from(localDate.minusDays(7-betweenDay).atStartOfDay().atZone(zoneId).toInstant());
+                return Arrays.asList(DateUtil.parse(DateUtil.format(start, "yyyy-MM-dd 00:00:00")),
+                        DateUtil.parse(DateUtil.format(end, "yyyy-MM-dd 23:59:59")));
+            }else{
+                // 周一往后3天，星期四
+                secondDate = Date.from(localDate.plusDays(betweenDay).atStartOfDay().atZone(zoneId).toInstant());
+                return Arrays.asList(DateUtil.parse(DateUtil.format(firstDate, "yyyy-MM-dd 00:00:00")),
+                        DateUtil.parse(DateUtil.format(secondDate, "yyyy-MM-dd 23:59:59")));
+            }
+
+        }
+
     }
 
     /**
