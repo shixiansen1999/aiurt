@@ -2,7 +2,6 @@ package com.aiurt.modules.stock.controller;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -33,7 +32,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -129,11 +127,8 @@ public class StockOutOrderLevel2Controller {
 
 			try {
 				LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-				//根据仓库编号获取仓库组织机构code
-				String orgCode = sysBaseApi.getDepartByWarehouseCode(sparePartApply.getApplyWarehouseCode());
-				String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
 				//发送通知
-				MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件入库确认" + DateUtil.today(), null);
+				MessageDTO messageDTO = new MessageDTO(user.getUsername(),sparePartApply.getApplyUserId(), "备件入库确认" + DateUtil.today(), null);
 
 				//构建消息模板
 				HashMap<String, Object> map = new HashMap<>();
