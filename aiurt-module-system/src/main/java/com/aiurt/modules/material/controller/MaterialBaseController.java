@@ -142,7 +142,7 @@ public class MaterialBaseController {
         List<MaterialBase> records = pageList.getRecords();
         if(records != null && records.size()>0){
             for(MaterialBase materialBase1 : records){
-                if (StrUtil.isNotBlank(materialBase1.getPrice())){
+                if (StrUtil.isBlank(materialBase1.getPrice())){
                     materialBase1.setPrice("0");
                 }
                 MaterialBase translate = iMaterialBaseService.translate(materialBase1);
