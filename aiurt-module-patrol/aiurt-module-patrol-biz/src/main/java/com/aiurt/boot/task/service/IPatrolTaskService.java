@@ -205,8 +205,8 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
     void archPatrol(PatrolTaskParam patrolTask, String finalToken, String finalArchiveUserId, String refileFolderId, String username, String sectId);
     /**
      * 打印巡视详情
-     * @param id
+     * @param ids
      * @return
      */
-    PrintPatrolTaskDTO printPatrolTaskById(String id);
+    List<PrintPatrolTaskDTO> printPatrolTaskById(String ids);
 }

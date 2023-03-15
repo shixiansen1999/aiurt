@@ -246,8 +246,8 @@ public interface IRepairTaskService extends IService<RepairTask> {
 
     /**
      * 检修任务表-打印检修详情
-     * @param id
+     * @param ids
      * @return
      */
-    PrintRepairTaskDTO printRepairTaskById(String id);
+    List<PrintRepairTaskDTO> printRepairTaskById(String ids);
 }
