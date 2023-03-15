@@ -1209,7 +1209,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
 
                     todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
-                    todoDTO.setTitle("巡视任务-审核通过"+DateUtil.today());
+                    todoDTO.setTitle("巡视任务-审核"+DateUtil.today());
                     todoDTO.setMsgAbstract("巡视任务完成");
                     todoDTO.setPublishingContent("巡视任务已完成，请确认");
 
