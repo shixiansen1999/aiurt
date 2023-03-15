@@ -41,7 +41,7 @@ public enum TodoTaskEnum {
     /**
      * 固定资产
      */
-    FIXED_ASSETS("fixed_assets", Arrays.asList("fixed_assets_check"),"固定资产流程"),
+    FIXED_ASSETS("fixed_assets", Arrays.asList("fixed_assets_check","fixed_assets"),"固定资产流程"),
     /**
      * 物资出入库
      */
