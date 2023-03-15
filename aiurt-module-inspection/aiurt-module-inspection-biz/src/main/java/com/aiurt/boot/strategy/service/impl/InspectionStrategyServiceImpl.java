@@ -132,6 +132,15 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                     // 站点
                     String siteName = manager.translateStation(inspectionStrStaRelMapper.selectStationList(re.getCode()));
                     re.setSiteName(siteName);
+                    //专业
+                    String s = inspectionStrStaRelMapper.selectMajorList(re.getCode());
+                    re.setProfessionName(s);
+                    //子系统
+                    String s1 = inspectionStrStaRelMapper.selectSystemList(re.getCode());
+                    re.setSubsystemName(s1);
+                    //组织机构
+                    String s2 = inspectionStrStaRelMapper.selectDepartList(re.getCode());
+                    re.setMechanismName(s2);
                 });
             }
         }

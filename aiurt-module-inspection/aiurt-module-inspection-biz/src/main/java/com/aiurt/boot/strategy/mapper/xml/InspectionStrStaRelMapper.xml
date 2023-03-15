@@ -5,4 +5,44 @@
     <select id="selectStationList" resultType="com.aiurt.boot.plan.dto.StationDTO">
           select station_code,position_code,line_code from inspection_str_sta_rel where inspection_str_code = #{planCode}
     </select>
+
+    <select id="selectDepartList" resultType="java.lang.String">
+        SELECT
+        GROUP_CONCAT( e.depart_name )
+        FROM
+        inspection_str_org_rel inor
+        LEFT JOIN sys_depart e ON inor.org_code = e.org_code
+        WHERE
+        inor.inspection_str_code = #{code}
+
+        AND inor.del_flag = 0
+    </select>
+
+    <select id="selectSystemList" resultType="java.lang.String">
+        SELECT
+        GROUP_CONCAT( DISTINCT css.system_name )
+        FROM
+        inspection_str_rel insr
+        LEFT JOIN inspection_code ic ON ic.`code` = insr.inspection_sta_code
+        LEFT JOIN cs_subsystem css ON ic.subsystem_code = css.system_code
+        WHERE
+        insr.inspection_str_code = #{code}
+
+        AND ic.del_flag = 0
+        AND css.del_flag = 0
+    </select>
+
+    <select id="selectMajorList" resultType="java.lang.String">
+        SELECT
+        GROUP_CONCAT( DISTINCT csm.major_name )
+        FROM
+        inspection_str_rel insr
+        LEFT JOIN inspection_code ic ON ic.`code` = insr.inspection_sta_code
+        LEFT JOIN cs_major csm ON ic.major_code = csm.major_code
+        WHERE
+        insr.inspection_str_code = #{code}
+
+        AND ic.del_flag = 0
+        AND csm.del_flag = 0
+    </select>
 </mapper>

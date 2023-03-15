@@ -26,73 +26,7 @@
 
     <select id="selectPageList" resultType="com.aiurt.boot.strategy.dto.InspectionStrategyDTO">
         SELECT * FROM
-            ( SELECT isy.*,
-                     ( SELECT
-                           GROUP_CONCAT(e.depart_name)
-                       FROM inspection_str_org_rel inor
-                                LEFT JOIN sys_depart e ON inor.org_code = e.org_code
-                       WHERE
-                           isy.`code` = inor.inspection_str_code
-                         AND inor.del_flag = 0) AS mechanismName,
-                     (SELECT
-                          GROUP_CONCAT(e.org_code)
-                      FROM inspection_str_org_rel inor
-                               LEFT JOIN sys_depart e ON inor.org_code = e.org_code
-                      WHERE
-                          isy.`code` = inor.inspection_str_code
-                        AND inor.del_flag = 0) AS mechanismCode,
-                     (SELECT
-                          GROUP_CONCAT(f.station_name)
-                      FROM
-                          inspection_str_sta_rel inssr
-                              LEFT JOIN cs_station f ON inssr.station_code = f.station_code
-                      WHERE
-                          isy.`code` = inssr.inspection_str_code and f.del_flag = 0
-                        AND inssr.del_flag = 0) AS siteName,
-                     (SELECT
-                          GROUP_CONCAT(f.station_code)
-                      FROM
-                          inspection_str_sta_rel inssr
-                              LEFT JOIN cs_station f ON inssr.station_code = f.station_code
-                      WHERE
-                          isy.`code` = inssr.inspection_str_code and f.del_flag = 0
-                        AND inssr.del_flag = 0) AS siteCode,
-                     (SELECT
-                          GROUP_CONCAT(DISTINCT ic.major_code)
-                      FROM
-                          inspection_str_rel insr
-                              LEFT JOIN inspection_code ic on ic.`code`= insr.inspection_sta_code
-                              LEFT JOIN cs_major csm ON ic.major_code = csm.major_code
-                      WHERE
-                          insr.inspection_str_code = isy.`code`
-                          and ic.del_flag = 0 and csm.del_flag = 0 ) AS professionCode,
-                     ( SELECT
-                           GROUP_CONCAT(DISTINCT csm.major_name)
-                       FROM
-                           inspection_str_rel insr
-                               LEFT JOIN inspection_code ic on ic.`code`= insr.inspection_sta_code
-                               LEFT JOIN cs_major csm ON ic.major_code = csm.major_code
-                       WHERE
-                           insr.inspection_str_code = isy.`code`
-                         and ic.del_flag = 0 and csm.del_flag = 0) AS professionName,
-                     ( SELECT
-                           GROUP_CONCAT(DISTINCT ic.subsystem_code)
-                       FROM
-                           inspection_str_rel insr
-                               LEFT JOIN inspection_code ic on ic.`code`= insr.inspection_sta_code
-                               LEFT JOIN cs_subsystem css ON ic.subsystem_code = css.system_code
-                       WHERE
-                           insr.inspection_str_code = isy.`code`
-                          and ic.del_flag = 0 and css.del_flag = 0) AS subsystemCode,
-                     ( SELECT
-                           GROUP_CONCAT(DISTINCT css.system_name)
-                       FROM
-                           inspection_str_rel insr
-                               LEFT JOIN inspection_code ic on ic.`code`= insr.inspection_sta_code
-                               LEFT JOIN cs_subsystem css ON ic.subsystem_code = css.system_code
-                       WHERE
-                           insr.inspection_str_code = isy.`code`
-                        and ic.del_flag = 0 and css.del_flag = 0) AS subsystemName
+            ( SELECT isy.name,isy.year,isy.tactics,isy.type,isy.create_time,isy.code
                     FROM inspection_strategy isy
                     LEFT JOIN inspection_str_org_rel ss on isy.`code` =ss.inspection_str_code and ss.del_flag = 0
                     LEFT JOIN  inspection_str_rel ii on isy.`code` = ii.inspection_str_code and ii.del_flag =0
