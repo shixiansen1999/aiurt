@@ -1,5 +1,7 @@
 package com.aiurt.boot.task.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -27,7 +29,7 @@ import java.util.List;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value = "patrol_task对象", description = "patrol_task")
-public class PatrolTask implements Serializable {
+public class PatrolTask extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -116,6 +118,7 @@ public class PatrolTask implements Serializable {
      */
     @Excel(name = "任务获取方式：1 个人领取、2常规指派、3 手工下发", width = 15)
     @ApiModelProperty(value = "任务获取方式：1 个人领取、2常规指派、3 手工下发")
+    @Dict(dicCode = "patrol_task_access")
     private java.lang.Integer source;
     /**
      * 开始点击执行巡视任务的时间(yyyy-MM-dd HH:mm:ss)
@@ -150,6 +153,7 @@ public class PatrolTask implements Serializable {
      */
     @Excel(name = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成", width = 15)
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
+    @Dict(dicCode = "patrol_task_status")
     private java.lang.Integer status;
     /**
      * 驳回原因
@@ -195,6 +199,7 @@ public class PatrolTask implements Serializable {
      */
     @Excel(name = "处置状态：0未处置、1已处置", width = 15)
     @ApiModelProperty(value = "处置状态：0未处置、1已处置")
+    @Dict(dicCode = "patrol_dispose_status")
     private java.lang.Integer disposeStatus;
     /**
      * 处置时间(yyyy-MM-dd)
@@ -215,6 +220,7 @@ public class PatrolTask implements Serializable {
      */
     @Excel(name = "漏检状态:0未漏检，1已漏检", width = 15)
     @ApiModelProperty(value = "漏检状态:0未漏检，1已漏检")
+    @Dict(dicCode = "patrol_omit_status")
     private java.lang.Integer omitStatus;
     /**
      * 漏检说明
@@ -246,6 +252,7 @@ public class PatrolTask implements Serializable {
      */
     @Excel(name = "作废状态：0未作废、1已作废", width = 15)
     @ApiModelProperty(value = "作废状态：0未作废、1已作废")
+    @Dict(dicCode = "patrol_discard_status")
     private java.lang.Integer discardStatus;
     /**
      * 作废理由
@@ -258,6 +265,7 @@ public class PatrolTask implements Serializable {
      */
     @Excel(name = "是否已重新生成：0否、1是", width = 15)
     @ApiModelProperty(value = "是否已重新生成：0否、1是")
+    @Dict(dicCode = "patrol_task_rebuild")
     private java.lang.Integer rebuild;
     /**
      * 备注

@@ -6,10 +6,7 @@ import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -85,11 +82,21 @@ public class PatrolTaskParam extends PatrolTask {
     @ApiModelProperty(value = "组织机构信息")
     private List<PatrolTaskOrganizationDTO> departInfo;
     /**
+     * 组织机构名称
+     */
+    @ApiModelProperty(value = "组织机构名称(根据组织机构信息拼接)")
+    private String departInfoName;
+    /**
      * 站点信息
      */
     @Excel(name = "站点信息", width = 15)
     @ApiModelProperty(value = "站点信息")
     private List<PatrolTaskStationDTO> stationInfo;
+    /**
+     * 站点名称
+     */
+    @ApiModelProperty(value = "站点名称(根据站点信息拼接)")
+    private String stationInfoName;
 
     /**
      * 巡检人员信息
@@ -97,6 +104,11 @@ public class PatrolTaskParam extends PatrolTask {
     @Excel(name = "巡检人员信息", width = 15)
     @ApiModelProperty(value = "巡检人员信息")
     private List<PatrolTaskUser> userInfo;
+    /**
+     * 巡检人员名称
+     */
+    @ApiModelProperty(value = "巡检人员名称(根据巡检人员信息拼接)")
+    private String userInfoName;
     /**
      * 任务计划执行日期范围开始日期
      */

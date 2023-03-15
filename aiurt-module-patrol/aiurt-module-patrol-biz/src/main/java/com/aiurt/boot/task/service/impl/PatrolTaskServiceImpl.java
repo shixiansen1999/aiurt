@@ -133,8 +133,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         taskPage.getRecords().stream().forEach(l -> {
             // 组织机构信息
             l.setDepartInfo(patrolTaskOrganizationMapper.selectOrgByTaskCode(l.getCode()));
+            // 设置组织机构名称
+            String departInfoName = l.getDepartInfo().stream().map(PatrolTaskOrganizationDTO::getDepartName).collect(Collectors.joining("；"));
+            l.setDepartInfoName(departInfoName);
             // 站点信息
             l.setStationInfo(patrolTaskStationMapper.selectStationByTaskCode(l.getCode()));
+            // 设置站点名称
+            String stationInfoName = l.getStationInfo().stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.joining("；"));
+            l.setStationInfoName(stationInfoName);
             if (ObjectUtil.isNotEmpty(l.getEndUserId())) {
                 // 任务结束用户名称
                 l.setEndUsername(patrolTaskMapper.getUsername(l.getEndUserId()));
@@ -158,6 +164,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 List<PatrolTaskUser> userInfo = Optional.ofNullable(patrolTaskUserMapper.selectList(userWrapper))
                         .orElseGet(Collections::emptyList).stream().collect(Collectors.toList());
                 l.setUserInfo(userInfo);
+                // 设置巡检用户名称
+                String userInfoName = userInfo.stream().map(PatrolTaskUser::getUserName).collect(Collectors.joining("；"));
+                l.setUserInfoName(userInfoName);
             }
         });
         // 禁用数据权限过滤-end
