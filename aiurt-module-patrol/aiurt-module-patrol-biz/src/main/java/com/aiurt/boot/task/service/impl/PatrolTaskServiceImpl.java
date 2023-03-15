@@ -1873,84 +1873,88 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
 
     @Override
-    public PrintPatrolTaskDTO printPatrolTaskById(String id) {
-        PrintPatrolTaskDTO taskDTO = new PrintPatrolTaskDTO();
-        PatrolTaskParam patrolTaskParam = new PatrolTaskParam();
-        patrolTaskParam.setId(id);
-        PatrolTaskParam param = this.selectBasicInfo(patrolTaskParam);
-        taskDTO.setId(param.getId());
-        taskDTO.setTitle(param.getName());
-        List<PatrolTaskStationDTO> stationInfo = param.getStationInfo();
-        taskDTO.setStationNames(stationInfo.stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.joining()));
-        taskDTO.setUserName(param.getEndUsername());
-        taskDTO.setSubmitTime(DateUtil.format(param.getSubmitTime(),"yyyy-MM-dd HH:mm:ss"));
+    public List<PrintPatrolTaskDTO> printPatrolTaskById(String ids) {
+        List<PrintPatrolTaskDTO> arrayList = new ArrayList<>();
+        List<String> idList = StrUtil.splitTrim(ids, ",");
+        for (String id : idList) {
+            PrintPatrolTaskDTO taskDTO = new PrintPatrolTaskDTO();
+            PatrolTaskParam patrolTaskParam = new PatrolTaskParam();
+            patrolTaskParam.setId(id);
+            PatrolTaskParam param = this.selectBasicInfo(patrolTaskParam);
+            taskDTO.setId(param.getId());
+            taskDTO.setTitle(param.getName());
+            List<PatrolTaskStationDTO> stationInfo = param.getStationInfo();
+            taskDTO.setStationNames(stationInfo.stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.joining()));
+            taskDTO.setUserName(param.getEndUsername());
+            taskDTO.setSubmitTime(DateUtil.format(param.getSubmitTime(),"yyyy-MM-dd HH:mm:ss"));
+            taskDTO.setSignUrl(patrolTaskParam.getSignUrl());
 
-        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
-        List<PrintStationDTO> stationDTOS = new ArrayList<>();
+            List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
+            List<PrintStationDTO> stationDTOS = new ArrayList<>();
 
-        for (PatrolStationDTO dto : billGangedInfo) {
-            PrintStationDTO printStationDTO = new PrintStationDTO();
-            printStationDTO.setStationName(dto.getStationName());
-            List<PrintSystemDTO> printSystemDTOS = new ArrayList<>();
+            for (PatrolStationDTO dto : billGangedInfo) {
+                PrintStationDTO printStationDTO = new PrintStationDTO();
+                printStationDTO.setStationName(dto.getStationName());
+                List<PrintSystemDTO> printSystemDTOS = new ArrayList<>();
 
-            //获取检修项
-            List<PatrolBillDTO> billInfo = dto.getBillInfo();
-            if (CollUtil.isNotEmpty(billInfo)) {
-                for (PatrolBillDTO patrolBillDTO : billInfo) {
+                //获取检修项
+                List<PatrolBillDTO> billInfo = dto.getBillInfo();
+                if (CollUtil.isNotEmpty(billInfo)) {
+                    for (PatrolBillDTO patrolBillDTO : billInfo) {
+                        //根据检修单号查询检修项
+                        String billCode = patrolBillDTO.getBillCode();
+                        PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(billCode))
+                                .orElseGet(PatrolTaskDeviceParam::new);
 
+                        PrintSystemDTO printSystemDTO = new PrintSystemDTO();
+                        printStationDTO.setStationName(taskDeviceParam.getSubsystemName());
+                        List<PrintDetailDTO> printDetailList = new ArrayList<>();
 
-                    //根据检修单号查询检修项
-                    String billCode = patrolBillDTO.getBillCode();
-                    PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(billCode))
-                            .orElseGet(PatrolTaskDeviceParam::new);
+                        List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
+                        // 字典翻译
+                        Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
+                                .stream().filter(l->StrUtil.isNotEmpty(l.getText()))
+                                .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
 
-                    PrintSystemDTO printSystemDTO = new PrintSystemDTO();
-                    printStationDTO.setStationName(taskDeviceParam.getSubsystemName());
-                    List<PrintDetailDTO> printDetailList = new ArrayList<>();
-
-                    List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
-                    // 字典翻译
-                    Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
-                            .stream().filter(l->StrUtil.isNotEmpty(l.getText()))
-                            .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-
-                    for (PatrolCheckResultDTO c : checkResultList) {
-                        c.setRequiredDictName(requiredItems.get(String.valueOf(c.getRequired())));
-                        if (ObjectUtil.isNotNull(c.getDictCode())) {
-                            List<DictModel> list = sysBaseApi.getDictItems(c.getDictCode());
-                            list.stream().forEach(l -> {
-                                if (PatrolConstant.DEVICE_INP_TYPE.equals(c.getInputType())) {
-                                    if (l.getValue().equals(c.getOptionValue())) {
-                                        c.setCheckDictName(l.getTitle());
+                        for (PatrolCheckResultDTO c : checkResultList) {
+                            c.setRequiredDictName(requiredItems.get(String.valueOf(c.getRequired())));
+                            if (ObjectUtil.isNotNull(c.getDictCode())) {
+                                List<DictModel> list = sysBaseApi.getDictItems(c.getDictCode());
+                                list.stream().forEach(l -> {
+                                    if (PatrolConstant.DEVICE_INP_TYPE.equals(c.getInputType())) {
+                                        if (l.getValue().equals(c.getOptionValue())) {
+                                            c.setCheckDictName(l.getTitle());
+                                        }
                                     }
-                                }
-                            });
+                                });
+                            }
+
+                            String userName = patrolTaskMapper.getUserName(c.getUserId());
+                            c.setCheckUserName(userName);
+
+                            PrintDetailDTO printDetailDTO = new PrintDetailDTO();
+                            printDetailDTO.setContent(c.getContent() + ":" + c.getQualityStandard());
+                            if (c.getInputType() == 0) {
+                                printDetailDTO.setResult(Convert.toStr(c.getCheckResult()));
+                            }else if (c.getInputType() == 1){
+                                printDetailDTO.setResult(c.getCheckDictName());
+                            }else {
+                                printDetailDTO.setResult(c.getWriteValue());
+                            }
+                            printDetailDTO.setRemark(c.getRemark());
+                            printDetailList.add(printDetailDTO);
                         }
 
-                        String userName = patrolTaskMapper.getUserName(c.getUserId());
-                        c.setCheckUserName(userName);
-
-                        PrintDetailDTO printDetailDTO = new PrintDetailDTO();
-                        printDetailDTO.setContent(c.getContent() + ":" + c.getQualityStandard());
-                        if (c.getInputType() == 0) {
-                            printDetailDTO.setResult(Convert.toStr(c.getCheckResult()));
-                        }else if (c.getInputType() == 1){
-                            printDetailDTO.setResult(c.getCheckDictName());
-                        }else {
-                            printDetailDTO.setResult(c.getWriteValue());
-                        }
-                        printDetailDTO.setRemark(c.getRemark());
-                        printDetailList.add(printDetailDTO);
+                        printSystemDTO.setPrintDetailDTOS(printDetailList);
+                        printSystemDTOS.add(printSystemDTO);
                     }
-
-                    printSystemDTO.setPrintDetailDTOS(printDetailList);
-                    printSystemDTOS.add(printSystemDTO);
+                    printStationDTO.setPrintSystemDTOS(printSystemDTOS);
+                    stationDTOS.add(printStationDTO);
                 }
-                printStationDTO.setPrintSystemDTOS(printSystemDTOS);
-                stationDTOS.add(printStationDTO);
             }
+            taskDTO.setPrintStationDTOList(stationDTOS);
+            arrayList.add(taskDTO);
         }
-        taskDTO.setPrintStationDTOList(stationDTOS);
-        return null;
+        return arrayList;
     }
 }

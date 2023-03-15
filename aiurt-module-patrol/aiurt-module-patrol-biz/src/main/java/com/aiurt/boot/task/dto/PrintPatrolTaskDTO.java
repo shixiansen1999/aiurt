@@ -28,4 +28,7 @@ public class PrintPatrolTaskDTO {
 
     private List<PrintStationDTO> printStationDTOList;
 
+    @ApiModelProperty(value = "任务提交的用户签名图片")
+    private java.lang.String signUrl;
+
 }

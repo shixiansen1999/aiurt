@@ -2745,9 +2745,53 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
-    public PrintRepairTaskDTO printRepairTaskById(String id) {
+    public List<PrintRepairTaskDTO> printRepairTaskById(String ids) {
+        List<String> idList = StrUtil.splitTrim(ids, ",");
+        List<PrintRepairTaskDTO> list = new ArrayList<>();
+        for (String id : idList) {
+            RepairTask repairTask = new RepairTask();
+            RepairTask byId = this.getById(id);
+            repairTask.setId(id);
+            Page<RepairTask> pageList = new Page<>(1, 1);
+            Page<RepairTask> repairTaskPage = this.selectables(pageList, repairTask);
+            List<RepairTask> records = repairTaskPage.getRecords();
+            if (CollUtil.isEmpty(records)) {
+                throw new AiurtNoDataException("未找到对应任务");
+            }
 
+            RepairTask one = records.get(0);
+            PrintRepairTaskDTO printRepairTaskDTO = new PrintRepairTaskDTO();
+            printRepairTaskDTO.setOrgName(one.getOrganizational());
+            // 所属周（相对年）
+            if (byId.getYear() != null && byId.getWeeks() != null) {
+                Date[] dateByWeek = DateUtils.getDateByWeek(byId.getYear(), byId.getWeeks());
+                if (dateByWeek.length != 0) {
+                    String weekName = String.format(DateUtil.format(dateByWeek[0], "yyyy/MM/dd")+"-"+ DateUtil.format(dateByWeek[1], "yyyy/MM/dd"));
+                    printRepairTaskDTO.setRepairTime(weekName);
+                }
+            }
+            printRepairTaskDTO.setRepairPeople(one.getSumitUserName());
+            printRepairTaskDTO.setStartRepairTime(DateUtil.format(one.getBeginTime(),"yyyy-MM-dd HH:mm"));
+            printRepairTaskDTO.setType(one.getTypeName());
+            printRepairTaskDTO.setWorkType(one.getWorkType());
+            printRepairTaskDTO.setPlanOrderCode(one.getPlanOrderCode());
+            printRepairTaskDTO.setPlanOrderCodeUrl(one.getPlanOrderCodeUrl());
 
-        return null;
+            //获取检修站点
+            List<RepairTaskStationDTO> repairTaskStationDTOS = this.repairTaskStationList(id);
+            for (RepairTaskStationDTO repairTaskStationDTO : repairTaskStationDTOS) {
+                List<RepairTaskDTO> repairTaskDTOList = this.selectTaskList(id,repairTaskStationDTO.getStationCode());
+                for (RepairTaskDTO repairTaskDTO : repairTaskDTOList) {
+                    String deviceId = repairTaskDTO.getDeviceId();
+                    CheckListDTO checkListDto = this.selectRepairTaskInfo(id,repairTaskStationDTO.getStationCode(),deviceId);
+
+                }
+
+            }
+
+            list.add(printRepairTaskDTO);
+        }
+        return list;
+
     }
 }
