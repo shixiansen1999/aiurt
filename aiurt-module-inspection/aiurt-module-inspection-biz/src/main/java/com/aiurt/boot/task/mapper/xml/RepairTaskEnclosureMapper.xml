@@ -11,7 +11,6 @@
             rtr.task_device_rel_id=rtdr.id
           and rtdr.repair_task_id=#{id}
     </select>
-
     <select id="getByResultId" resultType="com.aiurt.boot.task.entity.RepairTaskEnclosure">
         SELECT * from repair_task_enclosure as rte
         where rte.repair_task_result_id=#{id}

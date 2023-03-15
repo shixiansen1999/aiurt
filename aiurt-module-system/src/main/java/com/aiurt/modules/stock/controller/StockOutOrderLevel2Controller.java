@@ -2,12 +2,12 @@ package com.aiurt.modules.stock.controller;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.stock.entity.StockLevel2Check;
@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -31,7 +32,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -55,6 +55,8 @@ public class StockOutOrderLevel2Controller {
 	private ISysBaseAPI sysBaseApi;
 	@Autowired
 	private ISysParamAPI iSysParamAPI;
+	@Autowired
+	private ISTodoBaseAPI isTodoBaseAPI;
     /**
      * 分页列表查询
      *
@@ -125,11 +127,8 @@ public class StockOutOrderLevel2Controller {
 
 			try {
 				LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-				//根据仓库编号获取仓库组织机构code
-				String orgCode = sysBaseApi.getDepartByWarehouseCode(sparePartApply.getApplyWarehouseCode());
-				String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
 				//发送通知
-				MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "二级库出库" + DateUtil.today(), null);
+				MessageDTO messageDTO = new MessageDTO(user.getUsername(),sparePartApply.getApplyUserId(), "备件入库确认" + DateUtil.today(), null);
 
 				//构建消息模板
 				HashMap<String, Object> map = new HashMap<>();
@@ -143,6 +142,8 @@ public class StockOutOrderLevel2Controller {
 				messageDTO.setPublishingContent("备件申领到库，请尽快确认");
 				messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
 				sysBaseApi.sendTemplateMessage(messageDTO);
+				// 更新待办
+				isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.SPAREPART_APPLY.getType(), sparePartApply.getId(), user.getUsername(), "1");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

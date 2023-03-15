@@ -825,6 +825,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         wrapper.eq(SparePartStockInfo::getWarehouseCode,warehouseCode);
         wrapper.eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
         SparePartStockInfo one = sparePartStockInfoMapper.selectOne(wrapper);
+        if (ObjectUtil.isEmpty(one)) {
+            throw new AiurtBootException("找不到对应仓库！");
+        }
         return one.getWarehouseName();
     }
 
@@ -2764,6 +2767,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         announcement.setLevel(message.getLevel());
         announcement.setProcessCode(message.getProcessCode());
         announcement.setProcessName(message.getProcessName());
+        announcement.setTaskId(message.getTaskId());
+        announcement.setProcessInstanceId(message.getProcessInstanceId());
+        announcement.setProcessDefinitionKey(message.getProcessDefinitionKey());
         sysAnnouncementMapper.insert(announcement);
 
         // 2.插入用户通告阅读标记表记录

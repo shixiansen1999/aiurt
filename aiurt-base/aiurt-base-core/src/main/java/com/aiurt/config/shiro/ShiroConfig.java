@@ -149,6 +149,8 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/sys/autograph/**", "anon");//JVxeTable无痕刷新示例
         filterChainDefinitionMap.put("/sys/queryVersionInfo", "anon");//JVxeTable无痕刷新示例
         filterChainDefinitionMap.put("/sys/common/getSysFileKey", "anon");//在线编辑获取key
+        //大屏统计
+        filterChainDefinitionMap.put("/task/repairTask/getSystemInformation", "anon");
 
         //wps
         filterChainDefinitionMap.put("/v1/**","anon");
@@ -194,12 +196,17 @@ public class ShiroConfig {
         bigSet.add("/fault/faultInformation/queryLargeFaultDataCount");
         bigSet.add("/plan/bigscreen/getTeamPortraitDetails");
         bigSet.add("/plan/bigscreen/getTeamPortrait");
+
+        bigSet.add("/faultknowledgebase/**");
+        bigSet.add("/faultknowledgebasetype/**");
+
         bigSet.add("/plan/bigscreen/getTaskCompletion");
         bigSet.add("/plan/bigscreen/overviewInfo");
         bigSet.add("/plan/bigscreen/getInspectionDataNoPage");
         bigSet.add("/patrolScreen/statisticsGraph");
         bigSet.add("/patrolScreen/statistics");
         bigSet.add("/patrolScreen/statisticsTaskInfo");
+
 
         JwtFilter jwtFilter = new JwtFilter(cloudServer == null);
         jwtFilter.setBigScreenUrlSet(bigSet);
@@ -219,6 +226,7 @@ public class ShiroConfig {
     public DefaultWebSecurityManager securityManager(ShiroRealm myRealm) {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(myRealm);
+
         /*
          * 关闭shiro自带的session，详情见文档
          * http://shiro.apache.org/session-management.html#SessionManagement-

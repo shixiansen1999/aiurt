@@ -1,20 +1,20 @@
 package com.aiurt.modules.sparepart.controller;
 
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
-import com.aiurt.common.aspect.annotation.AutoLog;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
-import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
-import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.sparepart.entity.SparePartScrap;
 import com.aiurt.modules.sparepart.service.ISparePartScrapService;
 import com.aiurt.modules.todo.dto.TodoDTO;
@@ -49,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
  /**
  * @Description: spare_part_scrap
  * @Author: aiurt
@@ -63,16 +62,16 @@ import java.util.stream.Collectors;
 public class SparePartScrapController extends BaseController<SparePartScrap, ISparePartScrapService> {
 	@Autowired
 	private ISparePartScrapService sparePartScrapService;
-
-	@Autowired
-	private ISysDepartService sysDepartService;
-
 	 @Autowired
 	 private ISysParamAPI iSysParamAPI;
 	 @Autowired
 	 private ISysBaseAPI sysBaseApi;
 	 @Autowired
 	 private ISTodoBaseAPI isTodoBaseAPI;
+
+	@Autowired
+	private ISysDepartService sysDepartService;
+
 	/**
 	 * 分页列表查询
 	 *
@@ -114,7 +113,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 			String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
 
 			//发送通知
-			MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件报废申请" + DateUtil.today(), null);
+			MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件报废申请-确认" + DateUtil.today(), null);
 
 			//构建消息模板
 			HashMap<String, Object> map = new HashMap<>();
@@ -142,7 +141,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 			todoDTO.setData(map);
 			SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
 			todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
-			todoDTO.setTitle("备件报废申请" + DateUtil.today());
+			todoDTO.setTitle("备件报废申请-确认" + DateUtil.today());
 			todoDTO.setMsgAbstract("备件报废申请");
 			todoDTO.setPublishingContent("备件报废申请，请确认");
 			todoDTO.setCurrentUserName(userName);

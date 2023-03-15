@@ -11,7 +11,6 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
-import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
@@ -142,7 +141,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
            String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
 
            //发送通知
-           MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件库出库申请" + DateUtil.today(), null);
+           MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件出库-确认" + DateUtil.today(), null);
 
            //构建消息模板
            HashMap<String, Object> map = new HashMap<>();
@@ -170,7 +169,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
            todoDTO.setData(map);
            SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
            todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
-           todoDTO.setTitle("备件库出库申请" + DateUtil.today());
+           todoDTO.setTitle("备件出库-确认" + DateUtil.today());
            todoDTO.setMsgAbstract("备件库出库申请");
            todoDTO.setPublishingContent("备件出库申请，请确认");
            todoDTO.setCurrentUserName(userName);
@@ -203,7 +202,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
        try {
            LoginUser userById = sysBaseApi.getUserByName(one.getApplyUserId());
            //发送通知
-           MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件出库-确认" + DateUtil.today(), null);
+           MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件出库成功" + DateUtil.today(), null);
 
            //构建消息模板
            HashMap<String, Object> map = new HashMap<>();
@@ -226,6 +225,8 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
            messageDTO.setPublishingContent("备件出库申请通过");
            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
            sysBaseApi.sendTemplateMessage(messageDTO);
+           // 更新待办
+           isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.SPAREPART_OUT.getType(), one.getId(), user.getUsername(), "1");
        } catch (Exception e) {
            e.printStackTrace();
        }

@@ -219,4 +219,9 @@ public class SysAnnouncement implements Serializable {
 
     private String processCode;
 
+    private String taskId;
+
+    private String processDefinitionKey;
+
+    private String processInstanceId;
 }

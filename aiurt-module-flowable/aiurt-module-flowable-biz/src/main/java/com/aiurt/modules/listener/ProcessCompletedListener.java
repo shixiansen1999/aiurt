@@ -5,7 +5,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
-import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
@@ -100,6 +99,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                             String name = StrUtil.contains(one.getName(), "流程") ? one.getName() : one.getName()+"流程";
                             messageDTO.setProcessName(name);
                         }
+                        messageDTO.setProcessDefinitionKey(one.getModelKey());
                        // map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,processDefinitionIdList.get(0));
                     }
                     String startUserId = historicProcessInstance.getStartUserId();
@@ -111,6 +111,9 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                     map.put("creatBy",userByName.getRealname());
                     map.put("creatTime",format);
                     messageDTO.setData(map);
+                    messageDTO.setTaskId(executionEntity.getId());
+                    messageDTO.setProcessInstanceId(executionEntity.getProcessInstanceId());
+
 
                     messageDTO.setTitle(historicProcessInstance.getProcessDefinitionName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"));
                     messageDTO.setFromUser( loginUser.getUsername());

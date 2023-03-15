@@ -23,16 +23,16 @@ public interface IFileAnalysisService {
     String upload(MultipartFile file, String path, String typeId);
 
     /**
+     * 同步数据到es
+     * @param index
+     */
+    void syncData(String index);
+
+    /**
      * 同步规范知识库的数据和文档数据
      *
      * @param request
      * @param response
      */
     List<String> syncCanonicalKnowledgeBase(HttpServletRequest request, HttpServletResponse response);
-
-    /**
-     * 同步数据到es
-     * @param index
-     */
-    void syncData(String index);
 }

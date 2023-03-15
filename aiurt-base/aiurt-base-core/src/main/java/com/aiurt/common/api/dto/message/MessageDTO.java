@@ -116,6 +116,13 @@ public class MessageDTO implements Serializable {
      */
     protected Map<String, Object> data;
 
+
+    private String taskId;
+
+    private String processDefinitionKey;
+
+    private String processInstanceId;
+
     private String processName;
 
     private String processCode;

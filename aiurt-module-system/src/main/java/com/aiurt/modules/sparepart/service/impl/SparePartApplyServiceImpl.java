@@ -9,7 +9,6 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
-import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.sparepart.entity.SparePartApplyMaterial;
@@ -212,7 +211,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.MATERIAL_CLERK));
 
             //发送通知
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "设备申领" + DateUtil.today(), null);
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "二级库出库确认" + DateUtil.today(), null);
 
             //构建消息模板
             HashMap<String, Object> map = new HashMap<>();
@@ -240,7 +239,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             todoDTO.setData(map);
             SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
             todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
-            todoDTO.setTitle("设备申领" + DateUtil.today());
+            todoDTO.setTitle("二级库出库确认" + DateUtil.today());
             todoDTO.setMsgAbstract("备件申领");
             todoDTO.setPublishingContent("班组申请物资，请确认");
             todoDTO.setCurrentUserName(userName);
