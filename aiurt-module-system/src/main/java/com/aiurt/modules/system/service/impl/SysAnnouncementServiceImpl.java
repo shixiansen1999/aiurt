@@ -6,7 +6,9 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.TodoTaskEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
+import com.aiurt.common.util.SysAnnmentEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
@@ -192,33 +194,35 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 
 		Map<String, List<SysAnnouncementTypeCountDTO>> busTypeMap = announcementTypeCountDTOList.stream().collect(Collectors.groupingBy(dto -> {
 			String busType = dto.getBusType();
-			SysAnnmentTypeEnum sysAnnmentTypeEnum = SysAnnmentTypeEnum.getByTypeV2(busType);
-			if (Objects.nonNull(sysAnnmentTypeEnum)) {
-				return sysAnnmentTypeEnum.getModule();
+			SysAnnmentEnum sysAnnmentEnum = SysAnnmentEnum.getByTypeV2(busType);
+			if (Objects.nonNull(sysAnnmentEnum)) {
+				return sysAnnmentEnum.getType();
 			} else {
-				return dto.getTitile();
+				return dto.getBusType();
 			}
 		}));
 
 		List<SysMessageTypeDTO> messageList = new ArrayList<>();
 		busTypeMap.remove(null);
-		busTypeMap.forEach((module, dtoList)->{
+		busTypeMap.forEach((busType, dtoList)->{
 			SysAnnouncementTypeCountDTO countDTO = dtoList.get(0);
 			int sum = dtoList.stream().mapToInt(SysAnnouncementTypeCountDTO::getUnreadCount).sum();
 			List<String> busTypeList = dtoList.stream().map(SysAnnouncementTypeCountDTO::getBusType).collect(Collectors.toList());
-			String busType = countDTO.getBusType();
-			String type = StrUtil.splitTrim(busType, "_").get(0);
+			SysAnnmentEnum annmentEnum = SysAnnmentEnum.getByType(busType);
+
+
             //查询最近的一条数据
 			SysAnnouncementSend sysAnnouncementSend = baseMapper.queryLast(userId, busTypeList, null);
 
 			SysMessageTypeDTO typeDTO = SysMessageTypeDTO.builder()
-					.busType(type)
+					.busType(busType)
 					.messageFlag("1")
 					.count(sum)
-					.title(module).build();
+					.title(Objects.isNull(annmentEnum)? countDTO.getTitile(): annmentEnum.getModule()).build();
+
             //设置头像图片
-			if (pictureCode.contains(type)) {
-				SysParamModel sysParamModel = sysParamAPI.selectByCode(type);
+			if (pictureCode.contains(busType)) {
+				SysParamModel sysParamModel = sysParamAPI.selectByCode(busType);
 				if (Objects.nonNull(sysParamModel)) {
 					typeDTO.setValue(sysParamModel.getValue());
 				}
@@ -281,7 +285,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 
 		Map<String, List<SysTodoCountDTO>> bpmnMap = sysTodoCountDTOS.stream().collect(Collectors.groupingBy(sysTodoCountDTO -> {
 			String processCode = sysTodoCountDTO.getProcessCode();
-			TodoTaskTypeEnum todoTaskTypeEnum = TodoTaskTypeEnum.getByTypeV2(processCode);
+			TodoTaskEnum todoTaskTypeEnum = TodoTaskEnum.getByTypeV2(processCode);
 			if (Objects.nonNull(todoTaskTypeEnum)) {
 				return todoTaskTypeEnum.getType();
 			} else {
@@ -293,7 +297,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		bpmnMap.forEach((type, dtoList)->{
 			SysTodoCountDTO sysTodoCountDTO = dtoList.get(0);
 			int sum = dtoList.stream().mapToInt(SysTodoCountDTO::getUndoCount).sum();
-			TodoTaskTypeEnum typeEnum = TodoTaskTypeEnum.getByType(type);
+			TodoTaskEnum typeEnum = TodoTaskEnum.getByType(type);
 
 			SysMessageTypeDTO typeDTO = SysMessageTypeDTO.builder()
 					.count(sum)
@@ -368,9 +372,19 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String userId = loginUser.getId();
 		String username = loginUser.getUsername();
+
 		//业务数据
 		if ("1".equals(messageFlag)) {
-			IPage<SysMessageInfoDTO> businessList = sysAnnouncementMapper.queryAnnouncementInfo(page, userId, keyWord, busType, msgCategory);
+			SysAnnmentEnum annmentEnum = SysAnnmentEnum.getByType(busType);
+			List<String> enumList = new ArrayList<>();
+			if (Objects.nonNull(annmentEnum)) {
+				enumList = annmentEnum.getList();
+			}
+
+			if (CollUtil.isEmpty(enumList) && StrUtil.isNotBlank(busType)) {
+				enumList = Collections.singletonList(busType);
+			}
+			IPage<SysMessageInfoDTO> businessList = sysAnnouncementMapper.queryAnnouncementInfo(page, userId, keyWord, enumList, msgCategory);
 			//设置bpmn类型的数据的返回类型为各自模块类型
 			List<SysMessageInfoDTO> records = businessList.getRecords();
 			SysAnnmentTypeEnum[] values = SysAnnmentTypeEnum.values();
@@ -399,6 +413,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				if(StrUtil.isEmpty(s)){
 					record.setTaskType(null);
 				}else{
+					record.setOriginalType(s);
 					String type = StrUtil.splitTrim(s, "_").get(0);
 					if(type.equals("patrol") || type.equals("inspection")){
 						record.setTaskType(type);
@@ -417,8 +432,17 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		}
 		//流程业务
 		else if ("2".equals(messageFlag)) {
+			TodoTaskEnum todoTaskEnum = TodoTaskEnum.getByType(busType);
+			List<String> busTypeList = null;
+			if (Objects.nonNull(todoTaskEnum)) {
+				busTypeList = todoTaskEnum.getList();
+			}
+
+			if (CollUtil.isEmpty(busTypeList) && StrUtil.isNotBlank(busType)) {
+				busTypeList = Collections.singletonList(busType);
+			}
 			//流程数据
-			IPage<SysMessageInfoDTO> flowList = sysAnnouncementMapper.queryTodoListInfo(page, username, todoType, keyWord, busType);
+			IPage<SysMessageInfoDTO> flowList = sysAnnouncementMapper.queryTodoListInfo(page, username, todoType, keyWord, busTypeList);
 			//设置bpmn类型的数据的返回类型为各自模块类型
 			List<SysMessageInfoDTO> records = flowList.getRecords();
 			TodoTaskTypeEnum[] values = TodoTaskTypeEnum.values();
@@ -443,6 +467,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				}else{
 					record.setDeal(true);
 				}
+				//固定资产下发需要给另外的类型
+				if(StrUtil.isEmpty(record.getProcessInstanceId()) && record.getTaskType().equals(TodoTaskTypeEnum.FIXED_ASSETS.getType())){
+					record.setTaskType("fixed");
+				}
 			}
 			return flowList;
 		}
@@ -457,7 +485,16 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		SysAnnouncementPageDTO sysAnnouncementPageDTO = new SysAnnouncementPageDTO();
 		//业务数据
 		if("1".equals(messageFlag)){
-			List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementMapper.queryAllAnnouncement(userId, keyWord, busType, msgCategory);
+			SysAnnmentEnum annmentEnum = SysAnnmentEnum.getByType(busType);
+			List<String> enumList = null;
+			if (Objects.nonNull(annmentEnum)) {
+				enumList = annmentEnum.getList();
+			}
+
+			if (CollUtil.isEmpty(enumList) && StrUtil.isNotBlank(busType)) {
+				enumList = Collections.singletonList(busType);
+			}
+			List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementMapper.queryAllAnnouncement(userId, keyWord, enumList, msgCategory);
 			//获取未读的条数
 			List<SysMessageInfoDTO> collect = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getReadFlag().equals("0")).collect(Collectors.toList());
 			//查找最远的未读消息
@@ -469,8 +506,17 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		}
 		//流程业务
 		else if ("2".equals(messageFlag)) {
+			TodoTaskEnum todoTaskEnum = TodoTaskEnum.getByType(busType);
+			List<String> busTypeList = null;
+			if (Objects.nonNull(todoTaskEnum)) {
+				busTypeList = todoTaskEnum.getList();
+			}
+
+			if (CollUtil.isEmpty(busTypeList) && StrUtil.isNotBlank(busType)) {
+				busTypeList = Collections.singletonList(busType);
+			}
 			//流程数据
-			List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementMapper.queryAllTodoList(username, todoType, keyWord, busType);
+			List<SysMessageInfoDTO> sysMessageInfoDTOS = sysAnnouncementMapper.queryAllTodoList(username, todoType, keyWord, busTypeList);
 			//获取未办理的条数
 			List<SysMessageInfoDTO> collect = sysMessageInfoDTOS.stream().filter(sysMessageInfoDTO -> sysMessageInfoDTO.getTodoType().equals("0")).collect(Collectors.toList());
 			int number =collect.size();
