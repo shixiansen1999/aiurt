@@ -274,9 +274,14 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 		 emergencyMaterialsInvoices.setUserId(emergencyMaterialsDTO.getUserId());
 
 		 if (StrUtil.isNotBlank(emergencyMaterialsDTO.getUserId())){
-		 	//巡视班组Code
-			 LoginUser userById = iSysBaseAPI.getUserById(emergencyMaterialsDTO.getUserId());
-			 emergencyMaterialsInvoices.setDepartmentCode(userById.getOrgCode());
+			 String[] split = emergencyMaterialsDTO.getUserId().split(",");
+			 List<String> stringList = Arrays.asList(split);
+			 if (CollUtil.isNotEmpty(stringList)){
+				 String string = stringList.get(0);
+				 //巡视班组Code
+				 LoginUser userById = iSysBaseAPI.getUserById(string);
+				 emergencyMaterialsInvoices.setDepartmentCode(userById.getOrgCode());
+			 }
 		 }
 		 //插入物资巡检单
 		 iEmergencyMaterialsInvoicesService.save(emergencyMaterialsInvoices);
@@ -306,7 +311,6 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 						}
 					});
 			   }
-
 		 }
 
 		 return Result.OK("提交成功！");
