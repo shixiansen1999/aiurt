@@ -14,6 +14,8 @@
 
     <select id="getByResultId" resultType="com.aiurt.boot.task.entity.RepairTaskEnclosure">
         SELECT * from repair_task_enclosure as rte
-                 where rte.repair_task_result_id=#{id}
+        where rte.repair_task_result_id=#{id}
+          and rte.create_by=#{userName}
+        order by create_time desc limit 1
     </select>
 </mapper>
