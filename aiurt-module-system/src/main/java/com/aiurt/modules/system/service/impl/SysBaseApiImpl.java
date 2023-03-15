@@ -62,7 +62,6 @@ import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.util.SecurityUtil;
-import com.aiurt.modules.todo.service.ISysTodoListService;
 import com.aiurt.modules.workarea.entity.WorkArea;
 import com.aiurt.modules.workarea.mapper.WorkAreaMapper;
 import com.aiurt.modules.workarea.service.IWorkAreaService;
@@ -826,6 +825,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         wrapper.eq(SparePartStockInfo::getWarehouseCode,warehouseCode);
         wrapper.eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
         SparePartStockInfo one = sparePartStockInfoMapper.selectOne(wrapper);
+        if (ObjectUtil.isEmpty(one)) {
+            throw new AiurtBootException("找不到对应仓库！");
+        }
         return one.getWarehouseName();
     }
 
