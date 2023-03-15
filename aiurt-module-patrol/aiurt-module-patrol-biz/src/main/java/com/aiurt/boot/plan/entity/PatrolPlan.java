@@ -1,19 +1,20 @@
 package com.aiurt.boot.plan.entity;
 
-import java.io.Serializable;
-
+import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: patrol_plan
@@ -26,7 +27,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="patrol_plan对象", description="patrol_plan")
-public class PatrolPlan implements Serializable {
+public class PatrolPlan extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键ID*/
@@ -48,14 +49,17 @@ public class PatrolPlan implements Serializable {
 	/**是否委外：0否、1是*/
 	@Excel(name = "是否委外：0否、1是", width = 15)
     @ApiModelProperty(value = "是否委外：0否、1是")
+    @Dict(dicCode = "patrol_outsource")
     private java.lang.Integer outsource;
 	/**巡检频次：1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次、6两天1次、7三天1次*/
 	@Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次、6两天1次、7三天1次", width = 15)
     @ApiModelProperty(value = "1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次、6两天1次、7三天1次")
+    @Dict(dicCode = "patrol_plan_period")
     private java.lang.Integer period;
 	/**生效状态：0停用、1启用*/
 	@Excel(name = "生效状态：0停用、1启用", width = 15)
     @ApiModelProperty(value = "生效状态：0停用、1启用")
+    @Dict(dicCode = "patrol_plan_status")
     private java.lang.Integer status;
 	/**有效开始日期*/
 	@Excel(name = "有效开始日期", width = 15, format = "yyyy-MM-dd")
