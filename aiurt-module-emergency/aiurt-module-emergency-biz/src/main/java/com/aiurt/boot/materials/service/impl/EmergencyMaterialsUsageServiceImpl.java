@@ -108,8 +108,10 @@ public class EmergencyMaterialsUsageServiceImpl extends ServiceImpl<EmergencyMat
                 lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,0)
                                   .eq(EmergencyMaterialsCategory::getCategoryCode,e.getCategoryCode());
                 EmergencyMaterialsCategory emergencyMaterialsCategory = emergencyMaterialsCategoryMapper.selectOne(lambdaQueryWrapper);
-                if (StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryName())){
-                    e.setCategoryName(emergencyMaterialsCategory.getCategoryName());
+                if (ObjectUtil.isNotNull(emergencyMaterialsCategory)){
+                    if (StrUtil.isNotBlank(emergencyMaterialsCategory.getCategoryName())){
+                        e.setCategoryName(emergencyMaterialsCategory.getCategoryName());
+                    }
                 }
             }
         });
