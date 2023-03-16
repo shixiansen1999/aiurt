@@ -8,13 +8,13 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceComposeService;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
+import com.aiurt.modules.device.service.impl.CsMajorThreadService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
@@ -24,6 +24,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +48,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -98,44 +100,44 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			 deviceType.setValue(deviceType.getCode());
 		 }
 		 List<DeviceType> deviceTypeTree = deviceTypeService.treeList(deviceTypeList,"0");
+		 ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+				 .setNameFormat("CsMajor-%d").build();
+		 ExecutorService csMajor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
+				 0L, TimeUnit.MILLISECONDS,
+				 new LinkedBlockingQueue<Runnable>(), namedThreadFactory);
 		 List<DeviceType> newList = new ArrayList<>();
-		 majorList.forEach(one -> {
-			 DeviceType major = setEntity(one.getId(),"zy",one.getMajorCode(),one.getMajorName(),null,null,null,one.getMajorCode(),null,"-",null);
-			 major.setTitle(major.getName());
-			 major.setValue(major.getCode());
-			 List<CsSubsystem> sysList = systemList.stream().filter(system-> system.getMajorCode().equals(one.getMajorCode())).collect(Collectors.toList());
-			 List<DeviceType> majorDeviceType = deviceTypeTree.stream().filter(type-> one.getMajorCode().equals(type.getMajorCode()) && (null==type.getSystemCode() || "".equals(type.getSystemCode())) && ("0").equals(type.getPid())).collect(Collectors.toList());
-			 List<DeviceType> twoList = new ArrayList<>();
-			 if(level>LEVEL_2) {
-				//添加设备类型数据
-				twoList.addAll(majorDeviceType);
-			 }
-			 //判断是否有子系统数据
-			 sysList.forEach(two ->{
-				 DeviceType system = setEntity(two.getId()+"","zxt",two.getSystemCode(),two.getSystemName(),null,null,null,two.getMajorCode(),two.getSystemCode(),one.getMajorName(),null);
-				 if(level>LEVEL_2) {
-					 List<DeviceType> sysDeviceType = deviceTypeTree.stream().filter(type -> system.getMajorCode().equals(type.getMajorCode()) && (null != type.getSystemCode() && !"".equals(type.getSystemCode()) && system.getSystemCode().equals(type.getSystemCode()))).collect(Collectors.toList());
-					 List<DeviceType> collect = sysDeviceType.stream().distinct().collect(Collectors.toList());
-					 //name赋值给title，code赋值给value
-					 for (DeviceType deviceType : collect) {
-						 deviceType.setTitle(deviceType.getName());
-						 deviceType.setValue(deviceType.getCode());
-					 }
-					 system.setChildren(collect);
-				 }
-				 //name赋值给title，code赋值给value
-				 system.setValue(system.getCode());
-				 system.setTitle(system.getName());
-				 twoList.add(system);
+		 List<Future<CsMajor>> futureList = new ArrayList<>();
+
+		 if (CollUtil.isNotEmpty(majorList)){
+			 majorList.forEach(one -> {
+				 Future<CsMajor> submit = csMajor.submit(new CsMajorThreadService(one,newList,level, systemList, deviceTypeTree));
+				 futureList.add(submit);
 			 });
-             if(!sysList.isEmpty()){
-                 major.setPIsHaveSystem(1);
-             }else{
-                 major.setPIsHaveSystem(0);
-             }
-			 major.setChildren(twoList);
-			 newList.add(major);
-		 });
+
+			 // 确认每个线程都执行完成
+			 for (Future<CsMajor> fut : futureList) {
+				 try {
+					 fut.get();
+				 } catch (InterruptedException | ExecutionException e) {
+					 e.printStackTrace();
+				 }
+			 }
+
+			 try {
+				 csMajor.shutdown();
+				 // (所有的任务都结束的时候，返回TRUE)
+				 if (!csMajor.awaitTermination(5 * 1000, TimeUnit.MILLISECONDS)) {
+					 // 5s超时的时候向线程池中所有的线程发出中断(interrupted)。
+					 csMajor.shutdownNow();
+				 }
+			 } catch (InterruptedException e) {
+				 e.printStackTrace();
+				 // awaitTermination方法被中断的时候也中止线程池中全部的线程的执行。
+				 log.error("awaitTermination interrupted:{}", e);
+				 csMajor.shutdownNow();
+			 }
+		 }
+
 		 //做树形搜索处理
 		 if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(newList)){
 			 this.assetTreeList(newList,name);
