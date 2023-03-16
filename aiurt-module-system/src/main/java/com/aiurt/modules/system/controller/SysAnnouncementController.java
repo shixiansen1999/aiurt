@@ -127,6 +127,7 @@ public class SysAnnouncementController {
             queryWrapper.lambda().le(SysAnnouncement::getSendTime, eTime);
         }
         queryWrapper.orderByDesc("create_time");
+        queryWrapper.lambda().eq(SysAnnouncement::getMsgCategory, CommonConstant.MSG_CATEGORY_1).or().eq(SysAnnouncement::getMsgCategory, CommonConstant.MSG_CATEGORY_2);
         //排序逻辑 处理
         IPage<SysAnnouncement> pageList = sysAnnouncementService.page(page, queryWrapper);
         List<SysAnnouncement> records = pageList.getRecords();
