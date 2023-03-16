@@ -12,6 +12,8 @@ import java.util.List;
 
 public class PrintRepairTaskDTO {
 
+    @ApiModelProperty(value = "标题")
+    private String title;
     @ApiModelProperty(value = "检修班组")
     private String orgName;
     @ApiModelProperty(value = "检修日期")
@@ -35,7 +37,7 @@ public class PrintRepairTaskDTO {
     @ApiModelProperty(value = "备件更换")
     private String changeDevices;
     @ApiModelProperty(value = "附件信息")
-    private String rel;
+    private List<String> rel;
     @ApiModelProperty(value = "作业类型（A1不用计划令,A2,A3,B1,B2,B3）")
     private String workType;
     @ApiModelProperty(value = "计划令编码")
@@ -46,4 +48,14 @@ public class PrintRepairTaskDTO {
     private String submitUserName;
     @ApiModelProperty(value = "提交时间，精确到秒")
     private String submitTime;
+    @ApiModelProperty(value = "确认人")
+    private String confirmUserName;
+    @ApiModelProperty(value = "确认时间，精确到秒")
+    private String confirmTime;
+    @ApiModelProperty(value = "原因，不予确认/验收 原因")
+    private String errorContent;
+    @ApiModelProperty(value = "验收人")
+    private String receiptUserName;
+    @ApiModelProperty(value = "验收时间，精确到秒")
+    private String receiptTime;
 }

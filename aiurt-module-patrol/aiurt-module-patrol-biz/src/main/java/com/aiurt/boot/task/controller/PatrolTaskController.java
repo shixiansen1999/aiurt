@@ -439,6 +439,24 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         }
         return Result.OK("领取成功");
     }
+
+    /**
+     * app巡检任务批量领取
+     *
+     * @param patrolTaskDTOs
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "巡检任务表-app巡检任务批量领取", operateType = 3, operateTypeAlias = "修改-更新任务状态", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
+    @ApiOperation(value = "巡检任务表-app巡检任务批量领取", notes = "巡检任务表-app巡检任务批量领取")
+    @PostMapping(value = "/patrolTaskReceiveBatch")
+    public Result<?> patrolTaskReceiveBatch(@RequestBody List<PatrolTaskDTO> patrolTaskDTOs, HttpServletRequest req) {
+        for (PatrolTaskDTO patrolTaskDTO : patrolTaskDTOs) {
+            patrolTaskService.getPatrolTaskReceive(patrolTaskDTO);
+        }
+        return Result.OK("领取成功");
+    }
+
     /**
      * app巡检任务检查校验
      *

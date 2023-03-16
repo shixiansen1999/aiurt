@@ -2776,7 +2776,17 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             printRepairTaskDTO.setWorkType(one.getWorkType());
             printRepairTaskDTO.setPlanOrderCode(one.getPlanOrderCode());
             printRepairTaskDTO.setPlanOrderCodeUrl(one.getPlanOrderCodeUrl());
+            printRepairTaskDTO.setSubmitUserName(one.getSumitUserName());
+            printRepairTaskDTO.setSubmitTime(DateUtil.format(one.getSubmitTime(),"yyyy-MM-dd HH:mm"));
+            printRepairTaskDTO.setRepairRecord("1");
+            printRepairTaskDTO.setConfirmUserName(byId.getConfirmUserName());
+            printRepairTaskDTO.setConfirmTime(DateUtil.format(byId.getConfirmTime(),"yyyy-MM-dd HH:mm:ss"));
+            printRepairTaskDTO.setReceiptUserName(byId.getReceiptUserName());
+            printRepairTaskDTO.setReceiptTime(DateUtil.format(byId.getReceiptTime(),"yyyy-MM-dd HH:mm:ss"));
+            printRepairTaskDTO.setErrorContent(byId.getErrorContent());
 
+            List<String> arrayList = new ArrayList<>();
+            StringBuilder stringBuilder = new StringBuilder();
             //获取检修站点
             List<RepairTaskStationDTO> repairTaskStationDTOS = this.repairTaskStationList(id);
             for (RepairTaskStationDTO repairTaskStationDTO : repairTaskStationDTOS) {
@@ -2784,11 +2794,27 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 for (RepairTaskDTO repairTaskDTO : repairTaskDTOList) {
                     String deviceId = repairTaskDTO.getDeviceId();
                     CheckListDTO checkListDto = this.selectRepairTaskInfo(id,repairTaskStationDTO.getStationCode(),deviceId);
-
+                    printRepairTaskDTO.setRel(checkListDto.getEnclosureUrl());
+                    List<RepairTaskResult> repairTaskResultList = checkListDto.getRepairTaskResultList();
+                    if (CollUtil.isNotEmpty(repairTaskResultList)) {
+                        for (RepairTaskResult result : repairTaskResultList) {
+                            String content = result.getName() + ":" + result.getQualityStandard();
+                            arrayList.add(content);
+                            if (result.getStatus() == 2) {
+                                printRepairTaskDTO.setRepairRecord("2");
+                            }
+                        }
+                    }
+                    stringBuilder.append(repairTaskStationDTO.getStationName());
+                    stringBuilder.append(",");
                 }
-
             }
-
+            if (stringBuilder.length() > 0) {
+                // 截取字符
+                stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                printRepairTaskDTO.setTitle(stringBuilder.toString());
+            }
+            printRepairTaskDTO.setContent(arrayList);
             list.add(printRepairTaskDTO);
         }
         return list;

@@ -102,13 +102,6 @@ public class Schedule {
     private Date updateTime;
 
     /**
-     * 班次换班频率
-     */
-    @Excel(name = "班次换班频率", width = 15)
-    @ApiModelProperty(value = "班次换班频率")
-    private Integer changeFrequency;
-
-    /**
      *是否跳过周末
      */
     @Excel(name = "是否跳过周末", width = 15)
