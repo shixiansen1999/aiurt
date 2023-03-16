@@ -1160,16 +1160,22 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("unfinishedMatters",null);
+        Result result = Result.ok(jsonObject);
+        result.setCode(200);
         List<String> departList = new ArrayList<>();
         if (!admin) {
             if (CollUtil.isNotEmpty(departByUserId)) {
                 departList = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
             } else {
-                return null;
+                return  result;
             }
         }
         String unfinishedMatters  = depotMapper.getUnfinishedMatters(departList);
-        return  Result.ok(unfinishedMatters);
+        jsonObject.put("unfinishedMatters",unfinishedMatters);
+        result = Result.ok(jsonObject);
+        return  result;
     }
 
     @Override
