@@ -126,7 +126,7 @@ public class SysAnnouncementController {
         if (StrUtil.isNotEmpty(eTime)) {
             queryWrapper.lambda().le(SysAnnouncement::getSendTime, eTime);
         }
-
+        queryWrapper.orderByDesc("create_time");
         //排序逻辑 处理
         IPage<SysAnnouncement> pageList = sysAnnouncementService.page(page, queryWrapper);
         List<SysAnnouncement> records = pageList.getRecords();
