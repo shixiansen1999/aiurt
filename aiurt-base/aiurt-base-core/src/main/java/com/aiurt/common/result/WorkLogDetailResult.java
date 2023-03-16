@@ -167,6 +167,7 @@ public class WorkLogDetailResult {
     @ApiModelProperty(value = "提交时间")
     private  Date  submitTime;
 
-
-
+    /**未完成事项*/
+    @ApiModelProperty(value = "未完成事项")
+    private  String  unfinishedMatters;
 }
