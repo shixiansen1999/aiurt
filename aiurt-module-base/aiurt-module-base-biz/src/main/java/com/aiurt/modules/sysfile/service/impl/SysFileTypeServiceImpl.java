@@ -631,10 +631,13 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
 							if (loginUsers != null && loginUsers.size() > 0) {
 								Set<SimpUserVO> userList = new HashSet<>();
+								List<String> userIds = new ArrayList<>();
 								for (LoginUser sysUser : loginUsers) {
 									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+									userIds.add(sysUser.getId());
 								}
 								vo.setPrimaryLookStatus(userList);
+								vo.setPrimaryLookStatusCode(userIds);
 							}
 						});
 					}
@@ -663,10 +666,13 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
 							if (loginUsers != null && loginUsers.size() > 0) {
 								Set<SimpUserVO> userList = new HashSet<>();
+								List<String> userIds = new ArrayList<>();
 								for (LoginUser sysUser : loginUsers) {
 									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+									userIds.add(sysUser.getId());
 								}
 								vo.setPrimaryEditStatus(userList);
+								vo.setPrimaryEditStatusCode(userIds);
 							}
 						});
 					}
@@ -694,6 +700,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
 							if (loginUsers != null && loginUsers.size() > 0) {
 								Set<SimpUserVO> userList = new HashSet<>();
+								List<String> userIds = new ArrayList<>();
 								for (LoginUser sysUser : loginUsers) {
 									LambdaQueryWrapper<SysFileRole> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 									lambdaQueryWrapper.eq(SysFileRole::getDelFlag,0)
@@ -701,11 +708,13 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 											.eq(SysFileRole::getUserId,sysUser.getId());
 									SysFileRole one = roleService.getOne(lambdaQueryWrapper);
 									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()).setUploadTag(ObjectUtil.isNotEmpty(one.getUploadTag()) ? one.getUploadTag() : null));
+									userIds.add(sysUser.getId());
 								}
 //								for (LoginUser sysUser : loginUsers) {
 //									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
 //								}
 								vo.setPrimaryUploadStatus(userList);
+								vo.setPrimaryUploadStatusCode(userIds);
 							}
 						});
 					}
@@ -734,10 +743,13 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
 							if (loginUsers != null && loginUsers.size() > 0) {
 								Set<SimpUserVO> userList = new HashSet<>();
+								List<String> userIds = new ArrayList<>();
 								for (LoginUser sysUser : loginUsers) {
 									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+									userIds.add(sysUser.getId());
 								}
 								vo.setPrimaryDownloadStatus(userList);
+								vo.setPrimaryDownloadStatusCode(userIds);
 							}
 						});
 					}
@@ -766,10 +778,13 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
 							if (loginUsers != null && loginUsers.size() > 0) {
 								Set<SimpUserVO> userList = new HashSet<>();
+								List<String> userIds = new ArrayList<>();
 								for (LoginUser sysUser : loginUsers) {
 									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
+									userIds.add(sysUser.getId());
 								}
 								vo.setPrimaryDeleteStatus(userList);
+								vo.setPrimaryDeleteStatusCode(userIds);
 							}
 						});
 					}
@@ -835,8 +850,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
 									userIds.add(sysUser.getId());
 								}
-								vo.setEditUsersCode(userIds);
 								vo.setPrimaryOnlineEditing(userList);
+								vo.setPrimaryOnlineEditingCode(userIds);
 							}
 						});
 					}
