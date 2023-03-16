@@ -397,6 +397,7 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
             @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(name = "id", required = true) String deviceId,
             @RequestParam(name = "code", required = false) String code,
+            @RequestParam(name = "orgCode", required = false) String orgCode,
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "status", required = false) String status,
             HttpServletRequest req) {
@@ -415,6 +416,9 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
         }
         if(status != null && !"".equals(status)){
             queryWrapper.eq("status", status);
+        }
+        if(orgCode != null && !"".equals(orgCode)){
+            queryWrapper.like("orgCode", orgCode);
         }
         queryWrapper.eq("device_type_code",deviceTypeCode).eq("del_flag", CommonConstant.DEL_FLAG_0);
         Page<Device> pageList = deviceService.page(page, queryWrapper);
