@@ -204,11 +204,6 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         });
         try {
             LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(SparePartStockInfo::getOrganizationId,user.getOrgId());
-            wrapper.eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
-            SparePartStockInfo info = sparePartStockInfoService.getOne(wrapper);
-
             //根据仓库编号获取仓库组织机构code
             LambdaQueryWrapper<StockLevel2Info> queryWrapper = new LambdaQueryWrapper<>();
             StockLevel2Info one = iStockLevel2InfoService.getOne(queryWrapper.eq(StockLevel2Info::getWarehouseCode, partApply.getApplyWarehouseCode()).eq(StockLevel2Info::getDelFlag, 0));
@@ -225,9 +220,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             map.put("applyNumber",partApply.getApplyNumber());
             map.put("applyUserId",user.getRealname());
             map.put("applyTime",DateUtil.format(partApply.getApplyTime(),"yyyy-MM-dd HH:mm"));
-            if(null!=info){
-                map.put("warehouseName",info.getWarehouseName());
-            }
+            map.put("warehouseName",one.getWarehouseName());
 
             messageDTO.setData(map);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
