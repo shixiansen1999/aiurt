@@ -34,7 +34,8 @@
             t11.depart_name createDeptName,
             t12.depart_name returnDeptName,
             t13.depart_name lendDeptName,
-            spare_part_lend.num
+            spare_part_lend.num,
+         spare_part_lend.remarks
         FROM
         (
             SELECT
@@ -67,7 +68,8 @@
                 spare_part_lend.create_org_code,
                 spare_part_lend.entry_org_code,
                 spare_part_lend.exit_org_code,
-                t14.num
+                t14.num,
+            spare_part_lend.remarks
             FROM
             spare_part_lend spare_part_lend
             LEFT JOIN material_base t1 ON (spare_part_lend.material_code = t1.CODE and  t1.del_flag = 0)
