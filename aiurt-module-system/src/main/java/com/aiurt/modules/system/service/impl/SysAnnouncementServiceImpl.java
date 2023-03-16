@@ -1,7 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
@@ -12,8 +11,10 @@ import com.aiurt.common.util.SysAnnmentEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
-import com.aiurt.modules.param.mapper.SysParamMapper;
-import com.aiurt.modules.system.dto.*;
+import com.aiurt.modules.system.dto.SysAnnouncementPageDTO;
+import com.aiurt.modules.system.dto.SysAnnouncementTypeCountDTO;
+import com.aiurt.modules.system.dto.SysMessageInfoDTO;
+import com.aiurt.modules.system.dto.SysMessageTypeDTO;
 import com.aiurt.modules.system.entity.SysAnnouncement;
 import com.aiurt.modules.system.entity.SysAnnouncementSend;
 import com.aiurt.modules.system.mapper.SysAnnouncementMapper;
@@ -28,12 +29,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
-import org.checkerframework.checker.units.qual.min;
-import org.flowable.task.api.Task;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
-import org.jeecg.common.util.SpringContextUtils;
 import org.jeecgframework.minidao.util.FreemarkerParseFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @Description: 系统通告表
@@ -96,7 +93,11 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			for(int i=0;i<userIds.length;i++) {
 				SysAnnouncementSend announcementSend = new SysAnnouncementSend();
 				announcementSend.setAnntId(anntId);
-				announcementSend.setUserId(userIds[i]);
+				LoginUser sysUser = sysBaseApi.getUserByName(userIds[i]);
+				if (sysUser == null) {
+					continue;
+				}
+				announcementSend.setUserId(sysUser.getId());
 				announcementSend.setReadFlag(CommonConstant.NO_READ_FLAG);
 				announcementSend.setReadTime(refDate);
 				sysAnnouncementSendMapper.insert(announcementSend);
