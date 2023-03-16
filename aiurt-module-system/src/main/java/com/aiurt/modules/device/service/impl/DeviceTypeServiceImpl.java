@@ -3,6 +3,7 @@ package com.aiurt.modules.device.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.device.controller.DeviceTypeController;
@@ -20,6 +21,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
@@ -50,6 +52,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -206,32 +209,40 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
     public List<DeviceType> treeList(List<DeviceType> typeList, String pid){
 
         List<DeviceType> childList = typeList.stream().filter(deviceType -> pid.equals(deviceType.getPid())).collect(Collectors.toList());
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+                .setNameFormat("device-type-%d").build();
+        ExecutorService deviceTypes = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(), namedThreadFactory);
+        List<Future<DeviceType>> futureList = new ArrayList<>();
         if(childList != null && childList.size()>0){
             for (DeviceType deviceType : childList) {
-                deviceType.setTitle(deviceType.getName());
-                deviceType.setValue(deviceType.getCode());
-                deviceType.setTreeType("sblx");
-                String pUrl = "";
-                Integer pIsSpecialDevice = null;
-                if(pid.equals("0")){
-                    //如果systemCode不是null，查询systemCode的名称
-                    if(null!=deviceType.getSystemCode()){
-                        pUrl = deviceType.getSystemName();
-                    }
-                    //如果systemCode是null，查询majorCode的名称
-                    if(null==deviceType.getSystemCode() && null!= deviceType.getMajorCode()){
-                        pUrl = deviceType.getMajorName();
-                    }
-                }else{
-                    //如果pid不是0，查询设备类型名称
-                    LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
-                    DeviceType type = deviceTypeMapper.selectOne(wrapper.eq(DeviceType::getId,pid));
-                    pUrl = type.getName();
-                    pIsSpecialDevice = type.getIsSpecialDevice();
-                }
-                deviceType.setPUrl(pUrl);
-                deviceType.setPIsSpecialDevice(pIsSpecialDevice);
+                Future<DeviceType> submit = deviceTypes.submit(new DeviceTypeThreadService(pid, deviceType, deviceTypeMapper));
                 deviceType.setChildren(treeList(typeList,deviceType.getId().toString()));
+                futureList.add(submit);
+            }
+
+            // 确认每个线程都执行完成
+            for (Future<DeviceType> fut : futureList) {
+                try {
+                    fut.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            try {
+                deviceTypes.shutdown();
+                // (所有的任务都结束的时候，返回TRUE)
+                if (!deviceTypes.awaitTermination(5 * 1000, TimeUnit.MILLISECONDS)) {
+                    // 5s超时的时候向线程池中所有的线程发出中断(interrupted)。
+                    deviceTypes.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                // awaitTermination方法被中断的时候也中止线程池中全部的线程的执行。
+                log.error("awaitTermination interrupted:{}", e);
+                deviceTypes.shutdownNow();
             }
         }
         return childList;
