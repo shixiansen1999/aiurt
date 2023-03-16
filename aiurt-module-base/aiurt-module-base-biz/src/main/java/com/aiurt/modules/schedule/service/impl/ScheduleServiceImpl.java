@@ -3,6 +3,7 @@ package com.aiurt.modules.schedule.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.Week;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.util.DateUtils;
@@ -169,7 +170,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             try {
                 Calendar start = Calendar.getInstance();
                 start.setTime(schedule.getStartDate());
-                QueryWrapper wrapper = new QueryWrapper();
+                QueryWrapper<ScheduleRuleItem> wrapper = new QueryWrapper<>();
                 wrapper.eq("rule_id", schedule.getRuleId());
                 wrapper.orderByDesc("id");
                 List<ScheduleRuleItem> itemList = ruleItemService.list(wrapper);
@@ -183,6 +184,14 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                 }
                 int i = scheduleRuleItem.getSort();
                 while (!start.getTime().after(schedule.getEndDate())) {
+                    //判断是否跳过周末
+                    Boolean isSkipWeekend = schedule.getIsSkipWeekend();
+                    Date time = start.getTime();
+                    Week week = DateUtil.dayOfWeekEnum(time);
+                    if (("星期日".equals(week.toChinese()) || "星期六".equals(week.toChinese())) && isSkipWeekend) {
+                        continue;
+                    }
+
                     int index = (i % itemSize == 0 ? itemSize : i % itemSize);
                     Integer ruleItemId = scheduleRuleItemMap.get(index);
                     ScheduleItem scheduleItem = ItemService.getById(ruleItemId);
