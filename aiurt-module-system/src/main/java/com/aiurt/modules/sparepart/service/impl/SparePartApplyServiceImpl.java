@@ -23,6 +23,7 @@ import com.aiurt.modules.stock.entity.StockOutboundMaterials;
 import com.aiurt.modules.stock.mapper.StockLevel2InfoMapper;
 import com.aiurt.modules.stock.mapper.StockOutOrderLevel2Mapper;
 import com.aiurt.modules.stock.mapper.StockOutboundMaterialsMapper;
+import com.aiurt.modules.stock.service.IStockLevel2InfoService;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.todo.dto.TodoDTO;
@@ -76,6 +77,8 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     private ISysBaseAPI sysBaseApi;
     @Autowired
     private ISTodoBaseAPI isTodoBaseAPI;
+    @Autowired
+    private IStockLevel2InfoService iStockLevel2InfoService;
 
     /**
      * 分页列表查询
@@ -207,8 +210,9 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             SparePartStockInfo info = sparePartStockInfoService.getOne(wrapper);
 
             //根据仓库编号获取仓库组织机构code
-            String orgCode = sparePartApplyMapper.getDepartByWarehouseCode(partApply.getApplyWarehouseCode());
-            String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.MATERIAL_CLERK));
+            LambdaQueryWrapper<StockLevel2Info> queryWrapper = new LambdaQueryWrapper<>();
+            StockLevel2Info one = iStockLevel2InfoService.getOne(queryWrapper.eq(StockLevel2Info::getWarehouseCode, partApply.getApplyWarehouseCode()).eq(StockLevel2Info::getDelFlag, 0));
+            String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(one.getOrgCode()), Collections.singletonList(RoleConstant.MATERIAL_CLERK));
 
             //发送通知
             MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "二级库出库确认" + DateUtil.today(), null);
