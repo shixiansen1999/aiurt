@@ -122,10 +122,10 @@ public class RepairTask extends BaseEntity {
     @ApiModelProperty(value = "检修人点击开始执行任务的时间")
     private java.util.Date beginTime;
     /**提交时间，精确到秒*/
-    @Excel(name = "提交时间，精确到秒", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "提交时间，精确到秒")
+    @Excel(name = "提交时间，精确到分", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "提交时间，精确到分")
     private java.util.Date submitTime;
     /**确认人id，关联sys_user的id*/
     @Excel(name = "确认人id，关联sys_user的id", width = 15)
