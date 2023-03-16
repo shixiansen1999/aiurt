@@ -533,5 +533,17 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK("操作成功");
     }
 
+    @AutoLog(value = "查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = PERMISSION_URL)
+    @ApiOperation(value = "分页列表查询", notes = "fault-分页列表查询")
+    @GetMapping(value = "/repairDeviceList")
+    public Result<IPage<FaultDeviceRepairDTO>> queryPageList(FaultDeviceRepairDTO faultDeviceRepairDto,
+                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                              HttpServletRequest req) {
+        Page<FaultDeviceRepairDTO> page = new Page<FaultDeviceRepairDTO>(pageNo, pageSize);
+        IPage<FaultDeviceRepairDTO> faultDeviceRepairDtoList = faultDeviceService.queryRepairDeviceList(page, faultDeviceRepairDto);
+        return Result.OK(faultDeviceRepairDtoList);
+    }
+
 
 }

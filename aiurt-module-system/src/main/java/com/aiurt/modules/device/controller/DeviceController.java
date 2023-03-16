@@ -418,7 +418,7 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
             queryWrapper.eq("status", status);
         }
         if(orgCode != null && !"".equals(orgCode)){
-            queryWrapper.like("orgCode", orgCode);
+            queryWrapper.eq("org_code", orgCode);
         }
         queryWrapper.eq("device_type_code",deviceTypeCode).eq("del_flag", CommonConstant.DEL_FLAG_0);
         Page<Device> pageList = deviceService.page(page, queryWrapper);

@@ -25,4 +25,46 @@
         LEFT JOIN cs_station_position csp on csp.position_code = b.position_code
         where a.fault_code = #{faultCode} AND cl.del_flag =0 and cs.del_flag =0 AND b.del_flag =0
     </select>
+
+    <select id="queryRepairDeviceList" resultType="com.aiurt.modules.fault.dto.FaultDeviceRepairDTO" parameterType="java.lang.String">
+        select
+            a.device_code,
+            a.id,
+            b.id as deviceId,
+            b.name as deviceName,
+            dt.name as device_type_name,
+            dt.code as device_type_code,
+            b.line_code,
+            cl.line_name,
+            cs.station_code,
+            cs.station_name,
+            a.fault_code,
+            csp.position_code,
+            csp.position_name,
+            f.symptoms as symptoms,
+            b.system_code as systemCode
+        from
+            fault_device a
+                LEFT JOIN fault f on a.fault_code = f.code
+                LEFT JOIN device b ON  a.device_code = b.code
+                LEFT JOIN device_type dt on b.device_type_code = dt.code
+                LEFT JOIN cs_line cl on b.line_code = cl.line_code
+                LEFT JOIN cs_station cs on b.station_code = cs.station_code
+                LEFT JOIN cs_station_position csp on csp.position_code = b.position_code
+        <where>
+        cl.del_flag =0 and cs.del_flag =0 AND b.del_flag =0
+        <if test="condition.subSystemCode != null and condition.subSystemCode != ''">
+            and b.system_code =#{condition.subSystemCode}
+        </if>
+        <if test="condition.deviceCode != null and condition.deviceCode != ''">
+            and a.device_code like concat('%', #{condition.deviceCode}, '%')
+        </if>
+        <if test="condition.deviceName != null and condition.deviceName != ''">
+            and a.device_name like concat('%', #{condition.deviceName}, '%')
+        </if>
+        <if test="condition.repairStatus != null and condition.repairStatus !=''">
+            and a.repair_status = #{condition.repairStatus}
+        </if>
+        </where>
+    </select>
 </mapper>
