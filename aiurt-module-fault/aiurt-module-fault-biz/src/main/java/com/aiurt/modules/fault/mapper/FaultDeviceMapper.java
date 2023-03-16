@@ -1,8 +1,12 @@
 package com.aiurt.modules.fault.mapper;
 
 
+import com.aiurt.modules.fault.dto.FaultDeviceRepairDTO;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -20,4 +24,13 @@ public interface FaultDeviceMapper extends BaseMapper<FaultDevice> {
      * @return
      */
     List<FaultDevice> queryByFaultCode(String faultCode);
+
+    /**
+     * 分页查询设备送修
+     * @param page
+     * @param FaultDeviceRepairDTO
+     * @return
+     */
+    IPage<FaultDeviceRepairDTO> queryRepairDeviceList(@Param("page") Page<FaultDeviceRepairDTO> page,
+                                                      @Param("condition") FaultDeviceRepairDTO FaultDeviceRepairDTO);
 }

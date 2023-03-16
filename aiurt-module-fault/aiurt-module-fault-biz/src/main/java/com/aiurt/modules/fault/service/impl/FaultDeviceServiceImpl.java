@@ -1,9 +1,12 @@
 package com.aiurt.modules.fault.service.impl;
 
 
+import com.aiurt.modules.fault.dto.FaultDeviceRepairDTO;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.mapper.FaultDeviceMapper;
 import com.aiurt.modules.fault.service.IFaultDeviceService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -24,4 +27,12 @@ public class FaultDeviceServiceImpl extends ServiceImpl<FaultDeviceMapper, Fault
         List<FaultDevice> faultDeviceList = baseMapper.queryByFaultCode(faultCode);
         return faultDeviceList;
     }
+
+    @Override
+    public IPage<FaultDeviceRepairDTO> queryRepairDeviceList(Page<FaultDeviceRepairDTO> page, FaultDeviceRepairDTO FaultDeviceRepairDTO) {
+        IPage<FaultDeviceRepairDTO> faultDeviceRepairDtoList = baseMapper.queryRepairDeviceList(page, FaultDeviceRepairDTO);
+        return faultDeviceRepairDtoList;
+    }
+
+
 }
