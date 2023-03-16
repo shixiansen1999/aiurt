@@ -850,7 +850,6 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
 									userIds.add(sysUser.getId());
 								}
-								vo.setEditUsersCode(userIds);
 								vo.setPrimaryOnlineEditing(userList);
 								vo.setPrimaryOnlineEditingCode(userIds);
 							}
