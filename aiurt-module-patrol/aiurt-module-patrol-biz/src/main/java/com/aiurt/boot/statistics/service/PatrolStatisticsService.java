@@ -152,7 +152,7 @@ public class PatrolStatisticsService {
         DateTime friDay = DateUtil.offsetDay(monday, 4);
         DateTime saDay = DateUtil.offsetDay(monday, 5);
         DateTime sunDay = DateUtil.offsetDay(monday, 6);
-        //所在周检修日期
+        //参数日期所在周漏检日期
         for (String s : split) {
             if(("1").equals(s)){
                 patrolList.add(monday);
@@ -176,7 +176,7 @@ public class PatrolStatisticsService {
                 patrolList.add(sunDay);
             }
         }
-        //检修开始和结束时间
+        //漏检开始和结束时间
         Date firstDate = patrolList.stream().min(Comparator.comparingLong(Date::getTime)).get();
         Date secondDate =patrolList.stream().max(Comparator.comparingLong(Date::getTime)).get();
         long betweenDay = DateUtil.between(firstDate, secondDate, DateUnit.DAY);
@@ -184,21 +184,21 @@ public class PatrolStatisticsService {
         ZoneId zoneId = ZoneId.systemDefault();
         LocalDate localDate = firstDate.toInstant().atZone(zoneId).toLocalDate();
         if( date.after(firstDate) && date.before(secondDate)){
-            // 周一往前3天，星期五
+            // 第一次漏检往前推两次漏检间隔天数
             Date start = Date.from(localDate.minusDays(7-betweenDay).atStartOfDay().atZone(zoneId).toInstant());
-            // 周一往前1天，星期天
+            // 第一次漏检往前推1天
             Date end = Date.from(localDate.minusDays(1).atStartOfDay().atZone(zoneId).toInstant());
             return Arrays.asList(DateUtil.parse(DateUtil.format(start, "yyyy-MM-dd 00:00:00")),
                     DateUtil.parse(DateUtil.format(end, "yyyy-MM-dd 23:59:59")));
         }else{
             if(date.before(firstDate)){
                 Date start = Date.from(localDate.minusDays(7).atStartOfDay().atZone(zoneId).toInstant());
-                // 周一往前1天，星期天
+                // 第一次漏检往前1天
                 Date end = Date.from(localDate.minusDays(7-betweenDay).atStartOfDay().atZone(zoneId).toInstant());
                 return Arrays.asList(DateUtil.parse(DateUtil.format(start, "yyyy-MM-dd 00:00:00")),
                         DateUtil.parse(DateUtil.format(end, "yyyy-MM-dd 23:59:59")));
             }else{
-                // 周一往后3天，星期四
+                // 第一次漏检往后推两次检修间隔天数
                 secondDate = Date.from(localDate.plusDays(betweenDay).atStartOfDay().atZone(zoneId).toInstant());
                 return Arrays.asList(DateUtil.parse(DateUtil.format(firstDate, "yyyy-MM-dd 00:00:00")),
                         DateUtil.parse(DateUtil.format(secondDate, "yyyy-MM-dd 23:59:59")));
