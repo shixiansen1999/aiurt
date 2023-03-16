@@ -485,7 +485,12 @@ public class BigscreenPlanService {
                         // 截取字符,去掉最后一个；
                         jurisdiction.deleteCharAt(jurisdiction.length() - 1);
                     }
-                    teamPortraitDTO.setPositionName(CollUtil.join(position, ","));
+                    if (CollUtil.isNotEmpty(position)) {
+                        teamPortraitDTO.setPositionName(CollUtil.join(position, ","));
+                    }else {
+                        teamPortraitDTO.setPositionName("");
+                    }
+
                     teamPortraitDTO.setSiteName(CollUtil.join(siteName, ","));
                     teamPortraitDTO.setStationNum(num);
                     teamPortraitDTO.setJurisdiction(jurisdiction.toString());
