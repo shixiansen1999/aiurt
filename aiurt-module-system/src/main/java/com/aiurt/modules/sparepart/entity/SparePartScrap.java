@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -32,7 +33,7 @@ import java.util.List;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="spare_part_scrap对象", description="spare_part_scrap")
-public class SparePartScrap implements Serializable {
+public class SparePartScrap extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键id*/
@@ -78,27 +79,31 @@ public class SparePartScrap implements Serializable {
     @ApiModelProperty(value = "物资名称")
     @TableField(exist = false)
     private String name;
-	/**报废数量*/
-	@Excel(name = "报废数量", width = 15)
-    @ApiModelProperty(value = "报废数量")
+	/**处置数量*/
+	@Excel(name = "处置数量", width = 15)
+    @ApiModelProperty(value = "处置数量")
     private Integer num;
-	/**报废时间*/
-	@Excel(name = "报废时间", width = 15, format = "yyyy-MM-dd HH:mm")
+	/**处置时间*/
+	@Excel(name = "处置时间", width = 15, format = "yyyy-MM-dd HH:mm")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
-    @ApiModelProperty(value = "报废时间")
+    @ApiModelProperty(value = "处置时间")
     private Date scrapTime;
-	/**报废原因*/
-	@Excel(name = "报废原因", width = 15)
-    @ApiModelProperty(value = "报废原因")
+	/**处置原因*/
+	@Excel(name = "处置原因", width = 15)
+    @ApiModelProperty(value = "处置原因")
     private String reason;
-    /**报废人*/
-    @Excel(name = "报废人", width = 15)
-    @ApiModelProperty(value = "报废人")
+    /**处置人*/
+    @Excel(name = "处置人", width = 15)
+    @ApiModelProperty(value = "处置人")
     private String createBy;
-	/**状态：1待报损、2待确认、3已确认*/
-    @ApiModelProperty(value = "状态：1待报损、2待确认、3已确认")
+	/**备件处置状态：1待处理、2已报废、3已报损*/
+    @ApiModelProperty(value = "备件处置状态：1待处理、2已报废、3已报损")
     private Integer status;
+    @Excel(name = "处置方式", width = 15)
+    @ApiModelProperty(value = "备件处置状态：0报损、1报废")
+    @Dict(dicCode = "spare_handle_way")
+    private Integer handleWay;
 	/**线路编号*/
     @ApiModelProperty(value = "线路编号")
     private String lineCode;
@@ -213,6 +218,11 @@ public class SparePartScrap implements Serializable {
     @DeptFilterColumn
     private String sysOrgCode;
 
+    @Excel(name = "存放位置", width = 15)
     @ApiModelProperty(value = "存放位置")
     private String location;
+
+    @Excel(name = "备注", width = 15)
+    @ApiModelProperty(value = "备注")
+    private String remarks;
 }

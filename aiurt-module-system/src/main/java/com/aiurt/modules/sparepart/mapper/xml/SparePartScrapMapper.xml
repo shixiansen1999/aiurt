@@ -23,7 +23,9 @@
         t8.realname confirmName,
         spare_part_scrap.reason ,
         spare_part_scrap.status,
-        spare_part_scrap.warehouse_code
+        spare_part_scrap.warehouse_code,
+        spare_part_scrap.location,
+        spare_part_scrap.remarks
         FROM
         spare_part_scrap spare_part_scrap
         LEFT JOIN material_base t1 ON (spare_part_scrap.material_code = t1.CODE and  t1.del_flag = 0)
