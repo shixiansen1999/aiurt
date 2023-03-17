@@ -98,13 +98,18 @@ public class SysHolidaysServiceImpl extends ServiceImpl<SysHolidaysMapper, SysHo
     private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, List<SysHolidays> list, int successLines, String url, String type) {
 
         try {
-            TemplateExportParams exportParams = XlsUtil.getExcelModel("holidaysError.xlsx");
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/holidaysError.xlsx");
             Map<String, Object> errorMap = new HashMap<String, Object>();
+
+            List<Map<String, String>> listMap = new ArrayList<>();
             for (SysHolidays sysHolidays : list) {
-                errorMap.put("date", sysHolidays.getDate());
-                errorMap.put("name", sysHolidays.getName());
-                errorMap.put("mistake", sysHolidays.getMistake());
+                Map<String, String> lm = new HashMap<>(3);
+                lm.put("date", sysHolidays.getDate());
+                lm.put("name", sysHolidays.getName());
+                lm.put("mistake", sysHolidays.getMistake());
+                listMap.add(lm);
             }
+            errorMap.put("maplist", listMap);
             Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
             sheetsMap.put(0, errorMap);
             Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
@@ -136,7 +141,7 @@ public class SysHolidaysServiceImpl extends ServiceImpl<SysHolidaysMapper, SysHo
                 } else {
                     List<SysHolidays> collect = holidays.stream().filter(h -> h.getDate().equals(date)).collect(Collectors.toList());
                     if (CollUtil.isNotEmpty(collect)) {
-                        sysHoliday.setMistake(",已存在该日期");
+                        sysHoliday.setMistake("已存在该日期");
                         errorLines++;
                     }
                 }
