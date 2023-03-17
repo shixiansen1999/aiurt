@@ -137,6 +137,7 @@ public class SysHolidaysServiceImpl extends ServiceImpl<SysHolidaysMapper, SysHo
                     List<SysHolidays> collect = holidays.stream().filter(h -> h.getDate().equals(date)).collect(Collectors.toList());
                     if (CollUtil.isNotEmpty(collect)) {
                         sysHoliday.setMistake(",已存在该日期");
+                        errorLines++;
                     }
                 }
             }
