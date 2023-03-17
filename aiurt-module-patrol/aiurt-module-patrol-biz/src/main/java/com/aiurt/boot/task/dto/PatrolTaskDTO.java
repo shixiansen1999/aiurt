@@ -147,6 +147,10 @@ public class PatrolTaskDTO
     @ApiModelProperty(value = "同行人")
     @TableField(exist = false)
     private java.lang.String peerPeople;
+    @Excel(name = "抽检人", width = 15)
+    @ApiModelProperty(value = "抽检人")
+    @TableField(exist = false)
+    private String samplePersonName;
     /*** 任务计划执行日期范围*/
     @Excel(name = "任务计划执行日期范围", width = 15)
     @ApiModelProperty(value = "任务计划执行日期范围")
