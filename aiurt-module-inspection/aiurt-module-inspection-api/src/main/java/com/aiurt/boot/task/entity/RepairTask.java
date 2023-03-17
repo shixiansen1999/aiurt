@@ -382,4 +382,12 @@ public class RepairTask extends BaseEntity {
     @TableField(exist = false)
     @ApiModelProperty(value = "附件")
     private String path;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "标题")
+    private String title;
+
+    @ApiModelProperty(value = "检修单（树形）")
+    @TableField(exist = false)
+    List<RepairTaskResult> repairTaskResultList;
 }
