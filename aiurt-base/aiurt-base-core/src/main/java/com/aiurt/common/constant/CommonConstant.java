@@ -504,11 +504,23 @@ public interface CommonConstant {
   */
  public static final String STOCK_LEVEL2_CHECK_STATUS_5 = "5";
  /**
-  * 备件报废状态 待确认-2
+  * 备件处置方式 报损-0
+  */
+ public static final Integer SPARE_PART_SCRAP_HANDLE_WAY_0 = 0;
+ /**
+  * 备件处置方式 报废-1
+  */
+ public static final Integer SPARE_PART_SCRAP_HANDLE_WAY_1 = 1;
+ /**
+  * 备件处置状态 待处理-1
+  */
+ public static final Integer SPARE_PART_SCRAP_STATUS_1 = 1;
+ /**
+  * 备件处置状态 已报废-2
   */
  public static final Integer SPARE_PART_SCRAP_STATUS_2 = 2;
  /**
-  * 备件报废状态 已确认-3
+  * 备件处置状态 已报损-3
   */
  public static final Integer SPARE_PART_SCRAP_STATUS_3 = 3;
  /**

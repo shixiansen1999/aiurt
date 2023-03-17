@@ -68,6 +68,10 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @Excel(name = "物资编号", width = 15)
     @ApiModelProperty(value = "物资编号")
     private String materialCode;
+    @Excel(name = "备件名称", width = 15)
+    @ApiModelProperty(value = "备件名称")
+    @TableField(exist = false)
+    private String materialName;
     /**仓库编号*/
     @ApiModelProperty(value = "仓库编号")
     private String warehouseCode;
@@ -93,15 +97,15 @@ public class SparePartScrap extends DictEntity implements Serializable {
 	@Excel(name = "处置原因", width = 15)
     @ApiModelProperty(value = "处置原因")
     private String reason;
-    /**处置人*/
-    @Excel(name = "处置人", width = 15)
-    @ApiModelProperty(value = "处置人")
+    /**申请处置人*/
+    @Excel(name = "申请处置人", width = 15)
+    @ApiModelProperty(value = "申请处置人")
     private String createBy;
-	/**备件处置状态：1待处理、2已报废、3已报损*/
-    @ApiModelProperty(value = "备件处置状态：1待处理、2已报废、3已报损")
+	/**备件处置单状态：1待处理、2已报废、3已报损*/
+    @ApiModelProperty(value = "备件处置单状态：1待处理、2已报废、3已报损")
     private Integer status;
     @Excel(name = "处置方式", width = 15)
-    @ApiModelProperty(value = "备件处置状态：0报损、1报废")
+    @ApiModelProperty(value = "备件处置方式：0报损、1报废")
     @Dict(dicCode = "spare_handle_way")
     private Integer handleWay;
 	/**线路编号*/
@@ -225,4 +229,35 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")
     private String remarks;
+
+    @Excel(name = "故障单编号", width = 15)
+    @ApiModelProperty(value = "故障单编号")
+    private String faultCode;
+
+    @Excel(name = "故障现象", width = 15)
+    @ApiModelProperty(value = "故障现象")
+    @TableField(exist = false)
+    private String symptoms;
+
+    @Excel(name = "备件送修状态", width = 15)
+    @ApiModelProperty(value = "备件送修状态：1待返修、2已返修、3已验收")
+    private String repairStatus;
+
+    @Excel(name = "序列号", width = 15)
+    @ApiModelProperty(value = "序列号")
+    private String serialNumber;
+
+    @Excel(name = "返回时间", width = 15)
+    @ApiModelProperty(value = "返回时间")
+    private Date returnTime;
+
+    @Excel(name = "负责人", width = 15)
+    @ApiModelProperty(value = "负责人")
+    @TableField(exist = false)
+    private String responsibleUserName;
+
+    @Excel(name = "送修经办人", width = 15)
+    @ApiModelProperty(value = "送修经办人")
+    @TableField(exist = false)
+    private String manageUserName;
 }
