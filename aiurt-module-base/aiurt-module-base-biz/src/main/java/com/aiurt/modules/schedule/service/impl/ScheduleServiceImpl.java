@@ -189,6 +189,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                     Date time = start.getTime();
                     Week week = DateUtil.dayOfWeekEnum(time);
                     if (("星期日".equals(week.toChinese()) || "星期六".equals(week.toChinese())) && isSkipWeekend) {
+                        start.add(Calendar.DAY_OF_YEAR, 1);
                         continue;
                     }
                     int index = (i % itemSize == 0 ? itemSize : i % itemSize);
