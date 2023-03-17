@@ -1,5 +1,6 @@
 package com.aiurt.modules.train.task.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.train.task.entity.BdTrainTaskAttachment;
@@ -23,6 +24,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
 
+import static sun.plugin2.os.windows.OVERLAPPED.size;
+
 /**
  * @Description: 培训任务附件
  * @Author: jeecg-boot
@@ -36,7 +39,7 @@ import java.util.List;
 public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskAttachment, IBdTrainTaskAttachmentService> {
 	@Autowired
 	private IBdTrainTaskAttachmentService bdTrainTaskAttachmentService;
-	
+
 	/**
 	 * 分页列表查询
 	 *
@@ -77,7 +80,7 @@ public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskA
 		List<BdTrainTaskAttachment> uploadTaskList = bdTrainTaskAttachmentService.getUploadTaskList(taskId);
 		return Result.OK(uploadTaskList);
 	}
-	
+
 	/**
 	 *   添加
 	 *
@@ -88,10 +91,19 @@ public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskA
 	@ApiOperation(value="培训任务附件-添加", notes="培训任务附件-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody BdTrainTaskAttachment bdTrainTaskAttachment) {
-		bdTrainTaskAttachmentService.save(bdTrainTaskAttachment);
+		String filename = bdTrainTaskAttachment.getFileName();
+		String filePath = bdTrainTaskAttachment.getFilePath();
+		if (StrUtil.isNotEmpty(filePath)){
+			List<String> list = Arrays.asList(filePath.split(","));
+			for (int i = 0; i < list.size() ; i++) {
+				bdTrainTaskAttachment.setFilePath(list.get(i));
+				bdTrainTaskAttachment.setFileName(Arrays.asList(filename.split(",")).get(i));
+				bdTrainTaskAttachmentService.save(bdTrainTaskAttachment);
+			}
+		}
 		return Result.OK("添加成功！");
 	}
-	
+
 	/**
 	 *  编辑
 	 *
@@ -105,7 +117,7 @@ public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskA
 		bdTrainTaskAttachmentService.updateById(bdTrainTaskAttachment);
 		return Result.OK("编辑成功!");
 	}
-	
+
 	/**
 	 *   通过id删除
 	 *
@@ -119,7 +131,7 @@ public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskA
 		bdTrainTaskAttachmentService.removeById(id);
 		return Result.OK("删除成功!");
 	}
-	
+
 	/**
 	 *  批量删除
 	 *
@@ -133,7 +145,7 @@ public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskA
 		this.bdTrainTaskAttachmentService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
 	}
-	
+
 	/**
 	 * 通过id查询
 	 *
