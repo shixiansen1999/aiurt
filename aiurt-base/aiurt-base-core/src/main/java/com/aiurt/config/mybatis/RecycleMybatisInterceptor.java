@@ -118,7 +118,7 @@ public class RecycleMybatisInterceptor implements Interceptor {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            log.info("删除完毕，已存入还原库");
+            log.info("删除完毕，已存入回收站");
         } else if (mappedStatement.getSqlCommandType() == SqlCommandType.UPDATE) {
             try {
                 // 如果是update语句，看看是不是 update xxx set ... del_flag ... where ... 的格式
@@ -216,7 +216,7 @@ public class RecycleMybatisInterceptor implements Interceptor {
                 String moduleName = null;  // 这个数据库的module_name先置空
                 Connection connection = (Connection) invocation.getArgs()[0];
                 boolean saveOk = saveToRecycle(connection, tableName, resultString, moduleName, billIdList.toString(), 1);
-                log.info("伪删除完毕，已存入还原库");
+                log.info("伪删除完毕，已存入回收站");
             } catch (Exception e) {
                 e.printStackTrace();
             }
