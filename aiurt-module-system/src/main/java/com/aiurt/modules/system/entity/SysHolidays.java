@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -44,6 +45,7 @@ public class SysHolidays implements Serializable {
     @ApiModelProperty(value = "节假日名称")
     private String name;
     /**导入错误原因*/
+    @TableField(exist = false)
     @Excel(name = "导入错误原因", width = 15)
     @ApiModelProperty(value = "导入错误原因")
     private String mistake;
