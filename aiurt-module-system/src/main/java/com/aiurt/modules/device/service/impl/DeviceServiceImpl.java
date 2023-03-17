@@ -660,6 +660,9 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		if (StrUtil.isNotEmpty(stationCodeName)) {
 			LambdaQueryWrapper<CsStation> csStationWrapper = new LambdaQueryWrapper<>();
 			csStationWrapper.eq(CsStation::getStationName, stationCodeName).eq(CsStation::getDelFlag, 0);
+			if (StrUtil.isNotEmpty(device.getLineCode())) {
+				csStationWrapper.eq(CsStation::getLineCode, device.getLineCode());
+			}
 			CsStation one = csStationService.getOne(csStationWrapper);
 			if (ObjectUtil.isEmpty(one)) {
 				stringBuilder.append("系统不存在该站点，");
