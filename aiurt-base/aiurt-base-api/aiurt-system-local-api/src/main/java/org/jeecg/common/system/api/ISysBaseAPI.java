@@ -1041,5 +1041,11 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     String getMaterialNameByCodes(String materialCodes);
 
+
+    /**
+     * 获取所有节假日
+     * @return
+     */
+    List<String> getAllHolidays();
 }
 

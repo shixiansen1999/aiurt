@@ -61,6 +61,7 @@ public class SysHolidaysController extends BaseController<SysHolidays, ISysHolid
 		if (StrUtil.isNotEmpty(sysHolidays.getName())) {
 			wrapper.like(SysHolidays::getName, sysHolidays.getName());
 		}
+		wrapper.orderByDesc(SysHolidays::getDate);
 		Page<SysHolidays> page = new Page<SysHolidays>(pageNo, pageSize);
 		IPage<SysHolidays> pageList = sysHolidaysService.page(page, wrapper);
 		return Result.OK(pageList);

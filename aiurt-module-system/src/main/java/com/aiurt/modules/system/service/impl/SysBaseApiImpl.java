@@ -241,6 +241,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private ISysParamAPI iSysParamAPI;
     @Autowired
     private SparePartLendMapper sparePartLendMapper;
+    @Lazy
+    private MaterialBaseMapper  materialBaseMapper;
+    @Autowired
+    private ISysHolidaysService sysHolidaysService;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -2893,5 +2897,16 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getCurrentNewModified(String dictCode) {
         return sysDictService.getCurrentNewModified(dictCode);
+    }
+
+    @Override
+    public List<String> getAllHolidays() {
+        LambdaQueryWrapper<SysHolidays> wrapper = new LambdaQueryWrapper<>();
+        List<SysHolidays> list = sysHolidaysService.list(wrapper);
+        if (CollUtil.isNotEmpty(list)) {
+            List<String> collect = list.stream().map(SysHolidays::getDate).collect(Collectors.toList());
+            return collect;
+        }
+        return new ArrayList<String>();
     }
 }

@@ -197,7 +197,6 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                     if (("星期日".equals(week.toChinese()) || "星期六".equals(week.toChinese())) && isSkipWeekend) {
                         continue;
                     }
-
                     int index = (i % itemSize == 0 ? itemSize : i % itemSize);
                     Integer ruleItemId = scheduleRuleItemMap.get(index);
                     ScheduleItem scheduleItem = ItemService.getById(ruleItemId);
@@ -216,6 +215,20 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                                 .color(scheduleItem.getColor())
                                 .delFlag(0)
                                 .build();
+                        //  如果需要跳过节假日，并且当天和指定班次一样，则变更班次
+                        List<String> allHolidays = iSysBaseApi.getAllHolidays();
+                        Date date = start.getTime();
+                        String format = DateUtil.format(date, "yyyy-MM-dd");
+                        if (CollUtil.isNotEmpty(allHolidays)) {
+                            List<String> collect = allHolidays.stream().filter(h -> h.equals(format)).collect(Collectors.toList());
+                            if (schedule.getIsHolidayAdjustment() && collect.size() == 1) {
+                                if (schedule.getBeforeItemId().equals(ruleItemId)) {
+                                    ScheduleItem scheduleItem2 = ItemService.getById(schedule.getAfterItemId());
+                                    record.setItemId(scheduleItem2.getId());
+                                    record.setItemName(scheduleItem2.getName());
+                                }
+                            }
+                        }
                         recordService.save(record);
                     }
                     start.add(Calendar.DAY_OF_YEAR, 1);
