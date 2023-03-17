@@ -94,51 +94,33 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
             }
             // TODO: 2023/3/17 同行人和抽检人代码待优化 
             List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTask(repairTask.getId());
+            List<String> peerList = new ArrayList<String>();
+            List<String> samplingList = new ArrayList<String>();
             repairTasks.forEach(e -> {
                 //查询同行人
                 List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
                         new LambdaQueryWrapper<RepairTaskPeerRel>()
                                 .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, e.getOverhaulCode()));
                 //名称集合
-                List<String> collect3 = repairTaskPeer.stream().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
-                if (CollectionUtil.isNotEmpty(collect3)) {
-                    StringBuffer stringBuffer = new StringBuffer();
-                    for (String t : collect3) {
-                        stringBuffer.append(t);
-                        stringBuffer.append(",");
-                    }
-                    if (stringBuffer.length() > 0) {
-                        stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
-                    }
-                    e.setPeerName(stringBuffer.toString());
-                }
+                List<String> collect3 = repairTaskPeer.stream().distinct().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
+                peerList.addAll(collect3);
+
                 //查询抽检人
                 List<RepairTaskSampling> repairTaskSampling = repairTaskSamplingMapper.selectList(
                         new LambdaQueryWrapper<RepairTaskSampling>()
                                 .eq(RepairTaskSampling::getRepairTaskDeviceCode, e.getOverhaulCode()));
                 //抽检名称集合
                 List<String> collect4 = repairTaskSampling.stream().map(RepairTaskSampling::getRealName).collect(Collectors.toList());
-                if (CollectionUtil.isNotEmpty(collect4)) {
-                    StringBuffer stringBuffer = new StringBuffer();
-                    for (String t : collect4) {
-                        stringBuffer.append(t);
-                        stringBuffer.append(",");
-                    }
-                    if (stringBuffer.length() > 0) {
-                        stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
-                    }
-                    e.setSamplingName(stringBuffer.toString());
-                }
+                samplingList.addAll(collect4);
             });
 
+            peerList.removeAll (Collections.singleton (null));
+            samplingList.removeAll (Collections.singleton (null));
             //查询同行人
-            List<RepairTaskDTO> peerList = repairTasks.stream().collect(
-                    Collectors.collectingAndThen(
-                            Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(RepairTaskDTO::getPeerName))), ArrayList::new));
-            List<String> collect3 = peerList.stream().map(RepairTaskDTO::getPeerName).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect3)) {
+            HashSet<String> collect33 = new HashSet<>(peerList);
+            if (CollectionUtil.isNotEmpty(collect33)) {
                 StringBuffer stringBuffer = new StringBuffer();
-                for (String t : collect3) {
+                for (String t : collect33) {
                     stringBuffer.append(t);
                     stringBuffer.append(",");
                 }
@@ -147,14 +129,12 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
                 }
                 repairTask.setPeerName(stringBuffer.toString());
             }
+
             //查询抽检人
-            List<RepairTaskDTO> samplingList = repairTasks.stream().collect(
-                    Collectors.collectingAndThen(
-                            Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(RepairTaskDTO::getSamplingName))), ArrayList::new));
-            List<String> collect4 = samplingList.stream().map(RepairTaskDTO::getSamplingName).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect4)) {
+            HashSet<String> collect44 = new HashSet<>(samplingList);
+            if (CollectionUtil.isNotEmpty(collect44)) {
                 StringBuffer stringBuffer = new StringBuffer();
-                for (String t : collect4) {
+                for (String t : collect44) {
                     stringBuffer.append(t);
                     stringBuffer.append(",");
                 }
@@ -163,43 +143,6 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
                 }
                 repairTask.setSamplingName(stringBuffer.toString());
             }
-
-            /*//查询同行人
-            List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
-                    new LambdaQueryWrapper<RepairTaskPeerRel>()
-                            .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, repairTask.getOverhaulCode()));
-            //名称集合
-            List<String> collect3 = repairTaskPeer.stream().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect3)) {
-                StringBuffer stringBuffer = new StringBuffer();
-                for (String t : collect3) {
-                    stringBuffer.append(t);
-                    stringBuffer.append(",");
-                }
-                if (stringBuffer.length() > 0) {
-                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
-                }
-                repairTask.setPeerName(stringBuffer.toString());
-            }*/
-
-           /* //查询抽检人
-            List<RepairTaskSampling> repairTaskSampling = repairTaskSamplingMapper.selectList(
-                    new LambdaQueryWrapper<RepairTaskSampling>()
-                            .eq(RepairTaskSampling::getRepairTaskDeviceCode, repairTask.getOverhaulCode()));
-
-            //抽检名称集合
-            List<String> collect4 = repairTaskSampling.stream().map(RepairTaskSampling::getRealName).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect4)) {
-                StringBuffer stringBuffer = new StringBuffer();
-                for (String t : collect4) {
-                    stringBuffer.append(t);
-                    stringBuffer.append(",");
-                }
-                if (stringBuffer.length() > 0) {
-                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
-                }
-                repairTask.setSamplingName(stringBuffer.toString());
-            }*/
 
             //检修周期类型
             repairTask.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairTask.getType())));
