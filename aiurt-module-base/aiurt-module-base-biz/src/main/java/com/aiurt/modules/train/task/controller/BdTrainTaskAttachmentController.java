@@ -98,6 +98,7 @@ public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskA
 			for (int i = 0; i < list.size() ; i++) {
 				bdTrainTaskAttachment.setFilePath(list.get(i));
 				bdTrainTaskAttachment.setFileName(Arrays.asList(filename.split(",")).get(i));
+				bdTrainTaskAttachment.setId(null);
 				bdTrainTaskAttachmentService.save(bdTrainTaskAttachment);
 			}
 		}
