@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import cn.hutool.core.collection.CollUtil;
@@ -55,7 +56,7 @@ import java.util.stream.Collectors;
  * @Date:   2022-07-26
  * @Version: V1.0
  */
-@Api(tags="备件管理-备件报废管理")
+@Api(tags="备件管理-备件处置管理")
 @RestController
 @RequestMapping("/sparepart/sparePartScrap")
 @Slf4j
@@ -107,7 +108,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	public Result<String> add(@RequestBody SparePartScrap sparePartScrap) {
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		sparePartScrap.setSysOrgCode(user.getOrgCode());
-		sparePartScrap.setStatus(CommonConstant.SPARE_PART_SCRAP_STATUS_2);
+		sparePartScrap.setStatus(CommonConstant.SPARE_PART_SCRAP_STATUS_1);
 		sparePartScrapService.save(sparePartScrap);
 		try {
 			String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
@@ -198,13 +199,25 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	 * @param sparePartScrap
 	 * @return
 	 */
-	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑备件报废",permissionUrl = "/sparepart/sparePartScrap/list")
-	@ApiOperation(value="spare_part_scrap-编辑", notes="spare_part_scrap-编辑")
+	@AutoLog(value = "处置",operateType = 3,operateTypeAlias = "编辑备件报废",permissionUrl = "/sparepart/sparePartScrap/list")
+	@ApiOperation(value="spare_part_scrap-处置", notes="spare_part_scrap-处置")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> edit(@RequestBody SparePartScrap sparePartScrap) {
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		sparePartScrap.setSysOrgCode(user.getOrgCode());
-		return sparePartScrapService.update(sparePartScrap);
+		if (ObjectUtil.isNotEmpty(sparePartScrap.getHandleWay()) && ObjectUtil.isNotEmpty(sparePartScrap.getId())
+				&& CommonConstant.SPARE_PART_SCRAP_STATUS_1.equals(sparePartScrap.getStatus())) {
+			if (CommonConstant.SPARE_PART_SCRAP_HANDLE_WAY_0.equals(sparePartScrap.getHandleWay())) {
+				sparePartScrap.setStatus(CommonConstant.SPARE_PART_SCRAP_STATUS_3);
+			}
+			if (CommonConstant.SPARE_PART_SCRAP_HANDLE_WAY_1.equals(sparePartScrap.getHandleWay())) {
+				sparePartScrap.setStatus(CommonConstant.SPARE_PART_SCRAP_STATUS_2);
+			}
+			return sparePartScrapService.update(sparePartScrap);
+
+		}else {
+			return Result.error("操作失败");
+		}
 	}
 
 	/**
