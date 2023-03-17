@@ -9,6 +9,7 @@ import com.aiurt.common.system.base.annotation.ExcelExtend;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -42,6 +43,7 @@ public class InspectionCode extends DictEntity implements Serializable {
     @Excel(name = "检修标准表名称", width = 15)
     @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "检修标准名称")
+    @JsonProperty("name")
     private java.lang.String title;
 	/**检修标准编码*/
 	@Excel(name = "检修标准表编码", width = 15)
