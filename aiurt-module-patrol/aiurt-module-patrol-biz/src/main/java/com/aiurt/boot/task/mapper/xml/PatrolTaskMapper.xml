@@ -570,12 +570,12 @@ FROM
                       and pps.station_code = #{condition.stationCode}
                     )
         </if>
-        <if test="departList != null and departList.size > 0">
+        <if test="patrolTaskOrganizations != null and patrolTaskOrganizations.size > 0">
             AND pt.`code` in (
                     SELECT task_code
                     FROM patrol_task_organization WHERE del_flag = 0
                                                     AND org_code IN
-            <foreach collection="departList" item="item" open="(" separator="," close=")">
+            <foreach collection="patrolTaskOrganizations" item="item" open="(" separator="," close=")">
                 #{item.orgCode}
             </foreach>
             )
