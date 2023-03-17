@@ -147,7 +147,7 @@ public class SysHolidaysController extends BaseController<SysHolidays, ISysHolid
     * @param sysHolidays
     */
 	@ApiOperation(value="sys_holidays-导出excel", notes="sys_holidays-导出excel")
-    @RequestMapping(value = "/exportXls")
+    @RequestMapping(value = "/exportXls", method = RequestMethod.GET)
     public ModelAndView exportXls(HttpServletRequest request, SysHolidays sysHolidays) {
         return super.exportXls(request, sysHolidays, SysHolidays.class, "节假日表","date,name");
     }
