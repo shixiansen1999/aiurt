@@ -30,7 +30,7 @@
         and cs.del_flag = 0
     </select>
     <select id="getTodaySubmit" resultType="com.aiurt.boot.task.entity.RepairTaskDeviceRel">
-        select rtdr.staff_id,rtdr.device_code, rtdr.station_code,rtdr.line_code, rt.code as taskCode,rt.weeks as weeks,rt.start_time
+        select rtdr.staff_id,rtdr.device_code, rtdr.station_code,rtdr.line_code, rt.code as taskCode,rt.weeks as weeks,rt.start_time,rtdr.repair_task_id as repairTaskId
         from repair_task_device_rel rtdr
         left join repair_task  rt on rtdr.repair_task_id = rt.id
         where
