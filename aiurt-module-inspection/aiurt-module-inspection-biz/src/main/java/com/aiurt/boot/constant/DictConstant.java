@@ -75,4 +75,6 @@ public class DictConstant {
      * 看板时间字典
      */
     public static final String 	BOARD_TIME_TYPE = "board_time_type";
+
+    public static final String ECM_STATUS = "ecm_status";
 }

@@ -23,11 +23,17 @@ public class FixedAssetsCheckVO extends FixedAssetsCheck {
      */
     @ApiModelProperty(value = "组织机构信息")
     List<FixedAssetsCheckDept> depts;
+
+    @ApiModelProperty(value = "组织机构信息List(导出)")
+    String deptsList;
     /**
      *
      */
     @ApiModelProperty(value = "资产分类信息")
     List<FixedAssetsCheckCategory> categorys;
+
+    @ApiModelProperty(value = "资产分类信息List(导出)")
+    String categorysList;
     /**
      * 实例id
      */
@@ -52,4 +58,8 @@ public class FixedAssetsCheckVO extends FixedAssetsCheck {
     @ApiModelProperty(value = "模板key，流程标识")
     @TableField(exist = false)
     private String modelKey;
+
+    @ApiModelProperty(value = "盘点计划日期范围（通用导出）")
+    @TableField(exist = false)
+    private String planDate;
 }

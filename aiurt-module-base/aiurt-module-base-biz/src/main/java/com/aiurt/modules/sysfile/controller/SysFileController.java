@@ -198,6 +198,7 @@ public class SysFileController {
 
 		result.setSuccess(true);
 		result.setResult(pages);
+		result.setCode(CommonConstant.SC_OK_200);
 		return result;
 	}
 

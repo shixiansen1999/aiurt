@@ -77,6 +77,7 @@ public class StockOutOrderLevel2Controller {
         Page<StockOutOrderLevel2> page = new Page<StockOutOrderLevel2>(pageNo, pageSize);
         IPage<StockOutOrderLevel2> pageList = iStockOutOrderLevel2Service.pageList(page, stockOutOrderLevel2);
         result.setSuccess(true);
+		result.setCode(CommonConstant.SC_OK_200);
         result.setResult(pageList);
         return result;
     }

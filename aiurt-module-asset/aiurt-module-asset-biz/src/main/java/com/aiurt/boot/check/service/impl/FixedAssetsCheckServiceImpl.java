@@ -391,7 +391,12 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
                     }
                 });
                 l.setCategorys(categorys);
+                String categorysList = l.getCategorys().stream().map(FixedAssetsCheckCategory::getCategoryName).collect(Collectors.joining(","));
+                l.setCategorysList(categorysList);
                 l.setDepts(depts);
+                String deptsList = l.getDepts().stream().map(FixedAssetsCheckDept::getOrgName).collect(Collectors.joining(","));
+                l.setDeptsList(deptsList);
+                l.setPlanDate(DateUtil.format(l.getPlanStartDate(), "YYYY-MM-dd")+"至"+DateUtil.format(l.getPlanEndDate(), "YYYY-MM-dd"));
             });
         }
         return pageList;
