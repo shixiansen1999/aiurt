@@ -43,6 +43,7 @@ import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -441,6 +442,7 @@ public class SysAnnouncementController {
      *
      * @param request
      */
+    @ApiOperation(value = "sys/annountCement导出", notes = "sys/annountCement导出")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(SysAnnouncement sysAnnouncement, HttpServletRequest request) {
         // Step.1 组装查询条件
@@ -453,7 +455,8 @@ public class SysAnnouncementController {
         mv.addObject(NormalExcelConstants.FILE_NAME, "系统通告列表");
         mv.addObject(NormalExcelConstants.CLASS, SysAnnouncement.class);
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("系统通告列表数据", "导出人:" + user.getRealname(), "导出信息"));
+        //mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("系统通告列表数据", "导出人:" + user.getRealname(), "导出信息"));
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("系统通告列表数据", "导出信息", ExcelType.XSSF));
         mv.addObject(NormalExcelConstants.DATA_LIST, pageList);
         return mv;
     }

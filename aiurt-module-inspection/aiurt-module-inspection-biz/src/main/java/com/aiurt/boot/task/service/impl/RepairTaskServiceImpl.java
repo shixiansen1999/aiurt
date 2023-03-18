@@ -147,7 +147,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         List<Future<RepairTask>> futureList = new ArrayList<>();
         if (CollUtil.isNotEmpty(lists)){
            lists.forEach(e -> {
-            Future<RepairTask> submit = repairTask.submit(new RepairTaskThreadService(e, repairTaskMapper, manager, repairTaskPeerRelMapper, repairTaskSamplingMapper, sysBaseApi, repairTaskEnclosureMapper, repairTaskUserMapper));
+               Future<RepairTask> submit = repairTask.submit(new RepairTaskThreadService(e, repairTaskMapper, manager, repairTaskPeerRelMapper, repairTaskSamplingMapper, sysBaseApi, repairTaskEnclosureMapper, repairTaskUserMapper));
             futureList.add(submit);
 
            //打印详情
@@ -2320,9 +2320,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     }
                     TodoDTO todoDTO = new TodoDTO();
                     todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
-                    todoDTO.setTitle("检修任务-检修" + DateUtil.today());
-                    todoDTO.setMsgAbstract("检修任务接收");
-                    todoDTO.setPublishingContent("接收到新的检修任务，请在检修任务计划执行日期开展检修工作");
+                    todoDTO.setTitle("检修任务-待执行" + DateUtil.today());
+                    todoDTO.setMsgAbstract("检修任务待执行");
+                    todoDTO.setPublishingContent("您有一条检修任务待执行");
                     createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(), repairTask.getId(), "执行检修任务", "", "", todoDTO, repairTask, realNames, null);
                 }
             } catch (Exception e) {
@@ -2614,6 +2614,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         } else {
             map.put("repairName",realName);
         }
+        map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTaskMessageDTO.getId());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, repairTaskMessageDTO.getBusType());
         messageDTO.setData(map);
         SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.REPAIR_MESSAGE);

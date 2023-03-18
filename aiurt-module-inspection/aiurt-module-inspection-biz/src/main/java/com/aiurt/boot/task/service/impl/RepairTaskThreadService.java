@@ -161,6 +161,8 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
 
             //作业类型
             repairTask.setWorkTypeName(sysBaseApi.translateDict(DictConstant.WORK_TYPE, String.valueOf(repairTask.getWorkType())));
+            //检修归档状态
+            repairTask.setEcmStatusName(sysBaseApi.translateDict(DictConstant.ECM_STATUS,String.valueOf(repairTask.getEcmStatus())));
             //备注
             repairTask.setContent(repairTask.getErrorContent());
             //附件

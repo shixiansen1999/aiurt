@@ -119,12 +119,16 @@ public class ExportExcelServiceImpl implements ExportExcelService {
         if (StrUtil.isBlank(url[1])) {
             return url[0];
         }
-        Map<String, Object> map = new HashMap<String, Object>(16);
-        String[] params = url[1].split("&");
-        for (int i = 0; i < params.length; i++) {
-            String[] param = params[i].split("=");
-            if (2 == param.length) {
-                map.put(param[0], param[1]);
+        //处理前端传多个？号和重复参数的情况
+        IdentityHashMap<String, Object> map = new IdentityHashMap<>(16);
+        //Map<String, Object> map = new HashMap<String, Object>(16);
+        for (int k=1;k< url.length;k++){
+            String[] params = url[k].split("&");
+            for (int i = 0; i < params.length; i++) {
+                String[] param = params[i].split("=");
+                if (2 == param.length) {
+                    map.put(param[0], param[1]);
+                }
             }
         }
         String urlParam = URLUtil.buildQuery(map, Charset.defaultCharset());
