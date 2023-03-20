@@ -62,18 +62,18 @@
 <!--                            #{item}-->
 <!--                        </foreach>-->
 <!--                    </if>-->
-                    <if test="majorByUserId != null and majorByUserId.size() != 0 ">
-                         AND major_code in
-                        <foreach collection="majorByUserId" item="item" index="index" open="(" close=")" separator=",">
-                             #{item}
-                        </foreach>
-                    </if>
-                   <if test="stationCodeList != null and stationCodeList.size() != 0">
-                       and station_code in
-                       <foreach collection="stationCodeList" separator="," open="(" close=")" item="item">
-                           #{item}
-                       </foreach>
-                   </if>
+<!--                    <if test="majorByUserId != null and majorByUserId.size() != 0 ">-->
+<!--                         AND major_code in-->
+<!--                        <foreach collection="majorByUserId" item="item" index="index" open="(" close=")" separator=",">-->
+<!--                             #{item}-->
+<!--                        </foreach>-->
+<!--                    </if>-->
+<!--                   <if test="stationCodeList != null and stationCodeList.size() != 0">-->
+<!--                       and station_code in-->
+<!--                       <foreach collection="stationCodeList" separator="," open="(" close=")" item="item">-->
+<!--                           #{item}-->
+<!--                       </foreach>-->
+<!--                   </if>-->
         </where>
     </select>
 
@@ -111,18 +111,18 @@
 <!--                        #{item}-->
 <!--                    </foreach>-->
 <!--                </if>-->
-                <if test="majorByUserId != null and majorByUserId.size() != 0">
-                  AND major_code in
-                    <foreach collection="majorByUserId" item="item" index="index" open="(" close=")" separator=",">
-                        #{item}
-                    </foreach>
-                </if>
-                <if test="stationCodeList != null and stationCodeList.size() != 0">
-                    and station_code in
-                    <foreach collection="stationCodeList" separator="," open="(" close=")" item="item">
-                        #{item}
-                    </foreach>
-                </if>
+<!--                <if test="majorByUserId != null and majorByUserId.size() != 0">-->
+<!--                  AND major_code in-->
+<!--                    <foreach collection="majorByUserId" item="item" index="index" open="(" close=")" separator=",">-->
+<!--                        #{item}-->
+<!--                    </foreach>-->
+<!--                </if>-->
+<!--                <if test="stationCodeList != null and stationCodeList.size() != 0">-->
+<!--                    and station_code in-->
+<!--                    <foreach collection="stationCodeList" separator="," open="(" close=")" item="item">-->
+<!--                        #{item}-->
+<!--                    </foreach>-->
+<!--                </if>-->
             </where>
     </select>
 
@@ -170,18 +170,18 @@
 <!--                    #{item}-->
 <!--                 </foreach>-->
 <!--                </if>-->
-                <if test="majorByUserId != null and majorByUserId.size() != 0 ">
-                  AND  major_code in
-                 <foreach collection="majorByUserId" item="item" index="index" open="(" close=")" separator=",">
-                     #{item}
-                 </foreach>
-                </if>
-                <if test="stationCodeList != null and stationCodeList.size() != 0">
-                    and station_code in
-                    <foreach collection="stationCodeList" separator="," open="(" close=")" item="item">
-                        #{item}
-                    </foreach>
-                </if>
+<!--                <if test="majorByUserId != null and majorByUserId.size() != 0 ">-->
+<!--                  AND  major_code in-->
+<!--                 <foreach collection="majorByUserId" item="item" index="index" open="(" close=")" separator=",">-->
+<!--                     #{item}-->
+<!--                 </foreach>-->
+<!--                </if>-->
+<!--                <if test="stationCodeList != null and stationCodeList.size() != 0">-->
+<!--                    and station_code in-->
+<!--                    <foreach collection="stationCodeList" separator="," open="(" close=")" item="item">-->
+<!--                        #{item}-->
+<!--                    </foreach>-->
+<!--                </if>-->
             </where>
     </select>
 
