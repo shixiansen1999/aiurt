@@ -121,6 +121,7 @@ public class RecycleMybatisInterceptor implements Interceptor {
             log.info("删除完毕，已存入回收站");
         } else if (mappedStatement.getSqlCommandType() == SqlCommandType.UPDATE) {
             try {
+                // 步骤一、判断最终的sql语句是不是 update ... del_flag ... 是的话才能往下走
                 // 如果是update语句，看看是不是 update xxx set ... del_flag ... where ... 的格式
                 String originSql = boundSql.getSql();
                 Pattern pattern = Pattern.compile("UPDATE\\s+([a-z_\\d]+)\\s+SET[\\s\\S]+?del_flag[\\s\\S]+?(WHERE[\\s\\S]*)", Pattern.CASE_INSENSITIVE);
@@ -131,33 +132,80 @@ public class RecycleMybatisInterceptor implements Interceptor {
                     return invocation.proceed();
                 }
 
-                Object delFlag = null;
-                // 直接写sql的话，参数会直接在((ParamMap) boundSql.getParameterObject())的ParamMap里面
-                ParamMap parameterObject = (ParamMap) boundSql.getParameterObject();
-                if (parameterObject.containsKey("delFlag")) {
-                    delFlag = ((ParamMap) boundSql.getParameterObject()).get("delFlag");
+                // 目前想到的几种更新类型：列出来是因为不同的更新类型，boundSql里面的参数数量以及类型不一样
+                // update xxx set ... del_flag = 1 where id = ?
+                // update xxx set ... del_flag = 1 where id = ? and xxx = ? ...
+                // update xxx set ... del_flag = ? where id = ? ...
+                // xxxService.updateById(entity)   entity 里面有delFlag
+                // xxxService.update(null, updateWrapper)   updateWrapper有set( delFlag... 1 )
+                // xxxService.update(entity, updateWrapper)   entity 里面有delFlag updateWrapper有set( delFlag... 1 )
+                // mybatis-plus的BaseMapper源码里面的更新语句：
+                // int updateById(@Param("et") T entity);
+                // int update(@Param("et") T entity, @Param("ew") Wrapper<T> updateWrapper);
+                // 总体来说，可以归为：1、自己写的sql，或mybatis plus的逻辑删除  2、使用了mybatis plus的update
+                // 使用了mybatis plus的update可以分为：1、有entity 无updateWrapper 2、无entity 有updateWrapper， 3、有entity 有updateWrapper
+
+                Integer updateType = null;
+                ParamMap parameterObject = null;
+                Object et = null;
+                Object ew = null;
+                if (boundSql.getParameterObject() instanceof ParamMap){
+                    parameterObject = ((ParamMap) boundSql.getParameterObject());
+                    if (parameterObject.containsKey("et")){
+                        et = parameterObject.get("et");
+                    }
+                    if (parameterObject.containsKey("ew")){
+                        ew = parameterObject.get("ew");
+                    }
                 }
-                if (delFlag == null) {
-                    // mybatis-plus的BaseMapper源码里面的更新语句：
-                    // int updateById(@Param("et") T entity);
-                    // int update(@Param("et") T entity, @Param("ew") Wrapper<T> updateWrapper);
-                    // 所以取 "et" 或者 "ew", "ew"的是Wrapper对象，比较麻烦
-                    if (parameterObject.containsKey("et") && parameterObject.get("et") != null) {
-                        Object obj = parameterObject.get("et");
-                        if (obj != null) {
-                            delFlag = ReflectUtil.getFieldValue(obj, "delFlag");
+                if (parameterObject == null || (et == null && ew == null)) {
+                    updateType = 1;  //  自己写的sql，或mybatis plus的逻辑删除
+                } else {
+                    if (et != null && ew != null) {
+                        updateType = 4;  // 有entity 有updateWrapper
+                    } else if (et != null) {
+                        updateType = 2;  //  有entity 无updateWrapper
+                    } else {
+                        updateType = 3;  //  无entity 有updateWrapper
+                    }
+                }
+
+                // 步骤二、判断是不是把del_flag更新为 1 ，是的话才能往下走
+                Object delFlag = null;
+                if (updateType == 1) {
+                    if (boundSql.getSql().contains("del_flag = 1")) {
+                        delFlag = CommonConstant.DEL_FLAG_1;
+                    } else {
+                        // 直接写sql的话，参数会直接在((ParamMap) boundSql.getParameterObject())的ParamMap里面
+                        if (parameterObject.containsKey("delFlag")) {
+                            delFlag = ((ParamMap) boundSql.getParameterObject()).get("delFlag");
                         }
-                    } else if (parameterObject.containsKey("ew") && parameterObject.get("ew") != null) {
-                        Object object = parameterObject.get("ew");
-                        List sqlSet = (List) ReflectUtil.getFieldValue(object, "sqlSet");
-                        Map paramMap = (Map) ReflectUtil.getFieldValue(object, "paramNameValuePairs");
-                        for (Object o : sqlSet) {
-                            String periodSql = (String) o;  // periodSql是类似del_flag=#{ew.paramNameValuePairs.MPGENVAL1}的片段
-                            if (periodSql.indexOf("del_flag") == 0) {
-                                String key = periodSql.replace("del_flag=#{ew.paramNameValuePairs.", "").replace("}", "");
-                                delFlag = paramMap.get(key);
-                                break;
-                            }
+                    }
+                } else if (updateType == 2) {
+                    delFlag = ReflectUtil.getFieldValue(et, "delFlag");
+                } else if (updateType == 3) {
+                    List sqlSet = (List) ReflectUtil.getFieldValue(ew, "sqlSet");
+                    Map paramMap = (Map) ReflectUtil.getFieldValue(ew, "paramNameValuePairs");
+                    for (Object o : sqlSet) {
+                        String periodSql = (String) o;  // periodSql是类似del_flag=#{ew.paramNameValuePairs.MPGENVAL1}的片段
+                        if (periodSql.indexOf("del_flag") == 0) {
+                            String key = periodSql.replace("del_flag=#{ew.paramNameValuePairs.", "").replace("}", "");
+                            delFlag = paramMap.get(key);
+                            break;
+                        }
+                    }
+                } else {
+                    // 当entity和updateWrapper都有时，updateWrapper字段放在后面，和entity有相同的时候，会覆盖掉entity
+                    delFlag = ReflectUtil.getFieldValue(et, "delFlag");
+
+                    List sqlSet = (List) ReflectUtil.getFieldValue(ew, "sqlSet");
+                    Map paramMap = (Map) ReflectUtil.getFieldValue(ew, "paramNameValuePairs");
+                    for (Object o : sqlSet) {
+                        String periodSql = (String) o;  // periodSql是类似del_flag=#{ew.paramNameValuePairs.MPGENVAL1}的片段
+                        if (periodSql.indexOf("del_flag") == 0) {
+                            String key = periodSql.replace("del_flag=#{ew.paramNameValuePairs.", "").replace("}", "");
+                            delFlag = paramMap.get(key);
+                            break;
                         }
                     }
                 }
@@ -166,7 +214,7 @@ public class RecycleMybatisInterceptor implements Interceptor {
                     // delFlag 不等于 1，不是删除
                     return invocation.proceed();
                 }
-
+                // 步骤三、组装查询条件，主要就是这一步，不同的更新类型，组装查询的时候，获取的参数有区别
                 String tableName = matcher.group(1);
                 // 不拦截sys_recycle表
                 if ("sys_recycle".equals(tableName)) {
@@ -177,20 +225,28 @@ public class RecycleMybatisInterceptor implements Interceptor {
                 // 要找到where后面的 xxx = ? ，把where前面的去掉，使用newParameterMappingList填充queryBoundSql，不然会报错
                 List<ParameterMapping> newParameterMappingList = new ArrayList<>();
                 List<ParameterMapping> parameterMappingList = boundSql.getParameterMappings(); // 预编译里所有要填充的?参数
-
-                parameterMappingList.forEach(parameterMapping -> {
-                    String property = parameterMapping.getProperty();  // property大概是et.id,et.delFlag这种格式的
-                    String fieldName = property.split("\\.")[1];  // fieldName就是去掉property前面的et.
-                    // fieldName在要查询的sql语句中存在，才填充。
-                    if (Pattern.matches("[\\s\\S]*[^a-z]" + fieldName + "[^a-z][\\s\\S]*", StrUtil.toCamelCase(querySql))) {
-                        newParameterMappingList.add(parameterMapping);
+                // where后面有多少个?也就是querySql有多少个问号，就取parameterMappingList的最后几位
+                int questionMark = 0;
+                for (String s : querySql.split("")) {
+                    if ("?".equals(s)){
+                        questionMark++;
                     }
-                });
+                }
+                for (int i = parameterMappingList.size() - 1; i >=0; i--) {
+                    if (newParameterMappingList.size() >= questionMark) {
+                        break;
+                    }
+                    // 从头部加入
+                    newParameterMappingList.add(0, parameterMappingList.get(i));
+                }
 
+                if (newParameterMappingList.size() == 0) {
+                    newParameterMappingList = boundSql.getParameterMappings();
+                }
                 Object parameter = boundSql.getParameterObject();
 //                BoundSql queryBoundSql = new BoundSql(mappedStatement.getConfiguration(), querySql, newParameterMappingList, parameter);
                 PluginUtils.MPBoundSql mpBoundSql = PluginUtils.mpBoundSql(boundSql);
-                BoundSql queryBoundSql = new BoundSql(mappedStatement.getConfiguration(), querySql, mpBoundSql.parameterMappings(), parameter);
+                BoundSql queryBoundSql = new BoundSql(mappedStatement.getConfiguration(), querySql, newParameterMappingList, parameter);
                 PluginUtils.setAdditionalParameter(queryBoundSql, mpBoundSql.additionalParameters());
 
                 Executor executor = (Executor) ReflectUtil.getFieldValue(delegate, "executor");
@@ -211,7 +267,7 @@ public class RecycleMybatisInterceptor implements Interceptor {
                     resultJson.add(JSONObject.toJSONString(new JSONObject(r), SerializerFeature.WriteMapNullValue));
                 }
                 String resultString = resultJson.toString(); // 将结果转成字符串
-
+                // 步骤四、将查询到的数据存入 sys_recycle 表
                 // String moduleName = mappedStatement.getId();
                 String moduleName = null;  // 这个数据库的module_name先置空
                 Connection connection = (Connection) invocation.getArgs()[0];

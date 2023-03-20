@@ -1,6 +1,8 @@
 package com.aiurt.modules.recycle.entity;
 
 import com.aiurt.common.aspect.annotation.DeptFilterColumn;
+import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -20,7 +22,7 @@ import java.util.Date;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="sys_recycle对象", description="sys_recycle")
-public class SysRecycle implements Serializable {
+public class SysRecycle extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**主键id*/
@@ -63,6 +65,7 @@ public class SysRecycle implements Serializable {
     private Date restoreTime;
     /**删除人*/
     @ApiModelProperty(value = "删除人")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
     private String physicaldelId;
     /**删除时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
@@ -71,6 +74,7 @@ public class SysRecycle implements Serializable {
     private Date dphysicalDel;
     /**状态（（1正常2还原3删除））*/
     @ApiModelProperty(value = "状态（（1正常2还原3删除））")
+    @Dict(dicCode = "recycle_state")
     private Integer state;
     /**单据id*/
     @ApiModelProperty(value = "单据id")
@@ -83,5 +87,6 @@ public class SysRecycle implements Serializable {
     private String regUserId;
     /**是否逻辑删除, 1是 0否*/
     @ApiModelProperty(value = "是否逻辑删除, 1是 0否")
+    @Dict(dicCode = "recycle_del_sign")
     private Integer delSign;
 }
