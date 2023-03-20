@@ -16,6 +16,7 @@ import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -137,6 +138,15 @@ public class FaultDeviceRepairDTO implements Serializable {
     @TableField(exist = false)
     private String positionName;
 
+    @Excel(name = "位置层级", width = 15,needMerge = true)
+    @ApiModelProperty(value = "位置层级")
+    @TableField(exist = false)
+    private  String  positionCodeCc;
+    @Excel(name = "位置层级名称", width = 15,needMerge = true)
+    @ApiModelProperty(value = "位置层级名称")
+    @TableField(exist = false)
+    private  String  positionCodeCcName;
+
     /**专业编码*/
     @Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码", required = true)
@@ -156,6 +166,13 @@ public class FaultDeviceRepairDTO implements Serializable {
 
     @ApiModelProperty(value = "故障现象")
     private String symptoms;
+
+    /**故障现象*/
+    @Excel(name = "故障现象分类", width = 15)
+    @ApiModelProperty(value = "故障现象分类",  required = true)
+    @NotBlank(message = "故障现象分类!")
+    @Dict(dictTable = "fault_knowledge_base_type", dicCode = "code", dicText = "name")
+    private String faultPhenomenon;
 
 
     /**负责人*/

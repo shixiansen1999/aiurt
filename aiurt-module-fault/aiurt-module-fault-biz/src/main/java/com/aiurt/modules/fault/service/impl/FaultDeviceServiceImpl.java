@@ -3,6 +3,7 @@ package com.aiurt.modules.fault.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.fault.dto.FaultDeviceRepairDTO;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.mapper.FaultDeviceMapper;
@@ -73,6 +74,34 @@ public class FaultDeviceServiceImpl extends ServiceImpl<FaultDeviceMapper, Fault
             String repairUserName = baseMapper.queryRepairUserName();
             record.setRepairUserName(repairUserName);
             getUserNames(record);
+
+            //设备位置数据组装
+            //线路
+            String lineCode = record.getLineCode()==null?"":record.getLineCode();
+            //站点
+            String stationCode = record.getStationCode()==null?"":record.getStationCode();
+            //位置
+            String positionCode = record.getPositionCode()==null?"":record.getPositionCode();
+            String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
+            String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
+            String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
+            String positionCodeCc = lineCode ;
+            if(stationCode!= null && !"".equals(stationCode)){
+                positionCodeCc += CommonConstant.SYSTEM_SPLIT_STR + stationCode;
+            }
+
+            if (!"".equals(positionCode) && positionCode != null) {
+                positionCodeCc += CommonConstant.SYSTEM_SPLIT_STR + positionCode;
+            }
+            String positionCodeCcName = lineCodeName ;
+            if(stationCodeName != null && !"".equals(stationCodeName)){
+                positionCodeCcName +=  CommonConstant.SYSTEM_SPLIT_STR + stationCodeName  ;
+            }
+            if(!"".equals(positionCodeName) && positionCodeName != null){
+                positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
+            }
+            record.setPositionCodeCcName(positionCodeCcName);
+            record.setPositionCodeCc(positionCodeCc);
         }
         page.setRecords(records);
         return page;
