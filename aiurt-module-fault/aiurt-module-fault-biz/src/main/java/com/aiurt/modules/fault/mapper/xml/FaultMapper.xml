@@ -127,19 +127,19 @@
     </select>
 
     <select id="selectBySubSystemCode" resultType="com.aiurt.modules.fault.dto.FaultFrequencyDTO">
-        SELECT sub_system_code as subSystemCode,
+        SELECT f.sub_system_code as subSystemCode,
                count(*) AS number
-        FROM fault
+        FROM fault f
         <where>
             1 = 1
             <if test="startDate != null">
-                and DATE_FORMAT(happen_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+                and DATE_FORMAT(f.happen_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate}, '%Y-%m-%d')
             </if>
             <if test="endDate != null">
-                and  DATE_FORMAT(happen_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+                and  DATE_FORMAT(f.happen_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate}, '%Y-%m-%d')
             </if>
         </where>
-        GROUP BY sub_system_code
+        GROUP BY f.sub_system_code
     </select>
 
     <select id="translateMajors" resultType="java.lang.String">
