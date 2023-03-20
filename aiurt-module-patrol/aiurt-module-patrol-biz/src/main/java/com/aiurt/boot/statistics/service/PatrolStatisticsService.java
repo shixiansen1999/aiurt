@@ -409,8 +409,8 @@ public class PatrolStatisticsService {
 //            }
 //            List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
             //数据权限
-            List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
-            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO,patrolTaskOrganizations);
+//            List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO,null);
         }
 
         pageList.getRecords().stream().forEach(l -> {

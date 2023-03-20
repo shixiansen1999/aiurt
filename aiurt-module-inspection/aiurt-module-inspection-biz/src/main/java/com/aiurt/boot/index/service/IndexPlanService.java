@@ -442,6 +442,9 @@ public class IndexPlanService {
         }
 //        List<String> codeByOrgCode = getCodeByOrgCode();
         List<RepairPoolOrgRel> codeByOrgCode = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        //查询关联表，获取线路，站点code
+        List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+
         List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
         List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, repairPoolIds));
@@ -455,7 +458,7 @@ public class IndexPlanService {
         taskDetailsReq.setStartTime(judgeIsMonthQuery.getDayBegin());
         taskDetailsReq.setEndTime(judgeIsMonthQuery.getDayEnd());
 
-        List<RepairPoolDetailsDTO> maintenancDataByStationCode = indexPlanMapper.getMaintenancDataByStationCode(page, taskDetailsReq.getType(), taskDetailsReq, codeByOrgCode, repairPoolRels);
+        List<RepairPoolDetailsDTO> maintenancDataByStationCode = indexPlanMapper.getMaintenancDataByStationCode(page, taskDetailsReq.getType(), taskDetailsReq, codeByOrgCode, repairPoolRels,repairPoolStationRels);
         if (CollUtil.isNotEmpty(maintenancDataByStationCode)) {
             for (RepairPoolDetailsDTO repairPool : maintenancDataByStationCode) {
                 String planCode = repairPool.getCode();
