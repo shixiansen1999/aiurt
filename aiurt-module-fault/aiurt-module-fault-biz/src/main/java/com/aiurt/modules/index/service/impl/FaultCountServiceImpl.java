@@ -217,21 +217,21 @@ public class FaultCountServiceImpl implements IFaultCountService {
         if(roleCodes.size()>0) {
             isAdmin = true;
         }
-//        List<String> ordCode = null;
+        List<String> ordCode = null;
         List<String> majors = null;
         List<String> stationCodeList = null;
-        if (!isAdmin) {
-            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
-            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+//        if (!isAdmin) {
+//            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
+//            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
 
 //            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
 //
 //            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
 
-            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
-
-            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
-        }
+//            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
+//
+//            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
+//        }
 
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultCountInfoReq.getAppointUserName());
         GlobalThreadLocal.setDataFilter(b);
@@ -286,18 +286,18 @@ public class FaultCountServiceImpl implements IFaultCountService {
 //        List<String> ordCode = null;
         List<String> majors = null;
         List<String> stationCodeList = null;
-        if (!isAdmin) {
-            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
-            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+//        if (!isAdmin) {
+//            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
+//            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
 
 //            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
 //
 //            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-
-            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
-
-            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
-        }
+//
+//            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
+//
+//            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
+//        }
         //通过真实姓名模糊查询username
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultCountInfoReq.getAppointUserName());
         GlobalThreadLocal.setDataFilter(b);
@@ -350,18 +350,18 @@ public class FaultCountServiceImpl implements IFaultCountService {
 //        List<String> ordCode = null;
         List<String> majors = null;
         List<String> stationCodeList = null;
-        if (!isAdmin) {
-            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
-            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+//        if (!isAdmin) {
+//            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
+//            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
 
 //            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
 //
 //            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
 
-            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
-
-            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
-        }
+//            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
+//
+//            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
+//        }
 //        faultTimeoutLevelReq.setOrgList(ordCode);
         //通过真实姓名模糊查询username
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultTimeoutLevelReq.getAppointUserName());

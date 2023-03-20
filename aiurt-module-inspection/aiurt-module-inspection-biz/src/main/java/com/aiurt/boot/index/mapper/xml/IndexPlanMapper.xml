@@ -42,6 +42,12 @@
                     #{item.repairPoolCode}
                 </foreach>
             </if>
+            <if test="repairPoolStationRels != null and repairPoolStationRels.size() != 0">
+                and  rp.code in
+                <foreach collection="repairPoolStationRels" item="item" open="(" close=")" separator=",">
+                    #{item.repairPoolCode}
+                </foreach>
+            </if>
         </where>
         GROUP BY
         rpsr.station_code

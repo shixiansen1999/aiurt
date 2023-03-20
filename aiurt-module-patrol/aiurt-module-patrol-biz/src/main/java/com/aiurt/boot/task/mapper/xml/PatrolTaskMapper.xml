@@ -449,6 +449,12 @@ FROM
                 #{item.taskCode}
             </foreach>
         </if>
+        <if test="patrolTaskStations != null and patrolTaskStations.size > 0">
+            AND pt.`code` in
+            <foreach collection="patrolTaskStations" item="item" open="(" separator="," close=")">
+                #{item.taskCode}
+            </foreach>
+        </if>
         <if test="standard != null and standard.size() != 0">
             AND pt.id in
             <foreach collection="standard" item="item" open="(" separator="," close=")">
@@ -521,6 +527,12 @@ FROM
         <if test="departList != null and departList.size > 0">
             AND pt.`code` in
             <foreach collection="departList" item="item" open="(" separator="," close=")">
+                #{item.taskCode}
+            </foreach>
+        </if>
+        <if test="patrolTaskStations != null and patrolTaskStations.size > 0">
+            AND pt.`code` in
+            <foreach collection="patrolTaskStations" item="item" open="(" separator="," close=")">
                 #{item.taskCode}
             </foreach>
         </if>
@@ -599,6 +611,12 @@ FROM
             AND id in
             <foreach collection="taskIds" item="item" open="(" separator="," close=")">
                 #{item.taskId}
+            </foreach>
+        </if>
+        <if test="patrolTaskStations != null and patrolTaskStations.size() != 0">
+            AND `code` in
+            <foreach collection="patrolTaskStations" item="item" open="(" separator="," close=")">
+                #{item.taskCode}
             </foreach>
         </if>
     </select>

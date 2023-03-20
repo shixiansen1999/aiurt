@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.entity;
 
+import com.aiurt.common.aspect.annotation.LineFilterColumn;
 import com.aiurt.common.aspect.annotation.StaionFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -45,6 +46,7 @@ public class RepairPoolStationRel implements Serializable {
 	/**线路编号*/
 	@Excel(name = "线路编号", width = 15)
     @ApiModelProperty(value = "线路编号")
+    @LineFilterColumn
     private java.lang.String lineCode;
 	/**位置编号*/
 	@Excel(name = "位置编号", width = 15)

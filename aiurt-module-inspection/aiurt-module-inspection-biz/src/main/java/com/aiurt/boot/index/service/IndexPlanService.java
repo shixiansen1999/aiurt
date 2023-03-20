@@ -13,10 +13,7 @@ import com.aiurt.boot.index.dto.*;
 import com.aiurt.boot.index.mapper.IndexPlanMapper;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
-import com.aiurt.boot.plan.entity.RepairPool;
-import com.aiurt.boot.plan.entity.RepairPoolCode;
-import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
-import com.aiurt.boot.plan.entity.RepairPoolRel;
+import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskOrgRel;
@@ -104,6 +101,9 @@ public class IndexPlanService {
         //查询关联表，获取部门code
         List<RepairPoolOrgRel> poolOrgRelList = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
+        //查询关联表，获取线路，站点code
+        List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+
         //根据当前人，获取当前的专业code
         List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
@@ -120,6 +120,7 @@ public class IndexPlanService {
 
         queryWrapper.in(RepairPool::getCode, poolOrgRelList.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList()));
         queryWrapper.in(RepairPool::getCode, repairPoolRels.stream().map(RepairPoolRel::getRepairPoolCode).collect(Collectors.toList()));
+        queryWrapper.in(RepairPool::getCode, repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList()));
 
         List<RepairPool> repairPoolList = repairPoolMapper.selectList(queryWrapper);
 
@@ -207,6 +208,8 @@ public class IndexPlanService {
         // List<String> codeByOrgCode = getCodeByOrgCode();
         List<RepairPoolOrgRel> codeByOrgCode = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+        //查询关联表，获取线路，站点code
+        List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
         List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, repairPoolIds));
         if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(codeByOrgCode) || CollUtil.isEmpty(repairPoolRels)) {
@@ -218,7 +221,7 @@ public class IndexPlanService {
         taskDetailsReq.setStartTime(judgeIsMonthQuery.getDayBegin());
         taskDetailsReq.setEndTime(judgeIsMonthQuery.getDayEnd());
 
-        List<TaskDetailsDTO> detailsDTOList = indexPlanMapper.getGropuByData(taskDetailsReq.getType(), page, taskDetailsReq, codeByOrgCode, repairPoolRels);
+        List<TaskDetailsDTO> detailsDTOList = indexPlanMapper.getGropuByData(taskDetailsReq.getType(), page, taskDetailsReq, codeByOrgCode, repairPoolRels,repairPoolStationRels);
 
         boolean b = GlobalThreadLocal.setDataFilter(false);
         // 查询出符合条件的检修详情数据
