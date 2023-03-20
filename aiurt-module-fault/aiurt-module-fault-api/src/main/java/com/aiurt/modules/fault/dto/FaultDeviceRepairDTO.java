@@ -7,7 +7,6 @@ package com.aiurt.modules.fault.dto;/**
  */
 
 import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -19,6 +18,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 设备送修
@@ -54,26 +54,26 @@ public class FaultDeviceRepairDTO implements Serializable {
     @ApiModelProperty(value = "所属部门")
     private String sysOrgCode;
 
-    /**所属部门*/
-    @ApiModelProperty(value = "送修状态")
+    /**送修状态*/
+    @ApiModelProperty(value = "送修状态:1.待返修，2.已返修，3.已验收")
     @Dict(dicCode = "device_repair_status")
     private String repairStatus;
 
-    /**所属部门*/
+    /**送修序列号*/
     @ApiModelProperty(value = "送修序列号")
     private String repairSerialNumber;
 
-    /**所属部门*/
+    /**送修时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "送修时间")
-    private String repairSendTime;
+    private Date repairSendTime;
 
-    /**所属部门*/
+    /**送修返回时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "送修返回时间")
-    private String repairBackTime;
+    private Date repairBackTime;
 
 
     /**更新人*/
@@ -137,12 +137,22 @@ public class FaultDeviceRepairDTO implements Serializable {
     @TableField(exist = false)
     private String positionName;
 
-    /**专业子系统编码*/
-    @Excel(name = "专业子系统编码", width = 15)
-    @ApiModelProperty(value = "专业子系统编码")
-    @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
-    @SystemFilterColumn
-    private String subSystemCode;
+    /**专业编码*/
+    @Excel(name = "专业编码", width = 15)
+    @ApiModelProperty(value = "专业编码", required = true)
+    @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
+    private String majorCode;
+
+    /**子系统编号*/
+    @Excel(name = "子系统编号", width = 15,needMerge = true)
+    @ApiModelProperty(value = "子系统编号")
+    @Dict(dictTable ="cs_subsystem",dicText = "system_name",dicCode = "system_code")
+    private  String  systemCode;
+    /**子系统编号名称*/
+    @Excel(name = "子系统编号名称", width = 15,needMerge = true)
+    @ApiModelProperty(value = "子系统编号名称")
+    @TableField(exist = false)
+    private  String  systemCodeName;
 
     @ApiModelProperty(value = "故障现象")
     private String symptoms;
@@ -151,13 +161,22 @@ public class FaultDeviceRepairDTO implements Serializable {
     /**负责人*/
     @Excel(name = "负责人", width = 15)
     @ApiModelProperty(value = "负责人")
-    @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
-    private String chargeUserName;
+    private List<String>  chargeUserName;
+
+    /**负责人名称*/
+    @Excel(name = "负责人名称", width = 15)
+    @ApiModelProperty(value = "负责人名称")
+    private List<String>  chargeRealName;
 
     /**送修经办人*/
     @Excel(name = "送修经办人", width = 15)
     @ApiModelProperty(value = "送修经办人")
     @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String repairUserName;
+
+    @ApiModelProperty(value = "故障接报人")
+    private String receiveUserName;
+
+
 
 }
