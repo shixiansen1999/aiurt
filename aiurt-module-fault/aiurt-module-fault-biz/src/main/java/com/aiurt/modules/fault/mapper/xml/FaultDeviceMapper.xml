@@ -71,6 +71,7 @@
             and a.repair_status = #{condition.repairStatus}
         </if>
         </where>
+        ORDER BY a.repair_send_time desc,a.repair_status asc
     </select>
 
     <select id="queryUserId" resultType="java.lang.String" parameterType="java.lang.String">
