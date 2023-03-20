@@ -89,7 +89,11 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @return
      */
     @DataPermission({
-            @DataColumn(key = "deptName",value = "f.sys_org_code")
+            @DataColumn(key = "deptName",value = "f.sys_org_code"),
+            @DataColumn(key = "lineName",value = "f.line_code"),
+            @DataColumn(key = "majorName",value = "f.major_code"),
+            @DataColumn(key = "systemName",value = "f.system_code"),
+            @DataColumn(key = "stationName",value = "f.station_code")
     })
     List<Fault> getDailyFaultNum(@Param("dateTime")DateTime dateTime);
 

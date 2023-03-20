@@ -24,6 +24,9 @@ import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.param.PatrolTaskParam;
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -39,6 +42,7 @@ import java.util.List;
  * @Date: 2022-06-21
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      * app-巡检任务池列表
@@ -208,6 +212,13 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param patrolTaskOrganizations
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "pto.org_code"),
+            @DataColumn(key = "majorName",value = "pts2.major_code"),
+            @DataColumn(key = "systemName",value = "pts2.system_code"),
+            @DataColumn(key = "lineName",value = "pts.station_code"),
+            @DataColumn(key = "stationName",value = "pts.station_code")
+    })
     IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, @Param("condition") IndexScheduleDTO indexScheduleDTO, @Param("patrolTaskOrganizations") List<PatrolTaskOrganization> patrolTaskOrganizations);
 
     /**

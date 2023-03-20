@@ -440,12 +440,18 @@
     <select id="selectRepairPoolList" resultType="com.aiurt.boot.plan.dto.RepairPoolDetailsDTO">
     select year,code,type,weeks,start_time,end_time,status from repair_task
     where status = 8 and is_confirm = 0 and date_format(submit_time ,'%Y-%m-%d') =date_format(#{startDate} ,'%Y-%m-%d')
-    <if test="taskCode.size()>0">
-        and code in
-        <foreach collection="taskCode" separator="," open="(" close=")" item="code">
-            #{code}
-        </foreach>
-    </if>
+        <if test="taskCode.size()>0">
+            and code in
+            <foreach collection="taskCode" separator="," open="(" close=")" item="code">
+                #{code}
+            </foreach>
+        </if>
+        <if test="taskId.size()>0">
+            and id in
+            <foreach collection="taskId" separator="," open="(" close=")" item="item">
+                #{item}
+            </foreach>
+        </if>
     union
     select year,code,type,weeks,start_time,end_time,status from repair_task
     where status = 8 and is_confirm = 1 and is_receipt =0 and date_format(confirm_time ,'%Y-%m-%d') =date_format(#{startDate} ,'%Y-%m-%d')
@@ -455,7 +461,13 @@
                 #{code}
             </foreach>
         </if>
-    union
+        <if test="taskId.size()>0">
+            and id in
+            <foreach collection="taskId" separator="," open="(" close=")" item="item">
+                #{item}
+            </foreach>
+        </if>
+        union
     select year,code,type,weeks,start_time,end_time,status from repair_task
     where status = 8 and is_confirm = 1 and is_receipt =1 and date_format(receipt_time ,'%Y-%m-%d') =date_format(#{startDate} ,'%Y-%m-%d')
         <if test="taskCode.size()>0">
@@ -464,22 +476,79 @@
                 #{code}
             </foreach>
         </if>
+        <if test="taskId.size()>0">
+            and id in
+            <foreach collection="taskId" separator="," open="(" close=")" item="item">
+                #{item}
+            </foreach>
+        </if>
     </select>
     <select id="selectOrgByCode" resultType="java.lang.String">
             select org_code from  repair_task_org_rel where del_flag = 0 and repair_task_code = #{planCode}
     </select>
     <select id="inspectionNumByDay" resultType="com.aiurt.boot.plan.dto.RepairPoolDetailsDTO">
         select rt.year,rt.code,rt.type,rt.weeks,rt.start_time,rt.end_time,rt.status from repair_task rt
-        left join repair_task_org_rel rtor on rt.code = rtor.repair_task_code
         where rt.status = 8 and rt.is_confirm = 0 and date_format(rt.submit_time ,'%Y-%m-%d') =date_format(#{dateTime} ,'%Y-%m-%d')
+        <if test="repairTaskOrgRels.size()>0">
+            and rt.code in
+            <foreach collection="repairTaskOrgRels" item="item" open="(" close=")" separator=",">
+                #{item.repairTaskCode}
+            </foreach>
+        </if>
+        <if test="repairTaskStationRels.size()>0">
+            and rt.code in
+            <foreach collection="repairTaskStationRels" item="item" open="(" close=")" separator=",">
+                #{item.repairTaskCode}
+            </foreach>
+        </if>
+        <if test="poolCodeList.size()>0">
+            and rt.code in
+            <foreach collection="poolCodeList" item="item" open="(" close=")" separator=",">
+                #{item.repairTaskId}
+            </foreach>
+        </if>
         union
         select rt.year,rt.code,rt.type,rt.weeks,rt.start_time,rt.end_time,rt.status from repair_task rt
-        left join repair_task_org_rel rtor on rt.code = rtor.repair_task_code
         where rt.status = 8 and rt.is_confirm = 1 and rt.is_receipt =0 and date_format(rt.confirm_time ,'%Y-%m-%d') =date_format(#{dateTime} ,'%Y-%m-%d')
+        <if test="repairTaskOrgRels.size()>0">
+            and rt.code in
+            <foreach collection="repairTaskOrgRels" item="item" open="(" close=")" separator=",">
+                #{item.repairTaskCode}
+            </foreach>
+        </if>
+        <if test="repairTaskStationRels.size()>0">
+            and rt.code in
+            <foreach collection="repairTaskStationRels" item="item" open="(" close=")" separator=",">
+                #{item.repairTaskCode}
+            </foreach>
+        </if>
+        <if test="poolCodeList.size()>0">
+            and rt.code in
+            <foreach collection="poolCodeList" item="item" open="(" close=")" separator=",">
+                #{item.repairTaskId}
+            </foreach>
+        </if>
         union
         select rt.year,rt.code,rt.type,rt.weeks,rt.start_time,rt.end_time,rt.status from repair_task rt
-        left join repair_task_org_rel rtor on rt.code = rtor.repair_task_code
         where rt.status = 8 and rt.is_confirm = 1 and rt.is_receipt =1 and date_format(rt.receipt_time ,'%Y-%m-%d') =date_format(#{dateTime} ,'%Y-%m-%d')
+        <if test="repairTaskOrgRels.size()>0">
+            and rt.code in
+            <foreach collection="repairTaskOrgRels" item="item" open="(" close=")" separator=",">
+                #{item.repairTaskCode}
+            </foreach>
+        </if>
+        <if test="repairTaskStationRels.size()>0">
+            and rt.code in
+            <foreach collection="repairTaskStationRels" item="item" open="(" close=")" separator=",">
+                #{item.repairTaskCode}
+            </foreach>
+        </if>
+        <if test="poolCodeList.size()>0">
+            and rt.code in
+            <foreach collection="poolCodeList" item="item" open="(" close=")" separator=",">
+                #{item.repairTaskId}
+            </foreach>
+        </if>
     </select>
     <select id="getTaskExceptionItem" resultType="java.lang.Integer">
     select COUNT(DISTINCT rt.id) from repair_task rt
