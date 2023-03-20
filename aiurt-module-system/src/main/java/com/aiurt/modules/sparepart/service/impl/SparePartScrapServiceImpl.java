@@ -1,19 +1,25 @@
 package com.aiurt.modules.sparepart.service.impl;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartScrap;
 import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartScrapMapper;
+import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
+import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartScrapService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
@@ -27,9 +33,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: spare_part_scrap
@@ -51,6 +59,10 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
     private ISysBaseAPI sysBaseApi;
     @Autowired
     private ISTodoBaseAPI isTodoBaseAPI;
+    @Autowired
+    private ISparePartInOrderService sparePartInOrderService;
+    @Autowired
+    private SparePartStockMapper sparePartStockMapper;
     /**
      * 查询列表
      * @param page
@@ -136,5 +148,61 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
         }
         sparePartScrapMapper.updateById(sparePartScrap);
         return Result.OK("操作成功！");
+    }
+
+    @Override
+    public IPage<SparePartScrap> queryAllScrapForRepair(Page page, SparePartScrap sparePartScrap) {
+        // 只展示给角色为送修经办人的用户
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String roleCodes = sysUser.getRoleCodes();
+        boolean repairAgent = roleCodes.contains("repair_agent");
+        if(!repairAgent){
+            page.setRecords(new ArrayList<>());
+            return page;
+        }
+
+        // 查询所有状态为“已报损”且“故障单号"不为空的数据
+        List<SparePartScrap> list = sparePartScrapMapper.queryAllScrapForRepair(page, sparePartScrap);
+        list.forEach((e) -> {
+            List<String> queryResponsibleUserNameList = this.baseMapper.queryResponsibleUserName(e.getWarehouseCode());
+            String responsibleUserName = queryResponsibleUserNameList.stream().filter(t -> StrUtil.isNotBlank(t)).collect(Collectors.joining(","));
+            String manageUserName = this.baseMapper.queryManageUserName();
+            e.setResponsibleUserName(responsibleUserName);
+            e.setManageUserName(manageUserName);
+            String consumablesTypeName = sysBaseApi.translateDict("consumables_type", Convert.toStr(e.getConsumablesType()));
+            String statusName = sysBaseApi.translateDict("spare_scrap_status", Convert.toStr(e.getStatus()));
+            String typeName = sysBaseApi.translateDict("material_type", Convert.toStr(e.getType()));
+            String unitName = sysBaseApi.translateDict("materian_unit", Convert.toStr(e.getUnitValue()));
+            e.setConsumablesTypeName(consumablesTypeName);
+            e.setStatusName(statusName);
+            e.setTypeName(typeName);
+            e.setUnit(unitName);
+            // 设置送修状态为1待返修
+            if (ObjectUtil.isEmpty(e.getRepairStatus())){
+                e.setRepairStatus(CommonConstant.SPARE_PART_SCRAP_REPAIR_STATUS_1);
+                sparePartScrapMapper.updateById(e);
+            }
+        });
+        page.setRecords(list);
+        return page;
+    }
+
+    @Override
+    public void scrapRepairAcceptance(SparePartScrap sparePartScrap) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        // 更新备件处置单状态
+        sparePartScrap.setRepairStatus(CommonConstant.SPARE_PART_SCRAP_REPAIR_STATUS_3);
+        sparePartScrapMapper.updateById(sparePartScrap);
+
+        // 插入备件入库管理表
+        SparePartInOrder sparePartInOrder = new SparePartInOrder();
+        sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_0);
+        sparePartInOrder.setMaterialCode(sparePartScrap.getMaterialCode());
+        sparePartInOrder.setWarehouseCode(sparePartScrap.getWarehouseCode());
+        sparePartInOrder.setNum(sparePartScrap.getNum());
+        sparePartInOrder.setOrgId(user.getOrgId());
+        sparePartInOrder.setSysOrgCode(user.getOrgCode());
+        sparePartInOrder.setOutOrderCode(sparePartScrap.getOutOrderId());
+        sparePartInOrderService.save(sparePartInOrder);
     }
 }

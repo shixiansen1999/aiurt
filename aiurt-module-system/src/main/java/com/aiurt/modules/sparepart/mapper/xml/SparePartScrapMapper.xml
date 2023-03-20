@@ -72,4 +72,75 @@
         order by spare_part_scrap.create_time desc
 
     </select>
+    <select id="queryAllScrapForRepair" resultType="com.aiurt.modules.sparepart.entity.SparePartScrap">
+        SELECT DISTINCT
+            spare_part_scrap.*,
+            t1.`code` materialCode,
+            t1.`type`,
+            t1.`name`,
+            t1.specifications,
+            t1.manufactor_code,
+            t1.price,
+            t1.unit unitValue,
+            t1.consumables_type,
+            t2.major_code,
+            t2.major_name,
+            t3.system_code,
+            t3.system_name,
+            t4.base_type_code,
+            t4.base_type_name baseTypeCodeName,
+            t6.realname createBy,
+            t7.`name` manufactorCodeName,
+            f1.symptoms
+        FROM
+            spare_part_scrap spare_part_scrap
+            LEFT JOIN material_base t1 ON ( spare_part_scrap.material_code = t1.CODE AND t1.del_flag = 0 )
+            LEFT JOIN cs_major t2 ON ( t1.major_code = t2.major_code AND t2.del_flag = 0 )
+            LEFT JOIN cs_subsystem t3 ON ( t1.system_code = t3.system_code AND t3.del_flag = 0 )
+            LEFT JOIN material_base_type t4 ON ( t1.base_type_code = t4.base_type_code AND t4.del_flag = 0 )
+            LEFT JOIN sys_user t6 ON spare_part_scrap.create_by = t6.username
+            LEFT JOIN cs_manufactor t7 ON t7.id = t1.manufactor_code
+            LEFT JOIN fault f1 ON ( spare_part_scrap.fault_code = f1.`code` )
+        <where>
+            spare_part_scrap.status = 3
+            AND spare_part_scrap.fault_code IS NOT NULL
+            AND TRIM( spare_part_scrap.fault_code ) != ''
+            <if test="scrap.repairStatus != null and scrap.repairStatus != ''">
+                AND spare_part_scrap.repair_status = #{scrap.repairStatus}
+            </if>
+            <if test="scrap.name != null and scrap.name != ''">
+                AND t1.name like concat('%', #{scrap.name}, '%')
+            </if>
+            <if test="scrap.materialCode != null and scrap.materialCode != ''">
+                AND t1.code like concat('%', #{scrap.materialCode}, '%')
+            </if>
+            <if test="scrap.systemCode != null and scrap.systemCode != ''">
+                AND t3.system_code = #{scrap.systemCode}
+            </if>
+        </where>
+        ORDER BY
+            spare_part_scrap.create_time desc
+    </select>
+
+    <select id="queryResponsibleUserName" resultType="java.lang.String">
+        SELECT distinct
+            s2.realname
+        FROM
+            spare_part_scrap
+                LEFT JOIN spare_part_stock_info s1 ON ( spare_part_scrap.warehouse_code = s1.warehouse_code AND s1.del_flag = 0 )
+                LEFT JOIN sys_user s2 ON ( s1.org_code = s2.org_code )
+                LEFT JOIN sys_user_role s3 ON ( s2.id = s3.user_id )
+                LEFT JOIN sys_role s4 ON ( s3.role_id = s4.id AND s4.role_code = 'foreman' )
+        WHERE spare_part_scrap.warehouse_code = #{warehouseCode}
+    </select>
+    <select id="queryManageUserName" resultType="java.lang.String">
+        SELECT
+            sys_user.realname
+        FROM
+            sys_user
+                JOIN sys_user_role ON ( sys_user.id = sys_user_role.user_id )
+                JOIN sys_role ON ( sys_user_role.role_id = sys_role.id AND sys_role.role_code = 'repair_agent')
+        LIMIT 1
+    </select>
+
 </mapper>

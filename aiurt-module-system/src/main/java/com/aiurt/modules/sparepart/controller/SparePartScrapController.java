@@ -289,4 +289,51 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 		return mv;
 	}
 
+	 /**
+	  * 委外备件送修-查询
+	  * 初始查询所有状态为“已报损”且“故障单号"不为空的数据
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "委外备件送修-查询",permissionUrl = "/sparepart/sparePartScrap/list")
+	 @ApiOperation(value="委外备件送修-查询", notes="委外备件送修-查询")
+	 @GetMapping(value = "/queryAllScrapForRepair")
+	 public Result<IPage<SparePartScrap>> queryAllScrapForRepair(SparePartScrap sparePartScrap,
+																 @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+																 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+																 HttpServletRequest req) {
+		 Page<SparePartScrap> page = new Page<>(pageNo, pageSize);
+		 IPage<SparePartScrap> pageList = sparePartScrapService.queryAllScrapForRepair(page, sparePartScrap);
+		 return Result.ok(pageList);
+	 }
+
+
+	 @AutoLog(value = "返修",operateType = 3, operateTypeAlias = "返修",permissionUrl = "/sparepart/sparePartScrap/list")
+	 @ApiOperation(value="委外备件送修-返修", notes="委外备件送修-返修")
+	 @RequestMapping(value = "/scrapToRepair", method = {RequestMethod.PUT,RequestMethod.POST})
+	 public Result<?> scrapToRepair(@RequestBody SparePartScrap sparePartScrap) {
+		 if (StrUtil.isNotEmpty(sparePartScrap.getId()) && ObjectUtil.equal(sparePartScrap.getRepairStatus(), CommonConstant.SPARE_PART_SCRAP_REPAIR_STATUS_1)) {
+			 sparePartScrap.setRepairStatus(CommonConstant.SPARE_PART_SCRAP_REPAIR_STATUS_2);
+			 sparePartScrapService.updateById(sparePartScrap);
+			 return Result.ok("操作成功");
+		 } else {
+			 return Result.error("操作失败");
+		 }
+	 }
+
+	 @AutoLog(value = "验收", operateType = 3, operateTypeAlias = "验收", permissionUrl = "/sparepart/sparePartScrap/list")
+	 @ApiOperation(value="委外备件送修-验收", notes="委外备件送修-验收")
+	 @PostMapping(value = "/scrapRepairAcceptance")
+	 public Result<?> scrapRepairAcceptance(@RequestBody SparePartScrap sparePartScrap) {
+		 if (StrUtil.isNotEmpty(sparePartScrap.getId()) && ObjectUtil.equal(sparePartScrap.getRepairStatus(), CommonConstant.SPARE_PART_SCRAP_REPAIR_STATUS_2)) {
+			 sparePartScrapService.scrapRepairAcceptance(sparePartScrap);
+			 return Result.ok("操作成功");
+		 } else {
+			 return Result.error("操作失败");
+		 }
+
+	 }
+
 }
