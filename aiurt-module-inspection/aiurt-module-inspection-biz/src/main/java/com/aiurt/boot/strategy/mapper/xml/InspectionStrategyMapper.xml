@@ -26,7 +26,7 @@
 
     <select id="selectPageList" resultType="com.aiurt.boot.strategy.dto.InspectionStrategyDTO">
         SELECT * FROM
-            ( SELECT isy.name,isy.year,isy.tactics,isy.type,isy.create_time,isy.code
+            ( SELECT isy.*
                     FROM inspection_strategy isy
                     LEFT JOIN inspection_str_org_rel ss on isy.`code` =ss.inspection_str_code and ss.del_flag = 0
                     LEFT JOIN  inspection_str_rel ii on isy.`code` = ii.inspection_str_code and ii.del_flag =0

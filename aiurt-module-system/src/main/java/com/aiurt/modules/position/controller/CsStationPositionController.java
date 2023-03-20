@@ -33,10 +33,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
  /**
@@ -262,8 +259,14 @@ public class CsStationPositionController  {
 			 LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.orderByDesc(CsLine::getSort);
 			 List<CsLine> list = csLineService.list(wrapper.eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0));
-			 if(!list.isEmpty()){
-				 sort = list.get(0).getSort()+1;
+			 if(CollUtil.isNotEmpty(list)){
+				 CsLine csLine = list.get(0);
+				 if (Objects.nonNull(csLine)) {
+					 sort = Objects.isNull(csLine.getSort())?list.size()+1:csLine.getSort()+1;
+				 }else{
+				 	sort = list.size()+1;
+				 }
+
 			 }
 		 }else if(null!=level && (LEVEL_2).equals(level)){
 			 LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
@@ -271,8 +274,13 @@ public class CsStationPositionController  {
 			 wrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
 			 wrapper.eq(CsStation::getLineCode,code);
 			 List<CsStation> list = csStationService.list(wrapper);
-			 if(!list.isEmpty()){
-				 sort = list.get(0).getSort()+1;
+			 if(CollUtil.isNotEmpty(list)){
+				 CsStation csLine = list.get(0);
+				 if (Objects.nonNull(csLine)) {
+					 sort = Objects.isNull(csLine.getSort())?list.size()+1:csLine.getSort()+1;
+				 }else{
+					 sort = list.size()+1;
+				 }
 			 }
 		 }else if(null!=level && (LEVEL_3).equals(level)){
 			 LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
@@ -280,8 +288,13 @@ public class CsStationPositionController  {
 			 wrapper.eq(CsStationPosition::getStaionCode,code);
 			 wrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0);
 			 List<CsStationPosition> list = csStationPositionService.list(wrapper);
-			 if(!list.isEmpty()){
-				 sort = list.get(0).getSort()+1;
+			 if(CollUtil.isNotEmpty(list)){
+				 CsStationPosition csLine = list.get(0);
+				 if (Objects.nonNull(csLine)) {
+					 sort = Objects.isNull(csLine.getSort())?list.size()+1:csLine.getSort()+1;
+				 }else{
+					 sort = list.size()+1;
+				 }
 			 }
 		 }
 		 return Result.OK(sort);
