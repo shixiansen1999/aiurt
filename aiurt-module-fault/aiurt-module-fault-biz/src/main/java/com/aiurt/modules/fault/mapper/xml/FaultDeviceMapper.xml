@@ -73,32 +73,15 @@
         </where>
     </select>
 
-    <select id="queryDepartId" resultType="java.lang.String" parameterType="java.lang.String">
-        select cud.depart_id from fault f
-                    left join sys_user su on f.receive_user_name = su.username
-                    left join cs_user_depart cud on cud.user_id = su.id
-        <where>
-        <if test="receiveUserName != null and receiveUserName !=''">
-            and f.receive_user_name = #{receiveUserName}
-        </if>
-        </where>
-        group by cud.depart_id
-    </select>
     <select id="queryUserId" resultType="java.lang.String" parameterType="java.lang.String">
         select su.username from cs_user_depart cud
         left join sys_user su on  su.id = cud.user_id
         left join sys_user_role sur on sur.user_id = su.id
         left join sys_role sr on sr.id = sur.role_id
-        <where>
-            and sr.role_code = 'foreman'
-            <if test="departId.size()>0">
-                and cud.depart_id in
-                <foreach item="item" collection="departId" separator="," open="(" close=")" index="">
-                    #{item}
-                </foreach>
-            </if>
-        </where>
-        group by su.id
+        WHERE
+        sr.role_code = 'foreman'
+        AND su.org_id  in ( select org_id from sys_user where username  = #{receiveUserName} )
+        GROUP BY su.id
     </select>
 
     <select id="queryRepairUserName" resultType="java.lang.String" parameterType="java.lang.String">
