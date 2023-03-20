@@ -170,6 +170,73 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 String userInfoName = userInfo.stream().map(PatrolTaskUser::getUserName).collect(Collectors.joining("；"));
                 l.setUserInfoName(userInfoName);
             }
+
+            //巡视单内容
+            List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(l.getId());
+            List<PrintStationDTO> stationDTOS = new ArrayList<>();
+
+            for (PatrolStationDTO dto : billGangedInfo) {
+                PrintStationDTO printStationDTO = new PrintStationDTO();
+                printStationDTO.setStationName(dto.getStationName());
+                List<PrintSystemDTO> printSystemDTOS = new ArrayList<>();
+
+                //获取检修项
+                List<PatrolBillDTO> billInfo = dto.getBillInfo();
+                if (CollUtil.isNotEmpty(billInfo)) {
+                    for (PatrolBillDTO patrolBillDTO : billInfo) {
+                        //根据检修单号查询检修项
+                        String billCode = patrolBillDTO.getBillCode();
+                        PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(billCode))
+                                .orElseGet(PatrolTaskDeviceParam::new);
+
+                        PrintSystemDTO printSystemDTO = new PrintSystemDTO();
+                        printSystemDTO.setSystemName(taskDeviceParam.getSubsystemName());
+                        List<PrintDetailDTO> printDetailList = new ArrayList<>();
+
+                        List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
+                        // 字典翻译
+                        Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
+                                .stream().filter(m->StrUtil.isNotEmpty(m.getText()))
+                                .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+
+                        for (PatrolCheckResultDTO c : checkResultList) {
+                            c.setRequiredDictName(requiredItems.get(String.valueOf(c.getRequired())));
+                            if (ObjectUtil.isNotNull(c.getDictCode())) {
+                                List<DictModel> list = sysBaseApi.getDictItems(c.getDictCode());
+                                list.stream().forEach(d -> {
+                                    if (PatrolConstant.DEVICE_INP_TYPE.equals(c.getInputType())) {
+                                        if (d .getValue().equals(c.getOptionValue())) {
+                                            c.setCheckDictName(d .getTitle());
+                                        }
+                                    }
+                                });
+                            }
+
+                            String userName = patrolTaskMapper.getUserName(c.getUserId());
+                            c.setCheckUserName(userName);
+
+                            PrintDetailDTO printDetailDTO = new PrintDetailDTO();
+                            printDetailDTO.setContent(c.getContent() + ":" + c.getQualityStandard());
+                            if (c.getInputType() == 0) {
+                                printDetailDTO.setResult(Convert.toStr(c.getCheckResult()));
+                            }else if (c.getInputType() == 1){
+                                printDetailDTO.setResult(c.getCheckDictName());
+                            }else {
+                                printDetailDTO.setResult(c.getWriteValue());
+                            }
+                            printDetailDTO.setRemark(c.getRemark());
+                            printDetailList.add(printDetailDTO);
+                        }
+
+                        printSystemDTO.setPrintDetailDTOS(printDetailList);
+                        printSystemDTOS.add(printSystemDTO);
+                    }
+                    printStationDTO.setPrintSystemDTOS(printSystemDTOS);
+                    stationDTOS.add(printStationDTO);
+                }
+            }
+            l.setPrintStationDTOList(stationDTOS);
+
         });
         // 禁用数据权限过滤-end
         GlobalThreadLocal.setDataFilter(filter);

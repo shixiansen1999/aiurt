@@ -3,11 +3,12 @@ package com.aiurt.modules.train.task.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
-import com.aiurt.modules.train.exam.entity.BdExamPaper;
-import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
+import com.aiurt.modules.train.exam.entity.BdExamPaper;
+import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.feedback.entity.*;
 import com.aiurt.modules.train.feedback.mapper.*;
 import com.aiurt.modules.train.quzrtz.QuartzServiceImpl;
@@ -431,6 +432,8 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	public Page<BdTrainTask> queryTrainingLedger(Page<BdTrainTask> pageList,BdTrainTask bdTrainTask) {
 		List<BdTrainTask> taskList = bdTrainTaskMapper.queryTrainingLedger(pageList,bdTrainTask);
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+		// 禁用数据权限过滤-start
+		boolean filter = GlobalThreadLocal.setDataFilter(false);
 		for(BdTrainTask bdTrainTasks : taskList)
 		{
 			Date startDate1 = bdTrainTasks.getStartDate();
@@ -452,6 +455,8 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 				bdTrainTasks.setExamNumber(examPaper.getDanumber()+examPaper.getScqnumber());
 			}
 		}
+		// 禁用数据权限过滤-end
+		GlobalThreadLocal.setDataFilter(filter);
 		return pageList.setRecords(taskList);
 	}
 	@Override

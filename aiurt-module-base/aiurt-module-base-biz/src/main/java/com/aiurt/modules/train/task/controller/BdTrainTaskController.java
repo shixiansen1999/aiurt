@@ -1,19 +1,8 @@
 package com.aiurt.modules.train.task.controller;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.util.oConvertUtils;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.train.task.dto.*;
 import com.aiurt.modules.train.task.entity.BdTrainTask;
 import com.aiurt.modules.train.task.entity.BdTrainTaskSign;
@@ -24,6 +13,20 @@ import com.aiurt.modules.train.task.mapper.BdTrainTaskUserMapper;
 import com.aiurt.modules.train.task.service.IBdTrainTaskService;
 import com.aiurt.modules.train.task.service.IBdTrainTaskSignService;
 import com.aiurt.modules.train.task.vo.BdTrainTaskPage;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.util.oConvertUtils;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -63,6 +66,8 @@ public class BdTrainTaskController {
 	private BdTrainTaskSignMapper bdTrainTaskSignMapper;
 	@Autowired
 	private BdTrainTaskUserMapper bdTrainTaskUserMapper;
+	 @Autowired
+	 private ISysBaseAPI iSysBaseAPI;
 	/**
 	 * 分页列表查询
 	 *
@@ -107,6 +112,8 @@ public class BdTrainTaskController {
 			bdTrainTask.setMakeUpState(0);
 			bdTrainTask.setStudyResourceState(0);
 		}
+		SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(bdTrainTask.getTaskTeamId());
+		bdTrainTask.setTaskTeamCode(sysDepartModel.getOrgCode());
 		bdTrainTaskService.saveMain(bdTrainTask, bdTrainTaskPage.getBdTrainTaskSignList());
 		List<String> userIds = bdTrainTask.getUserIds();
 		bdTrainTaskService.addTrainTaskUser(bdTrainTask.getId(),bdTrainTask.getTaskTeamId(),userIds);
@@ -358,6 +365,7 @@ public class BdTrainTaskController {
 	 @AutoLog(value = "培训台账-分页列表查询")
 	 @ApiOperation(value="培训台账-分页列表查询", notes="培训台账-分页列表查询")
 	 @GetMapping(value = "/trainingLedger")
+	 @PermissionData(pageComponent = "trainAss/trainAccount/BdTrainAccountList")
 	 public Result<?> trainingLedger(BdTrainTask bdTrainTask,
 									@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 									@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

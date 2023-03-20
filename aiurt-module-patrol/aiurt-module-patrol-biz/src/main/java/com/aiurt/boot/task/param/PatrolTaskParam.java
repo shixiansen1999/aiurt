@@ -2,6 +2,7 @@ package com.aiurt.boot.task.param;
 
 import com.aiurt.boot.task.dto.PatrolTaskOrganizationDTO;
 import com.aiurt.boot.task.dto.PatrolTaskStationDTO;
+import com.aiurt.boot.task.dto.PrintStationDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -164,4 +165,6 @@ public class PatrolTaskParam extends PatrolTask {
     @ApiModelProperty(value = "任务抽检人")
     private String samplePersonName;
 
+    @ApiModelProperty(value = "巡视单内容")
+    private List<PrintStationDTO> printStationDTOList;
 }
