@@ -89,8 +89,8 @@ public class FaultProduceReportJob implements Job {
         Date endDate = DateUtils.parseDate(endTimeString, pattern);
         // 统计开始时间：统计截止时间-统计的时间间隔
         Date beginDate = DateUtils.addHours(endDate, -Integer.parseInt(paramInterval));
-        // 统计日期，就是统计开始时间的日期
-        Date statisticsDate = beginDate;
+        // 统计日期，改成统计截止时间的日期
+        Date statisticsDate = endDate;
 
         // 查询故障保修单:
         // 查询条件：审核通过(status=12)&approval_pass_time(审核通过时间)在统计时间范围内(昨天的00:00:00到昨天的23:59:59)
