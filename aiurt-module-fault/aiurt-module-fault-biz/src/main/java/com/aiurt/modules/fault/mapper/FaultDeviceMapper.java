@@ -35,7 +35,7 @@ public interface FaultDeviceMapper extends BaseMapper<FaultDevice> {
                                                       @Param("condition") FaultDeviceRepairDTO FaultDeviceRepairDTO);
 
     /**
-     * 根据id查找部门工班长的用户
+     * 根据故障接报人查找所在部门工班长的用户
      * @param receiveUserName
      * @return
      */
