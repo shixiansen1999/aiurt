@@ -547,8 +547,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     List<ColleaguesDTO> samplingList = new ArrayList<>();
                     repairTaskSampling.forEach(p -> {
                         ColleaguesDTO colleaguesDTO = new ColleaguesDTO();
-                        colleaguesDTO.setSamplingId(p.getUserId());
-                        colleaguesDTO.setSamplingName(p.getRealName());
+                        colleaguesDTO.setRealId(p.getUserId());
+                        colleaguesDTO.setRealName(p.getRealName());
                         samplingList.add(colleaguesDTO);
                     });
                     checkListDTO.setSamplingList(samplingList);
@@ -944,8 +944,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 List<ColleaguesDTO> samplingList = new ArrayList<>();
                 repairTaskSampling.forEach(p -> {
                     ColleaguesDTO colleaguesDTO = new ColleaguesDTO();
-                    colleaguesDTO.setSamplingId(p.getUserId());
-                    colleaguesDTO.setSamplingName(p.getRealName());
+                    colleaguesDTO.setRealId(p.getUserId());
+                    colleaguesDTO.setRealName(p.getRealName());
                     samplingList.add(colleaguesDTO);
                 });
                 checkListDTO.setSamplingList(samplingList);
