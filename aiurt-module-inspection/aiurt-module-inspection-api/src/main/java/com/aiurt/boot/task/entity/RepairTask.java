@@ -14,7 +14,6 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -356,15 +355,6 @@ public class RepairTask extends BaseEntity {
     @ApiModelProperty(value = "检修编码")
     @TableField(exist = false)
     private List<String> codeList;
-
-    /**备注*/
-    @TableField(exist = false)
-    @ApiModelProperty(value = "备注")
-    private String content;
-
-    @TableField(exist = false)
-    @ApiModelProperty(value = "附件")
-    private String path;
 
     @ApiModelProperty(value = "密级")
     @TableField(exist = false)

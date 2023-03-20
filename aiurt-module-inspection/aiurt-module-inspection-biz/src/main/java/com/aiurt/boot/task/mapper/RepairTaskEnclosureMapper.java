@@ -18,5 +18,4 @@ public interface RepairTaskEnclosureMapper extends BaseMapper<RepairTaskEnclosur
 
     RepairTaskEnclosure getByResultId(@Param("id") String id,@Param("userName") String userName);
 
-
 }

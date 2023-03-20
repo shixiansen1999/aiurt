@@ -174,4 +174,5 @@ public class DeviceType implements Serializable {
     @ApiModelProperty(value = "搜索颜色")
     @TableField(exist = false)
     private String color;
+
 }

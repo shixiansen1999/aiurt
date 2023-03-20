@@ -786,9 +786,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             // 领取后发送待办消息
             try {
                 TodoDTO todoDTO = new TodoDTO();
-                todoDTO.setTitle("巡视任务接收"+DateUtil.today());
-                todoDTO.setMsgAbstract("巡视任务领取");
-                todoDTO.setPublishingContent("领取巡视任务，请在巡视任务计划执行日期开展巡视工作");
+                todoDTO.setTitle("巡视任务-确认接收"+DateUtil.today());
+                todoDTO.setMsgAbstract("巡视任务接收");
+                todoDTO.setPublishingContent("接收巡视任务指派，请在巡视任务计划执行日期开展巡视工作");
                 todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
                 this.sendWaitingMessage(patrolTask,todoDTO);
             } catch (Exception e) {
