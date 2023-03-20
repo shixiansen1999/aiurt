@@ -118,6 +118,7 @@
                 AND t3.system_code = #{scrap.systemCode}
             </if>
         </where>
+        order by spare_part_scrap.repair_time desc,spare_part_scrap.repair_status asc
     </select>
 
     <select id="queryResponsibleUserName" resultType="java.lang.String">
