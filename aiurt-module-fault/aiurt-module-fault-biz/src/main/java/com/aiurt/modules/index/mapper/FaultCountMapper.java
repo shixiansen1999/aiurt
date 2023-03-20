@@ -38,6 +38,13 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @param faultTimeoutLevelReq
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "sys_org_code"),
+            @DataColumn(key = "lineName",value = "line_code"),
+            @DataColumn(key = "majorName",value = "major_code"),
+            @DataColumn(key = "systemName",value = "system_code"),
+            @DataColumn(key = "stationName",value = "station_code")
+    })
     List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level, @Param("page") Page<FaultTimeoutLevelDTO> page, @Param("faultTimeoutLevelReq") FaultTimeoutLevelReq faultTimeoutLevelReq,@Param("majorByUserId")List<String> majorByUserId,@Param("stationCodeList")List<String> stationCodeList,@Param("lv1Hours") Integer lv1Hours,@Param("lv2Hours") Integer lv2Hours,@Param("lv3Hours") Integer lv3Hours,@Param("userNameByRealName")List<String> userNameByRealName);
 
     /**
@@ -47,6 +54,13 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @param faultCountInfoReq
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "sys_org_code"),
+            @DataColumn(key = "lineName",value = "line_code"),
+            @DataColumn(key = "majorName",value = "major_code"),
+            @DataColumn(key = "systemName",value = "system_code"),
+            @DataColumn(key = "stationName",value = "station_code")
+    })
     List<FaultCountInfoDTO> getFaultCountInfo(@Param("type") Integer type, @Param("page") Page<FaultCountInfoDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq,/**@Param("ordList") List<String> ordList*/@Param("majorByUserId")List<String> majorByUserId,@Param("stationCodeList")List<String> stationCodeList,@Param("userNameByRealName")List<String> userNameByRealName);
 
     /**
@@ -56,6 +70,13 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @param faultCountInfoReq
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "sys_org_code"),
+            @DataColumn(key = "lineName",value = "line_code"),
+            @DataColumn(key = "majorName",value = "major_code"),
+            @DataColumn(key = "systemName",value = "system_code"),
+            @DataColumn(key = "stationName",value = "station_code")
+    })
     List<FaultCountInfosDTO> getFaultCountInfos(@Param("type") Integer type, @Param("page") Page<FaultCountInfosDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq,/**@Param("ordList") List<String> ordList*/@Param("majorByUserId")List<String> majorByUserId,@Param("stationCodeList")List<String> stationCodeList,@Param("userNameByRealName")List<String> userNameByRealName);
 
 
@@ -68,7 +89,11 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @return
      */
     @DataPermission({
-            @DataColumn(key = "deptName",value = "f.sys_org_code")
+            @DataColumn(key = "deptName",value = "f.sys_org_code"),
+            @DataColumn(key = "lineName",value = "f.line_code"),
+            @DataColumn(key = "majorName",value = "f.major_code"),
+            @DataColumn(key = "systemName",value = "f.system_code"),
+            @DataColumn(key = "stationName",value = "f.station_code")
     })
     List<Fault> getDailyFaultNum(@Param("dateTime")DateTime dateTime);
 

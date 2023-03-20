@@ -241,6 +241,7 @@ public class SysAnnouncementSendController {
         }
         result.setResult(pageList);
         result.setSuccess(true);
+        result.setCode(CommonConstant.SC_OK_200);
         return result;
     }
 

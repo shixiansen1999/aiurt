@@ -23,6 +23,7 @@ import com.aiurt.modules.flow.api.FlowBaseApi;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -326,6 +327,16 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
 
     @Transactional(rollbackFor = Exception.class)
     public String startProcess(FaultDTO faultDTO){
+        String knowledge = faultDTO.getFaultKnowledgeBase().getId();
+        if (StrUtil.isNotBlank(knowledge)) {
+            LambdaQueryWrapper<FaultAnalysisReport> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(FaultAnalysisReport::getFaultKnowledgeBaseId, knowledge);
+            FaultAnalysisReport one = faultAnalysisReportMapper.selectOne(queryWrapper);
+            if (ObjectUtil.isNotNull(one)) {
+                faultDTO.setId(one.getId());
+            }
+        }
+
         String id = faultDTO.getId();
         FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
         faultAnalysisReport.setStatus(FaultConstant.PENDING);

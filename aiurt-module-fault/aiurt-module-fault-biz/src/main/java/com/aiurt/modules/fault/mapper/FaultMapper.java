@@ -1,5 +1,7 @@
 package com.aiurt.modules.fault.mapper;
 
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
@@ -59,6 +61,13 @@ public interface FaultMapper extends BaseMapper<Fault> {
       * @param endDate
       * @return
       */
+     @DataPermission({
+             @DataColumn(key = "deptName",value = "f.sys_org_code"),
+             @DataColumn(key = "majorName",value = "f.major_code"),
+             @DataColumn(key = "systemName",value = "f.sub_system_code"),
+             @DataColumn(key = "lineName",value = "f.line_code"),
+             @DataColumn(key = "stationName",value = "f.station_code")
+     })
      List<FaultFrequencyDTO> selectBySubSystemCode(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
      /**

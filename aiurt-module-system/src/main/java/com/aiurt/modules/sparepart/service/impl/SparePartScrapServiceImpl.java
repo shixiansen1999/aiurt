@@ -9,6 +9,8 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartScrap;
+import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
+import com.aiurt.modules.sparepart.entity.SparePartScrap;
 import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartScrapMapper;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
@@ -81,14 +83,17 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
     public Result<?> update(SparePartScrap sparePartScrap) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SparePartScrap scrap = getById(sparePartScrap.getId());
-        if (sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_3)) {
+        if(sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_3) || sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_2)){
             sparePartScrap.setConfirmId(user.getUsername());
             sparePartScrap.setConfirmTime(new Date());
 
             //更新已出库库存数量,做减法
-            List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode, sparePartScrap.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode, sparePartScrap.getWarehouseCode()));
-            if (!orderList.isEmpty()) {
-                for (int i = 0; i < orderList.size(); i++) {
+            List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
+                    .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .eq(SparePartOutOrder::getMaterialCode,sparePartScrap.getMaterialCode())
+                    .eq(SparePartOutOrder::getWarehouseCode,sparePartScrap.getWarehouseCode()));
+            if(!orderList.isEmpty()){
+                for(int i =0;i<orderList.size();i++){
                     SparePartOutOrder order = orderList.get(i);
                     if (Integer.parseInt(order.getUnused()) >= scrap.getNum()) {
                         Integer number = Integer.parseInt(order.getUnused()) - scrap.getNum();

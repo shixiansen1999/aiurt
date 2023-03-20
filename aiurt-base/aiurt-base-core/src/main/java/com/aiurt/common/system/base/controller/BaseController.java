@@ -73,7 +73,7 @@ public class BaseController<T, S extends IService<T>> {
         mv.addObject(NormalExcelConstants.FILE_NAME, title);
         mv.addObject(NormalExcelConstants.CLASS, clazz);
         //update-begin--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置--------------------
-        ExportParams  exportParams=new ExportParams(title + "报表", "导出人:" + sysUser.getRealname(), title);
+        ExportParams  exportParams=new ExportParams(title + "报表", "导出人:" + sysUser.getRealname(),ExcelType.XSSF);
         exportParams.setImageBasePath(upLoadPath);
         //update-end--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置----------------------
         mv.addObject(NormalExcelConstants.PARAMS,exportParams);

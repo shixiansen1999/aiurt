@@ -6,6 +6,7 @@ import com.aiurt.boot.index.dto.TaskStateDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
 import com.aiurt.boot.plan.entity.RepairPoolRel;
+import com.aiurt.boot.plan.entity.RepairPoolStationRel;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
@@ -28,7 +29,7 @@ public interface IndexPlanMapper {
      * @param taskDetailsReq
      * @return
      */
-    List<TaskDetailsDTO> getGropuByData(@Param("type") Integer type, @Param("page") Page<TaskDetailsDTO> page, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq,@Param("codeByOrgCode") List<RepairPoolOrgRel> codeByOrgCode, @Param("repairPoolRels")List<RepairPoolRel> repairPoolRels);
+    List<TaskDetailsDTO> getGropuByData(@Param("type") Integer type, @Param("page") Page<TaskDetailsDTO> page, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq,@Param("codeByOrgCode") List<RepairPoolOrgRel> codeByOrgCode, @Param("repairPoolRels")List<RepairPoolRel> repairPoolRels,@Param("repairPoolStationRels")List<RepairPoolStationRel> repairPoolStationRels);
 
     /**
      * 点击站点获取检修数据

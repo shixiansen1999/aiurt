@@ -37,7 +37,9 @@ public interface DeviceChangeSparePartMapper extends BaseMapper<DeviceChangeSpar
      * @return
      */
     @DataPermission({
-            @DataColumn(key = "deptName",value = "mb.sys_org_code")
+            @DataColumn(key = "deptName",value = "mb.sys_org_code"),
+            @DataColumn(key = "majorName",value = "mb.major_code"),
+            @DataColumn(key = "systemName",value = "mb.system_code"),
     })
     List<SpareConsumeDTO> querySpareConsume(@Param("startDate")Date startDate, @Param("endDate")Date endDate);
 }

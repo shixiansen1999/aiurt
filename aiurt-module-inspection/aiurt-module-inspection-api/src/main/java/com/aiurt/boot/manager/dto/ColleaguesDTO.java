@@ -21,4 +21,14 @@ public class ColleaguesDTO {
     @ApiModelProperty(value = "同行人名称")
     @TableField(exist = false)
     private String realName;
+
+    /**抽检人id*/
+    @ApiModelProperty(value = "抽检人id")
+    @TableField(exist = false)
+    private String samplingId;
+
+    /**抽检人名称*/
+    @ApiModelProperty(value = "抽检人名称")
+    @TableField(exist = false)
+    private String samplingName;
 }

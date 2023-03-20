@@ -24,6 +24,7 @@ import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.entity.TemplateExportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -116,7 +117,7 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
             String exportField = "majorCode,systemCode,attentionMeasures,attentionContent,state";
             mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
             //自定义表格参数
-            mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("安全事项管理", "安全事项管理"));
+            mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("安全事项管理", "安全事项管理", ExcelType.XSSF));
             //导出数据列表
             mv.addObject(NormalExcelConstants.DATA_LIST, safetyAttentions);
         }

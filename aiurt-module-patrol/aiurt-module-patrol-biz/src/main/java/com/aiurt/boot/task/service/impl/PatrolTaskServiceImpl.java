@@ -115,6 +115,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Autowired
     private PatrolAccompanyMapper accompanyMapper;
     @Autowired
+    private PatrolSamplePersonMapper patrolSamplePersonMapper;
+    @Autowired
     private ISysParamAPI iSysParamAPI;
 
     @Override
@@ -725,16 +727,26 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
             List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, e.getId()));
             List<PatrolAccompany> accompanyList = new ArrayList<>();
+            List<PatrolSamplePerson> samplePersonList = new ArrayList<>();
             for (PatrolTaskDevice patrolTaskDevice : taskDeviceList) {
                 List<PatrolAccompany> patrolAccompanies = accompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().eq(PatrolAccompany::getTaskDeviceCode, patrolTaskDevice.getPatrolNumber()));
                 if (CollUtil.isNotEmpty(patrolAccompanies)) {
                     accompanyList.addAll(patrolAccompanies);
+                }
+                List<PatrolSamplePerson> patrolSamplePeoples = patrolSamplePersonMapper.selectList(new LambdaQueryWrapper<PatrolSamplePerson>().eq(PatrolSamplePerson::getTaskDeviceCode, patrolTaskDevice.getPatrolNumber()));
+                if (CollUtil.isNotEmpty(patrolSamplePeoples)) {
+                    samplePersonList.addAll(patrolSamplePeoples);
                 }
             }
             if (CollUtil.isNotEmpty(accompanyList)) {
                 accompanyList = accompanyList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolAccompany::getUserId))), ArrayList::new));
                 String peerPeople = accompanyList.stream().map(PatrolAccompany::getUsername).collect(Collectors.joining(";"));
                 e.setPeerPeople(peerPeople);
+            }
+            if (CollUtil.isNotEmpty(samplePersonList)) {
+                samplePersonList = samplePersonList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolSamplePerson::getUserId))), ArrayList::new));
+                String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining("；"));
+                e.setSamplePersonName(samplePersonName);
             }
             e.setStationName(manager.translateStation(stationName));
             e.setSysName(sysName);
@@ -1798,16 +1810,26 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         e.setPatrolReturnUserName(userName == null ? "-" : userName);
         List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, id));
         List<PatrolAccompany> accompanyList = new ArrayList<>();
+        List<PatrolSamplePerson> samplePersonList = new ArrayList<>();
         for (PatrolTaskDevice patrolTaskDevice : taskDeviceList) {
             List<PatrolAccompany> patrolAccompanies = accompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().eq(PatrolAccompany::getTaskDeviceCode, patrolTaskDevice.getPatrolNumber()));
             if (CollUtil.isNotEmpty(patrolAccompanies)) {
                 accompanyList.addAll(patrolAccompanies);
+            }
+            List<PatrolSamplePerson> patrolSamplePeoples = patrolSamplePersonMapper.selectList(new LambdaQueryWrapper<PatrolSamplePerson>().eq(PatrolSamplePerson::getTaskDeviceCode, patrolTaskDevice.getPatrolNumber()));
+            if (CollUtil.isNotEmpty(patrolSamplePeoples)) {
+                samplePersonList.addAll(patrolSamplePeoples);
             }
         }
         if (CollUtil.isNotEmpty(accompanyList)) {
             accompanyList = accompanyList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolAccompany::getUserId))), ArrayList::new));
             String peerPeople = accompanyList.stream().map(PatrolAccompany::getUsername).collect(Collectors.joining(";"));
             e.setPeerPeople(peerPeople);
+        }
+        if (CollUtil.isNotEmpty(samplePersonList)) {
+            samplePersonList = samplePersonList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolSamplePerson::getUserId))), ArrayList::new));
+            String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining("；"));
+            e.setSamplePersonName(samplePersonName);
         }
         return e;
     }

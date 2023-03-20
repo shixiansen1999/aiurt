@@ -22,11 +22,11 @@ import com.aiurt.boot.task.dto.GeneralReturn;
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
-import com.aiurt.boot.task.entity.PatrolTask;
-import com.aiurt.boot.task.entity.PatrolTaskOrganization;
-import com.aiurt.boot.task.entity.PatrolTaskStandard;
-import com.aiurt.boot.task.entity.TemperatureHumidity;
+import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.param.PatrolTaskParam;
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -42,6 +42,7 @@ import java.util.List;
  * @Date: 2022-06-21
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      * app-巡检任务池列表
@@ -192,7 +193,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param standard
      * @return
      */
-    IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, @Param("condition") PatrolCondition condition, @Param("regexp") String regexp, @Param("departList") List<PatrolTaskOrganization> departList,@Param("standard")List<PatrolTaskStandard> standard);
+    IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, @Param("condition") PatrolCondition condition, @Param("regexp") String regexp, @Param("departList") List<PatrolTaskOrganization> departList,@Param("standard")List<PatrolTaskStandard> standard,@Param("patrolTaskStations")List<PatrolTaskStation> patrolTaskStations);
 
     /**
      * 获取首页巡视列表下的任务列表
@@ -202,7 +203,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param standard
      * @return
      */
-    IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition, @Param("departList") List<PatrolTaskOrganization> departList, @Param("standard")List<PatrolTaskStandard> standard);
+    IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition, @Param("departList") List<PatrolTaskOrganization> departList, @Param("standard")List<PatrolTaskStandard> standard,@Param("patrolTaskStations")List<PatrolTaskStation> patrolTaskStations);
 
     /**
      * 获取首页的日程的巡检列表
@@ -211,6 +212,13 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param patrolTaskOrganizations
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "pto.org_code"),
+            @DataColumn(key = "majorName",value = "pts2.major_code"),
+            @DataColumn(key = "systemName",value = "pts2.system_code"),
+            @DataColumn(key = "lineName",value = "pts.station_code"),
+            @DataColumn(key = "stationName",value = "pts.station_code")
+    })
     IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, @Param("condition") IndexScheduleDTO indexScheduleDTO, @Param("patrolTaskOrganizations") List<PatrolTaskOrganization> patrolTaskOrganizations);
 
     /**
@@ -221,7 +229,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param taskIds
      * @return
      */
-    List<PatrolTask> getOverviewInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("departList") List<PatrolTaskOrganization> departList, @Param("taskIds") List<PatrolTaskStandard> taskIds);
+    List<PatrolTask> getOverviewInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("departList") List<PatrolTaskOrganization> departList, @Param("taskIds") List<PatrolTaskStandard> taskIds,@Param("patrolTaskStations") List<PatrolTaskStation> patrolTaskStations);
 
     /**
      * 查看当前用户，当天的巡检任务

@@ -194,6 +194,16 @@ public class RepairTaskDTO {
     @TableField(exist = false)
     private String peerId;
 
+    /**抽检人名称*/
+    @ApiModelProperty(value = "抽检人名称")
+    @TableField(exist = false)
+    private String samplingName;
+
+    /**抽检人Id*/
+    @ApiModelProperty(value = "抽检人Id")
+    @TableField(exist = false)
+    private String samplingId;
+
     /**提交时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")

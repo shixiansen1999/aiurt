@@ -147,7 +147,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         List<Future<RepairTask>> futureList = new ArrayList<>();
         if (CollUtil.isNotEmpty(lists)){
            lists.forEach(e -> {
-            Future<RepairTask> submit = repairTask.submit(new RepairTaskThreadService(e, repairTaskMapper, manager, repairTaskPeerRelMapper, repairTaskSamplingMapper, sysBaseApi, repairTaskEnclosureMapper, repairTaskUserMapper));
+               Future<RepairTask> submit = repairTask.submit(new RepairTaskThreadService(e, repairTaskMapper, manager, repairTaskPeerRelMapper, repairTaskSamplingMapper, sysBaseApi, repairTaskEnclosureMapper, repairTaskUserMapper));
             futureList.add(submit);
         });
         // 确认每个线程都执行完成
@@ -227,6 +227,23 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
                 }
                 e.setPeerName(stringBuffer.toString());
+            }
+            //查询抽检人
+            List<RepairTaskSampling> repairTaskSampling = repairTaskSamplingMapper.selectList(
+                    new LambdaQueryWrapper<RepairTaskSampling>()
+                            .eq(RepairTaskSampling::getRepairTaskDeviceCode, e.getOverhaulCode()));
+            //抽检名称集合
+            List<String> collect4 = repairTaskSampling.stream().map(RepairTaskSampling::getRealName).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect4)) {
+                StringBuffer stringBuffer = new StringBuffer();
+                for (String t : collect4) {
+                    stringBuffer.append(t);
+                    stringBuffer.append(",");
+                }
+                if (stringBuffer.length() > 0) {
+                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                }
+                e.setSamplingName(stringBuffer.toString());
             }
             //专业
             e.setMajorName(manager.translateMajor(Arrays.asList(e.getMajorCode()), InspectionConstant.MAJOR));
@@ -355,6 +372,24 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
                 }
                 e.setPeerName(stringBuffer.toString());
+            }
+            //查询抽检人
+            List<RepairTaskSampling> repairTaskSampling = repairTaskSamplingMapper.selectList(
+                    new LambdaQueryWrapper<RepairTaskSampling>()
+                            .eq(RepairTaskSampling::getRepairTaskDeviceCode, e.getOverhaulCode()));
+
+            //抽检名称集合
+            List<String> collect4 = repairTaskSampling.stream().map(RepairTaskSampling::getRealName).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect4)) {
+                StringBuffer stringBuffer = new StringBuffer();
+                for (String t : collect4) {
+                    stringBuffer.append(t);
+                    stringBuffer.append(",");
+                }
+                if (stringBuffer.length() > 0) {
+                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                }
+                e.setSamplingName(stringBuffer.toString());
             }
             //专业
             e.setMajorName(manager.translateMajor(Arrays.asList(e.getMajorCode()), InspectionConstant.MAJOR));
@@ -502,6 +537,21 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         realList.add(colleaguesDTO);
                     });
                     checkListDTO.setRealList(realList);
+                }
+
+                //抽检人列表
+                List<RepairTaskSampling> repairTaskSampling = repairTaskSamplingMapper.selectList(
+                        new LambdaQueryWrapper<RepairTaskSampling>()
+                                .eq(RepairTaskSampling::getRepairTaskDeviceCode, checkListDTO.getResultCode()));
+                if (CollectionUtil.isNotEmpty(repairTaskSampling)) {
+                    List<ColleaguesDTO> samplingList = new ArrayList<>();
+                    repairTaskSampling.forEach(p -> {
+                        ColleaguesDTO colleaguesDTO = new ColleaguesDTO();
+                        colleaguesDTO.setSamplingId(p.getUserId());
+                        colleaguesDTO.setSamplingName(p.getRealName());
+                        samplingList.add(colleaguesDTO);
+                    });
+                    checkListDTO.setSamplingList(samplingList);
                 }
 
                 //组织机构
@@ -718,6 +768,25 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
                 e.setPeerName(stringBuffer.toString());
             }
+
+            //查询抽检人
+            List<RepairTaskSampling> repairTaskSampling = repairTaskSamplingMapper.selectList(
+                    new LambdaQueryWrapper<RepairTaskSampling>()
+                            .eq(RepairTaskSampling::getRepairTaskDeviceCode, e.getOverhaulCode()));
+
+            //抽检名称集合
+            List<String> collect4 = repairTaskSampling.stream().map(RepairTaskSampling::getRealName).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect4)) {
+                StringBuffer stringBuffer = new StringBuffer();
+                for (String t : collect4) {
+                    stringBuffer.append(t);
+                    stringBuffer.append(",");
+                }
+                if (stringBuffer.length() > 0) {
+                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                }
+                e.setSamplingName(stringBuffer.toString());
+            }
             //专业
             e.setMajorName(manager.translateMajor(Arrays.asList(e.getMajorCode()), InspectionConstant.MAJOR));
 
@@ -875,8 +944,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 List<ColleaguesDTO> samplingList = new ArrayList<>();
                 repairTaskSampling.forEach(p -> {
                     ColleaguesDTO colleaguesDTO = new ColleaguesDTO();
-                    colleaguesDTO.setRealId(p.getUserId());
-                    colleaguesDTO.setRealName(p.getRealName());
+                    colleaguesDTO.setSamplingId(p.getUserId());
+                    colleaguesDTO.setSamplingName(p.getRealName());
                     samplingList.add(colleaguesDTO);
                 });
                 checkListDTO.setSamplingList(samplingList);
@@ -2221,9 +2290,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     }
                     TodoDTO todoDTO = new TodoDTO();
                     todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
-                    todoDTO.setTitle("检修任务-检修" + DateUtil.today());
-                    todoDTO.setMsgAbstract("检修任务接收");
-                    todoDTO.setPublishingContent("接收到新的检修任务，请在检修任务计划执行日期开展检修工作");
+                    todoDTO.setTitle("检修任务-待执行" + DateUtil.today());
+                    todoDTO.setMsgAbstract("检修任务待执行");
+                    todoDTO.setPublishingContent("您有一条检修任务待执行");
                     createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(), repairTask.getId(), "执行检修任务", "", "", todoDTO, repairTask, realNames, null);
                 }
             } catch (Exception e) {
@@ -2515,6 +2584,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         } else {
             map.put("repairName",realName);
         }
+        map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTaskMessageDTO.getId());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, repairTaskMessageDTO.getBusType());
         messageDTO.setData(map);
         SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.REPAIR_MESSAGE);
@@ -2647,6 +2717,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         map.put("planOrderCodeUrl", repairTask.getPlanOrderCodeUrl());
 //        同行人
         map.put("peerName", repairTask.getPeerName());
+//        抽检人
+        map.put("samplingName",repairTask.getSamplingName());
 //        计划开始时间
         map.put("startTime", DateUtil.format(repairTask.getStartTime(), "YYYY-MM-dd HH:mm:ss"));
 //        计划结束时间vwv
