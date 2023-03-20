@@ -734,7 +734,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     }
 
     /**
-     *打印巡视详情
+     *打印巡视详情（弃用）
      *
      * @param ids
      * @param req
