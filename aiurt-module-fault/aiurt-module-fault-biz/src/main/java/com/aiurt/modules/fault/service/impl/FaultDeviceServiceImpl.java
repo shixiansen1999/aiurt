@@ -42,13 +42,15 @@ public class FaultDeviceServiceImpl extends ServiceImpl<FaultDeviceMapper, Fault
 
     @Override
     public IPage<FaultDeviceRepairDTO> queryRepairDeviceList(Page<FaultDeviceRepairDTO> page, FaultDeviceRepairDTO FaultDeviceRepairDTO) {
-//        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-//        String roleCodes = sysUser.getRoleCodes();
-//        boolean repairAgent = roleCodes.contains("repair_agent");
-//        if(!repairAgent){
-//            page.setRecords(new ArrayList<>());
-//            return page;
-//        }
+        //只允许送修经办人查看和修改
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String roleCodes = sysUser.getRoleCodes();
+        boolean repairAgent = roleCodes.contains("repair_agent");
+        if(!repairAgent){
+            page.setRecords(new ArrayList<>());
+            return page;
+        }
+        //查询故障单状态为已完成且为委外送修的设备数据
         IPage<FaultDeviceRepairDTO> faultDeviceRepairDtoList = baseMapper.queryRepairDeviceList(page, FaultDeviceRepairDTO);
         List<FaultDeviceRepairDTO> records = faultDeviceRepairDtoList.getRecords();
         for (FaultDeviceRepairDTO record : records) {
@@ -62,9 +64,8 @@ public class FaultDeviceServiceImpl extends ServiceImpl<FaultDeviceMapper, Fault
             }
             //查找接报人所在部门id
             String receiveUserName = record.getReceiveUserName();
-            List<String> departId = baseMapper.queryDepartId(receiveUserName);
-            //部门下工班长的用户集合
-            List<String> list = baseMapper.queryUserId(departId);
+            //查找接报人所在部门下工班长的用户集合
+            List<String> list = baseMapper.queryUserId(receiveUserName);
             if(CollUtil.isNotEmpty(list)){
                 record.setChargeUserName(list);
             }
@@ -80,12 +81,14 @@ public class FaultDeviceServiceImpl extends ServiceImpl<FaultDeviceMapper, Fault
     private void getUserNames(FaultDeviceRepairDTO faultDeviceRepairDTO) {
         List<String> list = faultDeviceRepairDTO.getChargeUserName();
         StringBuilder str = new StringBuilder();
-        for (String userName : list) {
-            if (StrUtil.isNotBlank(userName)) {
-                            LoginUser userById = sysBaseApi.getUserByName(userName);
-                            if (!ObjectUtils.isEmpty(userById)) {
-                                str.append(userById.getRealname()).append(",");
-                            }
+        if(CollUtil.isNotEmpty(list)){
+            for (String userName : list) {
+                if (StrUtil.isNotBlank(userName)) {
+                    LoginUser userById = sysBaseApi.getUserByName(userName);
+                    if (!ObjectUtils.isEmpty(userById)) {
+                        str.append(userById.getRealname()).append(",");
+                    }
+                }
             }
         }
         if (StrUtil.isNotBlank(str)) {
