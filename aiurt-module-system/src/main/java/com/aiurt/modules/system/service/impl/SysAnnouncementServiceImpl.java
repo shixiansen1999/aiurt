@@ -235,19 +235,6 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			}
 			messageList.add(typeDTO);
 		});
-		if(CollUtil.isNotEmpty(messageList)){
-			for (SysMessageTypeDTO sysMessageTypeDTO : messageList) {
-				String busType = sysMessageTypeDTO.getBusType();
-				//设置头像图片
-				if (pictureCode.contains(busType)) {
-					SysParamModel sysParamModel = sysParamAPI.selectByCode(busType);
-					if (Objects.nonNull(sysParamModel)) {
-						sysMessageTypeDTO.setValue(sysParamModel.getValue());
-					}
-				}
-			}
-		}
-
 
 		//获取当前登录人待办消息(业务消息)消息类型为null
 		List<SysAnnouncementTypeCountDTO> sysAnnouncementTypeCountDTOS = baseMapper.queryBNullTypeCount(userId);
@@ -332,12 +319,6 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			}
 			bpmnList.add(typeDTO);
 		});
-		if(CollUtil.isNotEmpty(bpmnList)){
-			for (SysMessageTypeDTO sysMessageTypeDTO : bpmnList) {
-				String busType = sysMessageTypeDTO.getBusType();
-				setPicture(sysMessageTypeDTO,busType);
-			}
-		}
 
 		list.addAll(bpmnList);
 
