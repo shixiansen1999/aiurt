@@ -1,5 +1,7 @@
 package com.aiurt.modules.train.task.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -8,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import com.aiurt.common.aspect.annotation.Dict;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -59,6 +60,10 @@ public class BdTrainTask implements Serializable ,Cloneable{
 	@Excel(name = "培训部门", width = 15)
     @ApiModelProperty(value = "培训部门")
     private String taskTeamId;
+    /**培训部门code*/
+    @ApiModelProperty(value = "培训部门code")
+    @DeptFilterColumn
+    private String taskTeamCode;
 	/**培训类型*/
 	@Excel(name = "培训类型", width = 15)
     @ApiModelProperty(value = "培训类型")
@@ -303,6 +308,14 @@ public class BdTrainTask implements Serializable ,Cloneable{
     @ApiModelProperty(value = "培训对象ids")
     @TableField(exist = false)
     private List<String> userIds;
+
+    @ApiModelProperty(value = "pageNo")
+    @TableField(exist = false)
+    private Integer pageNo;
+
+    @ApiModelProperty(value = "pageSize")
+    @TableField(exist = false)
+    private Integer pageSize;
     /**
      * 克隆方法
      * @return

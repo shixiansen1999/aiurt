@@ -62,8 +62,6 @@ public class BdExamPaperController extends BaseController<BdExamPaper, IBdExamPa
 	/**
 	 * 培训题库-分页列表查询
 	 * @param bdExamPaper
-	 * @param pageNo
-	 * @param pageSize
 	 * @param req
 	 * @return
 	 */
@@ -73,11 +71,12 @@ public class BdExamPaperController extends BaseController<BdExamPaper, IBdExamPa
 			@ApiResponse(code = 200, message = "OK", response = BdExamPaper.class),
 	})
 	@PostMapping(value = "/examPaperList")
-	public Result<?> examPaperList(@RequestBody BdExamPaper bdExamPaper,
-								   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-								   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-								   HttpServletRequest req) {
-		Page<BdExamPaper> pageList = new Page<>(pageNo, pageSize);
+	public Result<?> examPaperList(@RequestBody BdExamPaper bdExamPaper,HttpServletRequest req) {
+		Page<BdExamPaper> pageList = new Page<>(bdExamPaper.getPageNo(), bdExamPaper.getPageSize());
+		if (bdExamPaper.getPageNo()==null||bdExamPaper.getPageSize()==null){
+			bdExamPaper.setPageNo(1);
+			bdExamPaper.setPageSize(10);
+		}
 		Page<BdExamPaper> bdExamPaperPage = bdExamPaperService.examPaperList(pageList, bdExamPaper);
 		return Result.OK(bdExamPaperPage);
 	}

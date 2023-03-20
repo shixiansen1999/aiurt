@@ -33,4 +33,24 @@ public interface FaultDeviceMapper extends BaseMapper<FaultDevice> {
      */
     IPage<FaultDeviceRepairDTO> queryRepairDeviceList(@Param("page") Page<FaultDeviceRepairDTO> page,
                                                       @Param("condition") FaultDeviceRepairDTO FaultDeviceRepairDTO);
+
+    /**
+     * 根据接报人查找部门
+     * @param receiveUserName
+     * @return
+     */
+    List<String> queryDepartId(String receiveUserName);
+
+    /**
+     * 根据id查找部门工班长的用户
+     * @param departId
+     * @return
+     */
+    List<String> queryUserId(List<String> departId);
+
+    /**
+     * 查询角色为送修经办人的用户
+     * @return
+     */
+    String queryRepairUserName();
 }
