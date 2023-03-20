@@ -118,8 +118,6 @@
                 AND t3.system_code = #{scrap.systemCode}
             </if>
         </where>
-        ORDER BY
-            spare_part_scrap.create_time desc
     </select>
 
     <select id="queryResponsibleUserName" resultType="java.lang.String">
