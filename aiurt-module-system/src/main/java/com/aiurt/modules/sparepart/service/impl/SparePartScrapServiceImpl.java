@@ -166,7 +166,8 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
         list.forEach((e) -> {
             List<String> queryResponsibleUserNameList = this.baseMapper.queryResponsibleUserName(e.getWarehouseCode());
             String responsibleUserName = queryResponsibleUserNameList.stream().filter(t -> StrUtil.isNotBlank(t)).collect(Collectors.joining(","));
-            String manageUserName = this.baseMapper.queryManageUserName();
+            List<String> manageUserNameList = this.baseMapper.queryManageUserName();
+            String manageUserName = manageUserNameList.stream().filter(t -> StrUtil.isNotBlank(t)).collect(Collectors.joining(","));
             e.setResponsibleUserName(responsibleUserName);
             e.setManageUserName(manageUserName);
             String consumablesTypeName = sysBaseApi.translateDict("consumables_type", Convert.toStr(e.getConsumablesType()));

@@ -44,7 +44,7 @@ public interface SparePartScrapMapper extends BaseMapper<SparePartScrap> {
      * 查询送修经办人
      * @return
      */
-    String queryManageUserName();
+    List<String> queryManageUserName();
     /**
      * 查询所有数据不分页
      * @param sparePartScrap
