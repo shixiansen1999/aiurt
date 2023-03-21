@@ -60,7 +60,7 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
     //大屏统计分析
     Integer getZhiBanNum(Map map);
 
-    List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(@Param("date") String date, @Param("userIds") List<String> userIds , @Param("orgId") String orgId,@Param("text")String text,Page<Schedule> temp);
+    List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(@Param("date") String date, @Param("userIds") List<String> userIds , @Param("orgCodeList") List<String> orgCodeList,@Param("text")String text,Page<Schedule> temp);
 
     /**
      * 查询
