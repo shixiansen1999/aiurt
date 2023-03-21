@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultanalysisreport.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -101,6 +102,7 @@ public class FaultAnalysisReport implements Serializable {
     /**状态*/
     @Excel(name = "状态(0:待审批,1:已审批,2:已驳回)", width = 15)
     @ApiModelProperty(value = "状态(0:待审批,1:已审批,2:已驳回)")
+    @Dict(dicCode = "fault_analysis_status")
     private Integer status;
 
     /**故障现象分类*/
