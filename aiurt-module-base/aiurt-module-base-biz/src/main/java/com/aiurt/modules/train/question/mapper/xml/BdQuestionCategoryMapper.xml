@@ -7,7 +7,7 @@
 	</update>
 
 	<select id="queryPageList" resultType="com.aiurt.common.api.vo.TreeNode">
-		select id,name,pid,has_child,id as value,name as label  from bd_question_category
+		select id,name,pid,has_child,id as value,name as title  from bd_question_category
 	</select>
 
 </mapper>
