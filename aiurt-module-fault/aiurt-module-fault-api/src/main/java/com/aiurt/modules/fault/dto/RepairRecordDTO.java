@@ -1,6 +1,7 @@
 package com.aiurt.modules.fault.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.entity.FaultRepairParticipants;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -18,7 +19,7 @@ import java.util.List;
  */
 @Data
 @ApiModel("维修记录1")
-public class RepairRecordDTO implements Serializable {
+public class RepairRecordDTO extends DictEntity implements Serializable  {
 
     private static final long serialVersionUID = 1L;
 
@@ -86,12 +87,12 @@ public class RepairRecordDTO implements Serializable {
      * 组件更换
      */
     @ApiModelProperty(value = "组件更换")
-    private List<DeviceChangeDTO>  deviceChangeList;
+    private List<SparePartStockDTO>  deviceChangeList;
 
 
 
     @ApiModelProperty(value = "易耗品")
-    private List<DeviceChangeDTO> consumableList;
+    private List<SparePartStockDTO> consumableList;
 
     @ApiModelProperty(value = "app: 设备面好")
     private String deviceCodes;
@@ -128,4 +129,8 @@ public class RepairRecordDTO implements Serializable {
 
     @ApiModelProperty(value = "故障现象")
     private String symptoms;
+
+    @ApiModelProperty(value = "处理方式:0维修，1委外维修，2委外送修")
+    @Dict(dicCode = "usage_status")
+    private Integer processing;
 }

@@ -5,6 +5,7 @@
         select
             a.device_code,
             a.id,
+            a.material_codes,
             b.id as device_id,
             b.name as device_name,
             dt.name as device_type_name,

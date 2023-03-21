@@ -58,8 +58,7 @@ import com.aiurt.modules.sm.entity.SafetyRelatedForm;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.sm.mapper.SafetyRelatedFormMapper;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
-import com.aiurt.modules.sparepart.mapper.SparePartApplyMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
+import com.aiurt.modules.sparepart.mapper.*;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
@@ -83,7 +82,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
 import org.springframework.beans.BeanUtils;
@@ -231,8 +232,20 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Autowired
     private SparePartStockInfoMapper sparePartStockInfoMapper;
     @Autowired
+    private SparePartStockMapper sparePartStockMapper;
+    @Autowired
+    private SparePartInOrderMapper sparePartInOrderMapper;
+    @Autowired
+    private MaterialBaseMapper materialBaseMapper;
+    @Autowired
+    private SparePartOutOrderMapper sparePartOutOrderMapper;
+    @Autowired
     @Lazy
-    private MaterialBaseMapper  materialBaseMapper;
+    private ISTodoBaseAPI isTodoBaseAPI;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private SparePartLendMapper sparePartLendMapper;
     @Autowired
     private ISysHolidaysService sysHolidaysService;
     @Autowired
@@ -851,6 +864,17 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         MaterialBase one = materialBaseMapper.selectOne(wrapper);
         return one.getName();
     }
+    @Override
+    public String getMaterialNameByCodes(String materialCodes) {
+        List<String> list = StrUtil.splitTrim(materialCodes, ",");
+        LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(MaterialBase::getCode,list);
+        wrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
+        List<MaterialBase> materialBases = materialBaseMapper.selectList(wrapper);
+        String materialNames = materialBases.stream().map(MaterialBase::getName).collect(Collectors.joining(","));
+        return materialNames;
+    }
+
 
     @Override
     public String getDepartIdsByOrgCode(String orgCode) {
@@ -2528,16 +2552,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             modelList.add(model);
         }
         SysDepart sysDepart = departMapper.selectOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SysDepart::getOrgCode,orgCode));
+        if(ObjectUtil.isEmpty(sysDepart)){
+            return Collections.emptyList();
+        }
         SysDepartModel model = new SysDepartModel();
         BeanUtils.copyProperties(sysDepart,model);
         List<SysDepartModel> allChildren = new ArrayList<>();
         if(ObjectUtil.isNotEmpty(model)&&CollUtil.isNotEmpty(modelList)){
             List<SysDepartModel> sysDepartList = treeMenuList(modelList, model, allChildren);
+            sysDepartList.add(model);
             if (CollectionUtil.isEmpty(sysDepartList)) {
                 return Collections.emptyList();
             }
             List<String> codeList = sysDepartList.stream().map(s -> s.getOrgCode()).collect(Collectors.toList());
-            codeList.add(model.getOrgCode());
             return codeList;
         }
         return null;

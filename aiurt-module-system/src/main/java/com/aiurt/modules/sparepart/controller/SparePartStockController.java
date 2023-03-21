@@ -1,38 +1,30 @@
 package com.aiurt.modules.sparepart.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.task.dto.OverhaulStatisticsDTOS;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.material.entity.MaterialBaseType;
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
-import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.entity.dto.SparePartConsume;
 import com.aiurt.modules.sparepart.entity.dto.SparePartStatistics;
-import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.sparepart.entity.dto.WareHouseDTO;
 import com.aiurt.modules.sparepart.service.ISparePartStockService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.stream.Collectors;
 
  /**
  * @Description: spare_part_stock
@@ -110,15 +102,9 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 	 @ApiOperation(value="备件库存-获取存放仓库查询条件", notes="备件库存-获取存放仓库查询条件")
 	 @GetMapping(value = "/selectList")
 	 @PermissionData(pageComponent = "sparePartsFor/SparePartStockList")
-	 public Result<?> selectList(SparePartStock sparePartStock,HttpServletRequest req) {
-		 LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		 if(ObjectUtil.isNotNull(sparePartStock.getModule())){
-			 sparePartStock.setOrgId(user.getOrgId());
-		 }
-		 List<SparePartStock> list = sparePartStockService.selectList(null,sparePartStock);
-		 List<String> newList = list.stream().map(SparePartStock::getWarehouseName).collect(Collectors.toList());
-		 newList = newList.stream().distinct().collect(Collectors.toList());
-		 return Result.OK(newList);
+	 public Result<List<WareHouseDTO>> selectList(SparePartStock sparePartStock, HttpServletRequest req) {
+		List<WareHouseDTO>wareHouseDTOList = sparePartStockService.getWareHouse(sparePartStock);
+		 return Result.OK(wareHouseDTOList);
 	 }
 	 /**
 	  * 分页列表查询

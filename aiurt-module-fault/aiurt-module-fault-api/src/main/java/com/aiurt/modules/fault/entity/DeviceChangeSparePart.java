@@ -118,10 +118,34 @@ public class DeviceChangeSparePart implements Serializable {
 	/**是否易耗品(1是,0否)*/
 	@ApiModelProperty(value = "是否易耗品(1是,0否)")
     private String consumables;
-
-    @ApiModelProperty(value = "出库记录表ID")
-	private String outOrderId;
-
+	/**借出记录表ID*/
+    @ApiModelProperty(value = "借出记录表ID")
+    private String lendOrderId;
+//    @ApiModelProperty(value = "出库记录表ID")
+//	private String outOrderId;
+    /**借入的出库记录表ID*/
+    @ApiModelProperty(value = "借入的出库记录表ID")
+    private String borrowingOutOrderId;
+    /**借出的出库记录表ID|备件出库记录*/
+    @ApiModelProperty(value = "借出的出库记录表ID||备件出库记录")
+    private String lendOutOrderId;
+    /**借出的入库记录表ID*/
+    @ApiModelProperty(value = "借入的入库记录表ID")
+    private String intOrderId;
+    /**借入的库存记录表ID*/
+    @ApiModelProperty(value = "借入的库存记录表ID")
+    private String BorrowingInventoryOrderId;
+    /**借出的库存记录表ID*/
+    @ApiModelProperty(value = "借出的库存记录表ID")
+    private String lendInventoryOrderId;
+    @ApiModelProperty(value = "报废记录表ID")
+    private String scrapId;
+    @ApiModelProperty(value = "新组件拼接后的编码")
+    private String newSparePartSplitCode;
+    /**仓库编号*/
+    @Excel(name = "仓库编号", width = 15)
+    @ApiModelProperty(value = "仓库编号")
+    private String warehouseCode;
     @ApiModelProperty("规格")
     @TableField(exist = false)
     private String specifications;

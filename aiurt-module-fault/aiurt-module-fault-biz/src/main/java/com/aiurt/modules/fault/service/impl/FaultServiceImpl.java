@@ -1055,28 +1055,35 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<String> userNameList = participantsList.stream().map(FaultRepairParticipants::getRealName).collect(Collectors.toList());
         repairRecordDTO.setUsers(StrUtil.join(",", list));
         repairRecordDTO.setUserNames(StrUtil.join(",", userNameList));
-
         List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, repairRecord.getId());
         // 易耗品 1是易耗
-        List<DeviceChangeDTO> consumableList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("1", sparepart.getConsumables()))
+        List<SparePartStockDTO> consumableList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("1", sparepart.getConsumables()))
                 .map(sparepart -> {
-                    DeviceChangeDTO build = DeviceChangeDTO.builder()
+                    SparePartStockDTO build = SparePartStockDTO.builder()
                             .deviceCode(sparepart.getDeviceCode())
+                            .materialCode(sparepart.getNewSparePartCode())
                             .newSparePartCode(sparepart.getNewSparePartCode())
                             .newSparePartName(sparepart.getNewSparePartName())
+                            .name(sparepart.getNewSparePartName())
                             .id(sparepart.getId())
                             .repairRecordId(sparepart.getRepairRecordId())
+                            .specifications(sparepart.getSpecifications())
+                            .newSparePartNum(sparepart.getNewSparePartNum())
+                            .newSparePartSplitCode(sparepart.getNewSparePartSplitCode())
+                            .lendOutOrderId(sparepart.getLendOutOrderId())
+                            .warehouseCode(sparepart.getWarehouseCode())
                             .build();
                     return build;
                 }).collect(Collectors.toList());
-
         repairRecordDTO.setConsumableList(consumableList);
 
-        List<DeviceChangeDTO> deviceChangeList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
+        List<SparePartStockDTO> deviceChangeList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
                 .map(sparepart -> {
-                    DeviceChangeDTO build = DeviceChangeDTO.builder()
+                    SparePartStockDTO build = SparePartStockDTO.builder()
                             .deviceCode(sparepart.getDeviceCode())
                             .newSparePartCode(sparepart.getNewSparePartCode())
+                            .name(sparepart.getNewSparePartName())
+                            .materialCode(sparepart.getNewSparePartCode())
                             .newSparePartName(sparepart.getNewSparePartName())
                             .oldSparePartCode(sparepart.getOldSparePartCode())
                             .oldSparePartName(sparepart.getOldSparePartName())
@@ -1086,7 +1093,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                             .newSparePartNum(sparepart.getNewSparePartNum())
                             .id(sparepart.getId())
                             .repairRecordId(sparepart.getRepairRecordId())
-                            .outOrderId(sparepart.getOutOrderId())
+                            .newSparePartSplitCode(sparepart.getNewSparePartSplitCode())
+                            .lendOutOrderId(sparepart.getLendOutOrderId())
+                            .warehouseCode(sparepart.getWarehouseCode())
                             .build();
                     return build;
                 }).collect(Collectors.toList());
@@ -1162,12 +1171,19 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 设备
         fault.setDeviceCodes(repairRecordDTO.getDeviceCodes());
         dealDevice(fault, repairRecordDTO.getDeviceList());
-
-        Map<String, Integer> updateMap = buildSparePartNumMap(repairRecordDTO, faultCode);
+        //判断是否要删除
+        repairRecordDTO.getDeviceChangeList();
+        //非|是易耗品
+       //sysBaseAPI.addSparePartOutOrder(repairRecordDTO.getNonConsumablesList());
+      //  Map<String, Integer> updateMap = buildSparePartNumMap(repairRecordDTO, faultCode);
 
         // 更新备件出库未使用的数量
-        sparePartBaseApi.updateSparePartOutOrder(updateMap);
+        List<SparePartStockDTO> list = repairRecordDTO.getDeviceChangeList();
+        list.addAll(repairRecordDTO.getConsumableList());
+        sparePartBaseApi.addSparePartOutOrder(list,faultCode);
+        //sparePartBaseApi.updateSparePartOutOrder(updateMap);
 
+        one.setProcessing(repairRecordDTO.getProcessing());
         one.setArriveTime(repairRecordDTO.getArriveTime());
         one.setWorkTicketCode(repairRecordDTO.getWorkTicketCode());
         one.setWorkTickPath(repairRecordDTO.getWorkTickPath());
@@ -1273,99 +1289,99 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @param faultCode
      * @return
      */
-    private Map<String, Integer> buildSparePartNumMap(RepairRecordDTO repairRecordDTO, String faultCode) {
-        LambdaQueryWrapper<DeviceChangeSparePart> dataWrapper = new LambdaQueryWrapper<>();
-        dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
-        List<DeviceChangeSparePart> oneSourceList = sparePartService.list(dataWrapper);
-
-        // 不能简单删除， 对比，修改出库的实际使用数量
-        List<DeviceChangeDTO> deviceChangeList = repairRecordDTO.getDeviceChangeList();
-        Map<String, Integer> updateMap = new HashMap<>(16);
-        if (CollectionUtil.isNotEmpty(deviceChangeList)) {
-
-            // key-> 主键id_出库单id_物资编码， value： 使用的数量
-            Map<String, Integer> map = oneSourceList.stream().collect(Collectors.toMap(sparepart -> {
-                return String.format("%s_%s_%s", sparepart.getId(), sparepart.getOutOrderId(), sparepart.getNewSparePartCode());
-            }, DeviceChangeSparePart::getNewSparePartNum, (t1, t2) -> t1));
-
-            Map<String, DeviceChangeSparePart> sparePartMap = oneSourceList.stream().collect(Collectors.toMap(DeviceChangeSparePart::getId, t -> t, (t1, t2) -> t1));
-
-            Set<String> recordIdSet = deviceChangeList.stream().filter(s -> StrUtil.isNotBlank(s.getId())).map(DeviceChangeDTO::getId).collect(Collectors.toSet());
-            List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(deviceChangeDTO -> {
-                // 原纪录id,
-                String dtoId = deviceChangeDTO.getId();
-                // 出库单
-                String outOrderId = deviceChangeDTO.getOutOrderId();
-                // 物资编码
-                String newSparePartCode = deviceChangeDTO.getNewSparePartCode();
-                // 数量
-                Integer newSparePartNum = deviceChangeDTO.getNewSparePartNum();
-
-                // 新增数据
-                if (StrUtil.isNotBlank(dtoId)) {
-                    Integer mapNum = updateMap.getOrDefault(dtoId, 0);
-                    updateMap.put(outOrderId, mapNum + newSparePartNum);
-                } else {
-                    // 修改数据
-                    String key = String.format("%s_%s_%s", dtoId, outOrderId, newSparePartCode);
-                    Integer orignNum = map.getOrDefault(key, 0);
-                    Integer mapNum = updateMap.getOrDefault(outOrderId, 0);
-                    updateMap.put(outOrderId, (newSparePartNum - orignNum) + mapNum);
-                }
-
-                DeviceChangeSparePart build = DeviceChangeSparePart.builder()
-                        .code(faultCode)
-                        .consumables("0")
-                        .deviceCode(deviceChangeDTO.getDeviceCode())
-                        .newSparePartCode(newSparePartCode)
-                        .newSparePartNum(newSparePartNum)
-                        .repairRecordId(dtoId)
-                        .id(dtoId)
-                        .oldSparePartNum(deviceChangeDTO.getOldSparePartNum())
-                        .oldSparePartCode(deviceChangeDTO.getOldSparePartCode())
-                        .delFlag(CommonConstant.DEL_FLAG_0)
-                        .outOrderId(outOrderId)
-                        .build();
-                return build;
-            }).collect(Collectors.toList());
-
-            // 删除的数据
-
-            Set<String> set = sparePartMap.keySet();
-            set.removeAll(recordIdSet);
-            if (CollectionUtil.isNotEmpty(set)) {
-                set.stream().forEach(id -> {
-                    DeviceChangeSparePart deviceChangeSparePart = sparePartMap.get(id);
-                    if (Objects.nonNull(deviceChangeSparePart)) {
-                        String outOrderId = deviceChangeSparePart.getOutOrderId();
-                        Integer num = Optional.ofNullable(deviceChangeSparePart.getNewSparePartNum()).orElse(0);
-                        Integer mapNum = updateMap.getOrDefault(outOrderId, 0);
-                        updateMap.put(outOrderId, mapNum + (0 - num));
-                    }
-                });
-            }
-
-            // 删除
-            if (CollectionUtil.isNotEmpty(set)) {
-                sparePartService.removeBatchByIds(set);
-            }
-            // 更新备件更换记录
-            sparePartService.saveOrUpdateBatch(sparePartList);
-            //
-        } else {
-            oneSourceList.stream().forEach(deviceChangeSparePart -> {
-                String id = deviceChangeSparePart.getOutOrderId();
-                Integer newSparePartNum = deviceChangeSparePart.getNewSparePartNum();
-                Integer mapNum = updateMap.getOrDefault(id, 0);
-                if (Objects.nonNull(newSparePartNum)) {
-                    updateMap.put(id, mapNum + (0 - newSparePartNum));
-                }
-            });
-            // s
-            sparePartService.remove(dataWrapper);
-        }
-        return updateMap;
-    }
+//    private Map<String, Integer> buildSparePartNumMap(RepairRecordDTO repairRecordDTO, String faultCode) {
+//        LambdaQueryWrapper<DeviceChangeSparePart> dataWrapper = new LambdaQueryWrapper<>();
+//        dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
+//        List<DeviceChangeSparePart> oneSourceList = sparePartService.list(dataWrapper);
+//
+//        // 不能简单删除， 对比，修改出库的实际使用数量
+//        List<DeviceChangeDTO> deviceChangeList = repairRecordDTO.getDeviceChangeList();
+//        Map<String, Integer> updateMap = new HashMap<>(16);
+//        if (CollectionUtil.isNotEmpty(deviceChangeList)) {
+//
+//            // key-> 主键id_出库单id_物资编码， value： 使用的数量
+//            Map<String, Integer> map = oneSourceList.stream().collect(Collectors.toMap(sparepart -> {
+//                return String.format("%s_%s_%s", sparepart.getId(), sparepart.getOutOrderId(), sparepart.getNewSparePartCode());
+//            }, DeviceChangeSparePart::getNewSparePartNum, (t1, t2) -> t1));
+//
+//            Map<String, DeviceChangeSparePart> sparePartMap = oneSourceList.stream().collect(Collectors.toMap(DeviceChangeSparePart::getId, t -> t, (t1, t2) -> t1));
+//
+//            Set<String> recordIdSet = deviceChangeList.stream().filter(s -> StrUtil.isNotBlank(s.getId())).map(DeviceChangeDTO::getId).collect(Collectors.toSet());
+//            List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(deviceChangeDTO -> {
+//                // 原纪录id,
+//                String dtoId = deviceChangeDTO.getId();
+//                // 出库单
+//                String outOrderId = deviceChangeDTO.getOutOrderId();
+//                // 物资编码
+//                String newSparePartCode = deviceChangeDTO.getNewSparePartCode();
+//                // 数量
+//                Integer newSparePartNum = deviceChangeDTO.getNewSparePartNum();
+//
+//                // 新增数据
+//                if (StrUtil.isNotBlank(dtoId)) {
+//                    Integer mapNum = updateMap.getOrDefault(dtoId, 0);
+//                    updateMap.put(outOrderId, mapNum + newSparePartNum);
+//                } else {
+//                    // 修改数据
+//                    String key = String.format("%s_%s_%s", dtoId, outOrderId, newSparePartCode);
+//                    Integer orignNum = map.getOrDefault(key, 0);
+//                    Integer mapNum = updateMap.getOrDefault(outOrderId, 0);
+//                    updateMap.put(outOrderId, (newSparePartNum - orignNum) + mapNum);
+//                }
+//
+//                DeviceChangeSparePart build = DeviceChangeSparePart.builder()
+//                        .code(faultCode)
+//                        .consumables("0")
+//                        .deviceCode(deviceChangeDTO.getDeviceCode())
+//                        .newSparePartCode(newSparePartCode)
+//                        .newSparePartNum(newSparePartNum)
+//                        .repairRecordId(dtoId)
+//                        .id(dtoId)
+//                        .oldSparePartNum(deviceChangeDTO.getOldSparePartNum())
+//                        .oldSparePartCode(deviceChangeDTO.getOldSparePartCode())
+//                        .delFlag(CommonConstant.DEL_FLAG_0)
+//                        .outOrderId(outOrderId)
+//                        .build();
+//                return build;
+//            }).collect(Collectors.toList());
+//
+//            // 删除的数据
+//
+//            Set<String> set = sparePartMap.keySet();
+//            set.removeAll(recordIdSet);
+//            if (CollectionUtil.isNotEmpty(set)) {
+//                set.stream().forEach(id -> {
+//                    DeviceChangeSparePart deviceChangeSparePart = sparePartMap.get(id);
+//                    if (Objects.nonNull(deviceChangeSparePart)) {
+//                        String outOrderId = deviceChangeSparePart.getOutOrderId();
+//                        Integer num = Optional.ofNullable(deviceChangeSparePart.getNewSparePartNum()).orElse(0);
+//                        Integer mapNum = updateMap.getOrDefault(outOrderId, 0);
+//                        updateMap.put(outOrderId, mapNum + (0 - num));
+//                    }
+//                });
+//            }
+//
+//            // 删除
+//            if (CollectionUtil.isNotEmpty(set)) {
+//                sparePartService.removeBatchByIds(set);
+//            }
+//            // 更新备件更换记录
+//            sparePartService.saveOrUpdateBatch(sparePartList);
+//            //
+//        } else {
+//            oneSourceList.stream().forEach(deviceChangeSparePart -> {
+//                String id = deviceChangeSparePart.getOutOrderId();
+//                Integer newSparePartNum = deviceChangeSparePart.getNewSparePartNum();
+//                Integer mapNum = updateMap.getOrDefault(id, 0);
+//                if (Objects.nonNull(newSparePartNum)) {
+//                    updateMap.put(id, mapNum + (0 - newSparePartNum));
+//                }
+//            });
+//            // s
+//            sparePartService.remove(dataWrapper);
+//        }
+//        return updateMap;
+//    }
 
     /**
      * 审核结果

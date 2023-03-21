@@ -1,7 +1,7 @@
 package com.aiurt.modules.sparepart.service;
 
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
+import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
@@ -50,4 +50,10 @@ public interface ISparePartOutOrderService extends IService<SparePartOutOrder> {
      * @return
      */
     List<SparePartOutOrder> querySparePartOutOrder(String materialCode);
+
+    /***
+     * app-出库
+     * @param sparePartStock
+     */
+    void appOutbound(SparePartStock sparePartStock);
 }

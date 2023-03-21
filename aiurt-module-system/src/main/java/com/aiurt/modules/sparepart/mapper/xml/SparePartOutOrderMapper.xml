@@ -66,7 +66,9 @@
         <if test="out.orgId!=null and out.orgId!=''">
             and t5.organization_id = #{out.orgId} and spare_part_out_order.unused <![CDATA[ <> ]]>  0
         </if>
-
+        <if test="out.text!=null and out.text!=''">
+            and (t8.realname like concat('%',  #{out.text}, '%')  or t1.`name` like concat('%', #{out.text}, '%'))
+        </if>
         order by spare_part_out_order.create_time desc
 
     </select>

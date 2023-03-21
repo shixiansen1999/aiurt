@@ -32,12 +32,17 @@ import java.util.List;
  */
 @Service
 public class FaultDeviceServiceImpl extends ServiceImpl<FaultDeviceMapper, FaultDevice> implements IFaultDeviceService {
-
-    @Autowired
-    private ISysBaseAPI sysBaseApi;
+@Autowired
+private ISysBaseAPI sysBaseApi;
     @Override
     public List<FaultDevice> queryByFaultCode(String faultCode) {
         List<FaultDevice> faultDeviceList = baseMapper.queryByFaultCode(faultCode);
+        faultDeviceList.forEach(faultDevice ->{
+            if(ObjectUtil.isNotEmpty(faultDevice.getMaterialCodes())){
+                String materialNames = sysBaseApi.getMaterialNameByCodes(faultDevice.getMaterialCodes());
+                faultDevice.setMaterialNames(materialNames);
+            }
+        } );
         return faultDeviceList;
     }
 

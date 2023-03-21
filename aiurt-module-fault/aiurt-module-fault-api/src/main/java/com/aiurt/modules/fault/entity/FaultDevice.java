@@ -1,22 +1,21 @@
 package com.aiurt.modules.fault.entity;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.math.BigDecimal;
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @Description: fault_device
@@ -116,6 +115,11 @@ public class FaultDevice implements Serializable {
     @ApiModelProperty("位置名称")
     @TableField(exist = false)
 	private String positionName;
+    @ApiModelProperty("组件编码")
+    private String materialCodes;
+    @ApiModelProperty("组件名称")
+    @TableField(exist = false)
+    private String materialNames;
 
     /**所属部门*/
     @ApiModelProperty(value = "送修状态")

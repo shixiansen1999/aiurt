@@ -1,9 +1,8 @@
 package org.jeecg.common.system.api;
 
 
+import com.aiurt.modules.fault.dto.SparePartStockDTO;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
-import com.aiurt.modules.sparepart.dto.SparePartMalfunctionDTO;
-import com.aiurt.modules.sparepart.dto.SparePartReplaceDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -29,4 +28,10 @@ public interface ISparePartBaseApi {
      */
     void dealChangeSparePart(List<DeviceChangeSparePartDTO> sparePartList);
 
+    /**
+     * 故障：备件更换（组件、易耗品）
+     * @param nonConsumablesList
+     * @param faultCode
+     */
+    void addSparePartOutOrder(List<SparePartStockDTO> nonConsumablesList,String faultCode);
 }
