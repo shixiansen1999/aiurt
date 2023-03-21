@@ -456,21 +456,23 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         sparePart.setLendOutOrderId(lendOutOrder.getId());
 
                         //5.借入仓库库存数做加法
-                        SparePartStock borrowingStock = new SparePartStock();
-                        borrowingStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode, lendOutOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode, stockInfo.getWarehouseCode()));
+
+                        SparePartStock  borrowingStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode, lendOutOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode, stockInfo.getWarehouseCode()));
                         if (null != borrowingStock) {
                             borrowingStock.setNum(borrowingStock.getNum() + sparePartLend.getLendNum());
                             sparePartStockMapper.updateById(borrowingStock);
+                            sparePart.setBorrowingInventoryOrderId(borrowingStock.getId());
                         } else {
                             //插入库存
-                            borrowingStock.setMaterialCode(lendOutOrder.getMaterialCode());
-                            borrowingStock.setNum(lendOutOrder.getNum());
-                            borrowingStock.setWarehouseCode(lendOutOrder.getWarehouseCode());
-                            borrowingStock.setOrgId(user.getOrgId());
-                            borrowingStock.setSysOrgCode(user.getOrgCode());
-                            sparePartStockMapper.insert(borrowingStock);
+                            SparePartStock partStock = new SparePartStock();
+                            partStock.setMaterialCode(lendOutOrder.getMaterialCode());
+                            partStock.setNum(lendOutOrder.getNum());
+                            partStock.setWarehouseCode(lendOutOrder.getWarehouseCode());
+                            partStock.setOrgId(user.getOrgId());
+                            partStock.setSysOrgCode(user.getOrgCode());
+                            sparePartStockMapper.insert(partStock);
+                            sparePart.setBorrowingInventoryOrderId(partStock.getId());
                         }
-                        sparePart.setBorrowingInventoryOrderId(borrowingStock.getId());
                         //6.借入仓库生成入库记录
                         SparePartInOrder sparePartInOrder = new SparePartInOrder();
                         sparePartInOrder.setMaterialCode(lendOutOrder.getMaterialCode());
