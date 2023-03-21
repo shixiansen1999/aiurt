@@ -2,6 +2,7 @@ package com.aiurt.modules.train.question.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.train.exam.entity.BdExamPaper;
 import com.aiurt.modules.train.question.entity.BdQuestion;
 import com.aiurt.modules.train.question.service.IBdQuestionService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -38,17 +39,17 @@ public class BdQuestionController extends BaseController<BdQuestion, IBdQuestion
 	 * 分页列表查询
 	 *
 	 * @param condition
-	 * @param pageNo
-	 * @param pageSize
 	 * @return
 	 */
 	@AutoLog(value = "考卷习题-分页列表查询")
 	@ApiOperation(value="考卷习题-分页列表查询", notes="考卷习题-分页列表查询")
 	@PostMapping(value = "/questionList")
-	public Result<?> queryPageList(@RequestBody BdQuestion condition,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
-		Page<BdQuestion> pageList = new Page<>(pageNo, pageSize);
+	public Result<?> queryPageList(@RequestBody BdQuestion condition) {
+		if (condition.getPageNo()==null||condition.getPageSize()==null){
+			condition.setPageNo(1);
+			condition.setPageSize(10);
+		}
+		Page<BdQuestion> pageList = new Page<>(condition.getPageNo(), condition.getPageSize());
 		Page<BdQuestion> bdQuestionPage = bdQuestionService.queryPageList(pageList, condition);
 		return Result.OK(bdQuestionPage);
 	}
