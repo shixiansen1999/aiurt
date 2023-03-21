@@ -35,7 +35,7 @@
             <if test="condition.orgCode!=null ">
                 and t2.org_code = #{condition.orgCode}
             </if>
-            <if test="condition.siteCode!=null ">
+            <if test="condition.siteCode!=null and condition.siteCode!='' ">
                 and t4.station_code = #{condition.siteCode}
             </if>
             <if test="condition.workType!=null ">
