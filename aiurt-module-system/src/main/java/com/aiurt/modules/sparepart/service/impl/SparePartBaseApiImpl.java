@@ -322,6 +322,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         scrap.setMaterialCode(lendStockDTO.getMaterialCode());
                         scrap.setWarehouseCode(lendStockDTO.getWarehouseCode());
                         scrap.setNum(1);
+                        scrap.setFaultCode(faultCode);
                         scrap.setScrapTime(new Date());
                         sparePartScrapService.save(scrap);
                         try {
