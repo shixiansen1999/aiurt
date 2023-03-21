@@ -1,6 +1,7 @@
 package com.aiurt.modules.schedule.controller;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.schedule.service.IScheduleRuleItemService;
 import com.aiurt.modules.schedule.service.IScheduleRuleService;
 import com.aiurt.modules.schedule.entity.ScheduleRule;
@@ -104,6 +105,7 @@ public class ScheduleRuleController {
         });
         result.setSuccess(true);
         result.setResult(pageList);
+        result.setCode(CommonConstant.SC_OK_200);
         return result;
     }
 
