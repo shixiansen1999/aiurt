@@ -245,7 +245,7 @@ public class ScheduleController {
 
         }
         Calendar calendar = Calendar.getInstance();
-       SysDepartModel sysDepartModel = sysBaseAPI.selectAllById(schedule.getOrgId());
+       SysDepartModel sysDepartModel = sysBaseAPI.getDepartByOrgCode(schedule.getOrgCode());
        String title = null;
        if (schedule.getDate() == null) {
            try {

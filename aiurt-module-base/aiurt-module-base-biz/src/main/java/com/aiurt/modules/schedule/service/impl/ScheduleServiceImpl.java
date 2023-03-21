@@ -7,6 +7,7 @@ import cn.hutool.core.date.Week;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.util.DateUtils;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.schedule.entity.Schedule;
 import com.aiurt.modules.schedule.entity.ScheduleItem;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
@@ -116,7 +117,12 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         /**
          * 2、从record表中获取有多少人在时间范围类安排了工作,根据当前登录人班组权限查班组的人员，或者只查询当前登录人的数据
          */
-        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtil.format(date, "yyyy-MM"), userIds, schedule.getOrgId(),schedule.getText(),temp);
+        List<String> orgCodeList = new ArrayList<>();
+        boolean b = GlobalThreadLocal.setDataFilter(false);
+        if(ObjectUtil.isNotEmpty(schedule.getOrgCode())){
+            orgCodeList = iSysBaseApi.sysDepartList(schedule.getOrgCode());
+        }
+        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtil.format(date, "yyyy-MM"), userIds, orgCodeList,schedule.getText(),temp);
         /**
          * 3、获取记录数据
          */

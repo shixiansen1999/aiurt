@@ -139,7 +139,7 @@ public class Schedule {
     private List<String> userIds;
 
     @TableField(exist = false)
-    private String orgId;
+    private String orgCode;
 
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM")
     @DateTimeFormat(pattern = "yyyy-MM")
