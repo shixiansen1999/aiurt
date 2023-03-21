@@ -4,6 +4,7 @@ import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
@@ -49,6 +50,13 @@ public class RecycleMybatisInterceptor implements Interceptor {
 
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
+        // isDelete为true才拦截
+        boolean isDelete = GlobalThreadLocal.enabledDataFilter();
+        String permissionUrl = GlobalThreadLocal.getDataString();
+        if (!(isDelete && StrUtil.isNotEmpty(permissionUrl))){
+            return invocation.proceed();
+        }
+
         RoutingStatementHandler handler = (RoutingStatementHandler) invocation.getTarget();
         //通过反射获取到当前RoutingStatementHandler对象的delegate属性
         StatementHandler delegate = (StatementHandler) ReflectUtil.getFieldValue(handler, "delegate");
@@ -111,10 +119,10 @@ public class RecycleMybatisInterceptor implements Interceptor {
                 String resultString = resultJson.toString(); // 将结果转成字符串
 
 //			String moduleName = mappedStatement.getId();
-                String moduleName = null;  // 这个数据库的module_name先置空
+//                String moduleName = null;  // 这个数据库的module_name先置空
 
                 Connection connection = (Connection) invocation.getArgs()[0];
-                boolean saveOk = saveToRecycle(connection, tableName, resultString, moduleName, billIdList.toString(), 0);
+                boolean saveOk = saveToRecycle(connection, tableName, resultString, permissionUrl, billIdList.toString(), 0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -269,9 +277,9 @@ public class RecycleMybatisInterceptor implements Interceptor {
                 String resultString = resultJson.toString(); // 将结果转成字符串
                 // 步骤四、将查询到的数据存入 sys_recycle 表
                 // String moduleName = mappedStatement.getId();
-                String moduleName = null;  // 这个数据库的module_name先置空
+//                String moduleName = null;  // 这个数据库的module_name先置空
                 Connection connection = (Connection) invocation.getArgs()[0];
-                boolean saveOk = saveToRecycle(connection, tableName, resultString, moduleName, billIdList.toString(), 1);
+                boolean saveOk = saveToRecycle(connection, tableName, resultString, permissionUrl, billIdList.toString(), 1);
                 log.info("伪删除完毕，已存入回收站");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -297,13 +305,13 @@ public class RecycleMybatisInterceptor implements Interceptor {
      * @param connection
      * @param billTableNm
      * @param billValue
-     * @param moduleName
+     * @param moduleUrl
      * @param billId
      * @param delSign
      * @return
      * @throws Throwable
      */
-    private boolean saveToRecycle(Connection connection, String billTableNm, String billValue, String moduleName, String billId, Integer delSign) throws Throwable {
+    private boolean saveToRecycle(Connection connection, String billTableNm, String billValue, String moduleUrl, String billId, Integer delSign) throws Throwable {
 
         //		connection.setAutoCommit(false);
 
@@ -317,7 +325,7 @@ public class RecycleMybatisInterceptor implements Interceptor {
 
         // 预编译
         String insertSql = "insert into sys_recycle(id,create_by,create_time,sys_org_code,bill_tablenm, bill_value," +
-                "physicaldel_id, dphysical_del,state,bill_id, module_name, del_sign) values (?,?,?,?,?,?,?,?,?,?,?,?)";
+                "physicaldel_id, dphysical_del,state,bill_id, module_url, del_sign) values (?,?,?,?,?,?,?,?,?,?,?,?)";
 
         PreparedStatement preparedStatement = connection.prepareStatement(insertSql);
         preparedStatement.setString(1, IdWorker.getIdStr(billValue));   // id，雪花算法
@@ -330,7 +338,7 @@ public class RecycleMybatisInterceptor implements Interceptor {
         preparedStatement.setTimestamp(8, new Timestamp(System.currentTimeMillis())); // 删除时间
         preparedStatement.setString(9, "1"); // 状态（1正常 2还原 3删除（指从回收站删除））,这里固定为1
         preparedStatement.setString(10, billId); // 单据id
-        preparedStatement.setString(11, moduleName); // 模块名称
+        preparedStatement.setString(11, moduleUrl); // 模块的url，要根据菜单管理查询出模块名称
         preparedStatement.setInt(12, delSign); // 是否逻辑删除 1是 0否
 
         int i = preparedStatement.executeUpdate();
