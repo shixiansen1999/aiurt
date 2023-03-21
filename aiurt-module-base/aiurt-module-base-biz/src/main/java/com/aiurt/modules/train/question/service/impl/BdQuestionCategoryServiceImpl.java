@@ -157,12 +157,12 @@ public class BdQuestionCategoryServiceImpl extends ServiceImpl<BdQuestionCategor
                 //名称匹配则赋值颜色
                 next.setColor("#FF5B05");
             }
-            List<TreeNode> children = next.getChildList();
+            List<TreeNode> children = next.getChildren();
             if (CollUtil.isNotEmpty(children)) {
                 processingTreeList(name, children);
             }
             //如果没有子级，并且当前不匹配，则去除
-            if (CollUtil.isEmpty(next.getChildList()) && StrUtil.isEmpty(next.getColor())) {
+            if (CollUtil.isEmpty(next.getChildren()) && StrUtil.isEmpty(next.getColor())) {
                 iterator.remove();
             }
         }

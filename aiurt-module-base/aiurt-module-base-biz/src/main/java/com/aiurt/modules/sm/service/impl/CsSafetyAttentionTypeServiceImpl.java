@@ -244,7 +244,7 @@ public class CsSafetyAttentionTypeServiceImpl extends ServiceImpl<CsSafetyAttent
                         childList.add(node);
                     }
                 }
-                treeNode.setChildList(childList);
+                treeNode.setChildren(childList);
             }
         }
         return result;
@@ -262,7 +262,7 @@ public class CsSafetyAttentionTypeServiceImpl extends ServiceImpl<CsSafetyAttent
         List<TreeNode> result = baseMapper.queryAllMajor(majorCode);
         if (CollUtil.isNotEmpty(result)) {
             TreeNode treeNode = result.get(0);
-            treeNode.setChildList(childs);
+            treeNode.setChildren(childs);
             return treeNode;
         }
         return new TreeNode();

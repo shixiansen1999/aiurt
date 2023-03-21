@@ -149,11 +149,11 @@ public class TreeUtils {
                 rootNodes.add(treeNode);
             } else {
                 //当前位置显示实体类中的List元素定义的参数为null，出现空指针异常错误
-                if (ObjectUtil.isEmpty(parentHave.getChildList())) {
-                    parentHave.setChildList(new ArrayList<TreeNode>());
-                    parentHave.getChildList().add(treeNode);
+                if (ObjectUtil.isEmpty(parentHave.getChildren())) {
+                    parentHave.setChildren(new ArrayList<TreeNode>());
+                    parentHave.getChildren().add(treeNode);
                 } else {
-                    parentHave.getChildList().add(treeNode);
+                    parentHave.getChildren().add(treeNode);
                 }
             }
         }
