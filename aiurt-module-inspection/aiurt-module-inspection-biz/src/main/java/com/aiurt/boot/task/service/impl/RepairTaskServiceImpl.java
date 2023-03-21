@@ -51,6 +51,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
@@ -69,6 +70,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -119,8 +121,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Autowired
     private ISysParamAPI iSysParamAPI;
 
-//    @Autowired
-//    private RepairTaskService repairTaskService;
     @Autowired
     ArchiveUtils archiveUtils;
 
@@ -136,167 +136,43 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
         // 数据权限过滤
         condition.setCodeList(handleDataPermission());
+
+        // 开启线程处理
         List<RepairTask> lists = repairTaskMapper.selectables(pageList, condition);
-        lists.forEach(e -> {
-            //组织机构
-            if (e.getOrgCode() != null) {
-                String[] split1 = e.getOrgCode().split(",");
-                List<String> list1 = Arrays.asList(split1);
-                e.setOrganizational(manager.translateOrg(list1));
-            }
-            //站点
-            if (e.getSiteCode() != null) {
-                String[] split2 = e.getSiteCode().split(",");
-                List<String> list2 = Arrays.asList(split2);
-                e.setSiteName(manager.translateStationList(list2));
-            }
-            //专业
-            if (e.getMajorCode() != null) {
-                String[] split3 = e.getMajorCode().split(",");
-                List<String> list3 = Arrays.asList(split3);
-                e.setMajorName(manager.translateMajor(list3, InspectionConstant.MAJOR));
-            }
-
-            //子系统
-            if (e.getSystemCode() != null) {
-                String[] split4 = e.getSystemCode().split(",");
-                List<String> list4 = Arrays.asList(split4);
-                e.setSystemName(manager.translateMajor(list4, InspectionConstant.SUBSYSTEM));
-            }
-
-            //查询同行人
-            List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
-                    new LambdaQueryWrapper<RepairTaskPeerRel>()
-                            .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, e.getOverhaulCode()));
-            //名称集合
-            List<String> collect3 = repairTaskPeer.stream().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect3)) {
-                StringBuffer stringBuffer = new StringBuffer();
-                for (String t : collect3) {
-                    stringBuffer.append(t);
-                    stringBuffer.append(",");
-                }
-                if (stringBuffer.length() > 0) {
-                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
-                }
-                e.setPeerName(stringBuffer.toString());
-            }
-
-            //查询抽检人
-            List<RepairTaskSampling> repairTaskSampling = repairTaskSamplingMapper.selectList(
-                    new LambdaQueryWrapper<RepairTaskSampling>()
-                            .eq(RepairTaskSampling::getRepairTaskDeviceCode, e.getOverhaulCode()));
-
-            //抽检名称集合
-            List<String> collect4 = repairTaskSampling.stream().map(RepairTaskSampling::getRealName).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect4)) {
-                StringBuffer stringBuffer = new StringBuffer();
-                for (String t : collect4) {
-                    stringBuffer.append(t);
-                    stringBuffer.append(",");
-                }
-                if (stringBuffer.length() > 0) {
-                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
-                }
-                e.setSamplingName(stringBuffer.toString());
-            }
-
-            //检修周期类型
-            e.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(e.getType())));
-
-            //检修任务状态
-            e.setStatusName(sysBaseApi.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(e.getStatus())));
-
-            //是否需要审核
-            e.setIsConfirmName(sysBaseApi.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(e.getIsConfirm())));
-
-            //是否需要验收
-            e.setIsReceiptName(sysBaseApi.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(e.getIsReceipt())));
-
-            //任务来源
-            e.setSourceName(sysBaseApi.translateDict(DictConstant.PATROL_TASK_ACCESS, String.valueOf(e.getSource())));
-
-            //作业类型
-            e.setWorkTypeName(sysBaseApi.translateDict(DictConstant.WORK_TYPE, String.valueOf(e.getWorkType())));
-            //备注
-            e.setContent(e.getErrorContent());
-
-            //附件
-            List<String> enclosures = repairTaskEnclosureMapper.getByRepairTaskId(e.getId());
-            for (String enclosure:enclosures){
-                RepairTaskEnclosure repairTaskEnclosure = repairTaskEnclosureMapper.getByResultId(enclosure);
-                if (repairTaskEnclosure!=null){
-                    if (!repairTaskEnclosure.getUrl().isEmpty()){
-                        e.setPath(repairTaskEnclosure.getUrl());
-                    }
-                }
-            }
-
-
-            //备注
-            e.setContent(e.getErrorContent());
-
-            //附件
-            List<String> enclosures = repairTaskEnclosureMapper.getByRepairTaskId(e.getId());
-            for (String enclosure:enclosures){
-                List<RepairTaskEnclosure> repairTaskEnclosure = repairTaskEnclosureMapper.getByResultId(enclosure);
-                if (repairTaskEnclosure!=null){
-                    for (RepairTaskEnclosure list: repairTaskEnclosure){
-                        if (StrUtil.isNotBlank(list.getUrl())){
-                            e.setPath(list.getUrl());
-                        }
-                    }
-                }
-            }
-
-            if (e.getCode() != null) {
-                //根据检修任务code查询
-                List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(
-                        new LambdaQueryWrapper<RepairTaskUser>()
-                                .eq(RepairTaskUser::getRepairTaskCode, e.getCode()));
-                //检修人id集合
-                List<String> collect = repairTaskUsers.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
-                if (CollectionUtil.isNotEmpty(collect)) {
-                    StringBuffer stringBuffer = new StringBuffer();
-                    for (String t : collect) {
-                        stringBuffer.append(t);
-                        stringBuffer.append(",");
-                    }
-                    if (stringBuffer.length() > 0) {
-                        stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
-                    }
-                    e.setOverhaulId(stringBuffer.toString());
-
-                    ArrayList<String> userList = new ArrayList<>();
-                    collect.forEach(o -> {
-                        String realName = repairTaskMapper.getRealName(o);
-                        userList.add(realName);
-                    });
-                    if (CollectionUtil.isNotEmpty(userList)) {
-                        StringBuffer stringBuffer1 = new StringBuffer();
-                        for (String t : userList) {
-                            stringBuffer1.append(t);
-                            stringBuffer1.append(",");
-                        }
-                        if (stringBuffer1.length() > 0) {
-                            stringBuffer1 = stringBuffer1.deleteCharAt(stringBuffer1.length() - 1);
-                        }
-                        e.setOverhaulName(stringBuffer1.toString());
-                    }
-                }
-
-            }
-
-            // 所属周（相对年）
-            if (e.getYear() != null && e.getWeeks() != null) {
-                Date[] dateByWeek = DateUtils.getDateByWeek(e.getYear(), e.getWeeks());
-                if (dateByWeek.length != 0) {
-                    String weekName = String.format("第%d周(%s~%s)", e.getWeeks(), DateUtil.format(dateByWeek[0], "yyyy/MM/dd"), DateUtil.format(dateByWeek[1], "yyyy/MM/dd"));
-                    e.setWeekName(weekName);
-                }
-            }
-
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+                .setNameFormat("repair-task-%d").build();
+        ExecutorService repairTask = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(), namedThreadFactory);
+        List<Future<RepairTask>> futureList = new ArrayList<>();
+        if (CollUtil.isNotEmpty(lists)){
+           lists.forEach(e -> {
+            Future<RepairTask> submit = repairTask.submit(new RepairTaskThreadService(e, repairTaskMapper, manager, repairTaskPeerRelMapper, repairTaskSamplingMapper, sysBaseApi, repairTaskEnclosureMapper, repairTaskUserMapper));
+            futureList.add(submit);
         });
+        // 确认每个线程都执行完成
+        for (Future<RepairTask> fut : futureList) {
+            try {
+                fut.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            repairTask.shutdown();
+            // (所有的任务都结束的时候，返回TRUE)
+            if (!repairTask.awaitTermination(5 * 1000, TimeUnit.MILLISECONDS)) {
+                // 5s超时的时候向线程池中所有的线程发出中断(interrupted)。
+                repairTask.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            // awaitTermination方法被中断的时候也中止线程池中全部的线程的执行。
+            log.error("awaitTermination interrupted:{}", e);
+            repairTask.shutdownNow();
+         }
+        }
         return pageList.setRecords(lists);
     }
 
@@ -1400,6 +1276,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
                     messageDTO.setMsgAbstract("检修任务审核");
                     messageDTO.setPublishingContent("检修任务审核通过");
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTaskMessageDTO.getId());
+                    messageDTO.setData(map);
                     sendMessage(messageDTO,realNames,null,repairTaskMessageDTO);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1562,21 +1441,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
         //添加附件
         List<String> enclosures = repairTaskEnclosureMapper.getByRepairTaskId(examineDTO.getId());
-        for (String enclosure : enclosures){
-            List<RepairTaskEnclosure> repairTaskEnclosure = repairTaskEnclosureMapper.getByResultId(enclosure);
+        for (String enclosure : enclosures) {
             RepairTaskEnclosure taskEnclosure = new RepairTaskEnclosure();
-            if (repairTaskEnclosure.size()==0 ){
-                taskEnclosure.setUrl(examineDTO.getPath());
-                taskEnclosure.setRepairTaskResultId(enclosure);
-                repairTaskEnclosureMapper.insert(taskEnclosure);
-            } else {
-                for (RepairTaskEnclosure list:repairTaskEnclosure){
-                    if(StrUtil.isNotBlank(list.getUrl())){
-                        list.setUrl(examineDTO.getPath());
-                        repairTaskEnclosureMapper.updateById(list);
-                    }
-                }
-            }
+            taskEnclosure.setUrl(examineDTO.getPath());
+            taskEnclosure.setRepairTaskResultId(enclosure);
+            repairTaskEnclosureMapper.insert(taskEnclosure);
         }
         status(examineDTO, loginUser, realName, repairTask1, repairTask.getRepairPoolId());
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT)) {
@@ -1602,19 +1471,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPool.setStatus(InspectionConstant.REJECTED);
                 repairPoolMapper.updateById(repairPool);
             }
-            List<String> enclosures = repairTaskEnclosureMapper.getByRepairTaskId(examineDTO.getId());
-                for (String enclosure : enclosures){
-                    RepairTaskEnclosure repairTaskEnclosure = repairTaskEnclosureMapper.getByResultId(enclosure);
-                    RepairTaskEnclosure taskEnclosure = new RepairTaskEnclosure();
-                    if (repairTaskEnclosure==null ){
-                        taskEnclosure.setUrl(examineDTO.getPath());
-                        taskEnclosure.setRepairTaskResultId(enclosure);
-                        repairTaskEnclosureMapper.insert(taskEnclosure);
-                    } else if(repairTaskEnclosure.getUrl().isEmpty()){
-                        repairTaskEnclosure.setUrl(examineDTO.getPath());
-                        repairTaskEnclosureMapper.updateById(repairTaskEnclosure);
-                    }
-                }
+
 
             // 给检修人驳回发消息
             sendBackMessage(repairTask1,examineDTO.getAcceptanceRemark());
@@ -1715,6 +1572,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
                     messageDTO.setMsgAbstract("检修任务审核");
                     messageDTO.setPublishingContent("检修任务审核通过");
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTaskMessageDTO.getId());
+                    messageDTO.setData(map);
                     sendMessage(messageDTO,realNames,null,repairTaskMessageDTO);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1762,7 +1622,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     MessageDTO messageDTO = new MessageDTO(manager.checkLogin().getUsername(), user.getUsername(), "检修任务-退回"+DateUtil.today(), null, CommonConstant.MSG_CATEGORY_5);
                     RepairTaskMessageDTO repairTaskMessageDTO = new RepairTaskMessageDTO();
                     BeanUtil.copyProperties(repairTask,repairTaskMessageDTO);
-                    repairTaskMessageDTO.setId(repairTask.getId());
                     //构建消息模板
                     HashMap<String, Object> map = new HashMap<>();
                     map.put("returnReason",examineDTO.getContent());
@@ -1772,6 +1631,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE_RETURN);
                     messageDTO.setMsgAbstract("检修任务退回");
                     messageDTO.setPublishingContent("检修任务退回，请重新安排");
+                    map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTask.getRepairPoolId());
+                    messageDTO.setData(map);
                     List<String> userNames = repairTaskUserss.stream().map(RepairTaskUser::getName).collect(Collectors.toList());
                     sendMessage(messageDTO,CollUtil.join(userNames,","),null,repairTaskMessageDTO);
                 } catch (Exception e) {
@@ -1951,9 +1812,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
                 TodoDTO todoDTO = new TodoDTO();
                 todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
-                todoDTO.setTitle("检修任务-检修" + DateUtil.today());
-                todoDTO.setMsgAbstract("检修任务接收");
-                todoDTO.setPublishingContent("主动领取检修任务，请在检修任务计划执行日期开展检修工作");
+                todoDTO.setTitle("检修任务-领取" + DateUtil.today());
+                todoDTO.setMsgAbstract("领取检修任务");
+                todoDTO.setPublishingContent("您领取了一条检修任务，请尽快检修");
 
                 createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(),repairTask.getId(), "执行检修任务", "", "",todoDTO,repairTask,realNames,null);
             }
@@ -2654,7 +2515,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         } else {
             map.put("repairName",realName);
         }
-        map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, repairTaskMessageDTO.getId());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, repairTaskMessageDTO.getBusType());
         messageDTO.setData(map);
         SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.REPAIR_MESSAGE);

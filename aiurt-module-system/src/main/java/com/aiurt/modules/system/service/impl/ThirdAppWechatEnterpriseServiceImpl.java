@@ -387,12 +387,42 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
         //查询本地用户
         List<SysUser> sysUsersList = userMapper.selectList(Wrappers.emptyWrapper());
         // 循环判断新用户和需要更新的用户
-        for (User qwUser : qwUsersList) {
+        for (SysUser sysUser : sysUsersList) {
             /*
              * 判断是否同步过的逻辑：
              * 1. 查询 sys_third_account（第三方账号表）是否有数据，如果有代表已同步
              * 2. 本地表里没有，就先用手机号判断，不通过再用username判断。
              */
+            SysThirdAccount sysThirdAccount = sysThirdAccountService.getOneByThirdUserId(sysUser.getUsername(), THIRD_TYPE);
+            List<User> collect = qwUsersList.stream().filter(user -> sysUser.getUsername().equals(user.getUserid())
+            ).collect(Collectors.toList());
+
+            if (collect != null && collect.size() > 0) {
+                User sysUserTemp = collect.get(0);
+                // 循环到此说明用户匹配成功，进行更新操作
+                SysUser updateSysUser = this.qwUserToSysUser(sysUserTemp, sysUser);
+                try {
+                    userMapper.updateById(updateSysUser);
+                    String str = String.format("用户 %s(%s) 更新成功！", updateSysUser.getRealname(), updateSysUser.getUsername());
+                    syncInfo.addSuccessInfo(str);
+                } catch (Exception e) {
+                    this.syncUserCollectErrInfo(e, sysUserTemp, syncInfo);
+                }
+
+                this.thirdAccountSaveOrUpdate(sysThirdAccount, updateSysUser.getId(), sysUserTemp.getUserid());
+                // 更新完成，直接跳到下一次外部循环继续
+            }else {
+                String str = String.format("用户 %s(%s) 更新失败，匹配不到企业微信账号！", sysUser.getRealname(), sysUser.getUsername());
+                syncInfo.addFailInfo(str);
+            }
+
+        }
+        /*for (User qwUser : qwUsersList) {
+            *//*
+             * 判断是否同步过的逻辑：
+             * 1. 查询 sys_third_account（第三方账号表）是否有数据，如果有代表已同步
+             * 2. 本地表里没有，就先用手机号判断，不通过再用username判断。
+             *//*
             SysThirdAccount sysThirdAccount = sysThirdAccountService.getOneByThirdUserId(qwUser.getUserid(), THIRD_TYPE);
             List<SysUser> collect = sysUsersList.stream().filter(user -> qwUser.getUserid().equals(user.getUsername())
                                                                 ).collect(Collectors.toList());
@@ -411,7 +441,7 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
 
                 this.thirdAccountSaveOrUpdate(sysThirdAccount, updateSysUser.getId(), qwUser.getUserid());
                 // 更新完成，直接跳到下一次外部循环继续
-            }/*else{
+            }else{
                 // 没匹配到用户则走新增逻辑
                 SysUser newSysUser = this.qwUserToSysUser(qwUser);
                 try {
@@ -422,8 +452,8 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
                     this.syncUserCollectErrInfo(e, qwUser, syncInfo);
                 }
                 this.thirdAccountSaveOrUpdate(sysThirdAccount, newSysUser.getId(), qwUser.getUserid());
-            }*/
-        }
+            }
+        }*/
         return syncInfo;
     }
 
