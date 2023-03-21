@@ -317,4 +317,39 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
         }).collect(Collectors.toList());
         return children;
     }
+
+    /**
+     * 根据url查询模块名称和子菜单名称
+     * @param url
+     * @return
+     */
+    @Override
+    public Map<String, String> getModuleNameAndSubmenuName(String url) {
+        String moduleName = "moduleName";
+        String submenuName = "submenuName";
+        Map<String, String> moduleNameAndSubmenuNameMap = new HashMap<>();
+        moduleNameAndSubmenuNameMap.put(moduleName, null);
+        moduleNameAndSubmenuNameMap.put(submenuName, null);
+        LambdaQueryWrapper<SysPermission> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysPermission::getUrl, url);
+        List<SysPermission> sysPermissions = sysPermissionMapper.selectList(queryWrapper);
+        if (sysPermissions.size() == 0){
+            return moduleNameAndSubmenuNameMap;
+        }
+        SysPermission sysPermission = sysPermissions.get(0);
+        Integer menuType = sysPermission.getMenuType();
+        if(menuType.equals(CommonConstant.MENU_TYPE_0)){
+            moduleNameAndSubmenuNameMap.put(moduleName, sysPermission.getName());
+        }else if(menuType.equals(CommonConstant.MENU_TYPE_1)){
+            moduleNameAndSubmenuNameMap.put(submenuName, sysPermission.getName());
+            SysPermission parent = this.getById(sysPermission.getParentId());
+            moduleNameAndSubmenuNameMap.put(moduleName, parent.getName());
+        } else if (menuType.equals(CommonConstant.MENU_TYPE_2)){
+            SysPermission submenu = this.getById(sysPermission.getParentId());
+            SysPermission parent = this.getById(submenu.getParentId());
+            moduleNameAndSubmenuNameMap.put(moduleName, parent.getName());
+            moduleNameAndSubmenuNameMap.put(submenuName, sysPermission.getName());
+        }
+        return moduleNameAndSubmenuNameMap;
+    }
 }

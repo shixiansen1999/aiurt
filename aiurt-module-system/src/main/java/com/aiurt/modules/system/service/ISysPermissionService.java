@@ -8,6 +8,7 @@ import com.aiurt.modules.system.model.TreeModel;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -103,4 +104,11 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	 * @return
 	 */
 	List<SysPermissionTree> getSystemSubmenuRecursive(String parentId);
+
+	/**
+	 * 根据url查询模块名称和子菜单名称
+	 * @param url 应该是唯一的
+	 * @return
+	 */
+	Map<String, String> getModuleNameAndSubmenuName(String url);
 }
