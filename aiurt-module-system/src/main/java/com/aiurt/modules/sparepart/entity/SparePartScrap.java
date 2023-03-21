@@ -96,6 +96,7 @@ public class SparePartScrap extends DictEntity implements Serializable {
     /**申请处置人*/
     @Excel(name = "申请处置人", width = 15)
     @ApiModelProperty(value = "申请处置人")
+    @TableField(exist = false)
     private String createBy;
 	/**备件处置单状态：1待处理、2已报废、3已报损*/
     @ApiModelProperty(value = "备件处置单状态：1待处理、2已报废、3已报损")
