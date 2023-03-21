@@ -5,6 +5,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.train.task.entity.BdTrainTaskAttachment;
 import com.aiurt.modules.train.task.service.IBdTrainTaskAttachmentService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -92,6 +93,8 @@ public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskA
 	public Result<?> add(@RequestBody BdTrainTaskAttachment bdTrainTaskAttachment) {
 		String filename = bdTrainTaskAttachment.getFileName();
 		String filePath = bdTrainTaskAttachment.getFilePath();
+		bdTrainTaskAttachmentService.remove(new LambdaQueryWrapper<BdTrainTaskAttachment>()
+				.eq(BdTrainTaskAttachment::getTrainTaskId,bdTrainTaskAttachment.getTrainTaskId()));
 		if (StrUtil.isNotEmpty(filePath)){
 			List<String> list = Arrays.asList(filePath.split(","));
 			for (int i = 0; i < list.size() ; i++) {
