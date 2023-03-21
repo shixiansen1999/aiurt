@@ -157,4 +157,11 @@ public class BdQuestion implements Serializable {
     @TableField(exist = false)
     private String appAnswer;
 
+    @ApiModelProperty(value = "pageNo")
+    @TableField(exist = false)
+    private Integer pageNo;
+
+    @ApiModelProperty(value = "pageSize")
+    @TableField(exist = false)
+    private Integer pageSize;
 }

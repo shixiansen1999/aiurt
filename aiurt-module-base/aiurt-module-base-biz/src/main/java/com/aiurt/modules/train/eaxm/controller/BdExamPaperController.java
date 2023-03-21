@@ -72,11 +72,11 @@ public class BdExamPaperController extends BaseController<BdExamPaper, IBdExamPa
 	})
 	@PostMapping(value = "/examPaperList")
 	public Result<?> examPaperList(@RequestBody BdExamPaper bdExamPaper,HttpServletRequest req) {
-		Page<BdExamPaper> pageList = new Page<>(bdExamPaper.getPageNo(), bdExamPaper.getPageSize());
 		if (bdExamPaper.getPageNo()==null||bdExamPaper.getPageSize()==null){
 			bdExamPaper.setPageNo(1);
 			bdExamPaper.setPageSize(10);
 		}
+		Page<BdExamPaper> pageList = new Page<>(bdExamPaper.getPageNo(), bdExamPaper.getPageSize());
 		Page<BdExamPaper> bdExamPaperPage = bdExamPaperService.examPaperList(pageList, bdExamPaper);
 		return Result.OK(bdExamPaperPage);
 	}
