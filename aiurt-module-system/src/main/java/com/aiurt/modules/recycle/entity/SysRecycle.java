@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -82,6 +83,13 @@ public class SysRecycle extends DictEntity implements Serializable {
     /**模块名称*/
     @ApiModelProperty(value = "模块名称")
     private String moduleName;
+    /**模块的子菜单*/
+    @ApiModelProperty(value = "模块的子菜单")
+    @TableField(exist = false)
+    private String submenu;
+    /**模块的菜单的url*/
+    @ApiModelProperty(value = "模块的菜单的url")
+    private String moduleUrl;
     /**删除记录用户id*/
     @ApiModelProperty(value = "删除记录用户id")
     private String regUserId;

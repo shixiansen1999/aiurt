@@ -4,6 +4,7 @@ import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.recycle.constant.SysRecycleConstant;
 import com.aiurt.modules.recycle.entity.SysRecycle;
 import com.aiurt.modules.recycle.service.ISysRecycleService;
+import com.aiurt.modules.system.service.ISysPermissionService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -11,6 +12,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Api(tags="回收站")
 @RestController
@@ -30,6 +34,8 @@ import java.util.Map;
 public class SysRecycleController {
     @Autowired
     private ISysRecycleService sysRecycleService;
+    @Autowired
+    private ISysPermissionService sysPermissionService;
 
     /**
      * 分页列表查询
@@ -51,8 +57,15 @@ public class SysRecycleController {
         Page<SysRecycle> page = new Page<>(pageNo, pageSize);
 //        queryWrapper.lambda().ne(SysRecycle::getState, SysRecycleConstant.STATE_DELETE);
         queryWrapper.lambda().eq(SysRecycle::getState, SysRecycleConstant.STATE_NORMAL);
+        queryWrapper.lambda().isNotNull(SysRecycle::getModuleUrl);
         queryWrapper.lambda().orderByDesc(SysRecycle::getCreateTime);
         IPage<SysRecycle> pageList = sysRecycleService.page(page, queryWrapper);
+        List<SysRecycle> sysRecycleList = pageList.getRecords().stream().peek(recycle -> {
+            Map<String, String> moduleNameAndSubmenuName = sysPermissionService.getModuleNameAndSubmenuName(recycle.getModuleUrl());
+            recycle.setModuleName(moduleNameAndSubmenuName.get("moduleName"));
+            recycle.setSubmenu(moduleNameAndSubmenuName.get("submenuName"));
+        }).collect(Collectors.toList());
+        pageList.setRecords(sysRecycleList);
         return Result.OK(pageList);
     }
 
