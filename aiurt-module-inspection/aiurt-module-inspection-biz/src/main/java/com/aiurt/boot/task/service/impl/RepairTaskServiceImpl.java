@@ -234,9 +234,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     String equipmentCode = repairTaskDTO.getEquipmentCode();
                     if(StrUtil.isNotBlank(equipmentCode)){
                         JSONObject deviceByCode = iSysBaseAPI.getDeviceByCode(equipmentCode);
-                        String station_code = deviceByCode.getString("stationCode");
-                        if((repairTaskStationDTO.getStationCode()).equals(station_code)){
-                            repairTasks.add(repairTaskDTO);
+                        if (ObjectUtil.isNotEmpty(deviceByCode)) {
+                            String station_code = deviceByCode.getString("stationCode");
+                            if((repairTaskStationDTO.getStationCode()).equals(station_code)){
+                                repairTasks.add(repairTaskDTO);
+                            }
                         }
                     }
                 }
