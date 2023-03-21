@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Api(tags="回收站")
 @RestController
@@ -45,7 +47,8 @@ public class SysRecycleController {
                                    HttpServletRequest req) {
         QueryWrapper<SysRecycle> queryWrapper = QueryGenerator.initQueryWrapper(sysRecycle, req.getParameterMap());
         Page<SysRecycle> page = new Page<>(pageNo, pageSize);
-        queryWrapper.lambda().ne(SysRecycle::getState, SysRecycleConstant.STATE_DELETE);
+//        queryWrapper.lambda().ne(SysRecycle::getState, SysRecycleConstant.STATE_DELETE);
+        queryWrapper.lambda().eq(SysRecycle::getState, SysRecycleConstant.STATE_NORMAL);
         IPage<SysRecycle> pageList = sysRecycleService.page(page, queryWrapper);
         return Result.OK(pageList);
     }
@@ -85,6 +88,23 @@ public class SysRecycleController {
     }
 
     /**
+     * 通过ids批量删除
+     *
+     * @param ids
+     * @return
+     */
+    @AutoLog(value = "删除", operateType = 4, operateTypeAlias = "通过ids批量删除")
+    @ApiOperation(value = "通过ids批量删除回收站记录", notes = "通过ids批量删除回收站记录")
+    @DeleteMapping(value = "/deleteBatchByIds")
+    public Result<?> deleteBatchByIds(@RequestParam(name = "ids", required = true) List<String> ids) {
+        LambdaUpdateWrapper<SysRecycle> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(SysRecycle::getState, SysRecycleConstant.STATE_DELETE);
+        updateWrapper.in(SysRecycle::getId, ids);
+        sysRecycleService.update(null, updateWrapper);
+        return Result.OK("删除成功!");
+    }
+
+    /**
      * 通过id还原数据
      *
      * @param id
@@ -96,5 +116,20 @@ public class SysRecycleController {
     public Result<?> restoreById(@RequestParam(name="id",required=true) String id) throws SQLException {
         return sysRecycleService.restoreById(id);
     }
+
+    /**
+     * 通过ids批量还原数据
+     *
+     * @param
+     * @return
+     */
+    @AutoLog(value = "还原数据",operateType = 1,operateTypeAlias = "通过ids批量还原数据")
+    @ApiOperation(value="通过ids批量还原数据", notes="通过ids批量还原数据")
+    @PostMapping(value = "/restoreBatchByIds")
+    public Result<?> restoreBatchByIds(@RequestParam(name="ids",required=true) List<String> ids) throws SQLException {
+//        List<String> ids = new ArrayList<>();
+        return sysRecycleService.restoreBatchByIds(ids);
+    }
+
 
 }
