@@ -220,9 +220,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
                             PrintDetailDTO printDetailDTO = new PrintDetailDTO();
                             printDetailDTO.setContent(c.getContent() + ":" + c.getQualityStandard());
-                            if (c.getInputType() == 0) {
+                            if (c.getInputType() == 1) {
                                 printDetailDTO.setResult(Convert.toStr(c.getCheckResult()));
-                            }else if (c.getInputType() == 1){
+                            }else if (c.getInputType() == 2){
                                 printDetailDTO.setResult(c.getCheckDictName());
                             }else {
                                 printDetailDTO.setResult(c.getWriteValue());
@@ -239,7 +239,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
             }
             l.setPrintStationDTOList(stationDTOS);
-
+            List<PatrolTaskStationDTO> stationInfo = l.getStationInfo();
+            List<String> collect = stationInfo.stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.toList());
+            l.setTitle(CollUtil.join(collect,",")+l.getName()+"巡视表");
         });
         // 禁用数据权限过滤-end
         GlobalThreadLocal.setDataFilter(filter);

@@ -3,6 +3,7 @@ package org.jeecg.common.system.api;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
+import com.aiurt.common.result.SpareResult;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.common.entity.SelectDeviceType;
@@ -1047,5 +1048,19 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<String> getAllHolidays();
+
+    /**
+     * 根据故障编号获取备件更换信息
+     * @param faultCode
+     * @return
+     */
+    List<SpareResult> getSpareChange(String faultCode);
+
+    /**
+     * 根据故障编号获取维修记录中的处理方案和处理负责人
+     * @param faultCode
+     */
+    String getFaultRepairReuslt(String faultCode);
+
 }
 

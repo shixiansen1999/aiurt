@@ -27,4 +27,16 @@
         GROUP BY dcsp.new_spare_part_code
         order by num  DESC limit 5
     </select>
+
+    <select id="getSparePart" resultType="com.aiurt.common.result.SpareResult">
+        select
+        b.name as new_spare_part_name,
+        da.material_name as old_spare_part_name
+        from device_change_spare_part a
+        LEFT JOIN material_base b ON  (a.new_spare_part_code = b.`code` and b.del_flag = 0)
+        LEFT JOIN device c on c.code = a.device_code
+        LEFT join device_assembly da on (a.old_spare_part_code = da.`code` AND a.del_flag = 0 AND da.device_code = c.`code`)
+        where a.code = #{faultCode} and a.repair_record_id = #{recordId}
+        and a.del_flag = 0
+    </select>
 </mapper>

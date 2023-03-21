@@ -28,4 +28,14 @@
         LEFT JOIN sys_user su on a.appoint_user_name = su.username
         where a.fault_code = #{faultCode} order by a.create_time desc
     </select>
+
+    <select id="getRecordByFaultCode" resultType="com.aiurt.modules.fault.dto.RepairRecordDetailDTO">
+        select
+        a.maintenance_measures,
+        su.realname as appoint_real_name
+        from
+        fault_repair_record a
+        LEFT JOIN sys_user su on a.appoint_user_name = su.username
+        where a.fault_code = #{faultCode} and a.solve_status = 1 order by a.create_time desc
+    </select>
 </mapper>

@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.entity;
 
 import com.aiurt.modules.base.BaseEntity;
+import com.aiurt.common.result.SpareResult;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -386,6 +387,12 @@ public class RepairTask extends BaseEntity {
     @TableField(exist = false)
     @ApiModelProperty(value = "标题")
     private String title;
+
+    @ApiModelProperty(value = "处理结果")
+    private String repairResult;
+
+    @ApiModelProperty(value = "备件更换")
+    private List<SpareResult> spareChange;
 
     @ApiModelProperty(value = "检修单（树形）")
     @TableField(exist = false)

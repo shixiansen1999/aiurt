@@ -4,6 +4,7 @@ package com.aiurt.modules.fault.mapper;
 import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
+import com.aiurt.common.result.SpareResult;
 import com.aiurt.modules.fault.entity.DeviceChangeSparePart;
 import com.aiurt.modules.faultanalysisreport.dto.SpareConsumeDTO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -42,4 +43,12 @@ public interface DeviceChangeSparePartMapper extends BaseMapper<DeviceChangeSpar
             @DataColumn(key = "systemName",value = "mb.system_code"),
     })
     List<SpareConsumeDTO> querySpareConsume(@Param("startDate")Date startDate, @Param("endDate")Date endDate);
+    List<SpareConsumeDTO> querySpareConsume(@Param("startDate")Date startDate, @Param("endDate")Date endDate, @Param("orgCodeList")List<String> orgCodeList);
+
+    /**
+     * @param faultCode
+     * @param id
+     */
+    List<SpareResult> getSparePart(@Param("faultCode")String faultCode, @Param("recordId") String id);
+
 }
