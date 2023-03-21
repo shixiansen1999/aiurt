@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Api(tags="回收站")
 @RestController
@@ -49,6 +51,7 @@ public class SysRecycleController {
         Page<SysRecycle> page = new Page<>(pageNo, pageSize);
 //        queryWrapper.lambda().ne(SysRecycle::getState, SysRecycleConstant.STATE_DELETE);
         queryWrapper.lambda().eq(SysRecycle::getState, SysRecycleConstant.STATE_NORMAL);
+        queryWrapper.lambda().orderByDesc(SysRecycle::getCreateTime);
         IPage<SysRecycle> pageList = sysRecycleService.page(page, queryWrapper);
         return Result.OK(pageList);
     }
@@ -107,14 +110,14 @@ public class SysRecycleController {
     /**
      * 通过id还原数据
      *
-     * @param id
+     * @param
      * @return
      */
     @AutoLog(value = "还原数据",operateType = 1,operateTypeAlias = "通过id还原数据")
     @ApiOperation(value="通过id还原数据", notes="通过id还原数据")
     @PostMapping(value = "/restoreById")
-    public Result<?> restoreById(@RequestParam(name="id",required=true) String id) throws SQLException {
-        return sysRecycleService.restoreById(id);
+    public Result<?> restoreById(@RequestBody Map map) throws SQLException {
+        return sysRecycleService.restoreById((String) map.get("id"));
     }
 
     /**
@@ -126,8 +129,8 @@ public class SysRecycleController {
     @AutoLog(value = "还原数据",operateType = 1,operateTypeAlias = "通过ids批量还原数据")
     @ApiOperation(value="通过ids批量还原数据", notes="通过ids批量还原数据")
     @PostMapping(value = "/restoreBatchByIds")
-    public Result<?> restoreBatchByIds(@RequestParam(name="ids",required=true) List<String> ids) throws SQLException {
-//        List<String> ids = new ArrayList<>();
+    public Result<?> restoreBatchByIds(@RequestBody Map map) throws SQLException {
+        List<String> ids = Arrays.asList(((String) map.get("ids")).split(","));
         return sysRecycleService.restoreBatchByIds(ids);
     }
 

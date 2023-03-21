@@ -157,61 +157,65 @@ public class SysRecycleImpl extends ServiceImpl<SysRecycleMapper, SysRecycle> im
         connection.setAutoCommit(false);
         PreparedStatement preparedStatement = null;
         // 伪删除的，直接更新del_flag=0
-        for (SysRecycle sysRecycleFake: sysRecycleMap.get(SysRecycleConstant.DEL_SIGN_1)){
-            String tableName = sysRecycleFake.getBillTablenm();
-            // 伪删除
-            List<String> billIdList = JSONArray.parseArray(sysRecycleFake.getBillId(), String.class);
-            StringBuilder idInSql = new StringBuilder();
-            billIdList.forEach(billId->idInSql.append("?").append(","));
-            idInSql.deleteCharAt(idInSql.length() - 1);
-            String updateSql = "update " + tableName + " set del_flag = 0 where id in (" + idInSql.toString() + ")";
-            // 创建PreparedStatement对象
-            preparedStatement = connection.prepareStatement(updateSql);
-            for (int i = 0; i < billIdList.size(); i++) {
-                preparedStatement.setObject(i + 1, billIdList.get(i));
-            }
-            preparedStatement.executeUpdate();
-            preparedStatement.close();
-        }
-        // 真实删除的，插入数据
-        for (SysRecycle sysRecycleReal: sysRecycleMap.get(SysRecycleConstant.DEL_SIGN_0)){
-            String tableName = sysRecycleReal.getBillTablenm();
-
-            List<JSONObject> restoreDataList = JSONArray.parseArray(sysRecycleReal.getBillValue(), JSONObject.class);
-            if (restoreDataList.size() == 0){
-                continue;
-            }
-            // 拼凑sql insert into xxx(yy,yy,yy) values(?,?,?)
-            StringBuilder headSql = new StringBuilder();
-            StringBuilder valueSql = new StringBuilder();
-            headSql.append("insert into ");
-            headSql.append(tableName);
-            headSql.append("(");
-
-            valueSql.append("values(");
-
-            Set<String> fieldSet = restoreDataList.get(0).keySet(); // 有多少个字段
-            List<String> fieldList = new ArrayList<>();  // set是无序的，使用了列表存，防止预编译参数顺序对不上
-            fieldSet.forEach(field->{
-                headSql.append(field).append(",");
-                valueSql.append("?").append(",");
-                fieldList.add(field);
-            });
-            headSql.deleteCharAt(headSql.length() - 1);
-            valueSql.deleteCharAt(valueSql.length() - 1);
-            headSql.append(") ");
-            valueSql.append(")");
-            String insertSql = headSql.toString() + valueSql.toString();
-            // 创建PreparedStatement对象
-            preparedStatement = connection.prepareStatement(insertSql);
-            for (JSONObject restoreData : restoreDataList) {
-                for (int i = 0; i < fieldList.size(); i++) {
-                    String field = fieldList.get(i);
-                    preparedStatement.setObject(i+1, restoreData.get(field));
+        if (sysRecycleMap.containsKey(SysRecycleConstant.DEL_SIGN_1)) {
+            for (SysRecycle sysRecycleFake: sysRecycleMap.get(SysRecycleConstant.DEL_SIGN_1)){
+                String tableName = sysRecycleFake.getBillTablenm();
+                // 伪删除
+                List<String> billIdList = JSONArray.parseArray(sysRecycleFake.getBillId(), String.class);
+                StringBuilder idInSql = new StringBuilder();
+                billIdList.forEach(billId->idInSql.append("?").append(","));
+                idInSql.deleteCharAt(idInSql.length() - 1);
+                String updateSql = "update " + tableName + " set del_flag = 0 where id in (" + idInSql.toString() + ")";
+                // 创建PreparedStatement对象
+                preparedStatement = connection.prepareStatement(updateSql);
+                for (int i = 0; i < billIdList.size(); i++) {
+                    preparedStatement.setObject(i + 1, billIdList.get(i));
                 }
                 preparedStatement.executeUpdate();
+                preparedStatement.close();
             }
-            preparedStatement.close();
+        }
+        if (sysRecycleMap.containsKey(SysRecycleConstant.DEL_SIGN_0)){
+            // 真实删除的，插入数据
+            for (SysRecycle sysRecycleReal: sysRecycleMap.get(SysRecycleConstant.DEL_SIGN_0)){
+                String tableName = sysRecycleReal.getBillTablenm();
+
+                List<JSONObject> restoreDataList = JSONArray.parseArray(sysRecycleReal.getBillValue(), JSONObject.class);
+                if (restoreDataList.size() == 0){
+                    continue;
+                }
+                // 拼凑sql insert into xxx(yy,yy,yy) values(?,?,?)
+                StringBuilder headSql = new StringBuilder();
+                StringBuilder valueSql = new StringBuilder();
+                headSql.append("insert into ");
+                headSql.append(tableName);
+                headSql.append("(");
+
+                valueSql.append("values(");
+
+                Set<String> fieldSet = restoreDataList.get(0).keySet(); // 有多少个字段
+                List<String> fieldList = new ArrayList<>();  // set是无序的，使用了列表存，防止预编译参数顺序对不上
+                fieldSet.forEach(field->{
+                    headSql.append(field).append(",");
+                    valueSql.append("?").append(",");
+                    fieldList.add(field);
+                });
+                headSql.deleteCharAt(headSql.length() - 1);
+                valueSql.deleteCharAt(valueSql.length() - 1);
+                headSql.append(") ");
+                valueSql.append(")");
+                String insertSql = headSql.toString() + valueSql.toString();
+                // 创建PreparedStatement对象
+                preparedStatement = connection.prepareStatement(insertSql);
+                for (JSONObject restoreData : restoreDataList) {
+                    for (int i = 0; i < fieldList.size(); i++) {
+                        String field = fieldList.get(i);
+                        preparedStatement.setObject(i+1, restoreData.get(field));
+                    }
+                    preparedStatement.executeUpdate();
+                }
+                preparedStatement.close();
+            }
         }
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
