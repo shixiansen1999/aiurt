@@ -447,7 +447,9 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 				bdTrainTasks.setTaskTeamName(departByOrgCode.getDepartName());
 			}
 			LoginUser userById = iSysBaseAPI.getUserById(bdTrainTasks.getTeacherId());
-			bdTrainTasks.setTeacherName(userById.getRealname());
+			if (ObjectUtil.isNotEmpty(userById)) {
+				bdTrainTasks.setTeacherName(userById.getRealname());
+			}
 
 			Date startDate1 = bdTrainTasks.getStartDate();
 			Date endDate1 = bdTrainTasks.getEndDate();

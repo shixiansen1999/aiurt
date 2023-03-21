@@ -43,6 +43,7 @@ import com.aiurt.common.result.SpareResult;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.PdfUtil;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -222,6 +223,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
             }
             //打印详情
+            // 禁用数据权限过滤-start
+            boolean filter = GlobalThreadLocal.setDataFilter(false);
             List<RepairTaskResult> repairTaskResults = new ArrayList<>();
             //获取检修站点
             List<RepairTaskStationDTO> repairTaskStationDTOS = this.repairTaskStationList(e.getId());
@@ -242,11 +245,24 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         }
                     }
                 }
+                e.setRepairRecord("无");
                 for (RepairTaskDTO repairTaskDTO : repairTasks) {
                     String deviceId = repairTaskDTO.getDeviceId();
-                    CheckListDTO checkListDTO = repairTaskMapper.selectRepairTaskInfo(e.getId(), repairTaskStationDTO.getStationCode(), deviceId);
-                    List<RepairTaskResult> resultList = selectCodeContentList(checkListDTO.getDeviceId());
-                    repairTaskResults.addAll(resultList);
+                    List<RepairTaskResult> resultList = repairTaskMapper.selectSingle(deviceId, null);
+                    resultList.forEach(r -> {
+                        //检修结果
+                        r.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(r.getStatus())));
+                        //当第一次检修结果为空时，且有检修结果是正常
+                        if (ObjectUtil.isEmpty(e.getRepairResult())&& r.getStatus() != null && r.getStatus() == 1) {
+                            e.setRepairRecord(r.getStatusName());
+                        }
+                        //当检修结果异常时覆盖
+                        if (r.getStatus() != null && r.getStatus() == 2) {
+                            e.setRepairRecord(r.getStatusName());
+                        }
+                    });
+                    List<RepairTaskResult> collect = resultList.stream().filter(P -> P.getType() == 1).collect(Collectors.toList());
+                    repairTaskResults.addAll(collect);
                 }
             }
             e.setTitle(e.getSiteName()+"检修记录表");
@@ -276,6 +292,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     i++;
                 }
             }
+            // 禁用数据权限过滤-end
+            GlobalThreadLocal.setDataFilter(filter);
         });
         // 确认每个线程都执行完成
         for (Future<RepairTask> fut : futureList) {

@@ -194,12 +194,13 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         List<PrintDetailDTO> printDetailList = new ArrayList<>();
 
                         List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
+                        List<PatrolCheckResultDTO> dtos = checkResultList.stream().filter(P -> P.getCheck() == 1).collect(Collectors.toList());
                         // 字典翻译
                         Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
                                 .stream().filter(m->StrUtil.isNotEmpty(m.getText()))
                                 .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
 
-                        for (PatrolCheckResultDTO c : checkResultList) {
+                        for (PatrolCheckResultDTO c : dtos) {
                             c.setRequiredDictName(requiredItems.get(String.valueOf(c.getRequired())));
                             if (ObjectUtil.isNotNull(c.getDictCode())) {
                                 List<DictModel> list = sysBaseApi.getDictItems(c.getDictCode());
@@ -217,15 +218,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
                             PrintDetailDTO printDetailDTO = new PrintDetailDTO();
                             printDetailDTO.setContent(c.getContent() + ":" + c.getQualityStandard());
-                            if (c.getInputType() != null) {
-                                if (c.getInputType() == 1) {
-                                    printDetailDTO.setResult(Convert.toStr(c.getCheckResult()));
-                                }else if (c.getInputType() == 2){
-                                    printDetailDTO.setResult(c.getCheckDictName());
-                                }else {
-                                    printDetailDTO.setResult(c.getWriteValue());
-                                }
-                            }
+                            printDetailDTO.setResult(Convert.toStr(c.getCheckResult()));
                             printDetailDTO.setRemark(c.getRemark());
                             printDetailList.add(printDetailDTO);
                         }
