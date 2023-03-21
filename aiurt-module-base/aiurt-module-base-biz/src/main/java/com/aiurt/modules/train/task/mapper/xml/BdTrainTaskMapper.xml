@@ -300,31 +300,53 @@ and er.exam_classify=1
     where  fr.user_id = #{userId}  and  fr.train_task_id =#{trainTaskId}
     </select>
     <select id="queryTrainingLedger" resultType="com.aiurt.modules.train.task.entity.BdTrainTask">
-select tt.id,tt.task_team_id,tt.teacher_id,
-       tt.sys_org_code,tt.exam_classify,tt.plan_sub_id,tt.task_hours,tt.address,tt.train_target,tt.exam_task_name,
-       tt.exam_paper_id,tt.make_up_time,tt.remarks,tt.make_up_state,tt.study_resource_state,tt.exam_status,
-       tt.number,tt.task_state,tt.start_time,tt.start_exam_time,tt.stop_state,tt.start_date,tt.end_date,tt.exam_plan_time,
-       tt.task_name,bt.depart_name as taskTeamName,tt.classify,tt.plan_sub_name,su.realname as teacherName,bep.name as examName
-from bd_train_task tt
-LEFT JOIN sys_depart bt ON tt.task_team_id = bt.id
-LEFT JOIN sys_user su ON tt.teacher_id = su.id
-LEFT JOIN  bd_exam_paper bep ON bep.id = tt.exam_paper_id
+        SELECT
+        id,
+        task_team_id,
+        teacher_id,
+        sys_org_code,
+        exam_classify,
+        plan_sub_id,
+        task_hours,
+        address,
+        train_target,
+        exam_task_name,
+        exam_paper_id,
+        make_up_time,
+        remarks,
+        make_up_state,
+        study_resource_state,
+        exam_status,
+        number,
+        task_state,
+        start_time,
+        start_exam_time,
+        stop_state,
+        start_date,
+        end_date,
+        exam_plan_time,
+        task_name,
+        classify,
+        plan_sub_name,
+        task_team_code
+        FROM
+        bd_train_task
 <where>
-  tt.task_state>0
+  task_state>0
  <if test="condition.id != null and condition.id != ''">
-    and tt.id = #{condition.id}
+    and id = #{condition.id}
 </if>
  <if test="condition.taskState != null">
-   and tt.task_state  = #{condition.taskState}
+   and task_state  = #{condition.taskState}
 </if>
  <if test="condition.taskName != null and condition.taskName != ''">
  and task_name like concat('%',#{condition.taskName},'%')
  </if>
 <if test="condition.startDate != null">
- AND DATE_FORMAT(tt.start_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+ AND DATE_FORMAT(start_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
 </if>
 </where>
-order by tt.create_time desc,tt.task_name asc
+order by create_time desc,task_name asc
 </select>
 
 <select id="getTeacherRole" resultType="java.lang.String">

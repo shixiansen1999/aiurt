@@ -180,7 +180,7 @@ public class PatrolStatisticsService {
 
         ZoneId zoneId = ZoneId.systemDefault();
         LocalDate localDate = firstDate.toInstant().atZone(zoneId).toLocalDate();
-        if( date.after(firstDate) && date.before(secondDate)){
+        if( date.after(firstDate) && date.before(secondDate) || date.equals(firstDate)){
             // 第一次漏检往前推两次漏检间隔天数
             Date start = Date.from(localDate.minusDays(7-betweenDay).atStartOfDay().atZone(zoneId).toInstant());
             // 第一次漏检往前推1天
@@ -193,12 +193,12 @@ public class PatrolStatisticsService {
                 // 第一次漏检往前1天
                 Date end = Date.from(localDate.minusDays(7-betweenDay).atStartOfDay().atZone(zoneId).toInstant());
                 return Arrays.asList(DateUtil.parse(DateUtil.format(start, "yyyy-MM-dd 00:00:00")),
-                        DateUtil.parse(DateUtil.format(end, "yyyy-MM-dd 23:59:59")));
+                        DateUtil.parse(DateUtil.format(end, "yyyy-MM-dd 00:00:00")));
             }else{
                 // 第一次漏检往后推两次检修间隔天数
                 secondDate = Date.from(localDate.plusDays(betweenDay).atStartOfDay().atZone(zoneId).toInstant());
                 return Arrays.asList(DateUtil.parse(DateUtil.format(firstDate, "yyyy-MM-dd 00:00:00")),
-                        DateUtil.parse(DateUtil.format(secondDate, "yyyy-MM-dd 23:59:59")));
+                        DateUtil.parse(DateUtil.format(secondDate, "yyyy-MM-dd 00:00:00")));
             }
 
         }

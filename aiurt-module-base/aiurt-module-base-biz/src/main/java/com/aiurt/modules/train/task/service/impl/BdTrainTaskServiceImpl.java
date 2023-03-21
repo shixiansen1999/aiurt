@@ -2,12 +2,14 @@ package com.aiurt.modules.train.task.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
-import com.aiurt.modules.train.exam.entity.BdExamPaper;
-import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
+import com.aiurt.modules.train.exam.entity.BdExamPaper;
+import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.feedback.entity.*;
 import com.aiurt.modules.train.feedback.mapper.*;
 import com.aiurt.modules.train.quzrtz.QuartzServiceImpl;
@@ -25,6 +27,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,6 +80,8 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 
 	@Autowired
 	private QuartzServiceImpl quartzService;
+	@Autowired
+	private ISysBaseAPI iSysBaseAPI;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -431,8 +438,17 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	public Page<BdTrainTask> queryTrainingLedger(Page<BdTrainTask> pageList,BdTrainTask bdTrainTask) {
 		List<BdTrainTask> taskList = bdTrainTaskMapper.queryTrainingLedger(pageList,bdTrainTask);
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+		// 禁用数据权限过滤-start
+		boolean filter = GlobalThreadLocal.setDataFilter(false);
 		for(BdTrainTask bdTrainTasks : taskList)
 		{
+			if (StrUtil.isNotEmpty(bdTrainTasks.getTaskTeamCode())) {
+				SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(bdTrainTasks.getTaskTeamCode());
+				bdTrainTasks.setTaskTeamName(departByOrgCode.getDepartName());
+			}
+			LoginUser userById = iSysBaseAPI.getUserById(bdTrainTasks.getTeacherId());
+			bdTrainTasks.setTeacherName(userById.getRealname());
+
 			Date startDate1 = bdTrainTasks.getStartDate();
 			Date endDate1 = bdTrainTasks.getEndDate();
 			if(ObjectUtil.isNotEmpty(startDate1) && ObjectUtil.isNotEmpty(endDate1))
@@ -452,6 +468,8 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 				bdTrainTasks.setExamNumber(examPaper.getDanumber()+examPaper.getScqnumber());
 			}
 		}
+		// 禁用数据权限过滤-end
+		GlobalThreadLocal.setDataFilter(filter);
 		return pageList.setRecords(taskList);
 	}
 	@Override

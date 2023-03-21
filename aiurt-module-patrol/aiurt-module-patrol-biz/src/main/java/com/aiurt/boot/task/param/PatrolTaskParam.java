@@ -2,8 +2,10 @@ package com.aiurt.boot.task.param;
 
 import com.aiurt.boot.task.dto.PatrolTaskOrganizationDTO;
 import com.aiurt.boot.task.dto.PatrolTaskStationDTO;
+import com.aiurt.boot.task.dto.PrintStationDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -164,4 +166,10 @@ public class PatrolTaskParam extends PatrolTask {
     @ApiModelProperty(value = "任务抽检人")
     private String samplePersonName;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "标题")
+    private String title;
+
+    @ApiModelProperty(value = "巡视单内容")
+    private List<PrintStationDTO> printStationDTOList;
 }

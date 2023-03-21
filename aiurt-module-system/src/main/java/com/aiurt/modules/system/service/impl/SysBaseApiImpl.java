@@ -14,6 +14,7 @@ import com.aiurt.common.constant.*;
 import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.HTMLUtils;
+import com.aiurt.common.result.SpareResult;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.YouBianCodeUtil;
 import com.aiurt.common.util.dynamic.db.FreemarkerParseFactory;
@@ -27,6 +28,10 @@ import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
+import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
+import com.aiurt.modules.fault.entity.FaultRepairRecord;
+import com.aiurt.modules.fault.mapper.DeviceChangeSparePartMapper;
+import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.major.entity.CsMajor;
@@ -53,8 +58,7 @@ import com.aiurt.modules.sm.entity.SafetyRelatedForm;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
 import com.aiurt.modules.sm.mapper.SafetyRelatedFormMapper;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
-import com.aiurt.modules.sparepart.mapper.SparePartApplyMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
+import com.aiurt.modules.sparepart.mapper.*;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
@@ -78,7 +82,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
 import org.springframework.beans.BeanUtils;
@@ -226,7 +232,26 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Autowired
     private SparePartStockInfoMapper sparePartStockInfoMapper;
     @Autowired
+    private SparePartStockMapper sparePartStockMapper;
+    @Autowired
+    private SparePartInOrderMapper sparePartInOrderMapper;
+    @Autowired
     private MaterialBaseMapper materialBaseMapper;
+    @Autowired
+    private SparePartOutOrderMapper sparePartOutOrderMapper;
+    @Autowired
+    @Lazy
+    private ISTodoBaseAPI isTodoBaseAPI;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private SparePartLendMapper sparePartLendMapper;
+    @Autowired
+    private ISysHolidaysService sysHolidaysService;
+    @Autowired
+    private DeviceChangeSparePartMapper sparePartMapper;
+    @Autowired
+    private FaultMapper faultMapper;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -839,6 +864,17 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         MaterialBase one = materialBaseMapper.selectOne(wrapper);
         return one.getName();
     }
+    @Override
+    public String getMaterialNameByCodes(String materialCodes) {
+        List<String> list = StrUtil.splitTrim(materialCodes, ",");
+        LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(MaterialBase::getCode,list);
+        wrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
+        List<MaterialBase> materialBases = materialBaseMapper.selectList(wrapper);
+        String materialNames = materialBases.stream().map(MaterialBase::getName).collect(Collectors.joining(","));
+        return materialNames;
+    }
+
 
     @Override
     public String getDepartIdsByOrgCode(String orgCode) {
@@ -2516,16 +2552,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             modelList.add(model);
         }
         SysDepart sysDepart = departMapper.selectOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SysDepart::getOrgCode,orgCode));
+        if(ObjectUtil.isEmpty(sysDepart)){
+            return Collections.emptyList();
+        }
         SysDepartModel model = new SysDepartModel();
         BeanUtils.copyProperties(sysDepart,model);
         List<SysDepartModel> allChildren = new ArrayList<>();
         if(ObjectUtil.isNotEmpty(model)&&CollUtil.isNotEmpty(modelList)){
             List<SysDepartModel> sysDepartList = treeMenuList(modelList, model, allChildren);
+            sysDepartList.add(model);
             if (CollectionUtil.isEmpty(sysDepartList)) {
                 return Collections.emptyList();
             }
             List<String> codeList = sysDepartList.stream().map(s -> s.getOrgCode()).collect(Collectors.toList());
-            codeList.add(model.getOrgCode());
             return codeList;
         }
         return null;
@@ -2865,5 +2904,35 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getCurrentNewModified(String dictCode) {
         return sysDictService.getCurrentNewModified(dictCode);
+    }
+
+    @Override
+    public List<String> getAllHolidays() {
+        LambdaQueryWrapper<SysHolidays> wrapper = new LambdaQueryWrapper<>();
+        List<SysHolidays> list = sysHolidaysService.list(wrapper);
+        if (CollUtil.isNotEmpty(list)) {
+            List<String> collect = list.stream().map(SysHolidays::getDate).collect(Collectors.toList());
+            return collect;
+        }
+        return new ArrayList<String>();
+    }
+
+    @Override
+    public List<SpareResult>  getSpareChange(String faultCode) {
+        LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(FaultRepairRecord::getFaultCode, faultCode)
+                .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1")
+                .select(FaultRepairRecord::getId);
+        FaultRepairRecord repairRecord = faultRepairRecordMapper.selectOne(wrapper);
+        List<SpareResult> sparePart = sparePartMapper.getSparePart(faultCode, repairRecord.getId());
+        return sparePart;
+    }
+
+    @Override
+    public String getFaultRepairReuslt(String faultCode) {
+        RepairRecordDetailDTO recordByFaultCode = faultRepairRecordMapper.getRecordByFaultCode(faultCode);
+        String s = "故障接报人："+recordByFaultCode.getAppointRealName() + ",处理结果："+recordByFaultCode.getMaintenanceMeasures();
+        return s;
     }
 }

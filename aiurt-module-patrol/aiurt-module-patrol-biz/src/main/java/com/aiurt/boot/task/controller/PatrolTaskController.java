@@ -1,11 +1,9 @@
 package com.aiurt.boot.task.controller;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
@@ -45,7 +43,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -443,6 +440,24 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         }
         return Result.OK("领取成功");
     }
+
+    /**
+     * app巡检任务批量领取
+     *
+     * @param patrolTaskDTOs
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "巡检任务表-app巡检任务批量领取", operateType = 3, operateTypeAlias = "修改-更新任务状态", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
+    @ApiOperation(value = "巡检任务表-app巡检任务批量领取", notes = "巡检任务表-app巡检任务批量领取")
+    @PostMapping(value = "/patrolTaskReceiveBatch")
+    public Result<?> patrolTaskReceiveBatch(@RequestBody List<PatrolTaskDTO> patrolTaskDTOs, HttpServletRequest req) {
+        for (PatrolTaskDTO patrolTaskDTO : patrolTaskDTOs) {
+            patrolTaskService.getPatrolTaskReceive(patrolTaskDTO);
+        }
+        return Result.OK("领取成功");
+    }
+
     /**
      * app巡检任务检查校验
      *
@@ -717,5 +732,22 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("巡视任务综合",  "导出信息", ExcelType.XSSF));
         mv.addObject(NormalExcelConstants.DATA_LIST, list);
         return  mv;
+    }
+
+    /**
+     *打印巡视详情（弃用）
+     *
+     * @param ids
+     * @param req
+     * @return author lkj
+     */
+    @AutoLog(value = "巡检任务表-打印巡视详情")
+    @ApiOperation(value = "巡检任务表-打印巡视详情", notes = "巡检任务表-打印巡视详情")
+    @GetMapping(value = "/printPatrolTaskById")
+    public Result<List<PrintPatrolTaskDTO>> printPatrolTaskById(@RequestParam(name="id",required=true) String ids,
+                                                      HttpServletRequest req) {
+
+        List<PrintPatrolTaskDTO> printPatrolTaskDTOS = patrolTaskService.printPatrolTaskById(ids);
+        return Result.OK(printPatrolTaskDTOS);
     }
 }

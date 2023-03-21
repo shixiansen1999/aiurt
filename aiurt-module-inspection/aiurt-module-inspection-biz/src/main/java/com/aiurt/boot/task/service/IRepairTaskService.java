@@ -242,4 +242,12 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @return
      */
     void exportPdf(HttpServletRequest request, RepairTask repairTask, HttpServletResponse response) throws IOException;
+
+
+    /**
+     * 检修任务表-打印检修详情
+     * @param ids
+     * @return
+     */
+    List<PrintRepairTaskDTO> printRepairTaskById(String ids);
 }

@@ -1,11 +1,10 @@
 package com.aiurt.modules.sparepart.service;
 
-import com.aiurt.boot.task.dto.OverhaulStatisticsDTOS;
 import com.aiurt.modules.material.entity.MaterialBaseType;
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.entity.dto.SparePartConsume;
 import com.aiurt.modules.sparepart.entity.dto.SparePartStatistics;
+import com.aiurt.modules.sparepart.entity.dto.WareHouseDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.servlet.ModelAndView;
@@ -66,4 +65,6 @@ public interface ISparePartStockService extends IService<SparePartStock> {
      * @return
      */
     List<SparePartStock> selectAppList(Page<SparePartStock> page, String orgId, String text);
+
+    List<WareHouseDTO> getWareHouse(SparePartStock sparePartStock);
 }

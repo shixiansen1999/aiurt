@@ -137,4 +137,10 @@ public class FaultDevice implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "送修返回时间")
     private Date repairBackTime;
+
+    @ApiModelProperty("组件编码")
+    private String materialCodes;
+    @ApiModelProperty("组件名称")
+    @TableField(exist = false)
+    private String materialNames;
 }

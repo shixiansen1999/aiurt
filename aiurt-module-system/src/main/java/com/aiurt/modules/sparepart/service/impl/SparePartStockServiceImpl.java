@@ -8,18 +8,23 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.entity.dto.SparePartConsume;
 import com.aiurt.modules.sparepart.entity.dto.SparePartStatistics;
+import com.aiurt.modules.sparepart.entity.dto.WareHouseDTO;
 import com.aiurt.modules.sparepart.mapper.SparePartLendStockMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
+import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
 import com.aiurt.modules.sparepart.service.ISparePartStockService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
@@ -27,7 +32,6 @@ import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,6 +55,8 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
     private SparePartLendStockMapper sparePartLendStockMapper;
     @Autowired
     private IMaterialBaseTypeService iMaterialBaseTypeService;
+    @Autowired
+    private ISparePartStockInfoService sparePartStockInfoService;
     @Autowired
     private CommonAPI commonApi;
     /**
@@ -621,4 +627,35 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
         return sparePartStockMapper.selectAppList(page,orgId,text);
     }
 
+    @Override
+    public List<WareHouseDTO> getWareHouse(SparePartStock sparePartStock) {
+        List<SparePartStock> list = sparePartStockMapper.readAll(null, sparePartStock);
+        list = list.stream().filter(l->l.getWarehouseCode()!=null).collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<SparePartStock>(Comparator.comparing(SparePartStock::getWarehouseName))), ArrayList::new));
+        List<WareHouseDTO> wareHouseDTOList = new ArrayList<>();
+        SparePartStockInfo stockInfo = new SparePartStockInfo();
+            // 获取当前登录人所属机构， 根据所属机构擦查询管理二级管理仓库
+            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            // 查询仓库
+            LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
+            if(ObjectUtil.isNotEmpty(loginUser.getOrgId())){
+                //一个班组管理一个仓库，用selectOne,防止有人多配，只取一条
+                wrapper.eq(SparePartStockInfo::getOrganizationId, loginUser.getOrgId()).last("limit 1");
+                stockInfo = sparePartStockInfoService.getBaseMapper().selectOne(wrapper);
+            }
+            for (SparePartStock stock : list) {
+                WareHouseDTO dto = new WareHouseDTO();
+                dto.setName(stock.getWarehouseName());
+                if(ObjectUtil.isNotEmpty(stockInfo)){
+                    if(stockInfo.getOrganizationId().equals(stock.getOrgId())){
+                        dto.setMyself(true);
+                    }else {
+                        dto.setMyself(false);
+                    }
+                }else {
+                    dto.setMyself(false);
+                }
+                wareHouseDTOList.add(dto);
+            }
+            return  wareHouseDTOList;
+        }
 }

@@ -40,7 +40,7 @@ public enum TodoTaskTypeEnum {
     /**
      * 物资出入库
      */
-    SPARE_PART("sparepart","","物资出入库流程"),
+    SPARE_PART("spare_part","","物资出入库流程"),
     /**
      * 工作票
      */

@@ -159,4 +159,8 @@ public class SparePartStock implements Serializable {
     @ApiModelProperty(value = "所属部门")
     @DeptFilterColumn
     private String sysOrgCode;
+    /**是否是易耗品：1是，0不是*/
+    @ApiModelProperty(value = "是否是易耗品：1是，0不是")
+    @TableField(exist = false)
+    private Integer consumablesType;
 }

@@ -1,12 +1,13 @@
 package com.aiurt.modules.train.task.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.ibatis.annotations.Param;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.train.task.dto.*;
 import com.aiurt.modules.train.task.entity.BdTrainTask;
 import com.aiurt.modules.train.task.entity.BdTrainTaskSign;
 import com.aiurt.modules.train.task.entity.BdTrainTaskUser;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
  * @Date:   2022-04-18
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface BdTrainTaskMapper extends BaseMapper<BdTrainTask> {
 
     /**

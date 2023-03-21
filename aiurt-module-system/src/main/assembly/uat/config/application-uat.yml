@@ -163,7 +163,7 @@ spring:
     password: 1qaz@2wsx
     port: 6379
   elasticsearch:
-    uris: http://192.168.1.29:9200
+    uris: http://127.0.0.1:9200
     connection-timeout: 3000
     socket-timeout: 5000
 #mybatis plus 设置

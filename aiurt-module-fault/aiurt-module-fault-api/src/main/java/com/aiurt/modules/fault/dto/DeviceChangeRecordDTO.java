@@ -13,10 +13,10 @@ public class DeviceChangeRecordDTO implements Serializable {
      * 组件更换
      */
     @ApiModelProperty(value = "组件更换")
-    private List<DeviceChangeDTO> deviceChangeList;
+    private List<SparePartStockDTO> deviceChangeList;
 
 
 
     @ApiModelProperty(value = "易耗品")
-    private List<DeviceChangeDTO> consumableList;
+    private List<SparePartStockDTO> consumableList;
 }

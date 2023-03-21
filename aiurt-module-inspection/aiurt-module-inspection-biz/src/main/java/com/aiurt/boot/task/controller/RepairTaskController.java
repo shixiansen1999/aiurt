@@ -5,10 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
-import com.aiurt.boot.task.dto.CheckListDTO;
-import com.aiurt.boot.task.dto.RepairTaskDTO;
-import com.aiurt.boot.task.dto.RepairTaskStationDTO;
-import com.aiurt.boot.task.dto.SystemInformationDTO;
+import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
@@ -576,4 +573,20 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 
         repairTaskService.exportPdf(request,repairTask,response);
     }*/
+
+    /**
+     *检修任务表-打印检修详情（作废）
+     *
+     * @param ids
+     * @param req
+     * @return author lkj
+     */
+    @AutoLog(value = "检修任务表-打印检修详情")
+    @ApiOperation(value = "检修任务表-打印检修详情", notes = "检修任务表-打印检修详情")
+    @GetMapping(value = "/printRepairTaskById")
+    public Result<List<PrintRepairTaskDTO>> printRepairTaskById(@RequestParam(name="id",required=true) String ids,
+                                                          HttpServletRequest req) {
+        List<PrintRepairTaskDTO> printPatrolTaskDTOs = repairTaskService.printRepairTaskById(ids);
+        return Result.OK(printPatrolTaskDTOs);
+    }
 }

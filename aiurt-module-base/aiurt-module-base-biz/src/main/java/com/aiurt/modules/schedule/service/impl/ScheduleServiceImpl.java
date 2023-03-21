@@ -3,9 +3,11 @@ package com.aiurt.modules.schedule.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.Week;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.util.DateUtils;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.schedule.entity.Schedule;
 import com.aiurt.modules.schedule.entity.ScheduleItem;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
@@ -115,7 +117,12 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         /**
          * 2、从record表中获取有多少人在时间范围类安排了工作,根据当前登录人班组权限查班组的人员，或者只查询当前登录人的数据
          */
-        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtil.format(date, "yyyy-MM"), userIds, schedule.getOrgId(),schedule.getText(),temp);
+        List<String> orgCodeList = new ArrayList<>();
+        boolean b = GlobalThreadLocal.setDataFilter(false);
+        if(ObjectUtil.isNotEmpty(schedule.getOrgCode())){
+            orgCodeList = iSysBaseApi.sysDepartList(schedule.getOrgCode());
+        }
+        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtil.format(date, "yyyy-MM"), userIds, orgCodeList,schedule.getText(),temp);
         /**
          * 3、获取记录数据
          */
@@ -169,7 +176,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             try {
                 Calendar start = Calendar.getInstance();
                 start.setTime(schedule.getStartDate());
-                QueryWrapper wrapper = new QueryWrapper();
+                QueryWrapper<ScheduleRuleItem> wrapper = new QueryWrapper<>();
                 wrapper.eq("rule_id", schedule.getRuleId());
                 wrapper.orderByDesc("id");
                 List<ScheduleRuleItem> itemList = ruleItemService.list(wrapper);
@@ -183,6 +190,14 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                 }
                 int i = scheduleRuleItem.getSort();
                 while (!start.getTime().after(schedule.getEndDate())) {
+                    //判断是否跳过周末
+                    Boolean isSkipWeekend = schedule.getIsSkipWeekend();
+                    Date time = start.getTime();
+                    Week week = DateUtil.dayOfWeekEnum(time);
+                    if (("星期日".equals(week.toChinese()) || "星期六".equals(week.toChinese())) && isSkipWeekend) {
+                        start.add(Calendar.DAY_OF_YEAR, 1);
+                        continue;
+                    }
                     int index = (i % itemSize == 0 ? itemSize : i % itemSize);
                     Integer ruleItemId = scheduleRuleItemMap.get(index);
                     ScheduleItem scheduleItem = ItemService.getById(ruleItemId);
@@ -201,6 +216,20 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                                 .color(scheduleItem.getColor())
                                 .delFlag(0)
                                 .build();
+                        //  如果需要跳过节假日，并且当天和指定班次一样，则变更班次
+                        List<String> allHolidays = iSysBaseApi.getAllHolidays();
+                        Date date = start.getTime();
+                        String format = DateUtil.format(date, "yyyy-MM-dd");
+                        if (CollUtil.isNotEmpty(allHolidays)) {
+                            List<String> collect = allHolidays.stream().filter(h -> h.equals(format)).collect(Collectors.toList());
+                            if (schedule.getIsHolidayAdjustment() && collect.size() == 1) {
+                                if (schedule.getBeforeItemId().equals(ruleItemId)) {
+                                    ScheduleItem scheduleItem2 = ItemService.getById(schedule.getAfterItemId());
+                                    record.setItemId(scheduleItem2.getId());
+                                    record.setItemName(scheduleItem2.getName());
+                                }
+                            }
+                        }
                         recordService.save(record);
                     }
                     start.add(Calendar.DAY_OF_YEAR, 1);
