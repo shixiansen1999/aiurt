@@ -19,6 +19,7 @@ import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.YouBianCodeUtil;
 import com.aiurt.common.util.dynamic.db.FreemarkerParseFactory;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
@@ -2934,5 +2935,23 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         RepairRecordDetailDTO recordByFaultCode = faultRepairRecordMapper.getRecordByFaultCode(faultCode);
         String s = "故障接报人："+recordByFaultCode.getAppointRealName() + ",处理结果："+recordByFaultCode.getMaintenanceMeasures();
         return s;
+    }
+
+    @Override
+    public List<LoginUser> getOrgUsers() {
+        QueryWrapper<SysDepart> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<SysDepart> sysDepartList = sysDepartService.list(queryWrapper);
+        boolean b = GlobalThreadLocal.setDataFilter(false);
+        List<LoginUser> loginUsers = new ArrayList<>();
+        for (SysDepart sysDepart : sysDepartList) {
+            List<String> orgCodes = sysDepartList(sysDepart.getOrgCode());
+            if(CollUtil.isNotEmpty(orgCodes)){
+                List<LoginUser> users = userMapper.getUserByCodes(orgCodes);
+                loginUsers.addAll(users);
+            }
+        }
+        GlobalThreadLocal.setDataFilter(b);
+        return loginUsers;
     }
 }
