@@ -6,6 +6,7 @@
         distinct
         spare_part_stock.id,
         t1.warehouse_code,
+        t1.organization_id as orgId,
         t1.warehouse_name warehouseName,
         spare_part_stock.material_code materialCode,
         t2.NAME,
@@ -19,22 +20,26 @@
         t7.`name` manufactorCodeName,
         d3.item_text unit,
         t2.price,
+        t2.consumables_type,
         spare_part_stock.minimum_stock
         FROM
         spare_part_stock spare_part_stock
-        LEFT JOIN spare_part_stock_info t1 ON spare_part_stock.warehouse_code = t1.warehouse_code
-        LEFT JOIN material_base t2 ON spare_part_stock.material_code = t2.CODE
-        LEFT JOIN cs_major cs_major ON t2.major_code = cs_major.major_code
-        LEFT JOIN cs_subsystem cs_subsystem ON t2.system_code = cs_subsystem.system_code
-        LEFT JOIN material_base_type t5 ON t2.base_type_code = t5.base_type_code
-        LEFT JOIN sys_depart sys_depart ON sys_depart.id = spare_part_stock.org_id
+        LEFT JOIN spare_part_stock_info t1 ON ( spare_part_stock.warehouse_code = t1.warehouse_code AND t1.del_flag = 0  )
+        LEFT JOIN material_base t2 ON ( spare_part_stock.material_code = t2.CODE AND t2.del_flag = 0 )
+        LEFT JOIN cs_major cs_major ON ( t2.major_code = cs_major.major_code AND cs_major.del_flag = 0 )
+        LEFT JOIN cs_subsystem cs_subsystem ON ( t2.system_code = cs_subsystem.system_code AND cs_subsystem.del_flag = 0 )
+        LEFT JOIN material_base_type t5 ON ( t2.base_type_code = t5.base_type_code AND t5.del_flag = 0 )
+        LEFT JOIN sys_depart sys_depart ON ( sys_depart.id = spare_part_stock.org_id AND sys_depart.del_flag = 0 )
         LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'material_type'
-        LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t2.type  AND dict1.id = d1.dict_id
+        LEFT JOIN sys_dict_item AS d1 ON ( d1.item_value = t2.type AND dict1.id = d1.dict_id )
         LEFT JOIN cs_manufactor t7 ON t7.id = t2.manufactor_code
         LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
-        LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t2.unit AND dict3.id = d3.dict_id
+        LEFT JOIN sys_dict_item AS d3 ON (
+        d3.item_value = t2.unit
+        AND dict3.id = d3.dict_id)
         WHERE
         spare_part_stock.del_flag =0
+        and spare_part_stock.num>0
         <if test="stock.materialCode!=null and stock.materialCode!=''">
             and spare_part_stock.material_code like concat('%',  #{stock.materialCode}, '%')
         </if>
@@ -73,6 +78,12 @@
         </if>
         <if test="stock.minimumStock != null and stock.minimumStock == 1">
             and spare_part_stock.num > spare_part_stock.minimum_stock
+        </if>
+        <if test="stock.consumablesType != null and stock.consumablesType == 0">
+             and t2.consumables_type = 0
+        </if>
+        <if test="stock.consumablesType != null and stock.consumablesType == 1">
+             and t2.consumables_type = 1
         </if>
         order by spare_part_stock.create_time desc
     </select>
@@ -233,19 +244,22 @@
         t2.price
         FROM
         spare_part_stock spare_part_stock
-        LEFT JOIN spare_part_stock_info t1 ON spare_part_stock.warehouse_code = t1.warehouse_code
-        LEFT JOIN material_base t2 ON spare_part_stock.material_code = t2.CODE
-        LEFT JOIN cs_major cs_major ON t2.major_code = cs_major.major_code
-        LEFT JOIN cs_subsystem cs_subsystem ON t2.system_code = cs_subsystem.system_code
-        LEFT JOIN material_base_type t5 ON t2.base_type_code = t5.base_type_code
-        LEFT JOIN sys_depart sys_depart ON sys_depart.id = spare_part_stock.org_id
-        LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'material_type'
-        LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t2.type  AND dict1.id = d1.dict_id
-        LEFT JOIN cs_manufactor t7 ON t7.id = t2.manufactor_code
-        LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
-        LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t2.unit AND dict3.id = d3.dict_id
+       	LEFT JOIN spare_part_stock_info t1 ON ( spare_part_stock.warehouse_code = t1.warehouse_code AND t1.del_flag = 0 )
+	    LEFT JOIN material_base t2 ON ( spare_part_stock.material_code = t2.CODE AND t2.del_flag = 0 )
+	    LEFT JOIN cs_major cs_major ON ( t2.major_code = cs_major.major_code AND cs_major.del_flag = 0 )
+	    LEFT JOIN cs_subsystem cs_subsystem ON ( t2.system_code = cs_subsystem.system_code AND cs_subsystem.del_flag = 0 )
+	    LEFT JOIN material_base_type t5 ON ( t2.base_type_code = t5.base_type_code AND t5.del_flag = 0 )
+	    LEFT JOIN sys_depart sys_depart ON ( sys_depart.id = spare_part_stock.org_id AND sys_depart.del_flag = 0 )
+	    LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'material_type'
+	    LEFT JOIN sys_dict_item AS d1 ON ( d1.item_value = t2.type AND dict1.id = d1.dict_id )
+	    LEFT JOIN cs_manufactor t7 ON t7.id = t2.manufactor_code
+	    LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
+	    LEFT JOIN sys_dict_item AS d3 ON (
+	d3.item_value = t2.unit
+	AND dict3.id = d3.dict_id)
         WHERE
         spare_part_stock.del_flag =0
+        and spare_part_stock.num>0
         <if test="text!=null and text!=''">
             and (spare_part_stock.material_code like concat('%',  #{text}, '%')  or t2.`name` like concat('%', #{text}, '%')
             or t1.warehouse_name like concat('%',  #{text}, '%'))

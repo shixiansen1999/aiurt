@@ -14,6 +14,7 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
+import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -234,7 +235,18 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
        return sparePartOutOrderService.update(sparePartOutOrder);
    }
 
-
+    /**
+     * APP-出库
+     *
+     * @return
+     */
+    @AutoLog(value = "APP-出库",operateType = 1,operateTypeAlias = "App备件库存出库",permissionUrl = "/sparepart/sparePartStock/list")
+    @ApiOperation(value="APP-出库", notes="APP-出库")
+    @GetMapping(value = "/appOutbound")
+    public Result<IPage<SparePartStock>> appOutbound(SparePartStock sparePartStock) {
+        sparePartOutOrderService.appOutbound(sparePartStock);
+        return Result.OK("出库成功");
+    }
    /**
     * 通过id查询
     *

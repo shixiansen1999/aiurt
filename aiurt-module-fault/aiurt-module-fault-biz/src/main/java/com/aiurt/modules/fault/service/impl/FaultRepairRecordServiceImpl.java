@@ -4,10 +4,10 @@ import cn.hutool.core.date.BetweenFormater;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.modules.fault.dto.DeviceChangeDTO;
 import com.aiurt.modules.fault.dto.DeviceChangeRecordDTO;
 import com.aiurt.modules.fault.dto.RecordDetailDTO;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
+import com.aiurt.modules.fault.dto.SparePartStockDTO;
 import com.aiurt.modules.fault.entity.DeviceChangeSparePart;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultRepairParticipants;
@@ -19,15 +19,13 @@ import com.aiurt.modules.fault.service.IFaultRepairRecordService;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -84,7 +82,11 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
         detailDTOList.stream().forEach(repairRecordDetailDTO -> {
             List<FaultRepairParticipants> list = participantsService.queryParticipantsByRecordId(repairRecordDetailDTO.getId());
             repairRecordDetailDTO.setParticipantsList(list);
-
+            if(repairRecordDetailDTO.getProcessing()!=null){
+                List<DictModel> faultProcessing = sysBaseAPI.getDictItems("fault_processing");
+                String faultProcessingName = faultProcessing.stream().filter(f -> f.getValue().equals(String.valueOf(repairRecordDetailDTO.getProcessing()))).map(DictModel::getLabel).collect(Collectors.joining());
+                repairRecordDetailDTO.setProcessingName(faultProcessingName);
+            }
             // 响应时长： 接收到任务，开始维修时长
             Date receviceTime = repairRecordDetailDTO.getReceviceTime();
             Date startTime = repairRecordDetailDTO.getStartTime();
@@ -120,26 +122,44 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
     public DeviceChangeRecordDTO queryDeviceChangeRecord(String faultCode) {
         DeviceChangeRecordDTO deviceChangeRecordDTO = new DeviceChangeRecordDTO();
         List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, null);
-        List<DeviceChangeDTO> deviceChangeList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
+        List<SparePartStockDTO> deviceChangeList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
                 .map(sparepart -> {
-                    DeviceChangeDTO build = DeviceChangeDTO.builder()
+                    SparePartStockDTO build = SparePartStockDTO.builder()
                             .deviceCode(sparepart.getDeviceCode())
+                            .name(sparepart.getNewSparePartName())
                             .newSparePartCode(sparepart.getNewSparePartCode())
                             .newSparePartName(sparepart.getNewSparePartName())
                             .oldSparePartCode(sparepart.getOldSparePartCode())
                             .oldSparePartName(sparepart.getOldSparePartName())
                             .deviceCode(sparepart.getDeviceCode())
+                            .deviceName(sparepart.getDeviceName())
                             .specifications(sparepart.getSpecifications())
                             .newSparePartNum(sparepart.getNewSparePartNum())
                             .id(sparepart.getId())
                             .repairRecordId(sparepart.getRepairRecordId())
-                            .outOrderId(sparepart.getOutOrderId())
-                            .deviceName(sparepart.getDeviceName())
+                            .newSparePartSplitCode(sparepart.getNewSparePartSplitCode())
+                            .lendOutOrderId(sparepart.getLendOutOrderId())
                             .build();
                     return build;
                 }).collect(Collectors.toList());
         deviceChangeRecordDTO.setDeviceChangeList(deviceChangeList);
-        deviceChangeRecordDTO.setConsumableList(Collections.emptyList());
+        List<SparePartStockDTO> consumableList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("1", sparepart.getConsumables()))
+                .map(sparepart -> {
+                    SparePartStockDTO build = SparePartStockDTO.builder()
+                            .deviceCode(sparepart.getDeviceCode())
+                            .newSparePartCode(sparepart.getNewSparePartCode())
+                            .newSparePartName(sparepart.getNewSparePartName())
+                            .name(sparepart.getNewSparePartName())
+                            .id(sparepart.getId())
+                            .repairRecordId(sparepart.getRepairRecordId())
+                            .specifications(sparepart.getSpecifications())
+                            .newSparePartNum(sparepart.getNewSparePartNum())
+                            .newSparePartSplitCode(sparepart.getNewSparePartSplitCode())
+                            .lendOutOrderId(sparepart.getLendOutOrderId())
+                            .build();
+                    return build;
+                }).collect(Collectors.toList());
+        deviceChangeRecordDTO.setConsumableList(consumableList);
         return deviceChangeRecordDTO;
     }
 }

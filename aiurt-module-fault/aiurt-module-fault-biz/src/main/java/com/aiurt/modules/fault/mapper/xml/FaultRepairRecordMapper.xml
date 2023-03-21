@@ -4,6 +4,7 @@
     <select id="queryRecordByFaultCode" resultType="com.aiurt.modules.fault.dto.RepairRecordDetailDTO" parameterType="java.lang.String">
         select
             a.id,
+            a.processing,
             a.appoint_user_name,
             su.realname as appoint_real_name,
             a.work_type,

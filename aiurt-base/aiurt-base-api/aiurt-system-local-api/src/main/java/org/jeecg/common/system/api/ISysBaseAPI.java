@@ -1034,5 +1034,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getMaterialNameByCode(String materialCode);
+    /**
+     * 根据多个物资编号（逗号隔开）获取物资名称
+     * @param materialCodes
+     * @return
+     */
+    String getMaterialNameByCodes(String materialCodes);
+
 }
 

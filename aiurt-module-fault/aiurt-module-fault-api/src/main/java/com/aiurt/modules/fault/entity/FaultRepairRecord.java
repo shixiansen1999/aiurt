@@ -230,4 +230,7 @@ public class FaultRepairRecord implements Serializable {
 
     @ApiModelProperty(value = "故障现象")
     private String symptoms;
+
+    @ApiModelProperty(value = "处理方式:0维修，1委外维修，2委外送修")
+    private Integer processing;
 }
