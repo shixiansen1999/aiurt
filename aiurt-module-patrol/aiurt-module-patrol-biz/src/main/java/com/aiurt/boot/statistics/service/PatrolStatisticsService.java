@@ -11,10 +11,7 @@ import com.aiurt.boot.constant.PatrolDictCode;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.statistics.dto.*;
 import com.aiurt.boot.statistics.model.*;
-import com.aiurt.boot.task.entity.PatrolTask;
-import com.aiurt.boot.task.entity.PatrolTaskOrganization;
-import com.aiurt.boot.task.entity.PatrolTaskStandard;
-import com.aiurt.boot.task.entity.PatrolTaskUser;
+import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
@@ -88,12 +85,12 @@ public class PatrolStatisticsService {
 //            }
 //            departList = sysBaseApi.getDepartByUserId(loginUser.getId());
 //        }
-        boolean b = GlobalThreadLocal.setDataFilter(false);
         List<PatrolTaskStandard> standards = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0));
-        GlobalThreadLocal.setDataFilter(b);
         List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<PatrolTaskStation> patrolTaskStations = patrolTaskStationMapper.selectList(new LambdaQueryWrapper<PatrolTaskStation>().eq(PatrolTaskStation::getDelFlag, CommonConstant.DEL_FLAG_0));
+
         boolean openClose = GlobalThreadLocal.setDataFilter(false);
-        List<PatrolTask> list = patrolTaskMapper.getOverviewInfo(newStartDate, newEndDate, departList,standards);
+        List<PatrolTask> list = patrolTaskMapper.getOverviewInfo(newStartDate, newEndDate, departList,standards,patrolTaskStations);
         long sum = list.stream().count();
         long finish = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
         long unfinish = sum - finish;
@@ -109,7 +106,7 @@ public class PatrolStatisticsService {
 ////         漏检任务列表
 //        List<PatrolTask> omitList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
 //                .between(PatrolTask::getPatrolDate, startTime, endTime).list();
-        List<PatrolTask> omitList = patrolTaskMapper.getOverviewInfo(startTime, endTime, departList,standards);
+        List<PatrolTask> omitList = patrolTaskMapper.getOverviewInfo(startTime, endTime, departList,standards,patrolTaskStations);
         GlobalThreadLocal.setDataFilter(openClose);
         // 漏检时间范围内的任务总数
         long omitScopeSum = omitList.size();
@@ -231,7 +228,7 @@ public class PatrolStatisticsService {
 
         IPage<PatrolIndexTask> pageList = null;
         if (ObjectUtil.isNotEmpty(patrolCondition.getIsAllData()) && ALLDATA.equals(patrolCondition.getIsAllData())) {
-            pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp, null,null);
+            pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp, null,null,null);
         } else {
             LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             if (ObjectUtil.isEmpty(loginUser)) {
@@ -239,9 +236,10 @@ public class PatrolStatisticsService {
             }
             List<PatrolTaskStandard> standards = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0));
             List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+            List<PatrolTaskStation> patrolTaskStations = patrolTaskStationMapper.selectList(new LambdaQueryWrapper<PatrolTaskStation>().eq(PatrolTaskStation::getDelFlag, CommonConstant.DEL_FLAG_0));
             //下面禁用数据权限
             boolean b= GlobalThreadLocal.setDataFilter(false);
-            pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp, departList,standards);
+            pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp, departList,standards,patrolTaskStations);
             GlobalThreadLocal.setDataFilter(b);
         }
 
@@ -324,7 +322,7 @@ public class PatrolStatisticsService {
 
         IPage<IndexTaskInfo> pageList = null;
         if (ObjectUtil.isNotEmpty(indexTaskDTO.getIsAllData()) && ALLDATA.equals(indexTaskDTO.getIsAllData())) {
-            pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO, null,null);
+            pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO, null,null,null);
         } else {
             LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             if (ObjectUtil.isEmpty(loginUser)) {
@@ -332,9 +330,10 @@ public class PatrolStatisticsService {
             }
             List<PatrolTaskStandard> standards = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0));
             List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+            List<PatrolTaskStation> patrolTaskStations = patrolTaskStationMapper.selectList(new LambdaQueryWrapper<PatrolTaskStation>().eq(PatrolTaskStation::getDelFlag, CommonConstant.DEL_FLAG_0));
             //下面禁用数据权限
             boolean b= GlobalThreadLocal.setDataFilter(false);
-            pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO, departList,standards);
+            pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO, departList,standards,patrolTaskStations);
             GlobalThreadLocal.setDataFilter(b);
 
         }
@@ -410,8 +409,8 @@ public class PatrolStatisticsService {
 //            }
 //            List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
             //数据权限
-            List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
-            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO,patrolTaskOrganizations);
+//            List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO,null);
         }
 
         pageList.getRecords().stream().forEach(l -> {

@@ -20,4 +20,10 @@ public interface InspectionStrStaRelMapper extends BaseMapper<InspectionStrStaRe
      * @return
      */
     List<StationDTO> selectStationList(String code);
+
+    String selectDepartList(String code);
+
+    String selectSystemList(String code);
+
+    String selectMajorList(String code);
 }

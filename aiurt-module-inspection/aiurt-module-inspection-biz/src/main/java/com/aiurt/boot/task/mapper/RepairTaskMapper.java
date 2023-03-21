@@ -6,10 +6,10 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.manager.dto.SubsystemDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
+import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
+import com.aiurt.boot.plan.entity.RepairPoolStationRel;
 import com.aiurt.boot.task.dto.*;
-import com.aiurt.boot.task.entity.RepairTask;
-import com.aiurt.boot.task.entity.RepairTaskEnclosure;
-import com.aiurt.boot.task.entity.RepairTaskResult;
+import com.aiurt.boot.task.entity.*;
 import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
@@ -48,6 +48,8 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     List<RepairTaskDTO> selectTasklet(@Param("pageList") Page<RepairTaskDTO> pageList, @Param("condition") RepairTaskDTO condition);
+
+    List<RepairTaskDTO> selectTask(@Param("taskId") String taskId);
 
     /**
      * 站点下拉查询
@@ -176,7 +178,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @param taskCode
      * @return
      */
-    List<RepairPoolDetailsDTO> selectRepairPoolList(@Param("page") Page<RepairPoolDetailsDTO> page, @Param("startDate") Date startDate, @Param("stationCode") String stationCode, @Param("taskCode") Set<String> taskCode);
+    List<RepairPoolDetailsDTO> selectRepairPoolList(@Param("page") Page<RepairPoolDetailsDTO> page, @Param("startDate") Date startDate, @Param("stationCode") String stationCode, @Param("taskCode") Set<String> taskCode,@Param("taskId") Set<String> taskId);
 
     /**
      * 根据code查询检修任务对应的组织机构编码
@@ -192,10 +194,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @param dateTime
      * @return
      */
-    @DataPermission({
-            @DataColumn(key = "deptName",value = "rtor.org_code")
-    })
-    List<RepairPoolDetailsDTO> inspectionNumByDay(@Param("dateTime") DateTime dateTime);
+    List<RepairPoolDetailsDTO> inspectionNumByDay(@Param("dateTime") DateTime dateTime, @Param("repairTaskOrgRels") List<RepairTaskOrgRel> repairTaskOrgRels, @Param("repairTaskStationRels")List<RepairTaskStationRel> repairTaskStationRels, @Param("poolCodeList")List<RepairTaskStandardRel> poolCodeList);
 
     /**
      * 根据检修任务单号查询异常项目

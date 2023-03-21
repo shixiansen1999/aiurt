@@ -34,6 +34,7 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -532,6 +533,41 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         faultService.useKnowledgeBase(useKnowledgeDTO.getFaultCode(), useKnowledgeDTO.getKnowledgeId());
         return Result.OK("操作成功");
     }
+
+    @AutoLog(value = "查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = PERMISSION_URL)
+    @ApiOperation(value = "分页列表查询", notes = "fault-分页列表查询")
+    @GetMapping(value = "/repairDeviceList")
+    public Result<IPage<FaultDeviceRepairDTO>> queryPageList(FaultDeviceRepairDTO faultDeviceRepairDto,
+                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                              HttpServletRequest req) {
+        Page<FaultDeviceRepairDTO> page = new Page<FaultDeviceRepairDTO>(pageNo, pageSize);
+        IPage<FaultDeviceRepairDTO> faultDeviceRepairDtoList = faultDeviceService.queryRepairDeviceList(page, faultDeviceRepairDto);
+        return Result.OK(faultDeviceRepairDtoList);
+    }
+
+    @AutoLog(value = "设备返修", operateType =  3, operateTypeAlias = "设备返修",  permissionUrl = PERMISSION_URL)
+    @ApiOperation(value = "设备返修", notes = "设备返修")
+    @RequestMapping(value = "/repairDeviceEdit", method = {RequestMethod.PUT, RequestMethod.POST})
+    public Result<String> edit(@RequestBody FaultDeviceRepairDTO faultDeviceRepairDTO) {
+        FaultDevice faultDevice = new FaultDevice();
+        BeanUtils.copyProperties(faultDeviceRepairDTO, faultDevice);
+        faultDevice.setRepairStatus("2");
+        faultDeviceService.updateById(faultDevice);
+        return Result.OK("返修成功!");
+    }
+
+    @AutoLog(value = "设备验收", operateType =  3, operateTypeAlias = "设备验收",  permissionUrl = PERMISSION_URL)
+    @ApiOperation(value = "设备验收", notes = "设备验收")
+    @RequestMapping(value = "/repairDeviceCheck", method = {RequestMethod.PUT, RequestMethod.POST})
+    public Result<String> check(@RequestBody FaultDeviceRepairDTO faultDeviceRepairDTO) {
+        FaultDevice faultDevice = new FaultDevice();
+        BeanUtils.copyProperties(faultDeviceRepairDTO, faultDevice);
+        faultDevice.setRepairStatus("3");
+        faultDeviceService.updateById(faultDevice);
+        return Result.OK("验收成功!");
+    }
+
 
 
 }

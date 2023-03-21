@@ -6,9 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
-import com.aiurt.boot.plan.entity.RepairPool;
-import com.aiurt.boot.plan.mapper.RepairPoolMapper;
-import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
+import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.common.util.DateUtils;
@@ -16,10 +14,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -97,16 +92,35 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
                 List<String> list4 = Arrays.asList(split4);
                 repairTask.setSystemName(manager.translateMajor(list4, InspectionConstant.SUBSYSTEM));
             }
+            // TODO: 2023/3/17 同行人和抽检人代码待优化 
+            List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTask(repairTask.getId());
+            List<String> peerList = new ArrayList<String>();
+            List<String> samplingList = new ArrayList<String>();
+            repairTasks.forEach(e -> {
+                //查询同行人
+                List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
+                        new LambdaQueryWrapper<RepairTaskPeerRel>()
+                                .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, e.getOverhaulCode()));
+                //名称集合
+                List<String> collect3 = repairTaskPeer.stream().distinct().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
+                peerList.addAll(collect3);
 
+                //查询抽检人
+                List<RepairTaskSampling> repairTaskSampling = repairTaskSamplingMapper.selectList(
+                        new LambdaQueryWrapper<RepairTaskSampling>()
+                                .eq(RepairTaskSampling::getRepairTaskDeviceCode, e.getOverhaulCode()));
+                //抽检名称集合
+                List<String> collect4 = repairTaskSampling.stream().map(RepairTaskSampling::getRealName).collect(Collectors.toList());
+                samplingList.addAll(collect4);
+            });
+
+            peerList.removeAll (Collections.singleton (null));
+            samplingList.removeAll (Collections.singleton (null));
             //查询同行人
-            List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
-                    new LambdaQueryWrapper<RepairTaskPeerRel>()
-                            .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, repairTask.getOverhaulCode()));
-            //名称集合
-            List<String> collect3 = repairTaskPeer.stream().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect3)) {
+            HashSet<String> collect33 = new HashSet<>(peerList);
+            if (CollectionUtil.isNotEmpty(collect33)) {
                 StringBuffer stringBuffer = new StringBuffer();
-                for (String t : collect3) {
+                for (String t : collect33) {
                     stringBuffer.append(t);
                     stringBuffer.append(",");
                 }
@@ -117,15 +131,10 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
             }
 
             //查询抽检人
-            List<RepairTaskSampling> repairTaskSampling = repairTaskSamplingMapper.selectList(
-                    new LambdaQueryWrapper<RepairTaskSampling>()
-                            .eq(RepairTaskSampling::getRepairTaskDeviceCode, repairTask.getOverhaulCode()));
-
-            //抽检名称集合
-            List<String> collect4 = repairTaskSampling.stream().map(RepairTaskSampling::getRealName).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect4)) {
+            HashSet<String> collect44 = new HashSet<>(samplingList);
+            if (CollectionUtil.isNotEmpty(collect44)) {
                 StringBuffer stringBuffer = new StringBuffer();
-                for (String t : collect4) {
+                for (String t : collect44) {
                     stringBuffer.append(t);
                     stringBuffer.append(",");
                 }
@@ -152,6 +161,8 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
 
             //作业类型
             repairTask.setWorkTypeName(sysBaseApi.translateDict(DictConstant.WORK_TYPE, String.valueOf(repairTask.getWorkType())));
+            //检修归档状态
+            repairTask.setEcmStatusName(sysBaseApi.translateDict(DictConstant.ECM_STATUS,String.valueOf(repairTask.getEcmStatus())));
             //备注
             repairTask.setContent(repairTask.getErrorContent());
             //附件

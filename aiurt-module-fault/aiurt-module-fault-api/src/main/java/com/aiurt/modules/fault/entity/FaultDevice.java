@@ -114,6 +114,28 @@ public class FaultDevice implements Serializable {
     @ApiModelProperty("位置名称")
     @TableField(exist = false)
 	private String positionName;
+
+    /**所属部门*/
+    @ApiModelProperty(value = "送修状态")
+    @Dict(dicCode = "device_repair_status")
+    private String repairStatus;
+
+    /**送修序列号*/
+    @ApiModelProperty(value = "送修序列号")
+    private String repairSerialNumber;
+
+    /**所属部门*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "送修时间")
+    private Date repairSendTime;
+
+    /**所属部门*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "送修返回时间")
+    private Date repairBackTime;
+
     @ApiModelProperty("组件编码")
     private String materialCodes;
     @ApiModelProperty("组件名称")

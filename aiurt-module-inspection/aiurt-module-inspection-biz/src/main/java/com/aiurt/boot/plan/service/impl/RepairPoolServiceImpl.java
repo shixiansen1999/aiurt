@@ -1129,6 +1129,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             List<StationDTO> repairPoolStationRels = repairPoolStationRelMapper.selectStationList(re.getCode());
             re.setStationName(manager.translateStation(repairPoolStationRels));
 
+            //检修任务状态
+            re.setStatusName(sysBaseApi.translateDict(DictConstant.INSPECTION_TASK_STATE,String.valueOf(re.getStatus())));
+
 
         });
         GlobalThreadLocal.setDataFilter(filterFlag);
