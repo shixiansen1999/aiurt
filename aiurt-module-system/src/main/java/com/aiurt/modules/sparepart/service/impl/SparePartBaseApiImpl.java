@@ -307,6 +307,9 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
             }
             //新数据进行判断，是否是自己的仓库
             if (CollUtil.isNotEmpty(unExitFaultSparePartList)) {
+                //旧数据进行判断，是否有移除的,有的话找到出来，然后恢复之前的
+                List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
+                recoverSparePart(deviceChangeSparePartList);
                 for (SparePartStockDTO lendStockDTO : unExitFaultSparePartList) {
                     DeviceChangeSparePart sparePart = new DeviceChangeSparePart();
                     sparePart.setCode(faultCode);
@@ -319,7 +322,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         SparePartScrap scrap = new SparePartScrap();
                         scrap.setStatus(1);
                         scrap.setSysOrgCode(user.getOrgCode());
-                        scrap.setMaterialCode(lendStockDTO.getMaterialCode());
+                        scrap.setMaterialCode(lendStockDTO.getOldSparePartCode());
                         scrap.setWarehouseCode(lendStockDTO.getWarehouseCode());
                         scrap.setNum(1);
                         scrap.setFaultCode(faultCode);
@@ -445,7 +448,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         //4.借出仓库生成出库单
                         SparePartOutOrder lendOutOrder = new SparePartOutOrder();
                         lendOutOrder.setMaterialCode(sparePartLend.getMaterialCode());
-                        lendOutOrder.setWarehouseCode(sparePartLend.getBackWarehouseCode());
+                        lendOutOrder.setWarehouseCode(sparePartLend.getLendWarehouseCode());
                         lendOutOrder.setSysOrgCode(user.getOrgCode());
                         lendOutOrder.setNum(sparePartLend.getLendNum());
                         lendOutOrder.setConfirmTime(new Date());
@@ -477,7 +480,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         //6.借入仓库生成入库记录
                         SparePartInOrder sparePartInOrder = new SparePartInOrder();
                         sparePartInOrder.setMaterialCode(lendOutOrder.getMaterialCode());
-                        sparePartInOrder.setWarehouseCode(lendOutOrder.getWarehouseCode());
+                        sparePartInOrder.setWarehouseCode(stockInfo.getWarehouseCode());
                         sparePartInOrder.setNum(lendOutOrder.getNum());
                         sparePartInOrder.setOrgId(user.getOrgId());
                         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_STATUS_1);
