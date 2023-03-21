@@ -261,4 +261,11 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	 * @return
 	 */
 	String selectTableName(@Param("dbName") String dbName,@Param("tableName") String tableName);
+
+	/**
+	 * 根据部门codes,获取用户信息
+	 * @param orgCodes
+	 * @return
+	 */
+    List<LoginUser> getUserByCodes(@Param("orgCodes")List<String> orgCodes);
 }

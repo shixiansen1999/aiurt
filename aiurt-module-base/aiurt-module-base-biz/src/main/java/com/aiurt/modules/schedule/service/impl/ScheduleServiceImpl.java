@@ -90,7 +90,9 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
 
         List<Schedule> scheduleList = new ArrayList<>();
         //根据数据规则查出所属权限的人员，这个只有根据部门权限查部门的人
-        List<LoginUser> allUsers = iSysBaseApi.getAllUsers();
+       // List<LoginUser> allUsers = iSysBaseApi.getAllUsers();
+        //2023-3-21:改为根据当前登录人的部门权限，查询改部门权限下的所有人员（本部门及其他部门）
+        List<LoginUser> allUsers = iSysBaseApi.getOrgUsers();
         List<String> userIds = new ArrayList<>();
         if (CollUtil.isNotEmpty(allUsers)) {
             List<String> collect = allUsers.stream().map(LoginUser::getId).collect(Collectors.toList());

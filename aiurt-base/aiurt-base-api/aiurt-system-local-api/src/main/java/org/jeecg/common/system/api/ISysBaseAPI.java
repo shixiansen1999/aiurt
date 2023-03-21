@@ -1062,5 +1062,10 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     String getMaterialNameByCodes(String materialCodes);
 
+    /**
+     * 据当前登录人的部门权限，查询该部门权限下的所有人员（本部门及其他部门）
+     * @return
+     */
+    List<LoginUser> getOrgUsers();
 }
 
