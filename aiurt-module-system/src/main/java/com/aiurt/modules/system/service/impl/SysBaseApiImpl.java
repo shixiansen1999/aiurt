@@ -246,8 +246,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private ISysParamAPI iSysParamAPI;
     @Autowired
     private SparePartLendMapper sparePartLendMapper;
-    @Lazy
-    private MaterialBaseMapper  materialBaseMapper;
     @Autowired
     private ISysHolidaysService sysHolidaysService;
     @Autowired
