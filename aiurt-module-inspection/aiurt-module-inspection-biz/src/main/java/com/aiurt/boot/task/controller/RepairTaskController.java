@@ -574,7 +574,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     }*/
 
     /**
-     *检修任务表-打印检修详情
+     *检修任务表-打印检修详情（作废）
      *
      * @param ids
      * @param req

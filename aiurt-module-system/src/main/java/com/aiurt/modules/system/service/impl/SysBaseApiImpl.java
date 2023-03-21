@@ -14,6 +14,7 @@ import com.aiurt.common.constant.*;
 import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.HTMLUtils;
+import com.aiurt.common.result.SpareResult;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.YouBianCodeUtil;
 import com.aiurt.common.util.dynamic.db.FreemarkerParseFactory;
@@ -27,6 +28,10 @@ import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
+import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
+import com.aiurt.modules.fault.entity.FaultRepairRecord;
+import com.aiurt.modules.fault.mapper.DeviceChangeSparePartMapper;
+import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.major.entity.CsMajor;
@@ -230,6 +235,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private MaterialBaseMapper  materialBaseMapper;
     @Autowired
     private ISysHolidaysService sysHolidaysService;
+    @Autowired
+    private DeviceChangeSparePartMapper sparePartMapper;
+    @Autowired
+    private FaultMapper faultMapper;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -2879,5 +2888,24 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return collect;
         }
         return new ArrayList<String>();
+    }
+
+    @Override
+    public List<SpareResult>  getSpareChange(String faultCode) {
+        LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(FaultRepairRecord::getFaultCode, faultCode)
+                .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1")
+                .select(FaultRepairRecord::getId);
+        FaultRepairRecord repairRecord = faultRepairRecordMapper.selectOne(wrapper);
+        List<SpareResult> sparePart = sparePartMapper.getSparePart(faultCode, repairRecord.getId());
+        return sparePart;
+    }
+
+    @Override
+    public String getFaultRepairReuslt(String faultCode) {
+        RepairRecordDetailDTO recordByFaultCode = faultRepairRecordMapper.getRecordByFaultCode(faultCode);
+        String s = "故障接报人："+recordByFaultCode.getAppointRealName() + ",处理结果："+recordByFaultCode.getMaintenanceMeasures();
+        return s;
     }
 }

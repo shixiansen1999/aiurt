@@ -327,7 +327,8 @@ and er.exam_classify=1
         exam_plan_time,
         task_name,
         classify,
-        plan_sub_name
+        plan_sub_name,
+        task_team_code
         FROM
         bd_train_task
 <where>
