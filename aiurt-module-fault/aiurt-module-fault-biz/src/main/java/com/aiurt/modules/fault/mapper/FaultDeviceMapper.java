@@ -45,5 +45,5 @@ public interface FaultDeviceMapper extends BaseMapper<FaultDevice> {
      * 查询角色为送修经办人的用户
      * @return
      */
-    String queryRepairUserName();
+    List<String> queryRepairUserName();
 }

@@ -183,13 +183,17 @@ public class FaultDeviceRepairDTO implements Serializable {
     /**负责人名称*/
     @Excel(name = "负责人名称", width = 15)
     @ApiModelProperty(value = "负责人名称")
-    private List<String>  chargeRealName;
+    private String  chargeRealName;
 
     /**送修经办人*/
     @Excel(name = "送修经办人", width = 15)
     @ApiModelProperty(value = "送修经办人")
     @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
-    private String repairUserName;
+    private List<String> repairUserName;
+    /**送修经办人名称*/
+    @Excel(name = "送修经办人名称", width = 15)
+    @ApiModelProperty(value = "送修经办人名称")
+    private String  repairRealName;
 
     @ApiModelProperty(value = "故障接报人")
     private String receiveUserName;

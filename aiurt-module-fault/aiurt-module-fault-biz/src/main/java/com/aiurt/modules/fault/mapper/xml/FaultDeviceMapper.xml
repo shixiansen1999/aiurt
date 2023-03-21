@@ -92,6 +92,6 @@
         select su.username from sys_user su
                           left join sys_user_role sur on sur.user_id = su.id
                           left join sys_role sr on sr.id = sur.role_id
-        where sr.role_name = '送修经办人' limit 1
+        where sr.role_name = '送修经办人'
     </select>
 </mapper>
