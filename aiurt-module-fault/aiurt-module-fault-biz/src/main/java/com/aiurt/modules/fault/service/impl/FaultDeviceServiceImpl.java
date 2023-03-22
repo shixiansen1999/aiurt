@@ -34,6 +34,8 @@ import java.util.List;
 public class FaultDeviceServiceImpl extends ServiceImpl<FaultDeviceMapper, FaultDevice> implements IFaultDeviceService {
 @Autowired
 private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private FaultDeviceMapper faultDeviceMapper;
     @Override
     public List<FaultDevice> queryByFaultCode(String faultCode) {
         List<FaultDevice> faultDeviceList = baseMapper.queryByFaultCode(faultCode);
@@ -57,9 +59,8 @@ private ISysBaseAPI sysBaseApi;
             return page;
         }
         //查询故障单状态为已完成且为委外送修的设备数据
-        IPage<FaultDeviceRepairDTO> faultDeviceRepairDtoList = baseMapper.queryRepairDeviceList(page, FaultDeviceRepairDTO);
-        List<FaultDeviceRepairDTO> records = faultDeviceRepairDtoList.getRecords();
-        for (FaultDeviceRepairDTO record : records) {
+        List<FaultDeviceRepairDTO> faultDeviceRepairDtoList = faultDeviceMapper.queryRepairDeviceList(page, FaultDeviceRepairDTO);
+        for (FaultDeviceRepairDTO record : faultDeviceRepairDtoList) {
             //将查出来的数据设置送修状态为待返修
             FaultDevice faultDevice = new FaultDevice();
             BeanUtils.copyProperties(record,faultDevice);
@@ -117,7 +118,7 @@ private ISysBaseAPI sysBaseApi;
             record.setPositionCodeCcName(positionCodeCcName);
             record.setPositionCodeCc(positionCodeCc);
         }
-        page.setRecords(records);
+        page.setRecords(faultDeviceRepairDtoList);
         return page;
     }
 

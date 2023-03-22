@@ -31,7 +31,7 @@ public interface FaultDeviceMapper extends BaseMapper<FaultDevice> {
      * @param FaultDeviceRepairDTO
      * @return
      */
-    IPage<FaultDeviceRepairDTO> queryRepairDeviceList(@Param("page") Page<FaultDeviceRepairDTO> page,
+    List<FaultDeviceRepairDTO> queryRepairDeviceList(@Param("pageList") Page<FaultDeviceRepairDTO> page,
                                                       @Param("condition") FaultDeviceRepairDTO FaultDeviceRepairDTO);
 
     /**
