@@ -1,10 +1,12 @@
 package com.aiurt.modules.recycle.controller;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.recycle.constant.SysRecycleConstant;
 import com.aiurt.modules.recycle.entity.SysRecycle;
 import com.aiurt.modules.recycle.service.ISysRecycleService;
 import com.aiurt.modules.system.service.ISysPermissionService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -53,20 +55,54 @@ public class SysRecycleController {
                                    @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                    @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
                                    HttpServletRequest req) {
-        QueryWrapper<SysRecycle> queryWrapper = QueryGenerator.initQueryWrapper(sysRecycle, req.getParameterMap());
         Page<SysRecycle> page = new Page<>(pageNo, pageSize);
-//        queryWrapper.lambda().ne(SysRecycle::getState, SysRecycleConstant.STATE_DELETE);
-        queryWrapper.lambda().eq(SysRecycle::getState, SysRecycleConstant.STATE_NORMAL);
-        queryWrapper.lambda().isNotNull(SysRecycle::getModuleUrl);
-        queryWrapper.lambda().orderByDesc(SysRecycle::getCreateTime);
-        IPage<SysRecycle> pageList = sysRecycleService.page(page, queryWrapper);
-        List<SysRecycle> sysRecycleList = pageList.getRecords().stream().peek(recycle -> {
-            Map<String, String> moduleNameAndSubmenuName = sysPermissionService.getModuleNameAndSubmenuName(recycle.getModuleUrl());
-            recycle.setModuleName(moduleNameAndSubmenuName.get("moduleName"));
-            recycle.setSubmenu(moduleNameAndSubmenuName.get("submenuName"));
-        }).collect(Collectors.toList());
-        pageList.setRecords(sysRecycleList);
-        return Result.OK(pageList);
+        LambdaQueryWrapper<SysRecycle> queryWrapper = new LambdaQueryWrapper<>();
+
+        String MODULE_NAME = "moduleName";
+        String SUBMENU_NAME = "submenuName";
+        String MODULE_URL = "moduleUrl";
+        String SUBMENU_URL = "submenuUrl";
+
+        // 根据模块名称查询时：
+        String moduleName = sysRecycle.getModuleName();
+        if (StrUtil.isNotBlank(moduleName)){
+            // 获取模块名称及其子菜单的url
+            List<Map<String, String>> moduleUrlAndSubmenuUrl = sysPermissionService.getUrlByModuleName(moduleName);
+            if (moduleUrlAndSubmenuUrl.size() == 0) {
+                return Result.ok(page);
+            }
+            List<String> urlList = new ArrayList<>();
+            moduleUrlAndSubmenuUrl.forEach(map->{
+                urlList.add(map.get(MODULE_URL));
+                urlList.add(map.get(SUBMENU_URL));
+            });
+            queryWrapper.in(SysRecycle::getModuleUrl, urlList);
+            queryWrapper.orderByDesc(SysRecycle::getCreateTime);
+            IPage<SysRecycle> pageList = sysRecycleService.page(page, queryWrapper);
+            List<SysRecycle> sysRecycleList = pageList.getRecords().stream().peek(recycle -> {
+                for (Map<String, String> map : moduleUrlAndSubmenuUrl) {
+                    if (recycle.getModuleUrl().equals(map.get(MODULE_URL)) || recycle.getModuleUrl().equals(map.get(SUBMENU_URL))) {
+                        recycle.setModuleName(map.get(MODULE_NAME));
+                        recycle.setSubmenu(map.get(SUBMENU_NAME));
+                        break;
+                    }
+                }
+            }).collect(Collectors.toList());
+            pageList.setRecords(sysRecycleList);
+            return Result.OK(pageList);
+        } else {
+            queryWrapper.eq(SysRecycle::getState, SysRecycleConstant.STATE_NORMAL);
+            queryWrapper.isNotNull(SysRecycle::getModuleUrl);
+            queryWrapper.orderByDesc(SysRecycle::getCreateTime);
+            IPage<SysRecycle> pageList = sysRecycleService.page(page, queryWrapper);
+            List<SysRecycle> sysRecycleList = pageList.getRecords().stream().peek(recycle -> {
+                Map<String, String> moduleNameAndSubmenuName = sysPermissionService.getModuleNameAndSubmenuName(recycle.getModuleUrl());
+                recycle.setModuleName(moduleNameAndSubmenuName.get(MODULE_NAME));
+                recycle.setSubmenu(moduleNameAndSubmenuName.get(SUBMENU_NAME));
+            }).collect(Collectors.toList());
+            pageList.setRecords(sysRecycleList);
+            return Result.OK(pageList);
+        }
     }
 
     /**
