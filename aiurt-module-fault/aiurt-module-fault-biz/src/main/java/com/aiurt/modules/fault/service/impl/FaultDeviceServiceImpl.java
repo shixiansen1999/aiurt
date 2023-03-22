@@ -65,6 +65,7 @@ private ISysBaseAPI sysBaseApi;
             BeanUtils.copyProperties(record,faultDevice);
             String repairStatus = faultDevice.getRepairStatus();
             if(StrUtil.isBlank(repairStatus)){
+                record.setRepairStatus("1");
                 faultDevice.setRepairStatus("1");
                 baseMapper.updateById(faultDevice);
             }

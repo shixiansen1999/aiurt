@@ -59,6 +59,7 @@
                 LEFT JOIN cs_station_position csp on csp.position_code = b.position_code
         <where>
         cl.del_flag =0 and cs.del_flag =0 AND b.del_flag =0
+            and a.del_flag = 0
             and frr.processing = 2
             and f.status = 12
         <if test="condition.systemCode != null and condition.systemCode != ''">
