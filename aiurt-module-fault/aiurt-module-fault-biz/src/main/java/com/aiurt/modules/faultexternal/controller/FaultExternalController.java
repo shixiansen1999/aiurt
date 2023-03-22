@@ -97,7 +97,7 @@ public class FaultExternalController extends BaseController<FaultExternal, IFaul
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "调度系统故障-通过id删除")
+	@AutoLog(value = "调度系统故障-通过id删除", operateType = 4, permissionUrl = "/fault/FaultExternalList")
 	@ApiOperation(value="调度系统故障-通过id删除", notes="调度系统故障-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -111,7 +111,7 @@ public class FaultExternalController extends BaseController<FaultExternal, IFaul
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "调度系统故障-批量删除")
+	@AutoLog(value = "调度系统故障-批量删除", operateType = 4, permissionUrl = "/fault/FaultExternalList")
 	@ApiOperation(value="调度系统故障-批量删除", notes="调度系统故障-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
