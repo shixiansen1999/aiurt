@@ -108,7 +108,7 @@ public class FaultTypeController extends BaseController<FaultType, IFaultTypeSer
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "fault_type-通过id删除")
+	@AutoLog(value = "fault_type-通过id删除", operateType = 4, permissionUrl = "/fault/FaultBasicDataList")
 	@ApiOperation(value="fault_type-通过id删除", notes="fault_type-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
