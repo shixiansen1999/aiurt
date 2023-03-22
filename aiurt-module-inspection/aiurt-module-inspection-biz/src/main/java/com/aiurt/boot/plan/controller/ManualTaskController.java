@@ -102,7 +102,7 @@ public class ManualTaskController {
      * @param id
      * @return
      */
-    @AutoLog(value = "检修管理-手工下发任务-删除手工下发任务", operateType =  4, operateTypeAlias = "删除手工下发任务", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-手工下发任务-删除手工下发任务", operateType =  4, operateTypeAlias = "删除手工下发任务", module = ModuleType.INSPECTION,permissionUrl="/views/overhaul/RepairManualPoolList")
     @ApiOperation(value = "通过id删除手工下发检修任务", notes = "通过id删除手工下发检修任务")
     @DeleteMapping(value = "/deleteManualTaskById")
     public Result<String> deleteManualTaskById(@RequestParam @ApiParam(name = "id", required = true, value = "任务id") String id) {
