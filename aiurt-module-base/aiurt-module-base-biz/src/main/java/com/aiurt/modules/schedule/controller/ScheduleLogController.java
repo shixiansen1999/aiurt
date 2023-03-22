@@ -3,6 +3,7 @@ package com.aiurt.modules.schedule.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.schedule.entity.ScheduleLog;
 import com.aiurt.modules.schedule.service.IScheduleLogService;
@@ -71,6 +72,7 @@ public class ScheduleLogController {
 		IPage<ScheduleLog> pageList = scheduleLogService.queryPageList(page,scheduleLog);
 		result.setSuccess(true);
 		result.setResult(pageList);
+		result.setCode(CommonConstant.SC_OK_200);
 		return result;
 	}
 

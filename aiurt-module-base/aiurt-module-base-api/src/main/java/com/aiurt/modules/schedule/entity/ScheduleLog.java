@@ -133,7 +133,7 @@ public class ScheduleLog {
 	/**
 	 * 开始日期
 	 */
-	@Excel(name = "开始日期", width = 15, format = "yyyy-MM-dd")
+//	@Excel(name = "开始日期", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@ApiModelProperty(value = "开始日期")
@@ -143,7 +143,7 @@ public class ScheduleLog {
 	/**
 	 * 结束日期
 	 */
-	@Excel(name = "结束日期", width = 15, format = "yyyy-MM-dd")
+//	@Excel(name = "结束日期", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@ApiModelProperty(value = "结束日期")
