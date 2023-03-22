@@ -128,7 +128,7 @@ public class SysAnnouncementController {
             queryWrapper.lambda().le(SysAnnouncement::getSendTime, eTime);
         }
         queryWrapper.orderByDesc("create_time");
-        queryWrapper.lambda().eq(SysAnnouncement::getMsgCategory, CommonConstant.MSG_CATEGORY_1).or().eq(SysAnnouncement::getMsgCategory, CommonConstant.MSG_CATEGORY_2);
+        queryWrapper.lambda().in(SysAnnouncement::getMsgCategory, CommonConstant.MSG_CATEGORY_1, CommonConstant.MSG_CATEGORY_2);
         queryWrapper.lambda().ne(SysAnnouncement::getBusType, "bpm");
         //排序逻辑 处理
         IPage<SysAnnouncement> pageList = sysAnnouncementService.page(page, queryWrapper);
