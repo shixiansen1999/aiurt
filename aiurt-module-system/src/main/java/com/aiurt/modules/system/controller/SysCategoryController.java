@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.controller;
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.DictModel;
@@ -137,6 +138,7 @@ public class SysCategoryController {
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "分类字典-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isys/category")
 	@DeleteMapping(value = "/delete")
 	public Result<SysCategory> delete(@RequestParam(name="id",required=true) String id) {
 		Result<SysCategory> result = new Result<SysCategory>();
@@ -156,6 +158,7 @@ public class SysCategoryController {
 	 * @param ids
 	 * @return
 	 */
+	@AutoLog(value = "分类字典-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/isys/category")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<SysCategory> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		Result<SysCategory> result = new Result<SysCategory>();

@@ -96,7 +96,7 @@ public class TaskFinishInfoController extends BaseController<TaskFinishInfo, ITa
      * @param id
      * @return
      */
-    @AutoLog(value = "task_finish_info-通过id删除")
+    @AutoLog(value = "task_finish_info-通过id删除",operateType = 4,permissionUrl = "/robotManagement/robotTaskQuery")
     @ApiOperation(value = "task_finish_info-通过id删除", notes = "task_finish_info-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
@@ -110,7 +110,7 @@ public class TaskFinishInfoController extends BaseController<TaskFinishInfo, ITa
      * @param ids
      * @return
      */
-    @AutoLog(value = "task_finish_info-批量删除")
+    @AutoLog(value = "task_finish_info-批量删除",operateType = 4,permissionUrl = "/robotManagement/robotTaskQuery")
     @ApiOperation(value = "task_finish_info-批量删除", notes = "task_finish_info-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {

@@ -90,7 +90,7 @@ public class BdQuestionOptionsAttController extends BaseController<BdQuestionOpt
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "bd_question_options_att-通过id删除")
+	@AutoLog(value = "bd_question_options_att-通过id删除",operateType = 4,permissionUrl = "/trainAss/question-manage/list")
 	@ApiOperation(value="bd_question_options_att-通过id删除", notes="bd_question_options_att-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
@@ -104,7 +104,7 @@ public class BdQuestionOptionsAttController extends BaseController<BdQuestionOpt
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "bd_question_options_att-批量删除")
+	@AutoLog(value = "bd_question_options_att-批量删除",operateType = 4,permissionUrl = "/trainAss/question-manage/list")
 	@ApiOperation(value="bd_question_options_att-批量删除", notes="bd_question_options_att-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

@@ -2,6 +2,8 @@ package com.aiurt.config.datafilter.object;
 
 import cn.hutool.core.util.BooleanUtil;
 
+import java.util.Map;
+
 /**
  * 线程本地化数据管理的工具类。可根据需求自行添加更多的线程本地化变量及其操作方法。
  *
@@ -15,6 +17,7 @@ public class GlobalThreadLocal {
      * 目前的过滤条件，包括数据权限和租户过滤。
      */
     private static final ThreadLocal<Boolean> DATA_FILTER_ENABLE = ThreadLocal.withInitial(() -> Boolean.TRUE);
+    private static final ThreadLocal<String> DATA_STRING = ThreadLocal.withInitial(() -> null); // 存储String类型的数据
 
     /**
      * 设置数据过滤是否打开。如果打开，当前Servlet线程所执行的SQL操作，均会进行数据过滤。
@@ -48,5 +51,21 @@ public class GlobalThreadLocal {
      * 私有构造函数，明确标识该常量类的作用。
      */
     private GlobalThreadLocal() {
+    }
+
+    /**
+     * 设置 DataString 的值
+     */
+    public static String setDataString(String DataString){
+        String oldValue = DATA_STRING.get();
+        DATA_STRING.set(DataString);
+        return oldValue;
+    }
+
+    /**
+     * 获取 DataString 的值
+     */
+    public static String getDataString(){
+        return DATA_STRING.get();
     }
 }

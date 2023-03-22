@@ -171,7 +171,7 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
      * @param id
      * @return
      */
-    @AutoLog(value = "生产日报-通过id删除")
+    @AutoLog(value = "生产日报-通过id删除", operateType = 4, permissionUrl = "/workLog/productionReportManageList")
     @ApiOperation(value = "生产日报-通过id删除", notes = "生产日报-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
@@ -185,7 +185,7 @@ public class FaultProduceReportController extends BaseController<FaultProduceRep
      * @param ids
      * @return
      */
-    @AutoLog(value = "生产日报-批量删除")
+    @AutoLog(value = "生产日报-批量删除", operateType = 4, permissionUrl = "/workLog/productionReportManageList")
     @ApiOperation(value = "生产日报-批量删除", notes = "生产日报-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {

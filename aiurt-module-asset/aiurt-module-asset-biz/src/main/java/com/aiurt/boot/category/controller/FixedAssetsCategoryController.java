@@ -165,7 +165,7 @@ public class FixedAssetsCategoryController extends BaseController<FixedAssetsCat
      * @param id
      * @return
      */
-    @AutoLog(value = "资产分类-删除")
+    @AutoLog(value = "资产分类-删除",operateType = 4,permissionUrl = "/fixedAssets/AssetClassifyList")
     @ApiOperation(value = "资产分类-删除", notes = "资产分类-删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id, @RequestParam(name = "code", required = true) String code) {

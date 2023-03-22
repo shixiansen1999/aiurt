@@ -163,7 +163,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准表-通过id删除", operateType =  4, operateTypeAlias = "删除", module = ModuleType.PATROL)
+	@AutoLog(value = "巡检标准表-通过id删除", operateType =  4, operateTypeAlias = "删除", module = ModuleType.PATROL, permissionUrl = "/standard/PatrolList")
 	@ApiOperation(value="巡检标准表-通过id删除", notes="巡检标准表-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -180,7 +180,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准表-批量删除", operateType =  4, operateTypeAlias = "批量删除", module = ModuleType.PATROL)
+	@AutoLog(value = "巡检标准表-批量删除", operateType =  4, operateTypeAlias = "批量删除", module = ModuleType.PATROL, permissionUrl = "/standard/PatrolList")
 	@ApiOperation(value="巡检标准表-批量删除", notes="巡检标准表-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

@@ -183,7 +183,7 @@ public class ScheduleRuleController {
      * @param id
      * @return
      */
-    @AutoLog(value = "排班规则-通过id删除")
+    @AutoLog(value = "排班规则-通过id删除",operateType = 4,permissionUrl = "/schedule/scheduleRuleList")
     @ApiOperation(value = "排班规则-通过id删除", notes = "排班规则-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
@@ -203,7 +203,7 @@ public class ScheduleRuleController {
      * @param ids
      * @return
      */
-    @AutoLog(value = "排班规则-批量删除")
+    @AutoLog(value = "排班规则-批量删除",operateType = 4,permissionUrl = "/schedule/scheduleRuleList")
     @ApiOperation(value = "排班规则-批量删除", notes = "排班规则-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<ScheduleRule> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {

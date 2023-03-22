@@ -147,7 +147,7 @@ public class SysDataSourceController extends BaseController<SysDataSource, ISysD
      * @param id
      * @return
      */
-    @AutoLog(value = "多数据源管理-通过id删除")
+    @AutoLog(value = "多数据源管理-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isystem/dataSource")
     @ApiOperation(value = "多数据源管理-通过id删除", notes = "多数据源管理-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id") String id) {
@@ -163,7 +163,7 @@ public class SysDataSourceController extends BaseController<SysDataSource, ISysD
      * @param ids
      * @return
      */
-    @AutoLog(value = "多数据源管理-批量删除")
+    @AutoLog(value = "多数据源管理-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/isystem/dataSource")
     @ApiOperation(value = "多数据源管理-批量删除", notes = "多数据源管理-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<?> deleteBatch(@RequestParam(name = "ids") String ids) {

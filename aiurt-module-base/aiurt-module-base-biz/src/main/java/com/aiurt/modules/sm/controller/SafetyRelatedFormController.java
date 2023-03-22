@@ -112,7 +112,7 @@ public class SafetyRelatedFormController extends BaseController<SafetyRelatedFor
 	 * @param
 	 * @return
 	 */
-	@AutoLog(value = "safety_related_form-通过code删除")
+	@AutoLog(value = "safety_related_form-通过code删除",operateType = 4,permissionUrl = "/overhaul/SafetyAttentionList")
 	@ApiOperation(value="safety_related_form-通过code删除", notes="safety_related_form-通过code删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="code",required=true) String code,

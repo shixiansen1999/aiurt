@@ -524,6 +524,18 @@ public interface CommonConstant {
   */
  public static final Integer SPARE_PART_SCRAP_STATUS_3 = 3;
  /**
+  * 备件送修状态 待返修-1
+  */
+ public static final Integer SPARE_PART_SCRAP_REPAIR_STATUS_1 = 1;
+ /**
+  * 备件送修状态 已返修-2
+  */
+ public static final Integer SPARE_PART_SCRAP_REPAIR_STATUS_2 = 2;
+ /**
+  * 备件送修状态 已验收-3
+  */
+ public static final Integer SPARE_PART_SCRAP_REPAIR_STATUS_3 = 3;
+ /**
   * 备件出库状态 已确认-2
   */
  public static final Integer SPARE_PART_OUT_ORDER_STATUS_2 = 2;

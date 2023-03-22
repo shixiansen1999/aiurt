@@ -173,6 +173,7 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
     /**
      * 施工周计划-根据ID删除计划
      */
+    @AutoLog(value = "施工周计划-根据ID删除计划",operateType = 4,permissionUrl = "/prodManage/week/weekchange")
     @ApiOperation(value = "施工周计划-根据ID删除计划", notes = "施工周计划-根据ID删除计划")
     @PostMapping(value = "/delete")
     public Result<String> delete(@RequestParam @ApiParam(name = "id", value = "计划主键ID") String id) {

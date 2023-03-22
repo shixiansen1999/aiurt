@@ -7,6 +7,7 @@ import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.constant.enums.OperateTypeEnum;
 import com.aiurt.common.util.IpUtils;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.PropertyFilter;
 import org.apache.shiro.SecurityUtils;
@@ -56,6 +57,19 @@ public class AutoLogAspect {
     @Around("logPointCut()")
     public Object around(ProceedingJoinPoint point) throws Throwable {
         long beginTime = System.currentTimeMillis();
+
+        // GlobalThreadLocal 的旧值
+        boolean oldValue;
+        String oldDataString = GlobalThreadLocal.getDataString();
+        // 判断是不是删除(operateType = 4)，是不是有permissionUrl(不为空), 是的话返回permissionUrl，不然返回null
+        String permissionUrl = getDeletePermissionUrl(point);
+        if (permissionUrl != null) {
+            oldValue = GlobalThreadLocal.setDataFilter(true);
+            GlobalThreadLocal.setDataString(permissionUrl);
+        } else {
+            oldValue = GlobalThreadLocal.setDataFilter(false);
+        }
+
         //执行方法
         Object result = point.proceed();
         //执行时长(毫秒)
@@ -64,6 +78,9 @@ public class AutoLogAspect {
         //保存日志
         saveSysLog(point, time, result);
 
+        // 设置回旧值
+        GlobalThreadLocal.setDataFilter(oldValue);
+        GlobalThreadLocal.setDataString(oldDataString);
         return result;
     }
 
@@ -259,4 +276,23 @@ public class AutoLogAspect {
         //保存系统日志
         sysLogService.save(sysLog);
     }*/
+
+    /**
+     * 判断是不是删除(operateType = 4)，是不是有permissionUrl(不为空), 是的话返回permissionUrl，不然返回null
+     */
+    String getDeletePermissionUrl(ProceedingJoinPoint point){
+        MethodSignature signature = (MethodSignature) point.getSignature();
+        Method method = signature.getMethod();
+
+        AutoLog autoLog = method.getAnnotation(AutoLog.class);
+        if (autoLog != null){
+            int operateType = autoLog.operateType();
+            String permissionUrl = autoLog.permissionUrl();
+            // 是删除(operateType = 4)，并且有permissionUrl
+            if (operateType == 4 && oConvertUtils.isNotEmpty(permissionUrl)){
+                return permissionUrl;
+            }
+        }
+        return null;
+    }
 }

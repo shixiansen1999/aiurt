@@ -61,7 +61,7 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
      * @param id
      * @return
      */
-    @AutoLog(value = "应急演练管理-年演练计划通过id删除")
+    @AutoLog(value = "应急演练管理-年演练计划通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/emergency/emergencyExercise/annualExercisePlan")
     @ApiOperation(value = "应急演练管理-年演练计划通过id删除", notes = "应急演练管理-年演练计划通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {

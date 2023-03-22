@@ -106,7 +106,7 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "故障等级-通过id删除")
+	@AutoLog(value = "故障等级-通过id删除", operateType = 4, permissionUrl = "/fault/FaultBasicDataList")
 	@ApiOperation(value="故障等级-通过id删除", notes="故障等级-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {

@@ -362,7 +362,7 @@ public class BdExamRecordController extends BaseController<BdExamRecord, IBdExam
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "考试记录-通过id删除")
+	@AutoLog(value = "考试记录-通过id删除",operateType = 4,permissionUrl = "/trainAss/StudentExamList/StudentExamList")
 	@ApiOperation(value="考试记录-通过id删除", notes="考试记录-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
@@ -376,7 +376,7 @@ public class BdExamRecordController extends BaseController<BdExamRecord, IBdExam
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "考试记录-批量删除")
+	@AutoLog(value = "考试记录-批量删除",operateType = 4,permissionUrl = "/trainAss/StudentExamList/StudentExamList")
 	@ApiOperation(value="考试记录-批量删除", notes="考试记录-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

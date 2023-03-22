@@ -59,6 +59,7 @@
                 LEFT JOIN cs_station_position csp on csp.position_code = b.position_code
         <where>
         cl.del_flag =0 and cs.del_flag =0 AND b.del_flag =0
+            and a.del_flag = 0
             and frr.processing = 2
             and f.status = 12
         <if test="condition.systemCode != null and condition.systemCode != ''">
@@ -74,7 +75,7 @@
             and a.repair_status = #{condition.repairStatus}
         </if>
         </where>
-        ORDER BY a.repair_status asc,a.repair_send_time desc
+        ORDER BY  a.repair_status ASC,a.create_time DESC
     </select>
 
     <select id="queryUserId" resultType="java.lang.String" parameterType="java.lang.String">
@@ -92,6 +93,6 @@
         select su.username from sys_user su
                           left join sys_user_role sur on sur.user_id = su.id
                           left join sys_role sr on sr.id = sur.role_id
-        where sr.role_name = '送修经办人' limit 1
+        where sr.role_name = '送修经办人'
     </select>
 </mapper>

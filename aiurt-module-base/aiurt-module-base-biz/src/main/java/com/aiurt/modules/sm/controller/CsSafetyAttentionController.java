@@ -260,7 +260,7 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "安全事项-通过id删除")
+	@AutoLog(value = "安全事项-通过id删除",operateType = 4,permissionUrl ="/overhaul/SafetyAttentionList")
 	@ApiOperation(value="安全事项-通过id删除", notes="安全事项-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -277,7 +277,7 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "安全事项-批量删除")
+	@AutoLog(value = "安全事项-批量删除",operateType = 4,permissionUrl ="/overhaul/SafetyAttentionList")
 	@ApiOperation(value="安全事项-批量删除", notes="安全事项-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

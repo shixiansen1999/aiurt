@@ -353,7 +353,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             if (b) {
                 TodoDTO todoDTO = new TodoDTO();
                 todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-                todoDTO.setTitle("故障上报审核通过");
+                todoDTO.setTitle("故障上报审核");
                 todoDTO.setMsgAbstract("有新的故障信息");
                 todoDTO.setPublishingContent("有新的故障信息，请尽快安排维修");
                 // 审批通过 新增任务， 该线路或者是工班长，指派任务
@@ -560,7 +560,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
         //发送通知
         try {
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(),loginUser.getUsername(), "故障接收确认" + DateUtil.today(), null);
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),loginUser.getUsername(), "故障指派" + DateUtil.today(), null);
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
             BeanUtil.copyProperties(fault,faultMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容

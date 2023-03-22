@@ -441,6 +441,7 @@ public class SysPermissionController {
      * @param id
      * @return
      */
+    @AutoLog(value = "菜单管理-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isystem/permission")
     @ApiOperation(value = "删除菜单或模块", notes = "删除菜单或模块")
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
     @ApiImplicitParam(name = "id", value = "菜单id", required = true, dataTypeClass = String.class)
@@ -462,6 +463,7 @@ public class SysPermissionController {
      * @param ids
      * @return
      */
+    @AutoLog(value = "菜单管理-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/isystem/permission")
     @RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
     public Result<SysPermission> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
         Result<SysPermission> result = new Result<>();

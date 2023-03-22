@@ -217,7 +217,7 @@ public class BdExamPaperController extends BaseController<BdExamPaper, IBdExamPa
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "试卷库表-通过id删除")
+	@AutoLog(value = "试卷库表-通过id删除",operateType = 4,permissionUrl = "/trainAss/ExamPaper/BdExamPaperList")
 	@ApiOperation(value="试卷库表-通过id删除", notes="试卷库表-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
@@ -231,7 +231,7 @@ public class BdExamPaperController extends BaseController<BdExamPaper, IBdExamPa
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "试卷库表-批量删除")
+	@AutoLog(value = "试卷库表-批量删除" ,operateType = 4,permissionUrl = "/trainAss/ExamPaper/BdExamPaperList")
 	@ApiOperation(value="试卷库表-批量删除", notes="试卷库表-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

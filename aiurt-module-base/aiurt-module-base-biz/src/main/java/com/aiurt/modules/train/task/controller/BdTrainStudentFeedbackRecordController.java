@@ -103,7 +103,7 @@ public class BdTrainStudentFeedbackRecordController extends BaseController<BdTra
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "学员反馈记录-通过id删除")
+	@AutoLog(value = "学员反馈记录-通过id删除",operateType = 4,permissionUrl = "/trainAss/questionFeedback/QuestionFeedbackList")
 	@ApiOperation(value="学员反馈记录-通过id删除", notes="学员反馈记录-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
@@ -117,7 +117,7 @@ public class BdTrainStudentFeedbackRecordController extends BaseController<BdTra
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "学员反馈记录-批量删除")
+	@AutoLog(value = "学员反馈记录-批量删除",operateType = 4,permissionUrl = "/trainAss/questionFeedback/QuestionFeedbackList")
 	@ApiOperation(value="学员反馈记录-批量删除", notes="学员反馈记录-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

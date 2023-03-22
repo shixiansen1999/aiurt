@@ -1,26 +1,24 @@
 package com.aiurt.boot.plan.controller;
 
-import java.util.Arrays;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.aiurt.boot.plan.entity.EmergencyPlanRecordAtt;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.plan.service.IEmergencyPlanRecordAttService;
-
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 
  /**
  * @Description: emergency_plan_record_att
@@ -91,7 +89,7 @@ public class EmergencyPlanRecordAttController extends BaseController<EmergencyPl
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "emergency_plan_record_att-通过id删除")
+	@AutoLog(value = "emergency_plan_record_att-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "")
 	@ApiOperation(value="emergency_plan_record_att-通过id删除", notes="emergency_plan_record_att-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -105,7 +103,7 @@ public class EmergencyPlanRecordAttController extends BaseController<EmergencyPl
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "emergency_plan_record_att-批量删除")
+	@AutoLog(value = "emergency_plan_record_att-批量删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "")
 	@ApiOperation(value="emergency_plan_record_att-批量删除", notes="emergency_plan_record_att-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

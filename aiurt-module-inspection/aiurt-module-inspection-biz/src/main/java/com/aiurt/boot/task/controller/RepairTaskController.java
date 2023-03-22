@@ -22,7 +22,6 @@ import com.aiurt.common.util.ArchiveUtils;
 import com.alibaba.druid.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
@@ -35,14 +34,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import static com.baomidou.mybatisplus.core.toolkit.Wrappers.update;
 
 /**
  * @Description: 检修任务
@@ -400,7 +399,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
      * @param id
      * @return
      */
-    @AutoLog(value = "repair_task-通过id删除")
+    @AutoLog(value = "repair_task-通过id删除",operateType=4,permissionUrl = "/views/overhaul/RepairTaskList")
     @ApiOperation(value = "repair_task-通过id删除", notes = "repair_task-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
@@ -414,7 +413,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
      * @param ids
      * @return
      */
-    @AutoLog(value = "repair_task-批量删除")
+    @AutoLog(value = "repair_task-批量删除",operateType=4,permissionUrl = "/views/overhaul/RepairTaskList")
     @ApiOperation(value = "repair_task-批量删除", notes = "repair_task-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {

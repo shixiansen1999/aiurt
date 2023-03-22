@@ -74,7 +74,7 @@ public class BdTemplateController extends BaseController<BdTemplate, IBdTemplate
 	 * 删除
 	 * @return
 	 */
-	@AutoLog(value = "周计划模板-删除")
+	@AutoLog(value = "周计划模板-删除",operateType = 4,permissionUrl = "/prodManage/week/weekchange")
 	@ApiOperation(value = "周计划模板-删除", notes = "周计划模板-删除")
 	@PostMapping(value = "/remove")
 	public Result<?> remove(@RequestBody BdTemplate bdTemplate) {
