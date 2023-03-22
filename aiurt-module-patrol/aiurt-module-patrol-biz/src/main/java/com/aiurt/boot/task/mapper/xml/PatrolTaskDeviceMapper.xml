@@ -266,8 +266,10 @@
         FROM
         patrol_task_fault ptf
 		LEFT JOIN patrol_task_device ptd on ptd.patrol_number = ptf.patrol_number
+		LEFT JOIN fault f on ptf.fault_code = f.`code`
         WHERE
         ptd.task_id = #{taskId}
+        and f.`status` = 12
     </select>
     <select id="getTaskDeviceDetail" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
         SELECT (select dv.name from device dv where ptd.device_code = dv.code) as deviceName,
