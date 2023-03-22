@@ -233,7 +233,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         //处理结果
                         String faultRepairReuslt = iSysBaseAPI.getFaultRepairReuslt(faultCode);
                         if (StrUtil.isNotBlank(faultRepairReuslt)) {
-                            stringBuilder.append(Convert.toStr(i)).append(".").append("故障编号：").append(",").append(faultRepairReuslt).append(",");
+                            stringBuilder.append(Convert.toStr(i)).append(".").append("故障编号：").append(faultCode).append(",").append(faultRepairReuslt).append(",");
                         } else {
                             stringBuilder.append(Convert.toStr(i)).append(".").append(faultCode).append(":该故障没有完成维修").append(",");
                         }
@@ -252,8 +252,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                             enclosureUrl.addAll(urllist);
                         }
 
+                        if ("0".equals(r.getPid())) {
+                            r.setName(checkListDTO.getMaintenancePosition() + "-" + repairTaskDTO.getSystemName() + ":" + (r.getName() != null ? r.getName() : ""));
+                        }
 
-                        r.setName(checkListDTO.getMaintenancePosition() + "-" + repairTaskDTO.getSystemName() + ":" + (r.getName()!=null?r.getName():""));
                         //检修结果
                         r.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(r.getStatus())));
                         //当第一次检修结果为空时，且有检修结果是正常
