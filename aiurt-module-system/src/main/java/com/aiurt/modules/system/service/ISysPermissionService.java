@@ -111,4 +111,12 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	 * @return
 	 */
 	Map<String, String> getModuleNameAndSubmenuName(String url);
+
+	/**
+	 * 根据模块名称，获取模块的url和其子菜单的url
+	 * 不知道模块名称是不是唯一，所以返回List
+	 * @param moduleName
+	 * @return
+	 */
+	List<Map<String, String>> getUrlByModuleName(String moduleName);
 }

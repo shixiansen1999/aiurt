@@ -325,11 +325,11 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
      */
     @Override
     public Map<String, String> getModuleNameAndSubmenuName(String url) {
-        String moduleName = "moduleName";
-        String submenuName = "submenuName";
+        String MODULE_NAME = "moduleName";
+        String SUBMENU_NAME = "submenuName";
         Map<String, String> moduleNameAndSubmenuNameMap = new HashMap<>();
-        moduleNameAndSubmenuNameMap.put(moduleName, null);
-        moduleNameAndSubmenuNameMap.put(submenuName, null);
+        moduleNameAndSubmenuNameMap.put(MODULE_NAME, null);
+        moduleNameAndSubmenuNameMap.put(SUBMENU_NAME, null);
         LambdaQueryWrapper<SysPermission> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysPermission::getUrl, url);
         List<SysPermission> sysPermissions = sysPermissionMapper.selectList(queryWrapper);
@@ -339,17 +339,55 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
         SysPermission sysPermission = sysPermissions.get(0);
         Integer menuType = sysPermission.getMenuType();
         if(menuType.equals(CommonConstant.MENU_TYPE_0)){
-            moduleNameAndSubmenuNameMap.put(moduleName, sysPermission.getName());
+            moduleNameAndSubmenuNameMap.put(MODULE_NAME, sysPermission.getName());
         }else if(menuType.equals(CommonConstant.MENU_TYPE_1)){
-            moduleNameAndSubmenuNameMap.put(submenuName, sysPermission.getName());
+            moduleNameAndSubmenuNameMap.put(SUBMENU_NAME, sysPermission.getName());
             SysPermission parent = this.getById(sysPermission.getParentId());
-            moduleNameAndSubmenuNameMap.put(moduleName, parent.getName());
+            moduleNameAndSubmenuNameMap.put(MODULE_NAME, parent.getName());
         } else if (menuType.equals(CommonConstant.MENU_TYPE_2)){
             SysPermission submenu = this.getById(sysPermission.getParentId());
             SysPermission parent = this.getById(submenu.getParentId());
-            moduleNameAndSubmenuNameMap.put(moduleName, parent.getName());
-            moduleNameAndSubmenuNameMap.put(submenuName, sysPermission.getName());
+            moduleNameAndSubmenuNameMap.put(MODULE_NAME, parent.getName());
+            moduleNameAndSubmenuNameMap.put(SUBMENU_NAME, sysPermission.getName());
         }
         return moduleNameAndSubmenuNameMap;
+    }
+
+    /**
+     * 根据模块名称，获取模块的url和其子菜单的url
+     * @param moduleName
+     * @return
+     */
+    @Override
+    public List<Map<String, String>> getUrlByModuleName(String moduleName){
+        String MODULE_NAME = "moduleName";
+        String SUBMENU_NAME = "submenuName";
+        String MODULE_URL = "moduleUrl";
+        String SUBMENU_URL = "submenuUrl";
+        List<Map<String, String>> moduleUrlAndSubMenuUrlList = new ArrayList<>();
+
+        LambdaQueryWrapper<SysPermission> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(SysPermission::getName, moduleName);
+        queryWrapper.eq(SysPermission::getMenuType, CommonConstant.MENU_TYPE_0);
+        queryWrapper.isNotNull(SysPermission::getUrl);
+        // 查询模块
+        List<SysPermission> moduleSysPermissionList = sysPermissionMapper.selectList(queryWrapper);
+        for (SysPermission moduleSysPermission : moduleSysPermissionList) {
+            LambdaQueryWrapper<SysPermission> submenuQueryWrapper = new LambdaQueryWrapper<>();
+            submenuQueryWrapper.eq(SysPermission::getParentId, moduleSysPermission.getId());
+            submenuQueryWrapper.eq(SysPermission::getMenuType, CommonConstant.MENU_TYPE_1);
+            submenuQueryWrapper.isNotNull(SysPermission::getUrl);
+            // 查询子菜单
+            List<SysPermission> submenuSysPermissionList = sysPermissionMapper.selectList(submenuQueryWrapper);
+            for (SysPermission submenuSysPermission : submenuSysPermissionList) {
+                Map<String, String> moduleUrlAndSubMenuUrlMap = new HashMap<>();
+                moduleUrlAndSubMenuUrlMap.put(MODULE_URL, moduleSysPermission.getUrl());
+                moduleUrlAndSubMenuUrlMap.put(MODULE_NAME, moduleSysPermission.getName());
+                moduleUrlAndSubMenuUrlMap.put(SUBMENU_NAME, submenuSysPermission.getName());
+                moduleUrlAndSubMenuUrlMap.put(SUBMENU_URL, submenuSysPermission.getUrl());
+                moduleUrlAndSubMenuUrlList.add(moduleUrlAndSubMenuUrlMap);
+            }
+        }
+        return moduleUrlAndSubMenuUrlList;
     }
 }
