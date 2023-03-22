@@ -5,6 +5,7 @@ import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.recycle.constant.SysRecycleConstant;
 import com.aiurt.modules.recycle.entity.SysRecycle;
 import com.aiurt.modules.recycle.service.ISysRecycleService;
+import com.aiurt.modules.system.entity.SysPermission;
 import com.aiurt.modules.system.service.ISysPermissionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -16,16 +17,14 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,54 +54,41 @@ public class SysRecycleController {
                                    @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                    @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
                                    HttpServletRequest req) {
+        String moduleName = sysRecycle.getModuleName();
         Page<SysRecycle> page = new Page<>(pageNo, pageSize);
-        LambdaQueryWrapper<SysRecycle> queryWrapper = new LambdaQueryWrapper<>();
 
         String MODULE_NAME = "moduleName";
         String SUBMENU_NAME = "submenuName";
-        String MODULE_URL = "moduleUrl";
-        String SUBMENU_URL = "submenuUrl";
 
-        // 根据模块名称查询时：
-        String moduleName = sysRecycle.getModuleName();
-        if (StrUtil.isNotBlank(moduleName)){
-            // 获取模块名称及其子菜单的url
-            List<Map<String, String>> moduleUrlAndSubmenuUrl = sysPermissionService.getUrlByModuleName(moduleName);
-            if (moduleUrlAndSubmenuUrl.size() == 0) {
-                return Result.ok(page);
-            }
-            List<String> urlList = new ArrayList<>();
-            moduleUrlAndSubmenuUrl.forEach(map->{
-                urlList.add(map.get(MODULE_URL));
-                urlList.add(map.get(SUBMENU_URL));
-            });
-            queryWrapper.in(SysRecycle::getModuleUrl, urlList);
-            queryWrapper.orderByDesc(SysRecycle::getCreateTime);
-            IPage<SysRecycle> pageList = sysRecycleService.page(page, queryWrapper);
-            List<SysRecycle> sysRecycleList = pageList.getRecords().stream().peek(recycle -> {
-                for (Map<String, String> map : moduleUrlAndSubmenuUrl) {
-                    if (recycle.getModuleUrl().equals(map.get(MODULE_URL)) || recycle.getModuleUrl().equals(map.get(SUBMENU_URL))) {
-                        recycle.setModuleName(map.get(MODULE_NAME));
-                        recycle.setSubmenu(map.get(SUBMENU_NAME));
-                        break;
-                    }
-                }
-            }).collect(Collectors.toList());
-            pageList.setRecords(sysRecycleList);
-            return Result.OK(pageList);
-        } else {
-            queryWrapper.eq(SysRecycle::getState, SysRecycleConstant.STATE_NORMAL);
-            queryWrapper.isNotNull(SysRecycle::getModuleUrl);
-            queryWrapper.orderByDesc(SysRecycle::getCreateTime);
-            IPage<SysRecycle> pageList = sysRecycleService.page(page, queryWrapper);
-            List<SysRecycle> sysRecycleList = pageList.getRecords().stream().peek(recycle -> {
-                Map<String, String> moduleNameAndSubmenuName = sysPermissionService.getModuleNameAndSubmenuName(recycle.getModuleUrl());
-                recycle.setModuleName(moduleNameAndSubmenuName.get(MODULE_NAME));
-                recycle.setSubmenu(moduleNameAndSubmenuName.get(SUBMENU_NAME));
-            }).collect(Collectors.toList());
-            pageList.setRecords(sysRecycleList);
-            return Result.OK(pageList);
+        LambdaQueryWrapper<SysPermission> sysPermissionQueryWrapper = new LambdaQueryWrapper<>();
+//        sysPermissionQueryWrapper.like(StrUtil.isNotBlank(moduleName), SysPermission::getName, moduleName);
+//        sysPermissionQueryWrapper.eq(StrUtil.isNotBlank(moduleName), SysPermission::getMenuType, CommonConstant.MENU_TYPE_0);
+        sysPermissionQueryWrapper.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
+        sysPermissionQueryWrapper.isNotNull(SysPermission::getUrl);
+        List<SysPermission> sysPermissionList = sysPermissionService.list(sysPermissionQueryWrapper);
+        if (sysPermissionList.size() == 0) {
+            return Result.OK(page);
         }
+        List<String> urlList = new ArrayList<>();
+        Map<String, SysPermission> SysPermissionMap = new HashMap<>();
+        sysPermissionList.forEach(sysPermission -> {
+            SysPermissionMap.put(sysPermission.getId(), sysPermission);
+            urlList.add(sysPermission.getUrl());
+        });
+
+        LambdaQueryWrapper<SysRecycle> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysRecycle::getState, SysRecycleConstant.STATE_NORMAL);
+        queryWrapper.isNotNull(SysRecycle::getModuleUrl);
+        queryWrapper.orderByDesc(SysRecycle::getCreateTime);
+        queryWrapper.in(StrUtil.isNotBlank(moduleName), SysRecycle::getModuleUrl, urlList);
+        IPage<SysRecycle> pageList = sysRecycleService.page(page, queryWrapper);
+        List<SysRecycle> sysRecycleList = pageList.getRecords().stream().peek(recycle -> {
+            Map<String, String> moduleNameAndSubmenuNameMap = getModuleNameAndSubmenuNameByUrl(SysPermissionMap, recycle.getModuleUrl());
+            recycle.setModuleName(moduleNameAndSubmenuNameMap.get(MODULE_NAME));
+            recycle.setSubmenu(moduleNameAndSubmenuNameMap.get(SUBMENU_NAME));
+        }).collect(Collectors.toList());
+        pageList.setRecords(sysRecycleList);
+        return Result.OK(pageList);
     }
 
     /**
@@ -183,5 +169,49 @@ public class SysRecycleController {
         return sysRecycleService.restoreBatchByIds(ids);
     }
 
+    /**
+     * 根据url获取模块名称和子菜单名称，要考虑到子菜单下还有可能有子菜单
+     * @param map
+     * @param url
+     * @return
+     */
+    private Map<String, String> getModuleNameAndSubmenuNameByUrl(Map<String, SysPermission> map, String url){
+        String matchId = null;
+        String MODULE_NAME = "moduleName";
+        String SUBMENU_NAME = "submenuName";
+
+        Map<String, String> ModuleNameAndSubmenuNameMap = new HashMap<>();
+        ModuleNameAndSubmenuNameMap.put(MODULE_NAME, null);
+        ModuleNameAndSubmenuNameMap.put(SUBMENU_NAME, null);
+        Set<String> keySet = map.keySet();
+        // 匹配url所在的SysPermission，返回匹配的id
+        for (String key : keySet) {
+            if (map.get(key).getUrl().equals(url)) {
+                matchId = map.get(key).getId();
+                break;
+            }
+        }
+        if (matchId == null){
+            return ModuleNameAndSubmenuNameMap;
+        }
+        // 从匹配到的SysPermission往上找，直到找到根(模块)
+        // 应该不会有10层，为了避免死循环，最多找10次
+        for (int i = 0; i < 10; i++) {
+            SysPermission matchSysPermission = map.get(matchId);
+            if (matchSysPermission.getMenuType().equals(CommonConstant.MENU_TYPE_0)) {
+                // 已经是根节点了，不用往上找了
+                ModuleNameAndSubmenuNameMap.put(MODULE_NAME, matchSysPermission.getName());
+                break;
+            }else if (matchSysPermission.getMenuType().equals(CommonConstant.MENU_TYPE_1)){
+                // 子菜单，继续往上找
+                matchId = matchSysPermission.getParentId();
+                ModuleNameAndSubmenuNameMap.put(SUBMENU_NAME, matchSysPermission.getName() + "-" + ModuleNameAndSubmenuNameMap.get(SUBMENU_NAME));
+            }else {
+                // 按钮权限，继续往上找
+                matchId = matchSysPermission.getParentId();
+            }
+        }
+        return ModuleNameAndSubmenuNameMap;
+    }
 
 }
