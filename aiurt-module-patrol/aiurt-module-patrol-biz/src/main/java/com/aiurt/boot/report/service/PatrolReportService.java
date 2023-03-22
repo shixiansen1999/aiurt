@@ -146,7 +146,7 @@ public class PatrolReportService {
                     d.setCompletionRate(b);
                 }
                 //计算异常数量
-                 List<PatrolReport> abnormalList = userNowNumber.stream().filter(u -> u.getAbnormalNumber() != null && u.getAbnormalNumber() == 1).collect(Collectors.toList());
+                 List<PatrolReport> abnormalList = userNowNumber.stream().filter(u -> u.getAbnormalState() != null && u.getAbnormalState() == 0).collect(Collectors.toList());
                  d.setAbnormalNumber(abnormalList.size());
             }
             //获取漏检数
