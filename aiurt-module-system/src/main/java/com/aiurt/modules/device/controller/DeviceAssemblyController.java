@@ -95,7 +95,7 @@ public class DeviceAssemblyController {
      * @param id
      * @return
      */
-    @AutoLog(value = "设备组件-通过id删除")
+    @AutoLog(value = "设备组件-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/equipmentData/masterData")
     @ApiOperation(value = "设备组件-通过id删除", notes = "设备组件-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
@@ -118,7 +118,7 @@ public class DeviceAssemblyController {
      * @param ids
      * @return
      */
-    @AutoLog(value = "设备-批量删除")
+    @AutoLog(value = "设备-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/equipmentData/masterData")
     @ApiOperation(value = "设备-批量删除", notes = "设备-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {

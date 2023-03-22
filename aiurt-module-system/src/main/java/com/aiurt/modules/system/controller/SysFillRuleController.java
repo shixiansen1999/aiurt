@@ -105,7 +105,7 @@ public class SysFillRuleController extends BaseController<SysFillRule, ISysFillR
      * @param id
      * @return
      */
-    @AutoLog(value = "填值规则-通过id删除")
+    @AutoLog(value = "填值规则-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isystem/fillRule")
     @ApiOperation(value = "填值规则-通过id删除", notes = "填值规则-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
@@ -119,7 +119,7 @@ public class SysFillRuleController extends BaseController<SysFillRule, ISysFillR
      * @param ids
      * @return
      */
-    @AutoLog(value = "填值规则-批量删除")
+    @AutoLog(value = "填值规则-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/isystem/fillRule")
     @ApiOperation(value = "填值规则-批量删除", notes = "填值规则-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<?> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {

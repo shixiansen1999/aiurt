@@ -160,7 +160,7 @@ public class StockInOrderLevel2Controller {
         return result;
     }
 
-    @AutoLog(value = "二级库管理-二级库入库管理-通过id删除", operateType = 3, operateTypeAlias = "删除", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
+    @AutoLog(value = "二级库管理-二级库入库管理-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
     @ApiOperation(value = "二级库管理-二级库入库管理-通过id删除", notes = "二级库管理-二级库入库管理-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
@@ -174,7 +174,7 @@ public class StockInOrderLevel2Controller {
         return Result.ok("删除成功!");
     }
 
-    @AutoLog(value = "二级库入库管理分类-批量删除", operateType = 3, operateTypeAlias = "删除", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
+    @AutoLog(value = "二级库入库管理分类-批量删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
     @ApiOperation(value = "二级库入库管理分类-批量删除", notes = "二级库入库管理分类-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {

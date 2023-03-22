@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.SysLog;
@@ -77,6 +78,7 @@ public class SysLogController {
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "系统日志-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isystem/loginLog")
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
 	public Result<SysLog> delete(@RequestParam(name="id",required=true) String id) {
 		Result<SysLog> result = new Result<SysLog>();
@@ -97,6 +99,7 @@ public class SysLogController {
 	 * @param ids
 	 * @return
 	 */
+	@AutoLog(value = "系统日志-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/isystem/loginLog")
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
 	public Result<SysRole> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		Result<SysRole> result = new Result<SysRole>();

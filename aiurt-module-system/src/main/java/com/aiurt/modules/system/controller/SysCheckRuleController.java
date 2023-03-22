@@ -125,7 +125,7 @@ public class SysCheckRuleController extends BaseController<SysCheckRule, ISysChe
      * @param id
      * @return
      */
-    @AutoLog(value = "编码校验规则-通过id删除")
+    @AutoLog(value = "编码校验规则-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isystem/checkRule")
     @ApiOperation(value = "编码校验规则-通过id删除", notes = "编码校验规则-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result delete(@RequestParam(name = "id", required = true) String id) {
@@ -139,7 +139,7 @@ public class SysCheckRuleController extends BaseController<SysCheckRule, ISysChe
      * @param ids
      * @return
      */
-    @AutoLog(value = "编码校验规则-批量删除")
+    @AutoLog(value = "编码校验规则-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/isystem/checkRule")
     @ApiOperation(value = "编码校验规则-批量删除", notes = "编码校验规则-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result deleteBatch(@RequestParam(name = "ids", required = true) String ids) {

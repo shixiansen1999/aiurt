@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.controller;
 
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.SymbolConstant;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -114,6 +115,7 @@ public class SysTenantController {
      * @param id
      * @return
      */
+    @AutoLog(value = "租户管理-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isys/tenant")
     @RequestMapping(value = "/delete", method ={RequestMethod.DELETE, RequestMethod.POST})
     public Result<?> delete(@RequestParam(name="id",required=true) String id) {
         sysTenantService.removeTenantById(id);
@@ -125,6 +127,7 @@ public class SysTenantController {
      * @param ids
      * @return
      */
+    @AutoLog(value = "租户管理-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/isys/tenant")
     @RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
     public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
         Result<?> result = new Result<>();

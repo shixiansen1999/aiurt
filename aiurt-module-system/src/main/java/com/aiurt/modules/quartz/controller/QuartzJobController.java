@@ -1,5 +1,6 @@
 package com.aiurt.modules.quartz.controller;
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.SymbolConstant;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.jeecg.common.api.vo.Result;
@@ -107,6 +108,7 @@ public class QuartzJobController {
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "定时任务-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isystem/QuartzJobList")
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
 	public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
 		QuartzJob quartzJob = quartzJobService.getById(id);
@@ -124,6 +126,7 @@ public class QuartzJobController {
 	 * @param ids
 	 * @return
 	 */
+	@AutoLog(value = "定时任务-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/isystem/QuartzJobList")
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
 	public Result<?> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
 		if (ids == null || "".equals(ids.trim())) {

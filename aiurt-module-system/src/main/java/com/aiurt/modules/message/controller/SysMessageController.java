@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.system.base.controller.BaseController;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -90,6 +91,7 @@ public class SysMessageController extends BaseController<SysMessage, ISysMessage
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "消息-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/message")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
 		sysMessageService.removeById(id);
@@ -102,6 +104,7 @@ public class SysMessageController extends BaseController<SysMessage, ISysMessage
 	 * @param ids
 	 * @return
 	 */
+	@AutoLog(value = "消息-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/message")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
 

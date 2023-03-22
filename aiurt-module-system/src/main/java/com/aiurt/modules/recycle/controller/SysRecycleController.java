@@ -114,7 +114,7 @@ public class SysRecycleController {
      * @param id
      * @return
      */
-    @AutoLog(value = "删除", operateType = 4, operateTypeAlias = "通过id删除回收站记录")
+    @AutoLog(value = "回收站-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/manage/CollectionList")
     @ApiOperation(value = "通过id删除回收站记录", notes = "通过id删除回收站记录")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
@@ -131,7 +131,7 @@ public class SysRecycleController {
      * @param ids
      * @return
      */
-    @AutoLog(value = "删除", operateType = 4, operateTypeAlias = "通过ids批量删除")
+    @AutoLog(value = "回收站-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/manage/CollectionList")
     @ApiOperation(value = "通过ids批量删除回收站记录", notes = "通过ids批量删除回收站记录")
     @DeleteMapping(value = "/deleteBatchByIds")
     public Result<?> deleteBatchByIds(@RequestParam(name = "ids", required = true) List<String> ids) {
@@ -148,7 +148,6 @@ public class SysRecycleController {
      * @param
      * @return
      */
-    @AutoLog(value = "还原数据",operateType = 1,operateTypeAlias = "通过id还原数据")
     @ApiOperation(value="通过id还原数据", notes="通过id还原数据")
     @PostMapping(value = "/restoreById")
     public Result<?> restoreById(@RequestBody Map map) throws SQLException {
@@ -161,7 +160,6 @@ public class SysRecycleController {
      * @param
      * @return
      */
-    @AutoLog(value = "还原数据",operateType = 1,operateTypeAlias = "通过ids批量还原数据")
     @ApiOperation(value="通过ids批量还原数据", notes="通过ids批量还原数据")
     @PostMapping(value = "/restoreBatchByIds")
     public Result<?> restoreBatchByIds(@RequestBody Map map) throws SQLException {

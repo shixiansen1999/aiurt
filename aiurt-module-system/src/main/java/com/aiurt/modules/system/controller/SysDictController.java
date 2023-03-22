@@ -4,6 +4,7 @@ package com.aiurt.modules.system.controller;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
@@ -425,6 +426,7 @@ public class SysDictController {
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "数据字典-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isystem/dict")
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
 	@CacheEvict(value={CacheConstant.SYS_DICT_CACHE, CacheConstant.SYS_ENABLE_DICT_CACHE}, allEntries=true)
 	public Result<SysDict> delete(@RequestParam(name="id",required=true) String id) {
@@ -443,6 +445,7 @@ public class SysDictController {
 	 * @param ids
 	 * @return
 	 */
+	@AutoLog(value = "数据字典-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/isystem/dict")
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
 	@CacheEvict(value= {CacheConstant.SYS_DICT_CACHE, CacheConstant.SYS_ENABLE_DICT_CACHE}, allEntries=true)
 	public Result<SysDict> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
@@ -610,6 +613,7 @@ public class SysDictController {
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "数据字典-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isystem/dict")
 	@RequestMapping(value = "/deletePhysic/{id}", method = RequestMethod.DELETE)
 	public Result<?> deletePhysic(@PathVariable("id") String id) {
 		try {

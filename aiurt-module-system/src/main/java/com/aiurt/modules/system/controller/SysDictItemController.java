@@ -6,6 +6,7 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.constant.CacheConstant;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -114,6 +115,7 @@ public class SysDictItemController {
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "数据字典-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isystem/dict")
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
 	@CacheEvict(value={CacheConstant.SYS_DICT_CACHE, CacheConstant.SYS_ENABLE_DICT_CACHE}, allEntries=true)
 	public Result<SysDictItem> delete(@RequestParam(name="id",required=true) String id) {
@@ -135,6 +137,7 @@ public class SysDictItemController {
 	 * @param ids
 	 * @return
 	 */
+	@AutoLog(value = "数据字典-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/isystem/dict")
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
 	@CacheEvict(value={CacheConstant.SYS_DICT_CACHE, CacheConstant.SYS_ENABLE_DICT_CACHE}, allEntries=true)
 	public Result<SysDictItem> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

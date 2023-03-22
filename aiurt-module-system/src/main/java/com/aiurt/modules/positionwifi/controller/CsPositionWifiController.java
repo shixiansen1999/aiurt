@@ -130,7 +130,7 @@ public class CsPositionWifiController extends BaseController<CsPositionWifi, ICs
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "wifi位置管理-通过id删除")
+	@AutoLog(value = "wifi位置管理-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isystem/wifiPosition")
 	@ApiOperation(value="wifi位置管理-通过id删除", notes="wifi位置管理-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -144,7 +144,7 @@ public class CsPositionWifiController extends BaseController<CsPositionWifi, ICs
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "wifi位置管理-批量删除")
+	@AutoLog(value = "wifi位置管理-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/isystem/wifiPosition")
 	@ApiOperation(value="wifi位置管理-批量删除", notes="wifi位置管理-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.controller;
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.SysGatewayRoute;
@@ -66,6 +67,7 @@ public class SysGatewayRouteController extends BaseController<SysGatewayRoute, I
      * @param id
      * @return
      */
+    @AutoLog(value = "路由网关-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isystem/gatewayroute")
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         sysGatewayRouteService.deleteById(id);
