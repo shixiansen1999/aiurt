@@ -181,7 +181,7 @@ public class RecycleMybatisInterceptor implements Interceptor {
                 // 步骤二、判断是不是把del_flag更新为 1 ，是的话才能往下走
                 Object delFlag = null;
                 if (updateType == 1) {
-                    if (boundSql.getSql().contains("del_flag = 1")) {
+                    if (boundSql.getSql().contains("del_flag = 1") || boundSql.getSql().contains("del_flag = '1")) {
                         delFlag = CommonConstant.DEL_FLAG_1;
                     } else {
                         // 直接写sql的话，参数会直接在((ParamMap) boundSql.getParameterObject())的ParamMap里面
@@ -271,7 +271,11 @@ public class RecycleMybatisInterceptor implements Interceptor {
                 // 数据存成json形式的，方便还原
                 List<String> resultJson = new ArrayList<>();
                 for (Map<String, Object> r : result) {
-                    billIdList.add((String) r.get("id"));
+                    if (r.get("id") instanceof Long){
+                        billIdList.add(r.get("id").toString());
+                    }else {
+                        billIdList.add((String) r.get("id"));
+                    }
                     resultJson.add(JSONObject.toJSONString(new JSONObject(r), SerializerFeature.WriteMapNullValue));
                 }
                 String resultString = resultJson.toString(); // 将结果转成字符串

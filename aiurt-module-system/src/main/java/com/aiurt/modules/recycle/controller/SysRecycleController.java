@@ -203,7 +203,9 @@ public class SysRecycleController {
             }else if (matchSysPermission.getMenuType().equals(CommonConstant.MENU_TYPE_1)){
                 // 子菜单，继续往上找
                 matchId = matchSysPermission.getParentId();
-                ModuleNameAndSubmenuNameMap.put(SUBMENU_NAME, matchSysPermission.getName() + "-" + ModuleNameAndSubmenuNameMap.get(SUBMENU_NAME));
+                if (ModuleNameAndSubmenuNameMap.get(SUBMENU_NAME) != null && matchSysPermission.getName() != null){
+                    ModuleNameAndSubmenuNameMap.put(SUBMENU_NAME, matchSysPermission.getName() + "-" + ModuleNameAndSubmenuNameMap.get(SUBMENU_NAME));
+                } else ModuleNameAndSubmenuNameMap.computeIfAbsent(SUBMENU_NAME, k -> matchSysPermission.getName());
             }else {
                 // 按钮权限，继续往上找
                 matchId = matchSysPermission.getParentId();
