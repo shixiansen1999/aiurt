@@ -2926,15 +2926,21 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1")
                 .select(FaultRepairRecord::getId);
         FaultRepairRecord repairRecord = faultRepairRecordMapper.selectOne(wrapper);
-        List<SpareResult> sparePart = sparePartMapper.getSparePart(faultCode, repairRecord.getId());
-        return sparePart;
+        if (ObjectUtil.isNotEmpty(repairRecord)) {
+            List<SpareResult> sparePart = sparePartMapper.getSparePart(faultCode, repairRecord.getId());
+            return sparePart;
+        }
+        return new ArrayList<SpareResult>();
     }
 
     @Override
     public String getFaultRepairReuslt(String faultCode) {
         RepairRecordDetailDTO recordByFaultCode = faultRepairRecordMapper.getRecordByFaultCode(faultCode);
-        String s = "故障接报人："+recordByFaultCode.getAppointRealName() + ",处理结果："+recordByFaultCode.getMaintenanceMeasures();
-        return s;
+        if (ObjectUtil.isNotEmpty(recordByFaultCode)) {
+            String s = "故障接报人："+recordByFaultCode.getAppointRealName() + ",处理结果："+recordByFaultCode.getMaintenanceMeasures();
+            return s;
+        }
+        return null;
     }
 
     @Override

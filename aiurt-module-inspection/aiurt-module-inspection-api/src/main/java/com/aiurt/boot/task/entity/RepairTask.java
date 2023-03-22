@@ -397,6 +397,10 @@ public class RepairTask extends BaseEntity {
     @TableField(exist = false)
     @ApiModelProperty(value = "备件更换")
     private List<SpareResult> spareChange;
+    /**检修单附件*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修单附件")
+    private List<String> enclosureUrl;
 
     @ApiModelProperty(value = "检修单（树形）")
     @TableField(exist = false)
