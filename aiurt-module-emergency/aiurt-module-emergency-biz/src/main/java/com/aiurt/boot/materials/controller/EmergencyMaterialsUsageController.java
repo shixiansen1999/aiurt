@@ -1,31 +1,26 @@
 package com.aiurt.boot.materials.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.materials.dto.MaterialAccountDTO;
 import com.aiurt.boot.materials.entity.EmergencyMaterialsUsage;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.materials.service.IEmergencyMaterialsUsageService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
  /**
  * @Description: emergency_materials_usage
@@ -90,7 +85,7 @@ public class EmergencyMaterialsUsageController extends BaseController<EmergencyM
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "应急物资使用记录-通过id删除")
+	@AutoLog(value = "应急物资使用记录-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/emergency/emergencyMaterials/UsageRecordList")
 	@ApiOperation(value="应急物资使用记录-通过id删除", notes="应急物资使用记录-通过id删除")
 	@DeleteMapping(value = "/delete")
 	@Transactional(rollbackFor = Exception.class)

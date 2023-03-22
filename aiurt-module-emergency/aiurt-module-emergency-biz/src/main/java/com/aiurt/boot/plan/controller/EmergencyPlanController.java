@@ -1,47 +1,31 @@
 package com.aiurt.boot.plan.controller;
 
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.boot.plan.dto.EmergencyPlanDTO;
 import com.aiurt.boot.plan.dto.EmergencyPlanQueryDTO;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
-import com.aiurt.boot.plan.entity.EmergencyPlanTeam;
-import com.aiurt.boot.plan.mapper.EmergencyPlanMapper;
-import com.aiurt.boot.plan.service.IEmergencyPlanTeamService;
-import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
-import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
-import com.aiurt.common.constant.CommonConstant;
-import com.baomidou.mybatisplus.extension.service.IService;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.plan.service.IEmergencyPlanService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
-import org.jeecg.common.system.vo.ComboModel;
-import org.jeecg.common.system.vo.SysDepartModel;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.ComboModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Description: emergency_plan
@@ -195,7 +179,7 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
      * @param id
      * @return
      */
-    @AutoLog(value = "应急预案台账-通过id删除")
+    @AutoLog(value = "应急预案台账-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/emergency/emergencyMaterials/AccountList")
     @ApiOperation(value = "应急预案台账-通过id删除", notes = "应急预案台账-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
@@ -238,7 +222,7 @@ public class EmergencyPlanController extends BaseController<EmergencyPlan, IEmer
      * @param ids
      * @return
      */
-    @AutoLog(value = "应急预案台账-批量删除")
+    @AutoLog(value = "应急预案台账-批量删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/emergency/emergencyMaterials/AccountList")
     @ApiOperation(value = "应急预案台账-批量删除", notes = "应急预案台账-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
