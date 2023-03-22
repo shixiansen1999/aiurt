@@ -170,7 +170,7 @@ public class FixedAssetsCheckController extends BaseController<FixedAssetsCheck,
      * @param id
      * @return
      */
-    @AutoLog(value = "固定资产盘点任务信息表-通过id删除")
+    @AutoLog(value = "固定资产盘点任务信息表-通过id删除",operateType = 4,permissionUrl = "/fixedAssets/InventoryList")
     @ApiOperation(value = "固定资产盘点任务信息表-通过id删除", notes = "固定资产盘点任务信息表-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {

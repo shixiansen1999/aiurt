@@ -127,7 +127,7 @@ public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskA
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "培训任务附件-通过id删除")
+	@AutoLog(value = "培训任务附件-通过id删除",operateType = 4,permissionUrl = "/trainAss/trainTaskManage/BdTrainTaskManageList")
 	@ApiOperation(value="培训任务附件-通过id删除", notes="培训任务附件-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
@@ -141,7 +141,7 @@ public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskA
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "培训任务附件-批量删除")
+	@AutoLog(value = "培训任务附件-批量删除",operateType = 4,permissionUrl = "/trainAss/trainTaskManage/BdTrainTaskManageList")
 	@ApiOperation(value="培训任务附件-批量删除", notes="培训任务附件-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

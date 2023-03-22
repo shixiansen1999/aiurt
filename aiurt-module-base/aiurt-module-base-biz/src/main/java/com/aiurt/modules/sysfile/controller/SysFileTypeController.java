@@ -112,7 +112,7 @@ public class SysFileTypeController {
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "文档类型表-删除")
+	@AutoLog(value = "文档类型表-删除",operateType = 4,permissionUrl = "/document/documentManage")
 	@ApiOperation(value = "文档类型表-删除", notes = "文档类型表-删除")
 	@PostMapping(value = "/delete")
 	public Result<?> detail(HttpServletRequest req, @RequestBody @NotNull(message = "id不能为空") List<Long> ids) {

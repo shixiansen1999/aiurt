@@ -97,7 +97,7 @@ public class BdTrainPlanSubController extends BaseController<BdTrainPlanSub, IBd
      * @param id
      * @return
      */
-    @AutoLog(value = "年子计划-通过id删除")
+    @AutoLog(value = "年子计划-通过id删除",operateType = 4,permissionUrl = "/trainAss/YearPlan/BdYearlyPlanList")
     @ApiOperation(value = "年子计划-通过id删除", notes = "年子计划-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
@@ -111,7 +111,7 @@ public class BdTrainPlanSubController extends BaseController<BdTrainPlanSub, IBd
      * @param ids
      * @return
      */
-    @AutoLog(value = "年子计划-批量删除")
+    @AutoLog(value = "年子计划-批量删除",operateType = 4,permissionUrl = "/trainAss/YearPlan/BdYearlyPlanList")
     @ApiOperation(value = "年子计划-批量删除", notes = "年子计划-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<?> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {

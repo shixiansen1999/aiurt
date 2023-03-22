@@ -90,7 +90,7 @@ public class BdTrainQuestionFeedbackRecordController extends BaseController<BdTr
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "bd_train_question_feedback_record-通过id删除")
+	@AutoLog(value = "bd_train_question_feedback_record-通过id删除",operateType = 4,permissionUrl = "/trainAss/questionFeedback/QuestionFeedbackList")
 	@ApiOperation(value="bd_train_question_feedback_record-通过id删除", notes="bd_train_question_feedback_record-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
@@ -104,7 +104,7 @@ public class BdTrainQuestionFeedbackRecordController extends BaseController<BdTr
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "bd_train_question_feedback_record-批量删除")
+	@AutoLog(value = "bd_train_question_feedback_record-批量删除",operateType = 4,permissionUrl = "/trainAss/questionFeedback/QuestionFeedbackList")
 	@ApiOperation(value="bd_train_question_feedback_record-批量删除", notes="bd_train_question_feedback_record-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

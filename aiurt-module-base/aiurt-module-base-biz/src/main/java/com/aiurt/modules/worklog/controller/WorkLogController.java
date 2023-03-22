@@ -227,7 +227,7 @@ public class WorkLogController {
      * @param id
      * @return
      */
-    @AutoLog(value = "工作日志-通过id删除")
+    @AutoLog(value = "工作日志-通过id删除",operateType = 4,permissionUrl = "/workLog/report")
     @ApiOperation(value="工作日志-通过id删除", notes="工作日志-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name="id",required=true) String id) {
@@ -245,7 +245,7 @@ public class WorkLogController {
      * @param ids
      * @return
      */
-    @AutoLog(value = "工作日志-批量删除")
+    @AutoLog(value = "工作日志-批量删除",operateType = 4,permissionUrl = "/workLog/report")
     @ApiOperation(value="工作日志-批量删除", notes="工作日志-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<WorkLog> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
