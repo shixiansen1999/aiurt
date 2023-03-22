@@ -104,7 +104,7 @@ public class EmergencyImplementationRecordController extends BaseController<Emer
      * @param id
      * @return
      */
-    @AutoLog(value = "应急实施记录-通过id删除")
+    @AutoLog(value = "应急实施记录-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/emergency/emergencyExercise/DrillImplementationRecord")
     @ApiOperation(value = "应急实施记录-通过id删除", notes = "应急实施记录-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {

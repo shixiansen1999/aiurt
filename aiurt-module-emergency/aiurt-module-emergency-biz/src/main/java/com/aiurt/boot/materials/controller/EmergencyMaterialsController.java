@@ -337,7 +337,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "物资信息-通过id删除")
+	@AutoLog(value = "物资信息-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/emergency/emergencyMaterials")
 	@ApiOperation(value="物资信息-通过id删除", notes="物资信息-通过id删除")
 	@DeleteMapping(value = "/delete")
 	@Transactional(rollbackFor = Exception.class)
@@ -359,7 +359,7 @@ public class EmergencyMaterialsController extends BaseController<EmergencyMateri
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "物资信息-批量删除")
+	@AutoLog(value = "物资信息-批量删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/emergency/emergencyMaterials")
 	@ApiOperation(value="物资信息-批量删除", notes="物资信息-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	@Transactional(rollbackFor = Exception.class)
