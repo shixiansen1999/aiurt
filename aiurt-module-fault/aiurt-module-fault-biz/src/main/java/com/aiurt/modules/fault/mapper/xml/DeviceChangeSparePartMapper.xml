@@ -30,13 +30,14 @@
 
     <select id="getSparePart" resultType="com.aiurt.common.result.SpareResult">
         select
-        b.name as new_spare_part_name,
-        da.material_name as old_spare_part_name
+        b.NAME AS new_spare_part_name,
+        c.NAME AS old_spare_part_name,
+        a.old_spare_part_num,
+        a.new_spare_part_num
         from device_change_spare_part a
         LEFT JOIN material_base b ON  (a.new_spare_part_code = b.`code` and b.del_flag = 0)
-        LEFT JOIN device c on c.code = a.device_code
-        LEFT join device_assembly da on (a.old_spare_part_code = da.`code` AND a.del_flag = 0 AND da.device_code = c.`code`)
-        where a.code = #{faultCode} and a.repair_record_id = #{recordId}
+        LEFT JOIN material_base c ON ( a.old_spare_part_code = c.`code` AND c.del_flag = 0 )
+        where a.code = #{faultCode} and a.consumables = 0
         and a.del_flag = 0
     </select>
 </mapper>
