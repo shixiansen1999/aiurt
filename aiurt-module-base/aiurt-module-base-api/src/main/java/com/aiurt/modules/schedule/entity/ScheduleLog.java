@@ -45,6 +45,7 @@ public class ScheduleLog {
 	private  String  userName;
 
 	@ApiModelProperty(value = "工号")
+	@TableField(exist = false)
 	private  String  workNo;
 
 	/**排班记录id*/
@@ -136,6 +137,7 @@ public class ScheduleLog {
 	@JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@ApiModelProperty(value = "开始日期")
+	@TableField(exist = false)
 	private Date startDate;
 
 	/**
@@ -145,6 +147,7 @@ public class ScheduleLog {
 	@JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
 	@ApiModelProperty(value = "结束日期")
+	@TableField(exist = false)
 	private Date endDate;
 
 	@TableField(exist = false)

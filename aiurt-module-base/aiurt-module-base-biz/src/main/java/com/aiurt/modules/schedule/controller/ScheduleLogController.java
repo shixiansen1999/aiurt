@@ -19,6 +19,7 @@ import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -201,7 +202,7 @@ public class ScheduleLogController {
       //导出文件名称
       mv.addObject(NormalExcelConstants.FILE_NAME, "schedule_log列表");
       mv.addObject(NormalExcelConstants.CLASS, ScheduleLog.class);
-      mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("schedule_log列表数据", "导出人:Jeecg", "导出信息"));
+      mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("schedule_log列表数据", "导出人:Jeecg", ExcelType.XSSF));
       mv.addObject(NormalExcelConstants.DATA_LIST, pageList);
       return mv;
   }
