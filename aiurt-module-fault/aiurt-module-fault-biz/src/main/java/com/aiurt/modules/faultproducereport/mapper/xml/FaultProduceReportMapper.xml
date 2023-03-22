@@ -38,7 +38,7 @@
                 and UNIX_TIMESTAMP(#{endDay}) >= UNIX_TIMESTAMP(fpr.statistics_date)
             </if>
         </where>
-        order by fpr.statistics_date desc
+        order by fpr.statistics_date desc, fpr.create_time desc
     </select>
     
     <select id="queryPageAuditList"
@@ -79,7 +79,7 @@
         <if test="endDay != null and beginDay != ''">
             and UNIX_TIMESTAMP(#{endDay}) >= UNIX_TIMESTAMP(fpr.statistics_date)
         </if>
-        order by fpr.statistics_date desc
+        order by fpr.statistics_date desc, fpr.create_time desc
     </select>
 
     <select id="selectIdList" resultType="java.lang.String">
