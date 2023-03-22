@@ -871,12 +871,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 e.printStackTrace();
             }
         }
-        //确认：将待确认改为待执行
+        //确认：将待确认改为执行中
         if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
             if (manager.checkTaskUser(patrolTask.getCode()) == false && !admin) {
                 throw new AiurtBootException("只有该任务的巡检人才可以确认");
             }
-            updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
+            updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
             // 确认后发送待办消息
             try {
