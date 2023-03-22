@@ -307,9 +307,11 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
             }
             //新数据进行判断，是否是自己的仓库
             if (CollUtil.isNotEmpty(unExitFaultSparePartList)) {
+                if (CollUtil.isEmpty(exitFaultSparePartList)){
                 //旧数据进行判断，是否有移除的,有的话找到出来，然后恢复之前的
                 List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
                 recoverSparePart(deviceChangeSparePartList);
+                }
                 for (SparePartStockDTO lendStockDTO : unExitFaultSparePartList) {
                     DeviceChangeSparePart sparePart = new DeviceChangeSparePart();
                     sparePart.setCode(faultCode);
