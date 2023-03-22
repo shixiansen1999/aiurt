@@ -106,17 +106,21 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	List<SysPermissionTree> getSystemSubmenuRecursive(String parentId);
 
 	/**
+	 * 未考虑到子菜单的父级别也有可能是子菜单的情况
 	 * 根据url查询模块名称和子菜单名称
 	 * @param url 应该是唯一的
 	 * @return
 	 */
+	@Deprecated
 	Map<String, String> getModuleNameAndSubmenuName(String url);
 
 	/**
+	 * 未考虑到子菜单的父级别也有可能是子菜单的情况
 	 * 根据模块名称，获取模块的url和其子菜单的url
 	 * 不知道模块名称是不是唯一，所以返回List
 	 * @param moduleName
 	 * @return
 	 */
+	@Deprecated
 	List<Map<String, String>> getUrlByModuleName(String moduleName);
 }
