@@ -113,11 +113,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		String str = "RK";
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 		str += sdf.format(new Date());
-		queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-		queryWrapper.likeRight("order_code",str);
-		queryWrapper.orderByDesc("create_time");
-		queryWrapper.last("limit 1");
-		StockInOrderLevel2 stockInOrderLevel2 = stockInOrderLevel2Mapper.selectOne(queryWrapper);
+		StockInOrderLevel2 stockInOrderLevel2 = stockInOrderLevel2Mapper.getone( str);
 		String format = "";
 		if(stockInOrderLevel2 != null){
 			String code = stockInOrderLevel2.getOrderCode();

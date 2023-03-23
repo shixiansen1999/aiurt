@@ -66,11 +66,7 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 		String str = "TBJH";
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 		str += sdf.format(new Date());
-		queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-		queryWrapper.likeRight("code",str);
-		queryWrapper.orderByDesc("create_time");
-		queryWrapper.last("limit 1");
-		StockSubmitPlan stockSubmitPlan = stockSubmitPlanMapper.selectOne(queryWrapper);
+		StockSubmitPlan stockSubmitPlan =  stockSubmitPlanMapper.getone( str);
 		String format = "";
 		if(stockSubmitPlan != null){
 			String code = stockSubmitPlan.getCode();

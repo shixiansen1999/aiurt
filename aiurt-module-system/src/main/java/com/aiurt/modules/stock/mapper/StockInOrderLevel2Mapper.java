@@ -1,12 +1,9 @@
 package com.aiurt.modules.stock.mapper;
 
-import com.aiurt.boot.standard.dto.InspectionCodeContentDTO;
-import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.stock.dto.StockInOrderLevel2ExportDTO;
 import com.aiurt.modules.stock.dto.StockIncomingMaterialsExportDTO;
 import com.aiurt.modules.stock.entity.StockInOrderLevel2;
-import com.aiurt.modules.stock.entity.StockSubmitMaterials;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -43,4 +40,5 @@ public interface StockInOrderLevel2Mapper extends BaseMapper<StockInOrderLevel2>
      */
     List<StockIncomingMaterialsExportDTO> selectByStockInOrderLevel2Id(String orderCode);
 
+    StockInOrderLevel2 getone(String str);
 }
