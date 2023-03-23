@@ -51,9 +51,9 @@ public class RecycleMybatisInterceptor implements Interceptor {
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         // isDelete为true才拦截
-        boolean isDelete = GlobalThreadLocal.enabledDataFilter();
+        boolean DataDelete = GlobalThreadLocal.getDataDelete();
         String permissionUrl = GlobalThreadLocal.getDataString();
-        if (!(isDelete && StrUtil.isNotEmpty(permissionUrl))){
+        if (!(DataDelete && StrUtil.isNotEmpty(permissionUrl))){
             return invocation.proceed();
         }
 
