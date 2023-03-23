@@ -268,7 +268,7 @@ public class PatrolStatisticsService {
             List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
             List<PatrolTaskStation> patrolTaskStations = patrolTaskStationMapper.selectList(new LambdaQueryWrapper<PatrolTaskStation>().eq(PatrolTaskStation::getDelFlag, CommonConstant.DEL_FLAG_0));
             if (CollUtil.isEmpty(standards) || CollUtil.isEmpty(departList) || CollUtil.isEmpty(patrolTaskStations)){
-                return pageList;
+                return page;
             }
             //下面禁用数据权限
             boolean b= GlobalThreadLocal.setDataFilter(false);
@@ -365,7 +365,7 @@ public class PatrolStatisticsService {
             List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
             List<PatrolTaskStation> patrolTaskStations = patrolTaskStationMapper.selectList(new LambdaQueryWrapper<PatrolTaskStation>().eq(PatrolTaskStation::getDelFlag, CommonConstant.DEL_FLAG_0));
             if (CollUtil.isEmpty(standards) || CollUtil.isEmpty(departList) || CollUtil.isEmpty(patrolTaskStations)){
-                return pageList;
+                return page;
             }
             //下面禁用数据权限
             boolean b= GlobalThreadLocal.setDataFilter(false);
