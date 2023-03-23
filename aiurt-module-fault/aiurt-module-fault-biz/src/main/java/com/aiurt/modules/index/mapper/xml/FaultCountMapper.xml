@@ -194,4 +194,11 @@
         select * from fault
         where status = 12  and date_format(end_time ,'%Y-%m-%d') =date_format(#{startDate} ,'%Y-%m-%d')
     </select>
+    <select id="getSysUserAndDepart" resultType="com.aiurt.modules.fault.dto.FaultCountInfoDTO">
+        SELECT  sd.depart_name AS teamName,
+                su.realname AS teamUser
+        FROM `sys_user` su left JOIN sys_depart sd
+        ON su.org_id=sd.id
+        WHERE su.id=#{userId}
+    </select>
 </mapper>
