@@ -113,7 +113,11 @@ public class RecycleMybatisInterceptor implements Interceptor {
                 // 数据存成json形式的，方便还原
                 List<String> resultJson = new ArrayList<>();
                 for (Map<String, Object> r : result) {
-                    billIdList.add((String) r.get("id"));
+                    try{
+                        billIdList.add((String) r.get("id"));
+                    }catch (Exception e){
+                        billIdList.add(r.get("id").toString());
+                    }
                     resultJson.add(JSONObject.toJSONString(new JSONObject(r), SerializerFeature.WriteMapNullValue));
                 }
                 String resultString = resultJson.toString(); // 将结果转成字符串
@@ -271,10 +275,10 @@ public class RecycleMybatisInterceptor implements Interceptor {
                 // 数据存成json形式的，方便还原
                 List<String> resultJson = new ArrayList<>();
                 for (Map<String, Object> r : result) {
-                    if (r.get("id") instanceof Long){
-                        billIdList.add(r.get("id").toString());
-                    }else {
+                    try{
                         billIdList.add((String) r.get("id"));
+                    }catch (Exception e){
+                        billIdList.add(r.get("id").toString());
                     }
                     resultJson.add(JSONObject.toJSONString(new JSONObject(r), SerializerFeature.WriteMapNullValue));
                 }

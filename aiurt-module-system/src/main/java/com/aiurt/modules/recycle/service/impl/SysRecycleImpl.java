@@ -1,6 +1,8 @@
 package com.aiurt.modules.recycle.service.impl;
 
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.recycle.constant.SysRecycleConstant;
 import com.aiurt.modules.recycle.entity.SysRecycle;
 import com.aiurt.modules.recycle.mapper.SysRecycleMapper;
@@ -12,14 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
+import org.omg.CORBA.OBJ_ADAPTER;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 @Service
@@ -54,6 +56,8 @@ public class SysRecycleImpl extends ServiceImpl<SysRecycleMapper, SysRecycle> im
 
         String tableName = sysRecycle.getBillTablenm();
         Integer delSign = sysRecycle.getDelSign();
+        // 先查询表字段类型，因为year类型的，存到还原表是日期的字符串，还原的时候会因为长度太长报错
+        Map<String, String> fieldTypeMap = getFieldType(connection, tableName);
         // 伪删除，直接更新del_flag=0
         if (SysRecycleConstant.DEL_SIGN_1.equals(delSign)) {
 //            List<String> billIdList = JSONArray.parseArray(sysRecycle.getBillId(), String.class);
@@ -93,7 +97,11 @@ public class SysRecycleImpl extends ServiceImpl<SysRecycleMapper, SysRecycle> im
             for (JSONObject restoreData : restoreDataList) {
                 for (int i = 0; i < fieldList.size(); i++) {
                     String field = fieldList.get(i);
-                    preparedStatement.setObject(i + 1, restoreData.get(field));
+                    if ("year".equals(fieldTypeMap.get(field)) && ObjectUtil.isNotEmpty(restoreData.get(field))){
+                        preparedStatement.setObject(i + 1, restoreData.get(field).toString().split("-")[0]);
+                    }else {
+                        preparedStatement.setObject(i + 1, restoreData.get(field));
+                    }
                 }
                 preparedStatement.setObject(fieldList.size() + 1, restoreData.get("id"));
             }
@@ -132,7 +140,11 @@ public class SysRecycleImpl extends ServiceImpl<SysRecycleMapper, SysRecycle> im
                 for (int i = 0; i < fieldList.size(); i++) {
                     String field = fieldList.get(i);
                     try {
-                        preparedStatement.setObject(i+1, restoreData.get(field));
+                        if ("year".equals(fieldTypeMap.get(field)) && ObjectUtil.isNotEmpty(restoreData.get(field))){
+                            preparedStatement.setObject(i + 1, restoreData.get(field).toString().split("-")[0]);
+                        }else {
+                            preparedStatement.setObject(i + 1, restoreData.get(field));
+                        }
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
@@ -191,6 +203,9 @@ public class SysRecycleImpl extends ServiceImpl<SysRecycleMapper, SysRecycle> im
         if (sysRecycleMap.containsKey(SysRecycleConstant.DEL_SIGN_1)) {
             for (SysRecycle sysRecycleFake: sysRecycleMap.get(SysRecycleConstant.DEL_SIGN_1)){
                 String tableName = sysRecycleFake.getBillTablenm();
+                // 先查询表字段类型，因为year类型的，存到还原表是日期的字符串，还原的时候会因为长度太长报错
+                Map<String, String> fieldTypeMap = getFieldType(connection, tableName);
+
                 // 伪删除
 //                List<String> billIdList = JSONArray.parseArray(sysRecycleFake.getBillId(), String.class);
 //                StringBuilder idInSql = new StringBuilder();
@@ -228,7 +243,11 @@ public class SysRecycleImpl extends ServiceImpl<SysRecycleMapper, SysRecycle> im
                 for (JSONObject restoreData : restoreDataList) {
                     for (int i = 0; i < fieldList.size(); i++) {
                         String field = fieldList.get(i);
-                        preparedStatement.setObject(i + 1, restoreData.get(field));
+                        if ("year".equals(fieldTypeMap.get(field)) && ObjectUtil.isNotEmpty(restoreData.get(field))){
+                            preparedStatement.setObject(i + 1, restoreData.get(field).toString().split("-")[0]);
+                        }else {
+                            preparedStatement.setObject(i + 1, restoreData.get(field));
+                        }
                     }
                     preparedStatement.setObject(fieldList.size() + 1, restoreData.get("id"));
                 }
@@ -240,6 +259,9 @@ public class SysRecycleImpl extends ServiceImpl<SysRecycleMapper, SysRecycle> im
             // 真实删除的，插入数据
             for (SysRecycle sysRecycleReal: sysRecycleMap.get(SysRecycleConstant.DEL_SIGN_0)){
                 String tableName = sysRecycleReal.getBillTablenm();
+
+                // 先查询表字段类型，因为year类型的，存到还原表是日期的字符串，还原的时候会因为长度太长报错
+                Map<String, String> fieldTypeMap = getFieldType(connection, tableName);
 
                 List<JSONObject> restoreDataList = JSONArray.parseArray(sysRecycleReal.getBillValue(), JSONObject.class);
                 if (restoreDataList.size() == 0){
@@ -271,7 +293,11 @@ public class SysRecycleImpl extends ServiceImpl<SysRecycleMapper, SysRecycle> im
                 for (JSONObject restoreData : restoreDataList) {
                     for (int i = 0; i < fieldList.size(); i++) {
                         String field = fieldList.get(i);
-                        preparedStatement.setObject(i+1, restoreData.get(field));
+                        if ("year".equals(fieldTypeMap.get(field)) && ObjectUtil.isNotEmpty(restoreData.get(field))){
+                            preparedStatement.setObject(i + 1, restoreData.get(field).toString().split("-")[0]);
+                        }else {
+                            preparedStatement.setObject(i + 1, restoreData.get(field));
+                        }
                     }
                     preparedStatement.executeUpdate();
                 }
@@ -306,5 +332,18 @@ public class SysRecycleImpl extends ServiceImpl<SysRecycleMapper, SysRecycle> im
         }finally {
             connection.close();
         }
+    }
+
+    private Map<String, String> getFieldType(Connection connection, String tableName) throws SQLException {
+        Map<String, String> fieldTypeMap = new HashMap<>();
+        String sql = "show fields from " + tableName;
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(sql);
+        while (resultSet.next()){
+            String field = resultSet.getString("Field");
+            String type = resultSet.getString("Type");
+            fieldTypeMap.put(field, type);
+        }
+        return fieldTypeMap;
     }
 }
