@@ -241,11 +241,19 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 //查找设备编码
                 boolean b1 = GlobalThreadLocal.setDataFilter(false);
                 List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
+                //查找班组名称和班组负责人
+                List<FaultCountInfoDTO> userAndDepartList = faultCountMapper.getSysUserAndDepart(user.getId());
                 GlobalThreadLocal.setDataFilter(b1);
                 if(CollUtil.isNotEmpty(faultDeviceList)){
                     for (FaultDevice faultDevice : faultDeviceList) {
                         faultDatum.setDeviceCode(faultDevice.getDeviceCode());
                         faultDatum.setDeviceName(faultDevice.getDeviceName());
+                    }
+                }
+                if(CollUtil.isNotEmpty(userAndDepartList)){
+                    for (FaultCountInfoDTO userAndDepart : userAndDepartList) {
+                        faultDatum.setTeamUser(userAndDepart.getTeamUser());
+                        faultDatum.setTeamName(userAndDepart.getTeamName());
                     }
                 }
             }
@@ -307,11 +315,19 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 //查找设备编码
                 boolean b1 = GlobalThreadLocal.setDataFilter(false);
                 List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
+                //查找班组名称和班组负责人
+                List<FaultCountInfoDTO> userAndDepartList = faultCountMapper.getSysUserAndDepart(user.getId());
                 GlobalThreadLocal.setDataFilter(b1);
                 if(CollUtil.isNotEmpty(faultDeviceList)){
                     for (FaultDevice faultDevice : faultDeviceList) {
                         faultDatum.setDeviceCode(faultDevice.getDeviceCode());
                         faultDatum.setDeviceName(faultDevice.getDeviceName());
+                    }
+                }
+                if(CollUtil.isNotEmpty(userAndDepartList)){
+                    for (FaultCountInfoDTO userAndDepart : userAndDepartList) {
+                        faultDatum.setTeamUser(userAndDepart.getTeamUser());
+                        faultDatum.setTeamName(userAndDepart.getTeamName());
                     }
                 }
             }
