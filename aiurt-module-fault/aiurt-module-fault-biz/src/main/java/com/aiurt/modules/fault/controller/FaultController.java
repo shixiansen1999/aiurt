@@ -20,6 +20,8 @@ import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
+import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
+import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeService;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
 import com.alibaba.fastjson.JSONObject;
@@ -41,6 +43,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -80,6 +83,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     @Autowired
     private IFaultKnowledgeBaseService faultKnowledgeBaseService;
+
+    @Autowired
+    private IFaultKnowledgeBaseTypeService faultKnowledgeBaseTypeService;
     /**
      * 分页列表查询
      *
@@ -129,13 +135,23 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             fault.setFaultLevel(null);
         }
 
+        //获取app输入故障现象查询内容，转换为code
+        LambdaQueryWrapper<FaultKnowledgeBaseType> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(FaultKnowledgeBaseType::getName, faultPhenomenon).eq(FaultKnowledgeBaseType::getDelFlag, 0);
+        List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeService.getBaseMapper().selectList(wrapper);
+        List<String> faultPhenomenonCodes = new ArrayList<>();
+        if (CollUtil.isNotEmpty(faultKnowledgeBaseTypes)) {
+            faultPhenomenonCodes = faultKnowledgeBaseTypes.stream().map(FaultKnowledgeBaseType::getCode).collect(Collectors.toList());
+        }
+
         QueryWrapper<Fault> queryWrapper = QueryGenerator.initQueryWrapper(fault, req.getParameterMap());
         Page<Fault> page = new Page<>(pageNo, pageSize);
         PageOrderGenerator.initPage(page, fault, fault);
         //修改查询条件
+        queryWrapper.in("fault_phenomenon",faultPhenomenonCodes);
+        queryWrapper.or().like("code", faultPhenomenon);
         queryWrapper.apply(StrUtil.isNotBlank(stationCode), "(line_code = {0} or station_code = {0} or station_position_code = {0})", stationCode);
         queryWrapper.apply(StrUtil.isNotBlank(fault.getDevicesIds()), "(code in (select fault_code from fault_device where device_code like  concat('%', {0}, '%')))", fault.getDevicesIds());
-        queryWrapper.apply(StrUtil.isNotBlank(faultPhenomenon), "(fault_phenomenon like concat('%', {0}, '%') or code like  concat('%', {0}, '%'))", faultPhenomenon);
         // 负责人查询
         queryWrapper.apply(StrUtil.isNotBlank(appointUserName), "( appoint_user_name in (select username from sys_user where (username like concat('%', {0}, '%') or realname like concat('%', {0}, '%'))))", appointUserName);
         queryWrapper.orderByDesc("create_time");
