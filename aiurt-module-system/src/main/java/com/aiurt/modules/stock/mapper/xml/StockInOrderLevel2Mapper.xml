@@ -51,4 +51,27 @@
         </if>
     </select>
 
+    <select id="getone" resultType="com.aiurt.modules.stock.entity.StockInOrderLevel2">
+        SELECT
+                id,
+                order_code,
+                org_code,
+                warehouse_code,
+                entry_time,
+                user_id,
+                STATUS,
+                note,
+                create_by,
+                update_by,
+                create_time,
+                update_time,
+                del_flag
+        FROM
+                stock_in_order_level2
+        WHERE
+                order_code LIKE CONCAT(#{str},'%')
+        ORDER BY
+                create_time DESC
+        LIMIT 1
+    </select>
 </mapper>

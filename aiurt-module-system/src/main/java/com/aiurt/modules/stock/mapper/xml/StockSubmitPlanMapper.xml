@@ -10,4 +10,29 @@
         order by sd.create_time desc
     </select>
 
+    <select id="getone" resultType="com.aiurt.modules.stock.entity.StockSubmitPlan">
+        SELECT
+        id,
+        CODE,
+        YEAR,
+        submit_type,
+        org_id,
+        org_code,
+        user_id,
+        submit_time,
+        STATUS,
+        create_by,
+        update_by,
+        create_time,
+        update_time,
+        del_flag
+        FROM
+        stock_submit_plan
+        WHERE
+        CODE LIKE CONCAT(#{str},'%')
+        ORDER BY
+        create_time DESC
+        LIMIT 1;
+
+    </select>
 </mapper>
