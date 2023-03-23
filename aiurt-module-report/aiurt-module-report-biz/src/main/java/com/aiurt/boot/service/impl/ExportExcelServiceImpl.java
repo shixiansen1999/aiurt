@@ -1,6 +1,7 @@
 package com.aiurt.boot.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.net.URLDecoder;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.URLUtil;
@@ -114,8 +115,9 @@ public class ExportExcelServiceImpl implements ExportExcelService {
      * @return
      */
     private String urlHandling(String dataUrl) {
+        final String decodeUrl = URLDecoder.decode(dataUrl, Charset.defaultCharset());
         // 处理前端传过来为空或空字符串的参数
-        String[] url = StrUtil.split(dataUrl, "?");
+        String[] url = StrUtil.split(decodeUrl, "?");
         if (StrUtil.isBlank(url[1])) {
             return url[0];
         }
@@ -131,7 +133,7 @@ public class ExportExcelServiceImpl implements ExportExcelService {
                 }
             }
         }
-        String urlParam = URLUtil.buildQuery(map, Charset.defaultCharset());
+        String urlParam = URLUtil.buildQuery(map, null);
         String fullPath = url[0] + "?" + urlParam;
         return fullPath;
     }

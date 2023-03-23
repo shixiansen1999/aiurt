@@ -90,7 +90,7 @@ public class EmergencyTrainingTeamController extends BaseController<EmergencyTra
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "emergency_training_team-通过id删除")
+	@AutoLog(value = "emergency_training_team-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "")
 	@ApiOperation(value="emergency_training_team-通过id删除", notes="emergency_training_team-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -104,7 +104,7 @@ public class EmergencyTrainingTeamController extends BaseController<EmergencyTra
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "emergency_training_team-批量删除")
+	@AutoLog(value = "emergency_training_team-批量删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "")
 	@ApiOperation(value="emergency_training_team-批量删除", notes="emergency_training_team-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

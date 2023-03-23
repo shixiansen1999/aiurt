@@ -132,7 +132,7 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "inspection_code_content-通过id删除", operateType =  4, operateTypeAlias = "通过id删除", module = ModuleType.INSPECTION)
+	@AutoLog(value = "inspection_code_content-通过id删除", operateType =  4, operateTypeAlias = "通过id删除", module = ModuleType.INSPECTION,permissionUrl="/overhaul/standardManage")
 	@ApiOperation(value="inspection_code_content-通过id删除", notes="inspection_code_content-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -152,7 +152,7 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "inspection_code_content-批量删除", operateType =  4, operateTypeAlias = "批量删除", module = ModuleType.INSPECTION)
+	@AutoLog(value = "inspection_code_content-批量删除", operateType =  4, operateTypeAlias = "批量删除", module = ModuleType.INSPECTION,permissionUrl="/overhaul/standardManage")
 	@ApiOperation(value="inspection_code_content-批量删除", notes="inspection_code_content-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

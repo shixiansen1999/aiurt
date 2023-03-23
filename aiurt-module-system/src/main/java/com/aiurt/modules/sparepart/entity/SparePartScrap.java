@@ -68,10 +68,6 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @Excel(name = "物资编号", width = 15)
     @ApiModelProperty(value = "物资编号")
     private String materialCode;
-    @Excel(name = "备件名称", width = 15)
-    @ApiModelProperty(value = "备件名称")
-    @TableField(exist = false)
-    private String materialName;
     /**仓库编号*/
     @ApiModelProperty(value = "仓库编号")
     private String warehouseCode;
@@ -100,6 +96,7 @@ public class SparePartScrap extends DictEntity implements Serializable {
     /**申请处置人*/
     @Excel(name = "申请处置人", width = 15)
     @ApiModelProperty(value = "申请处置人")
+    @TableField(exist = false)
     private String createBy;
 	/**备件处置单状态：1待处理、2已报废、3已报损*/
     @ApiModelProperty(value = "备件处置单状态：1待处理、2已报废、3已报损")
@@ -149,13 +146,13 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @ApiModelProperty(value = "修改人")
     private String updateBy;
 	/**创建时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 	/**修改时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
     private Date updateTime;
     /**ids*/
@@ -188,6 +185,10 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "规格型号")
     private String specifications;
+    /**单位值*/
+    @ApiModelProperty(value = "单位值")
+    @TableField(exist = false)
+    private Integer unitValue;
     /**单位*/
     @ApiModelProperty(value = " 单位")
     @TableField(exist = false)
@@ -200,6 +201,12 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @ApiModelProperty(value = " 单价")
     @TableField(exist = false)
     private String price;
+    @ApiModelProperty(value = "是否易耗品：0否1是")
+    @TableField(exist = false)
+    private Integer consumablesType;
+    @ApiModelProperty(value = "是否易耗品")
+    @TableField(exist = false)
+    private String consumablesTypeName;
     /** 状态名称*/
     @ApiModelProperty(value = "状态名称")
     @TableField(exist = false)
@@ -241,13 +248,16 @@ public class SparePartScrap extends DictEntity implements Serializable {
 
     @Excel(name = "备件送修状态", width = 15)
     @ApiModelProperty(value = "备件送修状态：1待返修、2已返修、3已验收")
-    private String repairStatus;
+    @Dict(dicCode = "spare_repair_status")
+    private Integer repairStatus;
 
     @Excel(name = "序列号", width = 15)
     @ApiModelProperty(value = "序列号")
     private String serialNumber;
 
     @Excel(name = "返回时间", width = 15)
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "返回时间")
     private Date returnTime;
 

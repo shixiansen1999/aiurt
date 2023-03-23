@@ -235,8 +235,7 @@
         end_time,
         hang_up_reason,
         fault_phenomenon,
-        symptoms,
-        create_time
+        symptoms
         FROM
         fault
         where

@@ -110,7 +110,7 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "实施配置-通过id删除")
+	@AutoLog(value = "实施配置-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/system/imp")
 	@ApiOperation(value="实施配置-通过id删除", notes="实施配置-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -123,7 +123,7 @@ public class SysParamController extends BaseController<SysParam, ISysParamServic
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "实施配置-批量删除")
+	@AutoLog(value = "实施配置-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/system/imp")
 	@ApiOperation(value="实施配置-批量删除", notes="实施配置-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

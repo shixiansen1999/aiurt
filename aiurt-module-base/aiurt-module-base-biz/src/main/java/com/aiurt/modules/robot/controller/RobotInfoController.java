@@ -87,7 +87,7 @@ public class RobotInfoController extends BaseController<RobotInfo, IRobotInfoSer
      * @param id
      * @return
      */
-    @AutoLog(value = "删除机器人")
+    @AutoLog(value = "删除机器人",operateType = 4,permissionUrl = "/robotManagement/robotParameter")
     @ApiOperation(value = "删除机器人", notes = "删除机器人")
     @DeleteMapping(value = "/delete")
     @ApiImplicitParam(name = "id", value = "机器人id", required = true, example = "1542055710450204673", dataTypeClass = String.class)

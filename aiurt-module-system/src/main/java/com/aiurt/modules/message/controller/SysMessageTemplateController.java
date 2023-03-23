@@ -3,6 +3,7 @@ package com.aiurt.modules.message.controller;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.message.entity.MsgParams;
@@ -93,6 +94,7 @@ public class SysMessageTemplateController extends BaseController<SysMessageTempl
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "消息模板-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/system/template")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
 		sysMessageTemplateService.removeById(id);
@@ -105,6 +107,7 @@ public class SysMessageTemplateController extends BaseController<SysMessageTempl
 	 * @param ids
 	 * @return
 	 */
+	@AutoLog(value = "消息模板-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/system/template")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
 		this.sysMessageTemplateService.removeByIds(Arrays.asList(ids.split(",")));

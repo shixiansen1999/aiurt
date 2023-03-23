@@ -1,9 +1,11 @@
 package com.aiurt.modules.train.task.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.train.task.entity.BdTrainTaskAttachment;
 import com.aiurt.modules.train.task.service.IBdTrainTaskAttachmentService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -23,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
 
+
 /**
  * @Description: 培训任务附件
  * @Author: jeecg-boot
@@ -36,7 +39,7 @@ import java.util.List;
 public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskAttachment, IBdTrainTaskAttachmentService> {
 	@Autowired
 	private IBdTrainTaskAttachmentService bdTrainTaskAttachmentService;
-	
+
 	/**
 	 * 分页列表查询
 	 *
@@ -77,7 +80,7 @@ public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskA
 		List<BdTrainTaskAttachment> uploadTaskList = bdTrainTaskAttachmentService.getUploadTaskList(taskId);
 		return Result.OK(uploadTaskList);
 	}
-	
+
 	/**
 	 *   添加
 	 *
@@ -88,10 +91,22 @@ public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskA
 	@ApiOperation(value="培训任务附件-添加", notes="培训任务附件-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody BdTrainTaskAttachment bdTrainTaskAttachment) {
-		bdTrainTaskAttachmentService.save(bdTrainTaskAttachment);
+		String filename = bdTrainTaskAttachment.getFileName();
+		String filePath = bdTrainTaskAttachment.getFilePath();
+		bdTrainTaskAttachmentService.remove(new LambdaQueryWrapper<BdTrainTaskAttachment>()
+				.eq(BdTrainTaskAttachment::getTrainTaskId,bdTrainTaskAttachment.getTrainTaskId()));
+		if (StrUtil.isNotEmpty(filePath)){
+			List<String> list = Arrays.asList(filePath.split(","));
+			for (int i = 0; i < list.size() ; i++) {
+				bdTrainTaskAttachment.setFilePath(list.get(i));
+				bdTrainTaskAttachment.setFileName(Arrays.asList(filename.split(",")).get(i));
+				bdTrainTaskAttachment.setId(null);
+				bdTrainTaskAttachmentService.save(bdTrainTaskAttachment);
+			}
+		}
 		return Result.OK("添加成功！");
 	}
-	
+
 	/**
 	 *  编辑
 	 *
@@ -105,35 +120,35 @@ public class BdTrainTaskAttachmentController extends BaseController<BdTrainTaskA
 		bdTrainTaskAttachmentService.updateById(bdTrainTaskAttachment);
 		return Result.OK("编辑成功!");
 	}
-	
+
 	/**
 	 *   通过id删除
 	 *
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "培训任务附件-通过id删除")
+	@AutoLog(value = "培训任务附件-通过id删除",operateType = 4,permissionUrl = "/trainAss/trainTaskManage/BdTrainTaskManageList")
 	@ApiOperation(value="培训任务附件-通过id删除", notes="培训任务附件-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		bdTrainTaskAttachmentService.removeById(id);
 		return Result.OK("删除成功!");
 	}
-	
+
 	/**
 	 *  批量删除
 	 *
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "培训任务附件-批量删除")
+	@AutoLog(value = "培训任务附件-批量删除",operateType = 4,permissionUrl = "/trainAss/trainTaskManage/BdTrainTaskManageList")
 	@ApiOperation(value="培训任务附件-批量删除", notes="培训任务附件-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.bdTrainTaskAttachmentService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
 	}
-	
+
 	/**
 	 * 通过id查询
 	 *

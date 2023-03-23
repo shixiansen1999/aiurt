@@ -130,7 +130,7 @@ public class SysPositionController {
      * @param id
      * @return
      */
-    @AutoLog(value = "职务表-通过id删除")
+    @AutoLog(value = "职务表-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isystem/position")
     @ApiOperation(value = "职务表-通过id删除", notes = "职务表-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
@@ -149,7 +149,7 @@ public class SysPositionController {
      * @param ids
      * @return
      */
-    @AutoLog(value = "职务表-批量删除")
+    @AutoLog(value = "职务表-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/isystem/position")
     @ApiOperation(value = "职务表-批量删除", notes = "职务表-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<SysPosition> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {

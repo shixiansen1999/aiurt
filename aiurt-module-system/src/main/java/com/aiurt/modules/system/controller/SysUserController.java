@@ -306,7 +306,7 @@ public class SysUserController {
     /**
      * 删除用户
      */
-    @AutoLog(value = "用户管理-通过id删除")
+    @AutoLog(value = "用户管理-通过id删除",operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/isystem/userListChange")
     @ApiOperation("通过id删除")
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
@@ -318,7 +318,7 @@ public class SysUserController {
     /**
      * 批量删除用户
      */
-    @AutoLog(value = "用户管理-批量删除")
+    @AutoLog(value = "用户管理-批量删除",operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/isystem/userListChange")
     @ApiOperation("批量删除")
     @RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
     public Result<?> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {

@@ -40,14 +40,14 @@ public class FaultDeviceRepairDTO implements Serializable {
     private String createBy;
 
     /**创建日期*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建日期")
     private Date createTime;
 
     /**更新日期*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新日期")
     private Date updateTime;
 
@@ -183,13 +183,17 @@ public class FaultDeviceRepairDTO implements Serializable {
     /**负责人名称*/
     @Excel(name = "负责人名称", width = 15)
     @ApiModelProperty(value = "负责人名称")
-    private List<String>  chargeRealName;
+    private String  chargeRealName;
 
     /**送修经办人*/
     @Excel(name = "送修经办人", width = 15)
     @ApiModelProperty(value = "送修经办人")
     @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
-    private String repairUserName;
+    private List<String> repairUserName;
+    /**送修经办人名称*/
+    @Excel(name = "送修经办人名称", width = 15)
+    @ApiModelProperty(value = "送修经办人名称")
+    private String  repairRealName;
 
     @ApiModelProperty(value = "故障接报人")
     private String receiveUserName;

@@ -34,6 +34,8 @@ import java.util.List;
 public class FaultDeviceServiceImpl extends ServiceImpl<FaultDeviceMapper, FaultDevice> implements IFaultDeviceService {
 @Autowired
 private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private FaultDeviceMapper faultDeviceMapper;
     @Override
     public List<FaultDevice> queryByFaultCode(String faultCode) {
         List<FaultDevice> faultDeviceList = baseMapper.queryByFaultCode(faultCode);
@@ -57,14 +59,14 @@ private ISysBaseAPI sysBaseApi;
             return page;
         }
         //查询故障单状态为已完成且为委外送修的设备数据
-        IPage<FaultDeviceRepairDTO> faultDeviceRepairDtoList = baseMapper.queryRepairDeviceList(page, FaultDeviceRepairDTO);
-        List<FaultDeviceRepairDTO> records = faultDeviceRepairDtoList.getRecords();
-        for (FaultDeviceRepairDTO record : records) {
+        List<FaultDeviceRepairDTO> faultDeviceRepairDtoList = faultDeviceMapper.queryRepairDeviceList(page, FaultDeviceRepairDTO);
+        for (FaultDeviceRepairDTO record : faultDeviceRepairDtoList) {
             //将查出来的数据设置送修状态为待返修
             FaultDevice faultDevice = new FaultDevice();
             BeanUtils.copyProperties(record,faultDevice);
             String repairStatus = faultDevice.getRepairStatus();
             if(StrUtil.isBlank(repairStatus)){
+                record.setRepairStatus("1");
                 faultDevice.setRepairStatus("1");
                 baseMapper.updateById(faultDevice);
             }
@@ -74,11 +76,19 @@ private ISysBaseAPI sysBaseApi;
             List<String> list = baseMapper.queryUserId(receiveUserName);
             if(CollUtil.isNotEmpty(list)){
                 record.setChargeUserName(list);
+                //负责人翻译
+                StringBuilder userNames = getUserNames(list);
+                record.setChargeRealName(userNames.toString());
             }
+
             //送修经办人
-            String repairUserName = baseMapper.queryRepairUserName();
-            record.setRepairUserName(repairUserName);
-            getUserNames(record);
+            List<String> repairUserName = baseMapper.queryRepairUserName();
+            if(CollUtil.isNotEmpty(repairUserName)){
+                record.setRepairUserName(repairUserName);
+                StringBuilder userNames = getUserNames(repairUserName);
+                record.setRepairRealName(userNames.toString());
+            }
+
 
             //设备位置数据组装
             //线路
@@ -108,12 +118,11 @@ private ISysBaseAPI sysBaseApi;
             record.setPositionCodeCcName(positionCodeCcName);
             record.setPositionCodeCc(positionCodeCc);
         }
-        page.setRecords(records);
+        page.setRecords(faultDeviceRepairDtoList);
         return page;
     }
 
-    private void getUserNames(FaultDeviceRepairDTO faultDeviceRepairDTO) {
-        List<String> list = faultDeviceRepairDTO.getChargeUserName();
+    private StringBuilder getUserNames( List<String> list) {
         StringBuilder str = new StringBuilder();
         if(CollUtil.isNotEmpty(list)){
             for (String userName : list) {
@@ -126,8 +135,9 @@ private ISysBaseAPI sysBaseApi;
             }
         }
         if (StrUtil.isNotBlank(str)) {
-            faultDeviceRepairDTO.setChargeRealName(Collections.singletonList(str.deleteCharAt(str.length() - 1).toString()));
+            str.deleteCharAt(str.length() - 1).toString();
         }
+        return str;
     }
 
 

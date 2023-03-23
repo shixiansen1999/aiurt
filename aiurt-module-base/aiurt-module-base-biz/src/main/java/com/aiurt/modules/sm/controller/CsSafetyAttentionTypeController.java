@@ -212,7 +212,7 @@ public class CsSafetyAttentionTypeController extends BaseController<CsSafetyAtte
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "安全事项类型表-通过id删除")
+	@AutoLog(value = "安全事项类型表-通过id删除",operateType = 4,permissionUrl ="/overhaul/SafetyAttentionList")
 	@ApiOperation(value="安全事项类型表-通过id删除", notes="安全事项类型表-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {

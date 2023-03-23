@@ -106,7 +106,7 @@ public class ConstructionTemplateController extends BaseController<ConstructionT
      * @param id
      * @return
      */
-    @AutoLog(value = "施工供电模板-通过id删除")
+    @AutoLog(value = "施工供电模板-通过id删除",operateType = 4,permissionUrl = "/prodManage/week/weekchange")
     @ApiOperation(value = "施工供电模板-通过id删除", notes = "施工供电模板-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {

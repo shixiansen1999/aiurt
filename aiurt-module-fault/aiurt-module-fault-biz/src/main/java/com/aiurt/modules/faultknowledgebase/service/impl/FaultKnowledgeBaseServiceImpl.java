@@ -372,7 +372,6 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                         examine(model, em, stringBuilder, list);
                         if (stringBuilder.length() > 0) {
                             // 截取字符
-                            stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
                             model.setDeviceMistake(stringBuilder.toString());
                             errorLines++;
                         }else{

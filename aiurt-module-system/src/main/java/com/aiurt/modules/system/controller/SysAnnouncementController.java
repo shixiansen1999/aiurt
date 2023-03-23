@@ -128,7 +128,7 @@ public class SysAnnouncementController {
             queryWrapper.lambda().le(SysAnnouncement::getSendTime, eTime);
         }
         queryWrapper.orderByDesc("create_time");
-        queryWrapper.lambda().eq(SysAnnouncement::getMsgCategory, CommonConstant.MSG_CATEGORY_1).or().eq(SysAnnouncement::getMsgCategory, CommonConstant.MSG_CATEGORY_2);
+        queryWrapper.lambda().in(SysAnnouncement::getMsgCategory, CommonConstant.MSG_CATEGORY_1, CommonConstant.MSG_CATEGORY_2);
         queryWrapper.lambda().ne(SysAnnouncement::getBusType, "bpm");
         //排序逻辑 处理
         IPage<SysAnnouncement> pageList = sysAnnouncementService.page(page, queryWrapper);
@@ -220,6 +220,7 @@ public class SysAnnouncementController {
      * @param id
      * @return
      */
+    @AutoLog(value = "系统通告-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/system/SysAnnouncementList")
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
     public Result<SysAnnouncement> delete(@RequestParam(name = "id", required = true) String id) {
         Result<SysAnnouncement> result = new Result<SysAnnouncement>();
@@ -243,6 +244,7 @@ public class SysAnnouncementController {
      * @param ids
      * @return
      */
+    @AutoLog(value = "系统通告-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/system/SysAnnouncementList")
     @RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
     public Result<SysAnnouncement> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
         Result<SysAnnouncement> result = new Result<SysAnnouncement>();

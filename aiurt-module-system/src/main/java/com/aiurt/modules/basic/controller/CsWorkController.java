@@ -94,7 +94,7 @@ public class CsWorkController extends BaseController<CsWork, ICsWorkService> {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "作业类型-通过id删除")
+	@AutoLog(value = "作业类型-通过id删除", operateType = 4, operateTypeAlias = "通过id删除", permissionUrl = "/manage/WorkList")
 	@ApiOperation(value="作业类型-通过id删除", notes="作业类型-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -108,7 +108,7 @@ public class CsWorkController extends BaseController<CsWork, ICsWorkService> {
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "作业类型-批量删除")
+	@AutoLog(value = "作业类型-批量删除", operateType = 4, operateTypeAlias = "批量删除", permissionUrl = "/manage/WorkList")
 	@ApiOperation(value="作业类型-批量删除", notes="作业类型-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
