@@ -56,16 +56,13 @@
         "type": "integer"
       },
       "file_path": {
-        "type": "integer",
-        "index": false,
-        "doc_values": false
+        "type": "text",
+        "index": false
       },
       "create_time": {
         "type": "date",
-        "index": false,
-        "doc_values": false
+        "index": false
       }
     }
   }
 }
-
