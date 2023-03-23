@@ -178,7 +178,7 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "通过id删除备件申领",permissionUrl = "/sparepart/sparePartApply/list")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "通过id删除备件申领",permissionUrl = "/sparePartsFor/SparePartApplyList")
 	@ApiOperation(value="spare_part_apply-通过id删除", notes="spare_part_apply-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
