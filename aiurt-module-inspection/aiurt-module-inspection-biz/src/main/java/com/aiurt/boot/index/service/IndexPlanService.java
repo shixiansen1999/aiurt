@@ -386,23 +386,49 @@ public class IndexPlanService {
     private Map<String, Integer> inspectionNumByDay(Date beginDate, int dayNum) {
         Map<String, Integer> result = new HashMap<>(32);
         //查询关联表，获取部门code
-        List<RepairTaskOrgRel> repairTaskOrgRels = repairTaskOrgRelMapper.selectList(new LambdaQueryWrapper<RepairTaskOrgRel>().eq(RepairTaskOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        /*List<RepairTaskOrgRel> repairTaskOrgRels = repairTaskOrgRelMapper.selectList(new LambdaQueryWrapper<RepairTaskOrgRel>().eq(RepairTaskOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         //查询关联表，获取线路，站点code
         List<RepairTaskStationRel> repairTaskStationRels = repairTaskStationRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStationRel>().eq(RepairTaskStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         //根据当前人，获取当前的专业code
+        List<RepairTaskStandardRel> poolCodeList = repairTaskStandardRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStandardRel>());*/
+
+        // 存在站点查询
+        Set<String> taskCode = new HashSet<>();
+        Set<String> taskId = new HashSet<>();
+
+        //查询关联表，获取部门
+        List<RepairTaskOrgRel> taskOrgRelList = repairTaskOrgRelMapper.selectList(new LambdaQueryWrapper<RepairTaskOrgRel>().eq(RepairTaskOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isNotEmpty(taskOrgRelList)){
+            List<String> collect = taskOrgRelList.stream().map(RepairTaskOrgRel::getRepairTaskCode).collect(Collectors.toList());
+            taskCode.addAll(collect);
+        }
+
+        //查询关联表，获取线路，站点code
+        List<RepairTaskStationRel> repairTaskStationRels = repairTaskStationRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStationRel>().eq(RepairTaskStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isNotEmpty(repairTaskStationRels)){
+            List<String> collect = repairTaskStationRels.stream().map(RepairTaskStationRel::getRepairTaskCode).collect(Collectors.toList());
+            taskCode.addAll(collect);
+        }
+        //根据当前人，获取当前的专业code
         List<RepairTaskStandardRel> poolCodeList = repairTaskStandardRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStandardRel>());
+        if (CollUtil.isNotEmpty(poolCodeList)){
+            List<String> collect = poolCodeList.stream().map(RepairTaskStandardRel::getRepairTaskId).collect(Collectors.toList());
+            taskId.addAll(collect);
+        }
 
         if (ObjectUtil.isNotEmpty(beginDate)) {
             for (int i = 0; i < dayNum; i++) {
                 DateTime dateTime = DateUtil.offsetDay(beginDate, i);
                 String currDateStr = DateUtil.format(dateTime, "yyyy/MM/dd");
-                if (CollUtil.isEmpty(repairTaskOrgRels) || CollUtil.isEmpty(repairTaskStationRels) || CollUtil.isEmpty(poolCodeList) ){
+                /*if (CollUtil.isEmpty(repairTaskOrgRels) || CollUtil.isEmpty(repairTaskStationRels) || CollUtil.isEmpty(poolCodeList) ){
                     result.put(currDateStr,0);
                     return result;
                 }
                 List<RepairPoolDetailsDTO> repairPoolDetailsDTOList = repairTaskMapper.inspectionNumByDay(dateTime,repairTaskOrgRels,repairTaskStationRels,poolCodeList);
+                result.put(currDateStr, CollUtil.isNotEmpty(repairPoolDetailsDTOList) ? repairPoolDetailsDTOList.size() : 0);*/
+                List<RepairPoolDetailsDTO> repairPoolDetailsDTOList = repairTaskMapper.selectRepairPoolList(null, dateTime, null, taskCode,taskId);
                 result.put(currDateStr, CollUtil.isNotEmpty(repairPoolDetailsDTOList) ? repairPoolDetailsDTOList.size() : 0);
             }
         }
