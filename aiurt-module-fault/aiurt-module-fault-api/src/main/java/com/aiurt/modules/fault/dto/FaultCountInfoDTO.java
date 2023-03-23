@@ -36,6 +36,9 @@ public class FaultCountInfoDTO {
     @ApiModelProperty("故障编号")
     private String code;
 
+    @ApiModelProperty("报修部门")
+    private String faultApplicantDept;
+
     /**故障级别*/
     @ApiModelProperty(value = "故障级别")
     @Dict(dictTable = "fault_level", dicCode = "code", dicText = "name")
