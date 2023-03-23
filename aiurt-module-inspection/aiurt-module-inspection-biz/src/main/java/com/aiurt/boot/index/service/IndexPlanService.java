@@ -385,37 +385,48 @@ public class IndexPlanService {
      */
     private Map<String, Integer> inspectionNumByDay(Date beginDate, int dayNum) {
         Map<String, Integer> result = new HashMap<>(32);
-        //查询关联表，获取部门code
-        /*List<RepairTaskOrgRel> repairTaskOrgRels = repairTaskOrgRelMapper.selectList(new LambdaQueryWrapper<RepairTaskOrgRel>().eq(RepairTaskOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-
-        //查询关联表，获取线路，站点code
-        List<RepairTaskStationRel> repairTaskStationRels = repairTaskStationRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStationRel>().eq(RepairTaskStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-
-        //根据当前人，获取当前的专业code
-        List<RepairTaskStandardRel> poolCodeList = repairTaskStandardRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStandardRel>());*/
-
-        // 存在站点查询
         Set<String> taskCode = new HashSet<>();
         Set<String> taskId = new HashSet<>();
+        // 将符合条件的检修计划查出
+        LambdaQueryWrapper<RepairPool> queryWrapper = new LambdaQueryWrapper<>();
 
-        //查询关联表，获取部门
-        List<RepairTaskOrgRel> taskOrgRelList = repairTaskOrgRelMapper.selectList(new LambdaQueryWrapper<RepairTaskOrgRel>().eq(RepairTaskOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-        if (CollUtil.isNotEmpty(taskOrgRelList)){
-            List<String> collect = taskOrgRelList.stream().map(RepairTaskOrgRel::getRepairTaskCode).collect(Collectors.toList());
-            taskCode.addAll(collect);
-        }
+        //查询关联表，获取部门code
+        List<RepairPoolOrgRel> poolOrgRelList = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         //查询关联表，获取线路，站点code
-        List<RepairTaskStationRel> repairTaskStationRels = repairTaskStationRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStationRel>().eq(RepairTaskStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-        if (CollUtil.isNotEmpty(repairTaskStationRels)){
-            List<String> collect = repairTaskStationRels.stream().map(RepairTaskStationRel::getRepairTaskCode).collect(Collectors.toList());
-            taskCode.addAll(collect);
+        List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isEmpty(repairPoolStationRels)) {
+            return result;
         }
+
         //根据当前人，获取当前的专业code
-        List<RepairTaskStandardRel> poolCodeList = repairTaskStandardRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStandardRel>());
-        if (CollUtil.isNotEmpty(poolCodeList)){
-            List<String> collect = poolCodeList.stream().map(RepairTaskStandardRel::getRepairTaskId).collect(Collectors.toList());
-            taskId.addAll(collect);
+        List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
+        if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(poolOrgRelList)) {
+            return result;
+        }
+
+        LambdaQueryWrapper<RepairPoolRel> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(RepairPoolRel::getRepairPoolStaId, repairPoolIds);
+        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(wrapper);
+        if (CollUtil.isEmpty(repairPoolRels)) {
+            return result;
+        }
+
+        queryWrapper.in(RepairPool::getCode, poolOrgRelList.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList()));
+        queryWrapper.in(RepairPool::getCode, repairPoolRels.stream().map(RepairPoolRel::getRepairPoolCode).collect(Collectors.toList()));
+        queryWrapper.in(RepairPool::getCode, repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList()));
+
+        List<RepairPool> repairPoolList = repairPoolMapper.selectList(queryWrapper);
+        if (CollUtil.isNotEmpty(repairPoolList)) {
+            List<String> ids = repairPoolList.stream().map(RepairPool::getId).collect(Collectors.toList());
+            LambdaQueryWrapper<RepairTask> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.in(RepairTask::getRepairPoolId, ids);
+            List<RepairTask> repairTasks = repairTaskMapper.selectList(lambdaQueryWrapper);
+            if (CollUtil.isNotEmpty(repairTasks)) {
+                List<String> list = repairTasks.stream().map(RepairTask::getId).collect(Collectors.toList());
+                taskId.addAll(list);
+            }
         }
 
         if (ObjectUtil.isNotEmpty(beginDate)) {
@@ -428,7 +439,7 @@ public class IndexPlanService {
                 }
                 List<RepairPoolDetailsDTO> repairPoolDetailsDTOList = repairTaskMapper.inspectionNumByDay(dateTime,repairTaskOrgRels,repairTaskStationRels,poolCodeList);
                 result.put(currDateStr, CollUtil.isNotEmpty(repairPoolDetailsDTOList) ? repairPoolDetailsDTOList.size() : 0);*/
-                List<RepairPoolDetailsDTO> repairPoolDetailsDTOList = repairTaskMapper.selectRepairPoolList(null, dateTime, null, taskCode,taskId);
+                List<RepairPoolDetailsDTO> repairPoolDetailsDTOList = repairTaskMapper.selectRepairPoolList(null, dateTime, null,taskCode ,taskId);
                 result.put(currDateStr, CollUtil.isNotEmpty(repairPoolDetailsDTOList) ? repairPoolDetailsDTOList.size() : 0);
             }
         }
@@ -553,24 +564,46 @@ public class IndexPlanService {
             }
         }
 
-        //查询关联表，获取部门
-        List<RepairTaskOrgRel> taskOrgRelList = repairTaskOrgRelMapper.selectList(new LambdaQueryWrapper<RepairTaskOrgRel>().eq(RepairTaskOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-        if (CollUtil.isNotEmpty(taskOrgRelList)){
-            List<String> collect = taskOrgRelList.stream().map(RepairTaskOrgRel::getRepairTaskCode).collect(Collectors.toList());
-            taskCode.addAll(collect);
-        }
+        // 将符合条件的检修计划查出
+        LambdaQueryWrapper<RepairPool> queryWrapper = new LambdaQueryWrapper<>();
+
+        //查询关联表，获取部门code
+        List<RepairPoolOrgRel> poolOrgRelList = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         //查询关联表，获取线路，站点code
-        List<RepairTaskStationRel> repairTaskStationRels = repairTaskStationRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStationRel>().eq(RepairTaskStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-        if (CollUtil.isNotEmpty(repairTaskStationRels)){
-            List<String> collect = repairTaskStationRels.stream().map(RepairTaskStationRel::getRepairTaskCode).collect(Collectors.toList());
-            taskCode.addAll(collect);
+        List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isEmpty(repairPoolStationRels)) {
+            return page;
         }
+
         //根据当前人，获取当前的专业code
-        List<RepairTaskStandardRel> poolCodeList = repairTaskStandardRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStandardRel>());
-        if (CollUtil.isNotEmpty(poolCodeList)){
-            List<String> collect = poolCodeList.stream().map(RepairTaskStandardRel::getRepairTaskId).collect(Collectors.toList());
-            taskId.addAll(collect);
+        List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
+        if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(poolOrgRelList)) {
+            return page;
+        }
+
+        LambdaQueryWrapper<RepairPoolRel> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(RepairPoolRel::getRepairPoolStaId, repairPoolIds);
+        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(wrapper);
+        if (CollUtil.isEmpty(repairPoolRels)) {
+            return page;
+        }
+
+        queryWrapper.in(RepairPool::getCode, poolOrgRelList.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList()));
+        queryWrapper.in(RepairPool::getCode, repairPoolRels.stream().map(RepairPoolRel::getRepairPoolCode).collect(Collectors.toList()));
+        queryWrapper.in(RepairPool::getCode, repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList()));
+
+        List<RepairPool> repairPoolList = repairPoolMapper.selectList(queryWrapper);
+        if (CollUtil.isNotEmpty(repairPoolList)) {
+            List<String> ids = repairPoolList.stream().map(RepairPool::getId).collect(Collectors.toList());
+            LambdaQueryWrapper<RepairTask> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.in(RepairTask::getRepairPoolId, ids);
+            List<RepairTask> repairTasks = repairTaskMapper.selectList(lambdaQueryWrapper);
+            if (CollUtil.isNotEmpty(repairTasks)) {
+                List<String> list = repairTasks.stream().map(RepairTask::getId).collect(Collectors.toList());
+                taskId.addAll(list);
+            }
         }
 
         List<RepairPoolDetailsDTO> result = repairTaskMapper.selectRepairPoolList(page, startDate, stationCode, taskCode,taskId);
