@@ -127,10 +127,10 @@ public class RecycleMybatisInterceptor implements Interceptor {
 
                 Connection connection = (Connection) invocation.getArgs()[0];
                 boolean saveOk = saveToRecycle(connection, tableName, resultString, permissionUrl, billIdList.toString(), 0);
+                log.info("删除完毕，已存入回收站");
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            log.info("删除完毕，已存入回收站");
         } else if (mappedStatement.getSqlCommandType() == SqlCommandType.UPDATE) {
             try {
                 // 步骤一、判断最终的sql语句是不是 update ... del_flag ... 是的话才能往下走

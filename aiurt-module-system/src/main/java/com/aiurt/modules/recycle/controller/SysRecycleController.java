@@ -80,13 +80,16 @@ public class SysRecycleController {
         queryWrapper.eq(SysRecycle::getState, SysRecycleConstant.STATE_NORMAL);
         queryWrapper.isNotNull(SysRecycle::getModuleUrl);
         queryWrapper.orderByDesc(SysRecycle::getCreateTime);
-        queryWrapper.in(StrUtil.isNotBlank(moduleName), SysRecycle::getModuleUrl, urlList);
+//        queryWrapper.in(StrUtil.isNotBlank(moduleName), SysRecycle::getModuleUrl, urlList);
         IPage<SysRecycle> pageList = sysRecycleService.page(page, queryWrapper);
         List<SysRecycle> sysRecycleList = pageList.getRecords().stream().peek(recycle -> {
             Map<String, String> moduleNameAndSubmenuNameMap = getModuleNameAndSubmenuNameByUrl(SysPermissionMap, recycle.getModuleUrl());
             recycle.setModuleName(moduleNameAndSubmenuNameMap.get(MODULE_NAME));
             recycle.setSubmenu(moduleNameAndSubmenuNameMap.get(SUBMENU_NAME));
         }).collect(Collectors.toList());
+        if (StrUtil.isNotBlank(moduleName)){
+            sysRecycleList = sysRecycleList.stream().filter(recycle -> recycle.getModuleName().contains(moduleName)).collect(Collectors.toList());
+        }
         pageList.setRecords(sysRecycleList);
         return Result.OK(pageList);
     }
