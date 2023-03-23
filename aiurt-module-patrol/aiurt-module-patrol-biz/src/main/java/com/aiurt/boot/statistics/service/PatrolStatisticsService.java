@@ -1,5 +1,6 @@
 package com.aiurt.boot.statistics.service;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
@@ -86,9 +87,38 @@ public class PatrolStatisticsService {
 //            departList = sysBaseApi.getDepartByUserId(loginUser.getId());
 //        }
         List<PatrolTaskStandard> standards = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isEmpty(standards)) {
+            situation.setSum(0L);
+            situation.setFinish(0L);
+            situation.setUnfinish(0L);
+            situation.setOverhaul(0L);
+            situation.setAbnormal(0L);
+            situation.setOmit(0L);
+            situation.setOmitRate("0");
+            return situation;
+        }
         List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isEmpty(departList)) {
+            situation.setSum(0L);
+            situation.setFinish(0L);
+            situation.setUnfinish(0L);
+            situation.setOverhaul(0L);
+            situation.setAbnormal(0L);
+            situation.setOmit(0L);
+            situation.setOmitRate("0");
+            return situation;
+        }
         List<PatrolTaskStation> patrolTaskStations = patrolTaskStationMapper.selectList(new LambdaQueryWrapper<PatrolTaskStation>().eq(PatrolTaskStation::getDelFlag, CommonConstant.DEL_FLAG_0));
-
+        if (CollUtil.isEmpty(patrolTaskStations)) {
+            situation.setSum(0L);
+            situation.setFinish(0L);
+            situation.setUnfinish(0L);
+            situation.setOverhaul(0L);
+            situation.setAbnormal(0L);
+            situation.setOmit(0L);
+            situation.setOmitRate("0");
+            return situation;
+        }
         boolean openClose = GlobalThreadLocal.setDataFilter(false);
         List<PatrolTask> list = patrolTaskMapper.getOverviewInfo(newStartDate, newEndDate, departList,standards,patrolTaskStations);
         long sum = list.stream().count();
@@ -237,6 +267,9 @@ public class PatrolStatisticsService {
             List<PatrolTaskStandard> standards = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0));
             List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
             List<PatrolTaskStation> patrolTaskStations = patrolTaskStationMapper.selectList(new LambdaQueryWrapper<PatrolTaskStation>().eq(PatrolTaskStation::getDelFlag, CommonConstant.DEL_FLAG_0));
+            if (CollUtil.isEmpty(standards) || CollUtil.isEmpty(departList) || CollUtil.isEmpty(patrolTaskStations)){
+                return pageList;
+            }
             //下面禁用数据权限
             boolean b= GlobalThreadLocal.setDataFilter(false);
             pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp, departList,standards,patrolTaskStations);
@@ -331,6 +364,9 @@ public class PatrolStatisticsService {
             List<PatrolTaskStandard> standards = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0));
             List<PatrolTaskOrganization> departList = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
             List<PatrolTaskStation> patrolTaskStations = patrolTaskStationMapper.selectList(new LambdaQueryWrapper<PatrolTaskStation>().eq(PatrolTaskStation::getDelFlag, CommonConstant.DEL_FLAG_0));
+            if (CollUtil.isEmpty(standards) || CollUtil.isEmpty(departList) || CollUtil.isEmpty(patrolTaskStations)){
+                return pageList;
+            }
             //下面禁用数据权限
             boolean b= GlobalThreadLocal.setDataFilter(false);
             pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO, departList,standards,patrolTaskStations);

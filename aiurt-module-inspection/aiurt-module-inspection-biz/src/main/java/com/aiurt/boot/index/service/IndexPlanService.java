@@ -99,11 +99,26 @@ public class IndexPlanService {
 
         //查询关联表，获取线路，站点code
         List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isEmpty(repairPoolStationRels)) {
+            result.setSum(0L);
+            result.setFinish(0L);
+            result.setUnfinish(0L);
+            result.setOverhaul(0L);
+            result.setOmit(0L);
+            result.setOmitRate("0%");
+            return result;
+        }
 
         //根据当前人，获取当前的专业code
         List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
         if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(poolOrgRelList)) {
+            result.setSum(0L);
+            result.setFinish(0L);
+            result.setUnfinish(0L);
+            result.setOverhaul(0L);
+            result.setOmit(0L);
+            result.setOmitRate("0%");
             return result;
         }
 
@@ -111,6 +126,12 @@ public class IndexPlanService {
         wrapper.in(RepairPoolRel::getRepairPoolStaId, repairPoolIds);
         List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(wrapper);
         if (CollUtil.isEmpty(repairPoolRels)) {
+            result.setSum(0L);
+            result.setFinish(0L);
+            result.setUnfinish(0L);
+            result.setOverhaul(0L);
+            result.setOmit(0L);
+            result.setOmitRate("0%");
             return result;
         }
 
@@ -208,7 +229,7 @@ public class IndexPlanService {
         List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
         List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, repairPoolIds));
-        if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(codeByOrgCode) || CollUtil.isEmpty(repairPoolRels)) {
+        if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(codeByOrgCode) || CollUtil.isEmpty(repairPoolRels) || CollUtil.isEmpty(repairPoolStationRels)) {
             return result;
         }
         // 用于判断是否是一整月的查询
@@ -377,6 +398,10 @@ public class IndexPlanService {
             for (int i = 0; i < dayNum; i++) {
                 DateTime dateTime = DateUtil.offsetDay(beginDate, i);
                 String currDateStr = DateUtil.format(dateTime, "yyyy/MM/dd");
+                if (CollUtil.isEmpty(repairTaskOrgRels) || CollUtil.isEmpty(repairTaskStationRels) || CollUtil.isEmpty(poolCodeList) ){
+                    result.put(currDateStr,0);
+                    return result;
+                }
                 List<RepairPoolDetailsDTO> repairPoolDetailsDTOList = repairTaskMapper.inspectionNumByDay(dateTime,repairTaskOrgRels,repairTaskStationRels,poolCodeList);
                 result.put(currDateStr, CollUtil.isNotEmpty(repairPoolDetailsDTOList) ? repairPoolDetailsDTOList.size() : 0);
             }
@@ -448,7 +473,7 @@ public class IndexPlanService {
         List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
         List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, repairPoolIds));
-        if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(codeByOrgCode) || CollUtil.isEmpty(repairPoolRels)) {
+        if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(codeByOrgCode) || CollUtil.isEmpty(repairPoolRels) || CollUtil.isEmpty(repairPoolStationRels)) {
             return new Page<>();
         }
         boolean b = GlobalThreadLocal.setDataFilter(false);
