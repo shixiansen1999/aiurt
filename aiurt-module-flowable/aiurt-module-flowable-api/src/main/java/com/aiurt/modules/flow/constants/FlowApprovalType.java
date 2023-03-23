@@ -37,7 +37,7 @@ public final class FlowApprovalType {
      */
     public static final String REVOKE = "revoke";
     /**
-     * 指派。
+     * 转办
      */
     public static final String TRANSFER = "transfer";
     /**

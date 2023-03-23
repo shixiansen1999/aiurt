@@ -69,26 +69,42 @@ public class SysRecycleController {
         if (sysPermissionList.size() == 0) {
             return Result.OK(page);
         }
-        List<String> urlList = new ArrayList<>();
+//        List<String> urlList = new ArrayList<>();
         Map<String, SysPermission> SysPermissionMap = new HashMap<>();
         sysPermissionList.forEach(sysPermission -> {
             SysPermissionMap.put(sysPermission.getId(), sysPermission);
-            urlList.add(sysPermission.getUrl());
+//            urlList.add(sysPermission.getUrl());
         });
 
         LambdaQueryWrapper<SysRecycle> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysRecycle::getState, SysRecycleConstant.STATE_NORMAL);
         queryWrapper.isNotNull(SysRecycle::getModuleUrl);
         queryWrapper.orderByDesc(SysRecycle::getCreateTime);
-        queryWrapper.in(StrUtil.isNotBlank(moduleName), SysRecycle::getModuleUrl, urlList);
-        IPage<SysRecycle> pageList = sysRecycleService.page(page, queryWrapper);
-        List<SysRecycle> sysRecycleList = pageList.getRecords().stream().peek(recycle -> {
+//        queryWrapper.in(StrUtil.isNotBlank(moduleName), SysRecycle::getModuleUrl, urlList);
+//        IPage<SysRecycle> pageList = sysRecycleService.page(page, queryWrapper);
+//        List<SysRecycle> sysRecycleList = pageList.getRecords().stream().peek(recycle -> {
+//            Map<String, String> moduleNameAndSubmenuNameMap = getModuleNameAndSubmenuNameByUrl(SysPermissionMap, recycle.getModuleUrl());
+//            recycle.setModuleName(moduleNameAndSubmenuNameMap.get(MODULE_NAME));
+//            recycle.setSubmenu(moduleNameAndSubmenuNameMap.get(SUBMENU_NAME));
+//        }).collect(Collectors.toList());
+//        if (StrUtil.isNotBlank(moduleName)){
+//            sysRecycleList = sysRecycleList.stream().filter(recycle -> recycle.getModuleName().contains(moduleName)).collect(Collectors.toList());
+//        }
+//        pageList.setRecords(sysRecycleList);
+//        pageList.setTotal(sysRecycleList.size());
+        List<SysRecycle> recycleList = sysRecycleService.list(queryWrapper);
+        List<SysRecycle> sysRecycleList = recycleList.stream().peek(recycle -> {
             Map<String, String> moduleNameAndSubmenuNameMap = getModuleNameAndSubmenuNameByUrl(SysPermissionMap, recycle.getModuleUrl());
             recycle.setModuleName(moduleNameAndSubmenuNameMap.get(MODULE_NAME));
             recycle.setSubmenu(moduleNameAndSubmenuNameMap.get(SUBMENU_NAME));
         }).collect(Collectors.toList());
-        pageList.setRecords(sysRecycleList);
-        return Result.OK(pageList);
+        // 模块名称过滤
+        if (StrUtil.isNotBlank(moduleName)){
+            sysRecycleList = sysRecycleList.stream().filter(recycle -> recycle.getModuleName().contains(moduleName)).collect(Collectors.toList());
+        }
+        page.setTotal(sysRecycleList.size());
+        page.setRecords(sysRecycleList);
+        return Result.OK(page);
     }
 
     /**

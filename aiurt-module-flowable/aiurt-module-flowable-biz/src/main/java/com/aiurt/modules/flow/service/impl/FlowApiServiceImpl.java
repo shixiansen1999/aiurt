@@ -312,7 +312,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (ObjectUtil.isNotEmpty(flowTaskComment)) {
             flowTaskComment.fillWith(task);
         }
-        // 设置签收
+        // 设置签收, todo， 不合理
         String assignee = task.getAssignee();
 
         if (StrUtil.isBlank(assignee)) {
@@ -413,6 +413,12 @@ public class FlowApiServiceImpl implements FlowApiService {
             rejectToStartDTO.setProcessInstanceId(processInstanceId);
             rejectToStartDTO.setBusData(busData);
             rejectToStart(rejectToStartDTO);
+            // 转办
+        } else if (StrUtil.equalsIgnoreCase(FlowApprovalType.TRANSFER, approvalType)) {
+            TurnTaskDTO param = new TurnTaskDTO();
+            param.setUsername(comment.getDelegateAssignee());
+            param.setTaskId(taskId);
+            turnTask(param);
         }
 
         // 判断当前完成执行的任务，是否存在抄送设置
@@ -1072,10 +1078,6 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (StrUtil.isEmpty(params.getUsername())) {
             throw new AiurtBootException("请指定转办的人员");
         }
-
-        // 添加审批意见
-        customTaskCommentService.getBaseMapper().insert(new ActCustomTaskComment(task));
-
         // 转办
         taskService.setAssignee(params.getTaskId(), params.getUsername());
     }
