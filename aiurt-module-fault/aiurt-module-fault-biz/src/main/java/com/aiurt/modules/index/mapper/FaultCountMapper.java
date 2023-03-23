@@ -105,6 +105,4 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      */
     List<FaultTimeoutLevelDTO> getMainFaultCondition(@Param("page") Page<FaultTimeoutLevelDTO> page, @Param("startDate") Date startDate);
 
-    List<FaultCountInfoDTO> getSysUserAndDepart(@Param("userId") String userId);
-
 }
