@@ -56,15 +56,46 @@ public class SysRecycleImpl extends ServiceImpl<SysRecycleMapper, SysRecycle> im
         Integer delSign = sysRecycle.getDelSign();
         // 伪删除，直接更新del_flag=0
         if (SysRecycleConstant.DEL_SIGN_1.equals(delSign)) {
-            List<String> billIdList = JSONArray.parseArray(sysRecycle.getBillId(), String.class);
-            StringBuilder idInSql = new StringBuilder();
-            billIdList.forEach(billId->idInSql.append("?").append(","));
-            idInSql.deleteCharAt(idInSql.length() - 1);
-            String updateSql = "update " + tableName + " set del_flag = 0 where id in (" + idInSql.toString() + ")";
+//            List<String> billIdList = JSONArray.parseArray(sysRecycle.getBillId(), String.class);
+//            StringBuilder idInSql = new StringBuilder();
+//            billIdList.forEach(billId->idInSql.append("?").append(","));
+//            idInSql.deleteCharAt(idInSql.length() - 1);
+//            String updateSql = "update " + tableName + " set del_flag = 0 where id in (" + idInSql.toString() + ")";
+//            // 创建PreparedStatement对象
+//            PreparedStatement preparedStatement = connection.prepareStatement(updateSql);
+//            for (int i = 0; i < billIdList.size(); i++) {
+//                preparedStatement.setObject(i + 1, billIdList.get(i));
+//            }
+//            preparedStatement.executeUpdate();
+//            preparedStatement.close();
+            
+            List<JSONObject> restoreDataList = JSONArray.parseArray(sysRecycle.getBillValue(), JSONObject.class);
+            if (restoreDataList.size() == 0){
+                return Result.error("还原失败，没有要还原的数据！");
+            }
+            // 拼凑sql update xxx set yyy = ?,yyy = ?...,del_flag = 0 where id = ?
+            // 如果set的字段有重复的话，以最后的为准
+            Set<String> keySet = restoreDataList.get(0).keySet();
+            List<String> fieldList = new ArrayList<>(keySet);  // set是无序的，使用了列表存，防止预编译参数顺序对不上
+            fieldList.remove("id");  // 不更新id
+            StringBuilder updateSqlBuilder = new StringBuilder();
+            updateSqlBuilder.append("update ");
+            updateSqlBuilder.append(tableName);
+            updateSqlBuilder.append(" set ");
+            for (String field : fieldList) {
+                updateSqlBuilder.append(field);
+                updateSqlBuilder.append(" = ?,");
+            }
+            updateSqlBuilder.append("del_flag = 0 where id = ?");
+            String updateSql = updateSqlBuilder.toString();
             // 创建PreparedStatement对象
             PreparedStatement preparedStatement = connection.prepareStatement(updateSql);
-            for (int i = 0; i < billIdList.size(); i++) {
-                preparedStatement.setObject(i + 1, billIdList.get(i));
+            for (JSONObject restoreData : restoreDataList) {
+                for (int i = 0; i < fieldList.size(); i++) {
+                    String field = fieldList.get(i);
+                    preparedStatement.setObject(i + 1, restoreData.get(field));
+                }
+                preparedStatement.setObject(fieldList.size() + 1, restoreData.get("id"));
             }
             preparedStatement.executeUpdate();
             preparedStatement.close();
@@ -161,15 +192,45 @@ public class SysRecycleImpl extends ServiceImpl<SysRecycleMapper, SysRecycle> im
             for (SysRecycle sysRecycleFake: sysRecycleMap.get(SysRecycleConstant.DEL_SIGN_1)){
                 String tableName = sysRecycleFake.getBillTablenm();
                 // 伪删除
-                List<String> billIdList = JSONArray.parseArray(sysRecycleFake.getBillId(), String.class);
-                StringBuilder idInSql = new StringBuilder();
-                billIdList.forEach(billId->idInSql.append("?").append(","));
-                idInSql.deleteCharAt(idInSql.length() - 1);
-                String updateSql = "update " + tableName + " set del_flag = 0 where id in (" + idInSql.toString() + ")";
+//                List<String> billIdList = JSONArray.parseArray(sysRecycleFake.getBillId(), String.class);
+//                StringBuilder idInSql = new StringBuilder();
+//                billIdList.forEach(billId->idInSql.append("?").append(","));
+//                idInSql.deleteCharAt(idInSql.length() - 1);
+//                String updateSql = "update " + tableName + " set del_flag = 0 where id in (" + idInSql.toString() + ")";
+//                // 创建PreparedStatement对象
+//                preparedStatement = connection.prepareStatement(updateSql);
+//                for (int i = 0; i < billIdList.size(); i++) {
+//                    preparedStatement.setObject(i + 1, billIdList.get(i));
+//                }
+//                preparedStatement.executeUpdate();
+//                preparedStatement.close();
+                List<JSONObject> restoreDataList = JSONArray.parseArray(sysRecycleFake.getBillValue(), JSONObject.class);
+                if (restoreDataList.size() == 0){
+                    return Result.error("还原失败，没有要还原的数据！");
+                }
+                // 拼凑sql update xxx set yyy = ?,yyy = ?...,del_flag = 0 where id = ?
+                // 如果set的字段有重复的话，以最后的为准
+                Set<String> keySet = restoreDataList.get(0).keySet();
+                List<String> fieldList = new ArrayList<>(keySet);  // set是无序的，使用了列表存，防止预编译参数顺序对不上
+                fieldList.remove("id");  // 不更新id
+                StringBuilder updateSqlBuilder = new StringBuilder();
+                updateSqlBuilder.append("update ");
+                updateSqlBuilder.append(tableName);
+                updateSqlBuilder.append(" set ");
+                for (String field : fieldList) {
+                    updateSqlBuilder.append(field);
+                    updateSqlBuilder.append(" = ?,");
+                }
+                updateSqlBuilder.append("del_flag = 0 where id = ?");
+                String updateSql = updateSqlBuilder.toString();
                 // 创建PreparedStatement对象
                 preparedStatement = connection.prepareStatement(updateSql);
-                for (int i = 0; i < billIdList.size(); i++) {
-                    preparedStatement.setObject(i + 1, billIdList.get(i));
+                for (JSONObject restoreData : restoreDataList) {
+                    for (int i = 0; i < fieldList.size(); i++) {
+                        String field = fieldList.get(i);
+                        preparedStatement.setObject(i + 1, restoreData.get(field));
+                    }
+                    preparedStatement.setObject(fieldList.size() + 1, restoreData.get("id"));
                 }
                 preparedStatement.executeUpdate();
                 preparedStatement.close();

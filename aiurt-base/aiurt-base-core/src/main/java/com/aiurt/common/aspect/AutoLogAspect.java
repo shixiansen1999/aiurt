@@ -59,15 +59,15 @@ public class AutoLogAspect {
         long beginTime = System.currentTimeMillis();
 
         // GlobalThreadLocal 的旧值
-        boolean oldValue;
+        boolean oldDataDelete;
         String oldDataString = GlobalThreadLocal.getDataString();
         // 判断是不是删除(operateType = 4)，是不是有permissionUrl(不为空), 是的话返回permissionUrl，不然返回null
         String permissionUrl = getDeletePermissionUrl(point);
         if (permissionUrl != null) {
-            oldValue = GlobalThreadLocal.setDataFilter(true);
+            oldDataDelete = GlobalThreadLocal.setDataDelete(true);
             GlobalThreadLocal.setDataString(permissionUrl);
         } else {
-            oldValue = GlobalThreadLocal.setDataFilter(false);
+            oldDataDelete = GlobalThreadLocal.setDataDelete(false);
         }
 
         //执行方法
@@ -79,7 +79,7 @@ public class AutoLogAspect {
         saveSysLog(point, time, result);
 
         // 设置回旧值
-        GlobalThreadLocal.setDataFilter(oldValue);
+        GlobalThreadLocal.setDataDelete(oldDataDelete);
         GlobalThreadLocal.setDataString(oldDataString);
         return result;
     }
