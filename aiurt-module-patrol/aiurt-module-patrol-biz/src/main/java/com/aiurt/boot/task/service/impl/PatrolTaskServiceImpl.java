@@ -1782,6 +1782,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
             if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
+                if(CollUtil.isEmpty(deviceList)){
+                     throw new AiurtBootException("要指定设备才可以保存");
+                }
                 //遍历设备单号
                 deviceList.stream().forEach(dv -> {
                     PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
