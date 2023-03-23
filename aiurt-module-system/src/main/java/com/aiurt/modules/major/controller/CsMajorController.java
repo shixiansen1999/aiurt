@@ -140,7 +140,7 @@ public class CsMajorController extends BaseController<CsMajor, ICsMajorService> 
      * @param id
      * @return
      */
-    @AutoLog(value = "删除", operateType = 4, operateTypeAlias = "通过id删除专业", permissionUrl = "/major/list")
+    @AutoLog(value = "删除", operateType = 4, operateTypeAlias = "通过id删除专业", permissionUrl = "/manage/MajorList")
     @ApiOperation(value = "专业通过id删除", notes = "专业通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
