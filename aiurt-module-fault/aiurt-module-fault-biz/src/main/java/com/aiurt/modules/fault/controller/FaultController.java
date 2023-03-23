@@ -152,7 +152,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             queryWrapper.in("fault_phenomenon", faultPhenomenonCodes);
             queryWrapper.or().like("code", faultPhenomenon);
         } else {
-            queryWrapper.like("code", faultPhenomenon);
+            if (StrUtil.isNotBlank(faultPhenomenon)) {
+                queryWrapper.like("code", faultPhenomenon);
+            }
         }
         queryWrapper.apply(StrUtil.isNotBlank(stationCode), "(line_code = {0} or station_code = {0} or station_position_code = {0})", stationCode);
         queryWrapper.apply(StrUtil.isNotBlank(fault.getDevicesIds()), "(code in (select fault_code from fault_device where device_code like  concat('%', {0}, '%')))", fault.getDevicesIds());
