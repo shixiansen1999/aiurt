@@ -219,8 +219,7 @@
     TIMESTAMPDIFF(
     SECOND,
     rt.begin_time,
-    IF
-    ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
+    rt.submit_time
     )) time
     FROM
     repair_pool rp
@@ -244,8 +243,7 @@
     TIMESTAMPDIFF(
     SECOND ,
     rt.begin_time,
-    IF
-    ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
+    rt.submit_time
     )) time
     FROM
     repair_task_peer_rel rtpr
