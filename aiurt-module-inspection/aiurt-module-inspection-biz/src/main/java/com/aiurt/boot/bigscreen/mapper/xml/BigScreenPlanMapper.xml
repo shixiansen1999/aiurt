@@ -218,9 +218,8 @@
     sum(
     TIMESTAMPDIFF(
     SECOND,
-    rt.begin_time,
-    IF
-    ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
+    ifnull(rt.assign_time,rt.start_time),
+    rt.submit_time
     )) time
     FROM
     repair_pool rp
@@ -243,9 +242,8 @@
     sum(
     TIMESTAMPDIFF(
     SECOND ,
-    rt.begin_time,
-    IF
-    ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
+    ifnull(rt.assign_time,rt.start_time),
+    rt.submit_time
     )) time
     FROM
     repair_task_peer_rel rtpr

@@ -2628,7 +2628,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                                 string = CollUtil.join(collect, ",");
                             }
                         }
-                        StringBuilder append1 = lineStation.append(lineName).append("-").append(stationName).append(string).append("第").append(deviceRel.getWeeks()).append("周检修任务").append(" ").append(" 检修人:");
+                        StringBuilder append1 = lineStation.append(lineName).append("-").append(stationName).append(StrUtil.isNotBlank(string) ? string : " ").append("第").append(deviceRel.getWeeks()).append("周检修任务").append(" ").append(" 检修人:");
                         StringBuilder append2 = staffName.append(userById.getRealname());
                         //同检修任务下的，不同工单中的，同线路站点的不同检修人要合并起来
                         Map<StringBuilder, StringBuilder> mapList = hashMap.get(deviceRel.getTaskCode());
