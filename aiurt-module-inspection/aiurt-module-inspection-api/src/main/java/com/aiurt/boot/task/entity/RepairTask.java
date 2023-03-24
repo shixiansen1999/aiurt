@@ -187,6 +187,11 @@ public class RepairTask extends BaseEntity {
     @Excel(name = "删除状态：0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态：0未删除 1已删除")
     private java.lang.Integer delFlag;
+    /**任务确认时间，精确到秒*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "任务确认时间，精确到秒")
+    private java.util.Date taskConfirmationTime;
     /**创建时间，精确到秒*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")

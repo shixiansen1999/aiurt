@@ -218,7 +218,7 @@
     sum(
     TIMESTAMPDIFF(
     SECOND,
-    rt.begin_time,
+    rt.task_confirmation_time,
     rt.submit_time
     )) time
     FROM
@@ -242,7 +242,7 @@
     sum(
     TIMESTAMPDIFF(
     SECOND ,
-    rt.begin_time,
+    rt.task_confirmation_time,
     rt.submit_time
     )) time
     FROM
