@@ -81,21 +81,25 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
                                                @RequestParam(name = "systemCode", required = false) String systemCode,
                                                @RequestParam(name = "deviceTypeCode", required = false) String deviceTypeCode,
                                                @RequestParam(name = "code", required = false) String code,
+                                               @RequestParam(name = "deviceCode", required = false) String deviceCode,
                                                @RequestParam(name = "name", required = false) String name,
                                                @RequestParam(name = "status", required = false) String status,
                                                @RequestParam(name = "scode", required = false) String scode,
                                                @RequestParam(name = "deviceCodes",required = false) String deviceCodes,
                                                HttpServletRequest req) {
-        return getList(pageNo, pageSize, positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status, scode,deviceCodes);
+        return getList(pageNo, pageSize, positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status, scode,deviceCodes,deviceCode);
     }
 
     public Result<IPage<Device>> getList(Integer pageNo, Integer pageSize, String positionCodeCc, String temporary, String majorCode,
-                             String systemCode, String deviceTypeCode, String code, String name, String status, String scode,String deviceCodes){
+                             String systemCode, String deviceTypeCode, String code, String name, String status, String scode,String deviceCodes,String deviceCode){
         Result<IPage<Device>> result = new Result<IPage<Device>>();
         Page<Device> page = new Page<Device>(pageNo, pageSize);
         QueryWrapper<Device> queryWrapper = deviceService.getQueryWrapper(scode,positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status);
         if (StrUtil.isNotEmpty(deviceCodes)) {
             queryWrapper.lambda().in(Device::getCode, StrUtil.split(deviceCodes,','));
+        }
+        if(StrUtil.isNotEmpty(deviceCode)){
+            queryWrapper.lambda().like(Device::getCode,deviceCode);
         }
         IPage<Device> pageList = deviceService.page(page, queryWrapper);
         List<Device> records = pageList.getRecords();
@@ -146,11 +150,12 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
             @RequestParam(name = "systemCode", required = false) String systemCode,
             @RequestParam(name = "deviceTypeCode", required = false) String deviceTypeCode,
             @RequestParam(name = "code", required = false) String code,
+            @RequestParam(name = "deviceCode", required = false) String deviceCode,
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "status", required = false) String status,
             @RequestParam(name = "scode", required = false) String scode,
             HttpServletRequest req) {
-        return getList(pageNo, pageSize, positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status, scode,null);
+        return getList(pageNo, pageSize, positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status, scode,null,deviceCode);
     }
 
     @AutoLog(value = "设备管理-设备主数据-列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")
