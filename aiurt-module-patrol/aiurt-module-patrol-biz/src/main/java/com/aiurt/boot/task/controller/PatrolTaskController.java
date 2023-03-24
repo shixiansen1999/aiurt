@@ -655,10 +655,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @ApiOperation(value = "pc手工下放任务-删除", notes = "pc手工下放任务-删除")
     @DeleteMapping(value = "/patrolTaskDelete")
     public Result<?> patrolTaskManualDelete(@RequestParam(name = "id", required = true) String id) {
-        PatrolTask patrolTask = new PatrolTask();
-        patrolTask.setId(id);
-        patrolTask.setDelFlag(1);
-        patrolTaskService.updateById(patrolTask);
+        patrolTaskService.patrolTaskManualDelete(id);
         return Result.ok("删除成功");
     }
 

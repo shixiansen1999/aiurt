@@ -209,4 +209,10 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @return
      */
     List<PrintPatrolTaskDTO> printPatrolTaskById(String ids);
+
+    /**
+     * pc手工下发任务-删除
+     * @param id
+     */
+    void patrolTaskManualDelete(String id);
 }
