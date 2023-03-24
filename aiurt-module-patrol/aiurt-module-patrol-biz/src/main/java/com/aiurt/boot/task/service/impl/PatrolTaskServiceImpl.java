@@ -20,8 +20,7 @@ import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.param.PatrolTaskParam;
-import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
-import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.aiurt.boot.task.service.*;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.boot.utils.PdfUtil;
 import com.aiurt.common.api.dto.message.MessageDTO;
@@ -90,13 +89,19 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
     @Autowired
+    private IPatrolCheckResultService patrolCheckResultService;
+    @Autowired
     private PatrolCheckResultMapper patrolCheckResultMapper;
-
+    @Autowired
+    private IPatrolTaskOrganizationService patrolTaskOrganizationService;
     @Autowired
     private PatrolTaskOrganizationMapper patrolTaskOrganizationMapper;
-
+    @Autowired
+    private IPatrolTaskStationService patrolTaskStationService;
     @Autowired
     private PatrolTaskStationMapper patrolTaskStationMapper;
+    @Autowired
+    private IPatrolTaskStandardService patrolTaskStandardService;
     @Autowired
     private PatrolTaskStandardMapper patrolTaskStandardMapper;
 
@@ -2022,5 +2027,40 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             arrayList.add(taskDTO);
         }
         return arrayList;
+    }
+
+    @Override
+    public void patrolTaskManualDelete(String id) {
+        if (StrUtil.isEmpty(id)) {
+            throw new AiurtBootException("操作失败");
+        }
+        PatrolTask patrolTask = patrolTaskMapper.selectById(id);
+        if (ObjectUtil.isNotEmpty(patrolTask)) {
+            patrolTask.setDelFlag(CommonConstant.DEL_FLAG_1);
+            patrolTaskMapper.updateById(patrolTask);
+            if (StrUtil.isNotEmpty(patrolTask.getCode())) {
+                patrolTaskOrganizationService.update(new LambdaUpdateWrapper<PatrolTaskOrganization>().set(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_1).eq(PatrolTaskOrganization::getTaskCode, patrolTask.getCode()));
+                patrolTaskStationService.update(new LambdaUpdateWrapper<PatrolTaskStation>().set(PatrolTaskStation::getDelFlag, CommonConstant.DEL_FLAG_1).eq(PatrolTaskStation::getTaskCode, patrolTask.getCode()));
+                patrolTaskStandardService.update(new LambdaUpdateWrapper<PatrolTaskStandard>().set(PatrolTaskStandard::getDelFlag, CommonConstant.DEL_FLAG_1).eq(PatrolTaskStandard::getTaskId, patrolTask.getId()));
+                List<PatrolTaskDevice> patrolTaskDeviceList = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTask.getId()));
+                if (ObjectUtil.isNotEmpty(patrolTaskDeviceList)) {
+                    patrolTaskDeviceList.forEach((e) -> {
+                        e.setDelFlag(CommonConstant.DEL_FLAG_1);
+                        patrolTaskDeviceMapper.updateById(e);
+                        List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>()
+                                .eq(PatrolCheckResult::getTaskStandardId, e.getTaskStandardId())
+                                .eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
+                        if (ObjectUtil.isNotEmpty(patrolCheckResultList)) {
+                            patrolCheckResultList.forEach((t) -> {
+                                t.setDelFlag(CommonConstant.DEL_FLAG_1);
+                                patrolCheckResultMapper.updateById(t);
+                            });
+                        }
+                    });
+                }
+            }
+        } else {
+            throw new AiurtBootException("操作失败");
+        }
     }
 }
