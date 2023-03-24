@@ -70,6 +70,12 @@ public class Device extends DictEntity {
     @ApiModelProperty(value = "设备编号")
 	private  String  code;
 
+	/**设备编号(设备主数据专用，兼容其他地方调用)*/
+	@ApiModelProperty(value = "设备编号")
+	@TableField(exist = false)
+	private  String  deviceCode;
+
+
 	/**设备类型编码*/
 	@Excel(name = "设备类型编码", width = 15,needMerge = true)
 	@ApiModelProperty(value = "设备类型编码")
