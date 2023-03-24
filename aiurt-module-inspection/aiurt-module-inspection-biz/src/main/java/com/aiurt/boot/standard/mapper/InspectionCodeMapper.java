@@ -48,7 +48,7 @@ public interface InspectionCodeMapper extends BaseMapper<InspectionCode> {
      * @param code
      * @return
      */
-    Integer number(@Param("code")String code);
+    Integer number( @Param("code") String code);
     /**
      * 查询是否显示
      * @param id

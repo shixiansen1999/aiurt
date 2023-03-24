@@ -140,9 +140,19 @@
         </foreach>
     </select>
     <select id="number" resultType="java.lang.Integer">
-        SELECT COUNT(patrol_plan_standard.standard_code)as number
-        FROM patrol_plan_standard
-        WHERE patrol_plan_standard.standard_code = #{code}
+        SELECT
+            ( COUNT( patrol_plan_standard.standard_code ) + (
+                    SELECT
+                      count(id)
+                    FROM
+                        patrol_task_standard
+                    WHERE
+                        del_flag = 0
+                      AND standard_code = #{code}) )as number
+        FROM
+            patrol_plan_standard
+        WHERE
+            patrol_plan_standard.standard_code = #{code} AND patrol_plan_standard.del_flag = 0
     </select>
     <select id="number1" resultType="java.lang.Integer">
         SELECT COUNT(psi.standard_id AND psi.standard_id=#{id} AND psi.del_flag=0 OR NULL) FROM patrol_standard_items psi WHERE 1=1
