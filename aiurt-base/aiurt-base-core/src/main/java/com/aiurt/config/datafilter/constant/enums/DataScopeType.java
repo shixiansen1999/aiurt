@@ -42,7 +42,7 @@ public enum DataScopeType {
     /**
      * 查看当前部门
      */
-    TYPE_DEPT_ONLY("TYPE_DEPT_ONLY", " #{#deptName} = #{#sysUser.orgCode} ", ""),
+    TYPE_DEPT_ONLY("TYPE_DEPT_ONLY", " #{#deptName} = '#{#sysUser.orgCode}' ", ""),
 
     /**
      * 查看管理线路
@@ -57,7 +57,7 @@ public enum DataScopeType {
     /**
      * 仅查看当前用户
      */
-    TYPE_MANAGE_LINE_ONLY("TYPE_MANAGE_LINE_ONLY", " #{#userName} = #{#sysUser.id} ", "");
+    TYPE_MANAGE_LINE_ONLY("TYPE_MANAGE_LINE_ONLY", " #{#userName} = '#{#sysUser.id}' ", "");
 
     private final String code;
 
