@@ -451,7 +451,7 @@ public class BigscreenPlanService {
                     List<String> teamLineName = workAreaById.stream().map(TeamPortraitDTO::getTeamLineName).collect(Collectors.toList());
                     teamPortraitDTO.setTeamLineName(CollUtil.join(teamLineName, ","));
 
-                    List<String> position = workAreaById.stream().map(TeamPortraitDTO::getPosition).collect(Collectors.toList());
+                    List<String> position = workAreaById.stream().filter(a->a.getPosition() != null).map(TeamPortraitDTO::getPosition).collect(Collectors.toList());
                     List<String> siteName = workAreaById.stream().map(TeamPortraitDTO::getSiteName).collect(Collectors.toList());
                     int num = 0;
                     int stationNum = 0;
@@ -508,8 +508,7 @@ public class BigscreenPlanService {
                 Date[] timeByType = getTimeByType(String.valueOf(type));
                 if (timeByType.length > 0 && CollUtil.isNotEmpty(userList)) {
                     //获取一周内的班组平均维修响应时间
-                    List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList,
-                            DateUtil.date(DateUtil.parseDate("2022-11-21 00:00:00")), DateUtil.date(DateUtil.parseDate("2022-11-22 23:59:00")));
+                    List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList, timeByType[0], timeByType[1]);
                     getAverageTime(repairDuration, teamPortraitDTO);
                     //获取总工时
                     getTotalTimes(teamPortraitDTO, userList, type, timeByType);
