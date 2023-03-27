@@ -136,6 +136,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
         List<PatrolTask> taskList = patrolTaskUserMapper.getUserTask(sysUser.getOrgCode());
         if (CollUtil.isNotEmpty(taskList)) {
             List<PatrolTaskDevice> taskDeviceList = new ArrayList<>();
+            //2023-03-27 需求确认，工作日志只看本班组下的相应时间的任务，不看工单，因此在sql合并
             for (PatrolTask task : taskList) {
                 //获取当前用户的任务中，已提交的所有的工单
                 List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getTodaySubmit(startTime,endTime, task.getId(), null);
@@ -143,18 +144,19 @@ public class PatrolApiServiceImpl implements PatrolApi {
                     taskDeviceList.addAll(devices);
                 }
             }
-            //获取当前部门人员作为同行人参与的单号
-            List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(sysUser.getOrgId());
-            List<String> userIds = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getId).collect(Collectors.toList());
-            List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().in(PatrolAccompany::getUserId, userIds).select(PatrolAccompany::getTaskDeviceCode));
-            //获取当前部门人员的单号，已提交
-            List<String> taskDeviceCodes = Optional.ofNullable(accompanyList).orElse(Collections.emptyList()).stream().map(PatrolAccompany::getTaskDeviceCode).distinct().collect(Collectors.toList());
-            for (String accompanyCode : taskDeviceCodes) {
-                List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getTodaySubmit(startTime,endTime, null, accompanyCode);
-                if (ObjectUtil.isNotEmpty(devices)) {
-                    taskDeviceList.addAll(devices);
-                }
-            }
+            //2023-3-27 需求确认，同行人也是本班组的人，去掉同行人，防止重复
+//            //获取当前部门人员作为同行人参与的单号
+//            List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(sysUser.getOrgId());
+//            List<String> userIds = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getId).collect(Collectors.toList());
+//            List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().in(PatrolAccompany::getUserId, userIds).select(PatrolAccompany::getTaskDeviceCode));
+//            //获取当前部门人员的单号，已提交
+//            List<String> taskDeviceCodes = Optional.ofNullable(accompanyList).orElse(Collections.emptyList()).stream().map(PatrolAccompany::getTaskDeviceCode).distinct().collect(Collectors.toList());
+//            for (String accompanyCode : taskDeviceCodes) {
+//                List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getTodaySubmit(startTime,endTime, null, accompanyCode);
+//                if (ObjectUtil.isNotEmpty(devices)) {
+//                    taskDeviceList.addAll(devices);
+//                }
+//            }
 
             StringBuilder content = new StringBuilder();
             StringBuilder code = new StringBuilder();
