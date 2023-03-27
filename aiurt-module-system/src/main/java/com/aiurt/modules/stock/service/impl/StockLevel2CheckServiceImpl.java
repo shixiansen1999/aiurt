@@ -60,15 +60,10 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 
 	@Override
 	public StockLevel2Check getStockCheckCode() throws ParseException {
-		QueryWrapper<StockLevel2Check> queryWrapper = new QueryWrapper<>();
 		String str = "PD";
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 		str += sdf.format(new Date());
-		queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-		queryWrapper.likeRight("stock_check_code",str);
-		queryWrapper.orderByDesc("create_time");
-		queryWrapper.last("limit 1");
-		StockLevel2Check stockLevel2Check = stockLevel2CheckMapper.selectOne(queryWrapper);
+		StockLevel2Check stockLevel2Check = stockLevel2CheckMapper.getone(str);
 		String format = "";
 		if(stockLevel2Check != null){
 			String code = stockLevel2Check.getStockCheckCode();

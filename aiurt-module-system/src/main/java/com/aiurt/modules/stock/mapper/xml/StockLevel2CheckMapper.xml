@@ -55,4 +55,32 @@
         </where>
         order by stock_level2_check.create_time desc
     </select>
+
+    <select id="getone" resultType="com.aiurt.modules.stock.entity.StockLevel2Check">
+        SELECT
+                id,
+                stock_check_code,
+                org_code,
+                warehouse_code,
+                plan_start_time,
+                plan_end_time,
+                check_start_time,
+                check_end_time,
+                check_num,
+                checker_id,
+                note,
+                STATUS,
+                create_by,
+                update_by,
+                create_time,
+                update_time,
+                del_flag
+        FROM
+                stock_level2_check
+        WHERE
+        stock_check_code LIKE CONCAT(#{str},'%')
+        ORDER BY
+                create_time DESC
+        LIMIT 1
+    </select>
 </mapper>
