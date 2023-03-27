@@ -56,6 +56,9 @@ public class InspectionStrategyDTO extends InspectionStrategy {
     @ApiModelProperty(value = "站点Code")
     @TableField(exist = false)
     private String siteCode;
+    @ApiModelProperty(value = "线路Code")
+    @TableField(exist = false)
+    private Integer level;
     @ApiModelProperty(value = "编辑站点Codes")
     @TableField(exist = false)
     private List<String> addSiteCode;
