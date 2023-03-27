@@ -42,5 +42,6 @@
         <if test="taskDeviceCode != null and taskDeviceCode != ''">
         and rtdr.code = #{taskDeviceCode}
         </if>
+        GROUP BY repairTaskId
     </select>
 </mapper>

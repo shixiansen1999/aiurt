@@ -2565,7 +2565,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             List<RepairTaskDeviceRel> oldTaskDeviceRelList = new ArrayList<>();
             List<String> pairTaskCodes = taskUsers.stream().map(RepairTaskUser::getRepairTaskCode).distinct().collect(Collectors.toList());
             List<RepairTask> taskList = repairTaskMapper.selectList(new LambdaQueryWrapper<RepairTask>().in(RepairTask::getCode, pairTaskCodes));
-
+            //2023-3-27 需求确认，工作日志只看本班组下的相应时间的任务，不看工单，因此在sql合并
             List<String> repairTaskIds = taskList.stream().map(RepairTask::getId).distinct().collect(Collectors.toList());
             for (String repairTaskId : repairTaskIds) {
                 //获取当前用户作为领取/指派人，当天，已提交的工单
@@ -2576,19 +2576,20 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
             }
 
-            //获取当前用户作为同行人参与的单号
-            List<RepairTaskPeerRel> relList = repairTaskPeerRelMapper.selectList(new LambdaQueryWrapper<RepairTaskPeerRel>().eq(RepairTaskPeerRel::getUserId, sysUser.getId()));
-            //获取单号信息
-            if (CollUtil.isNotEmpty(relList)) {
-                for (RepairTaskPeerRel taskPeerRel : relList) {
-                    List<RepairTaskDeviceRel> deviceRelList = repairTaskDeviceRelMapper.getTodaySubmit(startTime, endTime, null, taskPeerRel.getRepairTaskDeviceCode());
-                    if (ObjectUtil.isNotEmpty(deviceRelList)) {
-                        oldTaskDeviceRelList.addAll(deviceRelList);
-                    }
-                }
-            }
-
-            taskDeviceRelList.addAll(oldTaskDeviceRelList);
+            //2023-3-27 需求确认，同行人也是本班组的人，去掉同行人，
+//            //获取当前用户作为同行人参与的单号
+//            List<RepairTaskPeerRel> relList = repairTaskPeerRelMapper.selectList(new LambdaQueryWrapper<RepairTaskPeerRel>().eq(RepairTaskPeerRel::getUserId, sysUser.getId()));
+//            //获取单号信息
+//            if (CollUtil.isNotEmpty(relList)) {
+//                for (RepairTaskPeerRel taskPeerRel : relList) {
+//                    List<RepairTaskDeviceRel> deviceRelList = repairTaskDeviceRelMapper.getTodaySubmit(startTime, endTime, null, taskPeerRel.getRepairTaskDeviceCode());
+//                    if (ObjectUtil.isNotEmpty(deviceRelList)) {
+//                        oldTaskDeviceRelList.addAll(deviceRelList);
+//                    }
+//                }
+//            }
+//
+//            taskDeviceRelList.addAll(oldTaskDeviceRelList);
 
 
             if (CollUtil.isNotEmpty(taskDeviceRelList)) {

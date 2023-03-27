@@ -260,6 +260,7 @@
         <if test="taskDeviceCode != null and taskDeviceCode != ''">
         and ptd.patrol_number = #{taskDeviceCode}
         </if>
+        GROUP BY ptd.task_id
     </select>
     <select id="getFaultList" resultType="com.aiurt.boot.task.entity.PatrolTaskDevice">
     	SELECT ptf.patrol_number
