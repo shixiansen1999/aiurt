@@ -1950,6 +1950,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTask.setCode(repairPool.getCode());
         repairTask.setWeeks(repairPool.getWeeks());
         repairTask.setStartTime(new Date());
+        repairTask.setTaskConfirmationTime(new Date());
         repairTask.setStatus(InspectionConstant.PENDING);
         repairTask.setIsConfirm(repairPool.getIsConfirm());
         repairTask.setIsReceipt(repairPool.getIsReceipt());
