@@ -221,6 +221,9 @@ public class PermissionDataAspect {
             if (DataPermRuleType.TYPE_ALL.equals(customPermission.getRuleConditions())) {
                 dataPermMap.put(customPermission.getRuleConditions(), "null");
             }
+            if (DataPermRuleType.TYPE_USER_ONLY.equals(customPermission.getRuleConditions())) {
+                dataPermMap.put(customPermission.getRuleConditions(), "");
+            }
         }
 
         // 当管理部门里面有当前部门的时候，应该做数据权限规则优化
