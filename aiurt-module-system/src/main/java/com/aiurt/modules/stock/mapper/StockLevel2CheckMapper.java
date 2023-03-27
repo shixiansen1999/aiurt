@@ -31,4 +31,7 @@ public interface StockLevel2CheckMapper extends BaseMapper<StockLevel2Check> {
      * @return
      */
     List<StockLevel2Check> exportList(@Param("condition")StockLevel2Check level2Check,@Param("ids") List<String> ids);
+
+    StockLevel2Check getone(String str);
+
 }
