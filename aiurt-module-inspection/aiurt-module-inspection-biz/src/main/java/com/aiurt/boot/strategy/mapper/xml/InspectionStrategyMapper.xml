@@ -55,10 +55,16 @@
             AND name LIKE CONCAT ('%', #{inspectionStrategyDTO.name}, '%')
         </if>
         <if test="inspectionStrategyDTO.professionCode !=null ">
-            AND professionCode  LIKE CONCAT ('%', #{inspectionStrategyDTO.professionCode}, '%')
+           and code in (select isr.inspection_str_code from inspection_str_rel isr
+           LEFT JOIN  inspection_code ic on ( isr.inspection_sta_code = ic.code and ic.del_flag = 0)
+           where isr.del_flag = 0
+           and ic.major_code = #{inspectionStrategyDTO.professionCode})
         </if>
         <if test="inspectionStrategyDTO.subsystemCode !=null ">
-            AND subsystemCode  LIKE CONCAT ('%', #{inspectionStrategyDTO.subsystemCode}, '%')
+           and code in (select isr.inspection_str_code from inspection_str_rel isr
+	       LEFT JOIN  inspection_code ic on ( isr.inspection_sta_code = ic.code AND ic.del_flag = 0)
+	       where isr.del_flag = 0
+	       AND ic.subsystem_code = #{inspectionStrategyDTO.subsystemCode})
         </if>
         <if test="inspectionStrategyDTO.code !=null ">
             AND code LIKE CONCAT ('%', #{inspectionStrategyDTO.code}, '%')
@@ -76,10 +82,13 @@
             AND tactics = #{inspectionStrategyDTO.tactics}
         </if>
         <if test="inspectionStrategyDTO.mechanismCode !=null ">
-            AND mechanismCode =  #{inspectionStrategyDTO.mechanismCode}
+         	AND code in(SELECT ss.inspection_str_code FROM inspection_str_org_rel ss WHERE  ss.org_code = #{inspectionStrategyDTO.mechanismCode}})
         </if>
-        <if test="inspectionStrategyDTO.siteCode!=null ">
-            and siteCode REGEXP #{inspectionStrategyDTO.siteCode}
+        <if test="inspectionStrategyDTO.siteCode!=null and inspectionStrategyDTO.level == 1">
+        	AND code IN (SELECT ssr.inspection_str_code FROM inspection_str_sta_rel ssr WHERE  ssr.line_code = #{inspectionStrategyDTO.siteCode})
+        </if>
+       <if test="inspectionStrategyDTO.siteCode!=null and inspectionStrategyDTO.level == 2">
+        	AND code IN (SELECT ssr.inspection_str_code FROM inspection_str_sta_rel ssr WHERE   ssr.station_code = #{inspectionStrategyDTO.siteCode})
         </if>
         ORDER BY create_time DESC
     </select>
