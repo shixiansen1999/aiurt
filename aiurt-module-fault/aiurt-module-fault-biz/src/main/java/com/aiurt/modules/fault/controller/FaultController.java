@@ -1,6 +1,7 @@
 package com.aiurt.modules.fault.controller;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -590,6 +591,35 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK("验收成功!");
     }
 
-
+    @AutoLog(value = "故障钻取", operateType =  1, operateTypeAlias = "故障钻取", permissionUrl = PERMISSION_URL)
+    @ApiOperation(value = "故障钻取", notes = "故障钻取")
+    @GetMapping(value = "/getHitchDrilling")
+    public List<HitchDrillingDTO> getHitchDrilling(){
+        List<HitchDrillingDTO> hitchDrillingDTOList = new ArrayList<>();
+        LambdaQueryWrapper<Fault> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        ArrayList<Integer> integers = CollectionUtil.newArrayList(5, 6, 7);
+        lambdaQueryWrapper.in(Fault::getStatus,integers);
+        List<Fault> list1 = faultService.list(lambdaQueryWrapper);
+        if (CollectionUtil.isEmpty(list1)){
+            return hitchDrillingDTOList;
+        }else {
+            list1.forEach(e->{
+                HitchDrillingDTO hitchDrillingDTO = new HitchDrillingDTO();
+                String lineCode = e.getLineCode();
+                if (StrUtil.isNotBlank(lineCode)){
+                    String position = sysBaseAPI.getPosition(lineCode);
+                    hitchDrillingDTO.setLine(position);
+                }if (StrUtil.isNotBlank(e.getSymptoms())){
+                    hitchDrillingDTO.setGzyy(e.getSymptoms());
+                }if (ObjectUtil.isNotNull(e.getHappenTime())){
+                    hitchDrillingDTO.setGztime(e.getHappenTime());
+                }if (ObjectUtil.isNotNull(e.getStatus())){
+                    hitchDrillingDTO.setGzstate(e.getStatus());
+                }
+                hitchDrillingDTOList.add(hitchDrillingDTO);
+            });
+        }
+        return hitchDrillingDTOList;
+    }
 
 }
