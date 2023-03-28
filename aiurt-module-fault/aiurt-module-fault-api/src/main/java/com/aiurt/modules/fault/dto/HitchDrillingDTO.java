@@ -31,7 +31,7 @@ public class HitchDrillingDTO {
 
     @ApiModelProperty("状态")
     @Dict(dicCode = "fault_status")
-    private Integer gzstate;
+    private String gzstate;
 
 
 
