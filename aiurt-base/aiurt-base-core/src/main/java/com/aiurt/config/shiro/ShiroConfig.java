@@ -151,6 +151,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/sys/common/getSysFileKey", "anon");//在线编辑获取key
         //大屏统计
         filterChainDefinitionMap.put("/task/repairTask/getSystemInformation", "anon");
+        filterChainDefinitionMap.put("/fault/getHitchDrilling", "anon");
 
         //wps
         filterChainDefinitionMap.put("/v1/**","anon");
