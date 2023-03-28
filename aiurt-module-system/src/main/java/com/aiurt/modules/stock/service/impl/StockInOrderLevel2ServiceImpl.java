@@ -743,6 +743,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 										Boolean errorMark)
 	{
 		List<StockIncomingMaterialsDTO> stockIncomingMaterialsDTOList = stockInOrderLevel2DTO.getStockIncomingMaterialsDTOList();
+		stockIncomingMaterialsDTOList.removeIf(s->s.getMaterialCode()==null);
 		errorMark = false;
 		if (CollectionUtil.isNotEmpty(stockIncomingMaterialsDTOList)){
 			for (StockIncomingMaterialsDTO stockIncomingMaterialsDTO : stockIncomingMaterialsDTOList) {
