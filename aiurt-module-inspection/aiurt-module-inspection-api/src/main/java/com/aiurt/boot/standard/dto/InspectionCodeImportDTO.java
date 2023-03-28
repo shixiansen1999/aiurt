@@ -9,17 +9,11 @@ package com.aiurt.boot.standard.dto;/**
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import cn.afterturn.easypoi.excel.annotation.ExcelCollection;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
-import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.system.base.annotation.ExcelExtend;
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.List;
 
@@ -64,6 +58,11 @@ public class InspectionCodeImportDTO {
     @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "是否与设备相关(0否1是)")
     private String isAppointDevice;
+
+    @Excel(name = "检修表类型", width = 15)
+    @ApiModelProperty(value = "类型：0应急、车载、2正线、3车辆段 ")
+    @TableField(exist = false)
+    private String repairTypeName;
 
     /**状态 0-未生效 1-已生效*/
     @Excel(name = "生效状态", width = 15,needMerge = true)

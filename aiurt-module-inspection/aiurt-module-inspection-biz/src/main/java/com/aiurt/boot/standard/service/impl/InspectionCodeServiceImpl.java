@@ -275,30 +275,30 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         List<DictModel> isTypeModels = bean.queryDictItemsByCode("inspection_cycle_type");
         ExcelSelectListUtil.selectList(workbook, "检修周期类型", 1, 1, isTypeModels);
         List<DictModel> majorModels = bean.queryTableDictItemsByCode("cs_major", "major_name", "major_code");
-        ExcelSelectListUtil.selectList(workbook, "专业", 2, 2, majorModels);
+        ExcelSelectListUtil.selectList(workbook, "适用专业", 2, 2, majorModels);
         List<DictModel> subsystemModels = bean.queryTableDictItemsByCode("cs_subsystem", "system_name", "system_code");
-        ExcelSelectListUtil.selectList(workbook, "子系统", 3, 3, subsystemModels);
+        ExcelSelectListUtil.selectList(workbook, "适用子系统", 3, 3, subsystemModels);
         List<DictModel> isDeviceTypeModels = bean.queryDictItemsByCode("is_appoint_device");
-        ExcelSelectListUtil.selectList(workbook, "是否与设备类型相关", 4, 4, isDeviceTypeModels);
-        List<DictModel> statusModels = bean.queryDictItemsByCode("is_take_effect");
-        ExcelSelectListUtil.selectList(workbook, "生效状态", 5, 5, statusModels);
-        List<DictModel> deviceTypeModels = bean.queryTableDictItemsByCode("device_type", "name", "code");
-        ExcelSelectListUtil.selectList(workbook, "设备类型", 6, 6, deviceTypeModels);
-        List<DictModel> hierarchyTypeModels = bean.queryDictItemsByCode("patrol_hierarchy_type");
-        ExcelSelectListUtil.selectList(workbook, "层级类型", 7, 7, hierarchyTypeModels);
-        List<DictModel> isStandardModels = bean.queryDictItemsByCode("patrol_check");
-        ExcelSelectListUtil.selectList(workbook, "是否为检修项目", 12, 12, isStandardModels);
-        List<DictModel> requiredDictModels = bean.queryDictItemsByCode("patrol_input_type");
-        ExcelSelectListUtil.selectList(workbook, "检查值类型", 14, 14, requiredDictModels);
-        List<DictModel> requiredModels = bean.queryDictItemsByCode("patrol_item_required");
-        ExcelSelectListUtil.selectList(workbook, "检查值是否必填", 15, 15, requiredModels);
+        ExcelSelectListUtil.selectList(workbook, "与设备类型相关", 4, 4, isDeviceTypeModels);
         List<DictModel> repairTypeModels = bean.queryDictItemsByCode("repair_type");
-        ExcelSelectListUtil.selectList(workbook, "车辆类型", 16, 16, repairTypeModels);
+        ExcelSelectListUtil.selectList(workbook, "检修表类型", 5, 5, repairTypeModels);
+        List<DictModel> statusModels = bean.queryDictItemsByCode("is_take_effect");
+        ExcelSelectListUtil.selectList(workbook, "生效状态", 6, 6, statusModels);
+        List<DictModel> deviceTypeModels = bean.queryTableDictItemsByCode("device_type", "name", "code");
+        ExcelSelectListUtil.selectList(workbook, "设备类型", 7, 7, deviceTypeModels);
+        List<DictModel> hierarchyTypeModels = bean.queryDictItemsByCode("patrol_hierarchy_type");
+        ExcelSelectListUtil.selectList(workbook, "层级类型", 8, 8, hierarchyTypeModels);
+        List<DictModel> isStandardModels = bean.queryDictItemsByCode("patrol_check");
+        ExcelSelectListUtil.selectList(workbook, "是否为检修项目", 13, 13, isStandardModels);
+        List<DictModel> requiredDictModels = bean.queryDictItemsByCode("patrol_input_type");
+        ExcelSelectListUtil.selectList(workbook, "检查值类型", 15, 15, requiredDictModels);
+        List<DictModel> requiredModels = bean.queryDictItemsByCode("patrol_item_required");
+        ExcelSelectListUtil.selectList(workbook, "检查值是否必填", 16, 16, requiredModels);
         Integer modules = 2;
         List<DictModel> modelList = inspectionCodeMapper.querySysDict(modules);
-        ExcelSelectListUtil.selectList(workbook, "关联数据字典", 16, 16, modelList);
+        ExcelSelectListUtil.selectList(workbook, "关联数据字典", 17, 17, modelList);
         List<DictModel> regularModels = bean.queryDictItemsByCode("regex");
-        ExcelSelectListUtil.selectList(workbook, "数据校验表达式", 17, 17, regularModels);
+        ExcelSelectListUtil.selectList(workbook, "数据校验表达式", 18, 18, regularModels);
         String fileName = "检修标准导入模板.xlsx";
         try {
             response.setHeader("Content-Disposition",
@@ -544,10 +544,12 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
             String isDeviceType = model.getIsAppointDevice();
             String statusName = model.getStatus();
             String deviceTypeName = model.getDeviceTypeCode();
-
+            String repairTypeName =model.getRepairTypeName();
             Integer statusCode = checkMap2.get(statusName);
             Integer isDeviceCode = checkMap.get(isDeviceType);
-            if (StrUtil.isNotEmpty(majorName) && StrUtil.isNotEmpty(isDeviceType) && StrUtil.isNotEmpty(statusName) && StrUtil.isNotEmpty(name)) {
+            List<DictModel> repairTypes = sysBaseApi.getDictItems("repair_type");
+            String repairTypeNames = repairTypes.stream().map(e -> e.getText()).collect(Collectors.joining());
+            if (StrUtil.isNotEmpty(majorName) && StrUtil.isNotEmpty(isDeviceType) && StrUtil.isNotEmpty(repairTypeName)&& StrUtil.isNotEmpty(statusName) && StrUtil.isNotEmpty(name)) {
                 JSONObject major = sysBaseApi.getCsMajorByName(majorName);
                 if (ObjectUtil.isNotEmpty(major)) {
                     inspectionCode.setMajorCode(major.getString("majorCode"));
@@ -559,7 +561,9 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                             stringBuilder.append("系统不存在该专业下的子系统，");
                         }
                     }
-
+                    if (!(repairTypeNames.contains(repairTypeName))) {
+                        stringBuilder.append("标准表类型填写不规范");
+                    }
                     if (!InspectionConstant.IS_APPOINT_DEVICE.equals(isDeviceCode) && !InspectionConstant.NO_ISAPPOINT_DEVICE.equals(isDeviceCode)) {
                         stringBuilder.append("是否与设备类型相关填写不规范，");
                     } else {
@@ -586,6 +590,9 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                     }
                 } else {
                     stringBuilder.append("系统不存在该专业，");
+                    if (!(repairTypeNames.contains(repairTypeName))) {
+                        stringBuilder.append("标准表类型填写不规范");
+                    }
                     if (!InspectionConstant.IS_APPOINT_DEVICE.equals(isDeviceCode) || !InspectionConstant.NO_ISAPPOINT_DEVICE.equals(isDeviceCode)) {
                         stringBuilder.append("是否与设备类型相关填写不规范，");
                     } else {
@@ -598,7 +605,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                     }
                 }
             } else {
-                stringBuilder.append("检修标准名称、适用专业、是否与设备类型相关、生效状态不能为空;");
+                stringBuilder.append("检修标准名称、适用专业、标准表类型、是否与设备类型相关、生效状态不能为空;");
             }
         }
 
@@ -820,6 +827,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
             lm.put("dictCode", inspectionCodeErrorDto.getDictCode());
             lm.put("regular", inspectionCodeErrorDto.getDataCheck());
             lm.put("itemParentMistake", inspectionCodeErrorDto.getCodeContentErrorReason());
+            lm.put("repairType",inspectionCodeErrorDto.getRepairTypeName());
             listMap.add(lm);
         }
         errorMap.put("maplist", listMap);
