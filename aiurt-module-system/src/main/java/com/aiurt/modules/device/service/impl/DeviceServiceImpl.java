@@ -679,9 +679,11 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			}
 		}
 		if (StrUtil.isNotEmpty(manageUserName) && StrUtil.isNotEmpty(deviceLevel) && StrUtil.isNotEmpty(temporary)) {
-			LoginUser loginUser = iSysBaseAPI.queryUser(manageUserName);
-			if (ObjectUtil.isEmpty(loginUser)) {
+			List<LoginUser> userByRealName = iSysBaseAPI.getUserByRealName(manageUserName,null);
+			if (ObjectUtil.isEmpty(userByRealName)) {
 				stringBuilder.append("系统不存在该用户，");
+			}else {
+				device.setManageUserName(userByRealName.get(0).getId());
 			}
 			List<DictModel> deviceLevels = sysDictMapper.queryDictItemsByCode("device_level");
 			DictModel levelmodel = Optional.ofNullable(deviceLevels).orElse(Collections.emptyList()).stream().filter(dictModel -> dictModel.getText().equals(deviceLevel)).findFirst().orElse(null);
