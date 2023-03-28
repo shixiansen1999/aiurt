@@ -106,6 +106,10 @@ public class SysFile {
 	@Excel(name = "修改人", width = 15)
 	@ApiModelProperty(value = "修改人")
 	private String updateBy;
+
+	@ApiModelProperty("批量添加参数")
+	@TableField(exist = false)
+	List<SysFile> sysFileList;
 	/**
 	 * 创建时间
 	 */

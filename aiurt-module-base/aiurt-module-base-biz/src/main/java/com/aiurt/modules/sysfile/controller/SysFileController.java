@@ -255,66 +255,70 @@ public class SysFileController {
 	/**
 	 * 添加
 	 *
-	 * @param sysFile
+	 * @param sysFile1
 	 * @return
 	 */
 	@AutoLog(value = "文档表-添加")
 	@ApiOperation(value = "文档表-添加", notes = "文档表-添加")
 	@PostMapping(value = "/add")
-	public Result<SysFile> add(HttpServletRequest req,@RequestBody SysFile sysFile) {
+	public Result<SysFile> add(HttpServletRequest req,@RequestBody SysFile sysFile1) {
 		Result<SysFile> result = new Result<SysFile>();
-		if (StringUtils.isNotBlank(sysFile.getName())) {
-			String name = sysFile.getName();
-			//处理文件名
-			String prefix = name.substring(0, name.indexOf(PatrolConstant.NO_SPL));
-			sysFile.setName(StringUtils.isNotBlank(prefix) ? prefix : "未知文件名");
-			//处理后缀
-			String substring = name.substring(name.lastIndexOf(PatrolConstant.NO_SPL));
-			if (StringUtils.isNotBlank(substring)) {
-				String suffix = substring.replaceFirst(PatrolConstant.NO_SPL, "");
-				if (StringUtils.isNotBlank(suffix)) {
-					sysFile.setType(suffix.toUpperCase());
+		if (CollectionUtil.isNotEmpty(sysFile1.getSysFileList())){
+			sysFile1.getSysFileList().forEach(sysFile->{
+				if (StringUtils.isNotBlank(sysFile.getName())) {
+					String name = sysFile.getName();
+					//处理文件名
+					String prefix = name.substring(0, name.indexOf(PatrolConstant.NO_SPL));
+					sysFile.setName(StringUtils.isNotBlank(prefix) ? prefix : "未知文件名");
+					//处理后缀
+					String substring = name.substring(name.lastIndexOf(PatrolConstant.NO_SPL));
+					if (StringUtils.isNotBlank(substring)) {
+						String suffix = substring.replaceFirst(PatrolConstant.NO_SPL, "");
+						if (StringUtils.isNotBlank(suffix)) {
+							sysFile.setType(suffix.toUpperCase());
+						}
+					} else {
+						sysFile.setType("未知类型");
+					}
 				}
-			} else {
-				sysFile.setType("未知类型");
-			}
-		}
 
-		//URL url = new URL(sysFile.getUrl());
-		//URLConnection uc = url.openConnection();
-		//String fileName = uc.getHeaderField(6);
-		//fileName = URLDecoder.decode(fileName.substring(fileName.indexOf("filename=") + 9), "UTF-8");
-		//sysFile.setName(fileName);
-		//System.out.println("文件名为：" + fileName);
-		if (StrUtil.isNotBlank(sysFile.getFileSize())){
-            int integer = Integer.parseInt(sysFile.getFileSize());
-            if (integer>=0 && integer<1024){
-                BigDecimal div = NumberUtil.div(sysFile.getFileSize(), "1024", 1);
-                String string = div.stripTrailingZeros().toPlainString();
-                sysFile.setFileSize(string+"B");
-            }
-            if (integer>=1024 && integer<1048576){
-                BigDecimal div = NumberUtil.div(sysFile.getFileSize(), "1024", 1);
-                String string = div.stripTrailingZeros().toPlainString();
-                sysFile.setFileSize(string+"KB");
-            }
-            if (integer>=1048576){
-                BigDecimal div = NumberUtil.div(sysFile.getFileSize(), "1048576", 1);
-                String string = div.stripTrailingZeros().toPlainString();
-                sysFile.setFileSize(string+"MB");
-            }
-        }
-		try {
-			sysFileService.save(sysFile);
-			sysFileService.add(req,sysFile);
+				//URL url = new URL(sysFile.getUrl());
+				//URLConnection uc = url.openConnection();
+				//String fileName = uc.getHeaderField(6);
+				//fileName = URLDecoder.decode(fileName.substring(fileName.indexOf("filename=") + 9), "UTF-8");
+				//sysFile.setName(fileName);
+				//System.out.println("文件名为：" + fileName);
+				if (StrUtil.isNotBlank(sysFile.getFileSize())){
+					int integer = Integer.parseInt(sysFile.getFileSize());
+					if (integer>=0 && integer<1024){
+						BigDecimal div = NumberUtil.div(sysFile.getFileSize(), "1024", 1);
+						String string = div.stripTrailingZeros().toPlainString();
+						sysFile.setFileSize(string+"B");
+					}
+					if (integer>=1024 && integer<1048576){
+						BigDecimal div = NumberUtil.div(sysFile.getFileSize(), "1024", 1);
+						String string = div.stripTrailingZeros().toPlainString();
+						sysFile.setFileSize(string+"KB");
+					}
+					if (integer>=1048576){
+						BigDecimal div = NumberUtil.div(sysFile.getFileSize(), "1048576", 1);
+						String string = div.stripTrailingZeros().toPlainString();
+						sysFile.setFileSize(string+"MB");
+					}
+				}
+				try {
+					sysFileService.save(sysFile);
+					sysFileService.add(req,sysFile);
 
-			// ES更新规范规程知识库的文件数据
-            this.saveEsDate(sysFile);
+					// ES更新规范规程知识库的文件数据
+					this.saveEsDate(sysFile);
 
-			result.success("添加成功！");
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			result.error500("操作失败");
+					result.success("添加成功！");
+				} catch (Exception e) {
+					log.error(e.getMessage(), e);
+					result.error500("操作失败");
+				}
+			});
 		}
 		return result;
 	}
