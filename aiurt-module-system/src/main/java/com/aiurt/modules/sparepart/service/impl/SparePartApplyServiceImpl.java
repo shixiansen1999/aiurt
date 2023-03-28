@@ -9,10 +9,9 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
-import com.aiurt.modules.sparepart.entity.SparePartApply;
-import com.aiurt.modules.sparepart.entity.SparePartApplyMaterial;
-import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.mapper.SparePartApplyMapper;
 import com.aiurt.modules.sparepart.service.ISparePartApplyMaterialService;
 import com.aiurt.modules.sparepart.service.ISparePartApplyService;
@@ -110,6 +109,19 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     @Transactional(rollbackFor = Exception.class)
     public Result<?> add(SparePartApply sparePartApply) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //判断当前登录人所在部门是否有备件仓库
+        SparePartStockInfo stockInfo = new SparePartStockInfo();
+        LambdaQueryWrapper<SparePartStockInfo> queryWrapper = new LambdaQueryWrapper<>();
+        if (ObjectUtil.isNotEmpty(user.getOrgId())) {
+            //一个班组管理一个仓库，用selectOne,防止有人多配，只取一条
+            queryWrapper.eq(SparePartStockInfo::getOrganizationId, user.getOrgId()).last("limit 1");
+            stockInfo = sparePartStockInfoService.getOne(queryWrapper);
+        } else {
+            throw new AiurtBootException(" 您未归属部门，不支持物资申领");
+        }
+        if (ObjectUtil.isEmpty(stockInfo)) {
+            throw new AiurtBootException("您当前部门没有备件仓库，不支持物资申领");
+        }
         //申领单号 自动生成
         //String code = getCode();
         String code = sparePartApply.getCode();
