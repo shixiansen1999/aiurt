@@ -217,4 +217,46 @@ public class BdTrainTaskUser implements Serializable {
     @TableField(exist = false)
     @Dict(dicCode = "exam_state")
     private String examState;
+
+    /**培训任务-培训名称*/
+    @ApiModelProperty(value = "培训任务-培训名称")
+    @TableField(exist = false)
+    private String examTaskName;
+
+    /**培训任务-培训内容*/
+    @ApiModelProperty(value = "培训任务-培训内容")
+    @TableField(exist = false)
+    private String planSubName;
+
+    /**培训任务-培训讲师*/
+    @ApiModelProperty(value = "培训任务-培训讲师")
+    @TableField(exist = false)
+    private String teacherName;
+
+    /**培训任务-培训日期*/
+    @ApiModelProperty(value = "培训任务-培训日期")
+    @TableField(exist = false)
+    private String trainingDateRange;
+
+    /**培训任务-开始时间*/
+    @ApiModelProperty(value = "培训任务-开始时间")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @TableField(exist = false)
+    private Date startTime;
+
+    /**培训任务-关闭时间*/
+    @ApiModelProperty(value = "培训任务-关闭时间")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @TableField(exist = false)
+    private Date endTime;
+
+    /**培训任务-考试日期*/
+    @ApiModelProperty(value = "培训任务-考试日期")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @TableField(exist = false)
+    private Date examPlanTime;
 }
+
