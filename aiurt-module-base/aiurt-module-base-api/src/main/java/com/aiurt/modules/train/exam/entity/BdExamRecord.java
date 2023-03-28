@@ -284,4 +284,10 @@ public class BdExamRecord implements Serializable {
     @ApiModelProperty(value = "考试有效期")
     @TableField(exist = false)
     private Integer examValidityPeriod;
+
+    /**是否补考*/
+    @ApiModelProperty(value = "是否补考:0是、1否")
+    @TableField(exist = false)
+    @Dict(dicCode = "is_makeup_exam")
+    private Integer isMakeupExam;
 }
