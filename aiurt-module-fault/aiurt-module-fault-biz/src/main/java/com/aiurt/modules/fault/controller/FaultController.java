@@ -613,9 +613,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
                     hitchDrillingDTO.setGzyy(e.getSymptoms());
                 }if (ObjectUtil.isNotNull(e.getHappenTime())){
                     hitchDrillingDTO.setGztime(e.getHappenTime());
-                }if (ObjectUtil.isNotNull(e.getStatus())){
-                    hitchDrillingDTO.setGzstate(e.getStatus());
                 }
+                    hitchDrillingDTO.setGzstate("解决中");
+
                 hitchDrillingDTOList.add(hitchDrillingDTO);
             });
         }
