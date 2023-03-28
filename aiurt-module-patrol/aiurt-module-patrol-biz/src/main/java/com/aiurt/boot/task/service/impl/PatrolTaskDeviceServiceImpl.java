@@ -538,7 +538,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     e.setDevicePosition(null);
                 } else {
                     e.setStationName(positions);
-                    e.setInspectionPosition("-");
                 }
             }
             List<PatrolTaskFault> faultList = patrolTaskFaultMapper.selectList(new LambdaQueryWrapper<PatrolTaskFault>().eq(PatrolTaskFault::getPatrolNumber, e.getPatrolNumber()));
