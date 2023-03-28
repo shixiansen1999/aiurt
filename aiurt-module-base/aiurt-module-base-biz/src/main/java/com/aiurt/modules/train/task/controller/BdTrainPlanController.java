@@ -308,11 +308,12 @@ public class BdTrainPlanController extends BaseController<BdTrainPlan, IBdTrainP
      */
     @AutoLog(value = "培训复核管理")
     @ApiOperation(value = "培训复核管理", notes = "培训复核管理")
-    @PostMapping(value = "/getReCheckList")
+    //@PostMapping(value = "/getReCheckList")
+    @GetMapping(value = "/getReCheckList")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = ReCheckVO.class)
     })
-    public Result<?> getReCheckList(@RequestBody ReCheckReqVo reCheckReqVo) {
+    public Result<?> getReCheckList(ReCheckReqVo reCheckReqVo) {
         Page<ReCheckVO> page = new Page<>(reCheckReqVo.getPageNo(), reCheckReqVo.getPageSize());
         IPage<ReCheckVO> pageList = bdTrainPlanService.getReCheckList(page, reCheckReqVo);
         return Result.OK(pageList);

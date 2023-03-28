@@ -566,6 +566,13 @@ private void queryBdTrainTask(List<BdTrainTaskUser> userTasks,String uid){
 			bdTrainTaskUser.setClassify(bdTrainTask.getClassify());
 			bdTrainTaskUser.setExamClassify(bdTrainTask.getExamClassify());
 			bdTrainTaskUser.setExamStatus(bdTrainTask.getExamStatus());
+			bdTrainTaskUser.setExamTaskName(bdTrainTask.getExamTaskName());
+			bdTrainTaskUser.setPlanSubName(bdTrainTask.getPlanSubName());
+			bdTrainTaskUser.setTeacherName(bdTrainTask.getTeacherName());
+			bdTrainTaskUser.setTrainingDateRange(bdTrainTask.getTrainingDateRange());
+			bdTrainTaskUser.setStartTime(bdTrainTask.getStartTime());
+			bdTrainTaskUser.setEndTime(bdTrainTask.getEndTime());
+			bdTrainTaskUser.setExamPlanTime(bdTrainTask.getExamPlanTime());
 			//获取状态
 			if (bdTrainTaskUser.getSignState().equals(1)) {
 				Date signTime = bdTrainTaskMapper.getSignTime(uid, bdTrainTask.getId());

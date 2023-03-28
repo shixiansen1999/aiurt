@@ -3,16 +3,16 @@ package com.aiurt.modules.train.eaxm.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
+import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
+import com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper;
+import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
+import com.aiurt.modules.train.eaxm.service.IBdExamRecordService;
 import com.aiurt.modules.train.exam.dto.BdAchievementDTO;
 import com.aiurt.modules.train.exam.dto.BdExamRecordDTO;
 import com.aiurt.modules.train.exam.dto.ExamDetailsDTO;
 import com.aiurt.modules.train.exam.entity.BdExamPaper;
 import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
-import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
-import com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper;
-import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
-import com.aiurt.modules.train.eaxm.service.IBdExamRecordService;
 import com.aiurt.modules.train.task.dto.TranscriptDTO;
 import com.aiurt.modules.train.task.entity.BdTrainMakeupExamRecord;
 import com.aiurt.modules.train.task.entity.BdTrainTask;
@@ -149,6 +149,9 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
                 if (e.getExamClassify()==0){
                    BdExamRecord bdExamRecord1 = bdExamRecordMapper.selectById(e.getId());
                     e.setExamPlanTime(bdExamRecord1.getExamTime());
+                    e.setIsMakeupExam(0);
+                } else {
+                    e.setIsMakeupExam(1);
                 }
                 // 实际开始时间不为空 加有效期设为实际关闭时间
                 BdTrainTask bdTrainTask = bdTrainTaskMapper.selectById(e.getTrainTaskId());

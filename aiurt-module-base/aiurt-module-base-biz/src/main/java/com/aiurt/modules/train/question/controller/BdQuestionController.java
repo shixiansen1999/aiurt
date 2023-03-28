@@ -2,7 +2,6 @@ package com.aiurt.modules.train.question.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.train.exam.entity.BdExamPaper;
 import com.aiurt.modules.train.question.entity.BdQuestion;
 import com.aiurt.modules.train.question.service.IBdQuestionService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -43,8 +42,9 @@ public class BdQuestionController extends BaseController<BdQuestion, IBdQuestion
 	 */
 	@AutoLog(value = "考卷习题-分页列表查询")
 	@ApiOperation(value="考卷习题-分页列表查询", notes="考卷习题-分页列表查询")
-	@PostMapping(value = "/questionList")
-	public Result<?> queryPageList(@RequestBody BdQuestion condition) {
+	//@PostMapping(value = "/questionList")
+	@GetMapping(value = "/questionList")
+	public Result<?> queryPageList(BdQuestion condition) {
 		if (condition.getPageNo()==null||condition.getPageSize()==null){
 			condition.setPageNo(1);
 			condition.setPageSize(10);
