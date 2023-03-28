@@ -58,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -503,6 +504,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
@@ -554,6 +556,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 						examine(stockInOrderLevel2DTO, stockInOrderLevel2, stringBuilder);
 						//校验物资信息
 						errorMark = this.StockIncomingMaterials(stockInOrderLevel2DTO,stockIncomingMaterials,errorMark);
+						stockInOrderLevel2.setStockIncomingMaterialsList(stockIncomingMaterials);
 						if (stringBuilder.length() > 0 || errorMark) {
 							// 截取字符
 							if (stringBuilder.length() > 0){
@@ -582,7 +585,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 						 stockInOrderLevel2.setOrgCode(((LoginUser) SecurityUtils.getSubject().getPrincipal()).getOrgCode());
 						this.save(stockInOrderLevel2);
 
-						for (StockIncomingMaterials stockIncomingMaterials : stockIncomingMaterialsList) {
+						for (StockIncomingMaterials stockIncomingMaterials : stockInOrderLevel2.getStockIncomingMaterialsList()) {
 							 stockIncomingMaterials.setInOrderCode(stockInOrderLevel2.getOrderCode());
 							 stockIncomingMaterials.setDelFlag(0);
 							 stockIncomingMaterialsService.save(stockIncomingMaterials);
