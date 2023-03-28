@@ -112,13 +112,39 @@ public class SysDepartController {
                 List<SysDepartTreeModel> departList = sysDepartService.queryTreeList(ids);
                 result.setResult(departList);
             } else {
-                List<SysDepartTreeModel> list = sysDepartService.queryTreeList();
+                boolean flag=false;
+                List<SysDepartTreeModel> list = sysDepartService.queryTreeList(flag);
                 result.setResult(list);
             }
             if (StrUtil.isNotBlank(sign)) {
                 List<SysDepartTreeModel> list1 = sysDepartService.querySignTreeList(sign);
                 result.setResult(list1);
             }
+            //做树形搜索处理
+            if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(result.getResult())) {
+                sysDepartService.processingTreeList(name, result.getResult());
+            }
+            result.setSuccess(true);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return result;
+    }
+
+    /**
+     * 查询数据 查出所有部门,并以树结构数据格式响应给前端
+     *
+     * @return
+     */
+    @ApiOperation(value = "部门管理-查询账号部门", notes = "部门管理-查询账号部门")
+    @RequestMapping(value = "/queryDepartList", method = RequestMethod.GET)
+    @PermissionData(pageComponent = "system/DepartList")
+    public Result<List<SysDepartTreeModel>> queryTreeList(@RequestParam(name = "name", required = false) String name) {
+        Result<List<SysDepartTreeModel>> result = new Result<>();
+        try {
+            boolean flag=true;
+            List<SysDepartTreeModel> list = sysDepartService.queryTreeList(flag);
+            result.setResult(list);
             //做树形搜索处理
             if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(result.getResult())) {
                 sysDepartService.processingTreeList(name, result.getResult());

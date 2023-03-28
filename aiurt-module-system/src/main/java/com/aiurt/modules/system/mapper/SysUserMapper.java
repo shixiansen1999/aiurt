@@ -9,10 +9,13 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import javafx.util.Pair;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.LoginUser;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -268,4 +271,7 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	 * @return
 	 */
     List<LoginUser> getUserByCodes(@Param("orgCodes")List<String> orgCodes);
+
+	@MapKey("userId")
+	List<Pair<String,String>> getRealNameMap(@Param("orgId")String orgId);
 }

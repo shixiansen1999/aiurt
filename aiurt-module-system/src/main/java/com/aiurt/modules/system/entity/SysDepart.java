@@ -130,10 +130,16 @@ public class SysDepart implements Serializable {
 	@ApiModelProperty(value = "管理负责人id")
 	@Excel(name="管理负责人名称",width=15)
 	private String managerId;
+	@ApiModelProperty(value = "管理负责人名称")
+	@TableField(exist = false)
+	private String managerName;
 	/**技术负责人id*/
 	@ApiModelProperty(value = "技术负责人id")
 	@Excel(name="技术负责人名称",width=15)
 	private String technicalId;
+	@ApiModelProperty(value = "技术负责人名称")
+	@TableField(exist = false)
+	private String technicalName;
 	/**班组类别*/
 	@ApiModelProperty(value = "班组类别")
 	@Excel(name="班组类别",width=15)

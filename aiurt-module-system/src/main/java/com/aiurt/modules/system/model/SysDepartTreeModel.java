@@ -83,7 +83,11 @@ public class SysDepartTreeModel implements Serializable{
 
     private String managerId;
 
+    private String managerName;
+
     private String technicalId;
+
+    private String technicalName;
 
     private Integer teamType;
 
@@ -132,7 +136,9 @@ public class SysDepartTreeModel implements Serializable{
         this.contactId= sysDepart.getContactId();
         this.concatWay =sysDepart.getConcatWay();
         this.managerId = sysDepart.getManagerId();
+        this.managerName=sysDepart.getManagerName();
         this.technicalId =sysDepart.getTechnicalId();
+        this.technicalName=sysDepart.getTechnicalName();
         this.teamType =sysDepart.getTeamType();
         this.departFullName = sysDepart.getDepartFullName();
         this.departPhoneNum = sysDepart.getDepartPhoneNum();

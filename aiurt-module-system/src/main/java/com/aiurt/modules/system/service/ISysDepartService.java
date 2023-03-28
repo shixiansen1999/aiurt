@@ -33,7 +33,7 @@ public interface ISysDepartService extends IService<SysDepart>{
      * 查询所有部门信息,并分节点进行显示
      * @return
      */
-    List<SysDepartTreeModel> queryTreeList();
+    List<SysDepartTreeModel> queryTreeList(boolean flag);
 
 
     /**
