@@ -178,7 +178,7 @@
 		  and org_code_cc LIKE CONCAT('%' #{code} '%')
 	</select>
 	<select id="queryByorgIds" resultType="com.aiurt.modules.system.entity.SysUser">
-		select * from sys_user
+		select distinct sys_user.* from sys_user
 		left join sys_user_role sur  on sur.user_id = sys_user.id
 		left join sys_role sr  on sr.id = sur.role_id
 		where del_flag = 0
