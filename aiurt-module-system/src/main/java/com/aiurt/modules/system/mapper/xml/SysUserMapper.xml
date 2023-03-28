@@ -333,4 +333,16 @@
 	</if>
 </select>
 
+
+	<select id="getRealNameMap" resultType="javafx.util.Pair">
+		SELECT
+			su.id as "userId",su.realname as "realname"
+		FROM
+			sys_user su
+        WHERE
+			su.del_flag=0
+        AND
+			su.org_id like #{orgId}
+	</select>
+
 </mapper>

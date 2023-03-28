@@ -123,7 +123,7 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
         List<JwDepartmentTreeVo> departmentTreeList = JwDepartmentTreeVo.listToTree(departments);
         this.deleteDepartRecursion(departmentTreeList, accessToken, true);
         // 获取本地所有部门树结构
-        List<SysDepartTreeModel> sysDepartsTree = sysDepartService.queryTreeList();
+        List<SysDepartTreeModel> sysDepartsTree = sysDepartService.queryTreeList(false);
         // -- 企业微信不能创建新的顶级部门，所以新的顶级部门的parentId就为1
         Department parent = new Department();
         parent.setId("1");

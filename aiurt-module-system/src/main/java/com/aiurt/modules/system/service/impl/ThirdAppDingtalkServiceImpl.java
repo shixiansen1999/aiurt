@@ -136,7 +136,7 @@ public class ThirdAppDingtalkServiceImpl implements IThirdAppService {
             JdtDepartmentAPI.delete(deptId, accessToken);
         }
         // 获取本地所有部门树结构
-        List<SysDepartTreeModel> sysDepartsTree = sysDepartService.queryTreeList();
+        List<SysDepartTreeModel> sysDepartsTree = sysDepartService.queryTreeList(false);
         // -- 钉钉不能创建新的顶级部门，所以新的顶级部门的parentId就为1
         Department parent = new Department();
         parent.setDept_id(1);

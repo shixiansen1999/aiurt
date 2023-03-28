@@ -31,6 +31,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.netty.util.internal.StringUtil;
+import javafx.util.Pair;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -125,12 +126,32 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 	 * queryTreeList 对应 queryTreeList 查询所有的部门数据,以树结构形式响应给前端
 	 */
 	@Override
-	public List<SysDepartTreeModel> queryTreeList() {
+	public List<SysDepartTreeModel> queryTreeList(boolean flag) {
 		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
 		query.eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0.toString());
 		query.orderByAsc(SysDepart::getDepartOrder);
 		query.orderByDesc(SysDepart::getCreateTime);
 		List<SysDepart> list = this.list(query);
+		if (flag){
+			LoginUser sysUser = (LoginUser)SecurityUtils.getSubject().getPrincipal();
+			List<Pair<String,String>> users=sysUserMapper.getRealNameMap(sysUser.getOrgId());
+			Map<String, String> userMap = users.stream().collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+			list.forEach(l->{
+				String managerId=l.getManagerId();
+				if (StrUtil.isNotEmpty(l.getManagerId())&&userMap.containsKey(managerId)){
+					String realName= userMap.get(l.getManagerId());
+					l.setManagerName(realName);
+				}else {
+					l.setManagerId(null);
+				}
+				if (StrUtil.isNotEmpty(l.getTechnicalId())&&userMap.containsKey(l.getManagerId())){
+					String realName= userMap.get(l.getTechnicalId());
+					l.setTechnicalName(realName);
+				}else {
+					l.setTechnicalId(null);
+				}
+			});
+		}
         //update-begin---author:wangshuai ---date:20220307  for：[JTC-119]在部门管理菜单下设置部门负责人 创建用户的时候不需要处理
 		//设置用户id,让前台显示
         this.setUserIdsByDepList(list);
