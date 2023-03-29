@@ -40,14 +40,14 @@ public class FaultDevice implements Serializable {
     private String createBy;
 
 	/**创建日期*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建日期")
     private Date createTime;
 
 	/**更新日期*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新日期")
     private Date updateTime;
 
@@ -121,7 +121,7 @@ public class FaultDevice implements Serializable {
     @TableField(exist = false)
     private String materialNames;
 
-    /**所属部门*/
+    /**送修状态*/
     @ApiModelProperty(value = "送修状态")
     @Dict(dicCode = "device_repair_status")
     private String repairStatus;
@@ -130,13 +130,13 @@ public class FaultDevice implements Serializable {
     @ApiModelProperty(value = "送修序列号")
     private String repairSerialNumber;
 
-    /**所属部门*/
+    /**送修时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "送修时间")
     private Date repairSendTime;
 
-    /**所属部门*/
+    /**送修返回时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "送修返回时间")
