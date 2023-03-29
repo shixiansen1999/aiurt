@@ -31,7 +31,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.netty.util.internal.StringUtil;
-import javafx.util.Pair;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -134,8 +133,10 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 		List<SysDepart> list = this.list(query);
 		if (flag){
 			LoginUser sysUser = (LoginUser)SecurityUtils.getSubject().getPrincipal();
-			List<Pair<String,String>> users=sysUserMapper.getRealNameMap(sysUser.getOrgId());
-			Map<String, String> userMap = users.stream().collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+			List<Map<String,String>> users=sysUserMapper.getRealNameMap(sysUser.getOrgId());
+			System.out.println(users);
+			Map<String, String> userMap = users.stream()
+					.collect(Collectors.toMap(a1->a1.get("userId"),a2->a2.get("realname"),(a1,a2)->a1));
 			list.forEach(l->{
 				String managerId=l.getManagerId();
 				if (StrUtil.isNotEmpty(l.getManagerId())&&userMap.containsKey(managerId)){

@@ -334,7 +334,7 @@
 </select>
 
 
-	<select id="getRealNameMap" resultType="javafx.util.Pair">
+	<select id="getRealNameMap" resultType="java.util.Map">
 		SELECT
 			su.id as "userId",su.realname as "realname"
 		FROM
