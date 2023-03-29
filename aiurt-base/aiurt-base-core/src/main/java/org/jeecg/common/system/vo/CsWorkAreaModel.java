@@ -10,6 +10,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class CsWorkAreaModel {
@@ -69,4 +70,8 @@ public class CsWorkAreaModel {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")
     private Date updateTime;
+    /**组织机构编号*/
+    @Excel(name = "组织机构编号", width = 15)
+    @ApiModelProperty(value = "组织机构编号")
+    private List<String> orgCodeList;
 }
