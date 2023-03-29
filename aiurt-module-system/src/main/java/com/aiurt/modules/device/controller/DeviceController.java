@@ -101,6 +101,7 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
         if(StrUtil.isNotEmpty(deviceCode)){
             queryWrapper.lambda().like(Device::getCode,deviceCode);
         }
+        queryWrapper.lambda().orderByDesc(Device::getCreateTime);
         IPage<Device> pageList = deviceService.page(page, queryWrapper);
         List<Device> records = pageList.getRecords();
         if(records != null && records.size()>0){
