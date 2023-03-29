@@ -33,6 +33,7 @@ import com.aiurt.boot.strategy.mapper.InspectionStrDeviceRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.common.api.CommonAPI;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
@@ -149,6 +150,16 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
             inspectionCodeDTO.setOrgList(list);
         }
         List<InspectionCodeDTO> inspectionCodeDTOS = baseMapper.pageLists(page,inspectionCodeDTO);
+        for (InspectionCodeDTO codeDTO : inspectionCodeDTOS) {
+            LambdaQueryWrapper<InspectionCoOrgRel> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(InspectionCoOrgRel::getInspectionCoCode, codeDTO.getCode());
+            queryWrapper.eq(InspectionCoOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0);
+            List<InspectionCoOrgRel> inspectionCoOrgRels = inspectionCoOrgRelMapper.selectList(queryWrapper);
+            if (ObjectUtil.isNotEmpty(inspectionCoOrgRels)) {
+                List<String> list = inspectionCoOrgRels.stream().map(InspectionCoOrgRel::getOrgCode).collect(Collectors.toList());
+                codeDTO.setOrgList(list);
+            }
+        }
         GlobalThreadLocal.setDataFilter(false);
         if (ObjectUtils.isNotEmpty(inspectionCodeDTO.getInspectionStrCode())) {
             for (InspectionCodeDTO il : inspectionCodeDTOS) {
