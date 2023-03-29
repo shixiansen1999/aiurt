@@ -294,7 +294,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         ExcelSelectListUtil.selectList(workbook, "检查值类型", 15, 15, requiredDictModels);
         List<DictModel> requiredModels = bean.queryDictItemsByCode("patrol_item_required");
         ExcelSelectListUtil.selectList(workbook, "检查值是否必填", 16, 16, requiredModels);
-        Integer modules = 2;
+        Integer modules = 1;
         List<DictModel> modelList = inspectionCodeMapper.querySysDict(modules);
         ExcelSelectListUtil.selectList(workbook, "关联数据字典", 17, 17, modelList);
         List<DictModel> regularModels = bean.queryDictItemsByCode("regex");
