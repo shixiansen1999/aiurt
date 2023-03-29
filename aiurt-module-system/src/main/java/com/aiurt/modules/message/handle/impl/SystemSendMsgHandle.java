@@ -1,5 +1,6 @@
 package com.aiurt.modules.message.handle.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.WebsocketConst;
 import com.aiurt.modules.message.handle.ISendMsgHandle;
@@ -75,6 +76,9 @@ public class SystemSendMsgHandle implements ISendMsgHandle {
                 obj.put(WebsocketConst.MSG_USER_ID, sysUser.getId());
                 obj.put(WebsocketConst.MSG_ID, messageDTO.getMessageId());
                 obj.put(WebsocketConst.MSG_TXT, messageDTO.getTitle());
+                if (ObjectUtil.isNotEmpty(messageDTO.getIsRingBell())) {
+                    obj.put(WebsocketConst.IS_RING_BELL, messageDTO.getIsRingBell());
+                }
                 webSocket.sendMessage(sysUser.getId(), obj.toJSONString());
             }
         }

@@ -131,10 +131,10 @@ public interface IFaultService extends IService<Fault> {
 
     /**
      * 查询指派的人员
-     * @param faultCode
+     * @param fault
      * @return
      */
-    List<LoginUser> queryUser(String faultCode);
+    List<LoginUser> queryUser(Fault fault);
 
     /**
      * 查询故障解决方案

@@ -68,7 +68,9 @@ import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.util.SecurityUtil;
 import com.aiurt.modules.workarea.entity.WorkArea;
+import com.aiurt.modules.workarea.entity.WorkAreaOrg;
 import com.aiurt.modules.workarea.mapper.WorkAreaMapper;
+import com.aiurt.modules.workarea.mapper.WorkAreaOrgMapper;
 import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -253,6 +255,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private DeviceChangeSparePartMapper sparePartMapper;
     @Autowired
     private FaultMapper faultMapper;
+    @Autowired
+    private WorkAreaOrgMapper workAreaOrgMapper;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -2450,6 +2454,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             for (WorkArea workArea : workAreas) {
                 CsWorkAreaModel csWorkAreaModel = new CsWorkAreaModel();
                 BeanUtils.copyProperties(workArea, csWorkAreaModel);
+                List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getWorkAreaCode,workArea.getCode()));
+                List<String> orgCodeList = workAreaOrgList.stream().map(WorkAreaOrg::getOrgCode).collect(Collectors.toList());
+                csWorkAreaModel.setOrgCodeList(orgCodeList);
                 csWorkAreaModels.add(csWorkAreaModel);
             }
         }
@@ -2827,12 +2834,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 announcementSend.setUserId(sysUser.getId());
                 announcementSend.setReadFlag(org.jeecg.common.constant.CommonConstant.NO_READ_FLAG);
                 sysAnnouncementSendMapper.insert(announcementSend);
-                JSONObject obj = new JSONObject();
+               /* JSONObject obj = new JSONObject();
                 obj.put(WebsocketConst.MSG_CMD, WebsocketConst.CMD_USER);
                 obj.put(WebsocketConst.MSG_USER_ID, sysUser.getId());
                 obj.put(WebsocketConst.MSG_ID, announcement.getId());
                 obj.put(WebsocketConst.MSG_TXT, message.getTitle());
-                webSocket.sendMessage(sysUser.getId(), obj.toJSONString());
+                webSocket.sendMessage(sysUser.getId(), obj.toJSONString());*/
             }
         }
         message.setMessageId(anntId);

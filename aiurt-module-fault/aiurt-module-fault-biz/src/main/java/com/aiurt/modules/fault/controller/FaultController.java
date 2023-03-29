@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -536,10 +537,14 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
     })
     public Result<List<LoginUser>> queryUser(@Param(value = "faultCode") String faultCode) {
-
-        List<LoginUser> list = faultService.queryUser(faultCode);
-
-        return Result.OK(list);
+        // 根据故障编号获取故障所属组织机构
+        Fault fault = faultService.lambdaQuery().eq(Fault::getCode, faultCode).last("limit 1").one();
+        if (ObjectUtil.isEmpty(fault)) {
+            return Result.OK(Collections.emptyList());
+        } else {
+            List<LoginUser> list = faultService.queryUser(fault);
+            return Result.OK(list);
+        }
     }
 
 
