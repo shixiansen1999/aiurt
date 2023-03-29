@@ -637,7 +637,7 @@ public class FixedAssetsCheckServiceImpl extends ServiceImpl<FixedAssetsCheckMap
         }
         map.put("inventoryList",fixedAssetsCheck.getInventoryList());
         List<String> names = sysBaseApi.queryOrgNamesByOrgCodes(orgCodes);
-        map.put("departName", StrUtil.join(",", names));
+        map.put("departName", CollUtil.join(names,","));
         map.put("checkName", userById.getRealname());
         map.put("time", DateUtil.format(fixedAssetsCheck.getPlanStartDate(), "yyyy-MM-dd")+"-"+DateUtil.format(fixedAssetsCheck.getPlanEndDate(), "yyyy-MM-dd"));
         todoDTO.setData(map);
