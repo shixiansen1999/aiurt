@@ -11,17 +11,17 @@ import java.io.Serializable;
  */
 @Data
 public class ReCheckReqVo implements Serializable {
-    @ApiModelProperty(name = "复核状态")
+    @ApiModelProperty(value = "复核状态")
     private Integer reCheckState;
-    @ApiModelProperty(name = "培训部门")
+    @ApiModelProperty(value = "培训部门")
     private String sysOrgCode;
-    @ApiModelProperty(name = "培训部门")
+    @ApiModelProperty(value = "培训部门id")
     private String sysOrgCodeId;
-    @ApiModelProperty(name = "参考人员")
+    @ApiModelProperty(value = "参考人员")
     private String examPerson;
-    @ApiModelProperty(name = "考试计划")
+    @ApiModelProperty(value = "考试计划")
     private String examPlan;
-    @ApiModelProperty(name = "是否及格")
+    @ApiModelProperty(value = "是否及格")
     private Integer isPass;
     @ApiModelProperty("分页参数")
     private Integer pageNo;
