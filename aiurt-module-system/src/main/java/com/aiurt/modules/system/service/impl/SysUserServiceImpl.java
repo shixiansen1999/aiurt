@@ -677,7 +677,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     @Override
-    public IPage<SysUser> userByOrgCode(Page<SysUser> page, String orgCode, String phone, String realname, String username, Integer status,String orgId) {
+    public IPage<SysUser> userByOrgCode(Page<SysUser> page, String orgCode, String phone, String realname, String username, Integer status,String orgId,String roleCode) {
         List<String> orgIds = new ArrayList<>();
         if (StrUtil.isNotEmpty(orgId)) {
             orgIds.add(orgId);
@@ -689,7 +689,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             }
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        IPage<SysUser> users = baseMapper.queryByorgIds(page, orgIds, phone, realname, username, status, sysUser.getUsername());
+        IPage<SysUser> users = baseMapper.queryByorgIds(page, orgIds, phone, realname, username, status, sysUser.getUsername(),roleCode);
         return users;
     }
 
