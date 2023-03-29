@@ -528,6 +528,7 @@ public class SysUserController {
     @ApiOperation(value = "分页查询部门与子部门下所有人员", notes = "分页查询部门与子部门下所有人员")
     @RequestMapping(value = "/listUserByOegCode", method = RequestMethod.GET)
     public Result<?> queryUserByOrgCode(@RequestParam(name = "orgCode", required = false) String orgCode,
+                                        @RequestParam(name = "orgId", required = false) String orgId,
                                         @RequestParam(name = "phone", required = false) String phone,
                                         @RequestParam(name = "realname", required = false) String realname,
                                         @RequestParam(name = "username", required = false) String username,
@@ -535,7 +536,7 @@ public class SysUserController {
                                         @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         Page<SysUser> page = new Page<SysUser>(pageNo, pageSize);
-        IPage<SysUser> users = sysUserService.userByOrgCode(page, orgCode, phone, realname, username, status);
+        IPage<SysUser> users = sysUserService.userByOrgCode(page, orgCode, phone, realname, username, status,orgId);
         List<String> userIds = users.getRecords().stream().map(SysUser::getId).collect(Collectors.toList());
         if (userIds != null && userIds.size() > 0) {
             Map<String, String> useDepNames = sysUserService.getDepNamesByUserIds(userIds);

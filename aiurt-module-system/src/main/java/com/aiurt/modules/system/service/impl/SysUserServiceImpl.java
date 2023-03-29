@@ -677,15 +677,19 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     @Override
-    public IPage<SysUser> userByOrgCode(Page<SysUser> page, String orgCode, String phone, String realname, String username, Integer status) {
-        List<String> orgId = new ArrayList<>();
-        if (orgCode != "" && orgCode != null) {
-            String code = "/" + orgCode + "/";
-            List<SysDepart> sysDeparts = sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag,0).like(SysDepart::getOrgCodeCc, code));
-            sysDeparts.forEach(s -> orgId.add(s.getId()));
+    public IPage<SysUser> userByOrgCode(Page<SysUser> page, String orgCode, String phone, String realname, String username, Integer status,String orgId) {
+        List<String> orgIds = new ArrayList<>();
+        if (StrUtil.isNotEmpty(orgId)) {
+            orgIds.add(orgId);
+        }else {
+            if (orgCode != "" && orgCode != null) {
+                String code = "/" + orgCode + "/";
+                List<SysDepart> sysDeparts = sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag,0).like(SysDepart::getOrgCodeCc, code));
+                sysDeparts.forEach(s -> orgIds.add(s.getId()));
+            }
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        IPage<SysUser> users = baseMapper.queryByorgIds(page, orgId, phone, realname, username, status, sysUser.getUsername());
+        IPage<SysUser> users = baseMapper.queryByorgIds(page, orgIds, phone, realname, username, status, sysUser.getUsername());
         return users;
     }
 
