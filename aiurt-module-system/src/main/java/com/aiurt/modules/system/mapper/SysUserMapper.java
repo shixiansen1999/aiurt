@@ -188,7 +188,7 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	 * @param name
 	 * @return
 	 */
-	IPage<SysUser> queryByorgIds(Page<SysUser> page, @Param("orgId") List<String> orgId, @Param("phone") String phone, @Param("realname") String realname, @Param("username") String username, @Param("status") Integer status, String name);
+	IPage<SysUser> queryByorgIds(Page<SysUser> page, @Param("orgId") List<String> orgId, @Param("phone") String phone, @Param("realname") String realname, @Param("username") String username, @Param("status") Integer status, String name,@Param("roleCode") String roleCode);
 	/**
 	 * 翻译部门名字
 	 * @param asList

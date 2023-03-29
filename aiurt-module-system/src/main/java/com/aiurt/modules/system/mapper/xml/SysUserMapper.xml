@@ -178,7 +178,10 @@
 		  and org_code_cc LIKE CONCAT('%' #{code} '%')
 	</select>
 	<select id="queryByorgIds" resultType="com.aiurt.modules.system.entity.SysUser">
-		select * from sys_user  where del_flag = 0
+		select * from sys_user
+		left join sys_user_role sur  on sur.user_id = sys_user.id
+		left join sys_role sr  on sr.id = sur.role_id
+		where del_flag = 0
 		<if test="orgId.size()>0 and orgId!=null">
 			AND org_id in
 			<foreach item="orgId" collection="orgId" separator="," open="(" close=")" index="">
@@ -199,6 +202,9 @@
 		</if>
 		<if test="status == null and username ==null and realname ==null and phone ==null and name=='admin'">
 			or ( status = 2 and del_flag =0 )
+		</if>
+		<if test="roleCode != null and roleCode != '' ">
+			AND sr.role_code =#{roleCode}
 		</if>
 	</select>
 	<select id="getDepartIds" resultType="java.lang.String">
