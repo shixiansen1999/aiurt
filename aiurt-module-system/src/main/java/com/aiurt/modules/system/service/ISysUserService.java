@@ -295,7 +295,7 @@ public interface ISysUserService extends IService<SysUser> {
 	 * @param status
 	 * @return
 	 */
-	IPage<SysUser> userByOrgCode(Page<SysUser> page, String orgCode, String phone, String realname, String username , Integer status);
+	IPage<SysUser> userByOrgCode(Page<SysUser> page, String orgCode, String phone, String realname, String username , Integer status,String orgId);
 
 	/**
 	 * 查询管辖部门下的人员
