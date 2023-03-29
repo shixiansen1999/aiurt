@@ -229,7 +229,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, partApply.getId());
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_APPLY.getType());
             map.put("code",partApply.getCode());
-            map.put("applyNumber",partApply.getApplyNumber());
+            //map.put("applyNumber",partApply.getApplyNumber());
             map.put("applyUserId",user.getRealname());
             map.put("applyTime",DateUtil.format(partApply.getApplyTime(),"yyyy-MM-dd HH:mm"));
             map.put("warehouseName",one.getWarehouseName());

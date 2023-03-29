@@ -21,6 +21,10 @@ public interface SysParamCodeConstant {
      */
     String FAULT_SCHEDULING = "fault_scheduling";
     /**
+     * 故障上报是否需要审核
+     */
+    String FAULT_PROCESS = "fault_process";
+    /**
      * 固定资产业务消息发送渠道
      */
     String FIXED_ASSETS_MESSAGE = "fixed_assets_message";

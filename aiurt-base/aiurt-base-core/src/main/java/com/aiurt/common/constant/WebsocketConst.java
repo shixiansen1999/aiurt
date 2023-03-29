@@ -58,4 +58,10 @@ public class WebsocketConst {
      */
     public static final String NEWS_PUBLISH = "publish";
 
+    /**
+     * 消息json 是否响铃
+     */
+    public static final String IS_RING_BELL = "is_ring_bell";
+
+
 }
