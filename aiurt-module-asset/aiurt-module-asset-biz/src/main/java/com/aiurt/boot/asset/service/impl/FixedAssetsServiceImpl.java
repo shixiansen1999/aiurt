@@ -186,7 +186,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         List<FixedAssetsCheck> fixedAssetsChecks = assetsCheckMapper.selectList(new LambdaQueryWrapper<FixedAssetsCheck>().eq(FixedAssetsCheck::getStatus, FixedAssetsConstant.STATUS_3).eq(FixedAssetsCheck::getDelFlag, CommonConstant.DEL_FLAG_0));
         for (FixedAssetsCheck assetsCheck : fixedAssetsChecks) {
             LoginUser checkName = sysBaseAPI.getUserById(assetsCheck.getCheckId());
-            LoginUser auditName = sysBaseAPI.getUserById(assetsCheck.getCheckId());
+            LoginUser auditName = sysBaseAPI.getUserById(assetsCheck.getAuditId());
             FixedAssetsCheckRecordDTO assetsCheckDTO = new FixedAssetsCheckRecordDTO();
             BeanUtils.copyProperties(assetsCheck, assetsCheckDTO);
             //2.获取盘点任务下的资产编码一样的盘点记录
