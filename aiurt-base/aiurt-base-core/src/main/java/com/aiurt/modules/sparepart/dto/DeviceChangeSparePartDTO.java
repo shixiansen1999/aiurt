@@ -1,13 +1,10 @@
 package com.aiurt.modules.sparepart.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -105,4 +102,30 @@ public class DeviceChangeSparePartDTO implements Serializable {
 
     @ApiModelProperty("规格")
     private String specifications;
+    /**借出记录表ID*/
+    @ApiModelProperty(value = "借出记录表ID")
+    private String lendOrderId;
+    /**借入的出库记录表ID*/
+    @ApiModelProperty(value = "借入的出库记录表ID")
+    private String borrowingOutOrderId;
+    /**借出的出库记录表ID|备件出库记录*/
+    @ApiModelProperty(value = "借出的出库记录表ID||备件出库记录")
+    private String lendOutOrderId;
+    /**借出的入库记录表ID*/
+    @ApiModelProperty(value = "借入的入库记录表ID")
+    private String intOrderId;
+    /**借入的库存记录表ID*/
+    @ApiModelProperty(value = "借入的库存记录表ID")
+    private String BorrowingInventoryOrderId;
+    /**借出的库存记录表ID*/
+    @ApiModelProperty(value = "借出的库存记录表ID")
+    private String lendInventoryOrderId;
+    @ApiModelProperty(value = "报废记录表ID")
+    private String scrapId;
+    @ApiModelProperty(value = "新组件拼接后的编码")
+    private String newSparePartSplitCode;
+    /**仓库编号*/
+    @Excel(name = "仓库编号", width = 15)
+    @ApiModelProperty(value = "仓库编号")
+    private String warehouseCode;
 }

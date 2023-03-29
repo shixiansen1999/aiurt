@@ -4,10 +4,8 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.thread.ExecutorBuilder;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
@@ -31,9 +29,6 @@ import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.flow.api.FlowBaseApi;
-import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
-import com.aiurt.modules.flow.dto.StartBpmnDTO;
-import com.aiurt.modules.flow.dto.StartBpmnImportDTO;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.alibaba.fastjson.JSONObject;
@@ -70,9 +65,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -643,7 +635,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             getFaultCodeList(faultKnowledgeBase);
             faultKnowledgeBase.setStatus(FaultConstant.PENDING);
             faultKnowledgeBase.setDelFlag(0);
-            if (org.apache.commons.lang3.StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode())|| org.apache.commons.lang3.StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
+            if (StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode())|| StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
                 Result<String> result = new Result<>();
                 result.error500("设备或组件不能为空");
             }
