@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -395,10 +394,8 @@ public class FaultCountServiceImpl implements IFaultCountService {
         //通过真实姓名模糊查询username
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultTimeoutLevelReq.getAppointUserName());
          GlobalThreadLocal.setDataFilter(b);
-        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq, majors, stationCodeList, lv1Hours, lv2Hours, lv3Hours, userNameByRealName);
-        List<FaultTimeoutLevelDTO> list1 = new ArrayList<>();
-        List<FaultTimeoutLevelDTO> list2 = new ArrayList<>();
-        List<FaultTimeoutLevelDTO> list3 = new ArrayList<>();
+        Date date = new Date();
+        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq, majors, stationCodeList, lv1Hours, lv2Hours, lv3Hours, userNameByRealName,date);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultTimeoutLevelDTO faultDatum : faultData) {
                 //查找设备编码
@@ -412,8 +409,8 @@ public class FaultCountServiceImpl implements IFaultCountService {
                     }
                 }
                 //计算超时时长
-                long hour=DateUtil.between(faultDatum.getHappenTime(),new Date(), DateUnit.HOUR);
-                long min=DateUtil.between(faultDatum.getHappenTime(),new Date(), DateUnit.MINUTE);
+                long hour=DateUtil.between(faultDatum.getHappenTime(),date, DateUnit.HOUR);
+                long min=DateUtil.between(faultDatum.getHappenTime(),date, DateUnit.MINUTE);
                 int m = ((new Double(min % 60))).intValue();
                 String time = hour + "h" + m + "min";
                 long appHour =hour;
@@ -427,21 +424,18 @@ public class FaultCountServiceImpl implements IFaultCountService {
                     faultDatum.setAppTimeoutDuration(appTime);
                     if (hour >= lv1Hours && !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("一级超时");
-                        list1.add(faultDatum);
                     }
                 } else if (faultTimeoutLevelReq.getLevel() == 2) {
                     faultDatum.setTimeoutDuration(time);
                     faultDatum.setAppTimeoutDuration(appTime);
                     if (hour >= lv2Hours && hour < lv1Hours & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("二级超时");
-                        list2.add(faultDatum);
                     }
                 } else if (faultTimeoutLevelReq.getLevel() == 3) {
                     faultDatum.setTimeoutDuration(time);
                     faultDatum.setAppTimeoutDuration(appTime);
                     if (hour >= lv3Hours && hour < lv2Hours & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("三级超时");
-                        list3.add(faultDatum);
                     }
                 }
                 //班组名称和班组负责人
@@ -461,13 +455,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 faultDatum.setTeamUser(teamUser);
             }
         }
-        if (faultTimeoutLevelReq.getLevel() == 1) {
-            page.setRecords(list1);
-        } else if (faultTimeoutLevelReq.getLevel() == 2) {
-            page.setRecords(list2);
-        } else if (faultTimeoutLevelReq.getLevel() == 3) {
-            page.setRecords(list3);
-        }
+        page.setRecords(faultData);
         return page;
     }
 

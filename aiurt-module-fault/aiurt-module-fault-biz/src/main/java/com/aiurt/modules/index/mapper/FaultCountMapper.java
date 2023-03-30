@@ -45,7 +45,7 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
             @DataColumn(key = "systemName",value = "system_code"),
             @DataColumn(key = "stationName",value = "station_code")
     })
-    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level, @Param("page") Page<FaultTimeoutLevelDTO> page, @Param("faultTimeoutLevelReq") FaultTimeoutLevelReq faultTimeoutLevelReq,@Param("majorByUserId")List<String> majorByUserId,@Param("stationCodeList")List<String> stationCodeList,@Param("lv1Hours") Integer lv1Hours,@Param("lv2Hours") Integer lv2Hours,@Param("lv3Hours") Integer lv3Hours,@Param("userNameByRealName")List<String> userNameByRealName);
+    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level, @Param("page") Page<FaultTimeoutLevelDTO> page, @Param("faultTimeoutLevelReq") FaultTimeoutLevelReq faultTimeoutLevelReq,@Param("majorByUserId")List<String> majorByUserId,@Param("stationCodeList")List<String> stationCodeList,@Param("lv1Hours") Integer lv1Hours,@Param("lv2Hours") Integer lv2Hours,@Param("lv3Hours") Integer lv3Hours,@Param("userNameByRealName")List<String> userNameByRealName,@Param("date")Date date);
 
     /**
      * 故障概况统计详情(总数和已解决)分页
