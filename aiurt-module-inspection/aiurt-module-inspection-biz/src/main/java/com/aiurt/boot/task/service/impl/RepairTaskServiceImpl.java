@@ -2597,11 +2597,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
-    public IPage<SystemInformationDTO> getSystemInformation(SystemInformationDTO systemInformationDTO) {
-        Page<SystemInformationDTO> pageList = new Page<>(systemInformationDTO.getPageNo(),systemInformationDTO.getPageSize());
-
+    public List<SystemInformationDTO> getSystemInformation() {
         //查询所有线路
-        List<SystemInformationDTO> systemInformation = repairTaskMapper.getSystemInformation(pageList);
+        List<SystemInformationDTO> systemInformation = repairTaskMapper.getSystemInformation();
         systemInformation.forEach(e->{
             e.setSystemTyp("通信");
             String lineCode = e.getLineCode();
@@ -2640,8 +2638,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
             }
         });
-        pageList.setRecords(systemInformation);
-        return pageList;
+        return systemInformation;
     }
 
     @Override

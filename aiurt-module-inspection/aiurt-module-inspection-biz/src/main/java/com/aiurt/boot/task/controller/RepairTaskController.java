@@ -510,9 +510,8 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     @AutoLog(value = "董事长大屏-通信-统计", operateType = 1, operateTypeAlias = "董事长大屏-通信-统计", module = ModuleType.INSPECTION)
     @ApiOperation(value = "董事长大屏-通信-统计", notes = "董事长大屏-通信-统计")
     @GetMapping(value = "/getSystemInformation")
-    public Result<IPage<SystemInformationDTO>> getSystemInformation(SystemInformationDTO systemInformationDTO){
-        IPage<SystemInformationDTO> systemInformation = repairTaskService.getSystemInformation(systemInformationDTO);
-        return Result.OK(systemInformation);
+    public List<SystemInformationDTO> getSystemInformation(){
+        return repairTaskService.getSystemInformation();
     }
 
     @AutoLog("检修归档")

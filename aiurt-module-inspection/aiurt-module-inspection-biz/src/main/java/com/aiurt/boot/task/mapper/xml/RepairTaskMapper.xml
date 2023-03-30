@@ -834,7 +834,7 @@
 
 
     <select id="getSystemInformation" resultType="com.aiurt.boot.task.dto.SystemInformationDTO">
-         select line_code as lineCode,line_name as lineName  FROM cs_line where  del_flag = 0
+         select line_code as lineCode,line_name as line  FROM cs_line where  del_flag = 0
     </select>
 
     <select id="getMaintenanceQuantity" resultType="java.lang.Long">
