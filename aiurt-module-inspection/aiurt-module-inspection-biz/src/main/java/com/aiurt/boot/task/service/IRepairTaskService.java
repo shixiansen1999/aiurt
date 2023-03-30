@@ -224,10 +224,9 @@ public interface IRepairTaskService extends IService<RepairTask> {
 
     /**
      * 统计运维系统数据
-     * @param systemInformationDTO
      * @return
      */
-    IPage<SystemInformationDTO> getSystemInformation(SystemInformationDTO systemInformationDTO);
+    List<SystemInformationDTO> getSystemInformation();
 
     /**
      * 检修归档
