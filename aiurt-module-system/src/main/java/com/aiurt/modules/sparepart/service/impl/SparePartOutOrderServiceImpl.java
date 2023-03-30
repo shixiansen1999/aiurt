@@ -218,8 +218,12 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         sparePartOutOrder.setSysOrgCode(user.getOrgCode());
         sparePartOutOrder.setStatus(2);
         sparePartOutOrderMapper.insert(sparePartOutOrder);
-        List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode,sparePartOutOrder.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode,sparePartOutOrder.getWarehouseCode()));
-        if(!orderList.isEmpty()){
+        List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
+                .eq(SparePartOutOrder::getStatus, 2)
+                .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(SparePartOutOrder::getMaterialCode, sparePartOutOrder.getMaterialCode())
+                .eq(SparePartOutOrder::getWarehouseCode, sparePartOutOrder.getWarehouseCode()));
+        if (!orderList.isEmpty()) {
             sparePartOutOrder.setUnused(orderList.get(0).getUnused());
         }
         sparePartOutOrderMapper.updateById(sparePartOutOrder);
@@ -227,19 +231,19 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         try {
             LoginUser userById = sysBaseApi.getUserByName(sparePartOutOrder.getApplyUserId());
             //发送通知
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件出库成功" + DateUtil.today(), null);
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(), userById.getUsername(), "备件出库成功" + DateUtil.today(), null);
 
             //构建消息模板
             HashMap<String, Object> map = new HashMap<>();
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartOutOrder.getId());
-            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_OUT.getType());
-            map.put("materialCode",sparePartOutOrder.getMaterialCode());
-            String materialName= sysBaseApi.getMaterialNameByCode(sparePartOutOrder.getMaterialCode());
-            map.put("name",materialName);
-            map.put("num",sparePartOutOrder.getNum());
-            String warehouseName= sysBaseApi.getWarehouseNameByCode(sparePartOutOrder.getWarehouseCode());
-            map.put("warehouseName",warehouseName);
-            map.put("realName",userById.getRealname());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.SPAREPART_OUT.getType());
+            map.put("materialCode", sparePartOutOrder.getMaterialCode());
+            String materialName = sysBaseApi.getMaterialNameByCode(sparePartOutOrder.getMaterialCode());
+            map.put("name", materialName);
+            map.put("num", sparePartOutOrder.getNum());
+            String warehouseName = sysBaseApi.getWarehouseNameByCode(sparePartOutOrder.getWarehouseCode());
+            map.put("warehouseName", warehouseName);
+            map.put("realName", userById.getRealname());
 
             messageDTO.setData(map);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
@@ -260,19 +264,6 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         if(null!=sparePartStock && stock.getNum()>=sparePartOutOrder.getNum()){
             stock.setNum(stock.getNum()-sparePartOutOrder.getNum());
             sparePartStockMapper.updateById(stock);
-            //查询出库表同一仓库、同一备件是否有出库记录，没有则更新剩余数量为出库数量；有则更新同一仓库、同一备件所有数据的剩余数量=剩余数量+出库数量
-            List<SparePartOutOrder> outOrders = list(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode,sparePartOutOrder.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode,sparePartOutOrder.getWarehouseCode()));
-            if(outOrders.isEmpty()){
-                sparePartOutOrder.setUnused(sparePartStock.getNum()+"");
-                updateOrder(sparePartOutOrder);
-            }else{
-                outOrders.forEach(order -> {
-                    Integer n = Integer.parseInt(order.getUnused())+sparePartOutOrder.getNum();
-                    order.setStatus(sparePartOutOrder.getStatus());
-                    order.setUnused(n+"");
-                    updateOrder(order);
-                });
-            }
         }else{
             throw new AiurtBootException("库存数量不足!");
         }

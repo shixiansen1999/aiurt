@@ -25,7 +25,10 @@ import com.aiurt.modules.material.mapper.MaterialBaseMapper;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.sparepart.entity.*;
-import com.aiurt.modules.sparepart.mapper.*;
+import com.aiurt.modules.sparepart.mapper.SparePartInOrderMapper;
+import com.aiurt.modules.sparepart.mapper.SparePartLendMapper;
+import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
+import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.service.*;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.service.ISysDepartService;
@@ -223,6 +226,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         // 更新状态
                         deviceAssembly.setDelFlag(CommonConstant.DEL_FLAG_1);
                         deviceAssembly.setStatus("1");
+                        //2023-03-30 测试说被换的组件是不会再追溯，先假删除先
+                        deviceAssembly.setDelFlag(1);
                         deviceAssemblyService.updateById(deviceAssembly);
 //                        // 备件报废表spare_part_scrap插入数据
 //                        SparePartScrap sparePartScrap = new SparePartScrap();
@@ -401,18 +406,33 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                     }
                     sparePart.setNewSparePartNum(lendStockDTO.getNewSparePartNum());
                     sparePart.setNewOrgCode(user.getOrgCode());
-                    //自己仓库：生成出库单（待确认）
+                    //自己仓库：生成出库单（已确认）
                     if (lendStockDTO.getWarehouseCode().equals(stockInfo.getWarehouseCode())) {
                         SparePartOutOrder lendOutOrder = new SparePartOutOrder();
                         lendOutOrder.setNum(lendStockDTO.getNewSparePartNum());
                         lendOutOrder.setWarehouseCode(lendStockDTO.getWarehouseCode());
                         lendOutOrder.setApplyOutTime(new Date());
+                        lendOutOrder.setStatus(2);
                         lendOutOrder.setApplyUserId(user.getUsername());
                         lendOutOrder.setMaterialCode(lendStockDTO.getMaterialCode());
+                        List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
+                                .eq(SparePartOutOrder::getStatus,2)
+                                .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
+                                .eq(SparePartOutOrder::getMaterialCode,lendOutOrder.getMaterialCode())
+                                .eq(SparePartOutOrder::getWarehouseCode,lendOutOrder.getWarehouseCode()));
+                        if(!orderList.isEmpty()){
+                            lendOutOrder.setUnused(orderList.get(0).getUnused());
+                        }
                         sparePartOutOrderMapper.insert(lendOutOrder);
                         sparePart.setLendOutOrderId(lendOutOrder.getId());
-                        //发消息
-                        sendOutboundMessages(lendOutOrder,user);
+
+                        //库存扣减
+                        // new 自己的仓库扣减
+                        SparePartStock lendStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode, lendOutOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode, lendOutOrder.getWarehouseCode()));
+                        lendStock.setNum(lendStock.getNum() - lendOutOrder.getNum());
+                        sparePartStockMapper.updateById(lendStock);
+                        //2023-03-30 测试说不发消息
+                        //sendOutboundMessages(lendOutOrder,user);
                     } else {
                         //1.生成借出单（已借出）
                         SparePartLend sparePartLend = new SparePartLend();
@@ -475,19 +495,27 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         lendOutOrder.setApplyOutTime(new Date());
                         lendOutOrder.setApplyUserId(sparePartLend.getLendPerson());
                         lendOutOrder.setStatus(CommonConstant.SPARE_PART_OUT_ORDER_STATUS_2);
+                        List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
+                                .eq(SparePartOutOrder::getStatus,2)
+                                .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
+                                .eq(SparePartOutOrder::getMaterialCode,lendOutOrder.getMaterialCode())
+                                .eq(SparePartOutOrder::getWarehouseCode,lendOutOrder.getWarehouseCode()));
+                        if(!orderList.isEmpty()){
+                            lendOutOrder.setUnused(orderList.get(0).getUnused());
+                        }
                         sparePartOutOrderMapper.insert(lendOutOrder);
                         sparePart.setLendOutOrderId(lendOutOrder.getId());
 
                         //5.借入仓库库存数做加法
 
                         SparePartStock  borrowingStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode, lendOutOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode, stockInfo.getWarehouseCode()));
+                        SparePartStock partStock = new SparePartStock();
                         if (null != borrowingStock) {
                             borrowingStock.setNum(borrowingStock.getNum() + sparePartLend.getLendNum());
                             sparePartStockMapper.updateById(borrowingStock);
                             sparePart.setBorrowingInventoryOrderId(borrowingStock.getId());
                         } else {
                             //插入库存
-                            SparePartStock partStock = new SparePartStock();
                             partStock.setMaterialCode(lendOutOrder.getMaterialCode());
                             partStock.setNum(lendOutOrder.getNum());
                             partStock.setWarehouseCode(lendOutOrder.getWarehouseCode());
@@ -508,7 +536,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         sparePartInOrder.setSysOrgCode(user.getOrgCode());
                         sparePartInOrderMapper.insert(sparePartInOrder);
                         sparePart.setIntOrderId(sparePartInOrder.getId());
-                        //7.生成借入仓库的出库记录（待确认）
+                        //7.生成借入仓库的出库记录（已确认）
                         SparePartOutOrder borrowingOutOrder = new SparePartOutOrder();
                         borrowingOutOrder.setMaterialCode(sparePartInOrder.getMaterialCode());
                         borrowingOutOrder.setWarehouseCode(sparePartInOrder.getWarehouseCode());
@@ -516,10 +544,29 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         borrowingOutOrder.setNum(sparePartInOrder.getNum());
                         borrowingOutOrder.setApplyOutTime(new Date());
                         borrowingOutOrder.setApplyUserId(user.getUsername());
+                        borrowingOutOrder.setStatus(2);
+                        List<SparePartOutOrder> outOrders = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
+                                .eq(SparePartOutOrder::getStatus,2)
+                                .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
+                                .eq(SparePartOutOrder::getMaterialCode,borrowingOutOrder.getMaterialCode())
+                                .eq(SparePartOutOrder::getWarehouseCode,borrowingOutOrder.getWarehouseCode()));
+                        if(!orderList.isEmpty()){
+                            borrowingOutOrder.setUnused(outOrders.get(0).getUnused());
+                        }
                         sparePartOutOrderMapper.insert(borrowingOutOrder);
                         sparePart.setBorrowingOutOrderId(borrowingOutOrder.getId());
-                        //发消息
-                        sendOutboundMessages(borrowingOutOrder,user);
+                        //8.借入仓库的库存扣减（已确认）
+                        //库存扣减
+                        // new 自己的仓库再扣减
+                        if(ObjectUtil.isNotEmpty(borrowingStock)){
+                            borrowingStock.setNum(borrowingStock.getNum() - borrowingOutOrder.getNum());
+                            sparePartStockMapper.updateById(borrowingStock);
+                        }else {
+                            partStock.setNum(partStock.getNum() - borrowingOutOrder.getNum());
+                            sparePartStockMapper.updateById(partStock);
+                        }
+                        //2023-03-30 测试说不发消息
+                        //sendOutboundMessages(borrowingOutOrder,user);
                     }
                     sparePartService.getBaseMapper().insert(sparePart);
                 }
@@ -544,14 +591,15 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 //入库单不为空，即为借出流程
                 if (ObjectUtil.isNotEmpty(part.getIntOrderId())) {
                     SparePartOutOrder borrowingOutOrder = sparePartOutOrderMapper.selectOne(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getId, part.getBorrowingOutOrderId()));
-                    if (borrowingOutOrder.getStatus() == 1) {
+                    //2023-03-30 测试说先去掉判断，不管这个状态
+//                    if (borrowingOutOrder.getStatus() == 1) {
                         //删除借入仓库的出库单
                         sparePartOutOrderMapper.deleteById(borrowingOutOrder);
-                        //借入仓库库存扣减,删除入库单
+                        //删除入库单，借入仓库一直是不加不减
                         SparePartInOrder sparePartInOrder = sparePartInOrderMapper.selectOne(new LambdaQueryWrapper<SparePartInOrder>().eq(SparePartInOrder::getId, part.getIntOrderId()));
-                        SparePartStock borrowingStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getId, part.getBorrowingInventoryOrderId()));
-                        borrowingStock.setNum(borrowingStock.getNum() - sparePartInOrder.getNum());
-                        sparePartStockMapper.updateById(borrowingStock);
+//                        SparePartStock borrowingStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getId, part.getBorrowingInventoryOrderId()));
+//                        borrowingStock.setNum(borrowingStock.getNum() - sparePartInOrder.getNum());
+//                        sparePartStockMapper.updateById(borrowingStock);
                         sparePartInOrderMapper.deleteById(sparePartInOrder);
                         //借出仓库库存加回,删除借出仓库的出库单、删除借出单
                         SparePartOutOrder lendOutOrder = sparePartOutOrderMapper.selectOne(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getId, part.getLendOutOrderId()));
@@ -561,14 +609,17 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         sparePartOutOrderMapper.deleteById(lendOutOrder);
                         SparePartLend sparePartLend = sparePartLendMapper.selectOne(new LambdaQueryWrapper<SparePartLend>().eq(SparePartLend::getId, part.getLendOrderId()));
                         sparePartLendMapper.deleteById(sparePartLend);
-                    }
+                    //}
                 }
                 //反则出库流程
                 else {
+                    //自己的仓库加回，删除出库单
                     SparePartOutOrder sparePartOutOrder = sparePartOutOrderMapper.selectOne(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getId, part.getLendOutOrderId()));
-                    if (sparePartOutOrder.getStatus() == 1) {
-                        sparePartOutOrderMapper.deleteById(sparePartOutOrder);
-                    }
+                    SparePartStock lendStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getId, part.getBorrowingInventoryOrderId()));
+                    lendStock.setNum(lendStock.getNum() + sparePartOutOrder.getNum());
+                    sparePartStockMapper.updateById(lendStock);
+                    sparePartOutOrderMapper.deleteById(sparePartOutOrder);
+
                 }
             }
             //删除故障更换记录
