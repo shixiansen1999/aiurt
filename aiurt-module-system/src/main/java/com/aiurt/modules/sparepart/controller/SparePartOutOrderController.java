@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -130,7 +131,11 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
        sparePartOutOrder.setApplyUserId(user.getUsername());
        sparePartOutOrder.setSysOrgCode(user.getOrgCode());
        sparePartOutOrderService.save(sparePartOutOrder);
-       List<SparePartOutOrder> orderList = sparePartOutOrderService.list(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode,sparePartOutOrder.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode,sparePartOutOrder.getWarehouseCode()));
+       List<SparePartOutOrder> orderList = sparePartOutOrderService.list(new LambdaQueryWrapper<SparePartOutOrder>()
+               .eq(SparePartOutOrder::getStatus,2)
+               .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
+               .eq(SparePartOutOrder::getMaterialCode,sparePartOutOrder.getMaterialCode())
+               .eq(SparePartOutOrder::getWarehouseCode,sparePartOutOrder.getWarehouseCode()));
        if(!orderList.isEmpty()){
            sparePartOutOrder.setUnused(orderList.get(0).getUnused());
        }
@@ -231,7 +236,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
        } catch (Exception e) {
            e.printStackTrace();
        }
-
+       sparePartOutOrder.setConfirmTime(new Date());
        return sparePartOutOrderService.update(sparePartOutOrder);
    }
 
