@@ -1067,5 +1067,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<LoginUser> getOrgUsers();
+
+
+    /**
+     * 根据当前登录人的userName，查找其id
+     * @return
+     */
+    String getUserByUserName(String userName);
 }
 

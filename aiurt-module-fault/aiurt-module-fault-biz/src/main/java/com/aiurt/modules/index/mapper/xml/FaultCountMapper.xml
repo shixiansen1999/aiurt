@@ -195,5 +195,30 @@
         select * from fault
         where status = 12  and date_format(end_time ,'%Y-%m-%d') =date_format(#{startDate} ,'%Y-%m-%d')
     </select>
+    <select id="getShiftLeader" resultType="java.lang.String">
+        SELECT su.realname
+        FROM
+            sys_user as su
+        where
+            su.id in
+        <foreach collection="usersIdList" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        AND
+        su.org_code=(
+        SELECT org_code
+        FROM
+        sys_user
+        WHERE
+        id=#{faultApplicant}
+        )
+    </select>
+    <select id="getbyForeman" resultType="java.lang.String">
+        SELECT id
+        FROM
+            sys_role
+        WHERE
+            role_code=#{foreman}
+    </select>
 
 </mapper>
