@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -397,7 +396,8 @@ public class FaultCountServiceImpl implements IFaultCountService {
         //通过真实姓名模糊查询username
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultTimeoutLevelReq.getAppointUserName());
          GlobalThreadLocal.setDataFilter(b);
-        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq,majors,stationCodeList,lv1Hours,lv2Hours,lv3Hours,userNameByRealName);
+        Date date = new Date();
+        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq, majors, stationCodeList, lv1Hours, lv2Hours, lv3Hours, userNameByRealName,date);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultTimeoutLevelDTO faultDatum : faultData) {
                 //查找设备编码
@@ -411,8 +411,8 @@ public class FaultCountServiceImpl implements IFaultCountService {
                     }
                 }
                 //计算超时时长
-                long hour=DateUtil.between(faultDatum.getHappenTime(),new Date(), DateUnit.HOUR);
-                long min=DateUtil.between(faultDatum.getHappenTime(),new Date(), DateUnit.MINUTE);
+                long hour=DateUtil.between(faultDatum.getHappenTime(),date, DateUnit.HOUR);
+                long min=DateUtil.between(faultDatum.getHappenTime(),date, DateUnit.MINUTE);
                 int m = ((new Double(min % 60))).intValue();
                 String time = hour + "h" + m + "min";
                 long appHour =hour;
