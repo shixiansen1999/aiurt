@@ -1784,6 +1784,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 faultDevice.setId(null);
                 faultDevice.setDelFlag(0);
                 faultDevice.setFaultCode(fault.getCode());
+                faultDevice.setCreateTime(new Date());
             });
 
             // 保存设备信息
