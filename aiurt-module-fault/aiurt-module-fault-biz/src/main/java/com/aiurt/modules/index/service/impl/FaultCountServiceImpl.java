@@ -20,9 +20,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.CsUserMajorModel;
-import org.jeecg.common.system.vo.CsUserStationModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -372,7 +370,10 @@ public class FaultCountServiceImpl implements IFaultCountService {
         //通过真实姓名模糊查询username
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultTimeoutLevelReq.getAppointUserName());
          GlobalThreadLocal.setDataFilter(b);
-        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq,majors,stationCodeList,lv1Hours,lv2Hours,lv3Hours,userNameByRealName);
+        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq, majors, stationCodeList, lv1Hours, lv2Hours, lv3Hours, userNameByRealName);
+        List<FaultTimeoutLevelDTO> list1 = new ArrayList<>();
+        List<FaultTimeoutLevelDTO> list2 = new ArrayList<>();
+        List<FaultTimeoutLevelDTO> list3 = new ArrayList<>();
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultTimeoutLevelDTO faultDatum : faultData) {
                 //查找设备编码
@@ -401,24 +402,33 @@ public class FaultCountServiceImpl implements IFaultCountService {
                     faultDatum.setAppTimeoutDuration(appTime);
                     if (hour >= lv1Hours && !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("一级超时");
+                        list1.add(faultDatum);
                     }
                 } else if (faultTimeoutLevelReq.getLevel() == 2) {
                     faultDatum.setTimeoutDuration(time);
                     faultDatum.setAppTimeoutDuration(appTime);
                     if (hour >= lv2Hours && hour < lv1Hours & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("二级超时");
+                        list2.add(faultDatum);
                     }
                 } else if (faultTimeoutLevelReq.getLevel() == 3) {
                     faultDatum.setTimeoutDuration(time);
                     faultDatum.setAppTimeoutDuration(appTime);
                     if (hour >= lv3Hours && hour < lv2Hours & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
                         faultDatum.setTimeoutType("三级超时");
+                        list3.add(faultDatum);
                     }
                 }
 
             }
         }
-        page.setRecords(faultData);
+        if (faultTimeoutLevelReq.getLevel() == 1) {
+            page.setRecords(list1);
+        } else if (faultTimeoutLevelReq.getLevel() == 2) {
+            page.setRecords(list2);
+        } else if (faultTimeoutLevelReq.getLevel() == 3) {
+            page.setRecords(list3);
+        }
         return page;
     }
 
