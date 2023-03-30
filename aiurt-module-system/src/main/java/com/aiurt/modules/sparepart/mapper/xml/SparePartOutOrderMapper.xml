@@ -73,6 +73,7 @@
 
     </select>
     <select id="selectMaterial" resultType="com.aiurt.modules.sparepart.entity.SparePartOutOrder">
+        SELECT * FROM (
         SELECT DISTINCT
         cs_major.major_name majorName,
         cs_subsystem.system_name systemName,
@@ -115,6 +116,9 @@
         <if test="out.warehouseName!=null and out.warehouseName!=''">
             and t5.warehouse_name like concat('%', #{out.warehouseName}, '%')
         </if>
+        <if test="out.warehouseCode!=null and out.warehouseCode!=''">
+            and t5.warehouse_code = #{out.warehouseCode}
+        </if>
         <if test="out.status!=null and out.status!=''">
             and spare_part_out_order.status = #{out.status}
         </if>
@@ -132,7 +136,9 @@
         </if>
 
         order by spare_part_out_order.create_time desc
-
+        ) a
+        GROUP BY
+        a.materialCode
     </select>
 
 

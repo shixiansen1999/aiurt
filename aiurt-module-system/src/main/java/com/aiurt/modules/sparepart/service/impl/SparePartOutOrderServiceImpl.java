@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -113,18 +114,22 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         if(null!=sparePartStock && sparePartStock.getNum()>=outOrder.getNum()){
             sparePartStock.setNum(sparePartStock.getNum()-outOrder.getNum());
             sparePartStockMapper.updateById(sparePartStock);
-            //查询出库表同一仓库、同一备件是否有出库记录，没有则更新剩余数量为出库数量；有则更新同一仓库、同一备件所有数据的剩余数量=剩余数量+出库数量
+            //查询出库表同一仓库、同一备件是否有出库记录，没有则更新剩余数量为出库数量；
             List<SparePartOutOrder> orderList = list(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode,outOrder.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode,outOrder.getWarehouseCode()));
+
             if(orderList.isEmpty()){
                 sparePartOutOrder.setUnused(outOrder.getNum()+"");
                 updateOrder(sparePartOutOrder);
             }else{
-                orderList.forEach(order -> {
-                    Integer n = Integer.parseInt(order.getUnused())+outOrder.getNum();
-                    order.setStatus(sparePartOutOrder.getStatus());
-                    order.setUnused(n+"");
-                    updateOrder(order);
-                });
+                //同一仓库、同一备件 已经确认出库的数据,剩余数量=剩余数量+出库数量
+                List<SparePartOutOrder> outOrders = orderList.stream().filter(s -> 2 == s.getStatus()).collect(Collectors.toList());
+                if (CollUtil.isNotEmpty(outOrders)) {
+                    orderList.forEach(order -> {
+                        Integer n = Integer.parseInt(order.getUnused())+outOrder.getNum();
+                        order.setUnused(n+"");
+                        updateOrder(order);
+                    });
+                }
             }
             return Result.OK("操作成功!");
         }else{
@@ -135,7 +140,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     public void updateOrder(SparePartOutOrder sparePartOutOrder){
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         sparePartOutOrder.setConfirmUserId(user.getUsername());
-        sparePartOutOrder.setConfirmTime(new Date());
+        //sparePartOutOrder.setConfirmTime(new Date());不能把其他的提交时间也修改
         sparePartOutOrder.setSysOrgCode(user.getOrgCode());
         updateById(sparePartOutOrder);
     }
