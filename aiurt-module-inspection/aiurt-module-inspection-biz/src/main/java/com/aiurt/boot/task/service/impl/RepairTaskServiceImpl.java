@@ -50,7 +50,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
@@ -2097,12 +2096,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTaskResultMapper.updateById(result);
 
         // 保存上传的附件
+        repairTaskEnclosureMapper.delete(
+                new LambdaQueryWrapper<RepairTaskEnclosure>()
+                        .eq(RepairTaskEnclosure::getRepairTaskResultId, result.getId())
+                        .eq(RepairTaskEnclosure::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (StrUtil.isNotEmpty(monadDTO.getAppendix())) {
-            repairTaskEnclosureMapper.delete(
-                    new LambdaQueryWrapper<RepairTaskEnclosure>()
-                            .eq(RepairTaskEnclosure::getRepairTaskResultId, result.getId())
-                            .eq(RepairTaskEnclosure::getDelFlag, CommonConstant.DEL_FLAG_0));
-
             List<String> appendixList = StrUtil.split(monadDTO.getAppendix(), ',');
             appendixList.forEach(ap -> {
                 RepairTaskEnclosure repairTaskEnclosure = new RepairTaskEnclosure();
