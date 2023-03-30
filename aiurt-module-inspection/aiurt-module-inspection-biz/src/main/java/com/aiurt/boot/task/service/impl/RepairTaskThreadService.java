@@ -342,8 +342,9 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
 
                         //检修结果
                         r.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(r.getStatus())));
+
                         //当第一次检修结果为空时，且有检修结果是正常
-                        if (ObjectUtil.isEmpty(repairTask.getRepairResult())&& r.getStatus() != null && r.getStatus() == 1) {
+                        if (ObjectUtil.isEmpty(repairTask.getRepairRecord())&& r.getStatus() != null && r.getStatus() == 1) {
                             repairTask.setRepairRecord(r.getStatusName());
                         }
                         //当检修结果异常时覆盖
