@@ -2,7 +2,6 @@ package com.aiurt.modules.fault.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
-import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -10,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.hibernate.validator.constraints.Length;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
@@ -107,5 +105,8 @@ public class FaultTimeoutLevelDTO {
     @ApiModelProperty(value = "故障发生时间yyyy-MM-dd HH:mm",  required = true)
     @NotNull(message = "请填写故障发生时间")
     private Date happenTime;
+
+    @ApiModelProperty("报修部门")
+    private String faultApplicantDept;
 
 }
