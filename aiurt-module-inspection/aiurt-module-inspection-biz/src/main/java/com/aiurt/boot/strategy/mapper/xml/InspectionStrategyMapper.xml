@@ -82,7 +82,7 @@
             AND tactics = #{inspectionStrategyDTO.tactics}
         </if>
         <if test="inspectionStrategyDTO.mechanismCode !=null ">
-         	AND code in(SELECT ss.inspection_str_code FROM inspection_str_org_rel ss WHERE  ss.org_code = #{inspectionStrategyDTO.mechanismCode}})
+         	AND code in(SELECT ss.inspection_str_code FROM inspection_str_org_rel ss WHERE  ss.org_code = #{inspectionStrategyDTO.mechanismCode})
         </if>
         <if test="inspectionStrategyDTO.siteCode!=null and inspectionStrategyDTO.level == 1">
         	AND code IN (SELECT ssr.inspection_str_code FROM inspection_str_sta_rel ssr WHERE  ssr.line_code = #{inspectionStrategyDTO.siteCode})
