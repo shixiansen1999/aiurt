@@ -2620,14 +2620,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     e.setIplanComplete(maintenanceQuantity1+inspection1);
 
 
-                    List<String> faultCodeList = repairTaskMapper.getFaultCodeList(stationCodeByLineCode);
+                    List<String> faultCodeList = repairTaskMapper.getFaultCodeList(stationCodeByLineCode,null);
                     if (CollectionUtil.isNotEmpty(faultCodeList)){
                         //故障总数
                         e.setFaultSum((long) faultCodeList.size());
-
-                        //故障完成总数
-                        Long faultQuantity = repairTaskMapper.getFaultQuantity(faultCodeList);
-                        e.setFaultComplete(faultQuantity);
+                    }
+                    //故障完成总数
+                    List<String> faultCodeList1 = repairTaskMapper.getFaultCodeList(stationCodeByLineCode, CommonConstant.FAULT_STATUS);
+                    if(CollectionUtil.isNotEmpty(faultCodeList1)){
+                        e.setFaultComplete((long) faultCodeList1.size());
                     }
                 }else {
                     e.setIplanSum(CommonConstant.ASSIGNMENT);
