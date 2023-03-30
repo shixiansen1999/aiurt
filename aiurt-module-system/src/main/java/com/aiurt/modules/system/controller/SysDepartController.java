@@ -130,7 +130,28 @@ public class SysDepartController {
         }
         return result;
     }
-
+    /**
+     * 查询数据 查出所有部门,并以树结构数据格式响应给前端
+     *
+     * @return
+     */
+    @ApiOperation(value = "部门管理-当前登录人所管理的部门及所有子部门", notes = "部门管理-当前登录人所在部门及所有子部门")
+    @RequestMapping(value = "/queryOrgTreeList", method = RequestMethod.GET)
+    public Result<List<SysDepartTreeModel>> queryOrgTreeList(String name) {
+        Result<List<SysDepartTreeModel>> result = new Result<>();
+        try {
+                List<SysDepartTreeModel> list1 = sysDepartService.queryLoginSignTreeList();
+                result.setResult(list1);
+            //做树形搜索处理
+            if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(result.getResult())) {
+                sysDepartService.processingTreeList(name, result.getResult());
+            }
+            result.setSuccess(true);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return result;
+    }
     /**
      * 查询数据 查出所有部门,并以树结构数据格式响应给前端
      *
