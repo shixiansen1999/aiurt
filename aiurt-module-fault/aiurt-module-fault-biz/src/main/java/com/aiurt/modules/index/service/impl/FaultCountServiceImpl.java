@@ -20,10 +20,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.CsUserStationModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysUserRoleModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -250,7 +250,19 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 }
                 //班组名称和班组负责人
                 faultDatum.setTeamName(faultDatum.getFaultApplicantDept());
-                faultDatum.setTeamUser(user.getRealname());
+                //获取填报人组织机构
+                LambdaQueryWrapper<Fault> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(Fault::getCode,faultDatum.getCode());
+                Fault one = faultService.getOne(wrapper);
+                String realName = sysBaseApi.getUserByUserName(one.getFaultApplicant());
+                String foreman="foreman";
+                String foremanId = faultCountMapper.getbyForeman(foreman);
+                List<SysUserRoleModel> models = sysBaseApi.getUserByRoleId(foremanId);
+                //stream 流 过滤 填报人的组织机构 string
+                List<String> usersIdList = models.stream().map(SysUserRoleModel::getUserId).collect(Collectors.toList());
+                List<String> list = faultCountMapper.getShiftLeader(realName, usersIdList);
+                String teamUser = list.stream().map(String::valueOf).collect(Collectors.joining(","));
+                faultDatum.setTeamUser(teamUser);
             }
         }
         page.setRecords(faultData);
@@ -319,7 +331,19 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 }
                 //班组名称和班组负责人
                 faultDatum.setTeamName(faultDatum.getFaultApplicantDept());
-                faultDatum.setTeamUser(user.getRealname());
+                //获取填报人组织机构
+                LambdaQueryWrapper<Fault> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(Fault::getCode,faultDatum.getCode());
+                Fault one = faultService.getOne(wrapper);
+                String realName = sysBaseApi.getUserByUserName(one.getFaultApplicant());
+                String foreman="foreman";
+                String foremanId = faultCountMapper.getbyForeman(foreman);
+                List<SysUserRoleModel> models = sysBaseApi.getUserByRoleId(foremanId);
+                //stream 流 过滤 填报人的组织机构 string
+                List<String> usersIdList = models.stream().map(SysUserRoleModel::getUserId).collect(Collectors.toList());
+                List<String> list = faultCountMapper.getShiftLeader(realName, usersIdList);
+                String teamUser = list.stream().map(String::valueOf).collect(Collectors.joining(","));
+                faultDatum.setTeamUser(teamUser);
             }
         }
         page.setRecords(faultData);
@@ -415,7 +439,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
                         faultDatum.setTimeoutType("三级超时");
                     }
                 }
-
+   //ddd
             }
         }
         page.setRecords(faultData);
