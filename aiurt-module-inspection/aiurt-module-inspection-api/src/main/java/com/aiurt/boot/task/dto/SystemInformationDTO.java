@@ -26,17 +26,7 @@ public class SystemInformationDTO {
 
     @ApiModelProperty(value = "线路名称")
     @TableField(exist = false)
-    private String lineName;
-
-
-    @ApiModelProperty(value = "站点Code")
-    @TableField(exist = false)
-    private String siteCode;
-
-
-    @ApiModelProperty(value = "站点名称")
-    @TableField(exist = false)
-    private java.lang.String siteName;
+    private String line;
 
 
     @ApiModelProperty(value = "系统名称")
@@ -63,10 +53,4 @@ public class SystemInformationDTO {
     @TableField(exist = false)
     private java.lang.Long faultSum;
 
-
-    @ApiModelProperty(required = true)
-    private Integer pageNo=1;
-
-    @ApiModelProperty(required = true)
-    private Integer pageSize=10;
 }

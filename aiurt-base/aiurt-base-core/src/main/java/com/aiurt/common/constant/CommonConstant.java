@@ -71,6 +71,12 @@ public interface CommonConstant {
      */
     public static final Long REPAIR_POOL_ACCOMPLISH = 8L;
 
+
+    /**
+     * 故障已完成状态
+     */
+    public static final Long FAULT_STATUS = 12L;
+
     /**
      * 巡检已完成状态
      */

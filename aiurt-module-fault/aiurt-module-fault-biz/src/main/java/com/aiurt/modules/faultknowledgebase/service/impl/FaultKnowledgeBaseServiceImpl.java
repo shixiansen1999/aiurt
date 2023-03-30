@@ -4,10 +4,8 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.thread.ExecutorBuilder;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
@@ -31,9 +29,6 @@ import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.flow.api.FlowBaseApi;
-import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
-import com.aiurt.modules.flow.dto.StartBpmnDTO;
-import com.aiurt.modules.flow.dto.StartBpmnImportDTO;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.alibaba.fastjson.JSONObject;
@@ -70,9 +65,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -291,23 +283,36 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
 
         CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+
+        //专业下拉框
+        List<DictModel> dictModels3 = bean.queryTableDictItemsByCode("cs_major", "major_name", "major_code");
+        Map<String, DictModel> collect6 = dictModels3.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
+        List<DictModel> collect7 = collect6.values().stream().collect(Collectors.toList());
+        selectList(workbook, "专业", 0, 0, collect7);
+
+        //子系统下拉框
+        List<DictModel> dictModels4 = bean.queryTableDictItemsByCode("cs_subsystem", "system_name", "system_code");
+        Map<String, DictModel> collect8 = dictModels4.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
+        List<DictModel> collect9 = collect8.values().stream().collect(Collectors.toList());
+        selectList(workbook, "子系统", 1, 1, collect9);
+
         //知识库类别下拉框
         List<DictModel> dictModels = bean.queryTableDictItemsByCode("fault_knowledge_base_type", "name", "code");
         Map<String, DictModel> collect = dictModels.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
         List<DictModel> collect1 = collect.values().stream().collect(Collectors.toList());
-        selectList(workbook, "知识库类别", 0, 0, collect1);
+        selectList(workbook, "知识库类别", 2, 2, collect1);
 
         //设备类型下拉框
         List<DictModel> dictModels1 = bean.queryTableDictItemsByCode("device_Type", "name", "code");
         Map<String, DictModel> collect2 = dictModels1.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
         List<DictModel> collect3 = collect2.values().stream().collect(Collectors.toList());
-        selectList(workbook, "设备类型", 1, 1, collect3);
+        selectList(workbook, "设备类型", 3, 3, collect3);
 
         //设备组件下拉框
         List<DictModel> dictModels2 = bean.queryTableDictItemsByCode("device_assembly", "material_name", "material_code");
         Map<String, DictModel> collect4 = dictModels2.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
         List<DictModel> collect5 = collect4.values().stream().collect(Collectors.toList());
-        selectList(workbook, "设备组件", 2, 2, collect5);
+        selectList(workbook, "设备组件", 4, 4, collect5);
 
         String fileName = "故障知识库导入模板.xlsx";
 
@@ -418,22 +423,53 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         BeanUtils.copyProperties(faultKnowledgeBaseModel, faultKnowledgeBase);
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
+        String majorCode = null;
+        String systemCode = null;
+        if(StrUtil.isBlank(faultKnowledgeBaseModel.getMajorName())){
+            stringBuilder.append("专业必填，");
+        }else {
+            JSONObject csMajorByName = sysBaseApi.getCsMajorByName(faultKnowledgeBaseModel.getMajorName());
+            if (ObjectUtil.isNotNull(csMajorByName)){
+                majorCode = csMajorByName.getString("majorCode");
+                faultKnowledgeBase.setMajorCode(majorCode);
+            }else {
+                stringBuilder.append("系统中不存在该专业，");
+            }
+        }
+
+        if (StrUtil.isBlank(faultKnowledgeBaseModel.getSystemName())){
+            stringBuilder.append("子系统必填，");
+        }else {
+            if(StrUtil.isNotBlank(majorCode)){
+                JSONObject systemName = sysBaseApi.getSystemName(majorCode, faultKnowledgeBaseModel.getSystemName());
+                if (ObjectUtil.isNotNull(systemName)){
+                    systemCode = systemName.getString("systemCode");
+                    faultKnowledgeBase.setSystemCode(systemCode);
+                }else {
+                    stringBuilder.append("系统中该专业下不存在该子系统，");
+                }
+            }else {
+                stringBuilder.append("请正确填写专业后，在填写子系统，");
+            }
+
+        }
 
         if (StrUtil.isBlank(faultKnowledgeBaseModel.getKnowledgeBaseTypeName())) {
             stringBuilder.append("故障现象分类必填，");
         }else {
-            LambdaQueryWrapper<FaultKnowledgeBaseType> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(FaultKnowledgeBaseType::getName,faultKnowledgeBaseModel.getKnowledgeBaseTypeName())
-                              .eq(FaultKnowledgeBaseType::getDelFlag,0);
-            List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(lambdaQueryWrapper);
-            if (CollectionUtil.isNotEmpty(faultKnowledgeBaseTypes)){
-                List<String> collect = faultKnowledgeBaseTypes.stream().map(FaultKnowledgeBaseType::getCode).collect(Collectors.toList());
-                if (CollectionUtil.isNotEmpty(collect)){
-                    String s = collect.get(0);
-                    faultKnowledgeBase.setKnowledgeBaseTypeCode(s);
+            if (StrUtil.isNotBlank(systemCode)){
+                LambdaQueryWrapper<FaultKnowledgeBaseType> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+                lambdaQueryWrapper.eq(FaultKnowledgeBaseType::getName,faultKnowledgeBaseModel.getKnowledgeBaseTypeName())
+                                  .eq(FaultKnowledgeBaseType::getSystemCode,systemCode)
+                                  .eq(FaultKnowledgeBaseType::getDelFlag,0);
+                FaultKnowledgeBaseType faultKnowledgeBaseType = faultKnowledgeBaseTypeMapper.selectOne(lambdaQueryWrapper);
+                if (ObjectUtil.isNotNull(faultKnowledgeBaseType)){
+                    faultKnowledgeBase.setKnowledgeBaseTypeCode(faultKnowledgeBaseType.getCode());
+                }else {
+                    stringBuilder.append("系统中该子系统下不存在该故障现象分类，");
                 }
             }else {
-                stringBuilder.append("系统中不存在该故障现象分类，");
+                stringBuilder.append("请正确填写子系统后，在填写故障现象分类，");
             }
         }
 
@@ -522,6 +558,8 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             FaultKnowledgeBaseModel faultKnowledgeBaseModel = list.get(i);
             Map<String, String> lm = new HashMap<>(16);
             //错误报告获取信息
+            lm.put("majorName", faultKnowledgeBaseModel.getMajorName());
+            lm.put("systemName", faultKnowledgeBaseModel.getSystemName());
             lm.put("knowledgeBaseTypeName", faultKnowledgeBaseModel.getKnowledgeBaseTypeName());
             lm.put("deviceTypeName", faultKnowledgeBaseModel.getDeviceTypeName());
             lm.put("materialName", faultKnowledgeBaseModel.getMaterialName());
@@ -643,7 +681,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             getFaultCodeList(faultKnowledgeBase);
             faultKnowledgeBase.setStatus(FaultConstant.PENDING);
             faultKnowledgeBase.setDelFlag(0);
-            if (org.apache.commons.lang3.StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode())|| org.apache.commons.lang3.StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
+            if (StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode())|| StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
                 Result<String> result = new Result<>();
                 result.error500("设备或组件不能为空");
             }

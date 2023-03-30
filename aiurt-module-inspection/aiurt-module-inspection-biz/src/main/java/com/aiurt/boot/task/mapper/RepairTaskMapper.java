@@ -291,11 +291,10 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
 
     /**
-     * 分页查询
-     * @param pageList
+     * 大屏统计
      * @return
      */
-    List<SystemInformationDTO> getSystemInformation(Page<SystemInformationDTO> pageList);
+    List<SystemInformationDTO> getSystemInformation();
 
     /**
      * 统计数量(检修)
@@ -316,9 +315,10 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     /**
      * 根据站点Code查询故障信息
      * @param stationCode
+     * @param status
      * @return
      */
-    List<String> getFaultCodeList(@Param("stationCode") List<String> stationCode);
+    List<String> getFaultCodeList(@Param("stationCode") List<String> stationCode,@Param("status") Long status);
 
     /**
      * 故障已完成数量

@@ -1406,7 +1406,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             fault.setStatus(FaultStatusEnum.Close.getStatus());
             // 修改备件, 更改状态
             LambdaQueryWrapper<DeviceChangeSparePart> dataWrapper = new LambdaQueryWrapper<>();
-            dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
+            dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode).eq(DeviceChangeSparePart::getConsumables,0);
             List<DeviceChangeSparePart> oneSourceList = sparePartService.list(dataWrapper);
             // 处理备件
             if (CollectionUtil.isNotEmpty(oneSourceList)) {
@@ -1784,6 +1784,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 faultDevice.setId(null);
                 faultDevice.setDelFlag(0);
                 faultDevice.setFaultCode(fault.getCode());
+                faultDevice.setCreateTime(new Date());
             });
 
             // 保存设备信息
