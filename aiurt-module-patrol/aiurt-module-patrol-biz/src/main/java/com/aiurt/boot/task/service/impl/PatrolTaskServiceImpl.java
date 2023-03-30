@@ -856,6 +856,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 patrolTaskUserMapper.deleteBatchIds(taskUserList);
             }
             updateWrapper.set(PatrolTask::getStatus, 4)
+                    .set(PatrolTask::getBeginTime, new Date())
                     .set(PatrolTask::getSource, 1)
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);

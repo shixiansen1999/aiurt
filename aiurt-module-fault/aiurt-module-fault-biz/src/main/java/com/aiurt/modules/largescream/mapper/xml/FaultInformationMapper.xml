@@ -495,7 +495,7 @@
         fr.end_time,
         fr.assign_time,
         op.hang_up_time,
-        IFNULL(TIMESTAMPDIFF( SECOND, IFNULL( fr.recevice_time, fr.assign_time ), fr.end_time ) - IFNUll( op.hang_up_time, '0' ),'0') AS duration
+        IFNULL(TIMESTAMPDIFF( SECOND, IFNULL( IFNULL( fr.recevice_time, fr.assign_time ),f.happen_time), fr.end_time ) - IFNUll( op.hang_up_time, '0' ),'0') AS duration
         from  fault_repair_record  fr
         left join sys_user s on s.username = fr.appoint_user_name
         left join  fault f on f.code = fr.fault_code
@@ -527,7 +527,7 @@
         fr.end_time,
         fr.assign_time,
         op.hang_up_time,
-        IFNULL(TIMESTAMPDIFF( SECOND, IFNULL( fr.recevice_time, fr.assign_time ), fr.end_time ) - IFNUll( op.hang_up_time, '0' ),'0') AS duration
+        IFNULL(TIMESTAMPDIFF( SECOND, IFNULL( IFNULL( fr.recevice_time, fr.assign_time ),f.happen_time), fr.end_time ) - IFNUll( op.hang_up_time, '0' ),'0') AS duration
         FROM
         fault_repair_participants frp
         LEFT JOIN sys_user s ON s.username = frp.user_name
