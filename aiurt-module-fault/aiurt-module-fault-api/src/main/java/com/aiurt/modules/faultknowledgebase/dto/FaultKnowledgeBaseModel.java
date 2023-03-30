@@ -19,6 +19,31 @@ public class FaultKnowledgeBaseModel {
     @ApiModelProperty(value = "主键id")
     private java.lang.String id;
 
+    /**专业编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "专业编码")
+    private java.lang.String majorCode;
+
+
+    /**专业名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "专业名称")
+    @Excel(name = "专业", width = 15)
+    private java.lang.String majorName;
+
+
+    /**子系统编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "子系统编码")
+    private java.lang.String systemCode;
+
+
+    /**子系统名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "子系统名称")
+    @Excel(name = "子系统", width = 15)
+    private java.lang.String systemName;
+
     /**知识库编码*/
     @TableField(exist = false)
     @ApiModelProperty(value = "知识库编码")
