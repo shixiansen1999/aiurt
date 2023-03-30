@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -90,18 +91,18 @@ public class FaultCountServiceImpl implements IFaultCountService {
 //        List<String> ordCode = null;
         List<String> majors = null;
         List<String> stationCodeList = null;
-        if (!isAdmin) {
-            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
-            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+//        if (!isAdmin) {
+//            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
+//            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
 
 //            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
 //
 //            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
 
-            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
-
-            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
-        }
+//            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
+//
+//            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
+//        }
         GlobalThreadLocal.setDataFilter(b);
 
 
