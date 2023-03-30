@@ -50,6 +50,11 @@ public interface ISysDepartService extends IService<SysDepart>{
      * @return
      */
     List<SysDepartTreeModel> querySignTreeList(String sign);
+    /**
+     * 查询当前登录人所有部门信息,并分节点进行显示
+     * @return
+     */
+    List<SysDepartTreeModel> queryLoginSignTreeList();
 
     /**
      * 查询所有部门DepartId信息,并分节点进行显示

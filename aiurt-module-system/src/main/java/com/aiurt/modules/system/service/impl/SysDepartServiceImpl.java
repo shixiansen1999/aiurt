@@ -46,6 +46,7 @@ import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -185,6 +186,78 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 		return listResult;
 	}
 
+	@Override
+	public List<SysDepartTreeModel> queryLoginSignTreeList() {
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		List<CsUserDepartModel> departByUserId = api.getDepartByUserId(sysUser.getId());
+		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
+		query.eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0.toString());
+		if(CollectionUtil.isNotEmpty(departByUserId)){
+			List<String> codes = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+			Set<String> codeList = new HashSet<>();
+			for (String code : codes) {
+				List<String> strings = sysDepartList(code);
+				codeList.addAll(strings);
+			}
+			query.in(SysDepart::getOrgCode,codeList);
+			query.orderByAsc(SysDepart::getDepartOrder);
+			query.orderByDesc(SysDepart::getCreateTime);
+			List<SysDepart> list = this.list(query);
+			List<SysDepartTreeModel> listResult = FindsDepartsChildrenUtil.wrapTreeDataToTreeList(list);
+			return  listResult;
+		}else {
+			return CollUtil.newArrayList();
+		}
+		//update-begin---author:wangshuai ---date:20220307  for：[JTC-119]在部门管理菜单下设置部门负责人 创建用户的时候不需要处理
+		//设置用户id,让前台显示
+		//this.setUserIdsByDepList(list);
+		//update-begin---author:wangshuai ---date:20220307  for：[JTC-119]在部门管理菜单下设置部门负责人 创建用户的时候不需要处理
+		// 调用wrapTreeDataToTreeList方法生成树状数据
+	}
+	public  List<String> sysDepartList(String orgCode){
+		List<SysDepart> list = sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0));
+		List<org.jeecg.common.system.vo.SysDepartModel> modelList = new ArrayList<>();
+		for (SysDepart sysDepart : list) {
+			org.jeecg.common.system.vo.SysDepartModel model = new org.jeecg.common.system.vo.SysDepartModel();
+			BeanUtils.copyProperties(sysDepart,model);
+			modelList.add(model);
+		}
+		SysDepart sysDepart = sysDepartMapper.selectOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SysDepart::getOrgCode,orgCode));
+		if(ObjectUtil.isEmpty(sysDepart)){
+			return Collections.emptyList();
+		}
+		org.jeecg.common.system.vo.SysDepartModel model = new org.jeecg.common.system.vo.SysDepartModel();
+		BeanUtils.copyProperties(sysDepart,model);
+		List<org.jeecg.common.system.vo.SysDepartModel> allChildren = new ArrayList<>();
+		if(ObjectUtil.isNotEmpty(model)&&CollUtil.isNotEmpty(modelList)){
+			List<org.jeecg.common.system.vo.SysDepartModel> sysDepartList = treeMenuList(modelList, model, allChildren);
+			sysDepartList.add(model);
+			if (CollectionUtil.isEmpty(sysDepartList)) {
+				return Collections.emptyList();
+			}
+			List<String> codeList = sysDepartList.stream().map(s -> s.getOrgCode()).collect(Collectors.toList());
+			return codeList;
+		}
+		return null;
+	}
+	/**
+	 * 获取某个父节点下面的所有子节点
+	 * @param list
+	 * @param depart
+	 * @param allChildren
+	 * @return
+	 */
+	public static List<org.jeecg.common.system.vo.SysDepartModel> treeMenuList(List<org.jeecg.common.system.vo.SysDepartModel> list, org.jeecg.common.system.vo.SysDepartModel depart, List<org.jeecg.common.system.vo.SysDepartModel> allChildren) {
+		for (org.jeecg.common.system.vo.SysDepartModel sysDepart : list) {
+			//遍历出父id等于参数的id，add进子节点集合
+			if (sysDepart.getParentId().equals(depart.getId())) {
+				//递归遍历下一级
+				treeMenuList(list, sysDepart, allChildren);
+				allChildren.add(sysDepart);
+			}
+		}
+		return allChildren;
+	}
 	/**
 	 * queryTreeList 根据部门id查询,前端回显调用
 	 */
