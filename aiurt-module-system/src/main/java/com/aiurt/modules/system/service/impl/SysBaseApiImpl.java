@@ -13,8 +13,8 @@ import com.aiurt.common.aspect.UrlMatchEnum;
 import com.aiurt.common.constant.*;
 import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.util.HTMLUtils;
 import com.aiurt.common.result.SpareResult;
+import com.aiurt.common.util.HTMLUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.YouBianCodeUtil;
 import com.aiurt.common.util.dynamic.db.FreemarkerParseFactory;
@@ -2959,5 +2959,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         GlobalThreadLocal.setDataFilter(b);
         return loginUsers;
+    }
+
+    @Override
+    public String getUserByUserName(String userName) {
+        SysUser user = userMapper.getUserByName(userName);
+        return user.getId();
     }
 }
