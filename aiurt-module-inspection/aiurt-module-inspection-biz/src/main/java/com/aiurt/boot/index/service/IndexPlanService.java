@@ -283,6 +283,13 @@ public class IndexPlanService {
         lambdaQueryWrapper.in(RepairTaskUser::getRepairTaskCode, codeList);
         List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(lambdaQueryWrapper);
 
+
+        LambdaQueryWrapper<RepairTask> taskQueryWrapper = new LambdaQueryWrapper<>();
+        taskQueryWrapper.in(RepairTask::getCode, codeList);
+        taskQueryWrapper.select(RepairTask::getRepairPoolId);
+        List<RepairTask> repairTasks = repairTaskMapper.selectList(taskQueryWrapper);
+
+
         if (CollUtil.isNotEmpty(repairTaskUsers)) {
             Set<String> userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).collect(Collectors.toSet());
             if (CollUtil.isNotEmpty(userIds)) {
@@ -293,14 +300,33 @@ public class IndexPlanService {
                     // 检修人员名称
                     taskDetailsDTO.setRealName(jsonObjects.stream().map(js -> js.getString("realname")).collect(Collectors.joining("；")));
 
-                    Set<String> orgId = jsonObjects.stream().map(js -> js.getString("orgId")).collect(Collectors.toSet());
+                    /*Set<String> orgId = jsonObjects.stream().map(js -> js.getString("orgId")).collect(Collectors.toSet());
                     if (CollUtil.isNotEmpty(orgId)) {
                         List<JSONObject> deptList = sysBaseApi.queryDepartsByIds(StrUtil.join(",", orgId));
                         if (CollUtil.isNotEmpty(deptList)) {
                             taskDetailsDTO.setTeamName(deptList.stream().map(dept -> dept.getString("departName")).collect(Collectors.joining("；")));
                         }
-                    }
+                    }*/
                 }
+            }
+        }
+
+        if (CollUtil.isNotEmpty(repairTasks)) {
+            Set<String> orgCodes = new HashSet<>();
+            List<String> ids = repairTasks.stream().map(RepairTask::getRepairPoolId).collect(Collectors.toList());
+            LambdaQueryWrapper<RepairPool> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(RepairPool::getId, ids);
+            queryWrapper.select(RepairPool::getCode);
+            List<RepairPool> repairPools = repairPoolMapper.selectList(queryWrapper);
+            if (CollUtil.isNotEmpty(repairPools)) {
+                for (RepairPool repairPool : repairPools) {
+                    List<String> code = repairPoolMapper.selectOrgByCode(repairPool.getCode());
+                    orgCodes.addAll(code);
+                }
+            }
+            List<JSONObject> deptList = sysBaseApi.queryDepartsByOrgcodes(StrUtil.join(",", orgCodes));
+            if (CollUtil.isNotEmpty(deptList)) {
+                taskDetailsDTO.setTeamName(deptList.stream().map(dept -> dept.getString("departName")).collect(Collectors.joining("；")));
             }
         }
     }
