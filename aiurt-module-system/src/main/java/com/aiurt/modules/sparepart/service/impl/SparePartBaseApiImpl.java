@@ -431,6 +431,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         SparePartStock lendStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode, lendOutOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode, lendOutOrder.getWarehouseCode()));
                         lendStock.setNum(lendStock.getNum() - lendOutOrder.getNum());
                         sparePartStockMapper.updateById(lendStock);
+                        sparePart.setBorrowingInventoryOrderId(lendStock.getId());
                         //2023-03-30 测试说不发消息
                         //sendOutboundMessages(lendOutOrder,user);
                     } else {
@@ -518,7 +519,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                             //插入库存
                             partStock.setMaterialCode(lendOutOrder.getMaterialCode());
                             partStock.setNum(lendOutOrder.getNum());
-                            partStock.setWarehouseCode(lendOutOrder.getWarehouseCode());
+                            partStock.setWarehouseCode(stockInfo.getWarehouseCode());
                             partStock.setOrgId(user.getOrgId());
                             partStock.setSysOrgCode(user.getOrgCode());
                             sparePartStockMapper.insert(partStock);

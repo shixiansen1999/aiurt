@@ -26,7 +26,9 @@ import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.common.entity.SelectDeviceType;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.device.mapper.DeviceAssemblyMapper;
 import com.aiurt.modules.device.mapper.DeviceMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
@@ -196,6 +198,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Autowired
     private DeviceMapper deviceMapper;
+    @Autowired
+    private DeviceAssemblyMapper deviceAssemblyMapper;
     @Autowired
     private WorkAreaMapper workAreaMapper;
     @Autowired
@@ -871,13 +875,21 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
     @Override
     public String getMaterialNameByCodes(String materialCodes) {
-        List<String> list = StrUtil.splitTrim(materialCodes, ",");
-        LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(MaterialBase::getCode,list);
-        wrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
-        List<MaterialBase> materialBases = materialBaseMapper.selectList(wrapper);
-        String materialNames = materialBases.stream().map(MaterialBase::getName).collect(Collectors.joining(","));
-        return materialNames;
+        if(ObjectUtil.isNotEmpty(materialCodes)){
+            List<String> list = StrUtil.splitTrim(materialCodes, ",");
+            List<DeviceAssembly> deviceAssemblies = deviceAssemblyMapper.selectList(new LambdaQueryWrapper<DeviceAssembly>().eq(DeviceAssembly::getDelFlag,0).in(DeviceAssembly::getCode,list));
+            if(CollUtil.isNotEmpty(deviceAssemblies)){
+                List<String> materialNames = new ArrayList<>();
+                for (DeviceAssembly deviceAssembly : deviceAssemblies) {
+                    String materialName = deviceAssembly.getMaterialName()+"-"+deviceAssembly.getCode();
+                   materialNames.add(materialName);
+                }
+                String collect = materialNames.stream().collect(Collectors.joining(","));
+                return collect;
+            }
+          return null;
+        }
+     return null;
     }
 
 
