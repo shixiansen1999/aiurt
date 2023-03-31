@@ -85,6 +85,8 @@ public class SysInfoListServiceImpl extends ServiceImpl<SysInfoListMapper, SysAn
         //update-end--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置----------------------
         mv.addObject(NormalExcelConstants.PARAMS,exportParams);
         mv.addObject(NormalExcelConstants.DATA_LIST, exportList);
+        String exportFields = "titile,level,msgContent,userNames,sendStatus,sendTime,endTime,sender";
+        mv.addObject(NormalExcelConstants.EXPORT_FIELDS, exportFields);
         return mv;
     }
 

@@ -37,7 +37,7 @@ public class SysAnnouncement implements Serializable {
     /**
      * 内容
      */
-    @Excel(name = "内容", width = 30)
+    @Excel(name = "发布内容", width = 30)
     private String msgContent;
     /**
      * 发布人
