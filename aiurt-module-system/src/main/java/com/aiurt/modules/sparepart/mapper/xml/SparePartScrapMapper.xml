@@ -14,7 +14,7 @@
         t1.`name`,
         spare_part_scrap.scrap_time,
         spare_part_scrap.num,
-        t6.realname create_by,
+        spare_part_scrap.update_by createBy,
         t1.specifications,
         t7.`name` manufactorCodeName,
         d3.item_text unit,
