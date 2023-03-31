@@ -105,4 +105,5 @@ public class FaultCountInfosDTO {
     @NotNull(message = "请填写故障发生时间")
     private Date happenTime;
 
+
 }

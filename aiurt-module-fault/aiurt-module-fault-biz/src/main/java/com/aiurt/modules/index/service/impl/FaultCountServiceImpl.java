@@ -439,7 +439,21 @@ public class FaultCountServiceImpl implements IFaultCountService {
                         faultDatum.setTimeoutType("三级超时");
                     }
                 }
-   //ddd
+                //班组名称和班组负责人
+                faultDatum.setTeamName(faultDatum.getFaultApplicantDept());
+                //获取填报人组织机构
+                LambdaQueryWrapper<Fault> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(Fault::getCode,faultDatum.getCode());
+                Fault one = faultService.getOne(wrapper);
+                String realName = sysBaseApi.getUserByUserName(one.getFaultApplicant());
+                String foreman="foreman";
+                String foremanId = faultCountMapper.getbyForeman(foreman);
+                List<SysUserRoleModel> models = sysBaseApi.getUserByRoleId(foremanId);
+                //stream 流 过滤 填报人的组织机构 string
+                List<String> usersIdList = models.stream().map(SysUserRoleModel::getUserId).collect(Collectors.toList());
+                List<String> list = faultCountMapper.getShiftLeader(realName, usersIdList);
+                String teamUser = list.stream().map(String::valueOf).collect(Collectors.joining(","));
+                faultDatum.setTeamUser(teamUser);
             }
         }
         page.setRecords(faultData);
