@@ -122,4 +122,8 @@ public class StockInOrderLevel2 extends DictEntity {
 	@ApiModelProperty(value = "提报物资列表")
 	@TableField(exist = false)
 	private List<StockIncomingMaterials> stockIncomingMaterialsList;
+
+	/**锚点*/
+	@TableField(exist = false)
+	private  Integer  anchor;
 }
