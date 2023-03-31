@@ -177,8 +177,10 @@ public class SparePartStockDTO implements Serializable {
     /**原组件编号*/
     @ApiModelProperty(value = "原组件编号")
     private String oldSparePartCode;
-
-    @ApiModelProperty(value = "原组件名称")
+    /**原组件编号*/
+    @ApiModelProperty(value = "原组件物资编码")
+    private String oldMaterialCode;
+    @ApiModelProperty(value = "原组件物资编码")
     @TableField(exist = false)
     private String oldSparePartName;
 
