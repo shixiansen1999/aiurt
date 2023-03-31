@@ -706,6 +706,7 @@ public class EmergencyTeamServiceImpl extends ServiceImpl<EmergencyTeamMapper, E
                 crewModel.setRealName(record.getRealname());
                 crewModel.setUserPhone(record.getPhone());
                 crewModel.setJobName(record.getJobName());
+                crewModel.setRemark(record.getRemark());
                 Integer post = record.getPost();
                 String s = iSysBaseAPI.translateDict(TeamConstant.EMERGENCY_POST, Convert.toStr(post));
                 crewModel.setPostName(s);
