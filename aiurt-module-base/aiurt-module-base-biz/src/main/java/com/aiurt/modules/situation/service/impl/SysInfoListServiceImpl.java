@@ -2,6 +2,7 @@ package com.aiurt.modules.situation.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.situation.entity.SysAnnouncement;
 import com.aiurt.modules.situation.mapper.SysInfoListMapper;
@@ -49,6 +50,7 @@ public class SysInfoListServiceImpl extends ServiceImpl<SysInfoListMapper, SysAn
 
         // Step.1 组装查询条件
         QueryWrapper<SysAnnouncement> queryWrapper = QueryGenerator.initQueryWrapper(sysAnnouncement, request.getParameterMap());
+        queryWrapper.lambda().eq(SysAnnouncement::getMsgCategory, CommonConstant.MSG_CATEGORY_3).eq(SysAnnouncement::getDelFlag,CommonConstant.DEL_FLAG_0.toString()).orderByDesc(SysAnnouncement::getCreateTime);
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
         // Step.2 获取导出数据
