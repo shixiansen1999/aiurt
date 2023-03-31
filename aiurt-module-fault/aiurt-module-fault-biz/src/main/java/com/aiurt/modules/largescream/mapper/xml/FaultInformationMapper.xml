@@ -470,7 +470,7 @@
         fr.recevice_time,
         fr.end_time,
         fr.assign_time,
-        sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-(SELECT SUM(IFNUll(op.hang_up_time,0))
+        sum(TIMESTAMPDIFF(second,IFNULL( IFNULL( fr.recevice_time, fr.assign_time ),f.happen_time),fr.end_time))-(SELECT SUM(IFNUll(op.hang_up_time,0))
         FROM operation_process op  WHERE op.fault_code = fr.`fault_code`) as duration
         from  fault_repair_record  fr
         left join sys_user s on s.username = fr.appoint_user_name

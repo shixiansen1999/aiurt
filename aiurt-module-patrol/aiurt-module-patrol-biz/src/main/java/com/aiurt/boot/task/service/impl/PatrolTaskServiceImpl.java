@@ -884,7 +884,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             if (manager.checkTaskUser(patrolTask.getCode()) == false && !admin) {
                 throw new AiurtBootException("只有该任务的巡检人才可以确认");
             }
-            updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
+            updateWrapper.set(PatrolTask::getStatus, 4).set(PatrolTask::getBeginTime, new Date()).eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
             // 确认后发送待办消息
             try {
