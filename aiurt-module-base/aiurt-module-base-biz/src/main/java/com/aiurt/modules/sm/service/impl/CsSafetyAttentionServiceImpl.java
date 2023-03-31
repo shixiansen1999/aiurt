@@ -80,6 +80,11 @@ public class CsSafetyAttentionServiceImpl extends ServiceImpl<CsSafetyAttentionM
                     .eq(CsSafetyAttention::getDelFlag,0));
             safetyAttentions.addAll(safetyAttentions1);
         }
+        if (StrUtil.isBlank(ids)){
+            List<CsSafetyAttention>safetyAttentions1 = baseMapper.selectList(new LambdaQueryWrapper<CsSafetyAttention>()
+                    .eq(CsSafetyAttention::getDelFlag,0));
+            safetyAttentions.addAll(safetyAttentions1);
+        }
          safetyAttentions =  safetyAttentions.stream().distinct().collect(Collectors.toList());
          safetyAttentions.forEach(s->{
              String htmlStr  = s.getAttentionContent();
