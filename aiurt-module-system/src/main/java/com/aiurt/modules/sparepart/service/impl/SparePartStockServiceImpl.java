@@ -126,10 +126,10 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
                 Long aLong5 = sparePartStockMapper.timeCount(CollectionUtil.isNotEmpty(list) ? list:list2, null, DateUtil.date().year() - 1,null);
                 //本年度的总消耗量
                 Long aLong6 = sparePartStockMapper.timeCount(CollectionUtil.isNotEmpty(list) ? list:list2, null, DateUtil.date().year(),null);
-                //上个月的消耗量
-                Long aLong7 = sparePartStockMapper.timeCount(CollectionUtil.isNotEmpty(list) ? list:list2, null, DateUtil.date().year(), DateUtil.date().month() - 1);
                 //本月的消耗量
-                Long aLong8 = sparePartStockMapper.timeCount(CollectionUtil.isNotEmpty(list) ? list:list2, null, DateUtil.date().year(), DateUtil.date().month());
+                Long aLong8 = sparePartStockMapper.timeCount(CollectionUtil.isNotEmpty(list) ? list:list2, null, DateUtil.date().year(), DateUtil.date().month()+1);
+                //上个月的消耗量
+                Long aLong7 = sparePartStockMapper.timeCount(CollectionUtil.isNotEmpty(list) ? list:list2, null, DateUtil.date().year(), DateUtil.date().month()+1 - 1);
                 MaterialBaseType materialBaseType1 = new MaterialBaseType();
                 this.getJudge(e,materialBaseType1,aLong,aLong1,aLong4,aLong5,aLong6,aLong7,aLong8);
                 List<MaterialBaseType> collect = materialBaseTypeLitres.stream().filter(materialBaseType -> e.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
