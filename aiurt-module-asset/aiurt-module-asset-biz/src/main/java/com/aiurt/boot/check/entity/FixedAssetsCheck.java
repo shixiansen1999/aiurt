@@ -60,10 +60,10 @@ public class FixedAssetsCheck extends DictEntity implements Serializable {
 	@Excel(name = "盘点数量", width = 15)
     @ApiModelProperty(value = "盘点数量")
     private java.lang.Integer number;
-	/**盘点人ID*/
-	@Excel(name = "盘点人ID", width = 15)
-    @ApiModelProperty(value = "盘点人ID")
-    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
+	/**盘点人账号*/
+	@Excel(name = "盘点人账号", width = 15)
+    @ApiModelProperty(value = "盘点人账号")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
     private java.lang.String checkId;
 	/**审核人ID*/
 	@Excel(name = "审核人ID", width = 15)
