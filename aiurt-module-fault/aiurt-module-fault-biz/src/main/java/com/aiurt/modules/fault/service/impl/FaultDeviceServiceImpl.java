@@ -41,7 +41,7 @@ private ISysBaseAPI sysBaseApi;
         faultDeviceList.forEach(faultDevice ->{
             if(ObjectUtil.isNotEmpty(faultDevice.getMaterialCodes())){
                 String materialNames = sysBaseApi.getMaterialNameByCodes(faultDevice.getMaterialCodes());
-                faultDevice.setMaterialNames(materialNames+"-"+faultDevice.getMaterialCodes());
+                faultDevice.setMaterialNames(materialNames);
             }
         } );
         return faultDeviceList;

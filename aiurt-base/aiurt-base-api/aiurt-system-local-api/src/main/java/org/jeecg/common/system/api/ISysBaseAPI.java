@@ -1056,7 +1056,7 @@ public interface ISysBaseAPI extends CommonAPI {
     String getFaultRepairReuslt(String faultCode);
 
     /**
-     * 根据多个物资编号（逗号隔开）获取物资名称
+     * 根据多个组件编号（逗号隔开），获取物资名称-组件编码
      * @param materialCodes
      * @return
      */
