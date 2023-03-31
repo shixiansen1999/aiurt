@@ -550,7 +550,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                                 .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
                                 .eq(SparePartOutOrder::getMaterialCode,borrowingOutOrder.getMaterialCode())
                                 .eq(SparePartOutOrder::getWarehouseCode,borrowingOutOrder.getWarehouseCode()));
-                        if(!orderList.isEmpty()){
+                        if(!outOrders.isEmpty()){
                             borrowingOutOrder.setUnused(outOrders.get(0).getUnused());
                         }
                         sparePartOutOrderMapper.insert(borrowingOutOrder);
