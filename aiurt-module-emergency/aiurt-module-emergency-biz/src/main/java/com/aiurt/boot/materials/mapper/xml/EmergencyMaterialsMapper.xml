@@ -46,6 +46,9 @@
             #{item}
             </foreach>
             </if>
+             <if test="condition.materialsCode != null and condition.materialsCode != ''">
+                AND t2.category_code = #{condition.materialsCode}
+              </if>
         </where>
         <if test="condition.planFlag!=null">
             group by t1.materials_code
