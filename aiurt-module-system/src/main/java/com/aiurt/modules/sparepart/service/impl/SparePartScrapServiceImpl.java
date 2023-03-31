@@ -71,7 +71,14 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
      */
     @Override
     public List<SparePartScrap> selectList(Page page, SparePartScrap sparePartScrap){
-        return sparePartScrapMapper.readAll(page,sparePartScrap);
+        List<SparePartScrap> sparePartScraps = sparePartScrapMapper.readAll(page, sparePartScrap);
+        sparePartScraps.forEach(e->{
+            if (StrUtil.isNotBlank(e.getCreateBy())){
+                LoginUser loginUser = sysBaseApi.queryUser(e.getCreateBy());
+                e.setCreateBy(loginUser.getRealname());
+            }
+        });
+        return sparePartScraps;
     }
     /**
      * 查询列表不分页
