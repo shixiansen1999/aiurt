@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,7 +41,7 @@ private ISysBaseAPI sysBaseApi;
         faultDeviceList.forEach(faultDevice ->{
             if(ObjectUtil.isNotEmpty(faultDevice.getMaterialCodes())){
                 String materialNames = sysBaseApi.getMaterialNameByCodes(faultDevice.getMaterialCodes());
-                faultDevice.setMaterialNames(materialNames);
+                faultDevice.setMaterialNames(materialNames+"-"+faultDevice.getMaterialCodes());
             }
         } );
         return faultDeviceList;
