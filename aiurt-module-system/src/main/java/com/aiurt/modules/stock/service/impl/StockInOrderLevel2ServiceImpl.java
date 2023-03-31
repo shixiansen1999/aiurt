@@ -20,6 +20,7 @@ import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.mapper.MaterialBaseMapper;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.stock.dto.StockInOrderLevel2DTO;
 import com.aiurt.modules.stock.dto.StockInOrderLevel2ExportDTO;
@@ -105,6 +106,9 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	private ISysBaseAPI  iSysBaseAPI;
 	@Autowired
 	private IMaterialBaseService iMaterialBaseService;
+	@Autowired
+	private MaterialBaseMapper materialBaseMapper;
+	@Autowired
 	@Value("${jeecg.path.errorExcelUpload}")
 	private String errorExcelUpload;
 
@@ -545,13 +549,13 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 					return imporReturnRes(errorLines, successLines, tipMessage, false, null);
 				}
 				//数据校验
+				int anchor=0;
 				for (StockInOrderLevel2DTO stockInOrderLevel2DTO : stockInOrderLevel2DTOList) {
 					if (ObjectUtil.isNotEmpty(stockInOrderLevel2DTO)) {
 						StockInOrderLevel2 stockInOrderLevel2 = new StockInOrderLevel2();
 						List<StockIncomingMaterials> stockIncomingMaterials = new ArrayList<>();
 
 						StringBuilder stringBuilder = new StringBuilder();
-
 						//校验二级库信息
 						examine(stockInOrderLevel2DTO, stockInOrderLevel2, stringBuilder);
 						//校验物资信息
@@ -565,8 +569,14 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 							}
 							errorLines++;
 						}else {
+							stockInOrderLevel2.setAnchor(anchor);
+							int finalAnchor = anchor;
+							stockIncomingMaterials.forEach(s->{
+								s.setAnchor(finalAnchor);
+							});
 							stockInOrderLevel2List.add(stockInOrderLevel2);
 							stockIncomingMaterialsList.addAll(stockIncomingMaterials);
+							anchor++;
 						}
 					}
 				}
@@ -586,9 +596,11 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 						this.save(stockInOrderLevel2);
 
 						for (StockIncomingMaterials stockIncomingMaterials : stockInOrderLevel2.getStockIncomingMaterialsList()) {
-							 stockIncomingMaterials.setInOrderCode(stockInOrderLevel2.getOrderCode());
-							 stockIncomingMaterials.setDelFlag(0);
-							 stockIncomingMaterialsService.save(stockIncomingMaterials);
+							if (stockIncomingMaterials.getAnchor().equals(stockInOrderLevel2.getAnchor())){
+								stockIncomingMaterials.setInOrderCode(stockInOrderLevel2.getOrderCode());
+								stockIncomingMaterials.setDelFlag(0);
+								stockIncomingMaterialsService.save(stockIncomingMaterials);
+							}
 						}
 					}
 					return imporReturnRes(errorLines, successLines, tipMessage, true, null);
@@ -773,8 +785,9 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 					LambdaQueryWrapper<MaterialBase> lambdaQueryWrapper = new LambdaQueryWrapper<>();
 					lambdaQueryWrapper.eq(MaterialBase::getName,stockIncomingMaterialsDTO.getMaterialName());
 					lambdaQueryWrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
-					MaterialBase one = iMaterialBaseService.getOne(lambdaQueryWrapper);
-					if(ObjectUtil.isNull(one)) {
+//					MaterialBase one = iMaterialBaseService.getOne(lambdaQueryWrapper);
+					List<MaterialBase> list = materialBaseMapper.selectList(lambdaQueryWrapper);
+					if(list.size()==0) {
 						stringBuilder1.append("系统中不存在该物资名称，");
 					}
 				}
@@ -783,10 +796,9 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 					lambdaQueryWrapper.eq(MaterialBase::getCode,stockIncomingMaterialsDTO.getMaterialCode());
 					lambdaQueryWrapper.eq(MaterialBase::getName,stockIncomingMaterialsDTO.getMaterialName());
 					lambdaQueryWrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
-					MaterialBase one = iMaterialBaseService.getOne(lambdaQueryWrapper);
-					if (ObjectUtil.isNotEmpty(one)){
-						stockIncomingMaterials1.setMaterialCode(one.getCode());
-					}else {
+//					MaterialBase one = iMaterialBaseService.getOne(lambdaQueryWrapper);
+					List<MaterialBase> list = materialBaseMapper.selectList(lambdaQueryWrapper);
+					if(list.size()==0) {
 						stringBuilder1.append("物资编码和物资名称不匹配，");
 					}
 				}

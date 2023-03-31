@@ -120,4 +120,8 @@ public class StockIncomingMaterials extends DictEntity {
 	@Dict(dicCode = "materian_unit")
 	@TableField(exist = false)
 	private  String  unit;
+
+	/**锚点*/
+	@TableField(exist = false)
+	private  Integer  anchor;
 }
