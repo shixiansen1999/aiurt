@@ -224,11 +224,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
 //                    SparePartStockInfo stockInfo = sparePartStockInfoService.getSparePartStockInfoByUserName(deviceChange.getCreateBy());
                     if (Objects.nonNull(deviceAssembly)) {
                         // 更新状态
-                        deviceAssembly.setDelFlag(CommonConstant.DEL_FLAG_1);
-                        deviceAssembly.setStatus("1");
                         //2023-03-30 测试说被换的组件是不会再追溯，先假删除先
-                        deviceAssembly.setDelFlag(1);
-                        deviceAssemblyService.updateById(deviceAssembly);
+                        deviceAssemblyService.removeById(deviceAssembly);
 //                        // 备件报废表spare_part_scrap插入数据
 //                        SparePartScrap sparePartScrap = new SparePartScrap();
 //                        sparePartScrap.setNumber("1");
