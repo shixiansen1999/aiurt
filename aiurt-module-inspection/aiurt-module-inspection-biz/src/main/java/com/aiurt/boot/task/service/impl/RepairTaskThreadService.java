@@ -263,7 +263,6 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
                         }
                     }
                 }
-                repairTask.setRepairRecord("无");
                 int i = 1;
                 for (RepairTaskDTO repairTaskDTO : tasks) {
                     repairTaskDTO.setSystemName(manager.translateMajor(Arrays.asList(repairTaskDTO.getSystemCode()), InspectionConstant.SUBSYSTEM));
@@ -355,6 +354,9 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
                     List<RepairTaskResult> repairTaskResults1 = RepairTaskServiceImpl.treeFirst(resultList);
                     repairTaskResults.addAll(repairTaskResults1);
                 }
+            }
+            if (StrUtil.isEmpty(repairTask.getRepairRecord())) {
+                repairTask.setRepairRecord("无");
             }
             repairTask.setTitle(repairTask.getSiteName()+"检修记录表");
             repairTask.setRepairTaskResultList(repairTaskResults);
