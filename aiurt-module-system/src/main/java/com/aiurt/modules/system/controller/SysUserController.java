@@ -204,7 +204,17 @@ public class SysUserController {
         log.info(pageList.toString());
         return result;
     }
-
+    /**
+     * 获取用户列表数据
+     *
+     * @return
+     */
+    @ApiOperation(value = "用户管理-全部用户列表数据", notes = "用户管理-全部用户列表数据")
+    @RequestMapping(value = "/getUserList", method = RequestMethod.GET)
+    public Result<List<SysUser>> getUserList() {
+        List<SysUser> list = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0).select(SysUser::getId,SysUser::getRealname,SysUser::getUsername));
+        return Result.OK(list);
+    }
     private void getUserDetail(SysUser sysUser) {
         List<String> roleIds = sysUserRoleMapper.getRoleIds(sysUser.getId());
         List<String> roleNames = sysUserRoleMapper.getRoleNames(sysUser.getId());
