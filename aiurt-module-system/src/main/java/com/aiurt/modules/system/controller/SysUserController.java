@@ -151,11 +151,19 @@ public class SysUserController {
                                                 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, HttpServletRequest req) {
 
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (StrUtil.isBlank(user.getOrgId())){
-            user.setOrgId(sysUser.getOrgId());
-        }
+
         Result<IPage<SysUser>> result = new Result<>();
+        String id = user.getId();
+        user.setId(null);
         QueryWrapper<SysUser> queryWrapper = QueryGenerator.initQueryWrapper(user, req.getParameterMap());
+        if (StrUtil.isBlank(user.getOrgId())){
+            queryWrapper.eq("org_id",sysUser.getOrgId());
+        }
+        //当有传用户id的时候查询的用户数据是所查班组的人员和传进来的用户
+        if (StrUtil.isNotBlank(id)){
+            HashSet<String> set = new HashSet<>(Arrays.asList(id.split(",")));
+            queryWrapper.lambda().or().in(SysUser::getId,set);
+        }
 
         //用户ID
         String code = req.getParameter("code");
