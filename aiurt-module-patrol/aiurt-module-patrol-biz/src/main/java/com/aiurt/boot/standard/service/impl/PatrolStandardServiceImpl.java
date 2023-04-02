@@ -123,9 +123,9 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
 
     private List<String> standardDataPermissionFilter() {
         List<String> standardCodesByOrg = standardOrgMapper.getStandardCodeByUserOrg();
-        if (CollectionUtil.isEmpty(standardCodesByOrg)) {
+       /* if (CollectionUtil.isEmpty(standardCodesByOrg)) {
             throw new AiurtBootException("无组织机构数据！");
-        }
+        }*/
         return standardCodesByOrg;
     }
 
