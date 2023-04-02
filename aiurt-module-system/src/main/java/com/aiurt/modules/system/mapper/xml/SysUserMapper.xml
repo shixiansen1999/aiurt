@@ -348,7 +348,7 @@
         WHERE
 			su.del_flag=0
         AND
-			su.org_id like #{orgId}
+<!--			su.org_id like #{orgId}-->
 	</select>
 
 </mapper>
