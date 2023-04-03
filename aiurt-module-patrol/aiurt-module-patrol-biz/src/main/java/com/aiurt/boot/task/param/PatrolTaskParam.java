@@ -170,6 +170,10 @@ public class PatrolTaskParam extends PatrolTask {
     @ApiModelProperty(value = "标题")
     private String title;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否有打印")
+    private Boolean havePrint;
+
     @ApiModelProperty(value = "巡视单内容")
     private List<PrintStationDTO> printStationDTOList;
 }
