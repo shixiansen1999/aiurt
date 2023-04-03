@@ -70,6 +70,8 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -1941,8 +1943,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
         if(StrUtil.isNotBlank(monadDTO.getNote()) && StrUtil.isNotBlank(result.getDataCheck())){
-            boolean matches = monadDTO.getNote().matches(result.getDataCheck());
-            if (!matches){
+            Pattern pattern = Pattern.compile(result.getDataCheck());
+            Matcher matcher = pattern.matcher(monadDTO.getNote());
+            if(!matcher.find()) {
                 String regex = sysBaseApi.translateDict("regex", result.getDataCheck());
                 throw new AiurtBootException(regex);
             }
