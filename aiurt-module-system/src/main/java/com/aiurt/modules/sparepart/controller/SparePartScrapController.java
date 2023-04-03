@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.controller;
 
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.collection.CollUtil;
@@ -49,6 +50,7 @@ import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -296,10 +298,13 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 			SparePartScrap order = list.get(i);
 			order.setNumber(i+1+"");
 		}
+		SysDepartModel depart = sysBaseApi.getDepartByOrgCode(user.getOrgCode());
+		DateTime date = DateUtil.date();
+		String title = depart.getDepartName()+DateUtil.year(date)+"年度非固定资产（生产类专用物资）报废申请表";
 		//导出文件名称
 		mv.addObject(NormalExcelConstants.FILE_NAME, "备件报废管理列表");
 		mv.addObject(NormalExcelConstants.CLASS, SparePartScrap.class);
-		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件报废管理列表数据", "导出人:"+user.getRealname(), "导出信息"));
+		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams(title, "经办人:"+user.getRealname()+"     作成日期："+date, "导出信息"));
 		mv.addObject(NormalExcelConstants.DATA_LIST, list);
 		return mv;
 	}
