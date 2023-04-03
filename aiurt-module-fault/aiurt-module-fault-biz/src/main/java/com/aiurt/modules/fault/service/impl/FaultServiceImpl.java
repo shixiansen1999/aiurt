@@ -2018,8 +2018,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                             map.put("deviceNames",deviceNames);
                         }
                         Date thisHappenTime = fault.getHappenTime();
-                        Fault lastFault = list.get(0);
-                        Date lastHappenTime = fault.getHappenTime();
+                        Fault lastFault = list.get(1);
+                        Date lastHappenTime = lastFault.getHappenTime();
                         String line = sysBaseAPI.getPosition(fault.getLineCode());
                         String station = sysBaseAPI.getPosition(lastFault.getStationCode());
 
