@@ -205,4 +205,12 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     String getSamplePersonNameByTaskId(String taskId);
+
+    /**
+     * PC巡检任务池获取子系统名称和巡检单主表id
+     *
+     * @param patrolNumber
+     * @return
+     */
+    PatrolTaskDeviceParam getIdAndSystemName(@Param("patrolNumber") String patrolNumber);
 }
