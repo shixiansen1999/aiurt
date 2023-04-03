@@ -145,24 +145,19 @@ public class SysUserController {
      * @param req
      * @return
      */
-    @ApiOperation(value = "用户管理-获取用户列表数据", notes = "用户管理-分页列表查询")
+    @ApiOperation(value = "用户管理-获取用户列表数据", notes = "用户管理-分页列表查询,默认查询本部门的人员，如果需要查询全部，需要传入isAll值为1")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public Result<IPage<SysUser>> queryPageList(SysUser user, @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+    public Result<IPage<SysUser>> queryPageList(SysUser user, @RequestParam(name = "isAll", defaultValue = "0") String isAll, @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, HttpServletRequest req) {
 
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
         Result<IPage<SysUser>> result = new Result<>();
-        String id = user.getId();
-        user.setId(null);
         QueryWrapper<SysUser> queryWrapper = QueryGenerator.initQueryWrapper(user, req.getParameterMap());
-        if (StrUtil.isBlank(user.getOrgId())){
-            queryWrapper.eq("org_id",sysUser.getOrgId());
-        }
-        //当有传用户id的时候查询的用户数据是所查班组的人员和传进来的用户
-        if (StrUtil.isNotBlank(id)){
-            HashSet<String> set = new HashSet<>(Arrays.asList(id.split(",")));
-            queryWrapper.lambda().or().in(SysUser::getId,set);
+        if ("0".equals(isAll)) {
+            if (StrUtil.isBlank(user.getOrgId())){
+                queryWrapper.eq("org_id",sysUser.getOrgId());
+            }
         }
 
         //用户ID
@@ -192,7 +187,9 @@ public class SysUserController {
         queryWrapper.apply(StrUtil.isNotBlank(user.getSystemId()), "id in (select user_id from cs_user_subsystem where 1=1 and system_id in (select id from cs_subsystem where 1=1 and (id ={0} or system_code = {0})))", user.getSystemId());
 
         queryWrapper.apply(StrUtil.isNotBlank(user.getStationId()), "id in (select user_id from cs_user_station where 1=1 and station_id in (select id from cs_station where 1=1 and (id ={0} or station_code = {0})))", user.getStationId());
-
+        //如果是查全部，则把当前登录人所属部门的人排在前面
+        String sql = "order by case when ( org_code = '"+sysUser.getOrgCode()+"') then 0 else 1 end,id DESC";
+        queryWrapper.last("1".equals(isAll),sql);
         Page<SysUser> page = new Page<SysUser>(pageNo, pageSize);
         IPage<SysUser> pageList = sysUserService.page(page, queryWrapper);
 
