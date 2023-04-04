@@ -264,8 +264,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             inspectionApi.editFaultCallback(faultCallbackDTO);
         }
 
-        //单个设备一个月内重复出现两次故障，系统自动发布一条特情
-        sendInfo(fault,fault.getFaultDeviceList());
+        //单个设备一个月内重复出现两次故障，系统自动发布一条特情（专用）
+        // 根据配置决定是否需要发送
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SITUATION);
+        boolean equals = "1".equals(sysParamModel.getValue());
+        if (equals) {
+            sendInfo(fault,fault.getFaultDeviceList());
+        }
 
         return builder.toString();
     }
