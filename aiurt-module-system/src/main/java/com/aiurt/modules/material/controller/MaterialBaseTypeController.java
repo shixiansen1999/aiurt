@@ -300,6 +300,32 @@ public class MaterialBaseTypeController {
         result.setResult(materialBaseTypeListres);
         return result;
     }
+    @AutoLog(value = "系统管理-设备主键-组件-下拉的物资分类", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MaterialClassification")
+    @ApiOperation(value = "用于下拉的物资分类")
+    @GetMapping(value = "/deviceMaterialBaseType")
+    public Result<List<MaterialBaseType>> deviceMaterialBaseType(@RequestParam(name = "majorCode") String majorCode, @RequestParam(name = "systemCode",required = false) String systemCode,HttpServletRequest req) {
+        Result<List<MaterialBaseType>> result = new Result<List<MaterialBaseType>>();
+        QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>().eq("del_flag", CommonConstant.DEL_FLAG_0);
+        if(majorCode != null && !"".equals(majorCode)){
+            queryWrapper.eq("major_code", majorCode);
+        }
+        if(systemCode != null && !"".equals(systemCode)){
+            queryWrapper.eq("system_code", systemCode);
+        }
+        List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(queryWrapper.orderByDesc("create_time").select("id","base_type_code","major_code","system_code","base_type_name"));
+        if(CollUtil.isNotEmpty(materialBaseTypeList)){
+            for (MaterialBaseType baseType : materialBaseTypeList) {
+                baseType.setTitle(baseType.getBaseTypeName());
+                baseType.setValue(baseType.getBaseTypeCode());
+            }
+        }
+        if(CollUtil.isNotEmpty(materialBaseTypeList)&&ObjectUtil.isEmpty(systemCode)){
+            materialBaseTypeList = materialBaseTypeList.stream().filter(m->m.getSystemCode()==null).collect(Collectors.toList());
+        }
+        result.setSuccess(true);
+        result.setResult(materialBaseTypeList);
+        return result;
+    }
 
     @AutoLog(value = "系统管理-基础数据管理-物资分类-下拉的物资分类", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MaterialClassification")
     @ApiOperation(value = "用于下拉的物资分类")
