@@ -25,6 +25,14 @@ public interface SysParamCodeConstant {
      */
     String FAULT_PROCESS = "fault_process";
     /**
+     * 故障上报单个设备一个月内重复出现两次故障，系统是否自动发布一条特情
+     */
+    String FAULT_SITUATION = "fault_situation";
+    /**
+     * 备件报损是否使用专用导出
+     */
+    String SPAREPARTSCRAP_SPECIAL_EXPORT = "sparepartscrap_special_export";
+    /**
      * 固定资产业务消息发送渠道
      */
     String FIXED_ASSETS_MESSAGE = "fixed_assets_message";
