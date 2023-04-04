@@ -1881,4 +1881,16 @@ public class SysUserController {
         return Result.OK(result);
     }
 
+    /**
+     * 根据部门orgCode查询该部门下的所有用户
+     * @param orgCode
+     * @return
+     */
+    @ApiOperation(value = "根据部门orgCode查询该部门下的所有用户", notes = "根据部门orgCode查询该部门下的所有用户")
+    @GetMapping(value = "/queryUserByOrgCode")
+    public Result<List<SysUser>> queryUserByOrgCode(@RequestParam(name = "orgCode", required = true) String orgCode) {
+        List<SysUser> userList = sysUserService.queryUserByOrgCode(orgCode);
+        return Result.ok(userList);
+    }
+
 }
