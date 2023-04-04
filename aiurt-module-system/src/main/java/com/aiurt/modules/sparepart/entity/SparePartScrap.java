@@ -57,7 +57,7 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @TableField(exist = false)
     private  String  baseTypeCodeName;
     /**物资类型名称*/
-    @Excel(name = "物资类型", width = 15,orderNum = "1")
+    @Excel(name = "物资类型", width = 15)
     @ApiModelProperty(value = "物资类型名称")
     @TableField(exist = false)
     private  String  typeName;
@@ -71,12 +71,12 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @ApiModelProperty(value = "出库表id")
     private String outOrderId;
     /**物资名称*/
-    @Excel(name = "物资名称", width = 15,orderNum = "2")
+    @Excel(name = "物资名称", width = 15)
     @ApiModelProperty(value = "物资名称")
     @TableField(exist = false)
     private String name;
 	/**处置数量*/
-	@Excel(name = "数量", width = 15,orderNum = "5")
+	@Excel(name = "数量", width = 15)
     @ApiModelProperty(value = "处置数量")
     private Integer num;
 	/**处置时间*/
@@ -85,7 +85,7 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @ApiModelProperty(value = "处置时间")
     private Date scrapTime;
 	/**处置原因*/
-	@Excel(name = "报废原因", width = 15,orderNum = "10")
+	@Excel(name = "报废原因", width = 15)
     @ApiModelProperty(value = "处置原因")
     private String reason;
     /**申请处置人*/
@@ -175,7 +175,7 @@ public class SparePartScrap extends DictEntity implements Serializable {
     private  Integer  type;
 
     /**规格型号*/
-    @Excel(name = "规格型号",width = 15,orderNum = "3")
+    @Excel(name = "规格型号",width = 15)
     @TableField(exist = false)
     @ApiModelProperty(value = "规格型号")
     private String specifications;
@@ -184,7 +184,7 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @TableField(exist = false)
     private Integer unitValue;
     /**单位*/
-    @Excel(name = "单位",width = 15,orderNum = "4")
+    @Excel(name = "单位",width = 15)
     @ApiModelProperty(value = " 单位")
     @TableField(exist = false)
     private String unit;
@@ -220,44 +220,44 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String confirmName;
     /**所属部门*/
-    @Excel(name = "归属部门",width = 15,orderNum = "6")
+    @Excel(name = "归属部门",width = 15)
     @ApiModelProperty(value = "所属部门")
     @DeptFilterColumn
     @Dict(dictTable = "sys_depart", dicText = "depart_name", dicCode = "org_code")
     private String sysOrgCode;
-    @Excel(name = "存放位置", width = 15,orderNum = "7")
+    @Excel(name = "存放位置", width = 15)
     @ApiModelProperty(value = "存放位置")
     private String location;
 
-    @Excel(name = "备注", width = 15,orderNum = "11")
+    @Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")
     private String remarks;
 
-
+    @Excel(name = "故障单编号", width = 15)
     @ApiModelProperty(value = "故障单编号")
     private String faultCode;
 
-
+    @Excel(name = "故障现象", width = 15)
     @ApiModelProperty(value = "故障现象")
     @TableField(exist = false)
     private String symptoms;
 
-
+    @Excel(name = "备件送修状态", width = 15)
     @ApiModelProperty(value = "备件送修状态：1待返修、2已返修、3已验收")
     @Dict(dicCode = "spare_repair_status")
     private Integer repairStatus;
 
-
+    @Excel(name = "序列号", width = 15)
     @ApiModelProperty(value = "序列号")
     private String serialNumber;
 
-
+    @Excel(name = "返回时间", width = 15)
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "返回时间")
     private Date returnTime;
 
-
+    @Excel(name = "负责人", width = 15)
     @ApiModelProperty(value = "负责人")
     @TableField(exist = false)
     private String responsibleUserName;
@@ -266,11 +266,11 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String manageUserName;
 
-    @Excel(name = "生命周期", width = 15,orderNum = "8")
+    @Excel(name = "生命周期", width = 15)
     @ApiModelProperty(value = "生命周期")
     private String lifeCycle;
 
-    @Excel(name = "使用时间", width = 15,orderNum = "9")
+    @Excel(name = "使用时间", width = 15)
     @ApiModelProperty(value = "使用时间")
     private String usageTime;
 }

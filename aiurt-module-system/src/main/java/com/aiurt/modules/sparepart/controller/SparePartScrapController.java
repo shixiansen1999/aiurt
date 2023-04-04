@@ -298,15 +298,31 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 			SparePartScrap order = list.get(i);
 			order.setNumber(i+1+"");
 		}
-		SysDepartModel depart = sysBaseApi.getDepartByOrgCode(user.getOrgCode());
-		DateTime date = DateUtil.date();
-		String title = depart.getDepartName()+DateUtil.year(date)+"年度非固定资产（生产类专用物资）报废申请表";
-		//导出文件名称
-		mv.addObject(NormalExcelConstants.FILE_NAME, "备件报废管理列表");
-		mv.addObject(NormalExcelConstants.CLASS, SparePartScrap.class);
-		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams(title, "经办人:"+user.getRealname()+"     作成日期："+date, "导出信息"));
-		mv.addObject(NormalExcelConstants.DATA_LIST, list);
-		return mv;
+		// 根据配置决定是否需要使用专用导出
+		SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPARTSCRAP_SPECIAL_EXPORT);
+		boolean equals = "1".equals(sysParamModel.getValue());
+		if (equals) {
+			SysDepartModel depart = sysBaseApi.getDepartByOrgCode(user.getOrgCode());
+			DateTime date = DateUtil.date();
+			String title = depart.getDepartName() + DateUtil.year(date) + "年度非固定资产（生产类专用物资）报废申请表";
+			//导出文件名称
+			mv.addObject(NormalExcelConstants.FILE_NAME, "备件报废管理列表");
+			mv.addObject(NormalExcelConstants.CLASS, SparePartScrap.class);
+			mv.addObject(NormalExcelConstants.PARAMS, new ExportParams(title, "经办人:" + user.getRealname() + "     作成日期：" + date, "导出信息"));
+			//自定义导出字段，为null值时导出全部 例子:exportField="realname,username"
+			String exportField = "typeName,name,specifications,unit,num,sysOrgCode,location,lifeCycle,usageTime,reason,remarks";
+			//自定义导出字段
+			mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
+			mv.addObject(NormalExcelConstants.DATA_LIST, list);
+			return mv;
+		} else {
+			//导出文件名称
+			mv.addObject(NormalExcelConstants.FILE_NAME, "备件报废管理列表");
+			mv.addObject(NormalExcelConstants.CLASS, SparePartScrap.class);
+			mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件报废管理列表数据", "导出人:"+user.getRealname(), "导出信息"));
+			mv.addObject(NormalExcelConstants.DATA_LIST, list);
+			return mv;
+		}
 	}
 
 	 /**
