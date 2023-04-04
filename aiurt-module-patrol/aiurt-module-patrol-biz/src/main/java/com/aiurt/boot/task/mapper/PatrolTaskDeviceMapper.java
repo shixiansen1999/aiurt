@@ -172,11 +172,10 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * 获取当天已提交的工单
      * @param startTime
      * @param endTime
-     * @param taskId
-     * @param taskDeviceCode
+     * @param orgCode
      * @return
      */
-    List<PatrolTaskDevice> getTodaySubmit(@Param("startTime") DateTime startTime, @Param("endTime")DateTime endTime, @Param("taskId") String taskId, @Param("taskDeviceCode") String taskDeviceCode);
+    List<PatrolTaskDevice> getTodaySubmit(@Param("startTime") DateTime startTime, @Param("endTime")DateTime endTime, @Param("orgCode") String orgCode);
 
     /**
      *获取故障列表
