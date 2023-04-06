@@ -9,7 +9,6 @@ import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.common.api.dto.message.MessageDTO;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -29,7 +28,6 @@ public interface IRepairTaskService extends IService<RepairTask> {
     /**
      * 检修任务列表查询
      *
-     * @param pageList
      * @param condition
      * @return
      */

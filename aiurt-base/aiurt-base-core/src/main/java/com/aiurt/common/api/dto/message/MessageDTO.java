@@ -95,6 +95,11 @@ public class MessageDTO implements Serializable {
      * 模板消息对应的模板编码
      */
     protected String templateCode;
+
+    /**
+     * 是否响铃
+     */
+    protected Boolean isRingBell;
     /**
      * 消息类型：org.jeecg.common.constant.enums.MessageTypeEnum
      *  XT("system",  "系统消息")

@@ -1,8 +1,8 @@
 package com.aiurt.modules.sparepart.controller;
 
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -10,12 +10,6 @@ import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.constant.RoleConstant;
-import com.aiurt.boot.constant.SysParamCodeConstant;
-import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
@@ -23,19 +17,12 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.oConvertUtils;
-import com.aiurt.common.util.oConvertUtils;
-import com.aiurt.common.constant.CommonTodoStatus;
-import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
-import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartScrap;
+import com.aiurt.modules.sparepart.entity.dto.SparePartScrapSpecialDTO;
 import com.aiurt.modules.sparepart.service.ISparePartScrapService;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.todo.dto.TodoDTO;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.aiurt.modules.todo.dto.TodoDTO;
-import com.aiurt.modules.system.entity.SysDepart;
-import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -49,6 +36,7 @@ import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -59,10 +47,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
  /**
@@ -296,12 +281,33 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 			SparePartScrap order = list.get(i);
 			order.setNumber(i+1+"");
 		}
-		//导出文件名称
-		mv.addObject(NormalExcelConstants.FILE_NAME, "备件报废管理列表");
-		mv.addObject(NormalExcelConstants.CLASS, SparePartScrap.class);
-		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件报废管理列表数据", "导出人:"+user.getRealname(), "导出信息"));
-		mv.addObject(NormalExcelConstants.DATA_LIST, list);
-		return mv;
+		// 根据配置决定是否需要使用专用导出
+		SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPARTSCRAP_SPECIAL_EXPORT);
+		boolean equals = "1".equals(sysParamModel.getValue());
+		if (equals) {
+			List<SparePartScrapSpecialDTO> sparePartScraps = new ArrayList<>();
+			for (SparePartScrap partScrap : list) {
+				SparePartScrapSpecialDTO sparePartScrapSpecialDTO = new SparePartScrapSpecialDTO();
+				BeanUtil.copyProperties(partScrap, sparePartScrapSpecialDTO);
+				sparePartScraps.add(sparePartScrapSpecialDTO);
+			}
+			SysDepartModel depart = sysBaseApi.getDepartByOrgCode(user.getOrgCode());
+			DateTime date = DateUtil.date();
+			String title = depart.getDepartName() + DateUtil.year(date) + "年度非固定资产（生产类专用物资）报废申请表";
+			//导出文件名称
+			mv.addObject(NormalExcelConstants.FILE_NAME, "备件报废管理列表");
+			mv.addObject(NormalExcelConstants.CLASS, SparePartScrapSpecialDTO.class);
+			mv.addObject(NormalExcelConstants.PARAMS, new ExportParams(title, "经办人:" + user.getRealname() + "     作成日期：" + date, "导出信息"));
+			mv.addObject(NormalExcelConstants.DATA_LIST, sparePartScraps);
+			return mv;
+		} else {
+			//导出文件名称
+			mv.addObject(NormalExcelConstants.FILE_NAME, "备件报废管理列表");
+			mv.addObject(NormalExcelConstants.CLASS, SparePartScrap.class);
+			mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件报废管理列表数据", "导出人:"+user.getRealname(), "导出信息"));
+			mv.addObject(NormalExcelConstants.DATA_LIST, list);
+			return mv;
+		}
 	}
 
 	 /**

@@ -6,12 +6,8 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.manager.dto.SubsystemDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
-import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
-import com.aiurt.boot.plan.entity.RepairPoolStationRel;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
-import com.aiurt.common.aspect.annotation.DataColumn;
-import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -218,6 +214,8 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     List<OverhaulStatisticsDTOS> readTeamList(@Param("pageList") Page<OverhaulStatisticsDTOS> pageList,@Param("condition") OverhaulStatisticsDTOS condition);
+
+    Long readTaskList(@Param("pageList") Page<OverhaulStatisticsDTOS> pageList,@Param("condition") OverhaulStatisticsDTOS condition);
 
     /**
      * 查询管理负责人检修班组的信息

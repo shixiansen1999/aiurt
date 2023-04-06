@@ -321,4 +321,11 @@ public interface ISysUserService extends IService<SysUser> {
 	 * @return
 	 */
 	List<String> getSysRole(String names);
+
+	/**
+	 * 根据部门orgCode查询该部门下的所有用户
+	 * @param orgCode
+	 * @return
+	 */
+    List<SysUser> queryUserByOrgCode(String orgCode);
 }

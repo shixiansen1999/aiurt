@@ -45,17 +45,14 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String number;
     /**所属专业*/
-    @Excel(name = "所属专业", width = 15)
     @ApiModelProperty(value = "专业名称")
     @TableField(exist = false)
     private  String  majorName;
     /**子系统名称*/
-    @Excel(name = "所属子系统", width = 15)
     @ApiModelProperty(value = "子系统名称")
     @TableField(exist = false)
     private  String  systemName;
     /**物资分类*/
-    @Excel(name = "物资分类", width = 15)
     @ApiModelProperty(value = "物资分类名称")
     @TableField(exist = false)
     private  String  baseTypeCodeName;
@@ -65,7 +62,6 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @TableField(exist = false)
     private  String  typeName;
     /**物资编号*/
-    @Excel(name = "物资编号", width = 15)
     @ApiModelProperty(value = "物资编号")
     private String materialCode;
     /**仓库编号*/
@@ -80,28 +76,25 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String name;
 	/**处置数量*/
-	@Excel(name = "处置数量", width = 15)
+	@Excel(name = "数量", width = 15)
     @ApiModelProperty(value = "处置数量")
     private Integer num;
 	/**处置时间*/
-	@Excel(name = "处置时间", width = 15, format = "yyyy-MM-dd HH:mm")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "处置时间")
     private Date scrapTime;
 	/**处置原因*/
-	@Excel(name = "处置原因", width = 15)
+	@Excel(name = "报废原因", width = 15)
     @ApiModelProperty(value = "处置原因")
     private String reason;
     /**申请处置人*/
-    @Excel(name = "申请处置人", width = 15)
     @ApiModelProperty(value = "申请处置人")
     @TableField(exist = false)
     private String createBy;
 	/**备件处置单状态：1待处理、2已报废、3已报损*/
     @ApiModelProperty(value = "备件处置单状态：1待处理、2已报废、3已报损")
     private Integer status;
-    @Excel(name = "处置方式", width = 15)
     @ApiModelProperty(value = "备件处置方式：0报损、1报废")
     @Dict(dicCode = "spare_handle_way")
     private Integer handleWay;
@@ -182,6 +175,7 @@ public class SparePartScrap extends DictEntity implements Serializable {
     private  Integer  type;
 
     /**规格型号*/
+    @Excel(name = "规格型号",width = 15)
     @TableField(exist = false)
     @ApiModelProperty(value = "规格型号")
     private String specifications;
@@ -190,6 +184,7 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @TableField(exist = false)
     private Integer unitValue;
     /**单位*/
+    @Excel(name = "单位",width = 15)
     @ApiModelProperty(value = " 单位")
     @TableField(exist = false)
     private String unit;
@@ -225,10 +220,11 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String confirmName;
     /**所属部门*/
+    @Excel(name = "归属部门",width = 15,dictTable ="sys_depart",dicText = "depart_name",dicCode = "org_code")
     @ApiModelProperty(value = "所属部门")
     @DeptFilterColumn
+    @Dict(dictTable = "sys_depart", dicText = "depart_name", dicCode = "org_code")
     private String sysOrgCode;
-
     @Excel(name = "存放位置", width = 15)
     @ApiModelProperty(value = "存放位置")
     private String location;
@@ -266,8 +262,15 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String responsibleUserName;
 
-    @Excel(name = "送修经办人", width = 15)
     @ApiModelProperty(value = "送修经办人")
     @TableField(exist = false)
     private String manageUserName;
+
+    @Excel(name = "生命周期", width = 15)
+    @ApiModelProperty(value = "生命周期")
+    private String lifeCycle;
+
+    @Excel(name = "使用时间", width = 15)
+    @ApiModelProperty(value = "使用时间")
+    private String usageTime;
 }
