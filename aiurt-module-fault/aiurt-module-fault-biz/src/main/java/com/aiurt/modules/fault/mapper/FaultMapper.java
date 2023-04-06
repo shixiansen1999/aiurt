@@ -118,4 +118,11 @@ public interface FaultMapper extends BaseMapper<Fault> {
      * */
     List<FaultDTO> getFault(@Param("page")Page<FaultDTO> page, @Param("condition")FaultDTO condition, @Param("faultCodes")List<String> faultCodes);
 
+    /**
+     * 获取设备名称
+     * @param code
+     * @return
+     */
+    List<String> getDeviceName(@Param("code")String code);
+
 }

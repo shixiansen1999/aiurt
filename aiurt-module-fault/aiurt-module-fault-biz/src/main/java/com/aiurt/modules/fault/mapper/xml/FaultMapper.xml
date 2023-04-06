@@ -228,10 +228,10 @@
         fault.fault_applicant,
         fault.happen_time,
         fault.station_position_code,
-        (select group_concat(fd.device_code) from fault_device fd where fd.fault_code = fault.`code`) as deviceCode,
+        <!--(select group_concat(fd.device_code) from fault_device fd where fd.fault_code = fault.`code`) as deviceCode,
         ( select group_concat(d.name) from
         (select fd.device_code from fault_device fd where fd.fault_code = fault.`code`) a
-        left join device d on d.`code` = a.device_code ) as deviceName,
+        left join device d on d.`code` = a.device_code ) as deviceName,-->
         fault.end_time,
         fault.create_time,
         fault.hang_up_reason,
@@ -272,7 +272,13 @@
             </foreach>
         </if>
         </where>
+        group by  fault.id
     </select>
 
-
+    <select id="getDeviceName" resultType="java.lang.String">
+    select d.name
+    from fault_device fd
+    left join device d on d.`code` = fd.device_code
+    where fd.fault_code = #{code}
+    </select>
 </mapper>

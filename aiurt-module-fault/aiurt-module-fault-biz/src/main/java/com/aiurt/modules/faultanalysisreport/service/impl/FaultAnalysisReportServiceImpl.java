@@ -114,6 +114,12 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         //查询已经被引用的故障
         List<String> faultCodes = faultAnalysisReportMapper.getFaultCode();
         List<FaultDTO> faults = faultMapper.getFault(page, faultDTO,faultCodes);
+        if (CollUtil.isNotEmpty(faults)) {
+            for (FaultDTO fault : faults) {
+                List<String> deviceName = faultMapper.getDeviceName(fault.getCode());
+                fault.setDeviceName(CollUtil.join(deviceName,","));
+            }
+        }
         return page.setRecords(faults);
     }
 
