@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.PasswordUtil;
 import com.aiurt.common.util.UUIDGenerator;
 import com.aiurt.common.util.oConvertUtils;
@@ -765,5 +766,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     public List<String> getSysRole(String names) {
         List<String> role = baseMapper.getSysRole(Arrays.asList(names.split(",")));
         return role;
+    }
+
+    @Override
+    public List<SysUser> queryUserByOrgCode(String orgCode) {
+        SysDepart sysDepart = sysDepartMapper.selectOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode, orgCode).eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (ObjectUtil.isEmpty(sysDepart)) {
+            throw new AiurtBootException("没有查询到该部门");
+        }
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>().eq(SysUser::getStatus, 1).eq(SysUser::getOrgCode, sysDepart.getOrgCode()).eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+        return this.list(queryWrapper);
     }
 }
