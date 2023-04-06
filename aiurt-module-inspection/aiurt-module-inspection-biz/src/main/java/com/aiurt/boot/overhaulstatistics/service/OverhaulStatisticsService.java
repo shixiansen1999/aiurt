@@ -12,6 +12,7 @@ import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTOS;
 import com.aiurt.boot.task.dto.PersonnelTeamDTO;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -24,8 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.ModelAndView;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -129,13 +128,13 @@ public class OverhaulStatisticsService{
                 }
                 PersonnelTeamDTO userPeerTime = personnelTeamMapper.getUserPeerTime(StrUtil.isNotEmpty(q.getUserId()) ? q.getUserId() : null, condition.getStartDate(), condition.getEndDate());
 
-                if (q.getMaintenanceDuration()!=null && userPeerTime.getCounter()!=null){
-                     q.setMaintenanceDuration(q.getMaintenanceDuration()+userPeerTime.getCounter());
-                }else {
-                    q.setMaintenanceDuration(0L);
-                }
-                //完成率
-                getCompletionRate(q, size5);
+                    if (q.getMaintenanceDuration()!=0.0f && userPeerTime.getCounter()!=null){
+                        q.setMaintenanceDuration(q.getMaintenanceDuration()+(float) userPeerTime.getCounter());
+                    }else {
+                        q.setMaintenanceDuration(0.0f);
+                    }
+                    //完成率
+                    getCompletionRate(q, size5);
 
                 //异常数量
                 if (q.getTaskId()!=null) {
@@ -162,7 +161,9 @@ public class OverhaulStatisticsService{
                     overhaulStatisticsDTO.setEndDate(condition.getEndDate());
                 }
                 List<OverhaulStatisticsDTOS> dtoList = repairTaskMapper.readTeamLists(overhaulStatisticsDTO);
-
+                //查询管理负责人检修班组本周内的任务总数
+                Long tasksList = repairTaskMapper.readTaskList(pageList,overhaulStatisticsDTO);
+                e.setTaskTotal(tasksList);
                 //已完成数
                 int size2 = dtoList.size();
                 e.setCompletedNumber(Integer.valueOf(size2).longValue());
@@ -175,8 +176,8 @@ public class OverhaulStatisticsService{
                     e.setNotCompletedNumber(0L);
                     e.setTaskTotal(0L);
                 }
-                if (e.getMaintenanceDuration()==null){
-                    e.setMaintenanceDuration(0L);
+                if (e.getMaintenanceDuration()==0.0f){
+                    e.setMaintenanceDuration(0.0f);
                 }
                 //完成率
                 getCompletionRate(e, size2);
