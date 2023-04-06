@@ -220,7 +220,7 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String confirmName;
     /**所属部门*/
-    @Excel(name = "归属部门",width = 15)
+    @Excel(name = "归属部门",width = 15,dictTable ="sys_depart",dicText = "depart_name",dicCode = "org_code")
     @ApiModelProperty(value = "所属部门")
     @DeptFilterColumn
     @Dict(dictTable = "sys_depart", dicText = "depart_name", dicCode = "org_code")

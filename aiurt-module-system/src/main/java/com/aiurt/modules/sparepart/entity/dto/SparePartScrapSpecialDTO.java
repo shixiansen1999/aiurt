@@ -57,7 +57,7 @@ public class SparePartScrapSpecialDTO {
     private String unit;
 
     /**所属部门*/
-    @Excel(name = "归属部门",width = 15,orderNum = "6")
+    @Excel(name = "归属部门",width = 15,orderNum = "6",dictTable ="sys_depart",dicText = "depart_name",dicCode = "org_code")
     @ApiModelProperty(value = "所属部门")
     @DeptFilterColumn
     @Dict(dictTable = "sys_depart", dicText = "depart_name", dicCode = "org_code")
