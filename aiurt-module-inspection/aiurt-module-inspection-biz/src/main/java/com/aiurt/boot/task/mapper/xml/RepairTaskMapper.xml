@@ -573,54 +573,39 @@
     <select id="readTeamList" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTOS">
 	    SELECT
            t1.id as taskId,
-           t2.id as id,
+           t3.id as id,
            t1.code as taskCode,
-           ifnull( sum(
+           ifnull( Round(sum(
             TIMESTAMPDIFF(
              hour,
             t1.begin_time,
             IF
              ( 1 = t1.is_receipt, t1.receipt_time, IF ( 1 = t1.is_confirm, t1.confirm_time, t1.submit_time ) )
-           )),0)as maintenanceDuration,
+           ))/3600,2),0)as maintenanceDuration,
            t1.start_time as startDate,
            t1.end_time as endDate,
-		   t2.org_code as orgCode,
+		   t3.org_code as orgCode,
            count(*)AS taskTotal
         FROM
            repair_pool t6
            LEFT JOIN repair_task t1 ON t6.id = t1.repair_pool_id
-	       LEFT JOIN repair_task_org_rel t2 ON t1.`code`= t2.repair_task_code
-	       LEFT JOIN repair_task_station_rel t3 ON t1.`code`= t3.repair_task_code
-	       LEFT JOIN repair_task_standard_rel t4 ON t1.id= t4.repair_task_id
+	       LEFT JOIN repair_task_user t2 ON t1.`code`= t2.repair_task_code
+	       LEFT JOIN repair_task_org_rel t3 ON t1.`code`= t3.repair_task_code
         <where>
             t1.del_flag =0
             and t2.del_flag = 0
             and t3.del_flag = 0
-            and t4.is_appoint_device = 0
-            <if test="condition.lineCode!=null ">
-             and t3.line_code = #{condition.lineCode}
-            </if>
-            <if test="condition.taskId!=null ">
-                and t1.id = #{condition.taskId}
-            </if>
-            <if test="condition.stationCode!=null ">
-                and t3.station_code = #{condition.stationCode}
-            </if>
             <if test="condition.orgCodeList!=null and condition.orgCodeList.size()!=0">
-                and t2.org_code in
+                and t3.org_code in
                 <foreach collection="condition.orgCodeList" index="index" item="item" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
             <if test="condition.orgCode!=null ">
-                and t2.org_code = #{condition.orgCode}
-            </if>
-            <if test="condition.subsystemCode!=null ">
-                and t4.subsystem_code = #{condition.subsystemCode}
+                and t3.org_code = #{condition.orgCode}
             </if>
             <if test="condition.startDate!=null and condition.endDate!=null ">
                 and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate} ,'%Y-%m-%d')
-                and DATE_FORMAT(t6.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
             </if>
             <if test="condition.endDate!=null ">
                 and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
@@ -629,7 +614,7 @@
                 and t1.status = #{condition.status}
             </if>
         </where>
-        GROUP BY t2.org_code
+        GROUP BY t3.org_code
     </select>
 
 
@@ -645,15 +630,11 @@
         <where>
             t1.del_flag =0
             and t2.del_flag = 0
-            <if test="condition.taskId!=null ">
-                and t1.id = #{condition.taskId}
-            </if>
             <if test="condition.orgCode!=null ">
                 and t2.org_code = #{condition.orgCode}
             </if>
             <if test="condition.startDate!=null and condition.endDate!=null ">
                 and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate} ,'%Y-%m-%d')
-                and DATE_FORMAT(t6.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
             </if>
             <if test="condition.endDate!=null ">
                 and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
@@ -669,30 +650,29 @@
             t1.id as taskId,
             t2.id as id,
             t1.code as taskCode,
-            ifnull( sum(
+            ifnull( Round(sum(
             TIMESTAMPDIFF(
-             hour,
+            SECOND,
             t1.begin_time,
             IF
             ( 1 = t1.is_receipt, t1.receipt_time, IF ( 1 = t1.is_confirm, t1.confirm_time, t1.submit_time ) )
-            )),0)as maintenanceDuration,
+            ))/3600,2),0)as maintenanceDuration,
             t1.start_time as startDate,
             t1.end_time as endDate,
             t2.user_id as userId,
+            t2.name AS userName,
             count(*)AS taskTotal
           FROM
            repair_pool t6
            LEFT JOIN repair_task t1 ON t6.id = t1.repair_pool_id
 	       LEFT JOIN repair_task_user t2 ON t1.`code`= t2.repair_task_code
 	       LEFT JOIN repair_task_org_rel t3 ON t1.`code`= t3.repair_task_code
-	       LEFT JOIN repair_task_station_rel t4 ON t1.`code`= t4.repair_task_code
-	       LEFT JOIN repair_task_standard_rel t5 ON t1.id= t5.repair_task_id
+
         <where>
             t1.del_flag =0
             and t2.del_flag = 0
             and t3.del_flag = 0
-            and t4.del_flag = 0
-            and t5.is_appoint_device = 0
+
             <if test="condition.lineCode!=null ">
                 and t4.line_code = #{condition.lineCode}
             </if>
@@ -716,7 +696,7 @@
             </if>
             <if test="condition.startDate!=null and condition.endDate!=null ">
                 and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate} ,'%Y-%m-%d')
-                and DATE_FORMAT(t6.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
+
             </if>
             <if test="condition.endDate!=null ">
                 and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
@@ -798,6 +778,7 @@
                     #{item}
                 </foreach>
             </if>
+--             and del_flag=0
         </where>
     </select>
 
@@ -923,4 +904,33 @@
         </where>
         order by t2.update_time desc,t2.create_time desc
     </select>
+
+    <select id="readTaskList" resultType="java.lang.Long">
+        SELECT
+        count(*)AS taskTotal
+        FROM
+        repair_pool t6
+        LEFT JOIN repair_task t1 ON t6.id = t1.repair_pool_id
+        LEFT JOIN repair_task_org_rel t2 ON t1.`code`= t2.repair_task_code
+        <where>
+            t1.del_flag =0
+            and t2.del_flag = 0
+            <if test="condition.orgCodeList!=null and condition.orgCodeList.size()!=0">
+                and t2.org_code in
+                <foreach collection="condition.orgCodeList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="condition.orgCode!=null ">
+                and t2.org_code = #{condition.orgCode}
+            </if>
+            <if test="condition.startDate!=null and condition.endDate!=null ">
+                and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate} ,'%Y-%m-%d')
+            </if>
+            <if test="condition.endDate!=null ">
+                and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
+            </if>
+        </where>
+    </select>
+
 </mapper>
