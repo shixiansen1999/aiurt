@@ -330,6 +330,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 for (SparePartStockDTO lendStockDTO : unExitFaultSparePartList) {
                     DeviceChangeSparePart sparePart = new DeviceChangeSparePart();
                     sparePart.setCode(faultCode);
+                    //原组件数量默认1
+                    sparePart.setOldSparePartNum(1);
                     sparePart.setNewOrgCode(user.getOrgCode());
                     sparePart.setOldSparePartCode(lendStockDTO.getOldSparePartCode());
                     sparePart.setNewSparePartCode(lendStockDTO.getMaterialCode());
