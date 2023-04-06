@@ -32,7 +32,7 @@ public class DeviceAssembly extends DictEntity {
 	@TableId(type= IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
 	@JsonSerialize(using = ToStringSerializer.class)
-	private  Long  id;
+	private  String  id;
 
 	/**组件类型/物质类型*/
 	@ApiModelProperty(value = "物资类型编码")
