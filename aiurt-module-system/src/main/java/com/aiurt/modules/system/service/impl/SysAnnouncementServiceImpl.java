@@ -79,7 +79,8 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			content = FreemarkerParseFactory.parseTemplateContent(content,map);
 		}
 		sysAnnouncement.setMsgContent(content);
-
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		sysAnnouncement.setSender(user.getUsername());
 		if(sysAnnouncement.getMsgType().equals(CommonConstant.MSG_TYPE_ALL)) {
 			sysAnnouncementMapper.insert(sysAnnouncement);
 		}else {

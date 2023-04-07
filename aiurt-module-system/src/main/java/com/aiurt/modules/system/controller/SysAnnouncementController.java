@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
@@ -129,7 +130,7 @@ public class SysAnnouncementController {
         }
         queryWrapper.orderByDesc("create_time");
         queryWrapper.lambda().in(SysAnnouncement::getMsgCategory, CommonConstant.MSG_CATEGORY_1, CommonConstant.MSG_CATEGORY_2);
-        queryWrapper.lambda().ne(SysAnnouncement::getBusType, "bpm");
+        queryWrapper.lambda().and(s -> s.ne(SysAnnouncement::getBusType, "bpm").or().isNull(SysAnnouncement::getBusType));
         //排序逻辑 处理
         IPage<SysAnnouncement> pageList = sysAnnouncementService.page(page, queryWrapper);
         List<SysAnnouncement> records = pageList.getRecords();
@@ -389,12 +390,16 @@ public class SysAnnouncementController {
         querySaWrapper.eq(SysAnnouncement::getDelFlag, CommonConstant.DEL_FLAG_0.toString());
         // 已发布
         querySaWrapper.eq(SysAnnouncement::getSendStatus, CommonConstant.HAS_SEND);
-        // 新注册用户不看结束通知
-        querySaWrapper.ge(SysAnnouncement::getEndTime, sysUser.getCreateTime());
+
         querySaWrapper.notInSql(SysAnnouncement::getId, "select annt_id from sys_announcement_send where user_id='" + userId + "'");
         List<SysAnnouncement> announcements = sysAnnouncementService.list(querySaWrapper);
         if (announcements.size() > 0) {
             for (int i = 0; i < announcements.size(); i++) {
+                Date endTime = announcements.get(i).getEndTime();
+                if (ObjectUtil.isNotEmpty(endTime) && endTime.before(sysUser.getCreateTime())) {
+                    // 新注册用户不看结束通知
+                    continue;
+                }
                 // 通知公告消息重复
                 // 因为websocket没有判断是否存在这个用户，要是判断会出现问题，故在此判断逻辑
                 LambdaQueryWrapper<SysAnnouncementSend> query = new LambdaQueryWrapper<>();
