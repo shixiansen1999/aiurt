@@ -542,6 +542,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             lm.put("dictCode", deviceAssemblyErrorModel.getDictCode());
             lm.put("regular", deviceAssemblyErrorModel.getRegular());
             lm.put("itemParentMistake", deviceAssemblyErrorModel.getItemParentMistake());
+            lm.put("orgName", deviceAssemblyErrorModel.getOrgName());
+            lm.put("standardTypeName", deviceAssemblyErrorModel.getStandardTypeName());
             listMap.add(lm);
         }
         errorMap.put("maplist", listMap);
@@ -581,9 +583,23 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         String standardTypeName = model.getStandardTypeName();
         String statusName = model.getStatusName();
         String deviceTypeName = model.getDeviceTypeName();
-        List<String> orgNameList = StrUtil.splitTrim(orgName, "，");
+        List<String> orgNameList = null;
+        if (StrUtil.isEmpty(orgName)) {
+            stringBuilder.append("适用部门不能为空，");
+        } else {
+            orgNameList =  StrUtil.splitTrim(orgName, "，");
+            int begSize = orgNameList.size();
+            orgNameList =  orgNameList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> o))), ArrayList::new));
+            int endSize = orgNameList.size();
+            if (endSize < begSize) {
+                stringBuilder.append("适用部门填写不规范有重复内容，");
+            }
+        }
         List<DictModel> standardTypes = sysBaseApi.getDictItems("patrol_standard_type");
-        String standardTypeNames = standardTypes.stream().map(e -> e.getText()).collect(Collectors.joining());
+        String standardTypeNames = null;
+        if (CollUtil.isNotEmpty(standardTypes)) {
+            standardTypeNames = standardTypes.stream().map(e -> e.getText()).collect(Collectors.joining());
+        }
         if (StrUtil.isNotEmpty(majorName) && StrUtil.isNotEmpty(isDeviceType) && CollUtil.isNotEmpty(orgNameList) && StrUtil.isNotEmpty(standardTypeName) && StrUtil.isNotEmpty(statusName) && StrUtil.isNotEmpty(name)) {
             JSONObject major = sysBaseApi.getCsMajorByName(majorName);
             ArrayList<OrgVO> orgVOS = new ArrayList<>();
