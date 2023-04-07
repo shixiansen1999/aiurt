@@ -19,6 +19,7 @@ import com.aiurt.boot.standard.entity.PatrolStandardOrg;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.standard.mapper.PatrolStandardOrgMapper;
+import com.aiurt.boot.standard.service.IPatrolStandardOrgService;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.api.CommonAPI;
@@ -45,6 +46,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +86,9 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     private String upLoadPath;
     @Autowired
     private PatrolStandardOrgMapper standardOrgMapper;
+
+    @Autowired
+    private IPatrolStandardOrgService patrolStandardOrgService;
     @Override
     public IPage<PatrolStandardDto> pageList(Page page, PatrolStandard patrolStandard) {
         // 数据权限过滤
@@ -346,6 +351,13 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                     for (PatrolStandard patrolStandard : standardList) {
                         String standardCode = PatrolCodeUtil.getStandardCode();
+                        List<OrgVO> orgCodeList = patrolStandard.getOrgCodeList();
+                        for (OrgVO s : orgCodeList) {
+                            PatrolStandardOrg patrolStandardOrg = new PatrolStandardOrg();
+                            patrolStandardOrg.setOrgCode(s.getLabel());
+                            patrolStandardOrg.setStandardCode(standardCode);
+                            patrolStandardOrgService.save(patrolStandardOrg);
+                        }
                         patrolStandard.setCode(standardCode);
                         patrolStandard.setUserId(user.getId());
                         patrolStandardMapper.insert(patrolStandard);
@@ -412,26 +424,26 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         List<DictModel> subsystemModels = bean.queryTableDictItemsByCode("cs_subsystem", "system_name", "system_code");
         ExcelSelectListUtil.selectList(workbook, "适用子系统", 2, 2, subsystemModels);
         List<DictModel> standardTypes = bean.queryDictItemsByCode("patrol_standard_type");
-        ExcelSelectListUtil.selectList(workbook, "标准表类型", 3, 3, standardTypes);
+        ExcelSelectListUtil.selectList(workbook, "标准表类型", 4, 4, standardTypes);
         List<DictModel> isDeviceTypeModels = bean.queryDictItemsByCode("patrol_device_type");
-        ExcelSelectListUtil.selectList(workbook, "是否与设备类型相关", 4, 4, isDeviceTypeModels);
+        ExcelSelectListUtil.selectList(workbook, "是否与设备类型相关", 5, 5, isDeviceTypeModels);
         List<DictModel> statusModels = bean.queryDictItemsByCode("patrol_standard_status");
-        ExcelSelectListUtil.selectList(workbook, "生效状态", 5, 5, statusModels);
+        ExcelSelectListUtil.selectList(workbook, "生效状态", 6, 6, statusModels);
         List<DictModel> deviceTypeModels = bean.queryTableDictItemsByCode("device_type", "name", "code");
-        ExcelSelectListUtil.selectList(workbook, "设备类型", 6, 6, deviceTypeModels);
+        ExcelSelectListUtil.selectList(workbook, "设备类型", 7, 7, deviceTypeModels);
         List<DictModel> hierarchyTypeModels = bean.queryDictItemsByCode("patrol_hierarchy_type");
-        ExcelSelectListUtil.selectList(workbook, "层级类型", 7, 7, hierarchyTypeModels);
+        ExcelSelectListUtil.selectList(workbook, "层级类型", 8, 8, hierarchyTypeModels);
         List<DictModel> isStandardModels = bean.queryDictItemsByCode("patrol_check");
-        ExcelSelectListUtil.selectList(workbook, "是否为巡视项目", 12, 12, isStandardModels);
+        ExcelSelectListUtil.selectList(workbook, "是否为巡视项目", 13, 13, isStandardModels);
         List<DictModel> requiredDictModels = bean.queryDictItemsByCode("patrol_input_type");
-        ExcelSelectListUtil.selectList(workbook, "检查值类型", 14, 14, requiredDictModels);
+        ExcelSelectListUtil.selectList(workbook, "检查值类型", 15, 15, requiredDictModels);
         List<DictModel> requiredModels = bean.queryDictItemsByCode("patrol_item_required");
-        ExcelSelectListUtil.selectList(workbook, "检查值是否必填", 15, 15, requiredModels);
+        ExcelSelectListUtil.selectList(workbook, "检查值是否必填", 16, 16, requiredModels);
         Integer modules = 2;
         List<DictModel> modelList = patrolStandardMapper.querySysDict(modules);
-        ExcelSelectListUtil.selectList(workbook, "关联数据字典", 16, 16, modelList);
+        ExcelSelectListUtil.selectList(workbook, "关联数据字典", 17, 17, modelList);
         List<DictModel> regularModels = bean.queryDictItemsByCode("regex");
-        ExcelSelectListUtil.selectList(workbook, "数据校验表达式", 17, 17, regularModels);
+        ExcelSelectListUtil.selectList(workbook, "数据校验表达式", 18, 18, regularModels);
         String fileName = "巡检标准导入模板.xlsx";
         try {
             response.setHeader("Content-Disposition",
@@ -565,13 +577,16 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         String name = model.getName();
         String majorName = model.getProfessionCode();
         String isDeviceType = model.getIsDeviceType();
+        String orgName = model.getOrgName();
         String standardTypeName = model.getStandardTypeName();
         String statusName = model.getStatusName();
         String deviceTypeName = model.getDeviceTypeName();
+        List<String> orgNameList = StrUtil.splitTrim(orgName, "，");
         List<DictModel> standardTypes = sysBaseApi.getDictItems("patrol_standard_type");
         String standardTypeNames = standardTypes.stream().map(e -> e.getText()).collect(Collectors.joining());
-        if (StrUtil.isNotEmpty(majorName) && StrUtil.isNotEmpty(isDeviceType) && StrUtil.isNotEmpty(standardTypeName) && StrUtil.isNotEmpty(statusName) && StrUtil.isNotEmpty(name)) {
+        if (StrUtil.isNotEmpty(majorName) && StrUtil.isNotEmpty(isDeviceType) && CollUtil.isNotEmpty(orgNameList) && StrUtil.isNotEmpty(standardTypeName) && StrUtil.isNotEmpty(statusName) && StrUtil.isNotEmpty(name)) {
             JSONObject major = sysBaseApi.getCsMajorByName(majorName);
+            ArrayList<OrgVO> orgVOS = new ArrayList<>();
             if (ObjectUtil.isNotEmpty(major)) {
                 patrolStandard.setProfessionCode(major.getString("majorCode"));
                 if (ObjectUtil.isNotEmpty(model.getSubsystemCode())) {
@@ -591,8 +606,26 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         stringBuilder.append("系统不存在该专业下的子系统，");
                     }
                 }
+                orgNameList.forEach(t -> {
+                    SysDepartModel sysDepartModel = sysBaseApi.getDepartByName(t).toJavaObject(SysDepartModel.class);
+                    if (ObjectUtil.isEmpty(sysDepartModel)) {
+                        stringBuilder.append("系统不存在该部门：" + t + StrUtil.COMMA);
+                    } else {
+                        OrgVO orgVO = new OrgVO();
+                        orgVO.setLabel(sysDepartModel.getOrgCode());
+                        orgVO.setValue(sysDepartModel.getDepartName());
+                        orgVOS.add(orgVO);
+                    }
+                });
+                patrolStandard.setOrgCodeList(orgVOS);
                 if (!(standardTypeNames.contains(standardTypeName))) {
-                    stringBuilder.append("标准表类型填写不规范");
+                    stringBuilder.append("系统不存在该标准表类型：" + standardTypeName + StrUtil.COMMA);
+                } else {
+                    standardTypes.forEach(t -> {
+                        if (StrUtil.equals(t.getText(), standardTypeName)) {
+                            patrolStandard.setStandardType(Integer.valueOf(t.getValue()));
+                        }
+                    });
                 }
                 if (!(PatrolConstant.IS_DEVICE_TYPE + PatrolConstant.IS_NOT_DEVICE_TYPE).contains(isDeviceType)) {
                     stringBuilder.append("是否与设备类型相关填写不规范，");
@@ -620,8 +653,26 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 }
             } else {
                 stringBuilder.append("系统不存在该专业，");
+                orgNameList.forEach(t -> {
+                    SysDepartModel sysDepartModel = sysBaseApi.getDepartByName(t).toJavaObject(SysDepartModel.class);
+                    if (ObjectUtil.isEmpty(sysDepartModel)) {
+                        stringBuilder.append("系统不存在该部门：" + t + StrUtil.COMMA);
+                    } else {
+                        OrgVO orgVO = new OrgVO();
+                        orgVO.setLabel(sysDepartModel.getOrgCode());
+                        orgVO.setValue(sysDepartModel.getDepartName());
+                        orgVOS.add(orgVO);
+                    }
+                });
+                patrolStandard.setOrgCodeList(orgVOS);
                 if (!(standardTypeNames.contains(standardTypeName))) {
-                    stringBuilder.append("标准表类型填写不规范");
+                    stringBuilder.append("系统不存在该标准表类型：" + standardTypeName + StrUtil.COMMA);
+                } else {
+                    standardTypes.forEach(t -> {
+                        if (StrUtil.equals(t.getText(), standardTypeName)) {
+                            patrolStandard.setStandardType(Integer.valueOf(t.getValue()));
+                        }
+                    });
                 }
                 if (!(PatrolConstant.IS_DEVICE_TYPE + PatrolConstant.IS_NOT_DEVICE_TYPE).contains(isDeviceType)) {
                     stringBuilder.append("是否与设备类型相关填写不规范，");
@@ -635,7 +686,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 }
             }
         } else {
-            stringBuilder.append("巡视标准表名称、适用专业、标准表类型、是否与设备类型相关、生效状态不能为空;");
+            stringBuilder.append("巡视标准表名称、适用专业、适用部门、标准表类型、是否与设备类型相关、生效状态不能为空;");
         }
         if (stringBuilder.length() > 0) {
             // 截取字符
