@@ -182,4 +182,10 @@ public class InspectionCodeErrorDTO {
     @ApiModelProperty(value = "配置项错误原因")
     @TableField(exist = false)
     private  String  codeContentErrorReason;
+
+    /**适用部门*/
+    @Excel(name = "适用部门", width = 15)
+    @ApiModelProperty(value = "适用部门")
+    @TableField(exist = false)
+    private String orgName;
 }
