@@ -571,9 +571,23 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
             String repairTypeName =model.getRepairTypeName();
             Integer statusCode = checkMap2.get(statusName);
             Integer isDeviceCode = checkMap.get(isDeviceType);
-            List<String> orgNameList = StrUtil.splitTrim(orgName, "，");
+            List<String> orgNameList = null;
+            if (StrUtil.isEmpty(orgName)) {
+                stringBuilder.append("适用部门不能为空，");
+            } else {
+                orgNameList =  StrUtil.splitTrim(orgName, "，");
+                int begSize = orgNameList.size();
+                orgNameList =  orgNameList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> o))), ArrayList::new));
+                int endSize = orgNameList.size();
+                if (endSize < begSize) {
+                    stringBuilder.append("适用部门填写不规范有重复内容，");
+                }
+            }
             List<DictModel> repairTypes = sysBaseApi.getDictItems("repair_type");
-            String repairTypeNames = repairTypes.stream().map(e -> e.getText()).collect(Collectors.joining());
+            String repairTypeNames = null;
+            if (CollUtil.isNotEmpty(repairTypes)) {
+                repairTypeNames =  repairTypes.stream().map(e -> e.getText()).collect(Collectors.joining());
+            }
             if (StrUtil.isNotEmpty(majorName) && StrUtil.isNotEmpty(isDeviceType) && CollUtil.isNotEmpty(orgNameList) && StrUtil.isNotEmpty(repairTypeName)&& StrUtil.isNotEmpty(statusName) && StrUtil.isNotEmpty(name)) {
                 JSONObject major = sysBaseApi.getCsMajorByName(majorName);
                 ArrayList<OrgVO> orgVOS = new ArrayList<>();
@@ -890,6 +904,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
             lm.put("regular", inspectionCodeErrorDto.getDataCheck());
             lm.put("itemParentMistake", inspectionCodeErrorDto.getCodeContentErrorReason());
             lm.put("repairType",inspectionCodeErrorDto.getRepairTypeName());
+            lm.put("orgName", inspectionCodeErrorDto.getOrgName());
             listMap.add(lm);
         }
         errorMap.put("maplist", listMap);

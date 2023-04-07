@@ -112,4 +112,16 @@ public class PatrolStandardErrorModel {
     @ApiModelProperty(value = "错误原因")
     @TableField(exist = false)
     private  String  itemParentMistake;
+
+    /**标准表类型名称*/
+    @Excel(name = "标准表类型", width = 15, needMerge = true)
+    @ApiModelProperty(value = "巡视标准表类型:0应急/1车载/2正线/3车辆段")
+    @TableField(exist = false)
+    private String standardTypeName;
+
+    /**适用部门*/
+    @Excel(name = "适用部门", width = 15, needMerge = true)
+    @ApiModelProperty(value = "适用部门")
+    @TableField(exist = false)
+    private String orgName;
 }
