@@ -31,6 +31,11 @@ public class PatrolStandardModel {
     @Excel(name = "适用子系统",width = 15,needMerge = true)
     @ApiModelProperty(value = "适用系统code")
     private java.lang.String subsystemCode;
+    /**适用部门*/
+    @Excel(name = "适用部门", width = 15, needMerge = true)
+    @ApiModelProperty(value = "适用部门")
+    @TableField(exist = false)
+    private java.lang.String orgName;
     /**标准表类型名称*/
     @Excel(name = "标准表类型", width = 15, needMerge = true)
     @ApiModelProperty(value = "巡视标准表类型:0应急/1车载/2正线/3车辆段")
