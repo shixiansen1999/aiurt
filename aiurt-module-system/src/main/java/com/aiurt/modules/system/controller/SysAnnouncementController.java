@@ -60,6 +60,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.aiurt.common.constant.CommonConstant.ANNOUNCEMENT_SEND_STATUS_1;
 
@@ -402,18 +404,27 @@ public class SysAnnouncementController {
                 }
                 // 通知公告消息重复
                 // 因为websocket没有判断是否存在这个用户，要是判断会出现问题，故在此判断逻辑
-                LambdaQueryWrapper<SysAnnouncementSend> query = new LambdaQueryWrapper<>();
-                query.eq(SysAnnouncementSend::getAnntId, announcements.get(i).getId());
-                query.eq(SysAnnouncementSend::getUserId, userId);
-                SysAnnouncementSend one = sysAnnouncementSendService.getOne(query);
-                if (null == one) {
-                    log.info("listByUser接口新增了SysAnnouncementSend：pageSize{}：" + pageSize);
-                    SysAnnouncementSend announcementSend = new SysAnnouncementSend();
-                    announcementSend.setAnntId(announcements.get(i).getId());
-                    announcementSend.setUserId(userId);
-                    announcementSend.setReadFlag(CommonConstant.NO_READ_FLAG);
-                    sysAnnouncementSendService.save(announcementSend);
-                    log.info("announcementSend.toString()", announcementSend.toString());
+                //因为一个用户可以同时在不同设备同时登录，导致发布的websocket会同时请求这个接口从而产生重复数据，上锁限制
+                Lock lock = new ReentrantLock();
+                lock.lock();
+                try {
+                    LambdaQueryWrapper<SysAnnouncementSend> query = new LambdaQueryWrapper<>();
+                    query.eq(SysAnnouncementSend::getAnntId, announcements.get(i).getId());
+                    query.eq(SysAnnouncementSend::getUserId, userId);
+                    SysAnnouncementSend one = sysAnnouncementSendService.getOne(query);
+                    if (null == one) {
+                        log.info("listByUser接口新增了SysAnnouncementSend：pageSize{}：" + pageSize);
+                        SysAnnouncementSend announcementSend = new SysAnnouncementSend();
+                        announcementSend.setAnntId(announcements.get(i).getId());
+                        announcementSend.setUserId(userId);
+                        announcementSend.setReadFlag(CommonConstant.NO_READ_FLAG);
+                        sysAnnouncementSendService.save(announcementSend);
+                        log.info("announcementSend.toString()", announcementSend.toString());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    lock.unlock();
                 }
             }
         }
