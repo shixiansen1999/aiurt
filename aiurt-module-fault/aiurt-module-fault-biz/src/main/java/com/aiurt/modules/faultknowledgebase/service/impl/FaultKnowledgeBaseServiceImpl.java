@@ -110,37 +110,39 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             String substring = id.substring(0, id.length() - 1);
             faultKnowledgeBase.setId(substring);
         }
-
-        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,ids,sysUser.getUsername());
-        //解决不是审核人去除审核按钮
-        if(CollUtil.isNotEmpty(faultKnowledgeBases)){
-            for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
-                TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfo(knowledgeBase.getProcessInstanceId(), knowledgeBase.getTaskId());
-                List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
-                //operationList为空，没有审核按钮
-                if(CollUtil.isNotEmpty(operationList)){
-                    knowledgeBase.setHaveButton(true);
-                }else{
-                    knowledgeBase.setHaveButton(false);
-                }
-                //当前登录人不是创建人，则为false
-                if(knowledgeBase.getCreateBy().equals(sysUser.getUsername())){
-                    knowledgeBase.setIsCreateUser(true);
-                }else{
-                    knowledgeBase.setIsCreateUser(false);
+        if (CollUtil.isNotEmpty(ids)) {
+            List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,ids,sysUser.getUsername());
+            //解决不是审核人去除审核按钮
+            if(CollUtil.isNotEmpty(faultKnowledgeBases)){
+                for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
+                    TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfo(knowledgeBase.getProcessInstanceId(), knowledgeBase.getTaskId());
+                    List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
+                    //operationList为空，没有审核按钮
+                    if(CollUtil.isNotEmpty(operationList)){
+                        knowledgeBase.setHaveButton(true);
+                    }else{
+                        knowledgeBase.setHaveButton(false);
+                    }
+                    //当前登录人不是创建人，则为false
+                    if(knowledgeBase.getCreateBy().equals(sysUser.getUsername())){
+                        knowledgeBase.setIsCreateUser(true);
+                    }else{
+                        knowledgeBase.setIsCreateUser(false);
+                    }
                 }
             }
+
+            faultKnowledgeBases.forEach(f->{
+                String faultCodes = f.getFaultCodes();
+                if (StrUtil.isNotBlank(faultCodes)) {
+                    String[] split = faultCodes.split(",");
+                    List<String> list = Arrays.asList(split);
+                    f.setFaultCodeList(list);
+                }
+            });
+            GlobalThreadLocal.setDataFilter(b);
+            return page.setRecords(faultKnowledgeBases);
         }
-
-        GlobalThreadLocal.setDataFilter(b);
-        faultKnowledgeBases.forEach(f->{
-            String faultCodes = f.getFaultCodes();
-            if (StrUtil.isNotBlank(faultCodes)) {
-                String[] split = faultCodes.split(",");
-                List<String> list = Arrays.asList(split);
-                f.setFaultCodeList(list);
-            }
-        });
         //正序
        /* String asc = "asc";
         if (asc.equals(faultKnowledgeBase.getOrder())) {
@@ -148,7 +150,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             return page.setRecords(reportList);
         }*/
 
-        return page.setRecords(faultKnowledgeBases);
+        return page.setRecords(new ArrayList<>());
     }
 
     @Override
