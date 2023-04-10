@@ -10,6 +10,7 @@ import cn.afterturn.easypoi.excel.entity.enmus.ExcelType;
 import cn.afterturn.easypoi.util.PoiMergeCellUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
@@ -279,6 +280,29 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 if (CollUtil.isEmpty(inspectionCodeContentDTOList)) {
                     continue;
                 }
+                inspectionCodeContentDTOList.forEach(e -> {
+                    String hierarchyTypeName = sysBaseApi.translateDict("inspection_level_type", e.getHasChild());
+                    e.setHierarchyTypeName(hierarchyTypeName);
+                    if (!StrUtil.equals(e.getPid(), "0") || !StrUtil.equals(e.getPid(), StrUtil.NULL)) {
+                        InspectionCodeContent parent = inspectionCodeContentMapper.selectOne(new LambdaQueryWrapper<InspectionCodeContent>().eq(InspectionCodeContent::getId, e.getPid()).eq(InspectionCodeContent::getDelFlag, CommonConstant.DEL_FLAG_0));
+                        if (ObjectUtil.isNotEmpty(parent)) {
+                            e.setParent(parent.getName());
+                        }
+                    }
+                    String isType = sysBaseApi.translateDict("inspection_project", Convert.toStr(e.getType()));
+                    e.setIsType(isType);
+                    String sStatusItem = sysBaseApi.translateDict("patrol_input_type", e.getStatusItem());
+                    e.setSStatusItem(sStatusItem);
+                    String isInspectionType = sysBaseApi.translateDict("inspection_value", e.getInspectionType());
+                    e.setIsInspectionType(isInspectionType);
+                    List<DictModel> dictModelList = inspectionCodeMapper.querySysDict(1);
+                    if (CollUtil.isNotEmpty(dictModelList)) {
+                        String dictCode = dictModelList.stream().filter(t -> StrUtil.equals(t.getValue(), e.getDictCode())).map(DictModel::getText).limit(1).collect(Collectors.joining());
+                        e.setDictCode(dictCode);
+                    }
+                    String dataCheck = sysBaseApi.translateDict("regex", e.getDataCheck());
+                    e.setDataCheck(dataCheck);
+                });
                 dto.setInspectionCodeContentDTOList(inspectionCodeContentDTOList);
 
         }
