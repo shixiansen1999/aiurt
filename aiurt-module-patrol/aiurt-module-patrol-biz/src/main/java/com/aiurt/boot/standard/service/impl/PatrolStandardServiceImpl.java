@@ -216,6 +216,21 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
         //标准表翻译
         if (ObjectUtil.isNotEmpty(standard)) {
+            // 适用部门
+            List<PatrolStandardOrg> patrolStandardOrgs = standardOrgMapper.selectList(new LambdaQueryWrapper<PatrolStandardOrg>().eq(PatrolStandardOrg::getStandardCode, standard.getCode()).eq(PatrolStandardOrg::getDelFlag, CommonConstant.DEL_FLAG_0));
+            ArrayList<String> orgNamelist = new ArrayList<>();
+            if (CollUtil.isNotEmpty(patrolStandardOrgs)) {
+                patrolStandardOrgs.forEach(t -> {
+                    String departNameByOrgCode = sysBaseApi.getDepartNameByOrgCode(t.getOrgCode());
+                    if (StrUtil.isNotEmpty(departNameByOrgCode)) {
+                        orgNamelist.add(departNameByOrgCode);
+                    }
+                });
+            }
+            if (CollUtil.isNotEmpty(orgNamelist)) {
+                String orgName = orgNamelist.stream().collect(Collectors.joining(";"));
+                standard.setOrgName(orgName);
+            }
             JSONObject csMajor = sysBaseApi.getCsMajorByCode(standard.getProfessionCode());
             List<DictModel> deviceType = sysBaseApi.getDictItems("patrol_device_type");
             deviceType = deviceType.stream().filter(e -> e.getValue().equals(String.valueOf(standard.getDeviceType()))).collect(Collectors.toList());

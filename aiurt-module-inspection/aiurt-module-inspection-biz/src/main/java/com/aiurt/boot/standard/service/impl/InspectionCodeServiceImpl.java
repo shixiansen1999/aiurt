@@ -223,6 +223,21 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
     private List<InspectionCodeExcelDTO> getinspectionStrategyList(InspectionCodeExcelDTO inspectionCodeExcelDto) {
         List<InspectionCodeExcelDTO> inspectionCodeList = inspectionCodeMapper.getList(inspectionCodeExcelDto);
         for (InspectionCodeExcelDTO dto : inspectionCodeList) {
+            //适用部门
+            List<InspectionCoOrgRel> inspectionCoOrgRels = inspectionCoOrgRelMapper.selectList(new LambdaQueryWrapper<InspectionCoOrgRel>().eq(InspectionCoOrgRel::getInspectionCoCode, dto.getCode()).eq(InspectionCoOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+            ArrayList<String> orgNamelist = new ArrayList<>();
+            if (CollUtil.isNotEmpty(inspectionCoOrgRels)) {
+                inspectionCoOrgRels.forEach(t -> {
+                    String departNameByOrgCode = sysBaseApi.getDepartNameByOrgCode(t.getOrgCode());
+                    if (StrUtil.isNotEmpty(departNameByOrgCode)) {
+                        orgNamelist.add(departNameByOrgCode);
+                    }
+                });
+            }
+            if (CollUtil.isNotEmpty(orgNamelist)) {
+                String orgName = orgNamelist.stream().collect(Collectors.joining(";"));
+                dto.setOrgName(orgName);
+            }
             //检修表类型
             List<DictModel> repairType = sysBaseApi.getDictItems("repair_type");
             repairType = repairType.stream().filter(f -> (String.valueOf(dto.getRepairType())).equals(f.getValue())).collect(Collectors.toList());
@@ -781,7 +796,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                         }
                     }
                     if (items.getType() == 1 && StrUtil.equals(items.getHasChild(), "0")) {
-                        List<InspectionCodeContent> sonList = standardItems.stream().filter(e -> e.getPid().equals(items.getName())).collect(Collectors.toList());
+                        List<InspectionCodeContent> sonList = standardItems.stream().filter(e -> StrUtil.equals(e.getPid(), items.getName())).collect(Collectors.toList());
                         if(CollUtil.isNotEmpty(sonList)) {
                             contentStringBuilder.append("不能有子级，");
                         }
