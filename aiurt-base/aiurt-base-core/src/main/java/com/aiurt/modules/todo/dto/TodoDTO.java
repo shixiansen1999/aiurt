@@ -73,6 +73,13 @@ public class TodoDTO {
     /**解析模板内容 对应的数据*/
     @TableField(exist = false)
     private Map<String, Object> data;
+
+    /**
+     * 是否响铃
+     */
+    @TableField(exist = false)
+    protected Boolean isRingBell;
+
     public TodoDTO() {
     }
 

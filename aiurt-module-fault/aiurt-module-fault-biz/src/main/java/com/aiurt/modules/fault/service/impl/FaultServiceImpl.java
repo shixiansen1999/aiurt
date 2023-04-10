@@ -36,7 +36,6 @@ import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeS
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
-import com.aiurt.modules.situation.entity.SysAnnouncement;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSON;
@@ -210,6 +209,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 todoDTO.setTitle("故障维修任务");
                 todoDTO.setMsgAbstract("有新的故障信息");
                 todoDTO.setPublishingContent("有新的维修任务");
+                todoDTO.setIsRingBell(true);
                 // 自检
                 sendTodo(fault.getCode(), null, user.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
             } else {
