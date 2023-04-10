@@ -95,11 +95,11 @@ public class InspectionCodeExcelDTO extends DictEntity  {
     @TableField(exist = false)
     private String orgName;
 
-    @ApiModelProperty(value = "检修表类型")
+    @ApiModelProperty(value = "标准表类型")
     @Dict(dicCode = "repair_type")
     private Integer repairType;
 
-    @Excel(name = "检修表类型 ", width = 15,needMerge = true)
+    @Excel(name = "标准表类型 ", width = 15,needMerge = true)
     @ExcelExtend(isRequired = true)
     @ApiModelProperty(value = "检修表类型：0应急、车载、2正线、3车辆段 ")
     @TableField(exist = false)
