@@ -279,6 +279,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             modelList = modelList.stream().filter(e -> e.getValue().equals(String.valueOf(items.getDictCode()))).collect(Collectors.toList());
             String modelName = modelList.stream().map(DictModel::getText).collect(Collectors.joining());
             items.setDictCode(modelName);
+            String regular = sysBaseApi.translateDict("regex", items.getRegular());
+            items.setRegular(regular);
         }
 
     }

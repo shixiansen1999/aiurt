@@ -5,11 +5,9 @@ import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.system.base.annotation.ExcelExtend;
 import com.baomidou.mybatisplus.annotation.*;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.List;
@@ -37,10 +35,20 @@ public class InspectionCodeContentDTO implements Serializable {
     @ApiModelProperty(value = "是否有子节点")
     private java.lang.String hasChild;
 
+    @Excel(name = "层级类型", width = 15)
+    @ApiModelProperty(value = "层级类型")
+    @TableField(exist = false)
+    private java.lang.String hierarchyTypeName;
+
     /**父级节点，顶级为0*/
 //    @Excel(name = "父级节点", width = 15)
     @ApiModelProperty(value = "父级节点，顶级为0")
     private java.lang.String pid;
+
+    @Excel(name = "父级", width = 15)
+    @ApiModelProperty(value = "父级")
+    @TableField(exist = false)
+    private java.lang.String parent;
 
     /**检修项名称*/
     @Excel(name = "检修项内容", width = 15)
@@ -55,6 +63,7 @@ public class InspectionCodeContentDTO implements Serializable {
     private java.lang.String code;
 
     /**排序编号*/
+    @Excel(name = "内容排序", width = 15)
     @ApiModelProperty(value = "排序编号")
     private java.lang.String sortNo;
 
@@ -65,12 +74,13 @@ public class InspectionCodeContentDTO implements Serializable {
     private java.lang.String isSortNo;
 
     /**检查项类型，是否是检查项：0否 1是*/
-    @Excel(name = "是否是检查项", width = 15,replace = {"否_0","是_1","无_null"})
+//    @Excel(name = "是否是检查项", width = 15,replace = {"否_0","是_1","无_null"})
     @ApiModelProperty(value = "检查项类型，是否是检查项：0否 1是")
     @Dict(dicCode = "inspection_value")
     private java.lang.Integer type;
 
     /**检查项类型，是否是检查项：0否 1是*/
+    @Excel(name = "是否为检查项", width = 15)
     @ApiModelProperty(value = "检查项类型，是否是检查项：0否 1是")
     @TableField(exist = false)
     private java.lang.String isType;
@@ -83,12 +93,13 @@ public class InspectionCodeContentDTO implements Serializable {
 
 
     /**数据字典：1 无、2 选择项、3 输入项*/
-    @Excel(name = "检查值类型", width = 15,replace = {"无_1","选择项_2","输入项_3","无_null"})
+//    @Excel(name = "检查值类型", width = 15,replace = {"无_1","选择项_2","输入项_3","无_null"})
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "数据字典：1 无、2 选择项、3 输入项")
     private java.lang.String statusItem;
 
     /**数据字典：1 无、2 选择项、3 输入项*/
+    @Excel(name = "检查值类型", width = 15)
     @TableField(updateStrategy = FieldStrategy.IGNORED,exist = false)
     @ApiModelProperty(value = "数据字典：1 无、2 选择项、3 输入项")
     @Dict(dicCode = "patrol_input_type")
@@ -105,18 +116,19 @@ public class InspectionCodeContentDTO implements Serializable {
      * 检查值是否必填：0否1是
      */
 //    @Excel(name = "检查值是否必填", width = 15,replace = {"否_0","是_1","无_null"})
+    @Excel(name = "检查值是否必填", width = 15)
     @ApiModelProperty(value = "检查值是否必填：0否 1是")
     @TableField(exist = false)
     private java.lang.String isInspectionType;
 
 
     /**选择项关联的数据字典*/
-//    @Excel(name = "选择项关联的数据字典", width = 15)
+    @Excel(name = "关联数据字典", width = 15)
     @ApiModelProperty(value = "选择项关联的数据字典")
     private java.lang.String dictCode;
     /**数据校验字段*/
-//    @Excel(name = "数据校验字段", width = 15)
-    @ApiModelProperty(value = "数据校验字段")
+    @Excel(name = "数据校验表达式", width = 15)
+    @ApiModelProperty(value = "数据校验表达式")
     private java.lang.String dataCheck;
 
     /**检修标准id，关联inspection_code表的id*/
