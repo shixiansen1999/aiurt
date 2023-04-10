@@ -304,6 +304,7 @@
         select system_name
         from cs_subsystem
         where system_code = #{subsystemCode}
+       and del_flag = 0
     </select>
     <select id="deviceTypeCodeName" resultType="java.lang.String">
         select name
