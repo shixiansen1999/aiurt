@@ -623,10 +623,11 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     }
                 }
                 orgNameList.forEach(t -> {
-                    SysDepartModel sysDepartModel = sysBaseApi.getDepartByName(t).toJavaObject(SysDepartModel.class);
-                    if (ObjectUtil.isEmpty(sysDepartModel)) {
+                    JSONObject departByName = sysBaseApi.getDepartByName(t);
+                    if (ObjectUtil.isEmpty(departByName)) {
                         stringBuilder.append("系统不存在该部门：" + t + StrUtil.COMMA);
                     } else {
+                        SysDepartModel sysDepartModel = departByName.toJavaObject(SysDepartModel.class);
                         OrgVO orgVO = new OrgVO();
                         orgVO.setLabel(sysDepartModel.getOrgCode());
                         orgVO.setValue(sysDepartModel.getDepartName());
@@ -670,10 +671,11 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             } else {
                 stringBuilder.append("系统不存在该专业，");
                 orgNameList.forEach(t -> {
-                    SysDepartModel sysDepartModel = sysBaseApi.getDepartByName(t).toJavaObject(SysDepartModel.class);
-                    if (ObjectUtil.isEmpty(sysDepartModel)) {
+                    JSONObject departByName = sysBaseApi.getDepartByName(t);
+                    if (ObjectUtil.isEmpty(departByName)) {
                         stringBuilder.append("系统不存在该部门：" + t + StrUtil.COMMA);
                     } else {
+                        SysDepartModel sysDepartModel = departByName.toJavaObject(SysDepartModel.class);
                         OrgVO orgVO = new OrgVO();
                         orgVO.setLabel(sysDepartModel.getOrgCode());
                         orgVO.setValue(sysDepartModel.getDepartName());
@@ -779,6 +781,66 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         if (CollUtil.isNotEmpty(sonList)) {
                             stringBuilder.append("不能有子级，");
                         }
+                        if (ObjectUtil.isNotEmpty(items.getRequiredDictName())) {
+                            if (!(PatrolConstant.IS_DEVICE_TYPE + PatrolConstant.IS_NOT_DEVICE_TYPE).contains(items.getRequiredDictName())) {
+                                stringBuilder.append("检查值是否必填选择不正确，");
+                            } else {
+                                items.setRequired(items.getRequiredDictName().equals(PatrolConstant.IS_DEVICE_TYPE) ? 1 : 0);
+                            }
+                        }
+                        if (ObjectUtil.isNotEmpty(items.getInputTypeName())) {
+                            if (!(PatrolConstant.DATE_TYPE_IP + PatrolConstant.DATE_TYPE_OT + PatrolConstant.DATE_TYPE_NO).contains(items.getInputTypeName())) {
+                                stringBuilder.append("检查值类型选择不正确，");
+                            } else {
+                                if (items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_IP)) {
+                                    items.setInputType(3);
+                                } else {
+                                    items.setInputType(items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_OT) ? 2 : 1);
+                                }
+                            }
+                            if (items.getInputType() == 1) {
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())) {
+                                    stringBuilder.append("检查值类型为无时：关联数据字典、数据检验表达式不用填写");
+                                }
+                            }
+                            if (items.getInputType() == 2) {
+                                if (ObjectUtil.isNotEmpty(items.getRegular())) {
+                                    stringBuilder.append("检查值类型为选择项时：数据校验表达式不用填写，");
+                                } else {
+                                    if (ObjectUtil.isNotEmpty(items.getDictCode())) {
+                                        String dictCode = patrolStandardMapper.getDictCode(items.getDictCode());
+                                        if (ObjectUtil.isNotEmpty(dictCode)) {
+                                            items.setDictCode(dictCode);
+                                        } else {
+                                            stringBuilder.append("关联数据字典选择不正确，");
+                                        }
+                                    }
+                                }
+                            }
+                            if (items.getInputType() == 3) {
+                                if (ObjectUtil.isNotEmpty(items.getDictCode())) {
+                                    stringBuilder.append("检查值类型为输入项时：关联数据字典不用填写，");
+                                } else {
+                                    if (ObjectUtil.isNotEmpty(items.getRegular())) {
+                                        List<DictModel> regex = sysBaseApi.getDictItems("regex");
+                                        if (CollUtil.isNotEmpty(regex)) {
+                                            String dictValue = regex.stream().filter(t -> StrUtil.equals(t.getText(), items.getRegular())).map(DictModel::getValue).limit(1).collect(Collectors.joining());
+                                            if (StrUtil.isNotEmpty(dictValue)) {
+                                                items.setRegular(dictValue);
+                                            } else {
+                                                stringBuilder.append("数据校验表达式选择不正确，");
+                                            }
+                                        } else {
+                                            stringBuilder.append("数据校验表达式选择不正确，");
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            if (ObjectUtil.isNotEmpty(items.getRegular()) || ObjectUtil.isNotEmpty(items.getDictCode())) {
+                                stringBuilder.append("关联数据字典、数据校验表达式不用填写，");
+                            }
+                        }
                     }
                     if (items.getCheck() == 0 && items.getHierarchyType() == 1) {
                         stringBuilder.append("是否为巡视项目(要选择为：是)，");
@@ -825,12 +887,23 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                     stringBuilder.append("关联数据字典不用填写，");
                                 } else {
                                     if (ObjectUtil.isNotEmpty(items.getRegular())) {
-                                        String dictCode = patrolStandardMapper.getDictCode(items.getRegular());
+                                        List<DictModel> regex = sysBaseApi.getDictItems("regex");
+                                        if (CollUtil.isNotEmpty(regex)) {
+                                            String dictValue = regex.stream().filter(t -> StrUtil.equals(t.getText(), items.getRegular())).map(DictModel::getValue).limit(1).collect(Collectors.joining());
+                                            if (StrUtil.isNotEmpty(dictValue)) {
+                                                items.setRegular(dictValue);
+                                            } else {
+                                                stringBuilder.append("数据校验表达式选择不正确，");
+                                            }
+                                        } else {
+                                            stringBuilder.append("数据校验表达式选择不正确，");
+                                        }
+                                       /*String dictCode = patrolStandardMapper.getDictCode(items.getRegular());
                                         if (ObjectUtil.isNotEmpty(dictCode)) {
                                             items.setRegular(dictCode);
                                         } else {
                                             stringBuilder.append("数据校验表达式选择不正确，");
-                                        }
+                                        }*/
                                     }
                                 }
                             }

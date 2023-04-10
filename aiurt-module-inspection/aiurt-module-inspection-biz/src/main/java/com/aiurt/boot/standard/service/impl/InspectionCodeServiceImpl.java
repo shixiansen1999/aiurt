@@ -602,10 +602,11 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                         }
                     }
                     orgNameList.forEach(t -> {
-                        SysDepartModel sysDepartModel = sysBaseApi.getDepartByName(t).toJavaObject(SysDepartModel.class);
-                        if (ObjectUtil.isEmpty(sysDepartModel)) {
+                        JSONObject departByName = sysBaseApi.getDepartByName(t);
+                        if (ObjectUtil.isEmpty(departByName)) {
                             stringBuilder.append("系统不存在该部门：" + t + StrUtil.COMMA);
                         } else {
+                            SysDepartModel sysDepartModel = departByName.toJavaObject(SysDepartModel.class);
                             OrgVO orgVO = new OrgVO();
                             orgVO.setLabel(sysDepartModel.getOrgCode());
                             orgVO.setValue(sysDepartModel.getDepartName());
@@ -649,10 +650,11 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 } else {
                     stringBuilder.append("系统不存在该专业，");
                     orgNameList.forEach(t -> {
-                        SysDepartModel sysDepartModel = sysBaseApi.getDepartByName(t).toJavaObject(SysDepartModel.class);
-                        if (ObjectUtil.isEmpty(sysDepartModel)) {
+                        JSONObject departByName = sysBaseApi.getDepartByName(t);
+                        if (ObjectUtil.isEmpty(departByName)) {
                             stringBuilder.append("系统不存在该部门：" + t + StrUtil.COMMA);
                         } else {
+                            SysDepartModel sysDepartModel = departByName.toJavaObject(SysDepartModel.class);
                             OrgVO orgVO = new OrgVO();
                             orgVO.setLabel(sysDepartModel.getOrgCode());
                             orgVO.setValue(sysDepartModel.getDepartName());
@@ -773,21 +775,16 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                     } else {
                         items.setType(InspectionConstant.IS_APPOINT_DEVICE.equals(checkCode) ? 1 : 0);
                     }
-                    if (items.getType() == 0 && items.getHasChild() == "0") {
+                    if (items.getType() == 0 && StrUtil.equals(items.getHasChild(), "0")) {
                         if (ObjectUtil.isNotEmpty(items.getDataCheck()) || ObjectUtil.isNotEmpty(items.getQualityStandard()) || ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getSStatusItem()) || ObjectUtil.isNotEmpty(items.getIsInspectionType())) {
                             contentStringBuilder.append("质量标准、检查值类型、检查值是否必填、关联数据字典、数据校验表达式不用填写，");
                         }
                     }
-                    if (items.getType() == 1 && items.getHasChild() == "0") {
+                    if (items.getType() == 1 && StrUtil.equals(items.getHasChild(), "0")) {
                         List<InspectionCodeContent> sonList = standardItems.stream().filter(e -> e.getPid().equals(items.getName())).collect(Collectors.toList());
                         if(CollUtil.isNotEmpty(sonList)) {
                             contentStringBuilder.append("不能有子级，");
                         }
-                    }
-                    if (items.getType() == 0 && items.getHasChild() == "1") {
-                        contentStringBuilder.append("是否为检查项(要选择为：是)，");
-                    }
-                    if (items.getType() == 1 && items.getHasChild() == "1") {
                         if (ObjectUtil.isNotEmpty(items.getIsInspectionType())) {
                             Integer inspectionType = checkMap2.get(items.getIsInspectionType());
                             if (!InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionType) && !InspectionConstant.NO_ISAPPOINT_DEVICE.equals(inspectionType)) {
@@ -807,12 +804,12 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                                     items.setStatusItem(statusItem.equals(InspectionConstant.STATUS_ITEM_CHOICE) ? 2 : 1);
                                 }
                             }
-                            if (items.getType() == 1) {
+                            if (items.getStatusItem() == 1) {
                                 if (ObjectUtil.isNotEmpty(items.getDictCode()) && ObjectUtil.isNotEmpty(items.getDataCheck())) {
                                     contentStringBuilder.append("关联数据字典、数据校验表达式不用填写，");
                                 }
                             }
-                            if (items.getType() == 2) {
+                            if (items.getStatusItem() == 2) {
                                 if (ObjectUtil.isNotEmpty(items.getDataCheck())) {
                                     contentStringBuilder.append("数据校验表达式不用填写，");
                                 } else {
@@ -826,17 +823,97 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                                     }
                                 }
                             }
-                            if (items.getType() == 3) {
+                            if (items.getStatusItem() == 3) {
                                 if (ObjectUtil.isNotEmpty(items.getDictCode())) {
                                     contentStringBuilder.append("关联数据字典不用填写，");
                                 } else {
                                     if (ObjectUtil.isNotEmpty(items.getDataCheck())) {
-                                        String dictCode = inspectionCodeContentMapper.getDictCode(items.getDataCheck());
+                                        List<DictModel> regex = sysBaseApi.getDictItems("regex");
+                                        if (CollUtil.isNotEmpty(regex)) {
+                                            String dictValue = regex.stream().filter(t -> StrUtil.equals(t.getText(), items.getDataCheck())).map(DictModel::getValue).limit(1).collect(Collectors.joining());
+                                            if (StrUtil.isNotEmpty(dictValue)) {
+                                                items.setDataCheck(dictValue);
+                                            } else {
+                                                contentStringBuilder.append("数据校验表达式选择不正确，");
+                                            }
+                                        } else {
+                                            contentStringBuilder.append("数据校验表达式选择不正确，");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if(ObjectUtil.isNotEmpty(items.getDataCheck())||ObjectUtil.isNotEmpty(items.getDictCode())) {
+                                contentStringBuilder.append("关联数据字典、数据校验表达式不用填写，");
+                            }
+                        }
+                    }
+                    if (items.getType() == 0 && StrUtil.equals(items.getHasChild(), "1")) {
+                        contentStringBuilder.append("是否为检查项(要选择为：是)，");
+                    }
+                    if (items.getType() == 1 && StrUtil.equals(items.getHasChild(), "1")) {
+                        if (ObjectUtil.isNotEmpty(items.getIsInspectionType())) {
+                            Integer inspectionType = checkMap2.get(items.getIsInspectionType());
+                            if (!InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionType) && !InspectionConstant.NO_ISAPPOINT_DEVICE.equals(inspectionType)) {
+                                contentStringBuilder.append("检查值是否必填选择不正确，");
+                            } else {
+                                items.setInspectionType(inspectionType.equals(InspectionConstant.IS_APPOINT_DEVICE) ? 1 : 0);
+                            }
+                        }
+                        if (ObjectUtil.isNotEmpty(items.getSStatusItem())) {
+                            Integer statusItem = checkMap3.get(items.getSStatusItem());
+                            if(!InspectionConstant.NO_STATUS_ITEM.equals(statusItem) && !InspectionConstant.STATUS_ITEM_CHOICE.equals(statusItem) && !InspectionConstant.STATUS_ITEM_INPUT.equals(statusItem)){
+                                contentStringBuilder.append("检查值类型选择不正确，");
+                            } else {
+                                if (statusItem.equals(InspectionConstant.STATUS_ITEM_INPUT)) {
+                                    items.setStatusItem(3);
+                                } else {
+                                    items.setStatusItem(statusItem.equals(InspectionConstant.STATUS_ITEM_CHOICE) ? 2 : 1);
+                                }
+                            }
+                            if (items.getStatusItem() == 1) {
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) && ObjectUtil.isNotEmpty(items.getDataCheck())) {
+                                    contentStringBuilder.append("关联数据字典、数据校验表达式不用填写，");
+                                }
+                            }
+                            if (items.getStatusItem() == 2) {
+                                if (ObjectUtil.isNotEmpty(items.getDataCheck())) {
+                                    contentStringBuilder.append("数据校验表达式不用填写，");
+                                } else {
+                                    if (ObjectUtil.isNotEmpty(items.getDictCode())) {
+                                        String dictCode = inspectionCodeContentMapper.getDictCode(items.getDictCode());
+                                        if (ObjectUtil.isNotEmpty(dictCode)) {
+                                            items.setDictCode(dictCode);
+                                        } else {
+                                            contentStringBuilder.append("关联数据字典选择不正确，");
+                                        }
+                                    }
+                                }
+                            }
+                            if (items.getStatusItem() == 3) {
+                                if (ObjectUtil.isNotEmpty(items.getDictCode())) {
+                                    contentStringBuilder.append("关联数据字典不用填写，");
+                                } else {
+                                    if (ObjectUtil.isNotEmpty(items.getDataCheck())) {
+                                        List<DictModel> regex = sysBaseApi.getDictItems("regex");
+                                        if (CollUtil.isNotEmpty(regex)) {
+                                            String dictValue = regex.stream().filter(t -> StrUtil.equals(t.getText(), items.getDataCheck())).map(DictModel::getValue).limit(1).collect(Collectors.joining());
+                                            if (StrUtil.isNotEmpty(dictValue)) {
+                                                items.setDataCheck(dictValue);
+                                            } else {
+                                                contentStringBuilder.append("数据校验表达式选择不正确，");
+                                            }
+                                        } else {
+                                            contentStringBuilder.append("数据校验表达式选择不正确，");
+                                        }
+                                        /*String dictCode = inspectionCodeContentMapper.getDictCode(items.getDataCheck());
                                         if (ObjectUtil.isNotEmpty(dictCode)) {
                                             items.setDataCheck(dictCode);
                                         } else {
                                             contentStringBuilder.append("数据校验表达式选择不正确，");
-                                        }
+                                        }*/
                                     }
                                 }
                             }
