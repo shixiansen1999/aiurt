@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
@@ -114,12 +115,15 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         //查询已经被引用的故障
         List<String> faultCodes = faultAnalysisReportMapper.getFaultCode();
         List<FaultDTO> faults = faultMapper.getFault(page, faultDTO,faultCodes);
+        //下面禁用数据过滤
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         if (CollUtil.isNotEmpty(faults)) {
             for (FaultDTO fault : faults) {
                 List<String> deviceName = faultMapper.getDeviceName(fault.getCode());
                 fault.setDeviceName(CollUtil.join(deviceName,","));
             }
         }
+        GlobalThreadLocal.setDataFilter(b);
         return page.setRecords(faults);
     }
 

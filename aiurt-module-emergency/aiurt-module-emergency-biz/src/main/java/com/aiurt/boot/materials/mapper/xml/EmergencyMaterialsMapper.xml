@@ -84,6 +84,7 @@
                 </foreach>
             </if>
         </where>
+        order by create_time DESC
     </select>
 
     <select id="getStandingBook" resultType="com.aiurt.boot.materials.dto.PatrolStandardDTO">

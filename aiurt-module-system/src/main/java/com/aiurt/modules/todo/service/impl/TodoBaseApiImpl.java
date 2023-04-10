@@ -164,8 +164,15 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
             if (ObjectUtil.isNotEmpty(sysTodoList.getIsRingBell())) {
                 obj.put(WebsocketConst.IS_RING_BELL, sysTodoList.getIsRingBell());
             }
-            LoginUser userByName = sysBaseApi.getUserByName(sysTodoList.getActualUserName());
-            webSocket.sendMessage(userByName.getId(), obj.toJSONString());
+            if (StrUtil.isNotBlank(sysTodoList.getCurrentUserName())) {
+                String currentUserName = sysTodoList.getCurrentUserName();
+                List<String> userNames = StrUtil.splitTrim(currentUserName, ",");
+                for (String userName : userNames) {
+                    LoginUser userByName = sysBaseApi.getUserByName(userName);
+                    webSocket.sendMessage(userByName.getId(), obj.toJSONString());
+                }
+
+            }
         }
         String type = sysTodoList.getType();
         if(StrUtil.isBlank(type)){
