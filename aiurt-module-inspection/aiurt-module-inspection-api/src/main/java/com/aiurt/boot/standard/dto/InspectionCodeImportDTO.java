@@ -66,7 +66,7 @@ public class InspectionCodeImportDTO {
     private String orgName;
 
     /**检修表类型*/
-    @Excel(name = "检修表类型", width = 15)
+    @Excel(name = "标准表类型", width = 15)
     @ApiModelProperty(value = "类型：0应急、车载、2正线、3车辆段 ")
     @TableField(exist = false)
     private String repairTypeName;

@@ -15,7 +15,6 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -91,6 +90,22 @@ public class InspectionCodeExcelDTO extends DictEntity  {
     @TableField(exist = false)
     private String isRelatedDevice;
 
+    @Excel(name = "适用部门", width = 15, needMerge = true)
+    @ApiModelProperty(value = "适用部门")
+    @TableField(exist = false)
+    private String orgName;
+
+    @ApiModelProperty(value = "检修表类型")
+    @Dict(dicCode = "repair_type")
+    private Integer repairType;
+
+    @Excel(name = "检修表类型 ", width = 15,needMerge = true)
+    @ExcelExtend(isRequired = true)
+    @ApiModelProperty(value = "检修表类型：0应急、车载、2正线、3车辆段 ")
+    @TableField(exist = false)
+    @Dict(dicCode = "repair_type")
+    private String repairTypeValue;
+
     /**设备类型code，关联device_type的code*/
     @ApiModelProperty(value = "设备类型code，关联device_type的code")
     @TableField(updateStrategy = FieldStrategy.IGNORED)
@@ -145,18 +160,5 @@ public class InspectionCodeExcelDTO extends DictEntity  {
     @ApiModelProperty(value = "配置项")
     @TableField(exist = false)
     private List<InspectionCodeContentDTO> inspectionCodeContentDTOList;
-
-    @ApiModelProperty(value = "检修表类型")
-    @Dict(dicCode = "repair_type")
-    private Integer repairType;
-
-    @Excel(name = "检修表类型 ", width = 15,needMerge = true)
-    @ExcelExtend(isRequired = true)
-    @ApiModelProperty(value = "检修表类型：0应急、车载、2正线、3车辆段 ")
-    @TableField(exist = false)
-    @Dict(dicCode = "repair_type")
-    private String repairTypeValue;
-
-
 
 }
