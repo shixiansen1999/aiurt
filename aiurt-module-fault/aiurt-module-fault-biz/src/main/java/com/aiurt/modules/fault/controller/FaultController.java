@@ -33,6 +33,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -179,7 +180,17 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     }
 
     private void dealResult(List<Fault> records) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         records.stream().forEach(fault1 -> {
+            if(ObjectUtil.isNotEmpty(fault1.getAppointUserName())){
+                if(user.getUsername().equals(fault1.getAppointUserName())){
+                    fault1.setIsFault(true);
+                }else {
+                    fault1.setIsFault(false);
+                }
+            }else {
+                fault1.setIsFault(false);
+            }
             List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(fault1.getCode());
             // 权重登记
             if (StrUtil.isNotBlank(fault1.getFaultLevel())) {
