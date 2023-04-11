@@ -73,8 +73,9 @@
 
     <select id="getPatrolStandardNameList" resultType="com.aiurt.boot.materials.dto.PatrolStandardDTO">
         select
-        id as standardId,code as standardCode,`name` as standardName
-        from patrol_standard
+        ps.id as standardId,ps.code as standardCode,ps.`name` as standardName
+        from patrol_standard ps
+        left join emergency_materials_invoices emi on ps.`code` = emi.standard_code
         <where>
             del_flag = 0
             <if test="code.size()>0">
@@ -84,7 +85,9 @@
                 </foreach>
             </if>
         </where>
-        order by create_time DESC
+        GROUP BY
+        ps.id
+        ORDER BY emi.create_time DESC
     </select>
 
     <select id="getStandingBook" resultType="com.aiurt.boot.materials.dto.PatrolStandardDTO">
