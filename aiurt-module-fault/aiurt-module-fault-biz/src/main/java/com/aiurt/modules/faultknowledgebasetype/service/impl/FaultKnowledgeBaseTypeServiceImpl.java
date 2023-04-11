@@ -2,9 +2,13 @@ package com.aiurt.modules.faultknowledgebasetype.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
+import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebasetype.dto.MajorDTO;
 import com.aiurt.modules.faultknowledgebasetype.dto.SelectTableDTO;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
@@ -25,6 +29,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,6 +44,8 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
     @Autowired
     private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
 
+    @Autowired
+    private FaultKnowledgeBaseMapper faultKnowledgeBaseMapper;
     @Lazy
     @Autowired
     private CommonAPI commonApi;
@@ -172,9 +179,24 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
     }
 
     @Override
-    public List<SelectTableDTO> knowledgeBaseTypeTreeList(String majorCode,String systemCode) {
+    public List<SelectTableDTO> knowledgeBaseTypeTreeList(String majorCode,String systemCode,String classifyCode) {
+        List<String> list = new ArrayList<>();
+        if (StrUtil.isNotBlank(classifyCode)){
+            String[] split = StrUtil.split(classifyCode, ",");
+            List<String> stringList = Arrays.asList(split);
+            LambdaQueryWrapper<FaultKnowledgeBase> faultKnowledgeBaseLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            faultKnowledgeBaseLambdaQueryWrapper.in(FaultKnowledgeBase::getDeviceTypeCode,stringList).eq(FaultKnowledgeBase::getDelFlag, "0");
+            List<FaultKnowledgeBase> faultKnowledgeBaseList = faultKnowledgeBaseMapper.selectList(faultKnowledgeBaseLambdaQueryWrapper);
+            if (CollUtil.isNotEmpty(faultKnowledgeBaseList)){
+                list = faultKnowledgeBaseList.stream().map(FaultKnowledgeBase::getKnowledgeBaseTypeCode).collect(Collectors.toList());
+            }
+        }
+
         LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, "0").orderByDesc(FaultKnowledgeBaseType::getCreateTime);
+        if (CollUtil.isNotEmpty(list)){
+            queryWrapper.in(FaultKnowledgeBaseType::getCode,list);
+        }
         List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(queryWrapper);
 
         //下面禁用数据过滤
