@@ -36,7 +36,6 @@ import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeS
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
-import com.aiurt.modules.situation.entity.SysAnnouncement;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSON;
@@ -514,8 +513,18 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     @Override
     public Fault queryByCode(String code) {
+        LoginUser user = checkLogin();
 
         Fault fault = isExist(code);
+        if(ObjectUtil.isNotEmpty(fault.getAppointUserName())){
+            if(fault.getAppointUserName().equals(user.getUsername())){
+                fault.setIsFault(true);
+            }else {
+                fault.setIsFault(false);
+            }
+        }else {
+            fault.setIsFault(false);
+        }
         // 设备
         List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(code);
         fault.setFaultDeviceList(faultDeviceList);

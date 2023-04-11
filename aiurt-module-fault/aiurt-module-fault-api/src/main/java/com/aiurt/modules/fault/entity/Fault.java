@@ -366,7 +366,9 @@ public class Fault extends DictEntity implements Serializable {
 
     @ApiModelProperty(value = "故障详细位置")
     private String detailLocation;
-
+    @ApiModelProperty(value = "是否是自己的故障任务")
+    @TableField(exist = false)
+    private Boolean isFault;
     public static void main(String[] args) {
         Fault fault = new Fault();
 
