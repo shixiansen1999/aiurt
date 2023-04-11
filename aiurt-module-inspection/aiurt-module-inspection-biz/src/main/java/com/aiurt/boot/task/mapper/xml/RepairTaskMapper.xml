@@ -691,9 +691,9 @@
             <if test="condition.orgCode!=null ">
                 and t3.org_code = #{condition.orgCode}
             </if>
-            <if test="condition.subsystemCode!=null ">
-                and t5.subsystem_code = #{condition.subsystemCode}
-            </if>
+<!--            <if test="condition.subsystemCode!=null ">-->
+<!--                and t5.subsystem_code = #{condition.subsystemCode}-->
+<!--            </if>-->
             <if test="condition.startDate!=null and condition.endDate!=null ">
                 and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate} ,'%Y-%m-%d')
 
