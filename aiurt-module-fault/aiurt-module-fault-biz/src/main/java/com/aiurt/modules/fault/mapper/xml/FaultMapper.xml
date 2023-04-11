@@ -239,11 +239,11 @@
         fault.symptoms
         FROM
         fault fault
-        left join fault_device fd on fault.`code` = fd.fault_code
-        left join device de on de.`code` = fd.device_code
+        <!--left join fault_device fd on fault.`code` = fd.fault_code
+        left join device de on de.`code` = fd.device_code-->
         <where>
-            fault.major_code = de.major_code
-        and fault.sub_system_code = de.system_code
+          <!--  fault.major_code = de.major_code
+        and fault.sub_system_code = de.system_code-->
         and fault.status = 12
         <if test="condition.code != null and condition.code != ''">
             and fault.`code` like concat('%',#{condition.code},'%')
