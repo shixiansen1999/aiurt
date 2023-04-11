@@ -254,8 +254,9 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	 @PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
 	 public Result<List<SelectTableDTO>> knowledgeBaseTypeTreeList(@RequestParam(name="majorCode",required=false)String majorCode,
 																   @RequestParam(name="systemCode",required=false)String systemCode,
-																   @RequestParam(name = "name", required = false) String name) {
-		 List<SelectTableDTO> list = faultKnowledgeBaseTypeService.knowledgeBaseTypeTreeList(majorCode,systemCode);
+																   @RequestParam(name = "name", required = false) String name,
+																   @RequestParam(name = "classifyCode", required = false) String classifyCode) {
+		 List<SelectTableDTO> list = faultKnowledgeBaseTypeService.knowledgeBaseTypeTreeList(majorCode,systemCode,classifyCode);
 		 //树形搜索匹配
 		 if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(list)) {
 			 processingTreeList(name,list);
