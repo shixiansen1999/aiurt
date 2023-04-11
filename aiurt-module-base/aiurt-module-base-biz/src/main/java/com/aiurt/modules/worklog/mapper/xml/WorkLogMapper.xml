@@ -101,6 +101,7 @@
     <select id="queryById" resultType="com.aiurt.common.result.WorkLogResult">
         SELECT
 	        wl.*,
+            wl.org_id AS orgName,
 	        su.realname AS succeedName,
 	        sur.realname AS submitName,
 	        sur.org_name AS submitOrgName,

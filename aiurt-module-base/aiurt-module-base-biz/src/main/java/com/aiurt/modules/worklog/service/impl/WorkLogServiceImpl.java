@@ -620,21 +620,21 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         WorkLogResult workLog = depotMapper.queryById(id);
         WorkLogDTO workLogDTO = new WorkLogDTO();
         BeanUtil.copyProperties(workLog,workLogDTO);
-        if(ObjectUtil.isNotEmpty(workLog.getAssortLocation()))
-        {
-            List<String> codes = Arrays.asList(workLog.getAssortLocation().split(","));
-            String assortLocationName = null;
-            for (String code : codes) {
-                String position = iSysBaseAPI.getPosition(code);
-                if (assortLocationName == null) {
-                    assortLocationName = position;
-                } else {
-                    assortLocationName = assortLocationName + position;
-                }
-            }
-            workLogDTO.setAssortLocationName(assortLocationName);
 
+        // 配合施工地点名称
+        if (StrUtil.isNotBlank(workLog.getAssortLocation())) {
+            List<String> locations = StrUtil.split(workLog.getAssortLocation(), ',', true, true);
+            String locationNames = locations.stream().map(location -> iSysBaseAPI.getPosition(location))
+                    .filter(name -> StrUtil.isNotBlank(name)).collect(Collectors.joining(","));
+            workLogDTO.setAssortLocationName(locationNames);
         }
+
+        // 所在班组名称，orgName当前存储的是班组的orgId
+        if (StrUtil.isNotBlank(workLog.getOrgName())) {
+            List<JSONObject> dept = iSysBaseAPI.queryDepartsByIds(workLog.getOrgName());
+            workLogDTO.setOrgName(CollUtil.isEmpty(dept) ? "" : dept.get(0).getString("departName"));
+        }
+
         if(ObjectUtil.isNotEmpty(workLog.getSucceedId()))
         {
             String[] split1 = workLog.getSucceedId().split(",");
