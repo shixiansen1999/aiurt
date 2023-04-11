@@ -1,10 +1,10 @@
 package com.aiurt.modules.sm.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.sm.entity.CsSafetyAttention;
@@ -103,7 +103,7 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 				systemList.addAll(systemCodes);
 			}
 			if (CollectionUtil.isNotEmpty(userRoleSet)){
-				if (!userRoleSet.contains("admin")){
+				if (!userRoleSet.contains("admin")&& CollUtil.isNotEmpty(systemList)){
 					queryWrapper.in(CsSafetyAttention::getSystemCode,systemList);
 				}
 			}

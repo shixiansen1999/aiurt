@@ -181,8 +181,12 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 				.orderByDesc(CsSubsystem::getCreateTime);
 		if (CollectionUtil.isNotEmpty(userRoleSet)){
 			if (!userRoleSet.contains("admin")){
-				lambdaQueryWrapper.in(CsMajor::getMajorCode,majorCode);
-				lambdaQueryWrapper1.in(CsSubsystem::getSystemCode,systemList1);
+				if (CollUtil.isNotEmpty(systemList1)) {
+					lambdaQueryWrapper.in(CsMajor::getMajorCode,majorCode);
+				}
+				if (CollUtil.isNotEmpty(systemList1)) {
+					lambdaQueryWrapper1.in(CsSubsystem::getSystemCode,systemList1);
+				}
 			}
 		}
 		List<CsMajor> majorList = csMajorService.list(lambdaQueryWrapper);
