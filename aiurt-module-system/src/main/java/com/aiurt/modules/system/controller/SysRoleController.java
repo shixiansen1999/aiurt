@@ -380,6 +380,8 @@ public class SysRoleController {
 				isApp=0;
 			}
 			query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SysPermission::getIsApp,isApp);
+			query.eq(SysPermission::isRoute, true);
+			//只查看启用的菜单
 			query.orderByAsc(SysPermission::getSortNo);
 			List<SysPermission> list = sysPermissionService.list(query);
 			for(SysPermission sysPer : list) {
