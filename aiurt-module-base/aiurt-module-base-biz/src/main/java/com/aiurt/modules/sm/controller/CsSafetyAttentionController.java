@@ -93,7 +93,7 @@ public class CsSafetyAttentionController extends BaseController<CsSafetyAttentio
 		if (StrUtil.isNotEmpty(csSafetyAttention.getMajorCode())){
 			queryWrapper.eq(CsSafetyAttention::getMajorCode,csSafetyAttention.getMajorCode());
 			if (CollectionUtil.isNotEmpty(userRoleSet)){
-				if (!userRoleSet.contains("admin")){
+				if (!userRoleSet.contains("admin")&& CollUtil.isNotEmpty(systemList)){
 					queryWrapper.in(CsSafetyAttention::getSystemCode,systemList);
 				}
 			}
