@@ -36,6 +36,10 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "巡检表名称", width = 15)
     @ApiModelProperty(value = "巡检表名称")
     private java.lang.String taskStandardName;
+    /**截取后巡检表名称*/
+    @Excel(name = "截取后巡检表名称", width = 15)
+    @ApiModelProperty(value = "截取后巡检表名称")
+    private java.lang.String spiltTaskStandardName;
     /**巡检单号*/
     @Excel(name = "巡检单号", width = 15)
     @ApiModelProperty(value = "巡检单号")
