@@ -2428,6 +2428,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(sysUser.getOrgId());
         List<String> userIds = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getId).collect(Collectors.toList());
+        if (CollUtil.isEmpty(userIds)) {
+            return map;
+        }
         //获取当前班组用户的检修任务编号
         List<RepairTaskUser> taskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().in(RepairTaskUser::getUserId, userIds).eq(RepairTaskUser::getDelFlag, 0));
         if (CollUtil.isNotEmpty(taskUsers)) {
