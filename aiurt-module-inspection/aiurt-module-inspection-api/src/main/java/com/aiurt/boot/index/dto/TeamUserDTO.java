@@ -52,5 +52,10 @@ public class TeamUserDTO {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date workingTime;
 
+    @ApiModelProperty(value = "入职时间")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date entryDate;
+
     private Long time;
 }

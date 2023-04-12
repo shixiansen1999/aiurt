@@ -191,6 +191,7 @@
     su.avatar,
     su.job_grade,
     su.working_time,
+    su.entry_date,
     (
     SELECT
     GROUP_CONCAT( sr.role_name )
