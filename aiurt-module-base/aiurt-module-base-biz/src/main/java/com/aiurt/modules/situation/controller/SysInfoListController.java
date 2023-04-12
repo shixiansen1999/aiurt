@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
@@ -272,14 +271,24 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Page<SysAnnouncement> page = new Page<>(pageNo, pageSize);
         List<SysAnnouncement> myInfo = sysInfoListMapper.getMyInfo(page, sysUser.getId());
-        List<SysAnnouncement> collect = myInfo.stream().filter(s -> "1".equals(s.getReadFlag())).collect(Collectors.toList());
+        //List<SysAnnouncement> collect = myInfo.stream().filter(s -> "1".equals(s.getReadFlag())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(myInfo)) {
-            SysAnnouncement s = myInfo.get(0);
+           /* SysAnnouncement s = myInfo.get(0);
             s.setReadCount(collect.size());
             s.setUnreadCount(myInfo.size()-collect.size());
             result.setSuccess(true);
             result.setResult(page.setRecords(myInfo));
-            return result;
+            return result;*/
+            for (SysAnnouncement announcement : myInfo) {
+                String msgContent = announcement.getMsgContent();
+                String replace = StrUtil.replace(msgContent, "<p>", "");
+                String replace1 = StrUtil.replace(replace, "</p>", "");
+                announcement.setMsgContent(replace1);
+                bdInfoListService.getUserNames(announcement);
+                result.setSuccess(true);
+                result.setResult(page.setRecords(myInfo));
+                return result;
+            }
         }
         return result;
     }
