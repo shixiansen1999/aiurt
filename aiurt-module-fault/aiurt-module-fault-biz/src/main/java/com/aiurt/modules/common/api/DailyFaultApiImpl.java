@@ -72,6 +72,9 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<LoginUser> sysUsers = sysBaseApi.getUserPersonnel(sysUser.getOrgId());
         List<String> userNames = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getUsername).collect(Collectors.toList());
+        if (CollUtil.isEmpty(userNames)) {
+            return map;
+        }
         //获取当前用户部门的人作为被指派/领取人，负责过的故障报修单
         List<FaultRepairRecord> faultList = recordMapper.selectList(new LambdaQueryWrapper<FaultRepairRecord>().in(FaultRepairRecord::getAppointUserName, userNames).eq(FaultRepairRecord::getDelFlag, 0));
        //获取已经填写的维修单
