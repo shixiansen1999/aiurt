@@ -1512,12 +1512,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.INSPECTION_RECEIPT.getType(), repairTask.getId(), loginUser.getUsername(), CommonTodoStatus.DONE_STATUS_1);
 
         //添加附件
-        List<String> enclosures = repairTaskEnclosureMapper.getByRepairTaskId(examineDTO.getId());
-        for (String enclosure : enclosures) {
-            RepairTaskEnclosure taskEnclosure = new RepairTaskEnclosure();
-            taskEnclosure.setUrl(examineDTO.getPath());
-            taskEnclosure.setRepairTaskResultId(enclosure);
-            repairTaskEnclosureMapper.insert(taskEnclosure);
+        if(ObjectUtil.isNotEmpty(examineDTO.getPath())){
+            List<String> enclosures = repairTaskEnclosureMapper.getByRepairTaskId(examineDTO.getId());
+            for (String enclosure : enclosures) {
+                RepairTaskEnclosure taskEnclosure = new RepairTaskEnclosure();
+                taskEnclosure.setUrl(examineDTO.getPath());
+                taskEnclosure.setRepairTaskResultId(enclosure);
+                repairTaskEnclosureMapper.insert(taskEnclosure);
+            }
         }
         status(examineDTO, loginUser, realName, repairTask1, repairTask.getRepairPoolId());
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT)) {
