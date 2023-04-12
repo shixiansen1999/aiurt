@@ -167,6 +167,12 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             e.setSubsystemCode(taskStandardName.getSubsystemCode());
             e.setProfessionCode(taskStandardName.getProfessionCode());
             e.setTaskStandardName(taskStandardName.getName());
+            if(ObjectUtil.isNotEmpty(taskStandardName.getName())){
+                String[] split = taskStandardName.getName().split("-");
+                if(split.length==3){
+                    e.setSpiltTaskStandardName(split[2]);
+                }
+            }
             e.setDeviceType(taskStandardName.getDeviceType());
             e.setStandardCode(taskStandardName.getCode());
             boolean nullSafetyPrecautions = sysBaseApi.isNullSafetyPrecautions(e.getProfessionCode(), e.getSubsystemCode(),taskStandardName.getCode(),0);
@@ -547,6 +553,12 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             e.setSubsystemCode(taskStandardName.getSubsystemCode());
             e.setProfessionCode(taskStandardName.getProfessionCode());
             e.setTaskStandardName(taskStandardName.getName());
+            if(ObjectUtil.isNotEmpty(taskStandardName.getName())){
+            String[] split = taskStandardName.getName().split("-");
+            if(split.length==3){
+                e.setSpiltTaskStandardName(split[2]);
+            }
+            }
             e.setDeviceType(taskStandardName.getDeviceType());
             e.setStandardCode(taskStandardName.getCode());
             boolean nullSafetyPrecautions = sysBaseApi.isNullSafetyPrecautions(e.getProfessionCode(), e.getSubsystemCode(),taskStandardName.getCode(),0);
