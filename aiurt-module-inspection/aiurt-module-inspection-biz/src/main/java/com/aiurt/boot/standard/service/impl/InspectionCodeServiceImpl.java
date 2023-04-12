@@ -280,8 +280,10 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 if (CollUtil.isEmpty(inspectionCodeContentDTOList)) {
                     continue;
                 }
+                // 导出配置项内容
                 inspectionCodeContentDTOList.forEach(e -> {
-                    String hierarchyTypeName = sysBaseApi.translateDict("inspection_level_type", e.getHasChild());
+                    String hierarchyType = StrUtil.equals(e.getPid(), "0") ? "0" : "1";
+                    String hierarchyTypeName = sysBaseApi.translateDict("inspection_level_type", hierarchyType);
                     e.setHierarchyTypeName(hierarchyTypeName);
                     if (!StrUtil.equals(e.getPid(), "0") || !StrUtil.equals(e.getPid(), StrUtil.NULL)) {
                         InspectionCodeContent parent = inspectionCodeContentMapper.selectOne(new LambdaQueryWrapper<InspectionCodeContent>().eq(InspectionCodeContent::getId, e.getPid()).eq(InspectionCodeContent::getDelFlag, CommonConstant.DEL_FLAG_0));
@@ -777,7 +779,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 }
                 if (StrUtil.isNotEmpty(hierarchyTypeName) && StrUtil.isNotEmpty(itemsCode) && StrUtil.isNotEmpty(checkName) && StrUtil.isNotEmpty(content)) {
                     List<InspectionCodeContent> itemsList = new ArrayList<>();
-                    if(!InspectionConstant.HAS_CHILD_1.equals(hierarchyTypeName) && !!InspectionConstant.TREE_ROOT_0.equals(hierarchyTypeName)){
+                    if(!InspectionConstant.HAS_CHILD_1.equals(hierarchyType) && !InspectionConstant.TREE_ROOT_0.equals(hierarchyType)){
                         contentStringBuilder.append("层级类型填写不规范，");
                     } else {
                         items.setHasChild(InspectionConstant.TREE_ROOT_0.equals(hierarchyType) ? "0" : "1");
