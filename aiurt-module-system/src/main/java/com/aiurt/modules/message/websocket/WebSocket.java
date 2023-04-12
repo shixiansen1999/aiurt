@@ -1,7 +1,11 @@
 package com.aiurt.modules.message.websocket;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
+import com.aiurt.common.base.BaseMap;
+import com.aiurt.common.constant.WebsocketConst;
+import com.aiurt.common.modules.redis.client.BaseRedisClient;
+import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.websocket.OnClose;
@@ -10,15 +14,8 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
-
-import com.aiurt.common.base.BaseMap;
-import com.aiurt.common.constant.WebsocketConst;
-import com.aiurt.common.modules.redis.client.BaseRedisClient;
-import org.springframework.stereotype.Component;
-
-import com.alibaba.fastjson.JSONObject;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @Author scott
@@ -42,6 +39,8 @@ public class WebSocket {
     @Resource
     private BaseRedisClient baseRedisClient;
 
+    //1.增加app端标识
+    private String APP_SESSION_SUFFIX = "_app";
     /**
      * 缓存 webSocket连接到单机服务class中（整体方案支持集群）
      */
@@ -147,11 +146,32 @@ public class WebSocket {
      * @param message
      */
     public void sendMessage(String userId, String message) {
-        BaseMap baseMap = new BaseMap();
+        /*BaseMap baseMap = new BaseMap();
         baseMap.put("userId", userId);
         baseMap.put("message", message);
-        baseRedisClient.sendMessage(REDIS_TOPIC_NAME, baseMap);
+        baseRedisClient.sendMessage(REDIS_TOPIC_NAME, baseMap);*/
+
+        Session session = sessionPool.get(userId);
+        if (session != null&&session.isOpen()) {
+            try {
+                log.info("【websocket消息】 单点消息:"+message);
+                session.getAsyncRemote().sendText(message);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        //--------3.增加APP端消息推送--------
+        Session session_app = sessionPool.get(userId+APP_SESSION_SUFFIX );
+        if (session_app != null&&session_app .isOpen()) {
+            try {
+                log.info("【websocket移动端消息】 单点消息:"+message);
+                session_app .getAsyncRemote().sendText(message);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
+
 
     /**
      * 此为单点消息(多人)

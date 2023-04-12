@@ -134,7 +134,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
             selectTable.setValue(f.getCode());
             selectTable.setPid(f.getPid());
             selectTable.setIsBaseType(true);
-            selectTable.setSystemCode(f.getSystemCode());
+            selectTable.setSystemCode(!"0".equals(f.getSystemCode()) ? f.getSystemCode() : "");
             if (ObjectUtil.isNotEmpty(majorDTO)) {
                 selectTable.setMajorCode(majorDTO.getMajorCode());
             }
@@ -207,6 +207,13 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
         if (StringUtils.isNotBlank(systemCode)) {
             List<CsUserSubsystemModel> subsystemModels = subsystemByUserId.stream().filter(s -> !s.getSystemCode().equals(systemCode)).collect(Collectors.toList());
             subsystemByUserId.removeAll(subsystemModels);
+        }else {
+            List<SelectTableDTO> treeRes = new ArrayList<>();
+            if (CollectionUtils.isNotEmpty(faultKnowledgeBaseTypes)) {
+                List<SelectTableDTO> childrenTress = getDetail(null, faultKnowledgeBaseTypes);
+                treeRes.addAll(getTreeRes(childrenTress, "0"));
+                return treeRes;
+            }
         }
 
         if (CollectionUtil.isNotEmpty(subsystemByUserId)) {

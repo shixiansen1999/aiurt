@@ -218,56 +218,67 @@
 
     <select id="getFault" resultType="com.aiurt.modules.faultanalysisreport.dto.FaultDTO">
         SELECT
-        id,
-        `code`,
-        major_code,
-        fault_mode_code,
-        sub_system_code,
-        line_code,
-        station_code,
-        fault_applicant,
-        happen_time,
-        station_position_code,
-        (select group_concat(device_code) from fault_device where fault_code = `code`) as deviceCode,
+        fault.id,
+        fault.`code`,
+        fault.major_code,
+        fault.fault_mode_code,
+        fault.sub_system_code,
+        fault.line_code,
+        fault.station_code,
+        fault.fault_applicant,
+        fault.happen_time,
+        fault.station_position_code,
+        <!--(select group_concat(fd.device_code) from fault_device fd where fd.fault_code = fault.`code`) as deviceCode,
         ( select group_concat(d.name) from
-        (select device_code from fault_device where fault_code = `code`) a
-        left join device d on d.`code` = a.device_code ) as deviceName,
-        end_time,
-        create_time,
-        hang_up_reason,
-        fault_phenomenon,
-        symptoms
+        (select fd.device_code from fault_device fd where fd.fault_code = fault.`code`) a
+        left join device d on d.`code` = a.device_code ) as deviceName,-->
+        fault.end_time,
+        fault.create_time,
+        fault.hang_up_reason,
+        fault.fault_phenomenon,
+        fault.symptoms
         FROM
-        fault
-        where
-        status = 12
+        fault fault
+        <!--left join fault_device fd on fault.`code` = fd.fault_code
+        left join device de on de.`code` = fd.device_code-->
+        <where>
+          <!--  fault.major_code = de.major_code
+        and fault.sub_system_code = de.system_code-->
+        and fault.status = 12
         <if test="condition.code != null and condition.code != ''">
-            and `code` like concat('%',#{condition.code},'%')
+            and fault.`code` like concat('%',#{condition.code},'%')
         </if>
         <if test="condition.faultModeCode != null and condition.faultModeCode != ''">
-            and fault_mode_code = #{condition.faultModeCode}
+            and fault.fault_mode_code = #{condition.faultModeCode}
         </if>
         <if test="condition.stationCode != null and condition.stationCode != ''">
-            and (station_code = #{condition.stationCode}
-            or line_code =#{condition.stationCode}
-            or station_position_code =#{condition.stationCode})
+            and (fault.station_code = #{condition.stationCode}
+            or fault.line_code =#{condition.stationCode}
+            or fault.station_position_code =#{condition.stationCode})
         </if>
         <if test="condition.deviceCode != null and condition.deviceCode != ''">
-            and `code` in ((select fault_code from fault_device where device_code like concat('%',#{condition.deviceCode},'%')))
+            and fault.`code` in ((select fd.fault_code from fault_device fd where fd.device_code like concat('%',#{condition.deviceCode},'%')))
         </if>
         <if test="condition.majorCode != null  and condition.majorCode !=''">
-            and major_code =#{condition.majorCode}
+            and fault.major_code =#{condition.majorCode}
         </if>
         <if test="condition.subSystemCode != null  and condition.subSystemCode !=''">
-            and sub_system_code =#{condition.subSystemCode}
+            and fault.sub_system_code =#{condition.subSystemCode}
         </if>
         <if test="faultCodes != null and faultCodes.size() != 0">
-            and  `code` not in
+            and  fault.`code` not in
             <foreach collection="faultCodes" index="index" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
+        </where>
+        group by  fault.id
     </select>
 
-
+    <select id="getDeviceName" resultType="java.lang.String">
+    select d.name
+    from fault_device fd
+    left join device d on d.`code` = fd.device_code
+    where fd.fault_code = #{code}
+    </select>
 </mapper>

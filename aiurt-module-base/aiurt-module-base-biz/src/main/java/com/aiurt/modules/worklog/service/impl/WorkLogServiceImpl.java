@@ -1201,7 +1201,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             workLog.setClassTime("8时30分");
             workLog.setClassName("早班会");
         }
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        LoginUser user = iSysBaseAPI.getUserById(workLog.getCreateBy());
         String orgId = user.getOrgId();
         List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
         //获取负责人

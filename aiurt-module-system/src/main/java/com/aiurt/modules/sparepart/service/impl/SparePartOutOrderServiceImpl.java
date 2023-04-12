@@ -108,6 +108,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     @Transactional(rollbackFor = Exception.class)
     public Result<?> update(SparePartOutOrder sparePartOutOrder) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        updateById(sparePartOutOrder);
         SparePartOutOrder outOrder = getById(sparePartOutOrder.getId());
         // 更新备件库存数据（原库存数-出库数量）
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,outOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,outOrder.getWarehouseCode()));

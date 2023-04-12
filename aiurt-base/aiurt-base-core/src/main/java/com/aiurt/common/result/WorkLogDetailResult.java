@@ -170,4 +170,9 @@ public class WorkLogDetailResult {
     /**未完成事项*/
     @ApiModelProperty(value = "未完成事项")
     private  String  unfinishedMatters;
+
+    /**创建人*/
+    @Excel(name = "创建人", width = 15)
+    @ApiModelProperty(value = "创建人")
+    private  String  createBy;
 }

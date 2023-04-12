@@ -210,6 +210,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 todoDTO.setTitle("故障维修任务");
                 todoDTO.setMsgAbstract("有新的故障信息");
                 todoDTO.setPublishingContent("有新的维修任务");
+                todoDTO.setIsRingBell(true);
                 // 自检
                 sendTodo(fault.getCode(), null, user.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
             } else {

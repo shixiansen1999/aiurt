@@ -162,6 +162,12 @@ public class SysTodoList implements Serializable {
     private String processCode;
 
     /**
+     * 是否响铃
+     */
+    @TableField(exist = false)
+    protected Boolean isRingBell;
+
+    /**
      * 排序时间
      */
     @TableField(exist = false)

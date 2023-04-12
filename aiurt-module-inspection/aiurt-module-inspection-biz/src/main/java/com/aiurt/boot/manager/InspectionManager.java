@@ -221,6 +221,10 @@ public class InspectionManager {
                     stationDTO.setStationCode(repairDeviceDTO.getStationCode());
                     stationDTO.setPositionCode(repairDeviceDTO.getPositionCode());
                     String positionCodeName = translateStation(Arrays.asList(stationDTO));
+                    JSONObject major = sysBaseApi.getCsMajorByCode(repairDeviceDTO.getMajorCode());
+                    repairDeviceDTO.setMajorName(major != null ? major.getString("majorName") : "");
+                    JSONObject systemName = sysBaseApi.getSystemName(repairDeviceDTO.getMajorCode(), repairDeviceDTO.getSubsystemCode());
+                    repairDeviceDTO.setSubsystemName(systemName != null ? systemName.getString("systemCode") : "");
                     repairDeviceDTO.setPositionCodeName(positionCodeName);
                 }
             }
@@ -270,6 +274,10 @@ public class InspectionManager {
                     stationDTO.setStationCode(repairDeviceDTO.getStationCode());
                     stationDTO.setPositionCode(repairDeviceDTO.getPositionCode());
                     String positionCodeName = translateStation(Arrays.asList(stationDTO));
+                    JSONObject major = sysBaseApi.getCsMajorByCode(repairDeviceDTO.getMajorCode());
+                    repairDeviceDTO.setMajorName(major != null ? major.getString("majorName") : "");
+                    JSONObject systemName = sysBaseApi.getSystemName(repairDeviceDTO.getMajorCode(), repairDeviceDTO.getSubsystemCode());
+                    repairDeviceDTO.setSubsystemName(systemName != null ? systemName.getString("systemCode") : "");
                     repairDeviceDTO.setPositionCodeName(positionCodeName);
                 }
             }

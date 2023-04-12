@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.WebsocketConst;
 import com.aiurt.common.constant.enums.MessageTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
@@ -25,6 +26,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,7 +56,8 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
 
     @Autowired
     private DdSendMsgHandle ddSendMsgHandle;
-
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
 
     @Override
     public void createBbmnTodoTask(BpmnTodoDTO bpmnTodoDTO) {
@@ -154,7 +157,22 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
         // 通过webSocket推送消息给前端刷新列表
         if (save) {
             log.info("新增代办->推送消息：businessKey：{}", JSONObject.toJSONString(sysTodoList));
-            webSocket.pushMessage("please update the to-do list");
+            //webSocket.pushMessage("please update the to-do list");
+            JSONObject obj = new JSONObject();
+            obj.put(WebsocketConst.MSG_CMD, WebsocketConst.CMD_USER);
+            obj.put(WebsocketConst.MSG_USER_ID, sysTodoList.getId());
+            if (ObjectUtil.isNotEmpty(sysTodoList.getIsRingBell())) {
+                obj.put(WebsocketConst.IS_RING_BELL, sysTodoList.getIsRingBell());
+            }
+            if (StrUtil.isNotBlank(sysTodoList.getCurrentUserName())) {
+                String currentUserName = sysTodoList.getCurrentUserName();
+                List<String> userNames = StrUtil.splitTrim(currentUserName, ",");
+                for (String userName : userNames) {
+                    LoginUser userByName = sysBaseApi.getUserByName(userName);
+                    webSocket.sendMessage(userByName.getId(), obj.toJSONString());
+                }
+
+            }
         }
         String type = sysTodoList.getType();
         if(StrUtil.isBlank(type)){

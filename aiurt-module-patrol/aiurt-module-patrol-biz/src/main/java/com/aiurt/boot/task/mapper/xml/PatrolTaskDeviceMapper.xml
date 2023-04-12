@@ -250,15 +250,13 @@
         SELECT ptd.*,pt.code as taskCode
         FROM patrol_task_device ptd
         left join patrol_task_standard pts on pts.id = ptd.task_standard_id
-        left join patrol_task pt on pt.id = ptd.task_id
+        left join patrol_task pt on pt.id = ptd.task_id and pt.del_flag = 0
+        LEFT JOIN patrol_task_organization pto on pto.task_code = pt.`code`  and pto.del_flag = 0
         WHERE
         ptd.check_time between #{startTime} and #{endTime}
         AND ptd.`status` = 2
-        <if test="taskId != null and taskId != ''">
-         and ptd.task_id = #{taskId}
-        </if>
-        <if test="taskDeviceCode != null and taskDeviceCode != ''">
-        and ptd.patrol_number = #{taskDeviceCode}
+        <if test="orgCode != null and orgCode != ''">
+            and pto.org_code = #{orgCode}
         </if>
         GROUP BY ptd.task_id
     </select>

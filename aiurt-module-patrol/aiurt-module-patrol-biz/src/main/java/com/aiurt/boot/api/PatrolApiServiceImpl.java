@@ -133,18 +133,14 @@ public class PatrolApiServiceImpl implements PatrolApi {
         HashMap<String, String> map = new HashMap<>();
         //获取当前用户在时间范围内的的巡检任务信息
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<PatrolTask> taskList = patrolTaskUserMapper.getUserTask(sysUser.getOrgCode());
-        if (CollUtil.isNotEmpty(taskList)) {
-            List<PatrolTaskDevice> taskDeviceList = new ArrayList<>();
-            //2023-03-27 需求确认，工作日志只看本班组下的相应时间的任务，不看工单，因此在sql合并
-            for (PatrolTask task : taskList) {
-                //获取当前用户的任务中，已提交的所有的工单
-                List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getTodaySubmit(startTime,endTime, task.getId(), null);
-                if (ObjectUtil.isNotEmpty(devices)) {
-                    taskDeviceList.addAll(devices);
-                }
-            }
-            //2023-3-27 需求确认，同行人也是本班组的人，去掉同行人，防止重复
+        List<PatrolTaskDevice> taskDeviceList = new ArrayList<>();
+        //2023-03-27 需求确认，工作日志只看本班组下的相应时间的任务，不看工单，因此在sql合并
+        //获取当前用户的任务中，已提交的所有的工单
+        List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getTodaySubmit(startTime,endTime,sysUser.getOrgCode());
+        if (ObjectUtil.isNotEmpty(devices)) {
+            taskDeviceList.addAll(devices);
+        }
+        //2023-3-27 需求确认，同行人也是本班组的人，去掉同行人，防止重复
 //            //获取当前部门人员作为同行人参与的单号
 //            List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(sysUser.getOrgId());
 //            List<String> userIds = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getId).collect(Collectors.toList());
@@ -158,38 +154,38 @@ public class PatrolApiServiceImpl implements PatrolApi {
 //                }
 //            }
 
-            StringBuilder content = new StringBuilder();
-            StringBuilder code = new StringBuilder();
-            String string = null;
-            //获取这个任务下的工单所对应的站点
-            if (CollUtil.isNotEmpty(taskDeviceList)) {
-                List<PatrolTaskDevice> collect = taskDeviceList.stream().distinct().collect(Collectors.toList());
-                for (PatrolTaskDevice patrolTaskDevice : collect) {
-                    String lineName = iSysBaseAPI.getPosition(patrolTaskDevice.getLineCode());
-                    String stationName = iSysBaseAPI.getPosition(patrolTaskDevice.getStationCode());
-                    LoginUser userById = iSysBaseAPI.getUserById(patrolTaskDevice.getUserId());
-                    if (StrUtil.isNotBlank(patrolTaskDevice.getTaskId())){
-                        PatrolTask patrolTask = patrolTaskMapper.selectOne(new LambdaQueryWrapper<PatrolTask>().eq(PatrolTask::getDelFlag,CommonConstant.DEL_FLAG_0).eq(PatrolTask::getId, patrolTaskDevice.getTaskId()));
-                        if (ObjectUtil.isNotNull(patrolTask)){
-                            string = patrolTask.getName();
-                        }
+        StringBuilder content = new StringBuilder();
+        StringBuilder code = new StringBuilder();
+        String string = null;
+        //获取这个任务下的工单所对应的站点
+        if (CollUtil.isNotEmpty(taskDeviceList)) {
+            List<PatrolTaskDevice> collect = taskDeviceList.stream().distinct().collect(Collectors.toList());
+            for (PatrolTaskDevice patrolTaskDevice : collect) {
+                String lineName = iSysBaseAPI.getPosition(patrolTaskDevice.getLineCode());
+                String stationName = iSysBaseAPI.getPosition(patrolTaskDevice.getStationCode());
+                LoginUser userById = iSysBaseAPI.getUserById(patrolTaskDevice.getUserId());
+                if (StrUtil.isNotBlank(patrolTaskDevice.getTaskId())){
+                    PatrolTask patrolTask = patrolTaskMapper.selectOne(new LambdaQueryWrapper<PatrolTask>().eq(PatrolTask::getDelFlag,CommonConstant.DEL_FLAG_0).eq(PatrolTask::getId, patrolTaskDevice.getTaskId()));
+                    if (ObjectUtil.isNotNull(patrolTask)){
+                        string = patrolTask.getName();
                     }
-                    content.append(lineName).append(string).append("-").append(stationName).append(" ").append(" 巡视人:").append(userById.getRealname()).append("。").append('\n');
-                    code.append(patrolTaskDevice.getTaskCode()).append(",");
                 }
-            }
-
-            if (content.length() > 1) {
-                // 截取字符
-                content = content.deleteCharAt(content.length() - 1);
-                map.put("content", content.toString());
-            }
-            if (code.length() > 1) {
-                // 截取字符
-                code = code.deleteCharAt(code.length() - 1);
-                map.put("code", code.toString());
+                content.append(lineName).append(string).append("-").append(stationName).append(" ").append(" 巡视人:").append(userById.getRealname()).append("。").append('\n');
+                code.append(patrolTaskDevice.getTaskCode()).append(",");
             }
         }
+
+        if (content.length() > 1) {
+            // 截取字符
+            content = content.deleteCharAt(content.length() - 1);
+            map.put("content", content.toString());
+        }
+        if (code.length() > 1) {
+            // 截取字符
+            code = code.deleteCharAt(code.length() - 1);
+            map.put("code", code.toString());
+        }
+
         return map;
     }
 

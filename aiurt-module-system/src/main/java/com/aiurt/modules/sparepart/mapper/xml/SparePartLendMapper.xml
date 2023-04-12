@@ -34,12 +34,14 @@
             t11.depart_name createDeptName,
             t12.depart_name returnDeptName,
             t13.depart_name lendDeptName,
-            spare_part_lend.num
+            spare_part_lend.num,
+            spare_part_lend.remarks
         FROM
         (
             SELECT
                 DISTINCT
                 spare_part_lend.id,
+                spare_part_lend.remarks ,
                 spare_part_lend.lend_warehouse_code,
                 spare_part_lend.back_warehouse_code,
                 d1.item_text statusName,
