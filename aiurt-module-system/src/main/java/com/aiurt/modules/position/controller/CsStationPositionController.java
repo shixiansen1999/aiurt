@@ -5,7 +5,6 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
-import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
@@ -151,7 +150,7 @@ public class CsStationPositionController  {
 		 position.setPositionType(positionType);
 		 position.setLength(length);
 		 position.setTitle(positionName);
-		 position.setValue(codeCc);
+		 position.setValue(positionCode);
          return position;
 	 }
 	/**
