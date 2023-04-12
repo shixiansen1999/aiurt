@@ -46,7 +46,7 @@ public class SysFileInfo {
      */
     @Excel(name = "文件id", width = 15)
     @ApiModelProperty(value = "文件id")
-    private String fileId;
+    private Long fileId;
 
 
     /**
