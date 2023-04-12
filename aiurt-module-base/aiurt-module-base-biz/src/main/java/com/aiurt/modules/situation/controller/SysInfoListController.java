@@ -257,20 +257,17 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
      * @param req
      * @return
      */
-    @AutoLog(value = "特情消息-特情消息列表-我的通知分页列表查询", operateType =  1, operateTypeAlias = "查询-我的通知分页列表查询", permissionUrl = "/specialSituation")
-    @ApiOperation(value = " 我的通知分页列表查询", notes = " 我的通知分页列表查询")
+    @AutoLog(value = "特情消息-特情消息列表-首页特情展示", operateType =  1, operateTypeAlias = "查询-首页特情展示", permissionUrl = "/specialSituation")
+    @ApiOperation(value = " 首页特情展示", notes = " 首页特情展示")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = SysAnnouncement.class)
     })
     @RequestMapping(value = "/getMyInfo", method = RequestMethod.GET)
-    public Result<IPage<SysAnnouncement>> getMyInfo(SysAnnouncement sysAnnouncement,
-                                                        @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+    public Result<List<SysAnnouncement>> getMyInfo(SysAnnouncement sysAnnouncement,
                                                         HttpServletRequest req) {
-        Result<IPage<SysAnnouncement>> result = new Result<>();
+        Result<List<SysAnnouncement>> result = new Result<>();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Page<SysAnnouncement> page = new Page<>(pageNo, pageSize);
-        List<SysAnnouncement> myInfo = sysInfoListMapper.getMyInfo(page, sysUser.getId());
+        List<SysAnnouncement> myInfo = sysInfoListMapper.getMyInfo( sysUser.getId());
         //List<SysAnnouncement> collect = myInfo.stream().filter(s -> "1".equals(s.getReadFlag())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(myInfo)) {
            /* SysAnnouncement s = myInfo.get(0);
@@ -286,7 +283,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
                 announcement.setMsgContent(replace1);
                 bdInfoListService.getUserNames(announcement);
                 result.setSuccess(true);
-                result.setResult(page.setRecords(myInfo));
+                result.setResult(myInfo);
                 return result;
             }
         }
