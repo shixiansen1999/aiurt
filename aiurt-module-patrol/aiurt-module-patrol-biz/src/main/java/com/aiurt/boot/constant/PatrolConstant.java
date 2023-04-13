@@ -217,13 +217,13 @@ public interface PatrolConstant {
      */
     String IS_NOT_DEVICE_TYPE = "否";
     /**
-     * 是否与设备类型相关：启用
+     * 是否与设备类型相关：生效
      */
-    String ACTIVE = "启用";
+    String ACTIVE = "生效";
     /**
-     * 是否与设备类型相关：停用
+     * 是否与设备类型相关：未生效
      */
-    String NOT_ACTIVE = "停用";
+    String NOT_ACTIVE = "未生效";
     /**
      * 层级：一级
      */
