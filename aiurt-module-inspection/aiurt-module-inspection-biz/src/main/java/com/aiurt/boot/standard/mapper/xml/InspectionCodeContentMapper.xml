@@ -60,6 +60,7 @@
 		sys_dict sd
 		<if test="dictName!=null">
 			where sd.del_flag = 0
+			and sd.modules = 1
 			and  sd.dict_name = #{dictName} limit 1
 		</if>
 	</select>
@@ -71,6 +72,7 @@
 			sys_dict sd
 		<if test="dictCode">
 			where sd.del_flag = 0
+			and sd.modules = 1
 			and sd.dict_code = #{dictCode} limit 1
 		</if>
 	</select>
