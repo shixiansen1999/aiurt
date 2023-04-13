@@ -175,4 +175,7 @@ public class SysTodoList implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private java.util.Date intervalTime;
 
+    /**阅读状态（0未读，1已读）*/
+    @Dict(dicCode = "read_flag")
+    private java.lang.String readFlag;
 }
