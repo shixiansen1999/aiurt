@@ -2,12 +2,12 @@ package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.stock.entity.StockLevel2Check;
 import com.aiurt.modules.stock.entity.StockLevel2CheckDetail;
-import com.aiurt.modules.stock.entity.StockLevel2Info;
 import com.aiurt.modules.stock.service.IStockLevel2CheckDetailService;
 import com.aiurt.modules.stock.service.IStockLevel2CheckService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -16,9 +16,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +48,9 @@ public class StockLevel2CheckDetailController {
     private IMaterialBaseService iMaterialBaseService;
     @Autowired
     private IStockLevel2CheckService iStockLevel2CheckService;
+    @Autowired
+    @Lazy
+    private ISTodoBaseAPI isTodoBaseAPI;
 
     /**
      * 分页列表查询
@@ -113,6 +119,8 @@ public class StockLevel2CheckDetailController {
     @PostMapping(value = "/commitCheckInfo")
     public Result<?> commitCheckInfo(@RequestBody StockLevel2Check stockLevel2Checkold) throws ParseException {
         Result<?> result = new Result<>();
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
         if (stockLevel2Checkold == null) {
             result.onnull("未找到对应实体");
         } else {
@@ -132,6 +140,12 @@ public class StockLevel2CheckDetailController {
 
             stockLevel2Check.setCheckNum(count);
             boolean ok = iStockLevel2CheckService.updateById(stockLevel2Check);
+            try {
+                // 更新待办
+                isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.SPAREPART_STOCKLEVEL2CHECK.getType(), stockLevel2Check.getId(), user.getUsername(), "1");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             try{
             }catch (Exception e){
                 throw new AiurtBootException(e.getMessage());
