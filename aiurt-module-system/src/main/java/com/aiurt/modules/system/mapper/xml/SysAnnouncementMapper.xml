@@ -214,7 +214,8 @@
 		stl.app_url as appUrl,
 		stl.process_name as processName,
 		stl.process_code as processCode,
-		stl.todo_type as todoType
+		stl.todo_type as todoType,
+		stl.read_flag as readFlag
 		from sys_todo_list stl,(SELECT @i:=0) b
 		<where>
 			<if test="userName!=null and userName!=''">
