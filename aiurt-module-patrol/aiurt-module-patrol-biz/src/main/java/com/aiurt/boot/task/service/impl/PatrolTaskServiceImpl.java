@@ -353,8 +353,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
                     messageDTO.setMsgAbstract("新的巡视任务");
                     messageDTO.setPublishingContent("接收到新的巡视任务，请尽快确认");
-                    //响铃
-                    messageDTO.setIsRingBell(true);
                     sendMessage(messageDTO,realNames,null,patrolMessageDTO);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -397,8 +395,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             messageDTO.setMsgAbstract("新的巡视任务");
             messageDTO.setPublishingContent("接收到新的巡视任务，请尽快确认");
             String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
-            //响铃
-            messageDTO.setIsRingBell(true);
             sendMessage(messageDTO,realNames,null,patrolMessageDTO);
         } catch (Exception e) {
             e.printStackTrace();

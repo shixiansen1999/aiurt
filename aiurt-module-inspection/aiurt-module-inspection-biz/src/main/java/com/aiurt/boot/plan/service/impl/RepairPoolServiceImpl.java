@@ -719,8 +719,6 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     messageDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
                     messageDTO.setMsgAbstract("新的检修任务");
                     messageDTO.setPublishingContent("接收到新的检修任务，请尽快确认");
-                    //响铃
-                    messageDTO.setIsRingBell(true);
                     sysBaseApi.sendTemplateMessage(messageDTO);
                 } catch (Exception e) {
                     e.printStackTrace();
