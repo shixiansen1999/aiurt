@@ -210,6 +210,7 @@
         sys_dict sd
         <if test="dictName!=null">
         where sd.del_flag = 0
+        and sd.modules = 2
         and  sd.dict_name = #{dictName} limit 1
         </if>
     </select>
