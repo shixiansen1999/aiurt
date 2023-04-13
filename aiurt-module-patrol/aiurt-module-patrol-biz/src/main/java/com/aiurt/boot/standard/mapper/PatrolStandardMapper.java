@@ -94,4 +94,6 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      * @param createBy
      */
     String selectUserName(@Param("username") String createBy);
+
+    String getDictName(String dictCode);
 }

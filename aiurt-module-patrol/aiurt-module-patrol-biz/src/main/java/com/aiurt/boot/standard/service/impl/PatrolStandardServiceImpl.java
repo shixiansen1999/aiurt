@@ -34,7 +34,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.SerializationUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
@@ -332,8 +331,6 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         StringBuilder standMistake = new StringBuilder();
                         PatrolStandard patrolStandard = new PatrolStandard();
                         List<PatrolStandardItems> patrolStandardItemsList = model.getPatrolStandardItemsList();
-                        // 备份用来输出错误模板内容
-                        List<PatrolStandardItems> copy = new ArrayList<>();
                         if (CollUtil.isNotEmpty(patrolStandardItemsList)) {
                             //判断配置项是否读取空数据
                             Iterator<PatrolStandardItems> iterator = patrolStandardItemsList.iterator();
@@ -343,8 +340,6 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                     boolean a = XlsUtil.checkObjAllFieldsIsNull(item);
                                     if (a) {
                                         iterator.remove();
-                                    } else {
-                                        copy.add((PatrolStandardItems) SerializationUtils.clone(item));
                                     }
                                 }
                             }
@@ -356,7 +351,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         if (standMistake.length() > 0 || model.getStandItemMistakeNumber()>0) {
                             errorLines++;
                         }
-                        for (PatrolStandardItems patrolStandardItems : copy) {
+                        for (PatrolStandardItems patrolStandardItems : patrolStandardItemsList) {
                             PatrolStandardErrorModel errorModel = new PatrolStandardErrorModel();
                             BeanUtils.copyProperties(model, errorModel);
                             BeanUtils.copyProperties(patrolStandardItems, errorModel);
@@ -560,7 +555,20 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             lm.put("qualityStandard", deviceAssemblyErrorModel.getQualityStandard());
             lm.put("checkValue", deviceAssemblyErrorModel.getInputTypeName());
             lm.put("isCheck", deviceAssemblyErrorModel.getRequiredDictName());
+            if (StrUtil.isNotEmpty(deviceAssemblyErrorModel.getDictCode())) {
+                String dictName = patrolStandardMapper.getDictName(deviceAssemblyErrorModel.getDictCode());
+                if (StrUtil.isNotEmpty(dictName)) {
+                    lm.put("dictCode", dictName);
+                }
+            }
             lm.put("dictCode", deviceAssemblyErrorModel.getDictCode());
+            List<DictModel> regex = sysBaseApi.getDictItems("regex");
+            if (CollUtil.isNotEmpty(regex)) {
+                String dictText = regex.stream().filter(t -> StrUtil.equals(t.getValue(), deviceAssemblyErrorModel.getRegular())).map(DictModel::getText).limit(1).collect(Collectors.joining());
+                if (StrUtil.isNotEmpty(dictText)) {
+                    deviceAssemblyErrorModel.setRegular(dictText);
+                }
+            }
             lm.put("regular", deviceAssemblyErrorModel.getRegular());
             lm.put("itemParentMistake", deviceAssemblyErrorModel.getItemParentMistake());
             lm.put("orgName", deviceAssemblyErrorModel.getOrgName());
