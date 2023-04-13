@@ -108,6 +108,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	public Result<String> add(@RequestBody SparePartScrap sparePartScrap) {
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		sparePartScrap.setSysOrgCode(user.getOrgCode());
+		sparePartScrap.setCreateBy(user.getUsername());
 		sparePartScrap.setStatus(CommonConstant.SPARE_PART_SCRAP_STATUS_1);
 		sparePartScrapService.save(sparePartScrap);
 		try {
