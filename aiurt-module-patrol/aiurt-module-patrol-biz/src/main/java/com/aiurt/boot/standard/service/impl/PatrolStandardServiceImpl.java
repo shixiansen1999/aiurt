@@ -24,7 +24,6 @@ import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -35,6 +34,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.SerializationUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
@@ -332,6 +332,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         StringBuilder standMistake = new StringBuilder();
                         PatrolStandard patrolStandard = new PatrolStandard();
                         List<PatrolStandardItems> patrolStandardItemsList = model.getPatrolStandardItemsList();
+                        // 备份用来输出错误模板内容
+                        List<PatrolStandardItems> copy = new ArrayList<>();
                         if (CollUtil.isNotEmpty(patrolStandardItemsList)) {
                             //判断配置项是否读取空数据
                             Iterator<PatrolStandardItems> iterator = patrolStandardItemsList.iterator();
@@ -341,18 +343,20 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                     boolean a = XlsUtil.checkObjAllFieldsIsNull(item);
                                     if (a) {
                                         iterator.remove();
+                                    } else {
+                                        copy.add((PatrolStandardItems) SerializationUtils.clone(item));
                                     }
                                 }
                             }
                         }
-                        //信息数据校验
+                        //信息数据校
                         standard(model, patrolStandard, standMistake);
                         //配置项数据校验
                         itemsModel(model,patrolStandard);
                         if (standMistake.length() > 0 || model.getStandItemMistakeNumber()>0) {
                             errorLines++;
                         }
-                        for (PatrolStandardItems patrolStandardItems : patrolStandardItemsList) {
+                        for (PatrolStandardItems patrolStandardItems : copy) {
                             PatrolStandardErrorModel errorModel = new PatrolStandardErrorModel();
                             BeanUtils.copyProperties(model, errorModel);
                             BeanUtils.copyProperties(patrolStandardItems, errorModel);
@@ -627,7 +631,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     if (ObjectUtil.isNotEmpty(systemName)) {
                         patrolStandard.setSubsystemCode(systemName.getString("systemCode"));
                         if (ObjectUtil.isNotEmpty(deviceTypeName)) {
-                            DeviceType d = sysBaseApi.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName);
+                            DeviceType d = sysBaseApi.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName, systemName.getString("systemCode"));
                             if (ObjectUtil.isNull(d)) {
                                 stringBuilder.append("系统不存在该专业的子系统的设备类型，");
                             } else {
@@ -666,7 +670,14 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 } else {
                     patrolStandard.setDeviceType(isDeviceType.equals(PatrolConstant.IS_DEVICE_TYPE) ? 1 : 0);
                     if (patrolStandard.getDeviceType() == 1 && StrUtil.isNotEmpty(deviceTypeName)) {
-                        DeviceType d = sysBaseApi.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName);
+                        String systemCode = null;
+                        if (StrUtil.isNotEmpty(model.getSubsystemCode())) {
+                            JSONObject systemName = sysBaseApi.getSystemName(major.getString("majorCode"), model.getSubsystemCode());
+                            if (ObjectUtil.isNotEmpty(systemName)) {
+                                systemCode = systemName.getString("systemCode");
+                            }
+                        }
+                        DeviceType d = sysBaseApi.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName, systemCode);
                         if (ObjectUtil.isNull(d)) {
                             stringBuilder.append("系统不存在该专业下的设备类型，");
                         } else {
