@@ -82,10 +82,10 @@ public class PatrolStandard extends DictEntity implements Serializable {
     @ApiModelProperty(value = "指定具体设备：0否 1 是")
     private java.lang.Integer specifyDevice;
     /**生效状态：0停用 1启用*/
-    @ApiModelProperty(value = "生效状态：0停用 1启用")
+    @ApiModelProperty(value = "生效状态：0未生效 1生效")
     private java.lang.Integer status;
     @Excel(name = "生效状态", width = 15,needMerge = true)
-    @ApiModelProperty(value = "生效状态：0停用 1启用")
+    @ApiModelProperty(value = "生效状态：0未生效 1生效")
     @TableField(exist = false)
     private java.lang.String statusName;
 	/**设备类型code*/

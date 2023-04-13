@@ -64,4 +64,15 @@
 		</if>
 	</select>
 
+	<select id="getDictName" resultType="java.lang.String">
+		select
+		    sd.dict_name
+		from
+			sys_dict sd
+		<if test="dictCode">
+			where sd.del_flag = 0
+			and sd.dict_code = #{dictCode} limit 1
+		</if>
+	</select>
+
 </mapper>

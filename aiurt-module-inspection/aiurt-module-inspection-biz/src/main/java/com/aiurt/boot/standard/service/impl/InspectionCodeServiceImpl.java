@@ -669,7 +669,14 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                     } else {
                         inspectionCode.setIsAppointDevice(isDeviceCode.equals(InspectionConstant.IS_APPOINT_DEVICE) ? 1 : 0);
                         if (inspectionCode.getIsAppointDevice() == 1 && StrUtil.isNotEmpty(deviceTypeName)) {
-                            DeviceType d = sysBaseApi.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName);
+                            String systemCode = null;
+                            if (StrUtil.isNotEmpty(model.getSubsystemCode())) {
+                                JSONObject systemName = sysBaseApi.getSystemName(major.getString("majorCode"), model.getSubsystemCode());
+                                if (ObjectUtil.isNotEmpty(systemName)) {
+                                    systemCode = systemName.getString("systemCode");
+                                }
+                            }
+                            DeviceType d = sysBaseApi.getCsMajorByCodeTypeName(major.getString("majorCode"), deviceTypeName, systemCode);
                             if (ObjectUtil.isNull(d)) {
                                 stringBuilder.append("系统不存在该专业下的设备类型，");
                             } else {
@@ -925,6 +932,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                                 } else {
                                     if (ObjectUtil.isNotEmpty(items.getDictCode())) {
                                         String dictCode = inspectionCodeContentMapper.getDictCode(items.getDictCode());
+
                                         if (ObjectUtil.isNotEmpty(dictCode)) {
                                             items.setDictCode(dictCode);
                                         } else {
@@ -1018,7 +1026,19 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
             lm.put("qualityStandard", inspectionCodeErrorDto.getQualityStandard());
             lm.put("checkValue", inspectionCodeErrorDto.getSStatusItem());
             lm.put("isCheck", inspectionCodeErrorDto.getIsInspectionType());
-            lm.put("dictCode", inspectionCodeErrorDto.getDictCode());
+            List<DictModel> regex = sysBaseApi.getDictItems("regex");
+            if (StrUtil.isNotEmpty(inspectionCodeErrorDto.getDictCode())) {
+                String dictName = inspectionCodeContentMapper.getDictName(inspectionCodeErrorDto.getDictCode());
+                if (StrUtil.isNotEmpty(dictName)) {
+                    lm.put("dictCode", dictName);
+                }
+            }
+            if (CollUtil.isNotEmpty(regex)) {
+                String dictText = regex.stream().filter(t -> StrUtil.equals(t.getValue(), inspectionCodeErrorDto.getDataCheck())).map(DictModel::getText).limit(1).collect(Collectors.joining());
+                if (StrUtil.isNotEmpty(dictText)) {
+                    inspectionCodeErrorDto.setDataCheck(dictText);
+                }
+            }
             lm.put("regular", inspectionCodeErrorDto.getDataCheck());
             lm.put("itemParentMistake", inspectionCodeErrorDto.getCodeContentErrorReason());
             lm.put("repairType",inspectionCodeErrorDto.getRepairTypeName());

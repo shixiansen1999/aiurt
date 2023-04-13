@@ -2010,9 +2010,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public DeviceType getCsMajorByCodeTypeName(String majorCode, String deviceTypeName) {
+    public DeviceType getCsMajorByCodeTypeName(String majorCode, String deviceTypeName, String systemCode) {
         LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(DeviceType::getMajorCode, majorCode).eq(DeviceType::getName, deviceTypeName).eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        wrapper.eq(DeviceType::getMajorCode, majorCode).eq(DeviceType::getName, deviceTypeName).eq(DeviceType::getSystemCode, systemCode).eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
         DeviceType deviceType = deviceTypeService.getBaseMapper().selectOne(wrapper);
         if (Objects.isNull(deviceType)) {
             return null;

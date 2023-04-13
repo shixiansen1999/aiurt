@@ -60,4 +60,11 @@ public interface InspectionCodeContentMapper extends BaseMapper<InspectionCodeCo
 	 */
 	String getDictCode(@Param("dictName")String dictName);
 
+	/**
+	 * 根据字典code获取字典名称
+	 * @param dictCode
+	 * @return
+	 */
+	String getDictName(@Param("dictCode") String dictCode);
+
 }
