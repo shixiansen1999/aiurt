@@ -52,7 +52,7 @@ public class SysFileInfo {
     /**
      * 文件名
      */
-    @Excel(name = "文件名", width = 15)
+    @Excel(name = "文件名称", width = 15)
     @ApiModelProperty(value = "文件名")
     private String fileName;
 
@@ -176,6 +176,7 @@ public class SysFileInfo {
      * 下载状态名称
      */
     @TableField(exist = false)
+    @Excel(name = "下载状态", width = 15)
     @ApiModelProperty(value = "下载状态名称")
     private String downloadStatusName;
 
