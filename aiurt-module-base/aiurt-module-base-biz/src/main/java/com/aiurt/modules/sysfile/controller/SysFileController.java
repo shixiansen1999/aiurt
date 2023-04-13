@@ -1,4 +1,5 @@
 package com.aiurt.modules.sysfile.controller;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -709,8 +710,8 @@ public class SysFileController {
 		if(StrUtil.isNotBlank(sysFileInfoParam.getUserName())){
 			lambdaQueryWrapper.like(SysFileInfo::getUserName,sysFileInfoParam.getUserName());
 		}
-		if(ObjectUtil.isNotNull(sysFileInfoParam.getStatus())){
-			lambdaQueryWrapper.eq(SysFileInfo::getDownloadStatus,sysFileInfoParam.getStatus());
+		if(ObjectUtil.isNotNull(sysFileInfoParam.getDownloadStatus())){
+			lambdaQueryWrapper.eq(SysFileInfo::getDownloadStatus,sysFileInfoParam.getDownloadStatus());
 		}
 		if(StrUtil.isNotBlank(sysFileInfoParam.getOrgCode())){
 			lambdaQueryWrapper.eq(SysFileInfo::getDepartmentCode,sysFileInfoParam.getOrgCode());
@@ -733,5 +734,48 @@ public class SysFileController {
 		result.setResult(page);
 		result.setCode(CommonConstant.SC_OK_200);
 		return result;
+	}
+
+	@AutoLog(value = "文档表-下载记录导出")
+	@ApiOperation(value = "文档表-下载记录导出", notes = "文档表-下载记录导出")
+	@RequestMapping(value = "/reportExportDownloadList")
+	public ModelAndView reportExportDownloadList(HttpServletRequest request,HttpServletResponse response,
+												 @RequestParam(value = "fileId",required = true) Long fileId){
+		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+		//查询条件拼接
+		LambdaQueryWrapper<SysFileInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+
+		if(ObjectUtil.isNotNull(fileId)){
+			lambdaQueryWrapper.eq(SysFileInfo::getFileId,fileId);
+		}
+		lambdaQueryWrapper.eq(SysFileInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
+		lambdaQueryWrapper.orderByDesc(SysFileInfo::getCreateTime);
+
+		List<SysFileInfo> list = sysFileInfoService.list(lambdaQueryWrapper);
+		list.forEach(e->{
+			String fileName = e.getFileName();
+			if (ObjectUtil.isNotNull(e.getDownloadStatus())){
+				e.setDownloadStatusName(iSysBaseAPI.translateDict("download_status",String.valueOf(e.getDownloadStatus())));
+			}
+			if (StrUtil.isNotBlank(fileName)){
+				e.setFileName("《"+fileName+"》");
+			}
+		});
+		String exportField = "userName,downloadTime,fileName,size,downloadStatusName,downloadDuration";
+
+		if (CollUtil.isNotEmpty(list)){
+			//导出文件名称
+			mv.addObject(NormalExcelConstants.FILE_NAME,"下载记录报表");
+            //excel注解对象Class
+			mv.addObject(NormalExcelConstants.CLASS,SysFileInfo.class);
+			//自定义导出字段
+			mv.addObject(NormalExcelConstants.EXPORT_FIELDS, exportField);
+			//自定义表格参数
+			mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("下载记录报表","下载记录报表"));
+			//导出数据列表
+			mv.addObject(NormalExcelConstants.DATA_LIST, list);
+		}
+		return mv;
+
 	}
 }

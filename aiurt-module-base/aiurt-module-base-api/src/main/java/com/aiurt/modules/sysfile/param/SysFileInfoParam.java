@@ -45,7 +45,7 @@ public class SysFileInfoParam implements Serializable {
     private String userName;
 
     @ApiModelProperty("状态")
-    private Integer status;
+    private Integer downloadStatus;
 
     @ApiModelProperty("部门编码")
     private String orgCode;
