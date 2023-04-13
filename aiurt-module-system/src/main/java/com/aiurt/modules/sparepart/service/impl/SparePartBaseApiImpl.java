@@ -346,6 +346,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         scrap.setNum(1);
                         scrap.setFaultCode(faultCode);
                         scrap.setScrapTime(new Date());
+                        scrap.setCreateBy(user.getUsername());
                         sparePartScrapService.save(scrap);
                         try {
                             String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
