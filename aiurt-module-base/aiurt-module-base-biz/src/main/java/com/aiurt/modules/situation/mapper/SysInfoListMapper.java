@@ -31,10 +31,9 @@ public interface SysInfoListMapper extends BaseMapper<SysAnnouncement> {
      * 我的通知分页列表查询
      *
      * @param id
-     * @param page
      * @return
      */
-    List<SysAnnouncement> getMyInfo(@Param("page") Page<SysAnnouncement> page,@Param("id")String id);
+    List<SysAnnouncement> getMyInfo(@Param("id")String id);
 
     void updateReadFlag(@Param("id")String idm, @Param("readTime") Date readTime);
 }
