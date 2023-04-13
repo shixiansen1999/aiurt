@@ -134,4 +134,22 @@ public class SysTodoListController extends BaseController<SysTodoList, ISysTodoL
         return Result.OK(sysTodoLists);
     }
 
+    /**
+     * 修改阅读状态
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "待办池列表-修改阅读状态")
+    @ApiOperation(value = "待办池列表-修改阅读状态", notes = "待办池列表-修改阅读状态")
+    @GetMapping(value = "/editReadFlag")
+    public Result<String> editReadFlag(@RequestParam(name = "id", required = true) String id) {
+        SysTodoList sysTodoList = sysTodoListService.getById(id);
+        if (sysTodoList == null) {
+            return Result.error("未找到对应数据");
+        }
+        sysTodoList.setReadFlag(org.jeecg.common.constant.CommonConstant.HAS_READ_FLAG);
+        sysTodoListService.updateById(sysTodoList);
+        return Result.OK("编辑成功!");
+    }
 }
