@@ -31,7 +31,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
-import org.jeecg.common.system.vo.CsUserDepartModel;
 
 import java.util.Date;
 import java.util.List;
@@ -51,6 +50,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param patrolTaskDTO
      * @return
      */
+    @DataPermission({@DataColumn(key = "deptName",value = "pto.org_code")})
     List<PatrolTaskDTO> getPatrolTaskPoolList(@Param("pageList") Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO") PatrolTaskDTO patrolTaskDTO);
 
     /**

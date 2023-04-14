@@ -670,32 +670,45 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 //            patrolTaskDTO.setUserHaveOrgCodeList(orgCodeList);
 //        }
         // 数据权限过滤
-        try {
-            List<String> taskCodes = this.taskDataPermissionFilter();
-            patrolTaskDTO.setTaskCodes(taskCodes);
-        } catch (AiurtBootException e) {
-            return pageList;
-        }
+//        try {
+//            List<String> taskCodes = this.taskDataPermissionFilter();
+//            patrolTaskDTO.setTaskCodes(taskCodes);
+//        } catch (AiurtBootException e) {
+//            return pageList;
+//        }
 
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskPoolList(pageList, patrolTaskDTO);
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("app_patrolTask-%d").build();
+        ExecutorService patrolTask = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(), namedThreadFactory);
+        List<Future<PatrolTaskDTO>> futureList = new ArrayList<>();
         taskList.stream().forEach(e -> {
-            String userName = patrolTaskMapper.getUserName(e.getBackId());
-            List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(e.getId());
-            String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).distinct().collect(Collectors.joining("；"));
-            String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).distinct().collect(Collectors.joining("；"));
-            List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
-            e.setOrganizationName(manager.translateOrg(orgCodes));
-            List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
-            e.setStationName(manager.translateStation(stationName));
-            e.setEndUserName(e.getEndUserName() == null ? "-" : e.getEndUserName());
-            e.setSubmitTime(e.getSubmitTime() == null ? "-" : e.getSubmitTime());
-            e.setPeriod(e.getPeriod() == null ? "-" : e.getPeriod());
-            e.setSysName(sysName);
-            e.setMajorName(majorName);
-            e.setOrgCodeList(orgCodes);
-            e.setPatrolUserName(manager.spliceUsername(e.getCode()));
-            e.setPatrolReturnUserName(userName == null ? "-" : userName);
+            Future<PatrolTaskDTO> submit = patrolTask.submit(new AppPatrolTaskThreadService(e,patrolTaskMapper,patrolTaskStandardMapper,manager,sysBaseApi));
+            futureList.add(submit);
         });
+            // 确认每个线程都执行完成
+        for (Future<PatrolTaskDTO> fut : futureList) {
+            try {
+                fut.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            patrolTask.shutdown();
+            // (所有的任务都结束的时候，返回TRUE)
+            if (!patrolTask.awaitTermination(5 * 1000, TimeUnit.MILLISECONDS)) {
+                // 5s超时的时候向线程池中所有的线程发出中断(interrupted)。
+                patrolTask.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            // awaitTermination方法被中断的时候也中止线程池中全部的线程的执行。
+            log.error("awaitTermination interrupted:{}", e);
+            patrolTask.shutdownNow();
+        }
         return pageList.setRecords(taskList);
     }
 
