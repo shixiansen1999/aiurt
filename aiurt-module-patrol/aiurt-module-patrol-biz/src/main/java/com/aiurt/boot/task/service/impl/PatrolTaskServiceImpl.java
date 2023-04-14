@@ -678,13 +678,13 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 //        }
 
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskPoolList(pageList, patrolTaskDTO);
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("app_patrolTask-%d").build();
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("app_patrolTaskPool-%d").build();
         ExecutorService patrolTask = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(), namedThreadFactory);
         List<Future<PatrolTaskDTO>> futureList = new ArrayList<>();
         taskList.stream().forEach(e -> {
-            Future<PatrolTaskDTO> submit = patrolTask.submit(new AppPatrolTaskThreadService(e,patrolTaskMapper,patrolTaskStandardMapper,manager,sysBaseApi));
+            Future<PatrolTaskDTO> submit = patrolTask.submit(new AppPatrolTaskPoolThreadService(e,patrolTaskMapper,patrolTaskStandardMapper,manager,sysBaseApi));
             futureList.add(submit);
         });
             // 确认每个线程都执行完成
@@ -730,54 +730,44 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 //            patrolTaskDTO.setUserHaveOrgCodeList(orgCodeList);
 //        }
         // 数据权限过滤
-        try {
-            List<String> taskCodes = this.taskDataPermissionFilter();
-            patrolTaskDTO.setTaskCodes(taskCodes);
-        } catch (AiurtBootException e) {
-            return pageList;
-        }
+//        try {
+//            List<String> taskCodes = this.taskDataPermissionFilter();
+//            patrolTaskDTO.setTaskCodes(taskCodes);
+//        } catch (AiurtBootException e) {
+//            return pageList;
+//        }
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskList(pageList, patrolTaskDTO);
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("app_patrolTask-%d").build();
+        ExecutorService patrolTask = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(), namedThreadFactory);
+        List<Future<PatrolTaskDTO>> futureList = new ArrayList<>();
         taskList.stream().forEach(e -> {
-            String userName = patrolTaskMapper.getUserName(e.getBackId());
-            List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(e.getId());
-            String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).distinct().collect(Collectors.joining("；"));
-            String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).distinct().collect(Collectors.joining("；"));
-            List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
-            e.setOrganizationName(manager.translateOrg(orgCodes));
-            List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
-            List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, e.getId()));
-            List<PatrolAccompany> accompanyList = new ArrayList<>();
-            List<PatrolSamplePerson> samplePersonList = new ArrayList<>();
-            for (PatrolTaskDevice patrolTaskDevice : taskDeviceList) {
-                List<PatrolAccompany> patrolAccompanies = accompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().eq(PatrolAccompany::getTaskDeviceCode, patrolTaskDevice.getPatrolNumber()));
-                if (CollUtil.isNotEmpty(patrolAccompanies)) {
-                    accompanyList.addAll(patrolAccompanies);
-                }
-                List<PatrolSamplePerson> patrolSamplePeoples = patrolSamplePersonMapper.selectList(new LambdaQueryWrapper<PatrolSamplePerson>().eq(PatrolSamplePerson::getTaskDeviceCode, patrolTaskDevice.getPatrolNumber()));
-                if (CollUtil.isNotEmpty(patrolSamplePeoples)) {
-                    samplePersonList.addAll(patrolSamplePeoples);
-                }
-            }
-            if (CollUtil.isNotEmpty(accompanyList)) {
-                accompanyList = accompanyList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolAccompany::getUserId))), ArrayList::new));
-                String peerPeople = accompanyList.stream().map(PatrolAccompany::getUsername).collect(Collectors.joining(";"));
-                e.setPeerPeople(peerPeople);
-            }
-            if (CollUtil.isNotEmpty(samplePersonList)) {
-                samplePersonList = samplePersonList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolSamplePerson::getUserId))), ArrayList::new));
-                String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining("；"));
-                e.setSamplePersonName(samplePersonName);
-            }
-            e.setStationName(manager.translateStation(stationName));
-            e.setSysName(sysName);
-            e.setMajorName(majorName);
-            e.setOrgCodeList(orgCodes);
-            e.setPatrolUserName(manager.spliceUsername(e.getCode()));
-            e.setPatrolReturnUserName(userName == null ? "-" : userName);
-            e.setPeriod(e.getPeriod() == null ? "-" : e.getPeriod());
-            e.setPatrolReturnUserName(e.getPeriod() == null ? "-" : e.getPeriod());
-            e.setSource(e.getSource() == null ? "-" : e.getSource());
+            Future<PatrolTaskDTO> submit = patrolTask.submit(new AppPatrolTaskThreadService(e,patrolTaskMapper,patrolTaskStandardMapper,manager,patrolTaskDeviceMapper,accompanyMapper,patrolSamplePersonMapper));
+            futureList.add(submit);
         });
+        // 确认每个线程都执行完成
+        for (Future<PatrolTaskDTO> fut : futureList) {
+            try {
+                fut.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            patrolTask.shutdown();
+            // (所有的任务都结束的时候，返回TRUE)
+            if (!patrolTask.awaitTermination(5 * 1000, TimeUnit.MILLISECONDS)) {
+                // 5s超时的时候向线程池中所有的线程发出中断(interrupted)。
+                patrolTask.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            // awaitTermination方法被中断的时候也中止线程池中全部的线程的执行。
+            log.error("awaitTermination interrupted:{}", e);
+            patrolTask.shutdownNow();
+        }
         return pageList.setRecords(taskList);
     }
 

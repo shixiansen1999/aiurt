@@ -102,11 +102,12 @@ FROM
 	    t1.stationSort ASC;
     </select>
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
-        select t1.*,
+        select DISTINCT t1.*,
                (select realname from sys_user where id = t1.end_user_id)                           as
                                                                                                       endUserName,
                concat(DATE_FORMAT(t1.start_time, '%H:%i'), "-", DATE_FORMAT(t1.end_time, '%H:%i')) as startEndTime
         from patrol_task t1
+        LEFT JOIN patrol_task_organization pto ON t1.`code` = pto.task_code AND pto.del_flag = 0
                 where t1.status in (6, 7)
                   and t1.del_flag = 0
                   and t1.omit_status = 0

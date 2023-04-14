@@ -59,6 +59,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param patrolTaskDTO
      * @return
      */
+    @DataPermission({@DataColumn(key = "deptName",value = "pto.org_code")})
     List<PatrolTaskDTO> getPatrolTaskList(@Param("pageList") Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO") PatrolTaskDTO patrolTaskDTO);
 
     /**
