@@ -2,7 +2,6 @@ package com.aiurt.boot.screen.job;
 
 import com.aiurt.boot.task.entity.TemperatureHumidity;
 import com.aiurt.boot.task.mapper.TemperatureHumidityMapper;
-import freemarker.core.HTMLOutputFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -16,14 +15,11 @@ import org.snmp4j.mp.SnmpConstants;
 import org.snmp4j.smi.*;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * 每日2点系统记录传感器的温湿度
@@ -34,8 +30,9 @@ public class TemperatureHumidityJob implements Job {
 
     @Autowired
     TemperatureHumidityMapper temperatureHumidityMapper;
-    // TODO: 2023/3/15 ip 传感器暂定，若有多个ip再考虑组装
-    private String ip="192.168.1.187";
+
+    //长春
+    private String ip="172.16.254.172";
     //端口统一设置为161
     private String port="161";
 
@@ -101,10 +98,7 @@ public class TemperatureHumidityJob implements Job {
                 Integer hum=Integer.parseInt(vb2.toString().substring(24,27));
                 float temperature = (float)tem / 10;
                 float humidity=(float)hum / 10;
-//                String temperature=dF.format((float)tem/10);
-//                String humidity=dF.format((float)hum/10);
                 TemperatureHumidity th = new TemperatureHumidity();
-//                th.setId("114514");
                 th.setIp(ip);
                 th.setTemperature(temperature);
                 th.setHumidity(humidity);
@@ -112,8 +106,6 @@ public class TemperatureHumidityJob implements Job {
                 th.setCreateTime(time);
                 System.out.println(time+"   定时任务--temperatureHumidity表插入一条数据...");
                 temperatureHumidityMapper.insert(th);
-//                List<TemperatureHumidity> list = new ArrayList<>();
-//                list.add(th);
                 //调用close()方法释放该进程
                 transport.close();
                 /**
@@ -128,4 +120,5 @@ public class TemperatureHumidityJob implements Job {
             e.printStackTrace();
         }
     }
+
 }
