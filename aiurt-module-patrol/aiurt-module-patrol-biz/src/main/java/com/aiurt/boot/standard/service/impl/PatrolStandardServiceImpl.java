@@ -558,7 +558,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             if (StrUtil.isNotEmpty(deviceAssemblyErrorModel.getDictCode())) {
                 String dictName = patrolStandardMapper.getDictName(deviceAssemblyErrorModel.getDictCode());
                 if (StrUtil.isNotEmpty(dictName)) {
-                    lm.put("dictCode", dictName);
+                    deviceAssemblyErrorModel.setDictCode(dictName);
                 }
             }
             lm.put("dictCode", deviceAssemblyErrorModel.getDictCode());
@@ -580,7 +580,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         sheetsMap.put(0, errorMap);
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
         int size = 4;
-        int length = 5;
+        int length = 8;
         for (PatrolStandardModel deviceModel : list) {
             for (int i = 0; i <= length; i++) {
                 //合并单元格
