@@ -1026,13 +1026,14 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
             lm.put("qualityStandard", inspectionCodeErrorDto.getQualityStandard());
             lm.put("checkValue", inspectionCodeErrorDto.getSStatusItem());
             lm.put("isCheck", inspectionCodeErrorDto.getIsInspectionType());
-            List<DictModel> regex = sysBaseApi.getDictItems("regex");
             if (StrUtil.isNotEmpty(inspectionCodeErrorDto.getDictCode())) {
                 String dictName = inspectionCodeContentMapper.getDictName(inspectionCodeErrorDto.getDictCode());
                 if (StrUtil.isNotEmpty(dictName)) {
-                    lm.put("dictCode", dictName);
+                    inspectionCodeErrorDto.setDictCode(dictName);
                 }
             }
+            lm.put("dictCode", inspectionCodeErrorDto.getDictCode());
+            List<DictModel> regex = sysBaseApi.getDictItems("regex");
             if (CollUtil.isNotEmpty(regex)) {
                 String dictText = regex.stream().filter(t -> StrUtil.equals(t.getValue(), inspectionCodeErrorDto.getDataCheck())).map(DictModel::getText).limit(1).collect(Collectors.joining());
                 if (StrUtil.isNotEmpty(dictText)) {
@@ -1050,7 +1051,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         sheetsMap.put(0, errorMap);
         Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
         int size = 4;
-        int length = 7;
+        int length = 9;
         for (InspectionCodeImportDTO deviceModel : list) {
             for (int i = 0; i <= length; i++) {
                 //合并单元格
