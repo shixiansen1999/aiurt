@@ -456,6 +456,7 @@ public class BigscreenPlanService {
                     int num = 0;
                     int stationNum = 0;
                     StringBuilder jurisdiction = new StringBuilder();
+                    List<TeamWorkAreaDTO> stationList = new ArrayList<>();
                     for (TeamPortraitDTO portraitDTO : workAreaById) {
                         num = num + portraitDTO.getStationNum();
                         //jurisdiction.append(portraitDTO.getSiteName()).append(":");
@@ -467,13 +468,14 @@ public class BigscreenPlanService {
                                 for (int j=0;j<line.size();j++) {
                                     int finalJ = j;
                                     List<TeamWorkAreaDTO> collect = stationDetails.stream().filter(t -> t.getLineCode().equals(line.get(finalJ))).collect(Collectors.toList());
-                                    String stations = collect.stream().map(TeamWorkAreaDTO::getStationName).collect(Collectors.joining("、"));
-                                    jurisdiction.append(stations);
+                                    stationList.addAll(collect);
                                 }
                             }
                         }
                         stationNum = stationNum + stationDetails.size();
                     }
+                    String stations = stationList.stream().map(TeamWorkAreaDTO::getStationName).collect(Collectors.joining("、"));
+                    jurisdiction.append(stations);
 //                    if (jurisdiction.length() > 0) {
 //                        // 截取字符，去掉最后一个，
 //                        jurisdiction.deleteCharAt(jurisdiction.length() - 1);
