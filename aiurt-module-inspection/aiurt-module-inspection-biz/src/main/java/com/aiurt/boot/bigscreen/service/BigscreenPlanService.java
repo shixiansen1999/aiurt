@@ -512,6 +512,11 @@ public class BigscreenPlanService {
                     getAverageTime(repairDuration, teamPortraitDTO);
                     //获取总工时
                     getTotalTimes(teamPortraitDTO, userList, type, timeByType);
+                }else {
+                    teamPortraitDTO.setAverageTime("0");
+                    teamPortraitDTO.setPatrolTotalTime(new BigDecimal(0.0));
+                    teamPortraitDTO.setFaultTotalTime(new BigDecimal(0.0));
+                    teamPortraitDTO.setInspecitonTotalTime(new BigDecimal(0.0));
                 }
             }
         }
