@@ -267,7 +267,7 @@
 
     <select id="getLargeLineFaultInfo" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault f
-        left join cs_line cl on f.line_code = cl.line_code
+        left join cs_line cl on (f.line_code = cl.line_code  and cl.del_flag = 0)
         <where>
             f.status > 2
             <if test="startDate!=null and endDate!=null">
