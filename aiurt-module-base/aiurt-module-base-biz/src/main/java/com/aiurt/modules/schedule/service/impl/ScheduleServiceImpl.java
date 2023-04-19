@@ -404,7 +404,9 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             while (!start.getTime().after(end)) {
                 if (StrUtil.isNotEmpty(scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+2))) {
                     ScheduleItem scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
-                            .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+2)).eq(ScheduleItem::getDelFlag,0));
+                            .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime()) + 2))
+                            .eq(ScheduleItem::getCreateBy, user.getUsername())
+                            .eq(ScheduleItem::getDelFlag, 0));
                     ScheduleRecord record = ScheduleRecord.builder()
                             .scheduleId(null)
                             .userId(user.getId())
