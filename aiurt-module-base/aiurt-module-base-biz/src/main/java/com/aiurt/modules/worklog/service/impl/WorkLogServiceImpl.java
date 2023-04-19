@@ -11,6 +11,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.InspectionApi;
 import com.aiurt.boot.api.PatrolApi;
+import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.enums.WorkLogCheckStatusEnum;
@@ -1205,10 +1206,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         String orgId = user.getOrgId();
         List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
         //获取负责人
-        SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(orgId);
-        LoginUser userById = iSysBaseAPI.getUserById(sysDepartModel.getManagerId());
-        if (ObjectUtil.isNotEmpty(userById)) {
-            workLog.setForeman(userById.getRealname());
+        String userName = iSysBaseAPI.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
+        if (ObjectUtil.isNotEmpty(userName)) {
+            List<String> list = StrUtil.splitTrim(userName, ",");
+            List<LoginUser> loginUserList = iSysBaseAPI.getLoginUserList(list);
+            workLog.setForeman(CollUtil.isNotEmpty(loginUserList) ? loginUserList.stream().map(LoginUser::getRealname).collect(Collectors.joining()) : "");
         }
 
         //获取参与人员
