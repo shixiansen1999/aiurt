@@ -116,7 +116,7 @@
     </select>
 
     <select id="getLargeFaultDatails" resultType="com.aiurt.modules.fault.dto.FaultLargeInfoDTO">
-        select * from fault f
+        select *,f.fault_phenomenon from fault f
         left join cs_subsystem cs on cs.system_code = f.sub_system_code
         left join  cs_line cl on cl.line_code = f.line_code
         left join cs_station ct on ct.station_code = f.station_code

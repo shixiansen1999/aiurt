@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.hibernate.validator.constraints.Length;
+import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
@@ -76,6 +77,14 @@ public class FaultLargeInfoDTO extends DictEntity {
 
     @ApiModelProperty("故障状态名称")
     private String statusName;
+
+    /**故障现象*/
+    @ApiModelProperty(value = "故障现象分类",  required = true)
+    private String faultPhenomenon;
+
+    /**故障现象分类名称*/
+    @ApiModelProperty(value = "故障现象分类名称",  required = true)
+    private String faultPhenomenonName;
 
     /**线路编码*/
     @ApiModelProperty(value = "线路编码", required = true)
