@@ -401,11 +401,12 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
 
             Date end = DateUtil.endOfMonth(start.getTime());
             //遍历本月所有的天数
+            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             while (!start.getTime().after(end)) {
                 if (StrUtil.isNotEmpty(scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+2))) {
                     ScheduleItem scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
                             .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime()) + 2))
-                            .eq(ScheduleItem::getCreateBy, user.getUsername())
+                            .eq(ScheduleItem::getCreateBy, loginUser.getUsername())
                             .eq(ScheduleItem::getDelFlag, 0));
                     ScheduleRecord record = ScheduleRecord.builder()
                             .scheduleId(null)

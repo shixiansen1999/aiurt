@@ -503,10 +503,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             //查询该部门下的人员
             List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
             //获取负责人
-            SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(orgId);
-            LoginUser userById = iSysBaseAPI.getUserById(sysDepartModel.getManagerId());
-            if (ObjectUtil.isNotEmpty(userById)) {
-                record.setForeman(userById.getRealname());
+            String userName = iSysBaseAPI.getUserNameByOrgCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
+            if (ObjectUtil.isNotEmpty(userName)) {
+                List<String> list = StrUtil.splitTrim(userName, ",");
+                List<LoginUser> loginUserList = iSysBaseAPI.getLoginUserList(list);
+                record.setForeman(CollUtil.isNotEmpty(loginUserList) ? loginUserList.stream().map(LoginUser::getRealname).collect(Collectors.joining()) : ",");
             }
             //获取参与人员
             List<String> nameList = sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList());
@@ -1206,7 +1207,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         String orgId = user.getOrgId();
         List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
         //获取负责人
-        String userName = iSysBaseAPI.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
+        String userName = iSysBaseAPI.getUserNameByOrgCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
         if (ObjectUtil.isNotEmpty(userName)) {
             List<String> list = StrUtil.splitTrim(userName, ",");
             List<LoginUser> loginUserList = iSysBaseAPI.getLoginUserList(list);
