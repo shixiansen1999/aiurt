@@ -514,8 +514,18 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     @Override
     public Fault queryByCode(String code) {
+        LoginUser user = checkLogin();
 
         Fault fault = isExist(code);
+        if(ObjectUtil.isNotEmpty(fault.getAppointUserName())){
+            if(fault.getAppointUserName().equals(user.getUsername())){
+                fault.setIsFault(true);
+            }else {
+                fault.setIsFault(false);
+            }
+        }else {
+            fault.setIsFault(false);
+        }
         // 设备
         List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(code);
         fault.setFaultDeviceList(faultDeviceList);

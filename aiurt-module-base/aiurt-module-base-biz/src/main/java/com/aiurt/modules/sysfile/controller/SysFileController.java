@@ -1,22 +1,25 @@
 package com.aiurt.modules.sysfile.controller;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.EsFileAPI;
-import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.MinioUtil;
-import com.aiurt.common.util.XlsUtil;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.search.dto.FileDataDTO;
 import com.aiurt.modules.sysfile.constant.PatrolConstant;
 import com.aiurt.modules.sysfile.entity.SysFile;
+import com.aiurt.modules.sysfile.entity.SysFileInfo;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
 import com.aiurt.modules.sysfile.param.FileAppParam;
+import com.aiurt.modules.sysfile.param.SysFileInfoParam;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
+import com.aiurt.modules.sysfile.service.ISysFileInfoService;
 import com.aiurt.modules.sysfile.service.ISysFileRoleService;
 import com.aiurt.modules.sysfile.service.ISysFileService;
 import com.aiurt.modules.sysfile.service.ISysFileTypeService;
@@ -80,6 +83,8 @@ public class SysFileController {
 	private ISysFileRoleService iSysFileRoleService;
 	@Autowired
 	private ISysFileTypeService sysFileTypeService;
+	@Autowired
+	private ISysFileInfoService sysFileInfoService;
 	@Autowired
 	private ISysBaseAPI iSysBaseAPI;
 	@Autowired
@@ -652,5 +657,125 @@ public class SysFileController {
 			typeList(collect,list);
 		}
 		return list ;
+	}
+
+	 /**
+	 * 保存下载记录
+	 *
+	 * @param sysFileInfo
+	 * @return
+	 */
+	 @AutoLog(value = "文档表-保存下载记录")
+	 @ApiOperation(value = "文档表-保存下载记录", notes = "文档表-保存下载记录")
+	 @PostMapping(value = "/addDownload")
+	 public Result<SysFileInfo> addDownload(HttpServletRequest req, @RequestBody SysFileInfo sysFileInfo) {
+		 Result<SysFileInfo> result = new Result<SysFileInfo>();
+		 LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+		 sysFileInfo.setUserName(loginUser.getRealname());
+		 sysFileInfo.setDepartmentCode(loginUser.getOrgCode());
+		 sysFileInfo.setDownloadTime(new Date());
+		 sysFileInfo.setDelFlag(CommonConstant.DEL_FLAG_0);
+		 try {
+			 sysFileInfoService.save(sysFileInfo);
+			 result.success("添加成功！");
+		 } catch (Exception e) {
+			 log.error(e.getMessage(), e);
+			 result.error500("操作失败！");
+		 }
+		 return result;
+	 }
+
+	/**
+	 * 分页列表查询
+	 *
+	 * @param sysFileInfoParam
+	 * @return
+	 */
+	@AutoLog(value = "文档表-下载记录查询")
+	@ApiOperation(value = "文档表-下载记录查询", notes = "文档表-下载记录查询")
+	@GetMapping(value = "/queryPageDownloadList")
+	public Result<IPage<SysFileInfo>> queryPageDownloadList(SysFileInfoParam sysFileInfoParam, HttpServletRequest request) {
+		Result<IPage<SysFileInfo>> result = new Result<>();
+		//查询条件拼接
+		LambdaQueryWrapper<SysFileInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+
+		if(ObjectUtil.isNotNull(sysFileInfoParam.getFileId())){
+			lambdaQueryWrapper.eq(SysFileInfo::getFileId,sysFileInfoParam.getFileId());
+		}
+		if (ObjectUtil.isNotNull(sysFileInfoParam.getStartTime()) && ObjectUtil.isNotNull(sysFileInfoParam.getEndTime())){
+			lambdaQueryWrapper.ge(SysFileInfo::getDownloadTime,DateUtil.beginOfDay(sysFileInfoParam.getStartTime()));
+			lambdaQueryWrapper.le(SysFileInfo::getDownloadTime,DateUtil.endOfDay(sysFileInfoParam.getEndTime()));
+		}
+		if(StrUtil.isNotBlank(sysFileInfoParam.getUserName())){
+			lambdaQueryWrapper.like(SysFileInfo::getUserName,sysFileInfoParam.getUserName());
+		}
+		if(ObjectUtil.isNotNull(sysFileInfoParam.getDownloadStatus())){
+			lambdaQueryWrapper.eq(SysFileInfo::getDownloadStatus,sysFileInfoParam.getDownloadStatus());
+		}
+		if(StrUtil.isNotBlank(sysFileInfoParam.getOrgCode())){
+			lambdaQueryWrapper.eq(SysFileInfo::getDepartmentCode,sysFileInfoParam.getOrgCode());
+		}
+
+		lambdaQueryWrapper.eq(SysFileInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
+		lambdaQueryWrapper.orderByDesc(SysFileInfo::getCreateTime);
+
+		Page<SysFileInfo> page = sysFileInfoService.page(new Page<>(sysFileInfoParam.getPageNo(), sysFileInfoParam.getPageSize()), lambdaQueryWrapper);
+		page.getRecords().forEach(e->{
+			String fileName = e.getFileName();
+			if (ObjectUtil.isNotNull(e.getDownloadStatus())){
+				e.setDownloadStatusName(iSysBaseAPI.translateDict("download_status",String.valueOf(e.getDownloadStatus())));
+			}
+			if (StrUtil.isNotBlank(fileName)){
+				e.setFileName("《"+fileName+"》");
+			}
+		});
+		result.setSuccess(true);
+		result.setResult(page);
+		result.setCode(CommonConstant.SC_OK_200);
+		return result;
+	}
+
+	@AutoLog(value = "文档表-下载记录导出")
+	@ApiOperation(value = "文档表-下载记录导出", notes = "文档表-下载记录导出")
+	@RequestMapping(value = "/reportExportDownloadList")
+	public ModelAndView reportExportDownloadList(HttpServletRequest request,HttpServletResponse response,
+												 @RequestParam(value = "fileId",required = true) Long fileId){
+		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+		//查询条件拼接
+		LambdaQueryWrapper<SysFileInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+
+		if(ObjectUtil.isNotNull(fileId)){
+			lambdaQueryWrapper.eq(SysFileInfo::getFileId,fileId);
+		}
+		lambdaQueryWrapper.eq(SysFileInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
+		lambdaQueryWrapper.orderByDesc(SysFileInfo::getCreateTime);
+
+		List<SysFileInfo> list = sysFileInfoService.list(lambdaQueryWrapper);
+		list.forEach(e->{
+			String fileName = e.getFileName();
+			if (ObjectUtil.isNotNull(e.getDownloadStatus())){
+				e.setDownloadStatusName(iSysBaseAPI.translateDict("download_status",String.valueOf(e.getDownloadStatus())));
+			}
+			if (StrUtil.isNotBlank(fileName)){
+				e.setFileName("《"+fileName+"》");
+			}
+		});
+		String exportField = "userName,downloadTime,fileName,size,downloadStatusName,downloadDuration";
+
+		if (CollUtil.isNotEmpty(list)){
+			//导出文件名称
+			mv.addObject(NormalExcelConstants.FILE_NAME,"下载记录报表");
+            //excel注解对象Class
+			mv.addObject(NormalExcelConstants.CLASS,SysFileInfo.class);
+			//自定义导出字段
+			mv.addObject(NormalExcelConstants.EXPORT_FIELDS, exportField);
+			//自定义表格参数
+			mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("下载记录报表","下载记录报表"));
+			//导出数据列表
+			mv.addObject(NormalExcelConstants.DATA_LIST, list);
+		}
+		return mv;
+
 	}
 }
