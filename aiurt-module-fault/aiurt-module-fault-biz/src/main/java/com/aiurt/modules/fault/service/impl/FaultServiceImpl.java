@@ -184,10 +184,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             repairRecordService.save(record);
         } else {
             if (value) {
+                fault.setStatus(FaultStatusEnum.NEW_FAULT.getStatus());
+            }else {
                 fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
                 fault.setApprovalPassTime(new Date());
-            }else {
-                fault.setStatus(FaultStatusEnum.NEW_FAULT.getStatus());
             }
         }
 
