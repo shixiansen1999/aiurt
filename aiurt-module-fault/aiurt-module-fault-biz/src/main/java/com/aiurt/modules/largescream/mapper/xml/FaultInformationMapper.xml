@@ -280,6 +280,9 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="lineCode != null and lineCode != ''">
+                and f.line_code  = #{lineCode}
+            </if>
         </where>
     </select>
 

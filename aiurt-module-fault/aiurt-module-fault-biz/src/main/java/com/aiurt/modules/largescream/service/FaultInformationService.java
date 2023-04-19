@@ -226,7 +226,7 @@ public class FaultInformationService {
      * @param boardTimeType
      * @return
      */
-    public List<FaultLargeLineInfoDTO> getLargeLineFaultInfo(Integer boardTimeType) {
+    public List<FaultLargeLineInfoDTO> getLargeLineFaultInfo(Integer boardTimeType,String lineCode) {
         List<FaultLargeLineInfoDTO> largeLineInfoDtos = new ArrayList<>();
         String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
         String[] split = dateTime.split("~");
@@ -236,7 +236,7 @@ public class FaultInformationService {
         //获取当前登录人的专业编码
         List<String> majors = getCurrentLoginUserMajors();
 
-        List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startDate, endDate, majors);
+        List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startDate, endDate, majors,lineCode);
         //根据line_code分组，查询同一条线路下的所有故障
         Map<String, List<Fault>> collect = largeLineFaultInfo.stream().collect(Collectors.groupingBy(Fault::getLineCode));
         Set<String> keys = collect.keySet();

@@ -58,9 +58,10 @@ public class FaultInformationController {
     @AutoLog(value = "综合大屏-线路故障统计", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "综合大屏-线路故障统计", notes = "综合大屏-线路故障统计")
     @RequestMapping(value = "/getLargeLineFaultInfo", method = RequestMethod.GET)
-    public Result<List<FaultLargeLineInfoDTO>> getLargeLineFaultInfo(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam(value="boardTimeType",required = false)Integer boardTimeType)
+    public Result<List<FaultLargeLineInfoDTO>> getLargeLineFaultInfo(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam(value="boardTimeType",required = false)Integer boardTimeType,
+                                                                     @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode)
     {
-        List<FaultLargeLineInfoDTO> largeLineFaultInfo = faultInformationService.getLargeLineFaultInfo(boardTimeType);
+        List<FaultLargeLineInfoDTO> largeLineFaultInfo = faultInformationService.getLargeLineFaultInfo(boardTimeType,lineCode);
         return Result.ok(largeLineFaultInfo);
     }
 
