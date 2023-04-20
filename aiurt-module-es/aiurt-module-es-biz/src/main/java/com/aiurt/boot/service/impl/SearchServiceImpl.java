@@ -145,7 +145,7 @@ public class SearchServiceImpl implements ISearchService {
                 }
 
             }
-            if (ObjectUtil.isNotEmpty(documentManageResponseDTO.getAttachment())) {
+            if (ObjectUtil.isEmpty(documentManageResponseDTO.getAttachment())) {
                 documentManageResponseDTO.setAttachment(new AttachmentDTO());
             }
             searchResponsList.add(documentManageResponseDTO);
