@@ -45,13 +45,8 @@ public class TemperatureHumidityJob implements Job {
             //定义远程主机的地址
             String deviceIp="udp:"+ip+"/"+port;
             Address deviceAdd = GenericAddress.parse(deviceIp);
-//            Address deviceAdd = GenericAddress.parse("udp:192.168.1.187/161");
-            //定义本机的地址
-//            Address localAdd = GenericAddress.parse("udp:192.168.1.187/161");
             //设定远程主机的地址
             myTarget.setAddress(deviceAdd);
-            //设定本地主机的地址
-//            myTarget.setAddress(localAdd);
             //设置snmp共同体
             myTarget.setCommunity(new OctetString("public"));
             //设置超时重试次数
@@ -74,7 +69,6 @@ public class TemperatureHumidityJob implements Job {
             request.add(new VariableBinding(new OID("1.3.6.1.4.1.58162.0.0")));
             //湿度
             request.add(new VariableBinding(new OID("1.3.6.1.4.1.58162.1.0")));
-//            request.add(new VariableBinding(new OID(new int[] {1,3,6,1,4,1,58162,2,0})));
             //调用setType()方法来确定该pdu的类型
             request.setType(PDU.GETNEXT);
             //调用 send(PDU pdu,Target target)发送pdu，返回一个ResponseEvent对象
@@ -83,19 +77,16 @@ public class TemperatureHumidityJob implements Job {
             PDU response=responseEvent.getResponse();
             //输出
             if(response != null){
-                System.out.println("request.size()="+request.size());
-//                System.out.println("response.size()="+response.size());
                 //通过应答pdu获得mib信息（之前绑定的OID的值），方法：VaribleBinding get(int index)
                 VariableBinding vb1 = response.get(0);
-//                String variableBinding = (String)response.get(0);
                 VariableBinding vb2 = response.get(1);
-                System.out.println(vb1);
-                System.out.println(vb1.toString().substring(24,27));
-                System.out.println(vb2);
-                System.out.println(vb2.toString().substring(24,27));
                 DecimalFormat dF = new DecimalFormat("0.0");
-                Integer tem=Integer.parseInt(vb1.toString().substring(24,27));
-                Integer hum=Integer.parseInt(vb2.toString().substring(24,27));
+                String vb1str=vb1.toString();
+                String vb2str=vb2.toString();
+                Integer tem=Integer.parseInt(vb1str.substring(24,vb1str.length()));
+                Integer hum=Integer.parseInt(vb2str.substring(24,vb2str.length()));
+//                System.out.println("tem="+tem);
+//                System.out.println("hum="+hum);
                 float temperature = (float)tem / 10;
                 float humidity=(float)hum / 10;
                 TemperatureHumidity th = new TemperatureHumidity();
