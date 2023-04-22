@@ -2985,4 +2985,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         SysUser user = userMapper.getUserByName(userName);
         return user.getId();
     }
+
+    @Override
+    public void sendAllMessage(String message) {
+        webSocket.sendAllMessage(message);
+    }
 }
