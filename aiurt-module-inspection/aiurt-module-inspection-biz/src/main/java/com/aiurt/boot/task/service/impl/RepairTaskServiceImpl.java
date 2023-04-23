@@ -1512,15 +1512,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.INSPECTION_RECEIPT.getType(), repairTask.getId(), loginUser.getUsername(), CommonTodoStatus.DONE_STATUS_1);
 
         //添加附件
-        if(ObjectUtil.isNotEmpty(examineDTO.getPath())){
-            List<String> enclosures = repairTaskEnclosureMapper.getByRepairTaskId(examineDTO.getId());
-            for (String enclosure : enclosures) {
-                RepairTaskEnclosure taskEnclosure = new RepairTaskEnclosure();
-                taskEnclosure.setUrl(examineDTO.getPath());
-                taskEnclosure.setRepairTaskResultId(enclosure);
-                repairTaskEnclosureMapper.insert(taskEnclosure);
-            }
-        }
+        repairTask.setUrl(examineDTO.getPath());
+        repairTaskMapper.updateById(repairTask);
         status(examineDTO, loginUser, realName, repairTask1, repairTask.getRepairPoolId());
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT)) {
             setId(examineDTO, repairTask1, loginUser, realName, repairTask.getRepairPoolId());
@@ -1917,6 +1910,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         .eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
             List<String> orgList = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList());
+            System.out.println(manager.checkLogin().getOrgCode());
             if (!orgList.contains(manager.checkLogin().getOrgCode())) {
                 throw new AiurtBootException("该检修任务不在您的领取范围之内哦");
             }

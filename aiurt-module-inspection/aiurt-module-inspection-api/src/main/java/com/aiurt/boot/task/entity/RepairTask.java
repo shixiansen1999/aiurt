@@ -209,6 +209,8 @@ public class RepairTask extends BaseEntity {
     @ApiModelProperty(value = "更新者")
     private java.lang.String updateBy;
 
+    @ApiModelProperty(value = "检修任务附件")
+    private String url;
     /**组织机构名称*/
     @ApiModelProperty(value = "组织机构名称")
     @TableField(exist = false)

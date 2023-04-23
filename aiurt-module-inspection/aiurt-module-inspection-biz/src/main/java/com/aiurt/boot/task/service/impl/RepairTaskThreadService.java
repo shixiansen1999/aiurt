@@ -22,7 +22,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.LoginUser;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -179,15 +178,7 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
             //备注
             repairTask.setContent(repairTask.getErrorContent());
             //附件
-            LoginUser loginUser = manager.checkLogin();
-//            String userName = repairTaskMapper.getRealName(loginUser.getId());
-            List<String> enclosures = repairTaskEnclosureMapper.getByRepairTaskId(repairTask.getId());
-            if (enclosures.size()!=0){
-                RepairTaskEnclosure repairTaskEnclosure = repairTaskEnclosureMapper.getByResultId(enclosures.get(0),loginUser.getUsername());
-                if (repairTaskEnclosure!=null){
-                    repairTask.setPath(repairTaskEnclosure.getUrl());
-                }
-            }
+            repairTask.setPath(repairTask.getUrl());
 
             if (repairTask.getCode() != null) {
                 //根据检修任务code查询
