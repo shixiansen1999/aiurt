@@ -3066,6 +3066,23 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public void sendAllMessage(String message) {
-        webSocket.sendAllMessage(message);
+        List<SysUser> userList = userMapper.selectList(new LambdaQueryWrapper<SysUser>().eq(SysUser::getOrgCode, "A01A01A01A01").eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+        String[] userIds = userList.stream().map(SysUser::getUsername).toArray(String[]::new);
+//        for (int i = 0; i < userIds.length; i++) {
+//            if (org.jeecg.common.util.oConvertUtils.isNotEmpty(userIds[i])) {
+//                SysUser sysUser = userMapper.getUserByName(userIds[i]);
+//                if (sysUser == null) {
+//                    continue;
+//                }
+                JSONObject obj = new JSONObject();
+                obj.put(WebsocketConst.MSG_CMD, WebsocketConst.CMD_USER);
+//                obj.put(WebsocketConst.MSG_USER_ID, sysUser.getId());
+                obj.put(WebsocketConst.MSG_TXT, message);
+                if (ObjectUtil.isNotEmpty(message)) {
+                    obj.put(WebsocketConst.IS_RING_BELL, true);
+                }
+                webSocket.sendAllMessage(obj.toJSONString());
+            //}
+        //}
     }
 }
