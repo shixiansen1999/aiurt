@@ -201,7 +201,7 @@ public class FaultExternal implements Serializable {
     private String stationId;
 
     @TableField(exist = false)
-    private List<String> stationIds;
+    private List<String> stationCodes;
 
     @TableField(exist = false)
     @ApiModelProperty(value = "非实体属性-查询传参-开始时间")
