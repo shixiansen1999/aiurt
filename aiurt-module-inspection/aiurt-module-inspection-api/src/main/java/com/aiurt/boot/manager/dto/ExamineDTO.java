@@ -43,4 +43,9 @@ public class ExamineDTO {
     private String confirmUrl;
     /**验收标记 验收0，审核1*/
     private Integer acceptanceRemark;
+
+    /**检修任务状态*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修任务状态")
+    private Integer inspectionStatus;
 }
