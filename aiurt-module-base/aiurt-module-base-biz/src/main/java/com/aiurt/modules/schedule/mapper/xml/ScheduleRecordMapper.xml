@@ -329,7 +329,7 @@
         su.org_name as teamName
         FROM
         schedule_record sr
-        INNER JOIN schedule_item si ON sr.item_id = si.id
+        INNER JOIN schedule_item si ON sr.item_id = si.id and is_rest_day = 1
         INNER JOIN sys_user su ON sr.user_id = su.id
         WHERE
         DATE_FORMAT( sr.date, '%Y-%m-%d' ) =DATE_FORMAT( #{date},'%Y-%m-%d')
