@@ -426,7 +426,7 @@
                 and status = #{status}
             </if>
         </where>
-        order by update_time desc,create_time desc
+        order by sort_no ASC
     </select>
 
     <select id="selectEnclosure" resultType="com.aiurt.boot.task.entity.RepairTaskEnclosure">

@@ -24,7 +24,7 @@
 
         WHERE
             spare_part_apply_material.del_flag =0
-
+        GROUP BY spare_part_apply_material.id
 
     </select>
 </mapper>

@@ -14,6 +14,7 @@ import com.aiurt.modules.faultexternal.dto.FaultExternalDTO;
 import com.aiurt.modules.faultexternal.entity.FaultExternal;
 import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
+import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -21,6 +22,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 调度系统故障
@@ -59,6 +62,8 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
 
     @Autowired
     private FaultExternalMapper faultExternalMapper;
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
 
 
     @Override
@@ -139,7 +144,9 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
         String stationId = faultExternal.getStationId();
         if (StrUtil.isNotBlank(stationId)) {
             List<String> strings = StrUtil.splitTrim(stationId, ",");
-            faultExternal.setStationIds(strings);
+            List<CsStation> stations = iSysBaseAPI.queryAllStation();
+            List<String> stationCode=  stations.stream().filter(e->strings.contains(e.getId())).map(CsStation::getStationCode).collect(Collectors.toList());
+            faultExternal.setStationCodes(stationCode);
         }
         List<FaultExternal> faultExternals = baseMapper.selectFaultExternalPage(page, faultExternal);
         page.setRecords(faultExternals);

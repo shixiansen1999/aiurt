@@ -161,6 +161,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         FaultKnowledgeBaseType one = faultKnowledgeBaseTypeService.getOne(queryWrapper.eq(FaultKnowledgeBaseType::getCode, fault.getFaultPhenomenon()).eq(FaultKnowledgeBaseType::getDelFlag, 0));
         // 自报自修跳过
         boolean b = StrUtil.equalsIgnoreCase(faultModeCode, SELF_FAULT_MODE_CODE);
+        // 根据配置决定是否需要审核
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_PROCESS);
+        boolean value = "1".equals(paramModel.getValue());
         if (b) {
             fault.setAppointUserName(user.getUsername());
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
@@ -180,7 +183,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             repairRecordService.save(record);
         } else {
-            fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
+            if (value) {
+                fault.setStatus(FaultStatusEnum.NEW_FAULT.getStatus());
+            }else {
+                fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
+                fault.setApprovalPassTime(new Date());
+            }
         }
 
         // 保存故障
@@ -194,9 +202,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 记录日志
         saveLog(user, "故障上报", fault.getCode(), 1, null);
 
-        // 根据配置决定是否需要审核
-        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_PROCESS);
-        boolean value = "1".equals(paramModel.getValue());
+
 
         try {
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();

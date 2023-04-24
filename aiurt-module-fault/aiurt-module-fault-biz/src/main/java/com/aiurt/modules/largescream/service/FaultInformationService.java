@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.constants.FaultDictCodeConstant;
@@ -14,9 +15,12 @@ import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.service.IFaultDeviceService;
+import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
+import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
@@ -45,6 +49,9 @@ public class FaultInformationService {
 
     @Resource
     private IFaultDeviceService faultDeviceService;
+
+    @Resource
+    private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
 
     @Autowired
     private ISysBaseAPI sysBaseApi;
@@ -174,6 +181,15 @@ public class FaultInformationService {
             // 字典翻译
             String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream().filter(item -> item.getValue().equals(String.valueOf(l.getStatus()))).map(DictModel::getText).collect(Collectors.joining());
             l.setStatusName(statusName);
+
+            // 字典翻译
+            if(StrUtil.isNotBlank(l.getFaultPhenomenon())){
+                LambdaQueryWrapper<FaultKnowledgeBaseType> faultKnowledgeBaseTypeLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                faultKnowledgeBaseTypeLambdaQueryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                        .eq(FaultKnowledgeBaseType::getCode,l.getFaultPhenomenon());
+                FaultKnowledgeBaseType faultKnowledgeBaseType = faultKnowledgeBaseTypeMapper.selectOne(faultKnowledgeBaseTypeLambdaQueryWrapper);
+                l.setFaultPhenomenonName(faultKnowledgeBaseType.getName());
+            }
         });
         return largeFaultInfo;
     }
@@ -210,7 +226,7 @@ public class FaultInformationService {
      * @param boardTimeType
      * @return
      */
-    public List<FaultLargeLineInfoDTO> getLargeLineFaultInfo(Integer boardTimeType) {
+    public List<FaultLargeLineInfoDTO> getLargeLineFaultInfo(Integer boardTimeType,String lineCode) {
         List<FaultLargeLineInfoDTO> largeLineInfoDtos = new ArrayList<>();
         String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
         String[] split = dateTime.split("~");
@@ -220,7 +236,7 @@ public class FaultInformationService {
         //获取当前登录人的专业编码
         List<String> majors = getCurrentLoginUserMajors();
 
-        List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startDate, endDate, majors);
+        List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startDate, endDate, majors,lineCode);
         //根据line_code分组，查询同一条线路下的所有故障
         Map<String, List<Fault>> collect = largeLineFaultInfo.stream().collect(Collectors.groupingBy(Fault::getLineCode));
         Set<String> keys = collect.keySet();

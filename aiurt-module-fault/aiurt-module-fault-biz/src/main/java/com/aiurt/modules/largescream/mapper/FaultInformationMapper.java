@@ -130,7 +130,7 @@ public interface FaultInformationMapper {
      * @param majors
      * @return
      */
-    List<Fault> getLargeLineFaultInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("majors") List<String> majors);
+    List<Fault> getLargeLineFaultInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("majors") List<String> majors,@Param("lineCode") String lineCode);
 
     /**
      * 获取子系统下故障维修时长

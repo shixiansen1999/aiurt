@@ -172,7 +172,28 @@ public class WebSocket {
         }
     }
 
-
+    // 此为广播消息
+    public void sendAllMessage(String message) {
+       // Session session = sessionPool.get(userId);
+//        if (session != null&&session.isOpen()) {
+//            try {
+//                log.info("【websocket消息】 单点消息:"+message);
+//                session.getAsyncRemote().sendText(message);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+        log.info("【websocket消息】广播消息:"+message);
+        for(WebSocket webSocket : webSockets) {
+            try {
+                if(webSocket.session.isOpen()) {
+                    webSocket.session.getAsyncRemote().sendText(message);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
     /**
      * 此为单点消息(多人)
      *

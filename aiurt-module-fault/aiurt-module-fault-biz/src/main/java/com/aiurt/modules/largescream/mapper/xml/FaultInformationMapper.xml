@@ -116,7 +116,7 @@
     </select>
 
     <select id="getLargeFaultDatails" resultType="com.aiurt.modules.fault.dto.FaultLargeInfoDTO">
-        select * from fault f
+        select *,f.fault_phenomenon from fault f
         left join cs_subsystem cs on cs.system_code = f.sub_system_code
         left join  cs_line cl on cl.line_code = f.line_code
         left join cs_station ct on ct.station_code = f.station_code
@@ -267,7 +267,7 @@
 
     <select id="getLargeLineFaultInfo" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault f
-        left join cs_line cl on f.line_code = cl.line_code
+        left join cs_line cl on (f.line_code = cl.line_code  and cl.del_flag = 0)
         <where>
             f.status > 2
             <if test="startDate!=null and endDate!=null">
@@ -279,6 +279,9 @@
                 <foreach collection="majors" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
+            </if>
+            <if test="lineCode != null and lineCode != ''">
+                and f.line_code  = #{lineCode}
             </if>
         </where>
     </select>

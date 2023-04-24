@@ -1075,5 +1075,11 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getUserByUserName(String userName);
+    /**
+     * 3通过模板发送消息
+     *
+     * @param message 使用构造器赋值参数
+     */
+    void sendAllMessage(String message);
 }
 

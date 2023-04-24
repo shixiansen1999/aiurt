@@ -128,6 +128,12 @@ public class PatrolTaskDTO
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
     @Dict(dicCode = "patrol_task_status")
     private java.lang.Integer status;
+    /**
+     * 驳回原因
+     */
+    @Excel(name = "驳回原因", width = 15)
+    @ApiModelProperty(value = "驳回原因")
+    private java.lang.String rejectReason;
     /*** 退回理由*/
     @Excel(name = "退回理由", width = 15)
     @ApiModelProperty(value = "退回理由")
