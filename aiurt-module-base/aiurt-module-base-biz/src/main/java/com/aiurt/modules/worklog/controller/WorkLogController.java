@@ -19,6 +19,8 @@ import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.WorkLogParam;
 import com.aiurt.modules.worklog.service.IWorkLogService;
+import com.aiurt.modules.worklog.task.DayWorkLogAutoAdd;
+import com.aiurt.modules.worklog.task.NightWorkLogAutoAdd;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -76,6 +78,10 @@ public class WorkLogController {
     private ISysBaseAPI iSysBaseAPI;
     @Autowired
     private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private NightWorkLogAutoAdd nightWorkLogAutoAdd;
+    @Autowired
+    private DayWorkLogAutoAdd dayWorkLogAutoAdd;
     /**
      * 工作日志上报-分页列表查询
      * @param pageNo
@@ -559,5 +565,27 @@ public class WorkLogController {
         });
 
         return Result.ok("归档成功");
+    }
+
+    /**
+     * 白班工作日志触发接口(供测试用)
+     */
+    @AutoLog(value = "白班工作日志触发接口(供测试用)", operateType = 2, operateTypeAlias = "新增", permissionUrl = "/dayWorkLogAutoAdd")
+    @RequestMapping(value = "/dayWorkLogAutoAdd", method = RequestMethod.POST)
+    public Result<?> dayWorkLogAutoAdd() {
+        dayWorkLogAutoAdd.execute();
+        return Result.ok();
+    }
+
+    /**
+     * 晚班工作日志检测触发接口(供测试用)
+     *
+     * @return
+     */
+    @AutoLog(value = "晚班工作日志检测触发接口(供测试用)", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/nightWorkLogAutoAdd")
+    @RequestMapping(value = "/nightWorkLogAutoAdd", method = RequestMethod.POST)
+    public Result<?> nightWorkLogAutoAdd() {
+        nightWorkLogAutoAdd.execute();
+        return Result.ok();
     }
 }

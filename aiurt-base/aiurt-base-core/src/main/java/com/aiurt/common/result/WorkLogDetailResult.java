@@ -175,4 +175,8 @@ public class WorkLogDetailResult {
     @Excel(name = "创建人", width = 15)
     @ApiModelProperty(value = "创建人")
     private  String  createBy;
+    /**所在班组*/
+    @Excel(name = "所在班组", width = 15)
+    @ApiModelProperty(value = "所在班组")
+    private  String  orgId;
 }

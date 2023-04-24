@@ -307,4 +307,8 @@ public class WorkLogResult {
     /**未完成事项*/
     @ApiModelProperty(value = "未完成事项")
     private  String  unfinishedMatters;
+    /**所在班组*/
+    @Excel(name = "所在班组", width = 15)
+    @ApiModelProperty(value = "所在班组")
+    private  String  orgId;
 }
