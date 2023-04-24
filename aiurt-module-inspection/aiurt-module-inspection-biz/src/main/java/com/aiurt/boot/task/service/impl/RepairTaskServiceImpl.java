@@ -1420,12 +1420,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        LoginUser user = sysBaseApi.getUserById(sysUser.getId());
         if (InspectionConstant.IS_CONFIRM_1.equals(repairTask.getIsConfirm())) {
             //修改检修任务状态
             repairTask.setSubmitUserId(sysUser.getId());
             repairTask.setSumitUserName(sysUser.getRealname());
             repairTask.setSubmitTime(new Date());
-            repairTask.setConfirmUrl(examineDTO.getConfirmUrl());
+            repairTask.setConfirmUrl(user.getSignatureUrl());
             repairTask.setStatus(InspectionConstant.PENDING_REVIEW);
             // 修改对应检修计划状态
             RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
@@ -1438,7 +1439,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             repairTask.setSubmitUserId(sysUser.getId());
             repairTask.setSumitUserName(sysUser.getRealname());
             repairTask.setSubmitTime(new Date());
-            repairTask.setConfirmUrl(examineDTO.getConfirmUrl());
+            repairTask.setConfirmUrl(user.getSignatureUrl());
             repairTask.setStatus(InspectionConstant.COMPLETED);
             // 修改对应检修计划状态
             RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
@@ -2370,8 +2371,93 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTaskDeviceRel.setStaffId(manager.checkLogin().getId());
         repairTaskDeviceRel.setIsSubmit(InspectionConstant.SUBMITTED);
         repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
+        //检查是否是最后工单提交
+        List<RepairTaskDeviceRel> deviceRels = repairTaskDeviceRelMapper.selectList(new LambdaQueryWrapper<RepairTaskDeviceRel>().eq(RepairTaskDeviceRel::getRepairTaskId, repairTaskDeviceRel.getRepairTaskId()));
+        List<RepairTaskDeviceRel> noSubmitDeviceList = deviceRels.stream().filter(d -> d.getIsSubmit() != 1).collect(Collectors.toList());
+        if(CollUtil.isEmpty(noSubmitDeviceList)){
+            repairTaskDeviceCheck(repairTaskDeviceRel.getRepairTaskId());
+        }
     }
+    @Transactional(rollbackFor = Exception.class)
+    public void repairTaskDeviceCheck(String id) {
+        RepairTask repairTask = repairTaskMapper.selectById(id);
+        if (ObjectUtil.isEmpty(repairTask)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+//        // 是任务的检修人才可以提交
+//        List<RepairTaskUser> repairTaskUserss = repairTaskUserMapper.selectList(
+//                new LambdaQueryWrapper<RepairTaskUser>()
+//                        .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
+//                        .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+//        if (CollUtil.isEmpty(repairTaskUserss)) {
+//            throw new AiurtBootException("该任务没有对应的检修人");
+//        } else {
+//            List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
+//            if (!userList.contains(manager.checkLogin().getId())) {
+//                throw new AiurtBootException("只有该任务的检修人才能提交");
+//            }
+//        }
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        LoginUser user = sysBaseApi.getUserById(sysUser.getId());
+        if (InspectionConstant.IS_CONFIRM_1.equals(repairTask.getIsConfirm())) {
+            //修改检修任务状态
+            repairTask.setSubmitUserId(sysUser.getId());
+            repairTask.setSumitUserName(sysUser.getRealname());
+            repairTask.setSubmitTime(new Date());
+            repairTask.setConfirmUrl(user.getSignatureUrl());
+            repairTask.setStatus(InspectionConstant.PENDING_REVIEW);
+            // 修改对应检修计划状态
+            RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
+            if (ObjectUtil.isNotEmpty(repairPool)) {
+                repairPool.setStatus(InspectionConstant.PENDING_REVIEW);
+                repairPoolMapper.updateById(repairPool);
+            }
+        } else {
+            //修改检修任务状态
+            repairTask.setSubmitUserId(sysUser.getId());
+            repairTask.setSumitUserName(sysUser.getRealname());
+            repairTask.setSubmitTime(new Date());
+            repairTask.setConfirmUrl(user.getSignatureUrl());
+            repairTask.setStatus(InspectionConstant.COMPLETED);
+            // 修改对应检修计划状态
+            RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
+            if (ObjectUtil.isNotEmpty(repairPool)) {
+                repairPool.setStatus(InspectionConstant.COMPLETED);
+                repairPoolMapper.updateById(repairPool);
+            }
+        }
+        repairTaskMapper.updateById(repairTask);
 
+        // 更新待办任务状态为已完成
+        isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.INSPECTION_EXECUTE.getType(), repairTask.getId(), sysUser.getUsername(), CommonTodoStatus.DONE_STATUS_1);
+
+        // 创建审核待办任务
+        try {
+            if (InspectionConstant.IS_CONFIRM_1.equals(repairTask.getIsConfirm())) {
+                String currentUserName = getUserName(repairTask.getCode(), RoleConstant.FOREMAN);
+                if (StrUtil.isNotEmpty(currentUserName)) {
+                    String realNames = null;
+                    List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode()).eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+                    if(CollUtil.isNotEmpty(repairTaskUsers)){
+                        String[] userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new);
+                        List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+                        if (CollUtil.isNotEmpty(loginUsers)) {
+                            realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+                        }
+                    }
+                    TodoDTO todoDTO = new TodoDTO();
+                    todoDTO.setTemplateCode(CommonConstant.REPAIR_SERVICE_NOTICE);
+                    todoDTO.setTitle("检修任务-审核" + DateUtil.today());
+                    todoDTO.setMsgAbstract("检修任务完成");
+                    todoDTO.setPublishingContent("检修任务已完成，请确认");
+                    createTodoTask(currentUserName, TodoBusinessTypeEnum.INSPECTION_CONFIRM.getType(), repairTask.getId(), "检修任务审核", "", "", todoDTO, repairTask, realNames, null);
+
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * 检修单同行人下拉
      *
