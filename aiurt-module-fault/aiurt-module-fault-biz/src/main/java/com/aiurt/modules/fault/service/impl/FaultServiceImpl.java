@@ -1333,7 +1333,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setKnowledgeId(repairRecordDTO.getKnowledgeId());
 
         one.setKnowledgeId(repairRecordDTO.getKnowledgeId());
-        one.setSignPath(repairRecordDTO.getSignPath());
+        LoginUser user = sysBaseAPI.getUserById(loginUser.getId());
+        one.setSignPath(user.getSignatureUrl());
 
 
         repairRecordService.updateById(one);
