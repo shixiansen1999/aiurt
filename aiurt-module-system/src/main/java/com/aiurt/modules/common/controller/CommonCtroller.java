@@ -238,7 +238,7 @@ public class CommonCtroller {
         Map<String, List<CsUserStationModel>> stationMap = stationModelList.stream().collect(Collectors.groupingBy(CsUserStationModel::getLineCode));
 
         LambdaQueryWrapper<CsStationPosition> positionWrapper = new LambdaQueryWrapper<>();
-
+        positionWrapper.eq(CsStationPosition::getDelFlag, 0);
         List<CsStationPosition> positionList = stationPositionService.getBaseMapper().selectList(positionWrapper);
 
         Map<String, List<CsStationPosition>> positionMap = positionList.stream().collect(Collectors.groupingBy(CsStationPosition::getStaionCode));
