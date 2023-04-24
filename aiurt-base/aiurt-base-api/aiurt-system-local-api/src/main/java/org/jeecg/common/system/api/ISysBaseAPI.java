@@ -198,6 +198,13 @@ public interface ISysBaseAPI extends CommonAPI {
     public List<ComboModel> queryAllRole(String[] roleIds);
 
     /**
+     * 角色树
+     * @param
+     * @return
+     */
+    public List<CsRoleUserModel> queryRoleUserTree();
+
+    /**
      * 22通过用户账号查询角色Id集合
      *
      * @param username

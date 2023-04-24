@@ -440,6 +440,18 @@ public class CommonCtroller {
     }
 
     /**
+     * 角色树
+     *
+     * @return
+     */
+    @ApiOperation(value = "", notes = "角色树")
+    @GetMapping(value = "/queryRoleUserTree")
+    public Result<List<CsRoleUserModel>> queryRoleUserTree() {
+        List<CsRoleUserModel> comboModels = sysBaseApi.queryRoleUserTree();
+        return Result.OK(comboModels);
+    }
+
+    /**
      * 位置列表查询
      * @param
      * @return
