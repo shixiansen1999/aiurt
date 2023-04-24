@@ -109,7 +109,7 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
      * @param orgCode
      * @return
      */
-    List<SysUserTeamDTO> getUserByDepIds(@Param("orgCodes") List<String> orgCodes, @Param("page") Page<SysUserTeamDTO> page, @Param("orgCode") String orgCode);
+    List<SysUserTeamDTO> getUserByDepIds(@Param("orgCodes") List<String> orgCodes, @Param("page") Page<SysUserTeamDTO> page, @Param("orgCode") String orgCode,@Param("name")String name);
 
     /**
      * 获取大屏的班组信息-点击总班组数
