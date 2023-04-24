@@ -84,7 +84,7 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
      * @param lineCode 线路code
      * @return
      */
-    IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page);
+    IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page,String name);
 
     /**
      * 获取大屏的班组信息-点击总班组数
