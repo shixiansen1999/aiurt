@@ -148,4 +148,6 @@ public class LoginUser {
 
 	/**岗位*/
 	private String jobName;
+	/**签名*/
+	private String signatureUrl;
 }
