@@ -434,7 +434,8 @@ public class CommonCtroller {
 
     @GetMapping("/sysuser/filterDepartUserTree")
     @ApiOperation("筛选机构人员树")
-    public Result<List<SelectTable>> filterDepartUserTree(@RequestParam(value = "majorId",required = false) String majorId,@RequestParam List<String> keys) {
+    public Result<List<SelectTable>> filterDepartUserTree(@RequestParam(value = "majorId",required = false) String majorId,
+                                                          @RequestParam(value = "keys",required = false) List<String> keys) {
         List<SelectTable> tables = commonService.queryDepartUserTree(null, null,majorId,keys);
         return Result.OK(tables);
     }

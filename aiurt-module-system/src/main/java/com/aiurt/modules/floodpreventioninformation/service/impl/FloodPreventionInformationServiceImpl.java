@@ -1,12 +1,16 @@
 package com.aiurt.modules.floodpreventioninformation.service.impl;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.util.XlsUtil;
 import com.aiurt.modules.floodpreventioninformation.entity.FloodPreventionInformation;
 import com.aiurt.modules.floodpreventioninformation.mapper.FloodPreventionInformationMapper;
 import com.aiurt.modules.floodpreventioninformation.service.IFloodPreventionInformationService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.core.io.ClassPathResource;
@@ -40,6 +44,7 @@ public class FloodPreventionInformationServiceImpl extends ServiceImpl<FloodPrev
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
 
+        //返回的数据集
         List<String> errorMessage = new ArrayList<>();
 
         int successLines = 0;
@@ -47,6 +52,16 @@ public class FloodPreventionInformationServiceImpl extends ServiceImpl<FloodPrev
         // 错误信息
         int  errorLines = 0;
         for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            String type = FilenameUtils.getExtension(file.getOriginalFilename());
+            if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+                return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, false, null);
+            }
+            ImportParams params = new ImportParams();
+            params.setTitleRows(2);
+            params.setHeadRows(1);
+            params.setNeedSave(true);
 
         }
         return null;

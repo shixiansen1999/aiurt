@@ -72,6 +72,9 @@ public class FloodPreventionInformationController extends BaseController<FloodPr
             if (ObjectUtil.isNotNull(e.getPeripheryGrounds())){
                 e.setPeripheryGroundsName(baseApi.translateDict("periphery_grounds",String.valueOf(e.getPeripheryGrounds())));
             }
+            if (StrUtil.isNotBlank(e.getOrgCode())){
+                e.setOrgName( baseApi.getDepartNameByOrgCode(e.getOrgCode()));
+            }
             if(StrUtil.isNotBlank(e.getEmergencyPeople())){
                 StringBuilder stringBuilder = new StringBuilder();
                 String[] split = e.getEmergencyPeople().split(",");

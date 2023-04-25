@@ -52,6 +52,12 @@ public class FloodPreventionInformation implements Serializable {
     @ApiModelProperty(value = "部门编码")
     private String orgCode;
 
+    /**部门名称*/
+    @Excel(name = "部门名称")
+    @ApiModelProperty(value = "部门名称")
+    @TableField(exist = false)
+    private String orgName;
+
     /**应急队伍负责人ID*/
     @Excel(name = "应急队伍负责人ID")
     @ApiModelProperty(value = "应急队伍负责人ID")
