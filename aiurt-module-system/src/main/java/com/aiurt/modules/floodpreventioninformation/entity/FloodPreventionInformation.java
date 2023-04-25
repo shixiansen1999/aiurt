@@ -124,7 +124,13 @@ public class FloodPreventionInformation implements Serializable {
     /**防汛等级*/
     @Excel(name = "防汛等级")
     @ApiModelProperty(value = "防汛等级")
-    private String grade;
+    private Long grade;
+
+    /**防汛等级名称*/
+    @Excel(name = "防汛等级名称")
+    @TableField(exist = false)
+    @ApiModelProperty(value = "防汛等级名称")
+    private String gradeName;
 
     /**删除状态 0-未删除 1-已删除*/
     @ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
