@@ -344,6 +344,9 @@
         <if test="orgCode!=null and orgCode!=''">
             and su.org_code = #{orgCode}
         </if>
+        <if test="name!=null and name!=''">
+            and su.realname = #{name}
+        </if>
         ORDER BY
         sr.date,
         sr.item_id
@@ -394,6 +397,12 @@
             <foreach collection="orgCodes" item="code" open="(" close=")" separator=",">
                 #{code}
             </foreach>
+        </if>
+        <if test="orgCode!=null and orgCode!=''">
+            and sd.org_code = #{orgCode}
+        </if>
+        <if test="name!=null and name!=''">
+            and su.realname = #{name}
         </if>
     GROUP BY
         sd.id

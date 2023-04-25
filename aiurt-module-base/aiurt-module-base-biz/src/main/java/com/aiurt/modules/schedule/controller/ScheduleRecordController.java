@@ -505,12 +505,13 @@ public class ScheduleRecordController {
     @ApiOperation(value = "获取大屏的班组信息-点击今日当班人数", notes = "获取大屏的班组信息-点击今日当班人数")
     @RequestMapping(value = "/getTodayOndutyDetail", method = RequestMethod.GET)
     public Result<IPage<SysUserTeamDTO>> getTodayOndutyDetail(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode,
-                                                              @ApiParam(name = "orgcode", value = "班组code") @RequestParam(value = "orgcode", required = false) String orgcode,
+                                                              @ApiParam(name = "orgCode", value = "班组code") @RequestParam(value = "orgCode", required = false) String orgCode,
+                                                              @ApiParam(name = "name", value = "名称") @RequestParam(value = "name", required = false) String name,
                                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
     ) {
         Page<SysUserTeamDTO> page = new Page<>(pageNo, pageSize);
-        IPage<SysUserTeamDTO> result = scheduleRecordService.getTodayOndutyDetail(lineCode, orgcode, page);
+        IPage<SysUserTeamDTO> result = scheduleRecordService.getTodayOndutyDetail(lineCode, orgCode, page,name);
         return Result.OK(result);
     }
 
@@ -524,13 +525,13 @@ public class ScheduleRecordController {
     @ApiOperation(value = "获取大屏的班组信息-点击总人员数", notes = "获取大屏的班组信息-点击总人员数")
     @RequestMapping(value = "/getTotalPepoleDetail", method = RequestMethod.GET)
     public Result<IPage<SysUserTeamDTO>> getTotalPepoleDetail(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode,
-                                                              @ApiParam(name = "orgcode", value = "班组code") @RequestParam(value = "orgcode", required = false) String orgcode,
+                                                              @ApiParam(name = "orgCode", value = "班组code") @RequestParam(value = "orgCode", required = false) String orgCode,
                                                               @ApiParam(name = "name", value = "名称") @RequestParam(value = "name", required = false) String name,
                                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
     ) {
         Page<SysUserTeamDTO> page = new Page<>(pageNo, pageSize);
-        IPage<SysUserTeamDTO> result = scheduleRecordService.getTotalPepoleDetail(lineCode, orgcode, page,name);
+        IPage<SysUserTeamDTO> result = scheduleRecordService.getTotalPepoleDetail(lineCode, orgCode, page,name);
         return Result.OK(result);
     }
 
@@ -545,11 +546,13 @@ public class ScheduleRecordController {
     @RequestMapping(value = "/getTotalTeamDetail", method = RequestMethod.GET)
     public Result<IPage<SysTotalTeamDTO>> getTotalTeamDetail(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开")
                                                              @RequestParam(value = "lineCode", required = false) String lineCode,
+                                                             @ApiParam(name = "orgCode", value = "班组code") @RequestParam(value = "orgCode", required = false) String orgCode,
+                                                             @ApiParam(name = "name", value = "名称") @RequestParam(value = "name", required = false) String name,
                                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
     ) {
         Page<SysTotalTeamDTO> page = new Page<>(pageNo, pageSize);
-        IPage<SysTotalTeamDTO> result = scheduleRecordService.getTotalTeamDetail(page, lineCode);
+        IPage<SysTotalTeamDTO> result = scheduleRecordService.getTotalTeamDetail(page, lineCode,orgCode,name);
         return Result.OK(result);
     }
 

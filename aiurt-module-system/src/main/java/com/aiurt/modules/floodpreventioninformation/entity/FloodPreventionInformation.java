@@ -162,4 +162,9 @@ public class FloodPreventionInformation implements Serializable {
     @TableField(exist = false)
     private String screenStationName;
 
+    /**防汛出入口/防汛等级*/
+    @ApiModelProperty(value = "防汛出入口/防汛等级")
+    @TableField(exist = false)
+    private String entranceGrade;
+
 }

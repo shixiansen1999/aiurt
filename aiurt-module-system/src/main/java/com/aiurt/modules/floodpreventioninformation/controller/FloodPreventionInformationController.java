@@ -94,6 +94,16 @@ public class FloodPreventionInformationController extends BaseController<FloodPr
             if (StrUtil.isNotBlank(e.getOrgCode())){
                 e.setOrgName( baseApi.getDepartNameByOrgCode(e.getOrgCode()));
             }
+            if (StrUtil.isNotBlank(e.getEntrance()) && StrUtil.isNotBlank(e.getGrade())){
+                e.setEntranceGrade(e.getEntrance()+e.getGrade());
+            }else {
+                if (StrUtil.isNotBlank(e.getEntrance())){
+                    e.setEntranceGrade(e.getEntrance());
+                }
+                if(StrUtil.isNotBlank(e.getGrade())){
+                    e.setEntranceGrade(e.getGrade());
+                }
+            }
             if(StrUtil.isNotBlank(e.getEmergencyPeople())){
                 StringBuilder stringBuilder = new StringBuilder();
                 String[] split = e.getEmergencyPeople().split(",");

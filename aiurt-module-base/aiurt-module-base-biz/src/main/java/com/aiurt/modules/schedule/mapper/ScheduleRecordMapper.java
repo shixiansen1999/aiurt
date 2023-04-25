@@ -99,7 +99,7 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
      * @param date
      * @return
      */
-    List<SysUserTeamDTO> getTodayOndutyDetail(@Param("page") Page<SysUserTeamDTO> page, @Param("orgCode") String orgCode, @Param("orgCodes") List<String> orgCodes, @Param("date") Date date);
+    List<SysUserTeamDTO> getTodayOndutyDetail(@Param("page") Page<SysUserTeamDTO> page, @Param("orgCode") String orgCode, @Param("orgCodes") List<String> orgCodes, @Param("date") Date date,@Param("name") String name);
 
     /**
      * 查询总人员列表
@@ -118,7 +118,7 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
      * @param orgCodes 组织机构
      * @return
      */
-    List<SysTotalTeamDTO> getTotalTeamDetail(@Param("page") Page<SysTotalTeamDTO> page, @Param("orgCodes") List<String> orgCodes);
+    List<SysTotalTeamDTO> getTotalTeamDetail(@Param("page") Page<SysTotalTeamDTO> page, @Param("orgCodes") List<String> orgCodes,@Param("orgCode") String orgCode,@Param("name")String name);
 
     /**
      * 查询今日当班人列表(无分页)
