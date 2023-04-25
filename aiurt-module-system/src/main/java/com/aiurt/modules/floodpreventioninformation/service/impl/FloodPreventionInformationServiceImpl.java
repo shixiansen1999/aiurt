@@ -4,10 +4,10 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.common.util.XlsUtil;
 import com.aiurt.modules.floodpreventioninformation.entity.FloodPreventionInformation;
 import com.aiurt.modules.floodpreventioninformation.mapper.FloodPreventionInformationMapper;
 import com.aiurt.modules.floodpreventioninformation.service.IFloodPreventionInformationService;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -40,31 +40,87 @@ import java.util.Map;
 public class FloodPreventionInformationServiceImpl extends ServiceImpl<FloodPreventionInformationMapper, FloodPreventionInformation> implements IFloodPreventionInformationService {
 
     @Override
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
-
-        //返回的数据集
         List<String> errorMessage = new ArrayList<>();
-
         int successLines = 0;
+        String tipMessage = null;
         String url = null;
-        // 错误信息
-        int  errorLines = 0;
+        int errorLines = 0;
         for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
             // 获取上传文件对象
             MultipartFile file = entity.getValue();
             String type = FilenameUtils.getExtension(file.getOriginalFilename());
             if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
-                return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, false, null);
+                tipMessage = "导入失败，文件类型错误！";
+                return imporReturnRes(errorLines, successLines, tipMessage, false, null);
             }
             ImportParams params = new ImportParams();
             params.setTitleRows(2);
             params.setHeadRows(1);
-            params.setNeedSave(true);
+            try {
+
+            }catch (Exception e) {
+                String msg = e.getMessage();
+                log.error(msg, e);
+                if (msg != null && msg.contains("Duplicate entry")) {
+                    return Result.error("文件导入失败:有重复数据！");
+                } else {
+                    return Result.error("文件导入失败:" + e.getMessage());
+                }
+            }finally {
+                try {
+                    file.getInputStream().close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
 
         }
         return null;
+    }
+
+    public static Result<?> imporReturnRes(int errorLines, int successLines, String tipMessage, boolean isType, String failReportUrl) throws IOException {
+        if (isType) {
+            if (errorLines != 0) {
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", false);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                result.put("failReportUrl", failReportUrl);
+                Result res = Result.ok(result);
+                res.setMessage("文件失败，数据有错误。");
+                res.setCode(200);
+                return res;
+            } else {
+                //是否成功
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", true);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                Result res = Result.ok(result);
+                res.setMessage("文件导入成功！");
+                res.setCode(200);
+                return res;
+            }
+        } else {
+            JSONObject result = new JSONObject(5);
+            result.put("isSucceed", false);
+            result.put("errorCount", errorLines);
+            result.put("successCount", successLines);
+            int totalCount = successLines + errorLines;
+            result.put("totalCount", totalCount);
+            Result res = Result.ok(result);
+            res.setMessage(tipMessage);
+            res.setCode(200);
+            return res;
+        }
+
     }
 
     @Override

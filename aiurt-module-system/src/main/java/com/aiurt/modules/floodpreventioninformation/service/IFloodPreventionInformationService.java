@@ -22,7 +22,7 @@ public interface IFloodPreventionInformationService extends IService<FloodPreven
      * @param response
      * @return
      */
-    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 
 
     /**

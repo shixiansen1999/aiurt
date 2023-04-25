@@ -59,8 +59,27 @@ public class FloodPreventionInformationController extends BaseController<FloodPr
         if (StrUtil.isNotBlank(floodPreventionInformation.getLineCode())){
             lambdaQueryWrapper.eq(FloodPreventionInformation::getLineCode,floodPreventionInformation.getLineCode());
         }
+        if(StrUtil.isNotBlank(floodPreventionInformation.getCodeCc())){
+            if(floodPreventionInformation.getCodeCc().contains(CommonConstant.SYSTEM_SPLIT_STR)){
+                String[] split = floodPreventionInformation.getCodeCc().split(CommonConstant.SYSTEM_SPLIT_STR);
+                int length = split.length;
+                switch (length){
+                    case 2:
+                        lambdaQueryWrapper.eq(FloodPreventionInformation::getLineCode, split[0]);
+                        lambdaQueryWrapper.eq(FloodPreventionInformation::getStationCode, split[1]);
+                        break;
+                    default:
+                        lambdaQueryWrapper.eq(FloodPreventionInformation::getLineCode, split[0]);
+                }
+            }else{
+                lambdaQueryWrapper.eq(FloodPreventionInformation::getLineCode, floodPreventionInformation.getCodeCc());
+            }
+        }
         if (StrUtil.isNotBlank(floodPreventionInformation.getStationCode())){
             lambdaQueryWrapper.eq(FloodPreventionInformation::getStationCode,floodPreventionInformation.getStationCode());
+        }
+        if (StrUtil.isNotBlank(floodPreventionInformation.getScreenStationName())){
+            lambdaQueryWrapper.eq(FloodPreventionInformation::getStationName,floodPreventionInformation.getScreenStationName());
         }
         lambdaQueryWrapper.orderByDesc(FloodPreventionInformation::getCreateTime);
         Page<FloodPreventionInformation> page = new Page<FloodPreventionInformation>(pageNo, pageSize);

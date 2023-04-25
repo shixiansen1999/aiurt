@@ -151,4 +151,15 @@ public class FloodPreventionInformation implements Serializable {
     @ApiModelProperty(value = "修改时间")
     private Date updateTime;
 
+    /**查询参数*/
+    @ApiModelProperty(value = "查询参数")
+    @TableField(exist = false)
+    private String codeCc;
+
+
+    /**大屏参数*/
+    @ApiModelProperty(value = "大屏参数")
+    @TableField(exist = false)
+    private String screenStationName;
+
 }

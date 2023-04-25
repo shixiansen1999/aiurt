@@ -31,6 +31,9 @@ public class CsRoleUserModel implements Serializable {
     @ApiModelProperty(value = "角色名称")
     private String label;
 
+    @ApiModelProperty(value = "标记")
+    private Boolean isOrg;
+
     @ApiModelProperty(value = "用户组")
     private List<SysUserModel> children;
 }

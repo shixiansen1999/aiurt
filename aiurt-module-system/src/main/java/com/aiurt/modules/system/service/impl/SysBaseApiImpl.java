@@ -819,6 +819,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             csRoleUserModel.setValue(role.getId());
             csRoleUserModel.setKey(role.getRoleCode());
             csRoleUserModel.setLabel(role.getRoleName());
+            csRoleUserModel.setIsOrg(true);
             LambdaQueryWrapper<SysUserRole> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(SysUserRole::getRoleId,role.getId());
             List<SysUserRole> sysUserRoles = sysUserRoleMapper.selectList(lambdaQueryWrapper);
@@ -833,6 +834,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                         SysUserModel sysUserModel = new SysUserModel();
                         sysUserModel.setValue(sysUser.getId());
                         sysUserModel.setLabel(sysUser.getRealname());
+                        sysUserModel.setIsOrg(false);
                         sysUserModelList.add(sysUserModel);
                     }
                     csRoleUserModel.setChildren(sysUserModelList);
@@ -851,7 +853,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             for (DictModel dictModel : sysPost) {
                  PostModel postModel = new PostModel();
                  postModel.setLabel(dictModel.getText());
-
+                 postModel.setIsOrg(true);
                  //根据岗位查询用户信息
                 List<SysUser> sysUsers = userMapper.selectList(new LambdaQueryWrapper<SysUser>()
                         .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
@@ -862,6 +864,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                         SysUserModel sysUserModel = new SysUserModel();
                         sysUserModel.setValue(sysUser.getId());
                         sysUserModel.setLabel(sysUser.getRealname());
+                        sysUserModel.setIsOrg(false);
                         sysUserModelList.add(sysUserModel);
                     }
                     postModel.setChildren(sysUserModelList);

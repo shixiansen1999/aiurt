@@ -26,4 +26,7 @@ public class SysUserModel implements Serializable {
     @ApiModelProperty(value = "用户名")
     private String label;
 
+    @ApiModelProperty(value = "标记")
+    private Boolean isOrg;
+
 }
