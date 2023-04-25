@@ -434,9 +434,34 @@ public class CommonCtroller {
 
     @GetMapping("/sysuser/filterDepartUserTree")
     @ApiOperation("筛选机构人员树")
-    public Result<List<SelectTable>> filterDepartUserTree(@RequestParam(value = "majorId",required = false) String majorId,@RequestParam List<String> keys) {
+    public Result<List<SelectTable>> filterDepartUserTree(@RequestParam(value = "majorId",required = false) String majorId,
+                                                          @RequestParam(value = "keys",required = false) List<String> keys) {
         List<SelectTable> tables = commonService.queryDepartUserTree(null, null,majorId,keys);
         return Result.OK(tables);
+    }
+
+    /**
+     * 角色树
+     *
+     * @return
+     */
+    @ApiOperation(value = "", notes = "角色树")
+    @GetMapping(value = "/queryRoleUserTree")
+    public Result<List<CsRoleUserModel>> queryRoleUserTree() {
+        List<CsRoleUserModel> comboModels = sysBaseApi.queryRoleUserTree();
+        return Result.OK(comboModels);
+    }
+
+    /**
+     * 岗位树
+     *
+     * @return
+     */
+    @ApiOperation(value = "", notes = "岗位树")
+    @GetMapping(value = "/queryPostUserTree")
+    public Result<List<PostModel>> queryPostUserTree() {
+        List<PostModel> list = sysBaseApi.queryPostUserTree();
+        return Result.OK(list);
     }
 
     /**

@@ -1141,6 +1141,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public void getPatrolTaskSubmit(PatrolTaskDTO patrolTaskDTO) {
         //提交任务：将待执行、执行中，变为待审核、添加任务结束人id,传签名地址、任务主键id、审核状态
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        LoginUser user = sysBaseApi.getUserById(sysUser.getId());
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
         if (manager.checkTaskUser(patrolTask.getCode()) == false && !admin) {
@@ -1153,14 +1154,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 if (CollUtil.isNotEmpty(errDeviceList)) {
                     updateWrapper.set(PatrolTask::getStatus, 6)
                             .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                            .set(PatrolTask::getSignUrl, user.getSignatureUrl())
                             .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                             .set(PatrolTask::getAbnormalState, 0)
                             .eq(PatrolTask::getId, patrolTaskDTO.getId());
                 } else {
                     updateWrapper.set(PatrolTask::getStatus, 6)
                             .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                            .set(PatrolTask::getSignUrl, user.getSignatureUrl())
                             .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                             .set(PatrolTask::getAbnormalState, 1)
                             .eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -1169,14 +1170,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 if (CollUtil.isNotEmpty(errDeviceList)) {
                     updateWrapper.set(PatrolTask::getStatus, 7)
                             .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                            .set(PatrolTask::getSignUrl, user.getSignatureUrl())
                             .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                             .set(PatrolTask::getAbnormalState, 0)
                             .eq(PatrolTask::getId, patrolTaskDTO.getId());
                 } else {
                     updateWrapper.set(PatrolTask::getStatus, 7)
                             .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                            .set(PatrolTask::getSignUrl, user.getSignatureUrl())
                             .set(PatrolTask::getAbnormalState, 1)
                             .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                             .eq(PatrolTask::getId, patrolTaskDTO.getId());

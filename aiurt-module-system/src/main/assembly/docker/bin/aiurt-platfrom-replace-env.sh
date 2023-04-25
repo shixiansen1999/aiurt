@@ -5,6 +5,7 @@ mysqlport=$DB_PROT
 redisip=$REDIS_IP
 redisport=$REDIS_PORT
 esurl=$ES_URL
+mysqlpassword=$MYSQL_PASSWORD
 if [ ! $mysqlip ]; then
     mysqlip="127.0.0.1"
 fi
@@ -23,15 +24,19 @@ fi
 if [ ! $esurl ]; then
     esurl="http://127.0.0.1:9200"
 fi
+if [ ! $mysqlpassword ]; then
+    mysqlpassword="1qaz@2wsx"
+fi
 
 applicationYml="/aiurt-platfrom/aiurt-module-system/config/application-docker.yml"
-if [ ! -z "$mysqlip" ] && [ ! -z "$mysqlname" ] && [ ! -z "$mysqlport" ]  && [ ! -z "$redisip" ]  && [ ! -z "$redisport" ] && [ ! -z "$esurl" ]; then
+if [ ! -z "$mysqlip" ] && [ ! -z "$mysqlname" ] && [ ! -z "$mysqlport" ]  && [ ! -z "$redisip" ]  && [ ! -z "$redisport" ] && [ ! -z "$esurl" ] && [ ! -z "$mysqlpassword" ]; then
   needReMySqlIpChar="\$MYSQL_IP"
   needReMySqlNameChar="\$DB_NAME"
   needReMySqlPortChar="\$DB_PROT"
   needReRedisIpChar="\$REDIS_IP"
   needReRedisPortChar="\$REDIS_PORT"
   needEsUrlChar="\$ES_URL"
+  needMysqlPasswordChar="\$MYSQL_PASSWORD"
   if [ -f "$applicationYml"  ]; then
     sed -i "s|$needReMySqlIpChar|$mysqlip|g" $applicationYml
     sed -i "s|$needReMySqlNameChar|$mysqlname|g" $applicationYml
@@ -39,6 +44,7 @@ if [ ! -z "$mysqlip" ] && [ ! -z "$mysqlname" ] && [ ! -z "$mysqlport" ]  && [ !
     sed -i "s|$needReRedisIpChar|$redisip|g" $applicationYml
     sed -i "s|$needReRedisPortChar|$redisport|g" $applicationYml
     sed -i "s|$needEsUrlChar|$esurl|g" $applicationYml
+    sed -i "s|$needMysqlPasswordChar|$mysqlpassword|g" $applicationYml
   fi
 fi
 cd /aiurt-platfrom/aiurt-module-system

@@ -809,6 +809,69 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return list;
     }
 
+
+    @Override
+    public List<CsRoleUserModel>queryRoleUserTree(){
+        List<CsRoleUserModel> list = new ArrayList<>();
+        List<SysRole> roleList = roleMapper.selectList(new QueryWrapper<SysRole>());
+        for (SysRole role : roleList) {
+            CsRoleUserModel csRoleUserModel = new CsRoleUserModel();
+            csRoleUserModel.setValue(role.getId());
+            csRoleUserModel.setKey(role.getRoleCode());
+            csRoleUserModel.setLabel(role.getRoleName());
+            LambdaQueryWrapper<SysUserRole> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(SysUserRole::getRoleId,role.getId());
+            List<SysUserRole> sysUserRoles = sysUserRoleMapper.selectList(lambdaQueryWrapper);
+            if (CollUtil.isNotEmpty(sysUserRoles)){
+                List<String> collect = sysUserRoles.stream().map(SysUserRole::getUserId).collect(Collectors.toList());
+                List<SysUser> sysUsers = userMapper.selectList(new LambdaQueryWrapper<SysUser>()
+                        .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+                        .in(SysUser::getId, collect));
+                if (CollUtil.isNotEmpty(sysUsers)){
+                    List<SysUserModel> sysUserModelList = new ArrayList<>();
+                    for (SysUser sysUser : sysUsers) {
+                        SysUserModel sysUserModel = new SysUserModel();
+                        sysUserModel.setValue(sysUser.getId());
+                        sysUserModel.setLabel(sysUser.getRealname());
+                        sysUserModelList.add(sysUserModel);
+                    }
+                    csRoleUserModel.setChildren(sysUserModelList);
+                }
+            }
+            list.add(csRoleUserModel);
+        }
+        return  list;
+    }
+
+    @Override
+    public List<PostModel>queryPostUserTree(){
+        List<PostModel> list = new ArrayList<>();
+        List<DictModel> sysPost = this.getDictItems("sys_post");
+        if (CollUtil.isNotEmpty(sysPost)){
+            for (DictModel dictModel : sysPost) {
+                 PostModel postModel = new PostModel();
+                 postModel.setLabel(dictModel.getText());
+
+                 //根据岗位查询用户信息
+                List<SysUser> sysUsers = userMapper.selectList(new LambdaQueryWrapper<SysUser>()
+                        .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+                        .eq(SysUser::getJobName, dictModel.getValue()));
+                if (CollUtil.isNotEmpty(sysUsers)){
+                    List<SysUserModel> sysUserModelList = new ArrayList<>();
+                    for (SysUser sysUser : sysUsers) {
+                        SysUserModel sysUserModel = new SysUserModel();
+                        sysUserModel.setValue(sysUser.getId());
+                        sysUserModel.setLabel(sysUser.getRealname());
+                        sysUserModelList.add(sysUserModel);
+                    }
+                    postModel.setChildren(sysUserModelList);
+                }
+                list.add(postModel);
+            }
+        }
+        return list;
+    }
+
     @Override
     public List<ComboModel> queryAllRole(String[] roleIds) {
         List<ComboModel> list = new ArrayList<ComboModel>();

@@ -1,13 +1,16 @@
 package com.aiurt.modules.system.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonSendStatus;
 import com.aiurt.common.constant.WebsocketConst;
+import com.aiurt.common.constant.enums.TodoTaskEnum;
 import com.aiurt.common.system.util.JwtUtil;
 import com.aiurt.common.util.RedisUtil;
+import com.aiurt.common.util.SysAnnmentEnum;
 import com.aiurt.common.util.TokenUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.message.websocket.WebSocket;
@@ -17,6 +20,8 @@ import com.aiurt.modules.system.dto.SysMessageInfoDTO;
 import com.aiurt.modules.system.dto.SysMessageTypeDTO;
 import com.aiurt.modules.system.entity.SysAnnouncement;
 import com.aiurt.modules.system.entity.SysAnnouncementSend;
+import com.aiurt.modules.system.mapper.SysAnnouncementMapper;
+import com.aiurt.modules.system.mapper.SysAnnouncementSendMapper;
 import com.aiurt.modules.system.service.ISysAnnouncementSendService;
 import com.aiurt.modules.system.service.ISysAnnouncementService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
@@ -95,7 +100,11 @@ public class SysAnnouncementController {
     @Autowired
     @Lazy
     private RedisUtil redisUtil;
+    @Resource
+    private SysAnnouncementMapper sysAnnouncementMapper;
 
+    @Resource
+    private SysAnnouncementSendMapper sysAnnouncementSendMapper;
     /**
      * 分页列表查询
      *
@@ -628,5 +637,43 @@ public class SysAnnouncementController {
         return Result.ok(sysAnnouncementPageDTO);
     }
 
+
+    @AutoLog(value = "消息中心-一键已读")
+    @GetMapping(value = "/readAll")
+    @ApiOperation(value = "一键已读", notes = "一键已读")
+    public Result<?> readAll( @ApiParam(name = "messageFlag", value = "1:业务、2:流程 ")@RequestParam(name="messageFlag",required=true) String  messageFlag,
+                              @ApiParam(name = "msgCategory", value = "消息类型1:通知公告2:系统消息3:特情消息 ")@RequestParam(name="msgCategory",required=false) String  msgCategory,
+                              @ApiParam(name = "busType", value = "fault:故障、situation:特情 、trainplan，trainrecheck:培训、worklog:工作日志、inspection_assign,inspection:检修、patrol_assign，patrol_audit:巡视、patrol:巡视流程、fault:故障流程、emergency:应急业务消息、inspection:检修流程")@RequestParam(name="busType",required=false) String  busType) {
+        Result<?> result = new Result<>();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = sysUser.getId();
+        String username = sysUser.getUsername();
+        int updateCount = 0;
+        //业务数据更新阅读状态
+        if ("1".equals(messageFlag)) {
+            SysAnnmentEnum annmentEnum = SysAnnmentEnum.getByType(busType);
+            List<String> enumList = annmentEnum != null ? annmentEnum.getList() : new ArrayList<>();
+
+            if (CollUtil.isEmpty(enumList) && StrUtil.isNotBlank(busType)) {
+                enumList = Collections.singletonList(busType);
+            }
+
+            sysAnnouncementMapper.readAllAnnouncementInfo(userId, enumList, msgCategory);
+        }
+        //流程数据更新阅读状态
+        else if ("2".equals(messageFlag)) {
+            TodoTaskEnum todoTaskEnum = TodoTaskEnum.getByType(busType);
+            List<String> busTypeList = todoTaskEnum != null ? todoTaskEnum.getList() : new ArrayList<>();
+
+            if (CollUtil.isEmpty(busTypeList) && StrUtil.isNotBlank(busType)) {
+                busTypeList = Collections.singletonList(busType);
+            }
+            sysAnnouncementMapper.readAllTodoListInfo(username, busTypeList);
+        }
+        System.out.println("执行更新语句数量：" + updateCount);
+        result.setSuccess(true);
+        result.setMessage("全部已读");
+        return result;
+    }
 
 }

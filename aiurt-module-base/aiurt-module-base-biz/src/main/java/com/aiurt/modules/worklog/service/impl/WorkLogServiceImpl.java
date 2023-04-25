@@ -11,7 +11,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.InspectionApi;
 import com.aiurt.boot.api.PatrolApi;
-import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.enums.WorkLogCheckStatusEnum;
@@ -503,11 +502,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             //查询该部门下的人员
             List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
             //获取负责人
-            String userName = iSysBaseAPI.getUserNameByOrgCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
-            if (ObjectUtil.isNotEmpty(userName)) {
-                List<String> list = StrUtil.splitTrim(userName, ",");
-                List<LoginUser> loginUserList = iSysBaseAPI.getLoginUserList(list);
-                record.setForeman(CollUtil.isNotEmpty(loginUserList) ? loginUserList.stream().map(LoginUser::getRealname).collect(Collectors.joining()) : ",");
+            SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(record.getOrgId());
+            LoginUser userById = iSysBaseAPI.getUserById(sysDepartModel.getManagerId());
+            if (ObjectUtil.isNotEmpty(userById)) {
+                record.setForeman(userById.getRealname());
             }
             //获取参与人员
             List<String> nameList = sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList());
@@ -809,7 +807,13 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void editWorkLog(WorkLogDTO dto) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
         WorkLog workLog = this.getOne(new QueryWrapper<WorkLog>().eq(WorkLog.ID, dto.getId()), false);
+        workLog.setOrgId(loginUser.getOrgId());
+        workLog.setSubmitId(loginUser.getId());
+        workLog.setCreateBy(loginUser.getId());
+
         workLog.setLogTime(dto.getLogTime());
         workLog.setWorkContent(dto.getWorkContent());
         workLog.setContent(dto.getContent());
@@ -947,7 +951,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
      * 生成日志编号
      * @return
      */
-    private String generateLogCode() {
+    public String generateLogCode() {
         String code = "L";
         LocalDate now = LocalDate.now();
         int dayOfYear = now.getYear();
@@ -1207,11 +1211,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         String orgId = user.getOrgId();
         List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
         //获取负责人
-        String userName = iSysBaseAPI.getUserNameByOrgCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
-        if (ObjectUtil.isNotEmpty(userName)) {
-            List<String> list = StrUtil.splitTrim(userName, ",");
-            List<LoginUser> loginUserList = iSysBaseAPI.getLoginUserList(list);
-            workLog.setForeman(CollUtil.isNotEmpty(loginUserList) ? loginUserList.stream().map(LoginUser::getRealname).collect(Collectors.joining()) : "");
+        SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(workLog.getOrgId());
+        LoginUser userById = iSysBaseAPI.getUserById(sysDepartModel.getManagerId());
+        if (ObjectUtil.isNotEmpty(userById)) {
+            workLog.setForeman(userById.getRealname());
         }
 
         //获取参与人员

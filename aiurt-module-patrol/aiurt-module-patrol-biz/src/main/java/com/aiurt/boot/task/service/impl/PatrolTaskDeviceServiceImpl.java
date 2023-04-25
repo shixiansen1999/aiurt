@@ -1,12 +1,13 @@
 package com.aiurt.boot.task.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.constant.PatrolConstant;
-import com.aiurt.boot.constant.PatrolDictCode;
+import com.aiurt.boot.constant.*;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
@@ -17,9 +18,15 @@ import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
+import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.CommonTodoStatus;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
+import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.todo.dto.TodoDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -27,11 +34,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -70,6 +81,14 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     private PatrolManager manager;
     @Autowired
     private PatrolTaskFaultMapper patrolTaskFaultMapper;
+    @Autowired
+    private PatrolTaskStationMapper patrolTaskStationMapper;
+    @Autowired
+    private PatrolTaskOrganizationMapper patrolTaskOrganizationMapper;
+    @Autowired
+    private ISTodoBaseAPI isTodoBaseAPI;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
 
 
     @Override
@@ -209,6 +228,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void getPatrolSubmit(PatrolTaskDevice patrolTaskDevice) {
         PatrolTaskDevice taskDevice = patrolTaskDeviceMapper.selectOne(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getId, patrolTaskDevice.getId()));
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -228,9 +248,126 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.set(PatrolTaskDevice::getUserId, sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus, PatrolConstant.BILL_COMPLETE).eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
             patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);
+            getPatrolTaskSubmit(patrolTask);
         }
     }
+    @Transactional(rollbackFor = Exception.class)
+    public void getPatrolTaskSubmit(PatrolTask task) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        LoginUser user = sysBaseApi.getUserById(sysUser.getId());
+        PatrolTask patrolTask = patrolTaskMapper.selectById(task.getId());
+            List<PatrolTaskDevice> taskDevices = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTask.getId()));
+            List<PatrolTaskDevice> errDeviceList = taskDevices.stream().filter(e -> PatrolConstant.RESULT_EXCEPTION.equals(e.getCheckResult())).collect(Collectors.toList());
+            List<PatrolTaskDevice> nonSubmitDeviceList = taskDevices.stream().filter(e -> !PatrolConstant.BILL_COMPLETE.equals(e.getStatus())).collect(Collectors.toList());
+            if(CollUtil.isEmpty(nonSubmitDeviceList)){
+                LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
+                if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
+                    if (CollUtil.isNotEmpty(errDeviceList)) {
+                        updateWrapper.set(PatrolTask::getStatus, 6)
+                                .set(PatrolTask::getEndUserId, sysUser.getId())
+                                .set(PatrolTask::getSignUrl, user.getSignatureUrl())
+                                .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                                .set(PatrolTask::getAbnormalState, 0)
+                                .eq(PatrolTask::getId, task.getId());
+                    } else {
+                        updateWrapper.set(PatrolTask::getStatus, 6)
+                                .set(PatrolTask::getEndUserId, sysUser.getId())
+                                .set(PatrolTask::getSignUrl, user.getSignatureUrl())
+                                .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                                .set(PatrolTask::getAbnormalState, 1)
+                                .eq(PatrolTask::getId, task.getId());
+                    }
+                } else {
+                    if (CollUtil.isNotEmpty(errDeviceList)) {
+                        updateWrapper.set(PatrolTask::getStatus, 7)
+                                .set(PatrolTask::getEndUserId, sysUser.getId())
+                                .set(PatrolTask::getSignUrl, user.getSignatureUrl())
+                                .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                                .set(PatrolTask::getAbnormalState, 0)
+                                .eq(PatrolTask::getId, task.getId());
+                    } else {
+                        updateWrapper.set(PatrolTask::getStatus, 7)
+                                .set(PatrolTask::getEndUserId, sysUser.getId())
+                                .set(PatrolTask::getSignUrl, user.getSignatureUrl())
+                                .set(PatrolTask::getAbnormalState, 1)
+                                .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                                .eq(PatrolTask::getId, task.getId());
+                    }
 
+                }
+                patrolTaskMapper.update(new PatrolTask(), updateWrapper);
+                // 提交任务如果需要审核则发送一条审核待办消息
+                try {
+                    if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
+                        QueryWrapper<PatrolTaskOrganization> wrapper = new QueryWrapper<>();
+                        wrapper.lambda().eq(PatrolTaskOrganization::getTaskCode, patrolTask.getCode())
+                                .eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0);
+                        List<PatrolTaskOrganization> organizations = patrolTaskOrganizationMapper.selectList(wrapper);
+                        List<String> orgCodes = organizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
+                        String userName = sysBaseApi.getUserNameByOrgCodeAndRoleCode(orgCodes, Arrays.asList(RoleConstant.FOREMAN));
+
+                        QueryWrapper<PatrolTaskUser> queryWrapper = new QueryWrapper<>();
+                        queryWrapper.lambda().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+                        List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(queryWrapper);
+                        if (CollectionUtil.isEmpty(taskUsers)) {
+                            return;
+                        }
+
+                        String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
+                        List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+                        String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+
+                        //构建消息模板
+                        HashMap<String, Object> map = new HashMap<>();
+                        map.put("code",patrolTask.getCode());
+                        map.put("patrolTaskName",patrolTask.getName());
+                        List<String>  station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
+                        map.put("patrolStation",CollUtil.join(station,","));
+                        String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
+                        map.put("patrolTaskTime",patrolDate);
+                        map.put("patrolName", realNames);
+
+                        //发送通知
+                        MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),userName, "巡视任务-审核通过" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
+                        PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
+                        BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
+                        //业务类型，消息类型，消息模板编码，摘要，发布内容
+                    /*patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
+                    messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
+                    messageDTO.setMsgAbstract("巡视任务完成");
+                    messageDTO.setPublishingContent("巡视任务已完成，请确认");
+                    sendMessage(messageDTO,realNames,null,patrolMessageDTO);*/
+                        //发送代办
+                        TodoDTO todoDTO = new TodoDTO();
+                        todoDTO.setData(map);
+                        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
+                        todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+
+                        todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
+                        todoDTO.setTitle("巡视任务-审核"+DateUtil.today());
+                        todoDTO.setMsgAbstract("巡视任务完成");
+                        todoDTO.setPublishingContent("巡视任务已完成，请确认");
+
+                        todoDTO.setProcessDefinitionName("巡视管理");
+                        todoDTO.setTaskName(patrolTask.getName() + "(待审核)");
+                        todoDTO.setBusinessKey(patrolTask.getId());
+                        todoDTO.setBusinessType(TodoBusinessTypeEnum.PATROL_AUDIT.getType());
+                        todoDTO.setCurrentUserName(userName);
+                        todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
+                        todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+                        todoDTO.setUrl(PatrolMessageUrlConstant.AUDIT_URL);
+                        todoDTO.setAppUrl(PatrolMessageUrlConstant.AUDIT_APP_URL);
+                        isTodoBaseAPI.createTodoTask(todoDTO);
+
+                        // 更新待办
+                        isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_EXECUTE.getType(), patrolTask.getId(), sysUser.getUsername(), "1");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+    }
     @Override
     public List<PatrolStationDTO> getBillGangedInfo(String taskId) {
         List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGangedInfo(taskId);

@@ -370,6 +370,9 @@
           #{orgCode}
       </foreach>
     </if>
+    <if test="name!=null and name!=''">
+        and su.realname LIKE CONCAT('%', #{name}, '%')
+    </if>
     </where>
     </select>
     <select id="getTotalTeamDetail" resultType="com.aiurt.modules.schedule.dto.SysTotalTeamDTO">
