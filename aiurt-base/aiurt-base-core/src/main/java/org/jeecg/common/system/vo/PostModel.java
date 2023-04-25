@@ -1,6 +1,5 @@
 package org.jeecg.common.system.vo;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -17,18 +16,13 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CsRoleUserModel implements Serializable {
+public class PostModel implements Serializable {
 
     @ApiModelProperty(value = "主键")
     private String id;
 
-    @ApiModelProperty(value = "角色id")
-    private String value;
 
-    @ApiModelProperty(value = "角色编码")
-    private String key;
-
-    @ApiModelProperty(value = "角色名称")
+    @ApiModelProperty(value = "岗位名称")
     private String label;
 
     @ApiModelProperty(value = "用户组")

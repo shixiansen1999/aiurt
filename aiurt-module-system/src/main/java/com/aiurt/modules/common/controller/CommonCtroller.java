@@ -452,6 +452,18 @@ public class CommonCtroller {
     }
 
     /**
+     * 岗位树
+     *
+     * @return
+     */
+    @ApiOperation(value = "", notes = "岗位树")
+    @GetMapping(value = "/queryPostUserTree")
+    public Result<List<PostModel>> queryPostUserTree() {
+        List<PostModel> list = sysBaseApi.queryPostUserTree();
+        return Result.OK(list);
+    }
+
+    /**
      * 位置列表查询
      * @param
      * @return
