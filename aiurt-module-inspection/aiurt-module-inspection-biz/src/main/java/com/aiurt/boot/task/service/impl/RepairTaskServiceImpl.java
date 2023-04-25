@@ -131,6 +131,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public Page<RepairTask> selectables(Page<RepairTask> pageList, RepairTask condition) {
         //去掉查询参数的所有空格
+        System.out.println(condition+"正在查询中");
         if (condition.getCode() != null) {
             condition.setCode(condition.getCode().replaceAll(" ", ""));
         }
@@ -1892,14 +1893,23 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
-    public void receiveTask(ExamineDTO examineDTO) {
-        RepairPool repairPool = repairPoolMapper.selectById(examineDTO.getId());
-        if (ObjectUtil.isEmpty(repairPool)) {
-            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+    public String receiveTask(ExamineDTO examineDTO) {
+        RepairPool repairPool=new RepairPool();
+        if (examineDTO.getInspectionStatus() == 1) {
+            RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
+            if (ObjectUtil.isEmpty(repairTask)) {
+                throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+            }
+        }else {
+            repairPool = repairPoolMapper.selectById(examineDTO.getId());
+            if (ObjectUtil.isEmpty(repairPool)) {
+                throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+            }
+            // 校验领取资格
+            checkReceiveTask(repairPool);
         }
 
-        // 校验领取资格
-        checkReceiveTask(repairPool);
+
 
         //个人领取：将待指派或退回之后重新领取改为待执行，变为个人领取（传任务主键id,状态）
         /*if (InspectionConstant.TASK_INIT.equals(examineDTO.getInspectionStatus()) || InspectionConstant.TASK_RETURNED.equals(examineDTO.getInspectionStatus())){
@@ -1908,14 +1918,19 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
         //确认：将待确认改为执行中
         if (InspectionConstant.TO_BE_CONFIRMED.equals(examineDTO.getInspectionStatus())) {
-            confirmInspectionTask(repairPool);
+            System.out.println(examineDTO.getId()+"将待确认改为执行中");
+            confirmInspectionTask(examineDTO);
+//            return examineDTO.getId();
         }
         //执行：将待指派改为执行中
         if (InspectionConstant.TO_BE_ASSIGNED.equals(examineDTO.getInspectionStatus())) {
-            excuteInspectionTask(repairPool);
+            System.out.println(examineDTO.getId()+"将待指派改为执行中");
+            return excuteInspectionTask(repairPool);
+
         }
         //待执行：将待执行或被退回改为执行中
-        if (InspectionConstant.PENDING.equals(examineDTO.getInspectionStatus())||InspectionConstant.GIVE_BACK.equals(examineDTO.getInspectionStatus())) {
+        if (InspectionConstant.PENDING.equals(examineDTO.getInspectionStatus())) {
+            System.out.println(examineDTO.getId()+"将待执行改为执行中");
             RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
             repairTask.setStatus(InspectionConstant.IN_EXECUTION);
             repairTask.setBeginTime(new Date());
@@ -1926,11 +1941,20 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPoolMapper.updateById(repairPool);
             }
         }
-
+        if (InspectionConstant.GIVE_BACK.equals(examineDTO.getInspectionStatus())) {
+            System.out.println(examineDTO.getId()+"将被退回改为执行中");
+            // 修改对应检修计划状态
+            if (ObjectUtil.isNotEmpty(repairPool)) {
+                repairPool.setStatus(InspectionConstant.IN_EXECUTION);
+                repairPoolMapper.updateById(repairPool);
+            }
+        }
+        examineDTO.setInspectionStatus(InspectionConstant.IN_EXECUTION);
+        return examineDTO.getId();
     }
 
-    private void confirmInspectionTask(RepairPool repair){
-        RepairTask repairTask = repairTaskMapper.selectById(repair.getId());
+    private void confirmInspectionTask(ExamineDTO examineDTO){
+        RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
         if (ObjectUtil.isEmpty(repairTask)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
@@ -1987,7 +2011,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
     }
-    private void excuteInspectionTask(RepairPool repairPool){
+    private String excuteInspectionTask(RepairPool repairPool){
+
+        // 更新检修计划状态，待执行
+        repairPool.setStatus(InspectionConstant.PENDING);
+        repairPoolMapper.updateById(repairPool);
+
+        System.out.println("正在执行excuteInspectionTask");
         RepairTask repairTask = new RepairTask();
         repairTask.setRepairPoolId(repairPool.getId());
         repairTask.setYear(DateUtil.year(repairPool.getStartTime()));
@@ -1998,7 +2028,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTask.setWeeks(repairPool.getWeeks());
         repairTask.setStartTime(new Date());
         repairTask.setTaskConfirmationTime(new Date());
-        repairTask.setStatus(InspectionConstant.IN_EXECUTION);
+        repairTask.setStatus(InspectionConstant.PENDING);
         repairTask.setIsConfirm(repairPool.getIsConfirm());
         repairTask.setIsReceipt(repairPool.getIsReceipt());
         repairTask.setWorkType(String.valueOf(repairPool.getWorkType()));
@@ -2006,7 +2036,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
         // 保存检修任务信息
         repairTaskMapper.insert(repairTask);
-
+        System.out.println(repairTask.getId()+"已插入repair_task表");
         // 保存站点关联信息
         List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(
                 new LambdaQueryWrapper<RepairPoolStationRel>()
@@ -2072,6 +2102,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         } catch (Exception e) {
             e.printStackTrace();
         }
+        ExamineDTO examineDTO = new ExamineDTO();
+        examineDTO.setId(repairTask.getId());
+        toBeImplement(examineDTO);
+        return repairTask.getId();
     }
 
     /**

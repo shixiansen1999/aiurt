@@ -159,7 +159,7 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @param examineDTO
      * @return
      */
-    void receiveTask(ExamineDTO examineDTO);
+    String receiveTask(ExamineDTO examineDTO);
 
 
 

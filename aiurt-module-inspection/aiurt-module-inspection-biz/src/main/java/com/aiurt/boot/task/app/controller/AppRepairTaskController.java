@@ -1,7 +1,6 @@
 package com.aiurt.boot.task.app.controller;
 
 
-import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.OrgDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
@@ -25,7 +24,6 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 
@@ -207,22 +205,23 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     /**
      * 检修任务领取、确认、执行
      *
-     * @param examineDTO
-     * @param req
+     * @param id
+     * @param status
      * @return
      */
-    @AutoLog(value = "检修任务表-检修任务领取", operateType = 3, operateTypeAlias = "修改-更新任务状态", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
-    @ApiOperation(value = "检修任务表-检修任务领取", notes = "检修任务表-a检修任务领取")
-    @PostMapping(value = "/inspectionReceive")
-    public Result<?> inspectionReceive(@RequestBody ExamineDTO examineDTO, HttpServletRequest req) {
-        repairTaskService.receiveTask(examineDTO);
-        if (InspectionConstant.TO_BE_CONFIRMED.equals(examineDTO.getInspectionStatus())) {
-            return Result.OK("确认成功");
+    @AutoLog(value = "检修任务表-检修任务领取", operateType = 2, operateTypeAlias = "修改-更新任务状态", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "检修任务表-检修任务领取", notes = "检修任务表-检修任务领取")
+    @GetMapping(value = "/inspectionReceive")
+    public Result<ExamineDTO> inspectionReceive(String id,Integer status) {
+        ExamineDTO examineDTO = new ExamineDTO();
+        examineDTO.setId(id);
+        examineDTO.setInspectionStatus(status);
+        String task = repairTaskService.receiveTask(examineDTO);
+        if (!task.isEmpty()){
+            examineDTO.setId(task);
+            examineDTO.setInspectionStatus(4);
         }
-        if (InspectionConstant.TO_BE_ASSIGNED.equals(examineDTO.getInspectionStatus())) {
-            return Result.OK("执行成功");
-        }
-        return Result.OK("领取检修任务成功!");
+        return Result.OK(examineDTO);
     }
     /**
      * 填写检修工单
