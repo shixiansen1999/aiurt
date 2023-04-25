@@ -101,6 +101,9 @@ public class FloodPreventionInformationController extends BaseController<FloodPr
     @PostMapping(value = "/add")
     public Result<?> add(@RequestBody FloodPreventionInformation floodPreventionInformation) {
         try {
+             if (StrUtil.isNotBlank(floodPreventionInformation.getStationCode())){
+                 floodPreventionInformation.setStationName(baseApi.getPosition(floodPreventionInformation.getStationCode()));
+             }
             iFloodPreventionInformationService.save(floodPreventionInformation);
         }catch (Exception e) {
             log.error("新增失败！", e.getMessage());
@@ -119,6 +122,9 @@ public class FloodPreventionInformationController extends BaseController<FloodPr
     @PostMapping(value = "/edit")
     public Result<?> edit(@RequestBody FloodPreventionInformation floodPreventionInformation) {
         try {
+            if (StrUtil.isNotBlank(floodPreventionInformation.getStationCode())){
+                floodPreventionInformation.setStationName(baseApi.getPosition(floodPreventionInformation.getStationCode()));
+            }
             iFloodPreventionInformationService.updateById(floodPreventionInformation);
         }catch (Exception e) {
             log.error("编辑失败！", e.getMessage());
