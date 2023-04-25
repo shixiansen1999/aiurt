@@ -24,7 +24,7 @@ fi
 if [ ! $esurl ]; then
     esurl="http://127.0.0.1:9200"
 fi
-if if [ ! $mysqlpassword ]; then
+if [ ! $mysqlpassword ]; then
     mysqlpassword="1qaz@2wsx"
 fi
 
