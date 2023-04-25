@@ -3,6 +3,7 @@ package com.aiurt.boot.plan.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 /**
@@ -86,4 +87,15 @@ public class RepairPoolDetailsDTO {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "结束时间")
     private java.util.Date endTime;
+
+    /**提交时间，精确到秒*/
+    @Excel(name = "提交时间，精确到分", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "提交时间，精确到分")
+    private java.util.Date submitTime;
+
+
+    @ApiModelProperty(value = "计划code")
+    private String poolCode;
 }

@@ -190,21 +190,31 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param page
      * @param condition
      * @param regexp
-     * @param departList
-     * @param standard
      * @return
      */
-    IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, @Param("condition") PatrolCondition condition, @Param("regexp") String regexp, @Param("departList") List<PatrolTaskOrganization> departList,@Param("standard")List<PatrolTaskStandard> standard,@Param("patrolTaskStations")List<PatrolTaskStation> patrolTaskStations);
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "t2.org_code"),
+            @DataColumn(key = "majorName",value = "t3.major_code"),
+            @DataColumn(key = "systemName",value = "t3.system_code"),
+            @DataColumn(key = "lineName",value = "t4.line_code"),
+            @DataColumn(key = "stationName",value = "t4.station_code")
+    })
+    IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, @Param("condition") PatrolCondition condition, @Param("regexp") String regexp);
 
     /**
      * 获取首页巡视列表下的任务列表
      * @param page
      * @param condition
-     * @param departList
-     * @param standard
      * @return
      */
-    IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition, @Param("departList") List<PatrolTaskOrganization> departList, @Param("standard")List<PatrolTaskStandard> standard,@Param("patrolTaskStations")List<PatrolTaskStation> patrolTaskStations);
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "t2.org_code"),
+            @DataColumn(key = "majorName",value = "t3.major_code"),
+            @DataColumn(key = "systemName",value = "t3.system_code"),
+            @DataColumn(key = "lineName",value = "t4.line_code"),
+            @DataColumn(key = "stationName",value = "t4.station_code")
+    })
+    IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition);
 
     /**
      * 获取首页的日程的巡检列表
@@ -226,11 +236,16 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * 获取首页指定日期范围的任务列表
      * @param startDate
      * @param endDate
-     * @param departList
-     * @param taskIds
      * @return
      */
-    List<PatrolTask> getOverviewInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("departList") List<PatrolTaskOrganization> departList, @Param("taskIds") List<PatrolTaskStandard> taskIds,@Param("patrolTaskStations") List<PatrolTaskStation> patrolTaskStations);
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "t2.org_code"),
+            @DataColumn(key = "stationName",value = "t4.station_code"),
+            @DataColumn(key = "lineName",value = "t4.line_code"),
+            @DataColumn(key = "majorName",value = "t3.major_code"),
+            @DataColumn(key = "systemName",value = "t3.subsystem_code")
+    })
+    List<PatrolTask> getOverviewInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
     /**
      * 查看当前用户，当天的巡检任务
@@ -465,4 +480,13 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     List<GeneralReturn> getOrgCodeName(@Param("orgCodes")List<String> orgCodes);
 
     List<TemperatureHumidity> getTemAndHum(@Param("date")String orgCodes);
+
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "t2.org_code"),
+            @DataColumn(key = "majorName",value = "t3.major_code"),
+            @DataColumn(key = "systemName",value = "t3.system_code"),
+            @DataColumn(key = "lineName",value = "t4.line_code"),
+            @DataColumn(key = "stationName",value = "t4.station_code")
+    })
+    List<PatrolTask> selectpatrolTaskList(@Param("firstDay")Date firstDay,@Param("lastDay") Date lastDay, @Param("status")Integer status);
 }

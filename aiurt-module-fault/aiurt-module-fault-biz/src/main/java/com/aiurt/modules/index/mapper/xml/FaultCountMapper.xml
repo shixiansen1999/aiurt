@@ -186,7 +186,7 @@
     </select>
 
     <select id="getDailyFaultNum" resultType="com.aiurt.modules.fault.entity.Fault">
-        select f.* from fault f
+        select f.id from fault f
         where f.status = 12  and date_format(f.end_time ,'%Y-%m-%d') =date_format(#{dateTime} ,'%Y-%m-%d')
     </select>
 

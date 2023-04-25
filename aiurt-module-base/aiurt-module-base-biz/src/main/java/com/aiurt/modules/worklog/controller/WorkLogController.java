@@ -348,12 +348,17 @@ public class WorkLogController {
         Result<WorkLogDTO> result = new Result<WorkLogDTO>();
         WorkLogDTO detailById = workLogDepotService.getDetailById(id);
         Date createTime = detailById.getCreateTime();
+        if (detailById.getConfirmStatus()==1 || detailById.getCheckStatus()==1){
+            detailById.setEditFlag(false);
+        }else {
+            detailById.setEditFlag(true);
+        }
         if (ObjectUtil.isNotEmpty(createTime)) {
             String today = DateUtil.today();
-            String amStart = today + "" + "08:00:00";
-            String amEnd = today + "" + "09:30:00";
-            String pmStart = today + "" + "16:00:00";
-            String pmEnd = today + "" + "16:30:00";
+            String amStart = today + " " + "08:00:00";
+            String amEnd = today + " " + "09:30:00";
+            String pmStart = today + " " + "16:00:00";
+            String pmEnd = today + " " + "16:30:00";
             boolean isBeforeAmEnd = createTime.before(DateUtil.parse(amEnd));
             boolean isAfterAmStart = createTime.after(DateUtil.parse(amStart));
             boolean isBeforePmEnd = createTime.before(DateUtil.parse(pmEnd));
@@ -361,11 +366,7 @@ public class WorkLogController {
             boolean isEdit = (isBeforeAmEnd && isAfterAmStart) || (isBeforePmEnd && isAfterPmStart);
             detailById.setEditFlag(isEdit);
         }
-        if (detailById.getConfirmStatus()==1 || detailById.getCheckStatus()==1){
-            detailById.setEditFlag(false);
-        }else {
-            detailById.setEditFlag(true);
-        }
+
         //result.setResult(detailById);
         return Result.ok(detailById);
     }

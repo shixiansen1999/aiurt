@@ -48,7 +48,7 @@ public class DayWorkLogAutoAdd implements Job {
     }
 
     /**
-     * 每天早上8点生成夜班工作日志
+     * 每天下午16点生成白班工作日志
      */
     private void autoAdd() {
         List<SysDepartModel> allSysDepart = iSysBaseAPI.getAllSysDepart();
@@ -56,7 +56,7 @@ public class DayWorkLogAutoAdd implements Job {
             for (SysDepartModel sysDepartModel : allSysDepart) {
                 WorkLog depot = new WorkLog();
                 depot.setOrgId(sysDepartModel.getId());
-                depot.setCreateTime(DateUtil.parse(DateUtil.today()+" 08:00:00", "yyyy-MM-dd HH:mm:ss"));
+                depot.setCreateTime(DateUtil.parse(DateUtil.today()+" 16:00:00", "yyyy-MM-dd HH:mm:ss"));
                 String logCode = workLogService.generateLogCode();
                 depot.setCode(logCode);
 

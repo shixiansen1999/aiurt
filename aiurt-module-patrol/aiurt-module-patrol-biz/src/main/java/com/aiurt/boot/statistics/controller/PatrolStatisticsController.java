@@ -40,7 +40,7 @@ public class PatrolStatisticsController {
     @AutoLog(value = "首页-巡视概况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-巡视概况", notes = "首页-巡视概况")
     @RequestMapping(value = "/overviewInfo", method = {RequestMethod.GET, RequestMethod.POST})
-    @PermissionData(pageComponent = "dashboard/Analysis")
+    @PermissionData(pageComponent = "dashboard/Analysis",appComponent="layouts/RouteView")
     public Result<PatrolSituation> getOverviewInfo(@ApiParam(name = "startDate", value = "开始日期")
                                                    @DateTimeFormat(pattern = "yyyy-MM-dd")
                                                    @RequestParam("startDate") Date startDate,

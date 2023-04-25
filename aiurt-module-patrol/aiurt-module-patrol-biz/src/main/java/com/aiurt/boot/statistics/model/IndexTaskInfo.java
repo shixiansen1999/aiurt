@@ -3,6 +3,7 @@ package com.aiurt.boot.statistics.model;
 import com.aiurt.boot.statistics.dto.IndexOrgDTO;
 import com.aiurt.boot.statistics.dto.IndexStationDTO;
 import com.aiurt.boot.statistics.dto.IndexUserDTO;
+import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,11 @@ import java.util.List;
 @Accessors(chain = true)
 public class IndexTaskInfo implements Serializable {
     private static final long serialVersionUID = 1L;
+    /**
+     * 任务id
+     */
+    @ApiModelProperty(value = "任务id")
+    private java.lang.String id;
     /**
      * 任务名称
      */
@@ -76,4 +82,7 @@ public class IndexTaskInfo implements Serializable {
      */
     @ApiModelProperty(value = "任务的站点")
     private List<IndexStationDTO> stationInfo;
+
+    @ApiModelProperty(value = "巡视单内容")
+    private List<PatrolCheckResultDTO> children;
 }

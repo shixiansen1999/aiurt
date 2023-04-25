@@ -8,6 +8,8 @@ import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -168,13 +170,20 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
      * 检修池查找
-     * @param page
      * @param startDate
-     * @param stationCode
-     * @param taskCode
+     * @param endDate
      * @return
      */
-    List<RepairPoolDetailsDTO> selectRepairPoolList(@Param("page") Page<RepairPoolDetailsDTO> page, @Param("startDate") Date startDate, @Param("stationCode") String stationCode, @Param("taskCode") Set<String> taskCode,@Param("taskId") Set<String> taskId);
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "t2.org_code"),
+            @DataColumn(key = "stationName",value = "t3.station_code"),
+            @DataColumn(key = "lineName",value = "t3.line_code"),
+            @DataColumn(key = "majorName",value = "t5.major_code"),
+            @DataColumn(key = "systemName",value = "t5.subsystem_code")
+    })
+    List<RepairPoolDetailsDTO> selectRepairPoolList(@Param("startDate") Date startDate,@Param("endDate") Date endDate);
+
+    List<RepairPoolDetailsDTO> selectRepairPoolList2(@Param("page") Page<RepairPoolDetailsDTO> page, @Param("startDate") Date startDate, @Param("stationCode") String stationCode, @Param("taskCode") Set<String> taskCode,@Param("taskId") Set<String> taskId,@Param("poolCode") Set<String> poolCode);
 
     /**
      * 根据code查询检修任务对应的组织机构编码
