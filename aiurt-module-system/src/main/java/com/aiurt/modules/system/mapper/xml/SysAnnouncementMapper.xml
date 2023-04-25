@@ -379,8 +379,7 @@
 	  GROUP BY  t2.msg_category
 	</select>
 
-	<update id="readAllAnnouncementInfo">
-		update sys_announcement_send set read_flag = 1 where id in (
+	<select id="readAllAnnouncementInfo" resultType="java.lang.String">
 		select
 		sas.id
 		from sys_announcement sa
@@ -411,12 +410,11 @@
 			<if test="msgCategory!=null and msgCategory!=''">
 				and sa.msg_category =#{msgCategory}
 			</if>
-		</where>)
-	</update>
+		</where>
+	</select>
 
-	<update id="readAllTodoListInfo">
-		update sys_todo_list set read_flag = 1 where id in
-		(select
+	<select id="readAllTodoListInfo" resultType="java.lang.String">
+		select
 		stl.id as id
 		from sys_todo_list stl
 		<where>
@@ -437,6 +435,6 @@
 				)
 			</if>
 			and stl.read_flag = 0
-		</where>)
-	</update>
+		</where>
+	</select>
 </mapper>

@@ -29,10 +29,12 @@ import com.aiurt.modules.system.service.impl.ThirdAppDingtalkServiceImpl;
 import com.aiurt.modules.system.service.impl.ThirdAppWechatEnterpriseServiceImpl;
 import com.aiurt.modules.system.util.XssUtils;
 import com.aiurt.modules.todo.entity.SysTodoList;
+import com.aiurt.modules.todo.mapper.SysTodoListMapper;
 import com.aiurt.modules.todo.service.ISysTodoListService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jeecg.dingtalk.api.core.response.Response;
@@ -100,11 +102,14 @@ public class SysAnnouncementController {
     @Autowired
     @Lazy
     private RedisUtil redisUtil;
-    @Resource
+    @Autowired
     private SysAnnouncementMapper sysAnnouncementMapper;
 
-    @Resource
+    @Autowired
     private SysAnnouncementSendMapper sysAnnouncementSendMapper;
+
+    @Autowired
+    private SysTodoListMapper sysTodoListMapper;
     /**
      * 分页列表查询
      *
@@ -658,7 +663,14 @@ public class SysAnnouncementController {
                 enumList = Collections.singletonList(busType);
             }
 
-            sysAnnouncementMapper.readAllAnnouncementInfo(userId, enumList, msgCategory);
+            List<String> ids = sysAnnouncementMapper.readAllAnnouncementInfo(userId, enumList, msgCategory);
+            if (CollUtil.isNotEmpty(ids)) {
+                UpdateWrapper<SysAnnouncementSend> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.lambda().in(SysAnnouncementSend::getId, ids).set(SysAnnouncementSend::getReadFlag,"1");
+                int rows = sysAnnouncementSendMapper.update(null,updateWrapper);
+                System.out.println("执行更新语句数量：" + rows);
+            }
+
         }
         //流程数据更新阅读状态
         else if ("2".equals(messageFlag)) {
@@ -668,9 +680,14 @@ public class SysAnnouncementController {
             if (CollUtil.isEmpty(busTypeList) && StrUtil.isNotBlank(busType)) {
                 busTypeList = Collections.singletonList(busType);
             }
-            sysAnnouncementMapper.readAllTodoListInfo(username, busTypeList);
+            List<String> ids = sysAnnouncementMapper.readAllTodoListInfo(username, busTypeList);
+            if (CollUtil.isNotEmpty(ids)) {
+                UpdateWrapper<SysTodoList> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.lambda().in(SysTodoList::getId, ids).set(SysTodoList::getReadFlag, "1");
+                int rows = sysTodoListMapper.update(null,updateWrapper);
+                System.out.println("执行更新语句数量：" + rows);
+            }
         }
-        System.out.println("执行更新语句数量：" + updateCount);
         result.setSuccess(true);
         result.setMessage("全部已读");
         return result;

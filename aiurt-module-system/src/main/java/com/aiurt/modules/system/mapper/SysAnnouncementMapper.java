@@ -123,12 +123,12 @@ public interface SysAnnouncementMapper extends BaseMapper<SysAnnouncement> {
      * @param msgCategory
      * @return
      */
-    void readAllAnnouncementInfo( @Param("userId")String userId, @Param("busTypeList")List<String> busTypeList, @Param("msgCategory")String msgCategory);
+    List<String> readAllAnnouncementInfo( @Param("userId")String userId, @Param("busTypeList")List<String> busTypeList, @Param("msgCategory")String msgCategory);
     /**
      * 查询当前登录人未读的流程消息详情
      * @param username
      * @param busTypeList
      * @return
      */
-    void readAllTodoListInfo(@Param("userName")String username, @Param("busTypeList")List<String> busTypeList);
+    List<String> readAllTodoListInfo(@Param("userName")String username, @Param("busTypeList")List<String> busTypeList);
 }
