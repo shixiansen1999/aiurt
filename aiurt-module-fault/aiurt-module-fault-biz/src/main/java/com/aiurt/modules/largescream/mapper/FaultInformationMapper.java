@@ -167,6 +167,13 @@ public interface FaultInformationMapper {
      */
     List<FaultSystemDeviceSumDTO> getLineSystem(@Param("lineCode") String lineCode,@Param("systemCode") List<String> systemCode);
 
+    /**
+     * 计算无线路的子系统的时长
+     * @param systemCode
+     * @return
+     */
+    String getSumWorkTime(@Param("systemCode") String systemCode);
+
 
     /**
      * 故障超时等级详情

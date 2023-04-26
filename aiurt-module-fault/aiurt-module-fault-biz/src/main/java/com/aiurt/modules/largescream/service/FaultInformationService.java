@@ -745,6 +745,10 @@ public class FaultInformationService {
                 }else {
                     return reliabilityList;
                 }
+                if(StrUtil.isBlank(lineCode) && StrUtil.isNotBlank(faultSystemDeviceSumDTO.getSystemCode())){
+                    String sumWorkTime = faultInformationMapper.getSumWorkTime(faultSystemDeviceSumDTO.getSystemCode());
+                    planTime = Double.valueOf(sumWorkTime);
+                }
                 actualTime = planTime;
                 if (ObjectUtil.isNotEmpty(systemFaultSum)) {
                     //遍历故障时间
