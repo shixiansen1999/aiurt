@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -252,6 +253,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @AutoLog(value = "新增故障上报", operateType =  2, operateTypeAlias = "故障上报", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "故障上报", notes = "故障上报")
     @PostMapping(value = "/add")
+    @LimitSubmit(key = "add:#fault")
     public Result<?> add(@Validated @RequestBody Fault fault) {
         String faultCode = faultService.add(fault);
         return Result.OK("故障上报成功", faultCode);
