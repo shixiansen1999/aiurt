@@ -160,6 +160,15 @@ public interface FaultInformationMapper {
 
 
     /**
+     * 查询线路子系统下的时长
+     * @param lineCode
+     * @param systemCode
+     * @return
+     */
+    List<FaultSystemDeviceSumDTO> getLineSystem(@Param("lineCode") String lineCode,@Param("systemCode") List<String> systemCode);
+
+
+    /**
      * 故障超时等级详情
      * @param level
      * @param startDate

@@ -24,6 +24,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -703,7 +704,7 @@ public class FaultInformationService {
      * @param boardTimeType
      * @return
      */
-    public List<FaultSystemReliabilityDTO> getSystemReliability(Integer boardTimeType) {
+    public List<FaultSystemReliabilityDTO> getSystemReliability(Integer boardTimeType,String lineCode) {
         List<FaultSystemReliabilityDTO> reliabilityList = new ArrayList<>();
         //设置时间获取本月/周小时数
         String dateTime1 = FaultLargeDateUtil.getDateHours(boardTimeType);
@@ -713,6 +714,8 @@ public class FaultInformationService {
 
         //获取登录人专业
         List<String> majors = getCurrentLoginUserMajors();
+
+        List<String> currentLoginUserSubsystems = getCurrentLoginUserSubsystems();
 
         //本周/本月时长总数
         Integer time = Math.toIntExact(DateUtil.between(startDate1, endDate1, DateUnit.MINUTE));
@@ -729,7 +732,7 @@ public class FaultInformationService {
         //查询按系统分类好的并计算了故障消耗总时长的记录
         List<FaultSystemTimesDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate, majors);
         //查询子系统设备数
-        List<FaultSystemDeviceSumDTO> systemDeviceSum = faultInformationMapper.getSystemDeviceSum(majors);
+        List<FaultSystemDeviceSumDTO> systemDeviceSum = faultInformationMapper.getLineSystem(lineCode,currentLoginUserSubsystems);
         if (ObjectUtil.isNotEmpty(systemDeviceSum)) {
             //遍历所有设备
             for (FaultSystemDeviceSumDTO faultSystemDeviceSumDTO : systemDeviceSum) {
@@ -737,7 +740,11 @@ public class FaultInformationService {
                 faultSystemReliabilityDTO.setSystemName(faultSystemDeviceSumDTO.getSystemName());
                 faultSystemReliabilityDTO.setSubSystemCode(faultSystemDeviceSumDTO.getSystemCode());
                 //计划时长
-                planTime = Double.valueOf(faultSystemDeviceSumDTO.getDeviceNumber() * time);
+                if (StrUtil.isNotBlank(faultSystemDeviceSumDTO.getShouldWorkTime())){
+                    planTime = Double.valueOf(faultSystemDeviceSumDTO.getShouldWorkTime());
+                }else {
+                    return reliabilityList;
+                }
                 actualTime = planTime;
                 if (ObjectUtil.isNotEmpty(systemFaultSum)) {
                     //遍历故障时间
@@ -794,6 +801,20 @@ public class FaultInformationService {
         List<CsUserMajorModel> majorList = sysBaseApi.getMajorByUserId(loginUser.getId());
         List<String> majors = majorList.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
         return majors;
+    }
+
+    /**
+     * 获取当前登录用户的子系统编码
+     *
+     * @return
+     */
+    public List<String> getCurrentLoginUserSubsystems(){
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到未登录系统，请登录后操作！");
+        }
+        List<CsUserSubsystemModel> subsystemByUserId = sysBaseApi.getSubsystemByUserId(loginUser.getId());
+        return subsystemByUserId.stream().map(CsUserSubsystemModel::getSystemCode).collect(Collectors.toList());
     }
 
 }

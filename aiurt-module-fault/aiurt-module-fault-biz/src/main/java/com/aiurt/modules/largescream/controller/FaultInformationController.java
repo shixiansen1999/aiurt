@@ -189,8 +189,10 @@ public class FaultInformationController {
     @AutoLog(value = "综合大屏-子系统可靠度", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "综合大屏-子系统可靠度", notes = "综合大屏-子系统可靠度")
     @RequestMapping(value = "/getSystemReliability", method = RequestMethod.GET)
-    public Result<List<FaultSystemReliabilityDTO>> getSystemReliability(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam(value="boardTimeType",required = false)Integer boardTimeType){
-        List<FaultSystemReliabilityDTO> systemReliability = faultInformationService.getSystemReliability(boardTimeType);
+    public Result<List<FaultSystemReliabilityDTO>> getSystemReliability(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1")
+                                                                            @RequestParam(value="boardTimeType",required = false)Integer boardTimeType,
+                                                                            @RequestParam(value="lineCode",required = false)String lineCode){
+        List<FaultSystemReliabilityDTO> systemReliability = faultInformationService.getSystemReliability(boardTimeType,lineCode);
         return Result.ok(systemReliability);
     }
 }

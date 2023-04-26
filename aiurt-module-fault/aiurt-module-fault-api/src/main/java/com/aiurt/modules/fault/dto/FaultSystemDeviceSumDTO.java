@@ -30,6 +30,14 @@ public class FaultSystemDeviceSumDTO implements Serializable {
     @ApiModelProperty(value = "专业子系统名称")
     private String systemName;
 
+    @ApiModelProperty(value = "线路编码")
+    private String lineCode;
+
+    @ApiModelProperty(value = "线路名称")
+    private String lineName;
+
+    @ApiModelProperty(value = "工作时长")
+    private String shouldWorkTime;
 
     @ApiModelProperty(value = "子系统设备数")
     private Integer deviceNumber;
