@@ -248,7 +248,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.set(PatrolTaskDevice::getUserId, sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus, PatrolConstant.BILL_COMPLETE).eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
             patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);
-            getPatrolTaskSubmit(patrolTask);
+            if(patrolTask.getStatus()!=PatrolConstant.TASK_BACK){
+                getPatrolTaskSubmit(patrolTask);
+            }
         }
     }
     @Transactional(rollbackFor = Exception.class)
