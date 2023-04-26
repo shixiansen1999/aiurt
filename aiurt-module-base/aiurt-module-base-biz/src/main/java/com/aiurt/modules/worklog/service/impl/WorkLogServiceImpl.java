@@ -520,7 +520,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             //获取是早班会16.30 还是晚班会8.30
             String am = format2+" " + morningTime;
             String pm = format2+" " + nightTime;
-            if (record.getSubmitTime().after(DateUtil.parse(am)) && record.getSubmitTime().before(DateUtil.parse(pm))) {
+            if (record.getCreateTime().after(DateUtil.parse(am)) && record.getCreateTime().before(DateUtil.parse(pm))) {
                 record.setClassTime("16时30分");
                 record.setClassName("晚班会");
             } else {
@@ -1234,7 +1234,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //获取是早班会16.30 还是晚班会8.30
         String am = format2+" "+ morningTime;
         String pm = format2+" "+ nightTime;
-        if (workLog.getSubmitTime().after(DateUtil.parse(am)) && workLog.getSubmitTime().before(DateUtil.parse(pm))) {
+        if (workLog.getCreateTime().after(DateUtil.parse(am)) && workLog.getCreateTime().before(DateUtil.parse(pm))) {
             workLog.setClassTime("16时30分");
             workLog.setClassName("晚班会");
         } else {
