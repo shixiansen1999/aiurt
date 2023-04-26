@@ -227,7 +227,7 @@ public class FloodPreventionInformationController extends BaseController<FloodPr
      */
     @AutoLog(value = "防汛信息-下载模板", operateType =  6, operateTypeAlias = "防汛信息-下载模板", permissionUrl = "")
     @ApiOperation(value="防汛信息-下载模板", notes="防汛信息-下载模板")
-    @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.POST)
+    @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
     public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
           iFloodPreventionInformationService.exportTemplateXl(response);
     }
