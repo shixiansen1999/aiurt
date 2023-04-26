@@ -13,6 +13,7 @@ import com.aiurt.boot.statistics.dto.*;
 import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.dto.PatrolBillDTO;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
+import com.aiurt.boot.task.entity.PatrolAccessory;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
@@ -64,7 +65,8 @@ public class PatrolStatisticsService {
     private PatrolTaskDeviceServiceImpl patrolTaskDeviceService;
     @Autowired
     private PatrolCheckResultMapper patrolCheckResultMapper;
-
+    @Autowired
+    private PatrolAccessoryMapper patrolAccessoryMapper;
     /**
      * 权限过滤标识
      */
@@ -371,6 +373,13 @@ public class PatrolStatisticsService {
                     }
                     String userName = patrolTaskMapper.getUserName(c.getUserId());
                     c.setCheckUserName(userName);
+                });
+                // 放入项目的附件信息
+                Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList).stream().forEach(l3 -> {
+                    QueryWrapper<PatrolAccessory> wrapper = new QueryWrapper<>();
+                    wrapper.lambda().eq(PatrolAccessory::getCheckResultId, l3.getId());
+                    List<PatrolAccessory> accessoryList = patrolAccessoryMapper.selectList(wrapper);
+                    l3.setAccessoryInfo(accessoryList);
                 });
                 List<PatrolCheckResultDTO> tree = patrolTaskDeviceService.getTree(checkResultList, "0");
                 patrolCheckResultDTOS.addAll(tree);
