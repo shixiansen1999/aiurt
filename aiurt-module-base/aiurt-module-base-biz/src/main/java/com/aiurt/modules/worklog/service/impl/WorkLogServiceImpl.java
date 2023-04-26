@@ -527,10 +527,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 record.setClassTime("8时30分");
                 record.setClassName("早班会");
             }
-            LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            String orgId = user.getOrgId();
+
             //查询该部门下的人员
-            List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
+            List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(record.getOrgId());
             //获取负责人
             SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(record.getOrgId());
             LoginUser userById = iSysBaseAPI.getUserById(sysDepartModel.getManagerId());
@@ -1241,9 +1240,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             workLog.setClassTime("8时30分");
             workLog.setClassName("早班会");
         }
-        LoginUser user = iSysBaseAPI.getUserById(workLog.getCreateBy());
-        String orgId = user.getOrgId();
-        List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
+        List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(workLog.getOrgId());
         //获取负责人
         SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(workLog.getOrgId());
         LoginUser userById = iSysBaseAPI.getUserById(sysDepartModel.getManagerId());
