@@ -1,125 +1,109 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.index.mapper.IndexPlanMapper">
-
-
     <select id="getGropuByData" resultType="com.aiurt.boot.index.dto.TaskDetailsDTO">
-     select * from (SELECT
+        SELECT * FROM (SELECT
         rpsr.station_code AS stationCode,
         cs.station_name AS stationName,
         cs.line_name AS lineName,
-        MIN(rp.`status`) as minStatus,
-        CASE WHEN MIN(rp.`status`)=8 THEN '已完成' ELSE '未完成' END as statusName,
-        GROUP_CONCAT(rp.code) as codeStr
+        MIN(rp.`status`) AS minStatus,
+        CASE WHEN MIN(rp.`status`) = 8 THEN '已完成' ELSE '未完成' END AS statusName,
+        GROUP_CONCAT(rp.code) AS codeStr
         FROM
-        repair_pool rp
-        LEFT JOIN repair_pool_station_rel rpsr ON rpsr.repair_pool_code = rp.`code`
-        left join cs_station cs on cs.station_code = rpsr.station_code
+        repair_pool AS rp
+        LEFT JOIN repair_pool_station_rel AS rpsr ON rpsr.repair_pool_code = rp.`code`
+        LEFT JOIN cs_station AS cs ON cs.station_code = rpsr.station_code
+        LEFT JOIN repair_pool_org_rel AS rpor ON rpor.repair_pool_code = rp.code
+        LEFT JOIN repair_pool_rel AS rpr ON rpr.repair_pool_code = rp.code
+        LEFT JOIN repair_pool_code AS rpc ON rpc.id = rpr.repair_pool_sta_id
         <where>
-            rp.start_time is not null
+            rp.start_time IS NOT NULL
             <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
-                and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
-                and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
+                AND date_format(rp.start_time ,'%Y-%m-%d') &gt;= date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
+                AND date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
             </if>
             <if test="taskDetailsReq.stationCode!=null">
-                and cs.station_code = #{taskDetailsReq.stationCode}
+                AND cs.station_code = #{taskDetailsReq.stationCode}
             </if>
             <if test="taskDetailsReq.lineCode!=null">
-                and cs.line_code = #{taskDetailsReq.lineCode}
+                AND cs.line_code = #{taskDetailsReq.lineCode}
             </if>
             <if test="taskDetailsReq.maintenanceCycle!=null">
-                and  rp.type = #{taskDetailsReq.maintenanceCycle}
+                AND rp.type = #{taskDetailsReq.maintenanceCycle}
             </if>
-            <if test="codeByOrgCode != null and codeByOrgCode.size() != 0">
-                and  rp.code in
-                <foreach collection="codeByOrgCode" item="item" open="(" close=")" separator=",">
-                    #{item.repairPoolCode}
-                </foreach>
-            </if>
-               <if test="repairPoolRels != null and repairPoolRels.size() != 0">
-                and  rp.code in
-                <foreach collection="repairPoolRels" item="item" open="(" close=")" separator=",">
-                    #{item.repairPoolCode}
-                </foreach>
-            </if>
-            <if test="repairPoolStationRels != null and repairPoolStationRels.size() != 0">
-                and  rp.code in
-                <foreach collection="repairPoolStationRels" item="item" open="(" close=")" separator=",">
-                    #{item.repairPoolCode}
-                </foreach>
+            <if test="filterConditions != null and filterConditions != ''">
+                AND ${filterConditions}
             </if>
         </where>
-        GROUP BY
-        rpsr.station_code
+        GROUP BY rpsr.station_code
         <if test="type!=null and type==2">
             HAVING MAX( rp.`status` ) = 8
         </if>
         <if test="type!=null and type==3">
-            HAVING MIN( rp.`status` ) &lt;&gt;  8
+            HAVING MIN( rp.`status` ) &lt;&gt; 8
         </if>
         ) temptable
         <where>
             <if test="taskDetailsReq.status!=null and taskDetailsReq.status==1">
                 temptable.minStatus =8
-             </if>
+            </if>
             <if test="taskDetailsReq.status!=null and taskDetailsReq.status==0">
                 and temptable.minStatus &lt;&gt; 8
             </if>
         </where>
-
     </select>
     <select id="getMaintenancDataByStationCode" resultType="com.aiurt.boot.plan.dto.RepairPoolDetailsDTO">
-    SELECT
-	rp.code,rp.name,rp.weeks,rp.type,rp.status,rp.start_time,rp.end_time
-    FROM   repair_pool rp
-	LEFT JOIN repair_pool_station_rel rpsr ON rpsr.repair_pool_code = rp.`code`
-	<where>
-       rpsr.station_code = #{taskDetailsReq.stationCode} and rp.start_time is not null
-       <if test="taskDetailsReq.status!=null">
-       and  status = #{taskDetailsReq.status}
-       </if>
-       <if test="type!=null and type == 2">
-           and status = 8
-       </if>
-        <if test="type!=null and type == 3">
-           and status &lt;&gt; 8
-       </if>
-        <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
-            and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
-            and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
-        </if>
-        <if test="codeByOrgCode != null and codeByOrgCode.size() != 0">
-            and  rp.code in
-            <foreach collection="codeByOrgCode" item="item" open="(" close=")" separator=",">
-                #{item.repairPoolCode}
-            </foreach>
-        </if>
-              <if test="repairPoolRels != null and repairPoolRels.size() != 0">
-            and  rp.code in
-            <foreach collection="repairPoolRels" item="item" open="(" close=")" separator=",">
-                #{item.repairPoolCode}
-            </foreach>
-        </if>
-        <if test="repairPoolStationRels != null and repairPoolStationRels.size() != 0">
-            and  rp.code in
-            <foreach collection="repairPoolStationRels" item="item" open="(" close=")" separator=",">
-                #{item.repairPoolCode}
-            </foreach>
-        </if>
-        <if test="taskDetailsReq.maintenanceCycle!=null">
-            and rp.type = #{taskDetailsReq.maintenanceCycle}
-        </if>
-    </where>
+        SELECT
+        rp.code,rp.name,rp.weeks,rp.type,rp.status,rp.start_time,rp.end_time
+        FROM repair_pool rp
+        LEFT JOIN repair_pool_station_rel rpsr ON rpsr.repair_pool_code = rp.`code`
+        <where>
+            rpsr.station_code = #{taskDetailsReq.stationCode} and rp.start_time is not null
+            <if test="taskDetailsReq.status!=null">
+                and status = #{taskDetailsReq.status}
+            </if>
+            <if test="type!=null and type == 2">
+                and status = 8
+            </if>
+            <if test="type!=null and type == 3">
+                and status &lt;&gt; 8
+            </if>
+            <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
+                and date_format(rp.start_time ,'%Y-%m-%d') &gt;= date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
+                and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
+            </if>
+            <if test="codeByOrgCode != null and codeByOrgCode.size() != 0">
+                and rp.code in
+                <foreach collection="codeByOrgCode" item="item" open="(" close=")" separator=",">
+                    #{item.repairPoolCode}
+                </foreach>
+            </if>
+            <if test="repairPoolRels != null and repairPoolRels.size() != 0">
+                and rp.code in
+                <foreach collection="repairPoolRels" item="item" open="(" close=")" separator=",">
+                    #{item.repairPoolCode}
+                </foreach>
+            </if>
+            <if test="repairPoolStationRels != null and repairPoolStationRels.size() != 0">
+                and rp.code in
+                <foreach collection="repairPoolStationRels" item="item" open="(" close=")" separator=",">
+                    #{item.repairPoolCode}
+                </foreach>
+            </if>
+            <if test="taskDetailsReq.maintenanceCycle!=null">
+                and rp.type = #{taskDetailsReq.maintenanceCycle}
+            </if>
+        </where>
     </select>
     <select id="getMainDataByStationCodeNoPage" resultType="com.aiurt.boot.plan.dto.RepairPoolDetailsDTO">
         SELECT
         rp.code,rp.name,rp.weeks,rp.type,rp.status,rp.start_time,rp.end_time
-        FROM   repair_pool rp
+        FROM repair_pool rp
         LEFT JOIN repair_pool_station_rel rpsr ON rpsr.repair_pool_code = rp.`code`
         <where>
-             rpsr.station_code = #{stationCode}
+            rpsr.station_code = #{stationCode}
             <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
-                and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
+                and date_format(rp.start_time ,'%Y-%m-%d') &gt;= date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
                 and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
             </if>
         </where>
@@ -134,7 +118,7 @@
         <where>
             rp.start_time is not null
             <if test="startTime!=null and endTime!=null">
-                and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{startTime},'%Y-%m-%d')
+                and date_format(rp.start_time ,'%Y-%m-%d') &gt;= date_format(#{startTime},'%Y-%m-%d')
                 and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{endTime},'%Y-%m-%d')
             </if>
         </where>

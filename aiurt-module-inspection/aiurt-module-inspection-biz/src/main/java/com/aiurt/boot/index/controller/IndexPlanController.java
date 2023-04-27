@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 
@@ -50,11 +51,12 @@ public class IndexPlanController {
     @AutoLog(value = "首页-获取首页的检修概况数量", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-获取首页的检修概况数量", notes = "首页-获取首页的检修概况数量")
     @RequestMapping(value = "/overviewInfo", method = RequestMethod.GET)
-    @PermissionData(pageComponent = "dashboard/Analysis",appComponent = "layouts/RouteView")
-    public Result<PlanIndexDTO> getOverviewInfo(@ApiParam(name = "isAllData", value = "是否全部数据0否1是",defaultValue = "0") @RequestParam("isAllData") Integer isAllData,
+    @PermissionData(pageComponent = "dashboard/Analysis", appComponent = "layouts/RouteView")
+    public Result<PlanIndexDTO> getOverviewInfo(@ApiParam(name = "isAllData", value = "是否全部数据0否1是", defaultValue = "0") @RequestParam("isAllData") Integer isAllData,
                                                 @ApiParam(name = "startDate", value = "开始日期yyyy-MM-dd") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
-                                                @ApiParam(name = "endDate", value = "结束日期yyyy-MM-dd") @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
-        PlanIndexDTO result = indexPlanService.getOverviewInfo(isAllData,startDate, endDate);
+                                                @ApiParam(name = "endDate", value = "结束日期yyyy-MM-dd") @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
+                                                HttpServletRequest request) {
+        PlanIndexDTO result = indexPlanService.getOverviewInfo(isAllData, startDate, endDate,request);
         return Result.OK(result);
     }
 
@@ -68,10 +70,8 @@ public class IndexPlanController {
     @ApiOperation(value = "首页-获取首页的检修概况详情", notes = "首页-获取首页的检修概况详情")
     @RequestMapping(value = "/getOverviewInfoDetails", method = RequestMethod.GET)
     @PermissionData(pageComponent = "dashboard/Analysis")
-    public Result<IPage<TaskDetailsDTO>> getOverviewInfoDetails(@Validated TaskDetailsReq taskDetailsReq
-
-    ) {
-        IPage<TaskDetailsDTO> result = indexPlanService.getOverviewInfoDetails(taskDetailsReq);
+    public Result<IPage<TaskDetailsDTO>> getOverviewInfoDetails(@Validated TaskDetailsReq taskDetailsReq, HttpServletRequest request) {
+        IPage<TaskDetailsDTO> result = indexPlanService.getOverviewInfoDetails(taskDetailsReq, request);
         return Result.OK(result);
     }
 
@@ -111,6 +111,7 @@ public class IndexPlanController {
 
     /**
      * 代办事项检修情况
+     *
      * @param startDate
      * @param pageNo
      * @param pageSize
@@ -126,7 +127,7 @@ public class IndexPlanController {
                                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                                        @ApiParam(name = "stationCode", value = "站点") @RequestParam(value = "stationCode", required = false) String stationCode
     ) {
-        Page<RepairPoolDetailsDTO> page = new Page<>(pageNo,pageSize);
+        Page<RepairPoolDetailsDTO> page = new Page<>(pageNo, pageSize);
         IPage<RepairPoolDetailsDTO> maintenanceSituation = indexPlanService.getMaintenanceSituation(page, startDate, stationCode);
         return Result.OK(maintenanceSituation);
     }

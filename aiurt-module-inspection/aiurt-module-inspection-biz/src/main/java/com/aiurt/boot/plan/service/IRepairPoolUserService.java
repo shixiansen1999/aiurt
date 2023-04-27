@@ -3,6 +3,8 @@ package com.aiurt.boot.plan.service;
 import com.aiurt.boot.plan.entity.RepairPoolUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * @Description: repair_pool_user
  * @Author: aiurt
@@ -10,5 +12,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Version: V1.0
  */
 public interface IRepairPoolUserService extends IService<RepairPoolUser> {
+
+    List<RepairPoolUser> findAll();
 
 }

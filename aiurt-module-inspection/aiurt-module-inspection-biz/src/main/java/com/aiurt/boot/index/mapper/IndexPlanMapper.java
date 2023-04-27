@@ -12,6 +12,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @Description: 首页检修模块
@@ -29,30 +30,33 @@ public interface IndexPlanMapper {
      * @param taskDetailsReq
      * @return
      */
-    List<TaskDetailsDTO> getGropuByData(@Param("type") Integer type, @Param("page") Page<TaskDetailsDTO> page, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq,@Param("codeByOrgCode") List<RepairPoolOrgRel> codeByOrgCode, @Param("repairPoolRels")List<RepairPoolRel> repairPoolRels,@Param("repairPoolStationRels")List<RepairPoolStationRel> repairPoolStationRels);
+    List<TaskDetailsDTO> getGropuByData(@Param("type") Integer type, @Param("page") Page<TaskDetailsDTO> page, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq, @Param("filterConditions") String filterConditions);
 
     /**
      * 点击站点获取检修数据
+     *
      * @param page
      * @param type
      * @param taskDetailsReq
      * @return
      */
-    List<RepairPoolDetailsDTO> getMaintenancDataByStationCode(@Param("page")Page<RepairPoolDetailsDTO> page,@Param("type")Integer type, @Param("taskDetailsReq")TaskDetailsReq taskDetailsReq,@Param("codeByOrgCode") List<RepairPoolOrgRel> codeByOrgCode, @Param("repairPoolRels")List<RepairPoolRel> repairPoolRels,@Param("repairPoolStationRels")List<RepairPoolStationRel> repairPoolStationRels);
+    List<RepairPoolDetailsDTO> getMaintenancDataByStationCode(@Param("page") Page<RepairPoolDetailsDTO> page, @Param("type") Integer type, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq, @Param("codeByOrgCode") List<RepairPoolOrgRel> codeByOrgCode, @Param("repairPoolRels") List<RepairPoolRel> repairPoolRels, @Param("repairPoolStationRels") List<RepairPoolStationRel> repairPoolStationRels);
 
     /**
      * 根据条件查询检修数据（无分页）
+     *
      * @param stationCode
      * @param taskDetailsReq
      * @return
      */
-    List<RepairPoolDetailsDTO> getMainDataByStationCodeNoPage(@Param("stationCode") String stationCode,@Param("taskDetailsReq") TaskDetailsReq taskDetailsReq);
+    List<RepairPoolDetailsDTO> getMainDataByStationCodeNoPage(@Param("stationCode") String stationCode, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq);
 
     /**
      * 查询站点下的检修任务是否已经完成
+     *
      * @param startTime
      * @param endTime
      * @return
      */
-    List<TaskStateDTO> selectStationState(@Param("startTime") Date startTime, @Param("endTime")  Date endTime);
+    List<TaskStateDTO> selectStationState(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
 }
