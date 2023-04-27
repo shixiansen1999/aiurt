@@ -363,8 +363,14 @@ public class WorkLogController {
             boolean isAfterAmStart = createTime.after(DateUtil.parse(amStart));
             boolean isBeforePmEnd = createTime.before(DateUtil.parse(pmEnd));
             boolean isAfterPmStart = createTime.after(DateUtil.parse(pmStart));
-            boolean isEdit = (isBeforeAmEnd && isAfterAmStart) || (isBeforePmEnd && isAfterPmStart);
-            detailById.setEditFlag(isEdit);
+
+            boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
+            if (!isEdit) {
+                boolean isEdit2 =  (isBeforePmEnd && isAfterPmStart);
+                detailById.setEditFlag(isEdit2);
+            } else {
+                detailById.setEditFlag(isEdit);
+            }
         }
 
         //result.setResult(detailById);

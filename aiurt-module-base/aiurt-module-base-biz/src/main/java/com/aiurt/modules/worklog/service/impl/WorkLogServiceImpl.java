@@ -191,7 +191,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             }
         }
         //插入签名
-        if (StringUtils.isNotBlank(dto.getSignature())) {
+        /*if (StringUtils.isNotBlank(dto.getSignature())) {
             WorkLogEnclosure enclosure = new WorkLogEnclosure();
             enclosure.setCreateBy(depot.getCreateBy());
             enclosure.setParentId(depot.getId());
@@ -199,7 +199,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             enclosure.setUrl(dto.getSignature());
             enclosure.setDelFlag(0);
             enclosureMapper.insert(enclosure);
-        }
+        }*/
         //完成任务
         //不存在userTaskService
         //userTaskService.completeWork(userId, DateUtils.date2Str(depot.getSubmitTime(), new SimpleDateFormat("yyyy-MM-dd")));
@@ -827,7 +827,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setFaultContent(dto.getFaultContent());
         workLog.setPatrolRepairContent(dto.getPatrolRepairContent());
         workLog.setAssortContent(dto.getAssortContent());
-        workLog.setStatus(dto.getStatus());
+        if (dto.getStatus() != null) {
+            workLog.setStatus(1);
+            workLog.setSubmitTime(new Date());
+        }
         workLog.setUnfinishedMatters(dto.getUnfinishedMatters());
         //工作内容赋值
         workLog.setIsDisinfect(dto.getIsDisinfect());
@@ -848,7 +851,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setOtherWorkContent(dto.getOtherWorkContent());
         workLog.setNote(dto.getNote());
         workLog.setHandoverId(dto.getHandoverId());
-
         this.updateById(workLog);
         //删除原附件列表
         enclosureMapper.deleteByName(workLog.getId());
@@ -871,10 +873,12 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             enclosure.setCreateBy(workLog.getCreateBy());
             enclosure.setParentId(workLog.getId());
             enclosure.setType(1);
-            enclosure.setUrl(dto.getSignature());
+            LoginUser user = iSysBaseAPI.getUserById(loginUser.getId());
+            enclosure.setUrl(user.getSignatureUrl());
             enclosure.setDelFlag(0);
             enclosureMapper.insert(enclosure);
         }
+
         //如果接班人不为空 发送待办消息
         if(ObjectUtil.isNotEmpty(dto.getSucceedId()))
         {

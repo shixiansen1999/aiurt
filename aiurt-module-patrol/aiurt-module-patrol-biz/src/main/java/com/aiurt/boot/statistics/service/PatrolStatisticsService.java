@@ -346,7 +346,7 @@ public class PatrolStatisticsService {
             l.setAbnormalDictName(abnormalDictName);
             l.setStatusDictName(statusDictName);
 
-            //获取巡视单和检查项
+            //获取巡视单和检查项（新需求）
             List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGangedInfo(l.getId());
             List<PatrolCheckResultDTO> patrolCheckResultDTOS = new ArrayList<PatrolCheckResultDTO>();
             for (PatrolBillDTO patrolBillDTO : billGangedInfo) {
