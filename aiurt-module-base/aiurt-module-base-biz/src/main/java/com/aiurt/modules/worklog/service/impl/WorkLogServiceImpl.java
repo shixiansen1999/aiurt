@@ -858,6 +858,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setFaultContent(dto.getFaultContent());
         workLog.setPatrolRepairContent(dto.getPatrolRepairContent());
         workLog.setAssortContent(dto.getAssortContent());
+        workLog.setFaultContent(dto.getFaultContent());
+        workLog.setRepairContent(dto.getRepairContent());
+        workLog.setPatrolContent(dto.getPatrolContent());
         if (dto.getStatus() != null) {
             workLog.setStatus(1);
             workLog.setSubmitTime(new Date());
