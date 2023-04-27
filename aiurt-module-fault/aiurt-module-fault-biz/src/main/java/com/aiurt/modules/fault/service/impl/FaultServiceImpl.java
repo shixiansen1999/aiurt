@@ -184,7 +184,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             repairRecordService.save(record);
         } else {
             if (value) {
-                fault.setStatus(FaultStatusEnum.NEW_FAULT.getStatus());
+                if(ObjectUtil.isNotEmpty(fault.getIsFaultExternal())&&fault.getIsFaultExternal()){
+                    fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
+                    fault.setApprovalPassTime(new Date());
+                }else {
+                    fault.setStatus(FaultStatusEnum.NEW_FAULT.getStatus());
+                }
             }else {
                 fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
                 fault.setApprovalPassTime(new Date());
@@ -220,10 +225,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 sendTodo(fault.getCode(), null, user.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
             } else {
                 if (value) {
-                    todoDTO.setTitle("故障上报审核");
-                    todoDTO.setMsgAbstract("有新的故障信息");
-                    todoDTO.setPublishingContent("有新的故障信息，请审核");
-                    sendTodo(fault.getCode(), RoleConstant.PRODUCTION, null, "故障上报审核", TodoBusinessTypeEnum.FAULT_APPROVAL.getType(), todoDTO, faultMessageDTO);
+                    if(ObjectUtil.isEmpty(fault.getIsFaultExternal())){
+                        todoDTO.setTitle("故障上报审核");
+                        todoDTO.setMsgAbstract("有新的故障信息");
+                        todoDTO.setPublishingContent("有新的故障信息，请审核");
+                        sendTodo(fault.getCode(), RoleConstant.PRODUCTION, null, "故障上报审核", TodoBusinessTypeEnum.FAULT_APPROVAL.getType(), todoDTO, faultMessageDTO);
+                    }
 
                 }
                 //此班组当前时间段当班维修人员收到通知
