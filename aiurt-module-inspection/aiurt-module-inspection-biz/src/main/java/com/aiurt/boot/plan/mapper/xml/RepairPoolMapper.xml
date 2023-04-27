@@ -195,9 +195,6 @@
                 AND date_format(rp.start_time ,'%Y-%m-%d') &gt;= date_format(#{startDate},'%Y-%m-%d')
                 AND date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
             </if>
-            <if test="filterConditions != null and filterConditions != ''">
-                AND ${filterConditions}
-            </if>
         </where>
     </select>
 </mapper>

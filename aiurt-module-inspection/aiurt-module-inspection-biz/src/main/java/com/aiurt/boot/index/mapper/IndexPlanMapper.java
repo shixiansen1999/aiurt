@@ -4,9 +4,14 @@ import com.aiurt.boot.index.dto.TaskDetailsDTO;
 import com.aiurt.boot.index.dto.TaskDetailsReq;
 import com.aiurt.boot.index.dto.TaskStateDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
+import com.aiurt.boot.plan.entity.RepairPoolDeviceRel;
 import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
 import com.aiurt.boot.plan.entity.RepairPoolRel;
 import com.aiurt.boot.plan.entity.RepairPoolStationRel;
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
@@ -20,7 +25,7 @@ import java.util.Set;
  * @Date: 2022-06-22
  * @Version: V1.0
  */
-public interface IndexPlanMapper {
+public interface IndexPlanMapper  {
 
     /**
      * 分页聚合检修数据
@@ -34,13 +39,13 @@ public interface IndexPlanMapper {
 
     /**
      * 点击站点获取检修数据
-     *
      * @param page
      * @param type
      * @param taskDetailsReq
+     * @param filterConditions
      * @return
      */
-    List<RepairPoolDetailsDTO> getMaintenancDataByStationCode(@Param("page") Page<RepairPoolDetailsDTO> page, @Param("type") Integer type, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq, @Param("codeByOrgCode") List<RepairPoolOrgRel> codeByOrgCode, @Param("repairPoolRels") List<RepairPoolRel> repairPoolRels, @Param("repairPoolStationRels") List<RepairPoolStationRel> repairPoolStationRels);
+    List<RepairPoolDetailsDTO> getMaintenancDataByStationCode(@Param("page") Page<RepairPoolDetailsDTO> page, @Param("type") Integer type, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq, @Param("filterConditions") String filterConditions);
 
     /**
      * 根据条件查询检修数据（无分页）

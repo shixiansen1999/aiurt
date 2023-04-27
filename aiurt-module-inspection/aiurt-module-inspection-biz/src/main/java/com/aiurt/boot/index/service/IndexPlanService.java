@@ -95,16 +95,11 @@ public class IndexPlanService {
             return setDefaultResultValues(result);
         }
 
-        // 处理sql数据过滤
-        Map<String, String> dataRules = (Map<String, String>) request.getAttribute(ContextUtil.FILTER_DATA_AUTHOR_RULES);
-        Map<String, String> columnMapping = this.getColumnMapping();
-        String filterConditions = SqlBuilderUtil.buildSql(dataRules, columnMapping);
-
         // 构建查询条件
         Date[] dates = doQuery(startDate, endDate);
-        
+
         // 查询检修计划列表
-        List<RepairPool> repairPoolList = repairPoolMapper.getOverviewInfo(dates[0], dates[1], filterConditions);
+        List<RepairPool> repairPoolList = repairPoolMapper.getOverviewInfo(dates[0], dates[1]);
 
         // 计算结果值
         return calculateResultValues(result, repairPoolList);
@@ -173,7 +168,6 @@ public class IndexPlanService {
 
         // 如果存在符合条件的检修详情数据
         if (CollUtil.isNotEmpty(detailsDTOList)) {
-
             for (TaskDetailsDTO taskDetailsDTO : detailsDTOList) {
                 List<String> codeList = new ArrayList<>();
                 if (StrUtil.isNotEmpty(taskDetailsDTO.getCodeStr())) {
@@ -216,12 +210,10 @@ public class IndexPlanService {
         lambdaQueryWrapper.in(RepairTaskUser::getRepairTaskCode, codeList);
         List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(lambdaQueryWrapper);
 
-
         LambdaQueryWrapper<RepairTask> taskQueryWrapper = new LambdaQueryWrapper<>();
         taskQueryWrapper.in(RepairTask::getCode, codeList);
         taskQueryWrapper.select(RepairTask::getRepairPoolId);
         List<RepairTask> repairTasks = repairTaskMapper.selectList(taskQueryWrapper);
-
 
         if (CollUtil.isNotEmpty(repairTaskUsers)) {
             Set<String> userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).collect(Collectors.toSet());
@@ -232,14 +224,6 @@ public class IndexPlanService {
                 if (CollUtil.isNotEmpty(jsonObjects)) {
                     // 检修人员名称
                     taskDetailsDTO.setRealName(jsonObjects.stream().map(js -> js.getString("realname")).collect(Collectors.joining("；")));
-
-                    /*Set<String> orgId = jsonObjects.stream().map(js -> js.getString("orgId")).collect(Collectors.toSet());
-                    if (CollUtil.isNotEmpty(orgId)) {
-                        List<JSONObject> deptList = sysBaseApi.queryDepartsByIds(StrUtil.join(",", orgId));
-                        if (CollUtil.isNotEmpty(deptList)) {
-                            taskDetailsDTO.setTeamName(deptList.stream().map(dept -> dept.getString("departName")).collect(Collectors.joining("；")));
-                        }
-                    }*/
                 }
             }
         }
@@ -397,7 +381,12 @@ public class IndexPlanService {
      * @param taskDetailsReq 查询条件
      * @return
      */
-    public IPage<RepairPoolDetailsDTO> getMaintenancDataByStationCode(TaskDetailsReq taskDetailsReq) {
+    @DisableDataFilter
+    public IPage<RepairPoolDetailsDTO> getMaintenancDataByStationCode(TaskDetailsReq taskDetailsReq, HttpServletRequest request) {
+        Map<String, String> dataRules = (Map<String, String>) request.getAttribute(ContextUtil.FILTER_DATA_AUTHOR_RULES);
+        Map<String, String> columnMapping = this.getColumnMapping();
+        String filterConditions = SqlBuilderUtil.buildSql(dataRules, columnMapping);
+
         Page<RepairPoolDetailsDTO> page = new Page<>(taskDetailsReq.getPageNo(), taskDetailsReq.getPageSize());
         if (ObjectUtil.isEmpty(taskDetailsReq.getType())
                 || ObjectUtil.isEmpty(taskDetailsReq)
@@ -411,25 +400,14 @@ public class IndexPlanService {
         if (ObjectUtil.isEmpty(taskDetailsReq.getIsAllData())) {
             taskDetailsReq.setIsAllData(InspectionConstant.IS_ALL_DATA_0);
         }
-//        List<String> codeByOrgCode = getCodeByOrgCode();
-        List<RepairPoolOrgRel> codeByOrgCode = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-        //查询关联表，获取线路，站点code
-        List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
-        List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
-        List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
-        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, repairPoolIds));
-        if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(codeByOrgCode) || CollUtil.isEmpty(repairPoolRels) || CollUtil.isEmpty(repairPoolStationRels)) {
-            return new Page<>();
-        }
-        boolean b = GlobalThreadLocal.setDataFilter(false);
         // 用于判断是否是一整月的查询
         // 如果是一整个月查询，那么返回的dayBegin是这个月的第一周的开始时间，dayEnd是这个月最后一周的结束时间
         JudgeIsMonthQuery judgeIsMonthQuery = new JudgeIsMonthQuery(taskDetailsReq.getStartTime(), taskDetailsReq.getEndTime()).invoke();
         taskDetailsReq.setStartTime(judgeIsMonthQuery.getDayBegin());
         taskDetailsReq.setEndTime(judgeIsMonthQuery.getDayEnd());
 
-        List<RepairPoolDetailsDTO> maintenancDataByStationCode = indexPlanMapper.getMaintenancDataByStationCode(page, taskDetailsReq.getType(), taskDetailsReq, codeByOrgCode, repairPoolRels, repairPoolStationRels);
+        List<RepairPoolDetailsDTO> maintenancDataByStationCode = indexPlanMapper.getMaintenancDataByStationCode(page, taskDetailsReq.getType(), taskDetailsReq, filterConditions);
         if (CollUtil.isNotEmpty(maintenancDataByStationCode)) {
             for (RepairPoolDetailsDTO repairPool : maintenancDataByStationCode) {
                 String planCode = repairPool.getCode();
