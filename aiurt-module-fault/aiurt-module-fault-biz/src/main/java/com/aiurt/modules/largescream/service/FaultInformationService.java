@@ -743,49 +743,49 @@ public class FaultInformationService {
                 //计划时长
                 if (StrUtil.isNotBlank(faultSystemDeviceSumDTO.getShouldWorkTime())){
                     planTime = Double.valueOf(faultSystemDeviceSumDTO.getShouldWorkTime());
-                }else {
-                    return reliabilityList;
                 }
                 if(StrUtil.isBlank(lineCode) && StrUtil.isNotBlank(faultSystemDeviceSumDTO.getSystemCode())){
                     String sumWorkTime = faultInformationMapper.getSumWorkTime(faultSystemDeviceSumDTO.getSystemCode());
                     planTime = Double.valueOf(sumWorkTime);
                 }
                 actualTime = planTime;
-                if (ObjectUtil.isNotEmpty(systemFaultSum)) {
-                    //遍历故障时间
-                    for (FaultSystemTimesDTO faultSystemTimeDTO : systemFaultSum) {
-                        if (ObjectUtil.isNotEmpty(faultSystemTimeDTO) && ObjectUtil.isNotEmpty(faultSystemTimeDTO.getSubSystemCode())) {
-                            //实际时长
-                            if (faultSystemTimeDTO.getSubSystemCode().equals(faultSystemDeviceSumDTO.getSystemCode())) {
-                                if (ObjectUtil.isNotEmpty(faultSystemTimeDTO.getRepairTime())) {
-                                    Double repairTime = faultSystemTimeDTO.getRepairTime();
-                                    actualTime = planTime - repairTime;
-                                    Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-                                    faultSystemReliabilityDTO.setActualRuntime(d);
+                if (actualTime != null) {
+                    if (ObjectUtil.isNotEmpty(systemFaultSum)) {
+                        //遍历故障时间
+                        for (FaultSystemTimesDTO faultSystemTimeDTO : systemFaultSum) {
+                            if (ObjectUtil.isNotEmpty(faultSystemTimeDTO) && ObjectUtil.isNotEmpty(faultSystemTimeDTO.getSubSystemCode())) {
+                                //实际时长
+                                if (faultSystemTimeDTO.getSubSystemCode().equals(faultSystemDeviceSumDTO.getSystemCode())) {
+                                    if (ObjectUtil.isNotEmpty(faultSystemTimeDTO.getRepairTime())) {
+                                        Double repairTime = faultSystemTimeDTO.getRepairTime();
+                                        actualTime = planTime - repairTime;
+                                        Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                        faultSystemReliabilityDTO.setActualRuntime(d);
+                                    } else {
+                                        Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                        faultSystemReliabilityDTO.setActualRuntime(d);
+                                    }
                                 } else {
                                     Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                     faultSystemReliabilityDTO.setActualRuntime(d);
                                 }
-                            } else {
-                                Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-                                faultSystemReliabilityDTO.setActualRuntime(d);
                             }
-                        }
 
+                        }
+                    } else {
+                        Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                        faultSystemReliabilityDTO.setActualRuntime(d);
                     }
-                } else {
-                    Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-                    faultSystemReliabilityDTO.setActualRuntime(d);
-                }
-                planTime = planTime / 60;
-                Double plan = null;
-                plan = new BigDecimal(planTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-                faultSystemReliabilityDTO.setScheduledRuntime(plan);
-                if (planTime <= 0 || actualTime <= 0) {
-                    faultSystemReliabilityDTO.setReliability("0");
-                } else {
-                    Double d = new BigDecimal(faultSystemReliabilityDTO.getActualRuntime() * 100 / planTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-                    faultSystemReliabilityDTO.setReliability(d + "%");
+                    planTime = planTime / 60;
+                    Double plan = null;
+                    plan = new BigDecimal(planTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                    faultSystemReliabilityDTO.setScheduledRuntime(plan);
+                    if (planTime <= 0 || actualTime <= 0) {
+                        faultSystemReliabilityDTO.setReliability("0");
+                    } else {
+                        Double d = new BigDecimal(faultSystemReliabilityDTO.getActualRuntime() * 100 / planTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                        faultSystemReliabilityDTO.setReliability(d + "%");
+                    }
                 }
                 reliabilityList.add(faultSystemReliabilityDTO);
             }
