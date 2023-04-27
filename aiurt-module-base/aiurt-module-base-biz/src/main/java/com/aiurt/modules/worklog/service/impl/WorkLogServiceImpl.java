@@ -451,6 +451,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                     boolean isAfterAmStart = date.after(DateUtil.parse(amStart));
                     boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
                     record.setEditFlag(isEdit);
+                } else {
+                    record.setEditFlag(false);
                 }
                 boolean pm = createTime.equals(DateUtil.parse(pmStart));
                 if (pm) {
