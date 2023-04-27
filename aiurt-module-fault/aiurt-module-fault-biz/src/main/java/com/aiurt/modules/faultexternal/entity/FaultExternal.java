@@ -1,5 +1,7 @@
 package com.aiurt.modules.faultexternal.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -28,11 +30,11 @@ import java.util.List;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="fault_external对象", description="调度系统故障")
-public class FaultExternal implements Serializable {
+public class FaultExternal extends DictEntity implements Serializable  {
     private static final long serialVersionUID = 1L;
 
 	/**id*/
-	@TableId(type = IdType.ASSIGN_ID)
+	@TableId(type = IdType.AUTO)
     @ApiModelProperty(value = "id")
     private Integer id;
 	/**主键*/
@@ -146,6 +148,24 @@ public class FaultExternal implements Serializable {
 	@Excel(name = "是否停止服务 1/2否", width = 15)
     @ApiModelProperty(value = "是否停止服务 1/2否")
     private String stopservice;
+    /**是否影响行车*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "fault_yn,是否影响行车,1:是,0否,2未知",  required = true)
+    @Dict(dicCode = "fault_yn")
+    private Integer affectDrive;
+
+    /**是否影响客运服务*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "fault_yn,是否影响客运服务,1:是,0否,2未知",  required = true)
+    @Dict(dicCode = "fault_yn")
+    private Integer affectPassengerService;
+
+
+    /**是否停止服务*/
+    @TableField(exist = false)
+    @Dict(dicCode = "fault_yn")
+    @ApiModelProperty(value = "fault_yn,是否停止服务,1:是,0否,2未知",  required = true)
+    private Integer isStopService;
 	/**报修人id*/
 	@Excel(name = "报修人id", width = 15)
     @ApiModelProperty(value = "报修人id")
