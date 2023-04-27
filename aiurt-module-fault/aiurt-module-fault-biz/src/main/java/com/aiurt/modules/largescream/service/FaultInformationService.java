@@ -745,7 +745,9 @@ public class FaultInformationService {
                 }
                 if(StrUtil.isBlank(lineCode) && StrUtil.isNotBlank(faultSystemDeviceSumDTO.getSystemCode())){
                     String sumWorkTime = faultInformationMapper.getSumWorkTime(faultSystemDeviceSumDTO.getSystemCode());
-                    planTime = Double.valueOf(sumWorkTime);
+                    if(StrUtil.isNotBlank(sumWorkTime)){
+                        planTime = Double.valueOf(sumWorkTime);
+                    }
                 }
                 actualTime = planTime;
                 if (actualTime != null) {
@@ -782,7 +784,7 @@ public class FaultInformationService {
                     if (planTime <= 0 || actualTime <= 0) {
                         faultSystemReliabilityDTO.setReliability("0");
                     } else {
-                        Double d = new BigDecimal(faultSystemReliabilityDTO.getActualRuntime() * 100 / planTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                        Double d = new BigDecimal(faultSystemReliabilityDTO.getActualRuntime() * 100 / plan).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                         faultSystemReliabilityDTO.setReliability(d + "%");
                     }
                 }
