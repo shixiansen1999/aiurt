@@ -92,7 +92,56 @@ public class IndexPlanService {
             return result;
         }
 
-        List<RepairPool> repairPoolList = repairPoolMapper.getList( startDate,  endDate);
+        // 将符合条件的检修计划查出
+        LambdaQueryWrapper<RepairPool> queryWrapper = new LambdaQueryWrapper<>();
+        doQuery(startDate, endDate, isAllData, queryWrapper);
+
+        //查询关联表，获取部门code
+        List<RepairPoolOrgRel> poolOrgRelList = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+        //查询关联表，获取线路，站点code
+        List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isEmpty(repairPoolStationRels)) {
+            result.setSum(0L);
+            result.setFinish(0L);
+            result.setUnfinish(0L);
+            result.setOverhaul(0L);
+            result.setOmit(0L);
+            result.setOmitRate("0%");
+            return result;
+        }
+
+        //根据当前人，获取当前的专业code
+        List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
+        if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(poolOrgRelList)) {
+            result.setSum(0L);
+            result.setFinish(0L);
+            result.setUnfinish(0L);
+            result.setOverhaul(0L);
+            result.setOmit(0L);
+            result.setOmitRate("0%");
+            return result;
+        }
+
+        LambdaQueryWrapper<RepairPoolRel> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(RepairPoolRel::getRepairPoolStaId, repairPoolIds);
+        List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(wrapper);
+        if (CollUtil.isEmpty(repairPoolRels)) {
+            result.setSum(0L);
+            result.setFinish(0L);
+            result.setUnfinish(0L);
+            result.setOverhaul(0L);
+            result.setOmit(0L);
+            result.setOmitRate("0%");
+            return result;
+        }
+
+        queryWrapper.in(RepairPool::getCode, poolOrgRelList.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList()));
+        queryWrapper.in(RepairPool::getCode, repairPoolRels.stream().map(RepairPoolRel::getRepairPoolCode).collect(Collectors.toList()));
+        queryWrapper.in(RepairPool::getCode, repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList()));
+
+        List<RepairPool> repairPoolList = repairPoolMapper.selectList(queryWrapper);
 
         // 检修总数
         result.setSum(CollUtil.isNotEmpty(repairPoolList) ? repairPoolList.size() : 0L);

@@ -512,6 +512,7 @@ FROM
         <if test="condition.orgCode != null and condition.orgCode != ''">
             AND pt.`code` IN (SELECT task_code FROM patrol_task_organization WHERE org_code = #{condition.orgCode})
         </if>
+        group by pt.id
     </select>
     <select id="getScheduleList" resultType="com.aiurt.boot.statistics.model.ScheduleTask">
         SELECT pt.`name`,
@@ -576,7 +577,7 @@ FROM
         <if test="startDate != null and endDate != null">
             AND pt.patrol_date BETWEEN #{startDate} AND #{endDate}
         </if>
-
+        group by pt.id
     </select>
     <select id="getUserTask" resultType="com.aiurt.boot.task.entity.PatrolTask">
         SELECT pt.id,
