@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.largescream.mapper.FaultInformationMapper">
+<insert id="insertSystemReliability">
+INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work_time`) VALUES (null, #{workTime.lineCode}, #{workTime.systemCode}, null);
+</insert>
     <select id="queryLargeFaultInformation" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>

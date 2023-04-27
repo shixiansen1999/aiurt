@@ -19,6 +19,7 @@ import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
+import com.aiurt.modules.largescream.model.ReliabilityWorkTime;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
@@ -821,4 +822,7 @@ public class FaultInformationService {
         return subsystemByUserId.stream().map(CsUserSubsystemModel::getSystemCode).collect(Collectors.toList());
     }
 
+    public void insertSystemReliability(ReliabilityWorkTime workTime) {
+        faultInformationMapper.insertSystemReliability(workTime);
+    }
 }

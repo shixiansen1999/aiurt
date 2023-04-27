@@ -1033,6 +1033,12 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     List<CsLine> getAllLine();
     /**
+     * 获取所有del_flag=0的线路
+     * 按照sort排序
+     * @return
+     */
+    List<JSONObject> getAllSystem();
+    /**
      * 根据仓库编号获取仓库组织机构code
      * @param applyWarehouseCode
      * @return
