@@ -41,7 +41,7 @@ import java.util.List;
  * @Date: 2022-06-21
  * @Version: V1.0
  */
-@EnableDataPerm
+@EnableDataPerm(excluseMethodName = {"getIndexPatrolList"})
 public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      * app-巡检任务池列表
@@ -192,13 +192,13 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param regexp
      * @return
      */
-    @DataPermission({
-            @DataColumn(key = "deptName",value = "t2.org_code"),
-            @DataColumn(key = "majorName",value = "t3.major_code"),
-            @DataColumn(key = "systemName",value = "t3.system_code"),
-            @DataColumn(key = "lineName",value = "t4.line_code"),
-            @DataColumn(key = "stationName",value = "t4.station_code")
-    })
+//    @DataPermission({
+//            @DataColumn(key = "deptName",value = "t2.org_code"),
+//            @DataColumn(key = "majorName",value = "t3.major_code"),
+//            @DataColumn(key = "systemName",value = "t3.system_code"),
+//            @DataColumn(key = "lineName",value = "t4.line_code"),
+//            @DataColumn(key = "stationName",value = "t4.station_code")
+//    })
     IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, @Param("condition") PatrolCondition condition, @Param("regexp") String regexp);
 
     /**
@@ -234,18 +234,20 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      * 获取首页指定日期范围的任务列表
+     *
      * @param startDate
      * @param endDate
+     * @param filterConditions
      * @return
      */
-    @DataPermission({
-            @DataColumn(key = "deptName",value = "t2.org_code"),
-            @DataColumn(key = "stationName",value = "t4.station_code"),
-            @DataColumn(key = "lineName",value = "t4.line_code"),
-            @DataColumn(key = "majorName",value = "t3.major_code"),
-            @DataColumn(key = "systemName",value = "t3.subsystem_code")
-    })
-    List<PatrolTask> getOverviewInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+//    @DataPermission({
+//            @DataColumn(key = "deptName",value = "t2.org_code"),
+//            @DataColumn(key = "stationName",value = "t4.station_code"),
+//            @DataColumn(key = "lineName",value = "t4.line_code"),
+//            @DataColumn(key = "majorName",value = "t3.major_code"),
+//            @DataColumn(key = "systemName",value = "t3.subsystem_code")
+//    })
+    List<PatrolTask> getOverviewInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("jointSQL") String filterConditions);
 
     /**
      * 查看当前用户，当天的巡检任务

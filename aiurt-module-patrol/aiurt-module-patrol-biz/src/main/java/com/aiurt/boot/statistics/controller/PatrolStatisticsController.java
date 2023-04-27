@@ -18,6 +18,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
 /**
@@ -48,8 +49,9 @@ public class PatrolStatisticsController {
                                                    @DateTimeFormat(pattern = "yyyy-MM-dd")
                                                    @RequestParam("endDate") Date endDate,
                                                    @ApiParam(name = "isAllData", value = "数据权限过滤，0按当前登录用户所管理的组织机构来进行过滤，1不进行过滤")
-                                                   @RequestParam("isAllData") Integer isAllData) {
-        PatrolSituation situation = patrolStatisticsService.getOverviewInfo(startDate, endDate, isAllData);
+                                                   @RequestParam("isAllData") Integer isAllData,
+                                                   HttpServletRequest request) {
+        PatrolSituation situation = patrolStatisticsService.getOverviewInfo(request, startDate, endDate, isAllData);
         return Result.ok(situation);
     }
 
@@ -64,9 +66,10 @@ public class PatrolStatisticsController {
     @PermissionData(pageComponent = "dashboard/Analysis")
     public Result<IPage<PatrolIndexTask>> getPatrolList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                        @Validated PatrolCondition patrolCondition) {
+                                                        @Validated PatrolCondition patrolCondition,
+                                                        HttpServletRequest request) {
         Page<PatrolIndexTask> page = new Page<PatrolIndexTask>(pageNo, pageSize);
-        IPage<PatrolIndexTask> pageList = patrolStatisticsService.getIndexPatrolList(page, patrolCondition);
+        IPage<PatrolIndexTask> pageList = patrolStatisticsService.getIndexPatrolList(page, patrolCondition,request);
         return Result.ok(pageList);
     }
 
