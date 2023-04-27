@@ -8,6 +8,9 @@ import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -22,6 +25,7 @@ import java.util.Set;
  * @Date: 2022-06-22
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface RepairPoolMapper extends BaseMapper<RepairPool> {
 
     /**
@@ -147,15 +151,13 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      *
      * @param startDate        查询的开始日期
      * @param endDate          查询的结束日期
-     * @param filterConditions SQL过滤条件片段，用于筛选符合条件的检修计划
      * @return 符合条件的检修计划列表
      */
     @DataPermission({
-            @DataColumn(key = "deptName",value = "t2.org_code"),
-            @DataColumn(key = "stationName",value = "t3.station_code"),
-            @DataColumn(key = "lineName",value = "t3.line_code"),
-            @DataColumn(key = "majorName",value = "t5.major_code"),
-            @DataColumn(key = "systemName",value = "t5.subsystem_code")
+            @DataColumn(key = "deptName",value = "rpor.org_code"),
+            @DataColumn(key = "stationName",value = "rpsr.station_code"),
+            @DataColumn(key = "majorName",value = "rpc.major_code"),
+            @DataColumn(key = "systemName",value = "rpc.subsystem_code")
     })
-    List<RepairPool> getOverviewInfo(Date startDate, Date endDate, String filterConditions);
+    List<RepairPool> getOverviewInfo(Date startDate, Date endDate);
 }

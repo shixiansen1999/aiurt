@@ -177,8 +177,8 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
             @DataColumn(key = "deptName",value = "t2.org_code"),
             @DataColumn(key = "stationName",value = "t3.station_code"),
             @DataColumn(key = "lineName",value = "t3.line_code"),
-            @DataColumn(key = "majorName",value = "t5.major_code"),
-            @DataColumn(key = "systemName",value = "t5.subsystem_code")
+            @DataColumn(key = "majorName",value = "t4.major_code"),
+            @DataColumn(key = "systemName",value = "t4.subsystem_code")
     })
     List<RepairPoolDetailsDTO> selectRepairPoolList(@Param("startDate") Date startDate,@Param("endDate") Date endDate);
     @DataPermission({
