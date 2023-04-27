@@ -900,19 +900,12 @@
     </select>
 
     <select id="selectRepairPoolList2" resultType="com.aiurt.boot.plan.dto.RepairPoolDetailsDTO">
-        select year,code,type,weeks,start_time,end_time,status from repair_task
-        where status = 8  and date_format(submit_time ,'%Y-%m-%d') =date_format(#{startDate} ,'%Y-%m-%d')
-        <if test="taskCode.size()>0">
-            and code in
-            <foreach collection="taskCode" separator="," open="(" close=")" item="code">
-                #{code}
-            </foreach>
-        </if>
-        <if test="taskId.size()>0">
-            and id in
-            <foreach collection="taskId" separator="," open="(" close=")" item="item">
-                #{item}
-            </foreach>
-        </if>
+        select rt.year,rt.code,rt.type,rt.weeks,rt.start_time,rt.end_time,rt.status from repair_task rt
+        left join repair_pool rp on rt.repair_pool_id = rp.id
+        left join repair_pool_org_rel t2 on rp.code = t2.repair_pool_code
+        left join repair_pool_station_rel t3 on rp.code = t3.repair_pool_code
+        left join repair_pool_rel t4 on rp.code = t4.repair_pool_code
+        left join repair_pool_code t5 on t4.repair_pool_sta_id = t4.id
+        where rt.status = 8  and date_format(rt.submit_time ,'%Y-%m-%d') =date_format(#{startDate} ,'%Y-%m-%d')
     </select>
 </mapper>
