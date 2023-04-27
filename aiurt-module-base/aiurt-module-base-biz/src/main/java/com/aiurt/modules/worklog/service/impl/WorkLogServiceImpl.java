@@ -430,6 +430,36 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
 
         for (WorkLogResult record : records) {
+            //判断是否能编辑
+            Date date = new Date();
+            Date createTime = record.getCreateTime();
+            if (record.getConfirmStatus()==1 || record.getCheckStatus()==1){
+                record.setEditFlag(false);
+            }else {
+                record.setEditFlag(true);
+            }
+            if (ObjectUtil.isNotEmpty(createTime)) {
+                //控制在9点半之后、5点半之后编辑按钮隐藏
+                String today = DateUtil.today();
+                String amStart = today + " " + "08:00:00";
+                String amEnd = today + " " + "09:30:00";
+                String pmStart = today + " " + "16:00:00";
+                String pmEnd = today + " " + "16:30:00";
+                boolean am = createTime.equals(DateUtil.parse(amStart));
+                if (am) {
+                    boolean isBeforeAmEnd = date.before(DateUtil.parse(amEnd));
+                    boolean isAfterAmStart = date.after(DateUtil.parse(amStart));
+                    boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
+                    record.setEditFlag(isEdit);
+                }
+                boolean pm = createTime.equals(DateUtil.parse(pmStart));
+                if (pm) {
+                    boolean isBeforePmEnd = date.before(DateUtil.parse(pmEnd));
+                    boolean isAfterPmStart = date.after(DateUtil.parse(pmStart));
+                    boolean isEdit2 =  (isBeforePmEnd && isAfterPmStart);
+                    record.setEditFlag(isEdit2);
+                }
+            }
 
             if (departMap!=null && stationTeamIdMap!=null){
                 String id = departMap.get(record.getSubmitOrgId());

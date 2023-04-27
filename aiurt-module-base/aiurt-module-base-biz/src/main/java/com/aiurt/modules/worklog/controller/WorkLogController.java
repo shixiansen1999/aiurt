@@ -346,6 +346,7 @@ public class WorkLogController {
     @GetMapping(value = "/queryDetail")
     public Result<WorkLogDTO> queryDetail(@RequestParam String id) {
         Result<WorkLogDTO> result = new Result<WorkLogDTO>();
+        Date date = new Date();
         WorkLogDTO detailById = workLogDepotService.getDetailById(id);
         Date createTime = detailById.getCreateTime();
         if (detailById.getConfirmStatus()==1 || detailById.getCheckStatus()==1){
@@ -353,23 +354,27 @@ public class WorkLogController {
         }else {
             detailById.setEditFlag(true);
         }
+        //控制在9点半之后、5点半之后编辑按钮隐藏
         if (ObjectUtil.isNotEmpty(createTime)) {
             String today = DateUtil.today();
             String amStart = today + " " + "08:00:00";
             String amEnd = today + " " + "09:30:00";
             String pmStart = today + " " + "16:00:00";
             String pmEnd = today + " " + "16:30:00";
-            boolean isBeforeAmEnd = createTime.before(DateUtil.parse(amEnd));
-            boolean isAfterAmStart = createTime.after(DateUtil.parse(amStart));
-            boolean isBeforePmEnd = createTime.before(DateUtil.parse(pmEnd));
-            boolean isAfterPmStart = createTime.after(DateUtil.parse(pmStart));
 
-            boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
-            if (!isEdit) {
+            boolean am = createTime.equals(DateUtil.parse(amStart));
+            if (am) {
+                boolean isBeforeAmEnd = date.before(DateUtil.parse(amEnd));
+                boolean isAfterAmStart = date.after(DateUtil.parse(amStart));
+                boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
+                detailById.setEditFlag(isEdit);
+            }
+            boolean pm = createTime.equals(DateUtil.parse(pmStart));
+            if (pm) {
+                boolean isBeforePmEnd = date.before(DateUtil.parse(pmEnd));
+                boolean isAfterPmStart = date.after(DateUtil.parse(pmStart));
                 boolean isEdit2 =  (isBeforePmEnd && isAfterPmStart);
                 detailById.setEditFlag(isEdit2);
-            } else {
-                detailById.setEditFlag(isEdit);
             }
         }
 
