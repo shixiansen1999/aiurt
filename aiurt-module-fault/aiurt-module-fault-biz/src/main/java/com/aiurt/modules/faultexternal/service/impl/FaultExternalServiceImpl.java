@@ -198,7 +198,7 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
 
 
     @Override
-    public void complete(RepairRecordDTO dto, LoginUser user) {
+    public void complete(RepairRecordDTO dto,Date endTime, LoginUser user) {
         //如果是调度推送过来的故障，发送推送数据至调度系统
         //通过faultCode找到对应的faultExternal
         FaultRepairRecord faultRecord = recordMapper.selectById(dto.getId());
@@ -218,7 +218,7 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             data.put("scharger", user.getRealname());
             //花费的时间
             Date startTime = faultRecord.getCreateTime();
-            Date overTime = faultRecord.getEndTime();
+            Date overTime = endTime;
             long start = startTime.getTime();
             long over = overTime.getTime();
             long diff = over - start;
@@ -226,7 +226,7 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             long nh = 1000 * 60 * 60;//一小时的毫秒数
             long hour = diff % nd / nh;
             data.put("irepairtime", hour);
-            data.put("dcompelete", faultRecord.getEndTime());
+            data.put("dcompelete", endTime);
 
             param.put("code", 200);
             param.put("message", "success");
