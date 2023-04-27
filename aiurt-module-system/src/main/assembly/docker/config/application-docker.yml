@@ -197,7 +197,7 @@ jeecg:
   # 签名密钥串(前后端要一致，正式发布请自行修改)
   signatureSecret: dd05f1c54d63749eda95f9fa6d49v442a
   # 本地：local\Minio：minio\阿里云：alioss
-  uploadType: local
+  uploadType: $UPLOAD_TYPE
   path:
     #文件上传根目录 设置
     upload: /opt/upFiles
@@ -231,7 +231,7 @@ jeecg:
   file-view-domain: 127.0.0.1:8012
   # minio文件上传
   minio:
-    minio_url: http://192.168.1.27:9000
+    minio_url: $MINIO_URL
     minio_name: admin
     minio_pass: gz*&1949
     bucketName: platform
