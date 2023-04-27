@@ -1325,6 +1325,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            repairRecordService.updateById(one);
             //推送数据到调度系统
             faultExternalService.complete(repairRecordDTO,loginUser);
         }
