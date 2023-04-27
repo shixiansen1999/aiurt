@@ -419,43 +419,35 @@
         </if>
     </select>
     <select id="getIndexPatrolList" resultType="com.aiurt.boot.statistics.model.PatrolIndexTask">
-        SELECT pt.*
+        SELECT sub.*
         FROM
         ( SELECT
-        pt.id,
-        pt.`code`,
         pts.station_code,
         cs.station_name,
         cs.line_code,
         cs.line_name,
-        GROUP_CONCAT(pt.`code`) taskCode,
-        GROUP_CONCAT(DISTINCT t2.`org_code`),
-        GROUP_CONCAT(DISTINCT t3.`user_name`) as userInfo,
+        GROUP_CONCAT(DISTINCT pt.`code`) taskCode,
         IF(MIN(pt.`status`) = 7, '已完成', '未完成') statusName,
         MAX(pt.submit_time) submitTime
         <if test="regexp != null and regexp != ''">
-            ,
-            IF(GROUP_CONCAT(DISTINCT pt.`status`) REGEXP #{regexp}, 1, 0) `status`
+            ,IF(GROUP_CONCAT(DISTINCT pt.`status`) REGEXP #{regexp}, 1, 0) `status`
         </if>
         FROM patrol_task pt
-        JOIN patrol_task_station pts ON pt.`code` = pts.task_code
-        JOIN cs_station cs ON pts.station_code = cs.station_code
-        left join patrol_task_organization t2 on pt.code = t2.task_code and t2.del_flag = 0
-        left join patrol_task_user t3 on pt.code = t3.task_code and t3.del_flag = 0
+        JOIN patrol_task_station pts ON pt.`code` = pts.task_code and pts.del_flag = 0
+        JOIN cs_station cs ON pts.station_code = cs.station_code and cs.del_flag = 0
+        left join patrol_task_organization pto on pt.`code` = pto.task_code and pto.del_flag = 0
+        left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
         WHERE pt.del_flag = 0
         <if test="condition.startDate != null and condition.endDate != null">
             AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
-            BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+                    BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+                    AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
         </if>
         <if test="condition.omitStatus != null">
             AND pt.omit_status = #{condition.omitStatus}
         </if>
-        <if test="condition.stationCode != null and condition.stationCode != ''">
-            AND pts.station_code = #{condition.stationCode}
-        </if>
-        <if test="condition.lineCode != null and condition.lineCode != ''">
-            AND cs.line_code = #{condition.lineCode}
+        <if test="condition.jointSQL != null and condition.jointSQL != ''">
+            and ${condition.jointSQL}
         </if>
         GROUP BY pts.station_code
         <if test="condition.type != null and condition.type == 1">
@@ -464,14 +456,10 @@
         <if test="condition.type != null and condition.type == 2">
             HAVING MIN( pt.`status` ) &lt;&gt; 7
         </if>
-        ) pt
-        left join patrol_task_organization t2 on pt.code = t2.task_code
-        left join patrol_task_standard t3 on pt.id = t3.task_id
-        left join patrol_task_station t4 on pt.code = t4.task_code
+        ) sub
         <if test="condition.finishStatus != null">
-            where pt.`status` = #{condition.finishStatus}
+            where sub.`status` = #{condition.finishStatus}
         </if>
-        GROUP BY pt.station_code
     </select>
     <select id="getIndexTaskList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
         SELECT pt.id,pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time
@@ -568,16 +556,23 @@
         GROUP BY pt.`code`
     </select>
     <select id="getOverviewInfo" resultType="com.aiurt.boot.task.entity.PatrolTask">
-        SELECT pt.*
+        SELECT
+        <!--pt.*-->
+        pt.`status`,
+        pt.abnormal_state,
+        pt.omit_status
         FROM patrol_task pt
-        left join patrol_task_organization t2 on pt.code = t2.task_code and t2.del_flag = 0
-        left join patrol_task_standard t3 on pt.id = t3.task_id and t3.del_flag = 0
-        left join patrol_task_station t4 on pt.code = t4.task_code and t4.del_flag = 0
+        left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
+        left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
+        left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
         WHERE pt.del_flag = 0
         <if test="startDate != null and endDate != null">
             AND pt.patrol_date BETWEEN #{startDate} AND #{endDate}
         </if>
-        group by pt.id
+        <if test="jointSQL != null and jointSQL != ''">
+            and ${jointSQL}
+        </if>
+        GROUP BY pt.`code`
     </select>
     <select id="getUserTask" resultType="com.aiurt.boot.task.entity.PatrolTask">
         SELECT pt.id,
