@@ -171,7 +171,7 @@ public class FloodPreventionInformationController extends BaseController<FloodPr
      * @param id
      * @return
      */
-    @AutoLog(value = "防汛信息-通过id删除", operateType = 4, operateTypeAlias = "防汛信息-通过id删除", permissionUrl = "/flood/prevention/information/delete")
+    @AutoLog(value = "防汛信息-通过id删除", operateType = 4, operateTypeAlias = "防汛信息-通过id删除", permissionUrl = "/isystem/floodPrevention")
     @ApiOperation(value = "防汛信息-通过id删除", notes = "防汛信息-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
@@ -194,7 +194,7 @@ public class FloodPreventionInformationController extends BaseController<FloodPr
      * @param ids
      * @return
      */
-    @AutoLog(value = "防汛信息-批量删除", operateType = 4, operateTypeAlias = "防汛信息-批量删除", permissionUrl = "/flood/prevention/information/deleteBatch")
+    @AutoLog(value = "防汛信息-批量删除", operateType = 4, operateTypeAlias = "防汛信息-批量删除", permissionUrl = "/isystem/floodPrevention")
     @ApiOperation(value = "防汛信息-批量删除", notes = "防汛信息-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
