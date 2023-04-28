@@ -240,7 +240,8 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             try {
                 JSONObject json = (JSONObject) JSONObject.toJSON(param);
 //                String url = "http://123.57.62.172:30235/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
-                String url = "http://mtrain-cc.lucksoft.com.cn/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
+//               String url = "http://mtrain-cc.lucksoft.com.cn/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
+                String url = "http://10.3.2.2:30300/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
                restTemplate.postForObject(url, json, JSONObject.class);
                 log.info("故障推送,请求结果",url);
             } catch (Exception e) {
