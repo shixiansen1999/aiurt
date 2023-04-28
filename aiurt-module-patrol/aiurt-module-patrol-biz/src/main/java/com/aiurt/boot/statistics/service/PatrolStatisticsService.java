@@ -124,7 +124,7 @@ public class PatrolStatisticsService {
 //        //  ******原统计实现方法-End********
 
         //  ******数据库统计实现方法-Begin********
-        IndexCountDTO indexCountDTO = new IndexCountDTO(startDate, endDate, filterConditions);
+        IndexCountDTO indexCountDTO = new IndexCountDTO(newStartDate, newEndDate, filterConditions);
         PatrolSituation overviewInfoCount = patrolTaskMapper.getOverviewInfoCount(indexCountDTO);
         // 漏巡数统计
         List<Date> startList = this.getOmitDateScope(startDate);
