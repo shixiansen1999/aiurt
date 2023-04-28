@@ -438,28 +438,31 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             }else {
                 record.setEditFlag(true);
             }
+            //控制在9点半之后、5点半之后编辑按钮隐藏
             if (ObjectUtil.isNotEmpty(createTime)) {
-                //控制在9点半之后、5点半之后编辑按钮隐藏
-                String today = DateUtil.today();
-                String amStart = today + " " + "08:00:00";
-                String amEnd = today + " " + "09:30:00";
-                String pmStart = today + " " + "16:00:00";
-                String pmEnd = today + " " + "16:30:00";
-                boolean am = createTime.equals(DateUtil.parse(amStart));
-                if (am) {
-                    boolean isBeforeAmEnd = date.before(DateUtil.parse(amEnd));
-                    boolean isAfterAmStart = date.after(DateUtil.parse(amStart));
-                    boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
-                    record.setEditFlag(isEdit);
-                } else {
-                    record.setEditFlag(false);
-                }
-                boolean pm = createTime.equals(DateUtil.parse(pmStart));
-                if (pm) {
-                    boolean isBeforePmEnd = date.before(DateUtil.parse(pmEnd));
-                    boolean isAfterPmStart = date.after(DateUtil.parse(pmStart));
-                    boolean isEdit2 =  (isBeforePmEnd && isAfterPmStart);
-                    record.setEditFlag(isEdit2);
+                SysParamModel sysParamModel1 = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_AM_STOPEDIT);
+                SysParamModel sysParamModel2 = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_PM_STOPEDIT);
+                if (ObjectUtil.isNotEmpty(sysParamModel1) && ObjectUtil.isNotEmpty(sysParamModel2)) {
+                    String today = DateUtil.today();
+                    String amStart = today + " " + "08:00:00";
+                    String amEnd = today + " " + sysParamModel1.getValue();
+                    String pmStart = today + " " + "16:00:00";
+                    String pmEnd = today + " " + sysParamModel2.getValue();
+
+                    boolean am = createTime.equals(DateUtil.parse(amStart));
+                    if (am) {
+                        boolean isBeforeAmEnd = date.before(DateUtil.parse(amEnd));
+                        boolean isAfterAmStart = date.after(DateUtil.parse(amStart));
+                        boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
+                        record.setEditFlag(isEdit);
+                    }
+                    boolean pm = createTime.equals(DateUtil.parse(pmStart));
+                    if (pm) {
+                        boolean isBeforePmEnd = date.before(DateUtil.parse(pmEnd));
+                        boolean isAfterPmStart = date.after(DateUtil.parse(pmStart));
+                        boolean isEdit2 =  (isBeforePmEnd && isAfterPmStart);
+                        record.setEditFlag(isEdit2);
+                    }
                 }
             }
 

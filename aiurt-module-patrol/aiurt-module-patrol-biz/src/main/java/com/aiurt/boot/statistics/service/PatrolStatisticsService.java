@@ -87,7 +87,7 @@ public class PatrolStatisticsService {
         boolean openClose = GlobalThreadLocal.setDataFilter(false);
         long sum = list.stream().count();
         long finish = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
-        long unfinish = sum - finish;
+        long unfinish = list.stream().filter(l -> PatrolConstant.TASK_INIT.equals(l.getStatus())).count();
         long abnormal = list.stream().filter(l -> PatrolConstant.TASK_ABNORMAL.equals(l.getAbnormalState())).count();
         long overhaul = list.stream().filter(l -> !PatrolConstant.TASK_COMPLETE.equals(l.getStatus())&&!PatrolConstant.TASK_INIT.equals(l.getStatus())).count();
         long omit = 0L;

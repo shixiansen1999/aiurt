@@ -5,7 +5,7 @@
     <select id="queryBpmn" resultType="com.aiurt.modules.todo.dto.SysTodoCountDTO">
         SELECT
             COUNT( id ) count,
-            COUNT(if(todo_type='0',1,null)) as undo_count,
+            COUNT(if(read_flag='0',1,null)) as undo_count,
             task_type,
             process_code,
             process_name,
@@ -22,7 +22,7 @@
         UNION
         SELECT
             COUNT( id ) count,
-            COUNT(IF( todo_type = '0', 1, NULL )) AS undo_count,
+            COUNT(IF( read_flag = '0', 1, NULL )) AS undo_count,
             task_type,
             task_type AS process_code,
              NULL,
