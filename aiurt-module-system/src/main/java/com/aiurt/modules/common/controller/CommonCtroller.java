@@ -239,9 +239,9 @@ public class CommonCtroller {
 
         LambdaQueryWrapper<CsStationPosition> positionWrapper = new LambdaQueryWrapper<>();
         positionWrapper.eq(CsStationPosition::getDelFlag, 0);
-        List<CsStationPosition> positionList = stationPositionService.getBaseMapper().selectList(positionWrapper);
+      /*  List<CsStationPosition> positionList = stationPositionService.getBaseMapper().selectList(positionWrapper);
 
-        Map<String, List<CsStationPosition>> positionMap = positionList.stream().collect(Collectors.groupingBy(CsStationPosition::getStaionCode));
+        Map<String, List<CsStationPosition>> positionMap = positionList.stream().collect(Collectors.groupingBy(CsStationPosition::getStaionCode));*/
 
         List<SelectTable> list = new ArrayList<>();
         stationMap.keySet().stream().forEach(lineCode -> {
@@ -262,7 +262,7 @@ public class CommonCtroller {
                 selectTable.setLineCode(lineCode);
                 selectTable.setStationCode(csStation.getStationCode());
 
-                List<CsStationPosition> stationPositionList = positionMap.getOrDefault(csStation.getStationCode(), Collections.emptyList());
+               /* List<CsStationPosition> stationPositionList = positionMap.getOrDefault(csStation.getStationCode(), Collections.emptyList());
 
                 List<SelectTable> tableList = stationPositionList.stream().map(csStationPosition -> {
                     SelectTable tableV = new SelectTable();
@@ -275,7 +275,7 @@ public class CommonCtroller {
                     tableV.setPositionCode(csStationPosition.getPositionCode());
                     return tableV;
                 }).collect(Collectors.toList());
-                selectTable.setChildren(tableList);
+                selectTable.setChildren(tableList);*/
                 return selectTable;
             }).collect(Collectors.toList());
 
