@@ -378,4 +378,63 @@
 		  and t2.del_flag = 0
 	  GROUP BY  t2.msg_category
 	</select>
+
+	<select id="readAllAnnouncementInfo" resultType="java.lang.String">
+		select
+		sas.id
+		from sys_announcement sa
+		left join sys_announcement_send sas on sas.annt_id = sa.id
+		<where>
+			sa.del_flag = 0
+			and sas.read_flag = 0
+			<if test="userId!=null and userId!=''">
+				and sas.user_id = #{userId}
+			</if>
+			<if test="busTypeList!=null and busTypeList.size()!=0">
+
+				and (
+				(sa.titile is not null and sa.bus_type in
+				<foreach collection="busTypeList" open="(" close=")" item="item" separator=",">
+					#{item}
+				</foreach>
+				) or
+				sa.process_code in
+				<foreach collection="busTypeList" open="(" close=")" item="item" separator=",">
+					#{item}
+				</foreach>
+				)
+			</if>
+			<if test="busTypeList == null or busTypeList.size() == 0">
+				and isNull(sa.bus_type)
+			</if>
+			<if test="msgCategory!=null and msgCategory!=''">
+				and sa.msg_category =#{msgCategory}
+			</if>
+		</where>
+	</select>
+
+	<select id="readAllTodoListInfo" resultType="java.lang.String">
+		select
+		stl.id as id
+		from sys_todo_list stl
+		<where>
+			<if test="userName!=null and userName!=''">
+				find_in_set(#{userName},stl.current_user_name)
+			</if>
+			<if test="busTypeList!=null and busTypeList.size()>0 ">
+				and (
+				(stl.title is not null and stl.task_type in
+				<foreach collection="busTypeList" separator="," item="item" close=")" open="(" >
+					#{item}
+				</foreach>
+				)
+				or stl.process_code in
+				<foreach collection="busTypeList" separator="," item="item" close=")" open="(" >
+					#{item}
+				</foreach>
+				)
+			</if>
+			and stl.read_flag = 0
+		</where>
+	</select>
 </mapper>

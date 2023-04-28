@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author cgkj0
  */
@@ -39,6 +41,13 @@ public class PatrolBillDTO {
      */
     @ApiModelProperty(value = "站点名称")
     private String stationName;
+
+    /**
+     * 巡检项目树
+     */
+    @ApiModelProperty(value = "巡检项目树")
+    private List<PatrolCheckResultDTO> children;
+
 }
 //SELECT
 //	*

@@ -153,6 +153,15 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @return
      */
     void receiveTask(String id);
+    /**
+     * 领取检修任务
+     *
+     * @param examineDTO
+     * @return
+     */
+    String receiveTask(ExamineDTO examineDTO);
+
+
 
     /**
      * 填写检修工单

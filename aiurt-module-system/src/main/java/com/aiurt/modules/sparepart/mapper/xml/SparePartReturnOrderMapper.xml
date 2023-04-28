@@ -19,6 +19,7 @@
         t7.`name` manufactorCodeName,
         d3.item_text unit,
         t1.price,
+        spare_part_return_order.remarks remarks,
         spare_part_return_order.confirm_time confirmTime,
         t8.realname confirmName,
         spare_part_return_order.status,

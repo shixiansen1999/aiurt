@@ -774,8 +774,12 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                     } else {
                         items.setHierarchyType(PatrolConstant.ONE_LEVEL.equals(hierarchyTypeName) ? PatrolConstant.TASK_UNDISPOSE : PatrolConstant.INPUT_TYPE_1);
                         if (items.getHierarchyType() == 0) {
-                            if (!items.getParent().equals(PatrolConstant.NO_PARENT)) {
+                            if (ObjectUtil.isEmpty(items.getParent())) {
                                 stringBuilder.append("层级为一级(父级填写无),");
+                            } else {
+                                if (!items.getParent().equals(PatrolConstant.NO_PARENT)) {
+                                    stringBuilder.append("层级为一级(父级填写无),");
+                                }
                             }
                         } else {
                             if (ObjectUtil.isEmpty(items.getParent())) {

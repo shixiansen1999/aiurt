@@ -108,6 +108,9 @@ public class PatrolTaskDTO
     @Excel(name = "任务提交人 ", width = 15)
     @ApiModelProperty(value = "任务提交人 ")
     private java.lang.String endUserName;
+    /*** 任务提交人Id */
+    @ApiModelProperty(value = "任务提交人Id ")
+    private java.lang.String endUserId;
     /*** 备注*/
     @Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")

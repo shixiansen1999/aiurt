@@ -344,6 +344,9 @@
         <if test="orgCode!=null and orgCode!=''">
             and su.org_code = #{orgCode}
         </if>
+        <if test="name!=null and name!=''">
+            and su.realname LIKE CONCAT('%', #{name}, '%')
+        </if>
         ORDER BY
         sr.date,
         sr.item_id
@@ -370,6 +373,9 @@
           #{orgCode}
       </foreach>
     </if>
+    <if test="name!=null and name!=''">
+        and su.realname LIKE CONCAT('%', #{name}, '%')
+    </if>
     </where>
     </select>
     <select id="getTotalTeamDetail" resultType="com.aiurt.modules.schedule.dto.SysTotalTeamDTO">
@@ -391,6 +397,12 @@
             <foreach collection="orgCodes" item="code" open="(" close=")" separator=",">
                 #{code}
             </foreach>
+        </if>
+        <if test="orgCode!=null and orgCode!=''">
+            and sd.org_code = #{orgCode}
+        </if>
+        <if test="name!=null and name!=''">
+            and su.realname like CONCAT('%', #{name}, '%')
         </if>
     GROUP BY
         sd.id

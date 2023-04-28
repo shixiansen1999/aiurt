@@ -1,19 +1,17 @@
 package com.aiurt.modules.system.mapper;
 
-import java.util.List;
-
-import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.modules.system.dto.SysAnnouncementSendDTO;
 import com.aiurt.modules.system.dto.SysAnnouncementTypeCountDTO;
 import com.aiurt.modules.system.dto.SysMessageInfoDTO;
 import com.aiurt.modules.system.entity.SysAnnouncement;
 import com.aiurt.modules.system.entity.SysAnnouncementSend;
 import com.aiurt.modules.todo.entity.SysTodoList;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import java.util.List;
 
 /**
  * @Description: 系统通告表
@@ -117,4 +115,20 @@ public interface SysAnnouncementMapper extends BaseMapper<SysAnnouncement> {
      * @return
      */
     SysAnnouncementSend queryLast(@Param("userId") String userId, @Param("list") List<String> busTypeList, @Param("msgCategory") String msgCategory);
+
+    /**
+     * 查询当前登录人未读的业务消息
+     * @param userId
+     * @param busTypeList
+     * @param msgCategory
+     * @return
+     */
+    List<String> readAllAnnouncementInfo( @Param("userId")String userId, @Param("busTypeList")List<String> busTypeList, @Param("msgCategory")String msgCategory);
+    /**
+     * 查询当前登录人未读的流程消息详情
+     * @param username
+     * @param busTypeList
+     * @return
+     */
+    List<String> readAllTodoListInfo(@Param("userName")String username, @Param("busTypeList")List<String> busTypeList);
 }

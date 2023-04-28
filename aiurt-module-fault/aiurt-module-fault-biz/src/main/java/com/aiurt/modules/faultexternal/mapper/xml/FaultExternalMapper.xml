@@ -4,14 +4,14 @@
     <select id="selectFaultExternalPage" resultType="com.aiurt.modules.faultexternal.entity.FaultExternal">
         SELECT f.*,s.line_code,s.station_code
         FROM fault_external f
-            LEFT JOIN cs_station s ON (f.spos = s.station_name and f.sline = s.line_name)
+            LEFT JOIN fault_external_line_sta_rel s ON ( f.ipos = s.ipos AND f.iline = s.iline )
         <where>
             <if test="faultExternal.startTime !=null and faultExternal.endTime !=null">
                 f.dhappen between #{faultExternal.startTime} and #{faultExternal.endTime}
             </if>
-            <if test="faultExternal.stationIds != null and faultExternal.stationIds.size() != 0">
-                and s.id in
-                <foreach collection="faultExternal.stationIds" index="index" open="(" separator="," close=")" item="item">
+            <if test="faultExternal.stationCodes != null and faultExternal.stationCodes.size() != 0">
+                and s.station_code in
+                <foreach collection="faultExternal.stationCodes" index="index" open="(" separator="," close=")" item="item">
                     #{item}
                 </foreach>
             </if>

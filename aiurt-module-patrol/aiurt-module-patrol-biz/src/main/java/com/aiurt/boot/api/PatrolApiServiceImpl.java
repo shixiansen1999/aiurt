@@ -1,7 +1,6 @@
 package com.aiurt.boot.api;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -15,11 +14,11 @@ import com.aiurt.boot.screen.model.ScreenDurationTask;
 import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
-import com.aiurt.boot.task.entity.*;
+import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.common.constant.CommonConstant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -77,46 +76,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
         // 所在月的最后一天
         Date lastDay = DateUtil.parse(DateUtil.format(instance.getTime(), "yyyy-MM-dd 23:59:59"));
 
-        //根据部门过滤数据
-        QueryWrapper<PatrolTaskOrganization> patrolTaskOrganizationQueryWrapper = new QueryWrapper<>();
-        patrolTaskOrganizationQueryWrapper.lambda().eq(PatrolTaskOrganization::getDelFlag,0);
-        List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(patrolTaskOrganizationQueryWrapper);
-
-        //根据专业和子系统过滤数据
-        LambdaQueryWrapper<PatrolTaskStandard> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(PatrolTaskStandard::getDelFlag,CommonConstant.DEL_FLAG_0);
-        List<PatrolTaskStandard> patrolTaskStandards = taskStandardMapper.selectList(lambdaQueryWrapper);
-
-        //根据线路站点过滤数据
-        LambdaQueryWrapper<PatrolTaskStation> patrolTaskStationLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        patrolTaskStationLambdaQueryWrapper.eq(PatrolTaskStation::getDelFlag,CommonConstant.DEL_FLAG_0);
-        List<PatrolTaskStation> patrolTaskStations = patrolTaskStationMapper.selectList(patrolTaskStationLambdaQueryWrapper);
-
-        QueryWrapper<PatrolTask> taskWrapper = new QueryWrapper<>();
-        taskWrapper.lambda().eq(PatrolTask::getDelFlag, 0)
-                .eq(PatrolTask::getStatus, PatrolConstant.TASK_COMPLETE)
-                .between(PatrolTask::getPatrolDate, firstDay, lastDay);
-        if (CollectionUtil.isNotEmpty(patrolTaskOrganizations)){
-            List<String> collect = patrolTaskOrganizations.stream().map(PatrolTaskOrganization::getTaskCode).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect)){
-                taskWrapper.lambda().in(PatrolTask::getCode,collect);
-            }
-        }
-
-        if(CollectionUtil.isNotEmpty(patrolTaskStandards)){
-            List<String> collect = patrolTaskStandards.stream().map(PatrolTaskStandard::getTaskId).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect)){
-                taskWrapper.lambda().in(PatrolTask::getId,collect);
-            }
-        }
-
-        if(CollectionUtil.isNotEmpty(patrolTaskStations)){
-            List<String> collect = patrolTaskStations.stream().map(PatrolTaskStation::getTaskCode).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect)){
-                taskWrapper.lambda().in(PatrolTask::getCode,collect);
-            }
-        }
-        List<PatrolTask> taskList = patrolTaskMapper.selectList(taskWrapper);
+        List<PatrolTask> taskList = patrolTaskMapper.selectpatrolTaskList(firstDay,lastDay,PatrolConstant.TASK_COMPLETE);
 
         instance.set(year, month - 1, 1);
         while (instance.get(Calendar.MONTH) == month - 1) {

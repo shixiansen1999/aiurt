@@ -11,7 +11,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.InspectionApi;
 import com.aiurt.boot.api.PatrolApi;
-import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.enums.WorkLogCheckStatusEnum;
@@ -192,7 +191,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             }
         }
         //插入签名
-        if (StringUtils.isNotBlank(dto.getSignature())) {
+        /*if (StringUtils.isNotBlank(dto.getSignature())) {
             WorkLogEnclosure enclosure = new WorkLogEnclosure();
             enclosure.setCreateBy(depot.getCreateBy());
             enclosure.setParentId(depot.getId());
@@ -200,7 +199,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             enclosure.setUrl(dto.getSignature());
             enclosure.setDelFlag(0);
             enclosureMapper.insert(enclosure);
-        }
+        }*/
         //完成任务
         //不存在userTaskService
         //userTaskService.completeWork(userId, DateUtils.date2Str(depot.getSubmitTime(), new SimpleDateFormat("yyyy-MM-dd")));
@@ -431,6 +430,38 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
 
         for (WorkLogResult record : records) {
+            //判断是否能编辑
+            Date date = new Date();
+            Date createTime = record.getCreateTime();
+            if (record.getConfirmStatus()==1 || record.getCheckStatus()==1){
+                record.setEditFlag(false);
+            }else {
+                record.setEditFlag(true);
+            }
+            if (ObjectUtil.isNotEmpty(createTime)) {
+                //控制在9点半之后、5点半之后编辑按钮隐藏
+                String today = DateUtil.today();
+                String amStart = today + " " + "08:00:00";
+                String amEnd = today + " " + "09:30:00";
+                String pmStart = today + " " + "16:00:00";
+                String pmEnd = today + " " + "16:30:00";
+                boolean am = createTime.equals(DateUtil.parse(amStart));
+                if (am) {
+                    boolean isBeforeAmEnd = date.before(DateUtil.parse(amEnd));
+                    boolean isAfterAmStart = date.after(DateUtil.parse(amStart));
+                    boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
+                    record.setEditFlag(isEdit);
+                } else {
+                    record.setEditFlag(false);
+                }
+                boolean pm = createTime.equals(DateUtil.parse(pmStart));
+                if (pm) {
+                    boolean isBeforePmEnd = date.before(DateUtil.parse(pmEnd));
+                    boolean isAfterPmStart = date.after(DateUtil.parse(pmStart));
+                    boolean isEdit2 =  (isBeforePmEnd && isAfterPmStart);
+                    record.setEditFlag(isEdit2);
+                }
+            }
 
             if (departMap!=null && stationTeamIdMap!=null){
                 String id = departMap.get(record.getSubmitOrgId());
@@ -491,23 +522,21 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             //获取是早班会16.30 还是晚班会8.30
             String am = format2+" " + morningTime;
             String pm = format2+" " + nightTime;
-            if (record.getSubmitTime().after(DateUtil.parse(am)) && record.getSubmitTime().before(DateUtil.parse(pm))) {
+            if (record.getCreateTime().after(DateUtil.parse(am)) && record.getCreateTime().before(DateUtil.parse(pm))) {
                 record.setClassTime("16时30分");
                 record.setClassName("晚班会");
             } else {
                 record.setClassTime("8时30分");
                 record.setClassName("早班会");
             }
-            LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            String orgId = user.getOrgId();
+
             //查询该部门下的人员
-            List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
+            List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(record.getOrgId());
             //获取负责人
-            String userName = iSysBaseAPI.getUserNameByOrgCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
-            if (ObjectUtil.isNotEmpty(userName)) {
-                List<String> list = StrUtil.splitTrim(userName, ",");
-                List<LoginUser> loginUserList = iSysBaseAPI.getLoginUserList(list);
-                record.setForeman(CollUtil.isNotEmpty(loginUserList) ? loginUserList.stream().map(LoginUser::getRealname).collect(Collectors.joining()) : ",");
+            SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(record.getOrgId());
+            LoginUser userById = iSysBaseAPI.getUserById(sysDepartModel.getManagerId());
+            if (ObjectUtil.isNotEmpty(userById)) {
+                record.setForeman(userById.getRealname());
             }
             //获取参与人员
             List<String> nameList = sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList());
@@ -622,21 +651,21 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         WorkLogResult workLog = depotMapper.queryById(id);
         WorkLogDTO workLogDTO = new WorkLogDTO();
         BeanUtil.copyProperties(workLog,workLogDTO);
-        if(ObjectUtil.isNotEmpty(workLog.getAssortLocation()))
-        {
-            List<String> codes = Arrays.asList(workLog.getAssortLocation().split(","));
-            String assortLocationName = null;
-            for (String code : codes) {
-                String position = iSysBaseAPI.getPosition(code);
-                if (assortLocationName == null) {
-                    assortLocationName = position;
-                } else {
-                    assortLocationName = assortLocationName + position;
-                }
-            }
-            workLogDTO.setAssortLocationName(assortLocationName);
 
+        // 配合施工地点名称
+        if (StrUtil.isNotBlank(workLog.getAssortLocation())) {
+            List<String> locations = StrUtil.split(workLog.getAssortLocation(), ',', true, true);
+            String locationNames = locations.stream().map(location -> iSysBaseAPI.getPosition(location))
+                    .filter(name -> StrUtil.isNotBlank(name)).collect(Collectors.joining(","));
+            workLogDTO.setAssortLocationName(locationNames);
         }
+
+        // 所在班组名称，orgName当前存储的是班组的orgId
+        if (StrUtil.isNotBlank(workLog.getOrgName())) {
+            List<JSONObject> dept = iSysBaseAPI.queryDepartsByIds(workLog.getOrgName());
+            workLogDTO.setOrgName(CollUtil.isEmpty(dept) ? "" : dept.get(0).getString("departName"));
+        }
+
         if(ObjectUtil.isNotEmpty(workLog.getSucceedId()))
         {
             String[] split1 = workLog.getSucceedId().split(",");
@@ -809,7 +838,13 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void editWorkLog(WorkLogDTO dto) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
         WorkLog workLog = this.getOne(new QueryWrapper<WorkLog>().eq(WorkLog.ID, dto.getId()), false);
+        workLog.setOrgId(loginUser.getOrgId());
+        workLog.setSubmitId(loginUser.getId());
+        workLog.setCreateBy(loginUser.getId());
+
         workLog.setLogTime(dto.getLogTime());
         workLog.setWorkContent(dto.getWorkContent());
         workLog.setContent(dto.getContent());
@@ -823,7 +858,13 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setFaultContent(dto.getFaultContent());
         workLog.setPatrolRepairContent(dto.getPatrolRepairContent());
         workLog.setAssortContent(dto.getAssortContent());
-        workLog.setStatus(dto.getStatus());
+        workLog.setFaultContent(dto.getFaultContent());
+        workLog.setRepairContent(dto.getRepairContent());
+        workLog.setPatrolContent(dto.getPatrolContent());
+        if (dto.getStatus() != null) {
+            workLog.setStatus(1);
+            workLog.setSubmitTime(new Date());
+        }
         workLog.setUnfinishedMatters(dto.getUnfinishedMatters());
         //工作内容赋值
         workLog.setIsDisinfect(dto.getIsDisinfect());
@@ -844,7 +885,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setOtherWorkContent(dto.getOtherWorkContent());
         workLog.setNote(dto.getNote());
         workLog.setHandoverId(dto.getHandoverId());
-
         this.updateById(workLog);
         //删除原附件列表
         enclosureMapper.deleteByName(workLog.getId());
@@ -867,10 +907,12 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             enclosure.setCreateBy(workLog.getCreateBy());
             enclosure.setParentId(workLog.getId());
             enclosure.setType(1);
-            enclosure.setUrl(dto.getSignature());
+            LoginUser user = iSysBaseAPI.getUserById(loginUser.getId());
+            enclosure.setUrl(user.getSignatureUrl());
             enclosure.setDelFlag(0);
             enclosureMapper.insert(enclosure);
         }
+
         //如果接班人不为空 发送待办消息
         if(ObjectUtil.isNotEmpty(dto.getSucceedId()))
         {
@@ -947,7 +989,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
      * 生成日志编号
      * @return
      */
-    private String generateLogCode() {
+    public String generateLogCode() {
         String code = "L";
         LocalDate now = LocalDate.now();
         int dayOfYear = now.getYear();
@@ -1196,22 +1238,19 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //获取是早班会16.30 还是晚班会8.30
         String am = format2+" "+ morningTime;
         String pm = format2+" "+ nightTime;
-        if (workLog.getSubmitTime().after(DateUtil.parse(am)) && workLog.getSubmitTime().before(DateUtil.parse(pm))) {
+        if (workLog.getCreateTime().after(DateUtil.parse(am)) && workLog.getCreateTime().before(DateUtil.parse(pm))) {
             workLog.setClassTime("16时30分");
             workLog.setClassName("晚班会");
         } else {
             workLog.setClassTime("8时30分");
             workLog.setClassName("早班会");
         }
-        LoginUser user = iSysBaseAPI.getUserById(workLog.getCreateBy());
-        String orgId = user.getOrgId();
-        List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(orgId);
+        List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(workLog.getOrgId());
         //获取负责人
-        String userName = iSysBaseAPI.getUserNameByOrgCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
-        if (ObjectUtil.isNotEmpty(userName)) {
-            List<String> list = StrUtil.splitTrim(userName, ",");
-            List<LoginUser> loginUserList = iSysBaseAPI.getLoginUserList(list);
-            workLog.setForeman(CollUtil.isNotEmpty(loginUserList) ? loginUserList.stream().map(LoginUser::getRealname).collect(Collectors.joining()) : "");
+        SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(workLog.getOrgId());
+        LoginUser userById = iSysBaseAPI.getUserById(sysDepartModel.getManagerId());
+        if (ObjectUtil.isNotEmpty(userById)) {
+            workLog.setForeman(userById.getRealname());
         }
 
         //获取参与人员

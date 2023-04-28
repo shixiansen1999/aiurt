@@ -198,6 +198,21 @@ public interface ISysBaseAPI extends CommonAPI {
     public List<ComboModel> queryAllRole(String[] roleIds);
 
     /**
+     * 角色树
+     * @param
+     * @return
+     */
+    public List<CsRoleUserModel> queryRoleUserTree();
+
+
+    /**
+     * 岗位树
+     * @param
+     * @return
+     */
+    public List<PostModel> queryPostUserTree();
+
+    /**
      * 22通过用户账号查询角色Id集合
      *
      * @param username
@@ -1018,6 +1033,12 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     List<CsLine> getAllLine();
     /**
+     * 获取所有del_flag=0的线路
+     * 按照sort排序
+     * @return
+     */
+    List<JSONObject> getAllSystem();
+    /**
      * 根据仓库编号获取仓库组织机构code
      * @param applyWarehouseCode
      * @return
@@ -1075,5 +1096,11 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getUserByUserName(String userName);
+    /**
+     * 3通过模板发送消息
+     *
+     * @param message 使用构造器赋值参数
+     */
+    void sendAllMessage(String message);
 }
 

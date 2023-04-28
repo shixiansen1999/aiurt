@@ -212,7 +212,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
 
         // 填充今日当班人数
         if (CollUtil.isNotEmpty(userIdList)) {
-            List<SysUserTeamDTO> sysUserTeamDTOS = baseMapper.getTodayOndutyDetail(page, null, orgCodes, new Date());
+            List<SysUserTeamDTO> sysUserTeamDTOS = baseMapper.getTodayOndutyDetail(page, null, orgCodes, new Date(),null);
             page.setRecords(sysUserTeamDTOS);
             result.setScheduleNum(page.getTotal());
         }
@@ -230,7 +230,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      * @return
      */
     @Override
-    public IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page) {
+    public IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page,String name) {
         List<SysUserTeamDTO> result = new ArrayList<>();
 
         // 根据传入线路和自身管理专业获取班组信息
@@ -239,7 +239,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         if (CollUtil.isNotEmpty(orgCodes)) {
 
             // 根据日期条件查询班次情况
-            result = baseMapper.getTodayOndutyDetail(page, orgcode, orgCodes, new Date());
+            result = baseMapper.getTodayOndutyDetail(page, orgcode, orgCodes, new Date(),name);
 
             // 填充角色名称
             for (SysUserTeamDTO sysUserTeamDTO : result) {
@@ -261,7 +261,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      * @return
      */
     @Override
-    public IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page) {
+    public IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page,String name) {
         List<SysUserTeamDTO> result = new ArrayList<>();
 
         // 根据传入线路和自身管理专业获取班组信息
@@ -269,7 +269,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
 
         if (CollUtil.isNotEmpty(orgCodes)) {
             // 查询总人员列表
-            result = baseMapper.getUserByDepIds(orgCodes, page, orgcode);
+            result = baseMapper.getUserByDepIds(orgCodes, page, orgcode,name);
 
             // 填充角色名称
             for (SysUserTeamDTO sysUserTeamDTO : result) {
@@ -290,7 +290,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      * @return
      */
     @Override
-    public IPage<SysTotalTeamDTO> getTotalTeamDetail(Page<SysTotalTeamDTO> page, String lineCode) {
+    public IPage<SysTotalTeamDTO> getTotalTeamDetail(Page<SysTotalTeamDTO> page, String lineCode,String orgCode,String name) {
         // 查询总班组数
         List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
         if (CollUtil.isEmpty(orgCodes)) {
@@ -298,7 +298,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         }
 
         // 获取总班组列表
-        List<SysTotalTeamDTO> result = baseMapper.getTotalTeamDetail(page, orgCodes);
+        List<SysTotalTeamDTO> result = baseMapper.getTotalTeamDetail(page, orgCodes,orgCode,name);
         page.setRecords(result);
         return page;
     }

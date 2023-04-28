@@ -6,6 +6,8 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.CodeManageDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCode;
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -123,4 +125,12 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @return
      */
     List<CodeManageDTO> selectStationList(List<String> taskCodes);
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "t2.org_code"),
+            @DataColumn(key = "stationName",value = "t3.station_code"),
+            @DataColumn(key = "lineName",value = "t3.line_code"),
+            @DataColumn(key = "majorName",value = "t5.major_code"),
+            @DataColumn(key = "systemName",value = "t5.subsystem_code")
+    })
+    List<RepairPool> getList(@Param("startDate")Date startDate,@Param("endDate") Date endDate);
 }

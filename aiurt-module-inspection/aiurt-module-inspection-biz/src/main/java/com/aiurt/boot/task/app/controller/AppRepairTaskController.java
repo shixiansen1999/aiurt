@@ -203,6 +203,27 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     }
 
     /**
+     * 检修任务领取、确认、执行
+     *
+     * @param id
+     * @param status
+     * @return
+     */
+    @AutoLog(value = "检修任务表-检修任务领取", operateType = 2, operateTypeAlias = "修改-更新任务状态", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "检修任务表-检修任务领取", notes = "检修任务表-检修任务领取")
+    @GetMapping(value = "/inspectionReceive")
+    public Result<ExamineDTO> inspectionReceive(String id,Integer status) {
+        ExamineDTO examineDTO = new ExamineDTO();
+        examineDTO.setId(id);
+        examineDTO.setInspectionStatus(status);
+        String task = repairTaskService.receiveTask(examineDTO);
+        if (!task.isEmpty()){
+            examineDTO.setId(task);
+            examineDTO.setInspectionStatus(4);
+        }
+        return Result.OK(examineDTO);
+    }
+    /**
      * 填写检修工单
      *
      * @return

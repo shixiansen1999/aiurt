@@ -76,7 +76,7 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
      * @param lineCode 线路code
      * @return
      */
-    IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page);
+    IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page,String name);
 
     /**
      * 获取大屏的班组信息-点击总人员数
@@ -84,7 +84,7 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
      * @param lineCode 线路code
      * @return
      */
-    IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page);
+    IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page,String name);
 
     /**
      * 获取大屏的班组信息-点击总班组数
@@ -93,7 +93,7 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
      * @param lineCode 线路code
      * @return
      */
-    IPage<SysTotalTeamDTO> getTotalTeamDetail(Page<SysTotalTeamDTO> page, String lineCode);
+    IPage<SysTotalTeamDTO> getTotalTeamDetail(Page<SysTotalTeamDTO> page, String lineCode,String orgCode,String name);
 
     /**
      * 查询今日当班人员信息

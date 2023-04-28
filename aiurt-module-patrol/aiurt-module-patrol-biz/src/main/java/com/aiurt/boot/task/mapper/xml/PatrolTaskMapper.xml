@@ -3,16 +3,15 @@
 <mapper namespace="com.aiurt.boot.task.mapper.PatrolTaskMapper">
     <select id="getPatrolTaskPoolList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
      SELECT
+     DISTINCT
 	t1.*
 FROM
 	(
 	SELECT
 		t1.*,
 		date_format( t1.create_time, '%Y-%m-%d' ) AS creatTime,
-		GROUP_CONCAT( cl.line_name ) AS lineName,
 		GROUP_CONCAT( DISTINCT cl.sort ) AS lineSort,
 		SUBSTRING_INDEX( GROUP_CONCAT( DISTINCT cs.sort ), ',', 1 ) * 1 AS stationSort,
-		( SELECT realname FROM sys_user WHERE id = t1.end_user_id ) AS endUserName,
 		concat(
 			DATE_FORMAT( t1.start_time, '%H:%i' ),
 			"-",
@@ -20,15 +19,13 @@ FROM
 	FROM
 		patrol_task t1
 		LEFT JOIN patrol_task_station pts ON t1.`code` = pts.task_code
-		LEFT JOIN cs_station cs ON pts.station_code = cs.station_code
-		LEFT JOIN cs_line cl ON cs.line_code = cl.line_code
+		LEFT JOIN cs_station cs ON (pts.station_code = cs.station_code	AND cs.del_flag = 0 )
+		LEFT JOIN cs_line cl ON( cs.line_code = cl.line_code AND cl.del_flag = 0 )
 	WHERE
 		t1.STATUS NOT IN ( 6, 7, 8 )
 		AND t1.del_flag = 0
 		AND t1.omit_status = 0
 		AND t1.discard_status = 0
-		AND cs.del_flag = 0
-		AND cl.del_flag = 0
         <if test="patrolTaskDTO.lineCode != null and patrolTaskDTO.lineCode !=''">
             AND cl.line_code = #{patrolTaskDTO.lineCode}
         </if>
@@ -43,6 +40,7 @@ FROM
 	GROUP BY
 		t1.id
 	) AS t1
+	    LEFT JOIN patrol_task_organization pto ON t1.`code` = pto.task_code AND pto.del_flag = 0
 		where 1=1
         <if test="patrolTaskDTO.dateScope != null and patrolTaskDTO.dateScope != ''">
             and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d')
@@ -104,11 +102,12 @@ FROM
 	    t1.stationSort ASC;
     </select>
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
-        select t1.*,
+        select DISTINCT t1.*,
                (select realname from sys_user where id = t1.end_user_id)                           as
                                                                                                       endUserName,
                concat(DATE_FORMAT(t1.start_time, '%H:%i'), "-", DATE_FORMAT(t1.end_time, '%H:%i')) as startEndTime
         from patrol_task t1
+        LEFT JOIN patrol_task_organization pto ON t1.`code` = pto.task_code AND pto.del_flag = 0
                 where t1.status in (6, 7)
                   and t1.del_flag = 0
                   and t1.omit_status = 0
@@ -420,14 +419,18 @@ FROM
         </if>
     </select>
     <select id="getIndexPatrolList" resultType="com.aiurt.boot.statistics.model.PatrolIndexTask">
-        SELECT sub.*
+        SELECT pt.*
                 FROM
                 ( SELECT
+                pt.id,
+                pt.`code`,
                 pts.station_code,
                 cs.station_name,
                 cs.line_code,
                 cs.line_name,
                 GROUP_CONCAT(pt.`code`)                taskCode,
+                GROUP_CONCAT(DISTINCT t2.`org_code`),
+                GROUP_CONCAT(DISTINCT t3.`user_name`) as userInfo,
                 IF(MIN(pt.`status`) = 7, '已完成', '未完成') statusName,
                 MAX(pt.submit_time)                    submitTime
         <if test="regexp != null and regexp != ''">
@@ -437,29 +440,13 @@ FROM
         FROM patrol_task pt
                      JOIN patrol_task_station pts ON pt.`code` = pts.task_code
                      JOIN cs_station cs ON pts.station_code = cs.station_code
+        left join patrol_task_organization t2 on pt.code = t2.task_code and t2.del_flag = 0
+        left join patrol_task_user t3 on pt.code = t3.task_code and t3.del_flag = 0
                 WHERE pt.del_flag = 0
         <if test="condition.startDate != null and condition.endDate != null">
             AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
                     BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
                     AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
-        </if>
-        <if test="departList != null and departList.size > 0">
-            AND pt.`code` in
-            <foreach collection="departList" item="item" open="(" separator="," close=")">
-                #{item.taskCode}
-            </foreach>
-        </if>
-        <if test="patrolTaskStations != null and patrolTaskStations.size > 0">
-            AND pt.`code` in
-            <foreach collection="patrolTaskStations" item="item" open="(" separator="," close=")">
-                #{item.taskCode}
-            </foreach>
-        </if>
-        <if test="standard != null and standard.size() != 0">
-            AND pt.id in
-            <foreach collection="standard" item="item" open="(" separator="," close=")">
-                #{item.taskId}
-            </foreach>
         </if>
         <if test="condition.omitStatus != null">
             AND pt.omit_status = #{condition.omitStatus}
@@ -477,14 +464,21 @@ FROM
         <if test="condition.type != null and condition.type == 2">
             HAVING MIN( pt.`status` ) &lt;&gt; 7
         </if>
-        ) sub
+        ) pt
+        left join patrol_task_organization t2 on pt.code = t2.task_code
+        left join patrol_task_standard t3 on pt.id = t3.task_id
+        left join patrol_task_station t4 on pt.code = t4.task_code
         <if test="condition.finishStatus != null">
-            where sub.`status` = #{condition.finishStatus}
+            where pt.`status` = #{condition.finishStatus}
         </if>
+        GROUP BY pt.station_code
     </select>
     <select id="getIndexTaskList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
-        SELECT pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time
+        SELECT pt.id,pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time
         FROM patrol_task pt
+        left join patrol_task_organization t2 on pt.code = t2.task_code and t2.del_flag = 0
+        left join patrol_task_standard t3 on pt.id = t3.task_id and t3.del_flag = 0
+        left join patrol_task_station t4 on pt.code = t4.task_code and t4.del_flag = 0
                 WHERE pt.del_flag = 0
         <if test="condition.startDate != null and condition.endDate != null">
             AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
@@ -494,14 +488,8 @@ FROM
         <if test="condition.state != null">
             AND pt.abnormal_state = #{condition.state}
         </if>
-        <!--        <if test="condition.taskCode != null and condition.taskCode.size>0">-->
-        <!--            AND pt.`code` IN-->
-        <!--            <foreach collection="condition.taskCode" item="item" open="(" separator="," close=")">-->
-        <!--                #{item}-->
-        <!--            </foreach>-->
-        <!--        </if>-->
         <if test="condition.stationCode != null and condition.stationCode != ''">
-            AND pt.`code` IN (SELECT task_code FROM patrol_task_station WHERE station_code = #{condition.stationCode})
+            AND t4.station_code = #{condition.stationCode}
         </if>
         <if test="condition.status != null and condition.status.length > 0">
             AND pt.`status` IN
@@ -524,24 +512,7 @@ FROM
         <if test="condition.orgCode != null and condition.orgCode != ''">
             AND pt.`code` IN (SELECT task_code FROM patrol_task_organization WHERE org_code = #{condition.orgCode})
         </if>
-        <if test="departList != null and departList.size > 0">
-            AND pt.`code` in
-            <foreach collection="departList" item="item" open="(" separator="," close=")">
-                #{item.taskCode}
-            </foreach>
-        </if>
-        <if test="patrolTaskStations != null and patrolTaskStations.size > 0">
-            AND pt.`code` in
-            <foreach collection="patrolTaskStations" item="item" open="(" separator="," close=")">
-                #{item.taskCode}
-            </foreach>
-        </if>
-        <if test="standard != null and standard.size() != 0">
-            AND pt.id in
-            <foreach collection="standard" item="item" open="(" separator="," close=")">
-                #{item.taskId}
-            </foreach>
-        </if>
+        group by pt.id
     </select>
     <select id="getScheduleList" resultType="com.aiurt.boot.statistics.model.ScheduleTask">
         SELECT pt.`name`,
@@ -597,30 +568,16 @@ FROM
         GROUP BY pt.`code`
     </select>
     <select id="getOverviewInfo" resultType="com.aiurt.boot.task.entity.PatrolTask">
-        SELECT *
-        FROM patrol_task
-                WHERE del_flag = 0
+        SELECT pt.*
+        FROM patrol_task pt
+        left join patrol_task_organization t2 on pt.code = t2.task_code and t2.del_flag = 0
+        left join patrol_task_standard t3 on pt.id = t3.task_id and t3.del_flag = 0
+        left join patrol_task_station t4 on pt.code = t4.task_code and t4.del_flag = 0
+                WHERE pt.del_flag = 0
         <if test="startDate != null and endDate != null">
-            AND patrol_date BETWEEN #{startDate} AND #{endDate}
+            AND pt.patrol_date BETWEEN #{startDate} AND #{endDate}
         </if>
-        <if test="departList != null and departList.size > 0">
-            AND `code` in
-            <foreach collection="departList" item="item" open="(" separator="," close=")">
-                #{item.taskCode}
-            </foreach>
-        </if>
-        <if test="taskIds != null and taskIds.size() != 0">
-            AND id in
-            <foreach collection="taskIds" item="item" open="(" separator="," close=")">
-                #{item.taskId}
-            </foreach>
-        </if>
-        <if test="patrolTaskStations != null and patrolTaskStations.size() != 0">
-            AND `code` in
-            <foreach collection="patrolTaskStations" item="item" open="(" separator="," close=")">
-                #{item.taskCode}
-            </foreach>
-        </if>
+        group by pt.id
     </select>
     <select id="getUserTask" resultType="com.aiurt.boot.task.entity.PatrolTask">
         SELECT pt.id,
@@ -1402,5 +1359,15 @@ FROM
         AND
         create_time <![CDATA[ <= ]]> #{date}
         order by create_time desc
+    </select>
+
+    <select id="selectpatrolTaskList" resultType="com.aiurt.boot.task.entity.PatrolTask">
+        select t1.patrol_date from  patrol_task t1
+        left join patrol_task_organization t2 on t1.code = t2.task_code
+        left join patrol_task_standard t3 on t1.id = t3.task_id
+        left join patrol_task_station t4 on t1.code = t4.task_code
+        where t1.del_flag = 0 and t1.status = #{status}
+        and date_format(t1.patrol_date ,'%Y-%m-%d') &gt;=date_format(#{firstDay} ,'%Y-%m-%d')
+        and date_format(t1.patrol_date ,'%Y-%m-%d') &lt;=date_format(#{lastDay} ,'%Y-%m-%d')
     </select>
 </mapper>

@@ -11,6 +11,7 @@ import com.aiurt.boot.standard.service.IInspectionCodeService;
 import com.aiurt.boot.strategy.entity.InspectionCoOrgRel;
 import com.aiurt.boot.strategy.service.IInspectionCoOrgRelService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -99,6 +100,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     @AutoLog(value = "检修标准表-添加", operateType =  2, operateTypeAlias = "添加", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修标准表-添加", notes = "检修标准表-添加")
     @PostMapping(value = "/add")
+    @LimitSubmit(key = "add:#inspectionCode")
     public Result<String> add(@RequestBody InspectionCode inspectionCode) {
         List<OrgVO> orgCodeList = inspectionCode.getOrgCodeList();
         for (OrgVO s : orgCodeList) {

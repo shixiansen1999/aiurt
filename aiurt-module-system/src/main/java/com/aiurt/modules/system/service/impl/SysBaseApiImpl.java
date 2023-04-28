@@ -809,6 +809,72 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return list;
     }
 
+
+    @Override
+    public List<CsRoleUserModel>queryRoleUserTree(){
+        List<CsRoleUserModel> list = new ArrayList<>();
+        List<SysRole> roleList = roleMapper.selectList(new QueryWrapper<SysRole>());
+        for (SysRole role : roleList) {
+            CsRoleUserModel csRoleUserModel = new CsRoleUserModel();
+            csRoleUserModel.setValue(role.getId());
+            csRoleUserModel.setKey(role.getRoleCode());
+            csRoleUserModel.setLabel(role.getRoleName());
+            csRoleUserModel.setIsOrg(true);
+            LambdaQueryWrapper<SysUserRole> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(SysUserRole::getRoleId,role.getId());
+            List<SysUserRole> sysUserRoles = sysUserRoleMapper.selectList(lambdaQueryWrapper);
+            if (CollUtil.isNotEmpty(sysUserRoles)){
+                List<String> collect = sysUserRoles.stream().map(SysUserRole::getUserId).collect(Collectors.toList());
+                List<SysUser> sysUsers = userMapper.selectList(new LambdaQueryWrapper<SysUser>()
+                        .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+                        .in(SysUser::getId, collect));
+                if (CollUtil.isNotEmpty(sysUsers)){
+                    List<SysUserModel> sysUserModelList = new ArrayList<>();
+                    for (SysUser sysUser : sysUsers) {
+                        SysUserModel sysUserModel = new SysUserModel();
+                        sysUserModel.setValue(sysUser.getId());
+                        sysUserModel.setLabel(sysUser.getRealname());
+                        sysUserModel.setIsOrg(false);
+                        sysUserModelList.add(sysUserModel);
+                    }
+                    csRoleUserModel.setChildren(sysUserModelList);
+                }
+            }
+            list.add(csRoleUserModel);
+        }
+        return  list;
+    }
+
+    @Override
+    public List<PostModel>queryPostUserTree(){
+        List<PostModel> list = new ArrayList<>();
+        List<DictModel> sysPost = this.getDictItems("sys_post");
+        if (CollUtil.isNotEmpty(sysPost)){
+            for (DictModel dictModel : sysPost) {
+                 PostModel postModel = new PostModel();
+                 postModel.setLabel(dictModel.getText());
+                 postModel.setIsOrg(true);
+                 //根据岗位查询用户信息
+                List<SysUser> sysUsers = userMapper.selectList(new LambdaQueryWrapper<SysUser>()
+                        .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+                        .eq(SysUser::getJobName, dictModel.getValue()));
+                if (CollUtil.isNotEmpty(sysUsers)){
+                    List<SysUserModel> sysUserModelList = new ArrayList<>();
+                    for (SysUser sysUser : sysUsers) {
+                        SysUserModel sysUserModel = new SysUserModel();
+                        sysUserModel.setValue(sysUser.getId());
+                        sysUserModel.setLabel(sysUser.getRealname());
+                        sysUserModel.setIsOrg(false);
+                        sysUserModelList.add(sysUserModel);
+                    }
+                    postModel.setChildren(sysUserModelList);
+                }
+                list.add(postModel);
+            }
+        }
+        return list;
+    }
+
     @Override
     public List<ComboModel> queryAllRole(String[] roleIds) {
         List<ComboModel> list = new ArrayList<ComboModel>();
@@ -846,6 +912,18 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         queryWrapper.eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0);
         queryWrapper.orderByAsc(CsLine::getSort);
         return lineMapper.selectList(queryWrapper);
+    }
+
+    @Override
+    public List<JSONObject> getAllSystem() {
+        List<CsSubsystem> csSubsystems = subsystemMapper.selectList(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<JSONObject> jsonObjects = new ArrayList<>();
+        for (CsSubsystem subsystem : csSubsystems) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("code",subsystem.getSystemCode());
+            jsonObjects.add(jsonObject);
+        }
+        return jsonObjects;
     }
 
     @Override
@@ -1600,7 +1678,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode , String name) {
+    public List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode, String name) {
 
         QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
         deviceTypeQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
@@ -2984,5 +3062,27 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public String getUserByUserName(String userName) {
         SysUser user = userMapper.getUserByName(userName);
         return user.getId();
+    }
+
+    @Override
+    public void sendAllMessage(String message) {
+        List<SysUser> userList = userMapper.selectList(new LambdaQueryWrapper<SysUser>().eq(SysUser::getOrgCode, "A01A01A01A01").eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+        String[] userIds = userList.stream().map(SysUser::getUsername).toArray(String[]::new);
+//        for (int i = 0; i < userIds.length; i++) {
+//            if (org.jeecg.common.util.oConvertUtils.isNotEmpty(userIds[i])) {
+//                SysUser sysUser = userMapper.getUserByName(userIds[i]);
+//                if (sysUser == null) {
+//                    continue;
+//                }
+                JSONObject obj = new JSONObject();
+                obj.put(WebsocketConst.MSG_CMD, WebsocketConst.CMD_USER);
+//                obj.put(WebsocketConst.MSG_USER_ID, sysUser.getId());
+                obj.put(WebsocketConst.MSG_TXT, message);
+                if (ObjectUtil.isNotEmpty(message)) {
+                    obj.put(WebsocketConst.IS_RING_BELL, true);
+                }
+                webSocket.sendAllMessage(obj.toJSONString());
+            //}
+        //}
     }
 }

@@ -19,6 +19,8 @@ import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.WorkLogParam;
 import com.aiurt.modules.worklog.service.IWorkLogService;
+import com.aiurt.modules.worklog.task.DayWorkLogAutoAdd;
+import com.aiurt.modules.worklog.task.NightWorkLogAutoAdd;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -76,6 +78,10 @@ public class WorkLogController {
     private ISysBaseAPI iSysBaseAPI;
     @Autowired
     private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private NightWorkLogAutoAdd nightWorkLogAutoAdd;
+    @Autowired
+    private DayWorkLogAutoAdd dayWorkLogAutoAdd;
     /**
      * 工作日志上报-分页列表查询
      * @param pageNo
@@ -340,12 +346,38 @@ public class WorkLogController {
     @GetMapping(value = "/queryDetail")
     public Result<WorkLogDTO> queryDetail(@RequestParam String id) {
         Result<WorkLogDTO> result = new Result<WorkLogDTO>();
+        Date date = new Date();
         WorkLogDTO detailById = workLogDepotService.getDetailById(id);
+        Date createTime = detailById.getCreateTime();
         if (detailById.getConfirmStatus()==1 || detailById.getCheckStatus()==1){
             detailById.setEditFlag(false);
         }else {
             detailById.setEditFlag(true);
         }
+        //控制在9点半之后、5点半之后编辑按钮隐藏
+        if (ObjectUtil.isNotEmpty(createTime)) {
+            String today = DateUtil.today();
+            String amStart = today + " " + "08:00:00";
+            String amEnd = today + " " + "09:30:00";
+            String pmStart = today + " " + "16:00:00";
+            String pmEnd = today + " " + "16:30:00";
+
+            boolean am = createTime.equals(DateUtil.parse(amStart));
+            if (am) {
+                boolean isBeforeAmEnd = date.before(DateUtil.parse(amEnd));
+                boolean isAfterAmStart = date.after(DateUtil.parse(amStart));
+                boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
+                detailById.setEditFlag(isEdit);
+            }
+            boolean pm = createTime.equals(DateUtil.parse(pmStart));
+            if (pm) {
+                boolean isBeforePmEnd = date.before(DateUtil.parse(pmEnd));
+                boolean isAfterPmStart = date.after(DateUtil.parse(pmStart));
+                boolean isEdit2 =  (isBeforePmEnd && isAfterPmStart);
+                detailById.setEditFlag(isEdit2);
+            }
+        }
+
         //result.setResult(detailById);
         return Result.ok(detailById);
     }
@@ -559,5 +591,27 @@ public class WorkLogController {
         });
 
         return Result.ok("归档成功");
+    }
+
+    /**
+     * 白班工作日志触发接口(供测试用)
+     */
+    @AutoLog(value = "白班工作日志触发接口(供测试用)", operateType = 2, operateTypeAlias = "新增", permissionUrl = "/dayWorkLogAutoAdd")
+    @RequestMapping(value = "/dayWorkLogAutoAdd", method = RequestMethod.POST)
+    public Result<?> dayWorkLogAutoAdd() {
+        dayWorkLogAutoAdd.execute();
+        return Result.ok();
+    }
+
+    /**
+     * 晚班工作日志检测触发接口(供测试用)
+     *
+     * @return
+     */
+    @AutoLog(value = "晚班工作日志检测触发接口(供测试用)", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/nightWorkLogAutoAdd")
+    @RequestMapping(value = "/nightWorkLogAutoAdd", method = RequestMethod.POST)
+    public Result<?> nightWorkLogAutoAdd() {
+        nightWorkLogAutoAdd.execute();
+        return Result.ok();
     }
 }

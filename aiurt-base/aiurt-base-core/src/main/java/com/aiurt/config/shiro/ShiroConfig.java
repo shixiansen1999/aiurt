@@ -162,7 +162,8 @@ public class ShiroConfig {
         //测试模块排除
         filterChainDefinitionMap.put("/test/seata/**", "anon");
         filterChainDefinitionMap.put("/sys/loginWithoutCaptcha/**", "anon");
-
+        //故障下发排除
+        filterChainDefinitionMap.put("/external/faultExternal/appendFault","anon");
         // 添加自己的过滤器并且取名为jwt
         Map<String, Filter> filterMap = new HashMap<String, Filter>(1);
         //如果cloudServer为空 则说明是单体 需要加载跨域配置【微服务跨域切换】

@@ -2,12 +2,16 @@ package com.aiurt.modules.largescream.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.fault.dto.*;
+import com.aiurt.modules.largescream.model.ReliabilityWorkTime;
 import com.aiurt.modules.largescream.service.FaultInformationService;
+import com.aiurt.modules.position.entity.CsLine;
+import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -26,6 +30,8 @@ import java.util.List;
 public class FaultInformationController {
     @Resource
     private FaultInformationService faultInformationService;
+    @Resource
+    private ISysBaseAPI iSysBaseAPI;
 
     @AutoLog(value = "综合大屏-故障信息统计")
     @ApiOperation(value="综合大屏-故障信息统计", notes="综合大屏-故障信息统计")
@@ -189,8 +195,30 @@ public class FaultInformationController {
     @AutoLog(value = "综合大屏-子系统可靠度", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "综合大屏-子系统可靠度", notes = "综合大屏-子系统可靠度")
     @RequestMapping(value = "/getSystemReliability", method = RequestMethod.GET)
-    public Result<List<FaultSystemReliabilityDTO>> getSystemReliability(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam(value="boardTimeType",required = false)Integer boardTimeType){
-        List<FaultSystemReliabilityDTO> systemReliability = faultInformationService.getSystemReliability(boardTimeType);
+    public Result<List<FaultSystemReliabilityDTO>> getSystemReliability(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1")
+                                                                            @RequestParam(value="boardTimeType",required = false)Integer boardTimeType,
+                                                                            @RequestParam(value="lineCode",required = false)String lineCode){
+        List<FaultSystemReliabilityDTO> systemReliability = faultInformationService.getSystemReliability(boardTimeType,lineCode);
         return Result.ok(systemReliability);
     }
+    /**
+     * 子系统可靠度接口
+     * @return
+     */
+    @AutoLog(value = "子系统可靠度", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "子系统可靠度", notes = "子系统可靠度")
+    @RequestMapping(value = "/insertSystemReliability", method = RequestMethod.GET)
+    public void addReliabilityWorkTime(){
+        List<CsLine> allLine = iSysBaseAPI.getAllLine();
+        List<JSONObject> allSystem = iSysBaseAPI.getAllSystem();
+        for (CsLine line : allLine) {
+            for (JSONObject jsonObject : allSystem) {
+                ReliabilityWorkTime workTime =new ReliabilityWorkTime();
+                workTime.setLineCode(line.getLineCode());
+                workTime.setSystemCode(jsonObject.getString("code"));
+                faultInformationService.insertSystemReliability(workTime);
+            }
+        }
+    }
 }
+

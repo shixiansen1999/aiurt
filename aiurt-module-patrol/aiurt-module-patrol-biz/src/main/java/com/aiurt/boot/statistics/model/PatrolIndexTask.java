@@ -73,4 +73,7 @@ public class PatrolIndexTask implements Serializable {
      */
     @ApiModelProperty(value = "任务编号")
     private String taskCode;
+
+    @ApiModelProperty(value = "组织机构编码")
+    private String orgCode;
 }

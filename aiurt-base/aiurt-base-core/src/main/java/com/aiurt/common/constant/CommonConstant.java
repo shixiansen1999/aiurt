@@ -467,6 +467,17 @@ public interface CommonConstant {
      * 分隔符  /
      */
     public static final String SYSTEM_SPLIT_STR = "/";
+
+ /**
+  * 是  /
+  */
+ public static final String SHI = "是";
+
+
+ /**
+  * 否  /
+  */
+ public static final String FOU = "否";
     /**
      * 物资分类及设备分类pid  ,
      */
