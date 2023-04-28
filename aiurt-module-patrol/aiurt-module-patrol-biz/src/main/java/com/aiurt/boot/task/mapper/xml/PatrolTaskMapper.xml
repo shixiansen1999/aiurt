@@ -464,9 +464,9 @@
     <select id="getIndexTaskList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
         SELECT pt.id,pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time
         FROM patrol_task pt
-        left join patrol_task_organization t2 on pt.code = t2.task_code and t2.del_flag = 0
-        left join patrol_task_standard t3 on pt.id = t3.task_id and t3.del_flag = 0
-        left join patrol_task_station t4 on pt.code = t4.task_code and t4.del_flag = 0
+        left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
+        left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
+        left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
         WHERE pt.del_flag = 0
         <if test="condition.startDate != null and condition.endDate != null">
             AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
@@ -477,7 +477,7 @@
             AND pt.abnormal_state = #{condition.state}
         </if>
         <if test="condition.stationCode != null and condition.stationCode != ''">
-            AND t4.station_code = #{condition.stationCode}
+            AND pts.station_code = #{condition.stationCode}
         </if>
         <if test="condition.status != null and condition.status.length > 0">
             AND pt.`status` IN
@@ -500,7 +500,10 @@
         <if test="condition.orgCode != null and condition.orgCode != ''">
             AND pt.`code` IN (SELECT task_code FROM patrol_task_organization WHERE org_code = #{condition.orgCode})
         </if>
-        group by pt.id
+        <if test="condition.jointSQL != null and condition.jointSQL != ''">
+            and ${condition.jointSQL}
+        </if>
+        GROUP BY pt.`code`
     </select>
     <select id="getScheduleList" resultType="com.aiurt.boot.statistics.model.ScheduleTask">
         SELECT pt.`name`,
