@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.aiurt.boot.statistics.dto.IndexOrgDTO;
@@ -55,4 +56,12 @@ public interface PatrolTaskOrganizationMapper extends BaseMapper<PatrolTaskOrgan
      * @return
      */
     List<String> getTaskCodeByUserOrg();
+
+    /**
+     * 首页巡视异常任务的组织机构信息
+     *
+     * @param taskCodes
+     * @return
+     */
+    List<IndexOrgDTO> getOrgInfo(@Param("taskCodes") List<String> taskCodes);
 }
