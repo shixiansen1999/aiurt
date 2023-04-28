@@ -69,6 +69,7 @@
     <select id="getInspectionData" resultType="com.aiurt.boot.index.dto.InspectionDTO">
         select distinct code,weeks,status from repair_pool rp
         left join repair_pool_org_rel rpor on rpor.repair_pool_code = rp.code
+        LEFT JOIN repair_pool_station_rel rr ON rr.repair_pool_code = rp.`code`
         <where>
             rp.del_flag = 0
             <if test="beginDate!=null and endDate!=null">
@@ -83,6 +84,9 @@
             </if>
             <if test="item!=null and item==2">
                 and status = 8
+            </if>
+            <if test="lineCode != null and lineCode != ''">
+                and rr.line_code = #{lineCode}
             </if>
         </where>
     </select>

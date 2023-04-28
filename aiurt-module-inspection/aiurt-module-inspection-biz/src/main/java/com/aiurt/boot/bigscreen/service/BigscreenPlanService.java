@@ -153,7 +153,7 @@ public class BigscreenPlanService {
 
         // 查询计划数、完成数
         if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)) {
-            result = repairPoolMapper.getInspectionData(page, orgCodes, item, time[0], time[1]);
+            result = repairPoolMapper.getInspectionData(page, orgCodes, item, time[0], time[1],lineCode);
         }
 
         // TODO 漏检
