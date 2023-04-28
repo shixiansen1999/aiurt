@@ -778,7 +778,7 @@ public class FaultInformationService {
                         Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                         faultSystemReliabilityDTO.setActualRuntime(d);
                     }
-                    planTime = planTime / 60;
+//                    planTime = planTime / 60;
                     Double plan = null;
                     plan = new BigDecimal(planTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                     faultSystemReliabilityDTO.setScheduledRuntime(plan);
