@@ -96,11 +96,11 @@ public class IndexPlanService {
         LambdaQueryWrapper<RepairPool> queryWrapper = new LambdaQueryWrapper<>();
         doQuery(startDate, endDate, isAllData, queryWrapper);
 
-        //查询关联表，获取部门code
-        List<RepairPoolOrgRel> poolOrgRelList = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+       /* //查询关联表，获取部门code
+        List<RepairPoolOrgRel> poolOrgRelList = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));*/
 
         //查询关联表，获取线路，站点code
-        List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        /*List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(repairPoolStationRels)) {
             result.setSum(0L);
             result.setFinish(0L);
@@ -135,11 +135,11 @@ public class IndexPlanService {
             result.setOmit(0L);
             result.setOmitRate("0%");
             return result;
-        }
+        }*/
 
-        queryWrapper.in(RepairPool::getCode, poolOrgRelList.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList()));
-        queryWrapper.in(RepairPool::getCode, repairPoolRels.stream().map(RepairPoolRel::getRepairPoolCode).collect(Collectors.toList()));
-        queryWrapper.in(RepairPool::getCode, repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList()));
+      /*  queryWrapper.in(RepairPool::getCode, poolOrgRelList.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList()));*/
+   /*     queryWrapper.in(RepairPool::getCode, repairPoolRels.stream().map(RepairPoolRel::getRepairPoolCode).collect(Collectors.toList()));
+        queryWrapper.in(RepairPool::getCode, repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList()));*/
 
         List<RepairPool> repairPoolList = repairPoolMapper.selectList(queryWrapper);
 
@@ -225,22 +225,22 @@ public class IndexPlanService {
             taskDetailsReq.setIsAllData(InspectionConstant.IS_ALL_DATA_0);
         }
         // List<String> codeByOrgCode = getCodeByOrgCode();
-        List<RepairPoolOrgRel> codeByOrgCode = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-        List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+       /* List<RepairPoolOrgRel> codeByOrgCode = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));*/
+      /*  List<RepairPoolCode> poolCodeList = poolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0));
         //查询关联表，获取线路，站点code
         List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<String> repairPoolIds = poolCodeList.stream().map(RepairPoolCode::getId).collect(Collectors.toList());
         List<RepairPoolRel> repairPoolRels = poolRelMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().in(RepairPoolRel::getRepairPoolStaId, repairPoolIds));
         if (CollUtil.isEmpty(repairPoolIds) || CollUtil.isEmpty(codeByOrgCode) || CollUtil.isEmpty(repairPoolRels) || CollUtil.isEmpty(repairPoolStationRels)) {
             return result;
-        }
+        }*/
         // 用于判断是否是一整月的查询
         // 如果是一整个月查询，那么返回的dayBegin是这个月的第一周的开始时间，dayEnd是这个月最后一周的结束时间
         JudgeIsMonthQuery judgeIsMonthQuery = new JudgeIsMonthQuery(taskDetailsReq.getStartTime(), taskDetailsReq.getEndTime()).invoke();
         taskDetailsReq.setStartTime(judgeIsMonthQuery.getDayBegin());
         taskDetailsReq.setEndTime(judgeIsMonthQuery.getDayEnd());
 
-        List<TaskDetailsDTO> detailsDTOList = indexPlanMapper.getGropuByData(taskDetailsReq.getType(), page, taskDetailsReq, codeByOrgCode, repairPoolRels,repairPoolStationRels);
+        List<TaskDetailsDTO> detailsDTOList = indexPlanMapper.getGropuByData(taskDetailsReq.getType(), page, taskDetailsReq, null, null,null);
 
         boolean b = GlobalThreadLocal.setDataFilter(false);
         // 查询出符合条件的检修详情数据
