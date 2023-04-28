@@ -97,30 +97,51 @@ public class PatrolStatisticsService {
         String filterConditions = SqlBuilderUtil.buildSql(map, mapping);
 //        log.info("SQl:{}", filterConditions);
 
-        List<PatrolTask> list = patrolTaskMapper.getOverviewInfo(newStartDate, newEndDate,filterConditions);
+//        //  ******原统计实现方法-Begin********
+//        List<PatrolTask> list = patrolTaskMapper.getOverviewInfo(newStartDate, newEndDate,filterConditions);
+////        boolean openClose = GlobalThreadLocal.setDataFilter(false);
+//        long sum = list.stream().count();
+//        long finish = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
+//        long unfinish = sum - finish;
+//        long abnormal = list.stream().filter(l -> PatrolConstant.TASK_ABNORMAL.equals(l.getAbnormalState())).count();
+//        long overhaul = list.stream().filter(l -> !PatrolConstant.TASK_COMPLETE.equals(l.getStatus()) && !PatrolConstant.TASK_INIT.equals(l.getStatus())).count();
+//        long omit = 0L;
+//        String omitRate = String.format("%.2f", 0F);
+//
+//        List<Date> startList = this.getOmitDateScope(startDate);
+//        List<Date> endList = this.getOmitDateScope(endDate);
+//        Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
+//        Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
+////         漏检任务列表
+////        List<PatrolTask> omitList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
+////                .between(PatrolTask::getPatrolDate, startTime, endTime).list();
+//
+////        GlobalThreadLocal.setDataFilter(openClose);
+//        List<PatrolTask> omitList = patrolTaskMapper.getOverviewInfo(startTime, endTime,filterConditions);
+//        // 漏检时间范围内的任务总数
+//        long omitScopeSum = omitList.size();
+//        omit += omitList.stream().filter(l -> PatrolConstant.OMIT_STATUS.equals(l.getOmitStatus())).count();
+//        //  ******原统计实现方法-End********
 
-//        boolean openClose = GlobalThreadLocal.setDataFilter(false);
-        long sum = list.stream().count();
-        long finish = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
-        long unfinish = list.stream().filter(l -> PatrolConstant.TASK_INIT.equals(l.getStatus())).count();
-        long abnormal = list.stream().filter(l -> PatrolConstant.TASK_ABNORMAL.equals(l.getAbnormalState())).count();
-        long overhaul = list.stream().filter(l -> !PatrolConstant.TASK_COMPLETE.equals(l.getStatus()) && !PatrolConstant.TASK_INIT.equals(l.getStatus())).count();
-        long omit = 0L;
-        String omitRate = String.format("%.2f", 0F);
-
+        //  ******数据库统计实现方法-Begin********
+        IndexCountDTO indexCountDTO = new IndexCountDTO(startDate, endDate, filterConditions);
+        PatrolSituation overviewInfoCount = patrolTaskMapper.getOverviewInfoCount(indexCountDTO);
+        // 漏巡数统计
         List<Date> startList = this.getOmitDateScope(startDate);
         List<Date> endList = this.getOmitDateScope(endDate);
         Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
         Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
-////         漏检任务列表
-//        List<PatrolTask> omitList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-//                .between(PatrolTask::getPatrolDate, startTime, endTime).list();
+        IndexCountDTO indexCountOmitDTO = new IndexCountDTO(startTime, endTime, filterConditions);
+        PatrolSituation overviewInfoOmitCount = patrolTaskMapper.getOverviewInfoCount(indexCountOmitDTO);
 
-//        GlobalThreadLocal.setDataFilter(openClose);
-        List<PatrolTask> omitList = patrolTaskMapper.getOverviewInfo(startTime, endTime,filterConditions);
-        // 漏检时间范围内的任务总数
-        long omitScopeSum = omitList.size();
-        omit += omitList.stream().filter(l -> PatrolConstant.OMIT_STATUS.equals(l.getOmitStatus())).count();
+        Long sum = ObjectUtil.isEmpty(overviewInfoCount.getSum()) ? 0 : overviewInfoCount.getSum();
+        Long finish = ObjectUtil.isEmpty(overviewInfoCount.getFinish()) ? 0 : overviewInfoCount.getFinish();
+        Long unfinish = ObjectUtil.isEmpty(overviewInfoCount.getUnfinish()) ? 0 : overviewInfoCount.getUnfinish();
+        Long abnormal = ObjectUtil.isEmpty(overviewInfoCount.getAbnormal()) ? 0 : overviewInfoCount.getAbnormal();
+        Long omit = ObjectUtil.isEmpty(overviewInfoOmitCount.getOmit()) ? 0 : overviewInfoOmitCount.getOmit();
+        Long omitScopeSum = ObjectUtil.isEmpty(overviewInfoOmitCount.getSum()) ? 0 : overviewInfoOmitCount.getSum();
+        String omitRate = String.format("%.2f", 0F);
+        //*******数据库统计实现方法-End*********
 
         // 漏检率精确到小数点后两位，需要四舍五入
         if (omit != 0 && omitScopeSum != 0) {
@@ -131,7 +152,7 @@ public class PatrolStatisticsService {
         situation.setSum(sum);
         situation.setFinish(finish);
         situation.setUnfinish(unfinish);
-        situation.setOverhaul(overhaul);
+//        situation.setOverhaul(overhaul);
         situation.setAbnormal(abnormal);
         situation.setOmit(omit);
         situation.setOmitRate(omitRate);
