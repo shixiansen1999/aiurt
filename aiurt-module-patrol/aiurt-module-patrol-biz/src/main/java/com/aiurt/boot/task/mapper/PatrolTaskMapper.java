@@ -12,12 +12,10 @@ import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
 import com.aiurt.boot.screen.model.ScreenStatisticsTask;
 import com.aiurt.boot.screen.model.ScreenTran;
 import com.aiurt.boot.standard.dto.StationDTO;
+import com.aiurt.boot.statistics.dto.IndexCountDTO;
 import com.aiurt.boot.statistics.dto.IndexScheduleDTO;
 import com.aiurt.boot.statistics.dto.IndexTaskDTO;
-import com.aiurt.boot.statistics.model.IndexTaskInfo;
-import com.aiurt.boot.statistics.model.PatrolCondition;
-import com.aiurt.boot.statistics.model.PatrolIndexTask;
-import com.aiurt.boot.statistics.model.ScheduleTask;
+import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.dto.GeneralReturn;
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
@@ -491,4 +489,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
             @DataColumn(key = "stationName",value = "t4.station_code")
     })
     List<PatrolTask> selectpatrolTaskList(@Param("firstDay")Date firstDay,@Param("lastDay") Date lastDay, @Param("status")Integer status);
+
+    /**
+     * 首页统计巡视数量(巡视总数、已巡视、未巡视、异常数)
+     */
+//    PatrolSituation getOverviewInfoCount(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("jointSQL") String filterConditions);
+    PatrolSituation getOverviewInfoCount(@Param("condition") IndexCountDTO indexCountDTO);
+
 }
