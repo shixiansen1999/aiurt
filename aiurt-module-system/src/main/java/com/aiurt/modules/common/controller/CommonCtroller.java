@@ -222,7 +222,8 @@ public class CommonCtroller {
         // 系统管理员不做权限过滤
 
 
-        List<CsLine> lineList = lineService.getBaseMapper().selectList(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag,0));
+        List<CsLine> lineList = lineService.getBaseMapper().selectList(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag,0)
+                .ne(CsLine::getLineCode,"NO1").ne(CsLine::getLineCode,"ehx0001").ne(CsLine::getLineCode,"01").ne(CsLine::getLineCode,"02"));
 
         Map<String, String> lineMap = lineList.stream().collect(Collectors.toMap(CsLine::getLineCode, CsLine::getLineName, (t1, t2) -> t2));
 
@@ -238,10 +239,10 @@ public class CommonCtroller {
         Map<String, List<CsUserStationModel>> stationMap = stationModelList.stream().collect(Collectors.groupingBy(CsUserStationModel::getLineCode));
 
         LambdaQueryWrapper<CsStationPosition> positionWrapper = new LambdaQueryWrapper<>();
-        positionWrapper.eq(CsStationPosition::getDelFlag, 0);
-      /*  List<CsStationPosition> positionList = stationPositionService.getBaseMapper().selectList(positionWrapper);
+        positionWrapper.eq(CsStationPosition::getDelFlag, 0) .ne(CsStationPosition::getLineCode,"NO1").ne(CsStationPosition::getLineCode,"ehx0001").ne(CsStationPosition::getLineCode,"01").ne(CsStationPosition::getLineCode,"02");
+        List<CsStationPosition> positionList = stationPositionService.getBaseMapper().selectList(positionWrapper);
 
-        Map<String, List<CsStationPosition>> positionMap = positionList.stream().collect(Collectors.groupingBy(CsStationPosition::getStaionCode));*/
+        Map<String, List<CsStationPosition>> positionMap = positionList.stream().collect(Collectors.groupingBy(CsStationPosition::getStaionCode));
 
         List<SelectTable> list = new ArrayList<>();
         stationMap.keySet().stream().forEach(lineCode -> {
@@ -262,7 +263,7 @@ public class CommonCtroller {
                 selectTable.setLineCode(lineCode);
                 selectTable.setStationCode(csStation.getStationCode());
 
-               /* List<CsStationPosition> stationPositionList = positionMap.getOrDefault(csStation.getStationCode(), Collections.emptyList());
+                List<CsStationPosition> stationPositionList = positionMap.getOrDefault(csStation.getStationCode(), Collections.emptyList());
 
                 List<SelectTable> tableList = stationPositionList.stream().map(csStationPosition -> {
                     SelectTable tableV = new SelectTable();
@@ -275,7 +276,7 @@ public class CommonCtroller {
                     tableV.setPositionCode(csStationPosition.getPositionCode());
                     return tableV;
                 }).collect(Collectors.toList());
-                selectTable.setChildren(tableList);*/
+                selectTable.setChildren(tableList);
                 return selectTable;
             }).collect(Collectors.toList());
 
