@@ -190,7 +190,9 @@ public class FaultInformationService {
                 faultKnowledgeBaseTypeLambdaQueryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, CommonConstant.DEL_FLAG_0)
                         .eq(FaultKnowledgeBaseType::getCode,l.getFaultPhenomenon());
                 FaultKnowledgeBaseType faultKnowledgeBaseType = faultKnowledgeBaseTypeMapper.selectOne(faultKnowledgeBaseTypeLambdaQueryWrapper);
-                l.setFaultPhenomenonName(faultKnowledgeBaseType.getName());
+                if(ObjectUtil.isNotEmpty(faultKnowledgeBaseType)){
+                    l.setFaultPhenomenonName(faultKnowledgeBaseType.getName());
+                }
             }
         });
         return largeFaultInfo;
