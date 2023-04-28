@@ -905,16 +905,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             }
         }
         //插入签名
-        if (StringUtils.isNotBlank(dto.getSignature())) {
-            WorkLogEnclosure enclosure = new WorkLogEnclosure();
-            enclosure.setCreateBy(workLog.getCreateBy());
-            enclosure.setParentId(workLog.getId());
-            enclosure.setType(1);
-            LoginUser user = iSysBaseAPI.getUserById(loginUser.getId());
-            enclosure.setUrl(user.getSignatureUrl());
-            enclosure.setDelFlag(0);
-            enclosureMapper.insert(enclosure);
-        }
+        WorkLogEnclosure enclosure = new WorkLogEnclosure();
+        enclosure.setCreateBy(workLog.getCreateBy());
+        enclosure.setParentId(workLog.getId());
+        enclosure.setType(1);
+        LoginUser user = iSysBaseAPI.getUserById(loginUser.getId());
+        enclosure.setUrl(user.getSignatureUrl());
+        enclosure.setDelFlag(0);
+        enclosureMapper.insert(enclosure);
 
         //如果接班人不为空 发送待办消息
         if(ObjectUtil.isNotEmpty(dto.getSucceedId()))

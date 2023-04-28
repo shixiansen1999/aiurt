@@ -731,7 +731,7 @@ public class FaultInformationService {
         Date endDate = DateUtil.parse(split[1]);
 
         //查询按系统分类好的并计算了故障消耗总时长的记录
-        List<FaultSystemTimesDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate, majors);
+        List<FaultSystemTimesDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate, majors,lineCode);
         //查询子系统设备数
         List<FaultSystemDeviceSumDTO> systemDeviceSum = faultInformationMapper.getLineSystem(lineCode,currentLoginUserSubsystems);
         if (ObjectUtil.isNotEmpty(systemDeviceSum)) {
@@ -760,22 +760,22 @@ public class FaultInformationService {
                                 if (faultSystemTimeDTO.getSubSystemCode().equals(faultSystemDeviceSumDTO.getSystemCode())) {
                                     if (ObjectUtil.isNotEmpty(faultSystemTimeDTO.getRepairTime())) {
                                         Double repairTime = faultSystemTimeDTO.getRepairTime();
-                                        actualTime = planTime - repairTime;
-                                        Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                        actualTime = actualTime - repairTime;
+                                        Double d = new BigDecimal(actualTime ).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                         faultSystemReliabilityDTO.setActualRuntime(d);
                                     } else {
-                                        Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                        Double d = new BigDecimal(actualTime ).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                         faultSystemReliabilityDTO.setActualRuntime(d);
                                     }
                                 } else {
-                                    Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                    Double d = new BigDecimal(actualTime ).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                     faultSystemReliabilityDTO.setActualRuntime(d);
                                 }
                             }
 
                         }
                     } else {
-                        Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                        Double d = new BigDecimal(actualTime ).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                         faultSystemReliabilityDTO.setActualRuntime(d);
                     }
 //                    planTime = planTime / 60;
