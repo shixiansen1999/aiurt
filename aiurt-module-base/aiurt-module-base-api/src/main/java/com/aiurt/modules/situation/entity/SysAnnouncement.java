@@ -185,6 +185,12 @@ public class SysAnnouncement implements Serializable {
     @Dict(dicCode = "level")
     private String level;
 
+    /**
+     * 特情等级
+     */
+    @TableField(exist = false)
+    private String level_dictText;
+
     /**阅读状态（0未读，1已读）*/
     @Dict(dicCode = "read_flag")
     @TableField(exist = false)
