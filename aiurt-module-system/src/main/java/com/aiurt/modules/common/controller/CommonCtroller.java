@@ -207,6 +207,20 @@ public class CommonCtroller {
         return Result.OK(list);
     }
 
+    @ApiOperation("异步加载位置树")
+    @GetMapping("/position/async/queryTreeByAuth")
+    @ApiImplicitParams({
+            @ApiImplicitParam(dataTypeClass = String.class, name = "name", value = "搜索名称", required = false, paramType = "query"),
+            @ApiImplicitParam(dataTypeClass = String.class, name = "pid", value = "父节点", required = false, paramType = "query"),
+            @ApiImplicitParam(dataTypeClass = String.class, name = "queryAll", value = "查询全部， 1是， 0否，或者不传", required = false, paramType = "query"),
+    })
+    public Result<List<SelectTable>> queryPositionTreeAsync(@RequestParam(name = "name", required = false) String name,
+                                                            @RequestParam(name = "pid", required = false)String pid,
+                                                            @RequestParam(name = "queryAll", required = false)String queryAll) {
+        List<SelectTable> list = commonService.queryPositionTreeAsync(name, pid, queryAll);
+        return Result.ok(list);
+    }
+
 
     /**
      * 根据个人权限获取位置树
@@ -230,7 +244,7 @@ public class CommonCtroller {
         List<CsUserStationModel> stationModelList = Collections.emptyList();
         // 根据个人管理的站点
         if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
-            stationModelList = userStationService.queryAllStation();
+            stationModelList = userStationService.queryAllStation(null);
         }else {
             stationModelList = sysBaseApi.getStationByUserId(userId);
         }
@@ -314,7 +328,9 @@ public class CommonCtroller {
             table.setLabel(lineMap.get(lineCode));
             table.setValue(lineCode);
             table.setLevel(1);
+            table.setKey(lineCode);
             table.setLineCode(lineCode);
+            table.setTitle(lineMap.get(lineCode));
             //
             List<CsStation> csStationList = stationMap.getOrDefault(lineCode, Collections.emptyList());
 
@@ -323,6 +339,7 @@ public class CommonCtroller {
                 selectTable.setValue(csStation.getStationCode());
                 selectTable.setLabel(csStation.getStationName());
                 selectTable.setLevel(2);
+                selectTable.setTitle(csStation.getStationName());
                 selectTable.setKey(csStation.getId());
                 selectTable.setLineCode(lineCode);
                 selectTable.setStationCode(csStation.getStationCode());
