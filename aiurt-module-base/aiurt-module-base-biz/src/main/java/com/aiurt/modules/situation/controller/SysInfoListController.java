@@ -28,6 +28,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -280,6 +282,9 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
                 String msgContent = announcement.getMsgContent();
                 String replace = StrUtil.replace(msgContent, "<p>", "");
                 String replace1 = StrUtil.replace(replace, "</p>", "");
+                List<DictModel> level = iSysBaseAPI.getDictItems("level");
+                String s = level.stream().filter(l -> l.getValue().equals(announcement.getLevel())).map(DictModel::getText).collect(Collectors.joining());
+                announcement.setLevel_dictText(s);
                 announcement.setMsgContent(replace1);
                 bdInfoListService.getUserNames(announcement);
                 result.setSuccess(true);

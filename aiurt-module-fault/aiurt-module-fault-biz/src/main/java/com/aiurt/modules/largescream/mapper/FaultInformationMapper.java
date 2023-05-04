@@ -149,7 +149,7 @@ public interface FaultInformationMapper {
      * @param majors
      * @return
      */
-    List<FaultSystemTimesDTO> getSystemFaultSum(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("majors") List<String> majors);
+    List<FaultSystemTimesDTO> getSystemFaultSum(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("majors") List<String> majors,@Param("lineCode") String lineCode);
 
 
     /**

@@ -372,6 +372,9 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
                     #{item}
                 </foreach>
             </if>
+            <if test="lineCode != null ">
+                and f.line_code =#{lineCode}
+            </if>
         </where>
         group by f.sub_system_code
     </select>

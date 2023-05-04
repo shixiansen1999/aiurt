@@ -1362,12 +1362,13 @@ FROM
     </select>
 
     <select id="selectpatrolTaskList" resultType="com.aiurt.boot.task.entity.PatrolTask">
-        select t1.patrol_date from  patrol_task t1
+        select t1.id,t1.patrol_date from  patrol_task t1
         left join patrol_task_organization t2 on t1.code = t2.task_code
         left join patrol_task_standard t3 on t1.id = t3.task_id
         left join patrol_task_station t4 on t1.code = t4.task_code
         where t1.del_flag = 0 and t1.status = #{status}
         and date_format(t1.patrol_date ,'%Y-%m-%d') &gt;=date_format(#{firstDay} ,'%Y-%m-%d')
         and date_format(t1.patrol_date ,'%Y-%m-%d') &lt;=date_format(#{lastDay} ,'%Y-%m-%d')
+        GROUP BY t1.id
     </select>
 </mapper>

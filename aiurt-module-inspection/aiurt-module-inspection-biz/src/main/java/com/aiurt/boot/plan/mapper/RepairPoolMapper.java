@@ -74,7 +74,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @param endDate
      * @return
      */
-    List<InspectionDTO> getInspectionData(@Param("page") Page<InspectionDTO> page,@Param("orgCodes") List<String> orgCodes,@Param("item") Integer item,@Param("beginDate") Date beginDate,@Param("endDate") Date endDate);
+    List<InspectionDTO> getInspectionData(@Param("page") Page<InspectionDTO> page,@Param("orgCodes") List<String> orgCodes,@Param("item") Integer item,@Param("beginDate") Date beginDate,@Param("endDate") Date endDate,@Param("lineCode") String lineCode);
 
     /**
      * 今日检修（带分页）
