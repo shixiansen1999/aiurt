@@ -221,14 +221,15 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param patrolTaskOrganizations
      * @return
      */
-    @DataPermission({
-            @DataColumn(key = "deptName",value = "pto.org_code"),
-            @DataColumn(key = "majorName",value = "pts2.major_code"),
-            @DataColumn(key = "systemName",value = "pts2.system_code"),
-            @DataColumn(key = "lineName",value = "pts.station_code"),
-            @DataColumn(key = "stationName",value = "pts.station_code")
-    })
-    IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, @Param("condition") IndexScheduleDTO indexScheduleDTO, @Param("patrolTaskOrganizations") List<PatrolTaskOrganization> patrolTaskOrganizations);
+//    @DataPermission({
+//            @DataColumn(key = "deptName",value = "pto.org_code"),
+//            @DataColumn(key = "majorName",value = "pts2.major_code"),
+//            @DataColumn(key = "systemName",value = "pts2.system_code"),
+//            @DataColumn(key = "lineName",value = "pts.station_code"),
+//            @DataColumn(key = "stationName",value = "pts.station_code")
+//    })
+//    IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, @Param("condition") IndexScheduleDTO indexScheduleDTO, @Param("patrolTaskOrganizations") List<PatrolTaskOrganization> patrolTaskOrganizations);
+    IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, @Param("condition") IndexScheduleDTO indexScheduleDTO);
 
     /**
      * 获取首页指定日期范围的任务列表

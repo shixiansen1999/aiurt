@@ -506,7 +506,8 @@
         GROUP BY pt.`code`
     </select>
     <select id="getScheduleList" resultType="com.aiurt.boot.statistics.model.ScheduleTask">
-        SELECT pt.`name`,
+        SELECT
+        pt.`name`,
         pt.`code`,
         pt.`status`,
         pt.patrol_date,
@@ -515,20 +516,13 @@
         GROUP_CONCAT(DISTINCT cs.station_name SEPARATOR '；' ) stationInfo,
         GROUP_CONCAT(DISTINCT sd.depart_name SEPARATOR '；' ) orgInfo
         FROM patrol_task pt
-        LEFT JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
-        AND ptu.del_flag = 0
-        LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code
-        AND pts.del_flag = 0
-        LEFT JOIN cs_station cs ON pts.station_code = cs.station_code
-        AND cs.del_flag = 0
-        LEFT JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
-        AND pto.del_flag = 0
-        LEFT JOIN sys_depart sd ON pto.org_code = sd.org_code
-        AND sd.del_flag = 0
-        LEFT JOIN patrol_task_standard pts2 ON pt.id = pts2.task_id
-        AND pts2.del_flag = 0
-        WHERE
-        pt.del_flag = 0
+        LEFT JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code AND ptu.del_flag = 0
+        LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
+        LEFT JOIN cs_station cs ON pts.station_code = cs.station_code AND cs.del_flag = 0
+        LEFT JOIN patrol_task_organization pto ON pt.`code` = pto.task_code AND pto.del_flag = 0
+        LEFT JOIN sys_depart sd ON pto.org_code = sd.org_code AND sd.del_flag = 0
+        LEFT JOIN patrol_task_standard ptsd ON pt.id = ptsd.task_id AND ptsd.del_flag = 0
+        WHERE pt.del_flag = 0
         <if test="condition.date != null">
             AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.date}, '%Y-%m-%d')
         </if>
@@ -556,6 +550,9 @@
         <!--            </foreach>-->
         <!--            )-->
         <!--        </if>-->
+        <if test="condition.jointSQL != null and condition.jointSQL != ''">
+            ${condition.jointSQL}
+        </if>
         GROUP BY pt.`code`
     </select>
     <select id="getOverviewInfo" resultType="com.aiurt.boot.task.entity.PatrolTask">
@@ -1366,7 +1363,7 @@
     </select>
 
     <select id="selectpatrolTaskList" resultType="com.aiurt.boot.task.entity.PatrolTask">
-        select t1.patrol_date
+        select distinct t1.*
         from patrol_task t1
                  left join patrol_task_organization t2 on t1.code = t2.task_code
                  left join patrol_task_standard t3 on t1.id = t3.task_id

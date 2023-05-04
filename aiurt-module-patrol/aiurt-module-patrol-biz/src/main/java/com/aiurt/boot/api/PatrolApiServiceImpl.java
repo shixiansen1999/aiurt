@@ -18,6 +18,9 @@ import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.config.datafilter.constant.DataPermRuleType;
+import com.aiurt.config.datafilter.utils.ContextUtil;
+import com.aiurt.config.datafilter.utils.SqlBuilderUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -27,6 +30,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -86,6 +90,38 @@ public class PatrolApiServiceImpl implements PatrolApi {
             instance.add(Calendar.DATE, 1);
         }
         return map;
+    }
+
+    /**
+     * 获取数据权限的SQL片段
+     */
+    public String getPermissionSQL(HttpServletRequest request) {
+        Map<String, String> map = (Map<String, String>) request.getAttribute(ContextUtil.FILTER_DATA_AUTHOR_RULES);
+        Map<String, String> mapping = this.getColumnMapping();
+        String filterConditions = SqlBuilderUtil.buildSql(map, mapping);
+        return filterConditions;
+    }
+
+    /**
+     * 初始化并返回一个预定义的列映射。
+     *
+     * @return 返回一个包含预定义列映射的 Map 对象
+     */
+    public Map<String, String> getColumnMapping() {
+        Map<String, String> columnMapping = new HashMap<>(8);
+        // 当前的部门
+        columnMapping.put(DataPermRuleType.TYPE_DEPT_ONLY, "pto.org_code");
+        // 管理的部门
+        columnMapping.put(DataPermRuleType.TYPE_MANAGE_DEPT, "pto.org_code");
+        // 管理的线路
+        columnMapping.put(DataPermRuleType.TYPE_MANAGE_LINE_ONLY, "pts.station_code");
+        // 管理的站点
+        columnMapping.put(DataPermRuleType.TYPE_MANAGE_STATION_ONLY, "pts.line_code");
+        // 管理的专业
+        columnMapping.put(DataPermRuleType.TYPE_MANAGE_MAJOR_ONLY, "ptsd.profession_code");
+        // 管理的子系统
+        columnMapping.put(DataPermRuleType.TYPE_MANAGE_SYSTEM_ONLY, "ptsd.subsystem_code");
+        return columnMapping;
     }
 
     @Override

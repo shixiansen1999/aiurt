@@ -92,10 +92,7 @@ public class PatrolStatisticsService {
         PatrolSituation situation = new PatrolSituation();
 
         // 获取权限数据
-        Map<String, String> map = (Map<String, String>) request.getAttribute(ContextUtil.FILTER_DATA_AUTHOR_RULES);
-        // 此处的别名与下面getIndexPatrolList方法共用，因此起的别名需要一样
-        Map<String, String> mapping = this.getColumnMapping();
-        String filterConditions = SqlBuilderUtil.buildSql(map, mapping);
+        String filterConditions = this.getPermissionSQL(request);
 //        log.info("SQl:{}", filterConditions);
 
 //        //  ******原统计实现方法-Begin********
@@ -265,9 +262,7 @@ public class PatrolStatisticsService {
             throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
         }
         // 获取权限数据
-        Map<String, String> map = (Map<String, String>) request.getAttribute(ContextUtil.FILTER_DATA_AUTHOR_RULES);
-        Map<String, String> mapping = this.getColumnMapping();
-        String filterConditions = SqlBuilderUtil.buildSql(map, mapping);
+        String filterConditions = this.getPermissionSQL(request);
         patrolCondition.setJointSQL(filterConditions);
 //        log.info("SQl:{}", filterConditions);
         pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp);
@@ -316,6 +311,15 @@ public class PatrolStatisticsService {
         return pageList;
     }
 
+    /**
+     * 获取数据权限的SQL片段
+     */
+    public String getPermissionSQL(HttpServletRequest request) {
+        Map<String, String> map = (Map<String, String>) request.getAttribute(ContextUtil.FILTER_DATA_AUTHOR_RULES);
+        Map<String, String> mapping = this.getColumnMapping();
+        String filterConditions = SqlBuilderUtil.buildSql(map, mapping);
+        return filterConditions;
+    }
 
     /**
      * 初始化并返回一个预定义的列映射。
@@ -366,9 +370,7 @@ public class PatrolStatisticsService {
         }
 
         // 获取权限数据
-        Map<String, String> map = (Map<String, String>) request.getAttribute(ContextUtil.FILTER_DATA_AUTHOR_RULES);
-        Map<String, String> mapping = this.getColumnMapping();
-        String filterConditions = SqlBuilderUtil.buildSql(map, mapping);
+        String filterConditions = this.getPermissionSQL(request);
         indexTaskDTO.setJointSQL(filterConditions);
 
         pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO);
@@ -492,32 +494,68 @@ public class PatrolStatisticsService {
      * @param indexScheduleDTO
      * @return
      */
-    public IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, IndexScheduleDTO indexScheduleDTO) {
+    @DisableDataFilter
+    public IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page,HttpServletRequest request, IndexScheduleDTO indexScheduleDTO) {
         IPage<ScheduleTask> pageList = null;
         // 默认已完成
         if (ObjectUtil.isEmpty(indexScheduleDTO.getStatus())) {
             indexScheduleDTO.setStatus(PatrolConstant.TASK_COMPLETE);
         }
-        if (ObjectUtil.isNotEmpty(indexScheduleDTO.getIsAllData()) && ALLDATA.equals(indexScheduleDTO.getIsAllData())) {
-            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, null);
-        } else {
-//            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-//            if (ObjectUtil.isEmpty(loginUser)) {
-//                throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
-//            }
-//            List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
-            //数据权限
-//            List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
-            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, null);
-        }
+//        if (ObjectUtil.isNotEmpty(indexScheduleDTO.getIsAllData()) && ALLDATA.equals(indexScheduleDTO.getIsAllData())) {
+//            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, null);
+//        } else {
+////            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+////            if (ObjectUtil.isEmpty(loginUser)) {
+////                throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
+////            }
+////            List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
+//            //数据权限
+////            List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+//            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, null);
+//        }
+        String filterConditions = this.getPermissionSQL(request);
+        indexScheduleDTO.setJointSQL(filterConditions);
 
-        pageList.getRecords().stream().forEach(l -> {
+        pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO);
+        if(CollectionUtil.isNotEmpty(pageList.getRecords())) {
             // 字典翻译
-            String statusName = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS).stream()
-                    .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
-                    .map(DictModel::getText).collect(Collectors.joining());
-            l.setStatusName(statusName);
-        });
+            Map<String, String> statusItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
+                    .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+            pageList.getRecords().forEach(l -> l.setStatusName(statusItems.get(String.valueOf(l.getStatus()))));
+        }
         return pageList;
+    }
+
+    public List<PatrolCheckResultDTO> getTaskBills(String taskId) {
+        //获取巡视单和检查项
+        List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGangedInfo(taskId);
+        List<PatrolCheckResultDTO> patrolCheckResultDTOS = new ArrayList<PatrolCheckResultDTO>();
+        for (PatrolBillDTO patrolBillDTO : billGangedInfo) {
+            PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(patrolBillDTO.getBillCode()))
+                    .orElseGet(PatrolTaskDeviceParam::new);
+            List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
+            // 字典翻译
+            Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
+                    .stream().filter(l1 -> StrUtil.isNotEmpty(l1.getText()))
+                    .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+            checkResultList.stream().forEach(c -> {
+                c.setRequiredDictName(requiredItems.get(String.valueOf(c.getRequired())));
+                if (ObjectUtil.isNotNull(c.getDictCode())) {
+                    List<DictModel> list = sysBaseApi.getDictItems(c.getDictCode());
+                    list.stream().forEach(l2 -> {
+                        if (PatrolConstant.DEVICE_INP_TYPE.equals(c.getInputType())) {
+                            if (l2.getValue().equals(c.getOptionValue())) {
+                                c.setCheckDictName(l2.getTitle());
+                            }
+                        }
+                    });
+                }
+                String userName = patrolTaskMapper.getUserName(c.getUserId());
+                c.setCheckUserName(userName);
+            });
+            List<PatrolCheckResultDTO> tree = patrolTaskDeviceService.getTree(checkResultList, "0");
+            patrolCheckResultDTOS.addAll(tree);
+        }
+        return patrolCheckResultDTOS;
     }
 }
