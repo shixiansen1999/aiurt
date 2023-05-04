@@ -35,5 +35,5 @@ public interface ICommonService {
      * @param pid
      * @return
      */
-    List<SelectTable> queryPositionTreeAsync(String name, String pid);
+    List<SelectTable> queryPositionTreeAsync(String name, String pid, String queryAll);
 }

@@ -316,7 +316,7 @@ public class CommonServiceImpl implements ICommonService {
      * @return
      */
     @Override
-    public List<SelectTable> queryPositionTreeAsync(String name, String pid) {
+    public List<SelectTable> queryPositionTreeAsync(String name, String pid, String queryAll) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String userId = loginUser.getId();
         String roleCodes = loginUser.getRoleCodes();
@@ -325,7 +325,7 @@ public class CommonServiceImpl implements ICommonService {
         if (StrUtil.isBlank(pid) || StrUtil.equalsAnyIgnoreCase(pid, "0")) {
             List<CsUserStationModel> stationModelList = Collections.emptyList();
             // 根据个人管理的站点
-            if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
+            if ((StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) || StrUtil.equalsIgnoreCase(queryAll, String.valueOf(CommonConstant.DEL_FLAG_1))) {
                 stationModelList = userStationService.queryAllStation(null);
             }else {
                 stationModelList = sysBaseApi.getStationByUserId(userId);
@@ -360,7 +360,7 @@ public class CommonServiceImpl implements ICommonService {
 
         List<CsUserStationModel> stationModelList = null;
         // 不等于0， 子节点,需要判断是站点还是位置。 判断是否有权限
-        if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
+        if ((StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) || StrUtil.equalsIgnoreCase(queryAll, String.valueOf(CommonConstant.DEL_FLAG_1))) {
             stationModelList = userStationService.queryAllStation(pid);
         }else {
             stationModelList = userStationService.queryByUserIdAndLineCode(userId, pid);
@@ -397,6 +397,7 @@ public class CommonServiceImpl implements ICommonService {
                     .level(3)
                     .id(csStationPosition.getPositionCode())
                     .pid(pid)
+                    .isLeaf(true)
                     .lineCode(csStationPosition.getLineCode())
                     .stationCode(csStationPosition.getStaionCode())
                     .positionCode(csStationPosition.getPositionCode()).build();

@@ -1,5 +1,6 @@
 package com.aiurt.modules.common.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -85,6 +86,8 @@ public class SelectTable {
 
     private String title;
 
+
+    @JsonProperty("pId")
     private String pid;
 
     private String systemCode;
