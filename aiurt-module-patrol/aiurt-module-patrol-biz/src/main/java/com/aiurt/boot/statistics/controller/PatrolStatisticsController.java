@@ -4,6 +4,7 @@ import com.aiurt.boot.statistics.dto.IndexScheduleDTO;
 import com.aiurt.boot.statistics.dto.IndexTaskDTO;
 import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.statistics.service.PatrolStatisticsService;
+import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author JB
@@ -89,6 +91,19 @@ public class PatrolStatisticsController {
     }
 
     /**
+     * 首页-获取首页的巡视任务列表的工单和检查项树
+     *
+     * @return
+     */
+    @AutoLog(value = "首页-获取首页的巡视任务列表的工单和检查项树", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-获取首页的巡视任务列表的工单和检查项树", notes = "首页-获取首页的巡视任务列表的工单和检查项树")
+    @RequestMapping(value = "/getTaskBills", method = {RequestMethod.GET})
+    public Result<?> getTaskBills(@ApiParam(name = "taskId", value = "任务记录的ID") @RequestParam(name = "pageNo") String taskId) {
+        List<PatrolCheckResultDTO> list = patrolStatisticsService.getTaskBills(taskId);
+        return Result.OK(list);
+    }
+
+    /**
      * 获取首页的日程的巡检列表
      *
      * @return
@@ -99,9 +114,10 @@ public class PatrolStatisticsController {
     @PermissionData(pageComponent = "dashboard/Analysis")
     public Result<IPage<ScheduleTask>> getScheduleList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                       HttpServletRequest request,
                                                        @Validated IndexScheduleDTO indexScheduleDTO) {
         Page<ScheduleTask> page = new Page<>(pageNo, pageSize);
-        IPage<ScheduleTask> pageList = patrolStatisticsService.getScheduleList(page, indexScheduleDTO);
+        IPage<ScheduleTask> pageList = patrolStatisticsService.getScheduleList(page,request, indexScheduleDTO);
         return Result.ok(pageList);
     }
 }
