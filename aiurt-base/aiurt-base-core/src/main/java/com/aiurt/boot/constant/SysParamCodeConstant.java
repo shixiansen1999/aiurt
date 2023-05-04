@@ -181,5 +181,12 @@ public interface SysParamCodeConstant {
      * 施工计划通知
      */
     String WEEK = "week";
-
+    /**
+     * 工作日志早上停止编辑时间
+     */
+    String WORKLOG_AM_STOPEDIT = "worklog_am_stopedit";
+    /**
+     * 工作日志下午停止编辑时间
+     */
+    String WORKLOG_PM_STOPEDIT = "worklog_pm_stopedit";
 }

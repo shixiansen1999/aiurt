@@ -19,6 +19,7 @@ import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
+import com.aiurt.modules.largescream.model.ReliabilityWorkTime;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
@@ -189,7 +190,9 @@ public class FaultInformationService {
                 faultKnowledgeBaseTypeLambdaQueryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, CommonConstant.DEL_FLAG_0)
                         .eq(FaultKnowledgeBaseType::getCode,l.getFaultPhenomenon());
                 FaultKnowledgeBaseType faultKnowledgeBaseType = faultKnowledgeBaseTypeMapper.selectOne(faultKnowledgeBaseTypeLambdaQueryWrapper);
-                l.setFaultPhenomenonName(faultKnowledgeBaseType.getName());
+                if(ObjectUtil.isNotEmpty(faultKnowledgeBaseType)){
+                    l.setFaultPhenomenonName(faultKnowledgeBaseType.getName());
+                }
             }
         });
         return largeFaultInfo;
@@ -730,7 +733,7 @@ public class FaultInformationService {
         Date endDate = DateUtil.parse(split[1]);
 
         //查询按系统分类好的并计算了故障消耗总时长的记录
-        List<FaultSystemTimesDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate, majors);
+        List<FaultSystemTimesDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate, majors,lineCode);
         //查询子系统设备数
         List<FaultSystemDeviceSumDTO> systemDeviceSum = faultInformationMapper.getLineSystem(lineCode,currentLoginUserSubsystems);
         if (ObjectUtil.isNotEmpty(systemDeviceSum)) {
@@ -759,22 +762,22 @@ public class FaultInformationService {
                                 if (faultSystemTimeDTO.getSubSystemCode().equals(faultSystemDeviceSumDTO.getSystemCode())) {
                                     if (ObjectUtil.isNotEmpty(faultSystemTimeDTO.getRepairTime())) {
                                         Double repairTime = faultSystemTimeDTO.getRepairTime();
-                                        actualTime = planTime - repairTime;
-                                        Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                        actualTime = actualTime - repairTime;
+                                        Double d = new BigDecimal(actualTime ).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                         faultSystemReliabilityDTO.setActualRuntime(d);
                                     } else {
-                                        Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                        Double d = new BigDecimal(actualTime ).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                         faultSystemReliabilityDTO.setActualRuntime(d);
                                     }
                                 } else {
-                                    Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                    Double d = new BigDecimal(actualTime ).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                     faultSystemReliabilityDTO.setActualRuntime(d);
                                 }
                             }
 
                         }
                     } else {
-                        Double d = new BigDecimal(actualTime / 60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                        Double d = new BigDecimal(actualTime ).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                         faultSystemReliabilityDTO.setActualRuntime(d);
                     }
 //                    planTime = planTime / 60;
@@ -823,4 +826,7 @@ public class FaultInformationService {
         return subsystemByUserId.stream().map(CsUserSubsystemModel::getSystemCode).collect(Collectors.toList());
     }
 
+    public void insertSystemReliability(ReliabilityWorkTime workTime) {
+        faultInformationMapper.insertSystemReliability(workTime);
+    }
 }

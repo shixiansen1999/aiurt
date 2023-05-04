@@ -836,7 +836,9 @@ public class FlowApiServiceImpl implements FlowApiService {
             LoginUser userByName = sysBaseAPI.getUserByName(startUserId);
 
             flowTaskVo.setProcessInstanceInitiator(startUserId);
-            flowTaskVo.setProcessInstanceInitiatorName(userByName.getRealname());
+            if (ObjectUtil.isNotNull(userByName)){
+                flowTaskVo.setProcessInstanceInitiatorName(userByName.getRealname());
+            }
             flowTaskVo.setProcessInstanceStartTime(processInstance.getStartTime());
             flowTaskVo.setBusinessKey(processInstance.getBusinessKey());
             flowTaskVoList.add(flowTaskVo);

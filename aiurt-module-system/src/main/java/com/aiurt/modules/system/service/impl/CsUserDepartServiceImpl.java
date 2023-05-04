@@ -64,14 +64,17 @@ public class CsUserDepartServiceImpl extends ServiceImpl<CsUserDepartMapper, CsU
                     for (String orgCode : orgCodes) {
                         CsUserDepartModel model = new CsUserDepartModel();
                         SysDepart depart = departMapper.queryDepartByOrgCode(orgCode);
-                        Object o = map.get(depart.getOrgCode());
-                        if (ObjectUtil.isEmpty(o)) {
-                            BeanUtil.copyProperties(depart,model);
-                            model.setSelect(false);
-                            map.put(orgCode, depart);
-                            models.add(model);
+                        if (ObjectUtil.isEmpty(depart)) {
+                            System.out.println(sysDepart.getId()+"该组织结构编码层级有误");
+                        } else {
+                            Object o = map.get(depart.getOrgCode());
+                            if (ObjectUtil.isEmpty(o)) {
+                                BeanUtil.copyProperties(depart,model);
+                                model.setSelect(false);
+                                map.put(orgCode, depart);
+                                models.add(model);
+                            }
                         }
-
                     }
                 }
             }

@@ -345,7 +345,7 @@
             and su.org_code = #{orgCode}
         </if>
         <if test="name!=null and name!=''">
-            and su.realname = #{name}
+            and su.realname LIKE CONCAT('%', #{name}, '%')
         </if>
         ORDER BY
         sr.date,
@@ -402,7 +402,7 @@
             and sd.org_code = #{orgCode}
         </if>
         <if test="name!=null and name!=''">
-            and su.realname = #{name}
+            and su.realname like CONCAT('%', #{name}, '%')
         </if>
     GROUP BY
         sd.id

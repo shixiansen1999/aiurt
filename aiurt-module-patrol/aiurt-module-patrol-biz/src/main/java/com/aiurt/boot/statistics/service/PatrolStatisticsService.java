@@ -87,7 +87,7 @@ public class PatrolStatisticsService {
         boolean openClose = GlobalThreadLocal.setDataFilter(false);
         long sum = list.stream().count();
         long finish = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
-        long unfinish = sum - finish;
+        long unfinish = list.stream().filter(l -> PatrolConstant.TASK_INIT.equals(l.getStatus())).count();
         long abnormal = list.stream().filter(l -> PatrolConstant.TASK_ABNORMAL.equals(l.getAbnormalState())).count();
         long overhaul = list.stream().filter(l -> !PatrolConstant.TASK_COMPLETE.equals(l.getStatus())&&!PatrolConstant.TASK_INIT.equals(l.getStatus())).count();
         long omit = 0L;
@@ -350,7 +350,7 @@ public class PatrolStatisticsService {
 
             //获取巡视单和检查项（新需求）
             List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGangedInfo(l.getId());
-            List<PatrolCheckResultDTO> patrolCheckResultDTOS = new ArrayList<PatrolCheckResultDTO>();
+
             for (PatrolBillDTO patrolBillDTO : billGangedInfo) {
                 PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(patrolBillDTO.getBillCode()))
                         .orElseGet(PatrolTaskDeviceParam::new);
@@ -382,10 +382,10 @@ public class PatrolStatisticsService {
                     l3.setAccessoryInfo(accessoryList);
                 });
                 List<PatrolCheckResultDTO> tree = patrolTaskDeviceService.getTree(checkResultList, "0");
-                patrolCheckResultDTOS.addAll(tree);
+                patrolBillDTO.setChildren(tree);
             }
 
-            l.setChildren(patrolCheckResultDTOS);
+            l.setChildren(billGangedInfo);
         });
          GlobalThreadLocal.setDataFilter(b1);
         return pageList;

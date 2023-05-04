@@ -5,6 +5,7 @@ import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.largescream.model.FaultDurationTask;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
+import com.aiurt.modules.largescream.model.ReliabilityWorkTime;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.LoginUser;
 
@@ -148,7 +149,7 @@ public interface FaultInformationMapper {
      * @param majors
      * @return
      */
-    List<FaultSystemTimesDTO> getSystemFaultSum(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("majors") List<String> majors);
+    List<FaultSystemTimesDTO> getSystemFaultSum(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("majors") List<String> majors,@Param("lineCode") String lineCode);
 
 
     /**
@@ -320,4 +321,10 @@ public interface FaultInformationMapper {
      * @return
      */
     Integer getConstructorsNum(@Param("startTime") String startTime,@Param("endTime") String endTime,@Param("orgId") String orgId);
+
+    /**
+     * 保存线路、子系统到可靠度表中
+     * @param workTime
+     */
+    void insertSystemReliability(@Param("workTime") ReliabilityWorkTime workTime);
 }

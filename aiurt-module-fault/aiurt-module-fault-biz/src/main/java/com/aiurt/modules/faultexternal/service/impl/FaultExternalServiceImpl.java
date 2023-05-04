@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultexternal.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.enums.RepairWayEnum;
@@ -70,11 +71,15 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> addFaultExternal(FaultExternalDTO dto, HttpServletRequest req) {
-        FaultExternal faultExternal = faultExternalMapper.selectOne(new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getId, dto.getId()));
-        faultExternal.setStopservice(String.valueOf(dto.getIsStopService()==1?1:2));
-        faultExternal.setCrane(String.valueOf(dto.getAffectDrive()==1?1:2));
-        faultExternal.setTransportservice(String.valueOf(dto.getAffectPassengerService()==1?1:2));
-        faultExternalMapper.updateById(faultExternal);
+        if(ObjectUtil.isNotEmpty(dto.getId())){
+            FaultExternal faultExternal = faultExternalMapper.selectOne(new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getId, dto.getId()));
+            if(ObjectUtil.isNotEmpty(faultExternal)){
+                faultExternal.setStopservice(String.valueOf(dto.getIsStopService()==1?1:2));
+                faultExternal.setCrane(String.valueOf(dto.getAffectDrive()==1?1:2));
+                faultExternal.setTransportservice(String.valueOf(dto.getAffectPassengerService()==1?1:2));
+                faultExternalMapper.updateById(faultExternal);
+            }
+        }
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Fault fault = new Fault();
         fault.setLineCode(dto.getLineCode());
@@ -235,7 +240,8 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             try {
                 JSONObject json = (JSONObject) JSONObject.toJSON(param);
 //                String url = "http://123.57.62.172:30235/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
-                String url = "http://mtrain-cc.lucksoft.com.cn/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
+//               String url = "http://mtrain-cc.lucksoft.com.cn/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
+                String url = "http://10.3.2.2:30300/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
                restTemplate.postForObject(url, json, JSONObject.class);
                 log.info("故障推送,请求结果",url);
             } catch (Exception e) {
