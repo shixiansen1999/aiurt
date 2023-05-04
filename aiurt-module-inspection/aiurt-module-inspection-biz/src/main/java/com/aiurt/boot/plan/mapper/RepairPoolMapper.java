@@ -6,6 +6,7 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.CodeManageDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCode;
+import com.aiurt.boot.plan.req.SelectPlanReq;
 import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
@@ -154,4 +155,6 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
             @DataColumn(key = "systemName",value = "rpc.subsystem_code")
     })
     List<RepairPool> getOverviewInfo(Date startDate, Date endDate);
+
+    List<RepairPool> selectRepairPool(Page<RepairPool> page, SelectPlanReq selectPlanReq);
 }

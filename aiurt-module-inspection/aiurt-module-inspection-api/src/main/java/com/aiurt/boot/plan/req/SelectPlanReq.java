@@ -6,6 +6,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author wgp
@@ -36,4 +37,7 @@ public class SelectPlanReq {
     private Integer pageNo = 1;
     @ApiModelProperty(value = "pageSize")
     private Integer pageSize = 30;
+
+    @ApiModelProperty(value = "多个状态,查询使用")
+    private List<String> statusList;
 }

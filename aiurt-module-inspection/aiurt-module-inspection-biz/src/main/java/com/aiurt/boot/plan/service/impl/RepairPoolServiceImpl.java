@@ -123,6 +123,14 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         Page<RepairPool> page = new Page<RepairPool>(selectPlanReq.getPageNo(), selectPlanReq.getPageSize());
         page = baseMapper.selectPage(page, queryWrapper);
 
+        if (StrUtil.isNotEmpty(selectPlanReq.getStatuList())) {
+            List<String> split = StrUtil.split(selectPlanReq.getStatuList(), ',');
+            if (CollUtil.isNotEmpty(split)) {
+                selectPlanReq.setStatusList(split);
+            }
+        }
+        List<RepairPool> result=baseMapper.selectRepairPool(page,selectPlanReq);
+
         // 开启线程处理
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("repair-pool-%d").build();

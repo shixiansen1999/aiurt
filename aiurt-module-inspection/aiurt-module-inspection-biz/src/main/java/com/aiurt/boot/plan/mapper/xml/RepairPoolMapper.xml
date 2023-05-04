@@ -213,4 +213,27 @@
             </if>
         </where>
     </select>
+    <select id="selectRepairPool" resultType="com.aiurt.boot.plan.entity.RepairPool">
+        SELECT *
+        FROM repair_pool rp
+        <where>
+            rp.start_time &gt;= #{startTime}
+            AND rp.start_time &gt;= #{endTime}
+            AND rp.is_manual = 0
+            AND rp.del_flag = 0
+            <if test="selectPlanReq.status != null">
+                AND rp.status = #{selectPlanReq.status}
+            </if>
+            <if test="selectPlanReq.workType != null">
+                AND rp.work_type = #{selectPlanReq.workType}
+            </if>
+            <if test="selectPlanReq.statusList != null and !selectPlanReq.statusList.isEmpty()">
+                AND rp.status IN
+                <foreach item="statusItem" collection="selectPlanReq.statusList" separator="," open="(" close=")">
+                    #{statusItem}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY rp.start_time ASC, rp.type ASC, rp.create_time DESC
+    </select>
 </mapper>
