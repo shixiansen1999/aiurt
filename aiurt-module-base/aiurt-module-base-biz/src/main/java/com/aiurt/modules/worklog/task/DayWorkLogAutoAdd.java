@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -60,12 +59,9 @@ public class DayWorkLogAutoAdd implements Job {
                 String logCode = workLogService.generateLogCode();
                 depot.setCode(logCode);
 
-                depot.setStatus(1);
+                depot.setStatus(0);
                 depot.setConfirmStatus(0);
                 depot.setCheckStatus(0);
-                if (depot.getStatus()==1){
-                    depot.setSubmitTime(new Date());
-                }
                 //工作内容赋值
                 depot.setIsEmergencyDisposal(0);
                 depot.setIsDocumentPublicity(0);

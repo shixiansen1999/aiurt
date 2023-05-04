@@ -6,11 +6,10 @@ import com.aiurt.modules.system.entity.CsUserStaion;
 import com.aiurt.modules.system.mapper.CsUserStaionMapper;
 import com.aiurt.modules.system.service.ICsUserStaionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.system.vo.CsUserStationModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,7 +34,7 @@ public class CsUserStaionServiceImpl extends ServiceImpl<CsUserStaionMapper, CsU
     @Override
     public List<CsUserStationModel> queryAllStation() {
         LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsStation::getDelFlag, 0);
+        wrapper.eq(CsStation::getDelFlag, 0) .ne(CsStation::getLineCode,"NO1").ne(CsStation::getLineCode,"ehx0001").ne(CsStation::getLineCode,"01").ne(CsStation::getLineCode,"02");
 
         List<CsStation> list = csStationService.list(wrapper);
 

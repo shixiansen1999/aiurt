@@ -2405,16 +2405,18 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTaskDeviceRel.setStaffId(manager.checkLogin().getId());
         repairTaskDeviceRel.setIsSubmit(InspectionConstant.SUBMITTED);
         repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
-        //检查是否是最后工单提交
+        //未驳回，检查是否是最后工单提交
         List<RepairTaskDeviceRel> deviceRels = repairTaskDeviceRelMapper.selectList(new LambdaQueryWrapper<RepairTaskDeviceRel>().eq(RepairTaskDeviceRel::getRepairTaskId, repairTaskDeviceRel.getRepairTaskId()));
         List<RepairTaskDeviceRel> noSubmitDeviceList = deviceRels.stream().filter(d -> d.getIsSubmit() != 1).collect(Collectors.toList());
-        if(CollUtil.isEmpty(noSubmitDeviceList)){
-            repairTaskDeviceCheck(repairTaskDeviceRel.getRepairTaskId());
+        RepairTask repairTask = repairTaskMapper.selectById(repairTaskDeviceRel.getRepairTaskId());
+        if(repairTask.getStatus()!=InspectionConstant.REJECTED){
+            if(CollUtil.isEmpty(noSubmitDeviceList)){
+                repairTaskDeviceCheck(repairTask);
+            }
         }
     }
     @Transactional(rollbackFor = Exception.class)
-    public void repairTaskDeviceCheck(String id) {
-        RepairTask repairTask = repairTaskMapper.selectById(id);
+    public void repairTaskDeviceCheck(RepairTask repairTask) {
         if (ObjectUtil.isEmpty(repairTask)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }

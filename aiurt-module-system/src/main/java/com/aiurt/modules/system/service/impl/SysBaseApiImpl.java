@@ -915,6 +915,18 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
+    public List<JSONObject> getAllSystem() {
+        List<CsSubsystem> csSubsystems = subsystemMapper.selectList(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<JSONObject> jsonObjects = new ArrayList<>();
+        for (CsSubsystem subsystem : csSubsystems) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("code",subsystem.getSystemCode());
+            jsonObjects.add(jsonObject);
+        }
+        return jsonObjects;
+    }
+
+    @Override
     public String getDepartByWarehouseCode(String applyWarehouseCode) {
         return sparePartApplyMapper.getDepartByWarehouseCode(applyWarehouseCode);
     }

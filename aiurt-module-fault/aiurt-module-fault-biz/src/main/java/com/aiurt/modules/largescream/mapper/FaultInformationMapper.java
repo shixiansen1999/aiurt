@@ -5,6 +5,7 @@ import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.largescream.model.FaultDurationTask;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
+import com.aiurt.modules.largescream.model.ReliabilityWorkTime;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.LoginUser;
 
@@ -148,7 +149,7 @@ public interface FaultInformationMapper {
      * @param majors
      * @return
      */
-    List<FaultSystemTimesDTO> getSystemFaultSum(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("majors") List<String> majors);
+    List<FaultSystemTimesDTO> getSystemFaultSum(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("majors") List<String> majors,@Param("lineCode") String lineCode);
 
 
     /**
@@ -157,6 +158,22 @@ public interface FaultInformationMapper {
      * @return
      */
     List<FaultSystemDeviceSumDTO> getSystemDeviceSum(@Param("majors") List<String> majors);
+
+
+    /**
+     * 查询线路子系统下的时长
+     * @param lineCode
+     * @param systemCode
+     * @return
+     */
+    List<FaultSystemDeviceSumDTO> getLineSystem(@Param("lineCode") String lineCode,@Param("systemCode") List<String> systemCode);
+
+    /**
+     * 计算无线路的子系统的时长
+     * @param systemCode
+     * @return
+     */
+    String getSumWorkTime(@Param("systemCode") String systemCode);
 
 
     /**
@@ -304,4 +321,10 @@ public interface FaultInformationMapper {
      * @return
      */
     Integer getConstructorsNum(@Param("startTime") String startTime,@Param("endTime") String endTime,@Param("orgId") String orgId);
+
+    /**
+     * 保存线路、子系统到可靠度表中
+     * @param workTime
+     */
+    void insertSystemReliability(@Param("workTime") ReliabilityWorkTime workTime);
 }

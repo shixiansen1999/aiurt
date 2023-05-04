@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.largescream.mapper.FaultInformationMapper">
+<insert id="insertSystemReliability">
+INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work_time`) VALUES (null, #{workTime.lineCode}, #{workTime.systemCode}, null);
+</insert>
     <select id="queryLargeFaultInformation" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
@@ -369,6 +372,9 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="lineCode != null ">
+                and f.line_code =#{lineCode}
+            </if>
         </where>
         group by f.sub_system_code
     </select>
@@ -387,6 +393,29 @@
             </if>
         </where>
         group by d.system_code
+    </select>
+
+    <select id="getLineSystem" resultType="com.aiurt.modules.fault.dto.FaultSystemDeviceSumDTO">
+        select
+            rwt.line_code as lineCode,
+            rwt.system_code as systemCode,
+            cs.system_name as systemName,
+            rwt.should_work_time as shouldWorkTime
+         from reliability_work_time rwt
+         left join cs_subSystem cs  on rwt.system_code = cs.system_code
+        <where>
+            cs.del_flag = 0
+            <if test="systemCode != null and systemCode.size>0 ">
+                and rwt.system_code in
+                <foreach collection="systemCode" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="lineCode != null and lineCode != ''">
+                and rwt.line_code  = #{lineCode}
+            </if>
+        </where>
+        group by rwt.system_code
     </select>
 
     <select id="queryFaultDataInformation" resultType="com.aiurt.modules.fault.entity.Fault">
@@ -670,5 +699,9 @@
             sd.del_flag =0
           and sd.id =#{orgId}
           and date_format(twl.submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
+    </select>
+
+    <select id="getSumWorkTime" resultType="java.lang.String">
+			SELECT SUM(should_work_time) from reliability_work_time rwt WHERE system_code = #{systemCode}
     </select>
 </mapper>

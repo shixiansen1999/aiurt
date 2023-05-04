@@ -1,7 +1,8 @@
 package com.aiurt.modules.faultexternal.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.enums.RepairWayEnum;
 import com.aiurt.common.exception.AiurtBootException;
@@ -19,19 +20,19 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
-//import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
  * @Date:   2023-02-16
  * @Version: V1.0
  */
+@Slf4j
 @Service
 public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, FaultExternal> implements IFaultExternalService {
 
@@ -69,10 +71,20 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> addFaultExternal(FaultExternalDTO dto, HttpServletRequest req) {
+        if(ObjectUtil.isNotEmpty(dto.getId())){
+            FaultExternal faultExternal = faultExternalMapper.selectOne(new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getId, dto.getId()));
+            if(ObjectUtil.isNotEmpty(faultExternal)){
+                faultExternal.setStopservice(String.valueOf(dto.getIsStopService()==1?1:2));
+                faultExternal.setCrane(String.valueOf(dto.getAffectDrive()==1?1:2));
+                faultExternal.setTransportservice(String.valueOf(dto.getAffectPassengerService()==1?1:2));
+                faultExternalMapper.updateById(faultExternal);
+            }
+        }
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Fault fault = new Fault();
         fault.setLineCode(dto.getLineCode());
         fault.setStationCode(dto.getStationCode());
+        fault.setStationPositionCode(dto.getStationPositionCode());
         if (StringUtils.isNotBlank(dto.getDevicesIds())) {
             fault.setDevicesIds(dto.getDevicesIds());
         }
@@ -88,8 +100,10 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
         fault.setMajorCode(dto.getMajorCode());
 //        fault.setFaultModeCode(dto.getFaultModeCode());
         fault.setFaultPhenomenon(dto.getFaultPhenomenon());
-//        fault.setFaultType(dto.getFaultType());
+       fault.setFaultTypeCode(dto.getFaultTypeCode());
         fault.setFaultLevel(dto.getFaultLevel());
+        //报修人
+        fault.setFaultApplicant(dto.getFaultApplicant());
         //紧急程度
         fault.setUrgency(dto.getUrgency());
         //是否委外
@@ -120,7 +134,11 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             fault.setScope(dto.getScope());
         }
         fault.setHappenTime(dto.getHappenTime());
-        fault.setStatus(0);
+        fault.setStatus(2);
+        fault.setFaultDeviceList(dto.getFaultDeviceList());
+        fault.setIsFaultExternal(true);
+        //故障现象
+        fault.setSymptoms(dto.getSymptoms());
 //        fault.setSystemCode(dto.getSystemCode());
 //        fault.setDelFlag(0);
 //        fault.setHangState(0);
@@ -149,6 +167,23 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             faultExternal.setStationCodes(stationCode);
         }
         List<FaultExternal> faultExternals = baseMapper.selectFaultExternalPage(page, faultExternal);
+        if(CollUtil.isNotEmpty(faultExternals)){
+            for (FaultExternal external : faultExternals) {
+                {
+                    external.setAffectPassengerService(0);
+                    external.setAffectDrive(0);
+                    external.setIsStopService(0);
+                    if("1".equals(external.getCrane())){
+                        external.setAffectDrive(1);
+                    }
+                    if("1".equals(external.getStopservice())){
+                        external.setIsStopService(1);
+                    }
+                    if("1".equals(external.getTransportservice())){
+                        external.setAffectPassengerService(1); }
+                }
+            }
+        }
         page.setRecords(faultExternals);
         return page;
     }
@@ -168,7 +203,7 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
 
 
     @Override
-    public void complete(RepairRecordDTO dto, LoginUser user) {
+    public void complete(RepairRecordDTO dto,Date endTime, LoginUser user) {
         //如果是调度推送过来的故障，发送推送数据至调度系统
         //通过faultCode找到对应的faultExternal
         FaultRepairRecord faultRecord = recordMapper.selectById(dto.getId());
@@ -188,7 +223,7 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             data.put("scharger", user.getRealname());
             //花费的时间
             Date startTime = faultRecord.getCreateTime();
-            Date overTime = faultRecord.getEndTime();
+            Date overTime = endTime;
             long start = startTime.getTime();
             long over = overTime.getTime();
             long diff = over - start;
@@ -196,7 +231,7 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             long nh = 1000 * 60 * 60;//一小时的毫秒数
             long hour = diff % nd / nh;
             data.put("irepairtime", hour);
-            data.put("dcompelete", faultRecord.getEndTime());
+            data.put("dcompelete", endTime);
 
             param.put("code", 200);
             param.put("message", "success");
@@ -204,8 +239,11 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             param.put("systemid", "TXSYS");
             try {
                 JSONObject json = (JSONObject) JSONObject.toJSON(param);
-                String url = "http://123.57.62.172:30235/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
-                restTemplate.postForObject(url, json, JSONObject.class);
+//                String url = "http://123.57.62.172:30235/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
+//               String url = "http://mtrain-cc.lucksoft.com.cn/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
+                String url = "http://10.3.2.2:30300/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
+               restTemplate.postForObject(url, json, JSONObject.class);
+                log.info("故障推送,请求结果",url);
             } catch (Exception e) {
                 e.printStackTrace();
             }

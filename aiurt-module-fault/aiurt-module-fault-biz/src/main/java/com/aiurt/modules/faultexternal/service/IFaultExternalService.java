@@ -9,6 +9,7 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 
 /**
  * @Description: 调度系统故障
@@ -19,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 public interface IFaultExternalService extends IService<FaultExternal> {
     Result<?> addFaultExternal(FaultExternalDTO dto, HttpServletRequest req);
 
-     void complete(RepairRecordDTO dto, LoginUser user);
+     void complete(RepairRecordDTO dto, Date date, LoginUser user);
 
     Page<FaultExternal> selectPage(Page<FaultExternal> page, FaultExternal faultExternal);
 }

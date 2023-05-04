@@ -100,7 +100,7 @@ public class SysRecycleController {
         }).collect(Collectors.toList());
         // 模块名称过滤
         if (StrUtil.isNotBlank(moduleName)){
-            sysRecycleList = sysRecycleList.stream().filter(recycle -> recycle.getModuleName().contains(moduleName)).collect(Collectors.toList());
+            sysRecycleList = sysRecycleList.stream().filter(recycle -> StrUtil.isNotEmpty(recycle.getModuleName()) && recycle.getModuleName().contains(moduleName)).collect(Collectors.toList());
         }
         page.setTotal(sysRecycleList.size());
         page.setRecords(sysRecycleList);
@@ -221,7 +221,9 @@ public class SysRecycleController {
                 matchId = matchSysPermission.getParentId();
                 if (ModuleNameAndSubmenuNameMap.get(SUBMENU_NAME) != null && matchSysPermission.getName() != null){
                     ModuleNameAndSubmenuNameMap.put(SUBMENU_NAME, matchSysPermission.getName() + "-" + ModuleNameAndSubmenuNameMap.get(SUBMENU_NAME));
-                } else ModuleNameAndSubmenuNameMap.computeIfAbsent(SUBMENU_NAME, k -> matchSysPermission.getName());
+                } else {
+                    ModuleNameAndSubmenuNameMap.computeIfAbsent(SUBMENU_NAME, k -> matchSysPermission.getName());
+                }
             }else {
                 // 按钮权限，继续往上找
                 matchId = matchSysPermission.getParentId();

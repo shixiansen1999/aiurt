@@ -311,4 +311,6 @@ public class WorkLogResult {
     @Excel(name = "所在班组", width = 15)
     @ApiModelProperty(value = "所在班组")
     private  String  orgId;
+    @TableField(exist = false)
+    private Boolean editFlag;
 }
