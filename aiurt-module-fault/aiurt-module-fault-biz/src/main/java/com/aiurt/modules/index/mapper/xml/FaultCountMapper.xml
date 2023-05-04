@@ -185,9 +185,20 @@
             </where>
     </select>
 
-    <select id="getDailyFaultNum" resultType="com.aiurt.modules.fault.entity.Fault">
-        select f.id from fault f
-        where f.status = 12  and date_format(f.end_time ,'%Y-%m-%d') =date_format(#{dateTime} ,'%Y-%m-%d')
+    <select id="getDailyFaultNum" resultType="com.aiurt.boot.index.dto.RepairTaskNum">
+        SELECT
+        DATE_FORMAT(f.end_time, '%Y/%m/%d') AS currDateStr,
+        COUNT(DISTINCT f.id) AS num
+        FROM
+        fault f
+        WHERE
+        f.status = 12
+        AND
+        DATE(f.end_time) &gt;= DATE(#{startDate})
+        AND
+        DATE(f.end_time)  &lt;=  DATE(#{endDate})
+        GROUP BY
+        DATE(f.end_time)
     </select>
 
     <select id="getMainFaultCondition" resultType="com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO">
