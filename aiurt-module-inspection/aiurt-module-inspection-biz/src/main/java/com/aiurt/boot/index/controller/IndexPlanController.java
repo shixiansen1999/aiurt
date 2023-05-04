@@ -56,7 +56,7 @@ public class IndexPlanController {
                                                 @ApiParam(name = "startDate", value = "开始日期yyyy-MM-dd") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                                 @ApiParam(name = "endDate", value = "结束日期yyyy-MM-dd") @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
                                                 HttpServletRequest request) {
-        PlanIndexDTO result = indexPlanService.getOverviewInfo(isAllData, startDate, endDate,request);
+        PlanIndexDTO result = indexPlanService.getOverviewInfo(isAllData, startDate, endDate, request);
         return Result.OK(result);
     }
 
@@ -108,15 +108,14 @@ public class IndexPlanController {
         return Result.OK(result);
     }
 
-
     /**
-     * 代办事项检修情况
+     * 获取已办理检修情况列表。
      *
-     * @param startDate
-     * @param pageNo
-     * @param pageSize
-     * @param stationCode
-     * @return
+     * @param pageNo      当前页数
+     * @param pageSize    每页显示数量
+     * @param startDate   查询开始日期，根据此日期筛选符合条件的检修情任务。
+     * @param stationCode 车站编码，用于筛选指定车站的检修情任务。
+     * @return 返回一个包含检修情任务详细信息的分页列表，每个检修情任务由一个 RepairPoolDetailsDTO 对象表示。
      */
     @AutoLog(value = "首页-代办事项检修情况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-代办事项检修情况", notes = "首页-代办事项检修情况")
