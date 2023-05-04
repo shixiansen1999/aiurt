@@ -15,6 +15,8 @@ import com.aiurt.modules.position.service.ICsStationService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
@@ -124,6 +126,24 @@ public class CsStationPositionController  {
 				 iterator.remove();
 			 }
 		 }
+	 }
+
+	 /**
+	  * 位置管理树异步加载
+	  * @param name
+	  * @param pid
+	  * @return
+	  */
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询位置管理树",permissionUrl = "/position/list")
+	 @ApiOperation(value="位置管理树异步加载", notes="位置管理树")
+	 @GetMapping(value = "/queryTreeListAsync")
+	 @ApiImplicitParams({
+			 @ApiImplicitParam(dataTypeClass = String.class, name = "name", value = "搜索名称", required = false, paramType = "query"),
+			 @ApiImplicitParam(dataTypeClass = String.class, name = "pid", value = "父节点", required = false, paramType = "query")
+	 })
+	 public Result<List<CsStationPosition>> queryTreeListAsync(@RequestParam(name="name",required = false) String name, @RequestParam(name = "pid", required = false) String pid) {
+		 List<CsStationPosition> list = csStationPositionService.queryTreeListAsync(name, pid);
+		 return Result.OK(list);
 	 }
 
 	 /**

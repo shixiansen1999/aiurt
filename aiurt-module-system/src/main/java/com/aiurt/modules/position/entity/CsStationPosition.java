@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -160,4 +161,11 @@ public class CsStationPosition implements Serializable {
     @ApiModelProperty(value = "搜索颜色")
     @TableField(exist = false)
     private String color;
+
+    @JsonProperty("pId")
+    @TableField(exist = false)
+    private String fid;
+
+    @TableField(exist = false)
+    private Boolean isLeaf;
 }

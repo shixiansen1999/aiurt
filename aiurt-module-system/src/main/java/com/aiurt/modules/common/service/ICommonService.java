@@ -28,4 +28,12 @@ public interface ICommonService {
      * @return
      */
     List<SelectTable> queryDevice(DeviceDTO deviceDTO);
+
+    /**
+     * 异步加载树形结构
+     * @param name
+     * @param pid
+     * @return
+     */
+    List<SelectTable> queryPositionTreeAsync(String name, String pid, String queryAll);
 }
