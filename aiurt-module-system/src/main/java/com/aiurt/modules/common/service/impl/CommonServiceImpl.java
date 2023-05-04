@@ -1,5 +1,6 @@
 package com.aiurt.modules.common.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -9,12 +10,24 @@ import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.common.service.ICommonService;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.service.IDeviceService;
+import com.aiurt.modules.position.entity.CsLine;
+import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.entity.CsStationPosition;
+import com.aiurt.modules.position.service.ICsLineService;
+import com.aiurt.modules.position.service.ICsStationPositionService;
+import com.aiurt.modules.position.service.ICsStationService;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.entity.SysUser;
+import com.aiurt.modules.system.service.ICsUserStaionService;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.service.ISysUserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserStationModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +42,11 @@ import java.util.stream.Collectors;
 @Service
 public class CommonServiceImpl implements ICommonService {
 
+    /**
+     * 系统管理员角色编码
+     */
+    private static final String ADMIN = "admin";
+
 
     @Autowired
     private ISysUserService sysUserService;
@@ -38,6 +56,22 @@ public class CommonServiceImpl implements ICommonService {
 
     @Autowired
     private IDeviceService deviceService;
+
+    @Autowired
+    private ICsUserStaionService userStationService;
+
+    @Autowired
+    private ICsLineService lineService;
+
+    @Autowired
+    private ICsStationService stationService;
+
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
+
+    @Autowired
+    private ICsStationPositionService stationPositionService;
+
 
     /**
      * 根据机构人员树
@@ -272,5 +306,103 @@ public class CommonServiceImpl implements ICommonService {
             return (true);
         }
         return (false);
+    }
+
+    /**
+     * 异步加载树形结构
+     *
+     * @param name
+     * @param pid
+     * @return
+     */
+    @Override
+    public List<SelectTable> queryPositionTreeAsync(String name, String pid) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = loginUser.getId();
+        String roleCodes = loginUser.getRoleCodes();
+
+        // 顶级位置数
+        if (StrUtil.isBlank(pid) || StrUtil.equalsAnyIgnoreCase(pid, "0")) {
+            List<CsUserStationModel> stationModelList = Collections.emptyList();
+            // 根据个人管理的站点
+            if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
+                stationModelList = userStationService.queryAllStation(null);
+            }else {
+                stationModelList = sysBaseApi.getStationByUserId(userId);
+            }
+
+            Set<String> lineSet = stationModelList.stream().map(CsUserStationModel::getLineCode).collect(Collectors.toSet());
+            if (CollUtil.isEmpty(lineSet)) {
+                return Collections.emptyList();
+            }
+
+            LambdaQueryWrapper<CsLine> lineLambdaQueryWrapper = new LambdaQueryWrapper<CsLine>()
+                    .in(CsLine::getLineCode, lineSet).eq(CsLine::getDelFlag, 0).orderByAsc(CsLine::getSort).orderByAsc(CsLine::getLineCode);
+
+            List<CsLine> lineList = lineService.getBaseMapper().selectList(lineLambdaQueryWrapper);
+
+            List<SelectTable> list = lineList.stream().map(csLine -> {
+                SelectTable table = new SelectTable();
+                table.setLabel(csLine.getLineName());
+                table.setValue(csLine.getLineCode());
+                table.setTitle(csLine.getLineName());
+                table.setLevel(1);
+                table.setLineCode(csLine.getLineCode());
+                table.setPid("0");
+                table.setId(csLine.getLineCode());
+                table.setIsLeaf(false);
+                return table;
+            }).collect(Collectors.toList());
+
+
+            return list;
+        }
+
+        List<CsUserStationModel> stationModelList = null;
+        // 不等于0， 子节点,需要判断是站点还是位置。 判断是否有权限
+        if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
+            stationModelList = userStationService.queryAllStation(pid);
+        }else {
+            stationModelList = userStationService.queryByUserIdAndLineCode(userId, pid);
+        }
+
+        //  构造站点树
+        if (CollUtil.isNotEmpty(stationModelList)) {
+            List<SelectTable> list = stationModelList.stream().map(csUserStationModel -> {
+                SelectTable selectTable = new SelectTable();
+                selectTable.setValue(csUserStationModel.getStationCode());
+                selectTable.setTitle(csUserStationModel.getStationName());
+                selectTable.setLabel(csUserStationModel.getStationName());
+                selectTable.setLevel(2);
+                selectTable.setId(csUserStationModel.getStationCode());
+                selectTable.setLineCode(csUserStationModel.getLineCode());
+                selectTable.setStationCode(csUserStationModel.getStationCode());
+                selectTable.setPid(pid);
+                selectTable.setIsLeaf(false);
+                return selectTable;
+            }).collect(Collectors.toList());
+            return list;
+        }
+
+        LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsStationPosition::getStaionCode, pid).eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0);
+
+        List<CsStationPosition> list = stationPositionService.list(wrapper);
+
+        List<SelectTable> collect = list.stream().map(csStationPosition -> {
+            SelectTable build = SelectTable.builder()
+                    .value(csStationPosition.getPositionCode())
+                    .title(csStationPosition.getPositionName())
+                    .label(csStationPosition.getPositionName())
+                    .level(3)
+                    .id(csStationPosition.getPositionCode())
+                    .pid(pid)
+                    .lineCode(csStationPosition.getLineCode())
+                    .stationCode(csStationPosition.getStaionCode())
+                    .positionCode(csStationPosition.getPositionCode()).build();
+            return build;
+        }).collect(Collectors.toList());
+
+        return collect;
     }
 }
