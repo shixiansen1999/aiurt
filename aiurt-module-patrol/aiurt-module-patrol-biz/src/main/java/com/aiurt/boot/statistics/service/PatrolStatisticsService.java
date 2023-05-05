@@ -91,8 +91,8 @@ public class PatrolStatisticsService {
         Date newEndDate = DateUtil.parse(DateUtil.format(endDate, "yyyy-MM-dd 23:59:59"));
         PatrolSituation situation = new PatrolSituation();
 
-        // 获取权限数据
-        String filterConditions = this.getPermissionSQL(request);
+//        // 获取权限数据
+//        String filterConditions = this.getPermissionSQL(request);
 //        log.info("SQl:{}", filterConditions);
 
 //        //  ******原统计实现方法-Begin********
@@ -122,14 +122,14 @@ public class PatrolStatisticsService {
 //        //  ******原统计实现方法-End********
 
         //  ******数据库统计实现方法-Begin********
-        IndexCountDTO indexCountDTO = new IndexCountDTO(newStartDate, newEndDate, filterConditions);
+        IndexCountDTO indexCountDTO = new IndexCountDTO(newStartDate, newEndDate/*, filterConditions*/);
         PatrolSituation overviewInfoCount = patrolTaskMapper.getOverviewInfoCount(indexCountDTO);
         // 漏巡数统计
         List<Date> startList = this.getOmitDateScope(startDate);
         List<Date> endList = this.getOmitDateScope(endDate);
         Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
         Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
-        IndexCountDTO indexCountOmitDTO = new IndexCountDTO(startTime, endTime, filterConditions);
+        IndexCountDTO indexCountOmitDTO = new IndexCountDTO(startTime, endTime/*, filterConditions*/);
         PatrolSituation overviewInfoOmitCount = patrolTaskMapper.getOverviewInfoCount(indexCountOmitDTO);
 
         Long sum = ObjectUtil.isEmpty(overviewInfoCount.getSum()) ? 0 : overviewInfoCount.getSum();
@@ -369,9 +369,9 @@ public class PatrolStatisticsService {
             throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
         }
 
-        // 获取权限数据
-        String filterConditions = this.getPermissionSQL(request);
-        indexTaskDTO.setJointSQL(filterConditions);
+//        // 获取权限数据
+//        String filterConditions = this.getPermissionSQL(request);
+//        indexTaskDTO.setJointSQL(filterConditions);
 
         pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO);
 
@@ -513,8 +513,9 @@ public class PatrolStatisticsService {
 ////            List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
 //            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, null);
 //        }
-        String filterConditions = this.getPermissionSQL(request);
-        indexScheduleDTO.setJointSQL(filterConditions);
+//        // 数据权限
+//        String filterConditions = this.getPermissionSQL(request);
+//        indexScheduleDTO.setJointSQL(filterConditions);
 
         pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO);
         if(CollectionUtil.isNotEmpty(pageList.getRecords())) {
