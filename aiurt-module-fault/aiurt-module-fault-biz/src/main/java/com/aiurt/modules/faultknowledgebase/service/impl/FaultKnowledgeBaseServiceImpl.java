@@ -36,6 +36,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import liquibase.pro.packaged.I;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -93,6 +94,10 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     @Autowired
     private FlowBaseApi flowBaseApi;
+
+
+
+
     @Override
     public IPage<FaultKnowledgeBase> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -106,11 +111,25 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         }
         List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,null,sysUser.getUsername());
         //解决不是审核人去除审核按钮
-        System.out.println(System.currentTimeMillis());
         if(CollUtil.isNotEmpty(faultKnowledgeBases)){
+            Set<String> deviceTypeCodeSet = faultKnowledgeBases.stream().map(FaultKnowledgeBase::getDeviceTypeCode).collect(Collectors.toSet());
+            Map<String, DeviceType> deviceTypeMap = new HashMap<>();
+            if (CollUtil.isNotEmpty(deviceTypeCodeSet)) {
+                List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodeSet);
+                if (CollUtil.isNotEmpty(typeList)) {
+                    deviceTypeMap = typeList.stream().collect(Collectors.toMap(DeviceType::getCode, Function.identity()));
+                }
+            }
             for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
+                knowledgeBase.setHaveButton(false);
                 if (StrUtil.isNotBlank(knowledgeBase.getProcessInstanceId()) && StrUtil.isNotBlank(knowledgeBase.getTaskId())) {
                     dealAuthButton(sysUser, knowledgeBase);
+                }
+                //当前登录人不是创建人，则为false
+                if(knowledgeBase.getCreateBy().equals(sysUser.getUsername())){
+                    knowledgeBase.setIsCreateUser(true);
+                }else{
+                    knowledgeBase.setIsCreateUser(false);
                 }
                 String faultCodes = knowledgeBase.getFaultCodes();
                 if (StrUtil.isNotBlank(faultCodes)) {
@@ -118,15 +137,17 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     List<String> list = Arrays.asList(split);
                     knowledgeBase.setFaultCodeList(list);
                 }
+
+                DeviceType deviceType = deviceTypeMap.getOrDefault(knowledgeBase.getDeviceTypeCode(), new DeviceType());
+                knowledgeBase.setDeviceTypeName(deviceType.getName());
             }
         }
-        System.out.println(System.currentTimeMillis());
         GlobalThreadLocal.setDataFilter(b);
         return page.setRecords(faultKnowledgeBases);
     }
 
     private void dealAuthButton(LoginUser sysUser, FaultKnowledgeBase knowledgeBase) {
-        TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfo(knowledgeBase.getProcessInstanceId(), knowledgeBase.getTaskId());
+        TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfoWithCache(knowledgeBase.getProcessInstanceId(), knowledgeBase.getTaskId(),sysUser.getUsername());
         List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
         //operationList为空，没有审核按钮
         if(CollUtil.isNotEmpty(operationList)){
@@ -134,12 +155,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         }else{
             knowledgeBase.setHaveButton(false);
         }
-        //当前登录人不是创建人，则为false
-        if(knowledgeBase.getCreateBy().equals(sysUser.getUsername())){
-            knowledgeBase.setIsCreateUser(true);
-        }else{
-            knowledgeBase.setIsCreateUser(false);
-        }
+
     }
 
     @Override

@@ -3085,4 +3085,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             //}
         //}
     }
+
+    /**
+     * 根据编码查询设备分类
+     *
+     * @param list
+     * @return
+     */
+    @Override
+    public List<DeviceType> selectDeviceTypeByCodes(Set<String> list) {
+        if (CollUtil.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        List<DeviceType> typeList = deviceTypeService.list(new LambdaQueryWrapper<DeviceType>().in(DeviceType::getCode, list));
+        return typeList;
+    }
 }

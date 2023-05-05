@@ -24,21 +24,26 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.common.engine.impl.identity.Authentication;
+import org.flowable.engine.HistoryService;
 import org.flowable.engine.IdentityService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
+import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
+import org.flowable.task.api.history.HistoricTaskInstance;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author fgw
@@ -73,6 +78,12 @@ public class FlowBaseApiImpl implements FlowBaseApi {
     @Autowired
     private IActCustomBusinessDataService businessDataService;
 
+    @Autowired
+    private HistoryService historyService;
+
+    @Autowired
+    private RedisTemplate<String,String> redisTemplate;
+
     /**
      * 查询当前任务的权限信息（页面，按钮权限）
      *
@@ -87,6 +98,45 @@ public class FlowBaseApiImpl implements FlowBaseApi {
              taskInfoDTO = flowApiService.viewRuntimeTaskInfo(null, processInstanceId, taskId);
         } catch (Exception e) {
            log.error(e.getMessage(), e);
+        }
+        return taskInfoDTO;
+    }
+
+    /**
+     * 缓存板
+     *
+     * @param processInstanceId
+     * @param taskId
+     * @return
+     */
+    @Override
+    public TaskInfoDTO viewRuntimeTaskInfoWithCache(String processInstanceId, String taskId,String userName) {
+        TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+        try {
+            String taskDefinitionKey = "";
+            String processDefinitionId = "";
+            // 任务结束了
+            if (StrUtil.isNotBlank(taskId)) {
+                HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskId(taskId).singleResult();
+                if (Objects.nonNull(taskInstance)) {
+                    taskDefinitionKey = taskInstance.getTaskDefinitionKey();
+                    processDefinitionId = taskInstance.getProcessDefinitionId();
+                }
+            }
+
+            String key = String.format("process:%s:%s:%s", processDefinitionId, taskDefinitionKey, userName);
+            String s = redisTemplate.opsForValue().get(key);
+
+            if (StrUtil.isNotBlank(s)) {
+                return JSONObject.parseObject(s, TaskInfoDTO.class);
+            }
+            taskInfoDTO = flowApiService.viewRuntimeTaskInfo(null, processInstanceId, taskId);
+            if (Objects.nonNull(taskInfoDTO)) {
+                redisTemplate.opsForValue().set(key, JSON.toJSONString(taskInfoDTO));
+                redisTemplate.expire(key, 600, TimeUnit.SECONDS);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
         }
         return taskInfoDTO;
     }
