@@ -25,10 +25,10 @@ public class IndexCountDTO {
      */
     private Date endDate;
 
-    /**
-     * 权限拼接SQl
-     */
-    private String jointSQL;
+//    /**
+//     * 权限拼接SQl
+//     */
+//    private String jointSQL;
     /**
      * 任务已完成状态
      */
@@ -42,9 +42,9 @@ public class IndexCountDTO {
      */
     private Integer omitStatus = PatrolConstant.OMIT_STATUS;
 
-    public IndexCountDTO(Date startDate, Date endDate, String jointSQL) {
+    public IndexCountDTO(Date startDate, Date endDate/*, String jointSQL*/) {
         this.startDate = startDate;
         this.endDate = endDate;
-        this.jointSQL = jointSQL;
+//        this.jointSQL = jointSQL;
     }
 }
