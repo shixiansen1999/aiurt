@@ -8,6 +8,9 @@ import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -22,6 +25,7 @@ import java.util.Set;
  * @Date: 2022-06-22
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface RepairPoolMapper extends BaseMapper<RepairPool> {
 
     /**
@@ -67,6 +71,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
 
     /**
      * 检修计划总数和完成总数（带分页）
+     *
      * @param page
      * @param orgCodes
      * @param item
@@ -78,6 +83,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
 
     /**
      * 今日检修（带分页）
+     *
      * @param page
      * @param date
      * @param codeList
@@ -133,4 +139,19 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
             @DataColumn(key = "systemName",value = "t5.subsystem_code")
     })
     List<RepairPool> getList(@Param("startDate")Date startDate,@Param("endDate") Date endDate);
+
+    /**
+     * 获取符合条件的检修计划概览信息。
+     *
+     * @param startDate        查询的开始日期
+     * @param endDate          查询的结束日期
+     * @return 符合条件的检修计划列表
+     */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "rpor.org_code"),
+            @DataColumn(key = "stationName",value = "rpsr.station_code"),
+            @DataColumn(key = "majorName",value = "rpc.major_code"),
+            @DataColumn(key = "systemName",value = "rpc.subsystem_code")
+    })
+    List<RepairPool> getOverviewInfo(Date startDate, Date endDate);
 }

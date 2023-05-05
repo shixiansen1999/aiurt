@@ -196,4 +196,21 @@
         and date_format(rt.start_time ,'%Y-%m-%d') &gt;=date_format(#{startDate} ,'%Y-%m-%d')
         and date_format(rt.start_time ,'%Y-%m-%d') &lt;=date_format(#{endDate} ,'%Y-%m-%d')
     </select>
+    <select id="getOverviewInfo" resultType="com.aiurt.boot.plan.entity.RepairPool">
+        SELECT
+        DISTINCT rp.id,rp.`status`
+        FROM
+        repair_pool AS rp
+        LEFT JOIN repair_pool_station_rel AS rpsr ON rpsr.repair_pool_code = rp.`code`
+        LEFT JOIN repair_pool_org_rel AS rpor ON rpor.repair_pool_code = rp.code
+        LEFT JOIN repair_pool_rel AS rpr ON rpr.repair_pool_code = rp.code
+        LEFT JOIN repair_pool_code AS rpc ON rpc.id = rpr.repair_pool_sta_id
+        <where>
+            rp.start_time IS NOT NULL
+            <if test="startDate!=null and endDate!=null">
+                AND date_format(rp.start_time ,'%Y-%m-%d') &gt;= date_format(#{startDate},'%Y-%m-%d')
+                AND date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
+            </if>
+        </where>
+    </select>
 </mapper>

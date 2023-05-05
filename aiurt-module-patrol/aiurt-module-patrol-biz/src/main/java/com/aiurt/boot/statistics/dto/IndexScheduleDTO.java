@@ -50,4 +50,9 @@ public class IndexScheduleDTO implements Serializable {
      */
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
     private Integer status;
+
+    /**
+     * 拼接SQL
+     */
+    private String jointSQL;
 }

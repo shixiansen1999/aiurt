@@ -12,12 +12,10 @@ import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
 import com.aiurt.boot.screen.model.ScreenStatisticsTask;
 import com.aiurt.boot.screen.model.ScreenTran;
 import com.aiurt.boot.standard.dto.StationDTO;
+import com.aiurt.boot.statistics.dto.IndexCountDTO;
 import com.aiurt.boot.statistics.dto.IndexScheduleDTO;
 import com.aiurt.boot.statistics.dto.IndexTaskDTO;
-import com.aiurt.boot.statistics.model.IndexTaskInfo;
-import com.aiurt.boot.statistics.model.PatrolCondition;
-import com.aiurt.boot.statistics.model.PatrolIndexTask;
-import com.aiurt.boot.statistics.model.ScheduleTask;
+import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.dto.GeneralReturn;
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
@@ -41,7 +39,7 @@ import java.util.List;
  * @Date: 2022-06-21
  * @Version: V1.0
  */
-@EnableDataPerm
+@EnableDataPerm(excluseMethodName = {"getIndexPatrolList"})
 public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      * app-巡检任务池列表
@@ -192,13 +190,13 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param regexp
      * @return
      */
-    @DataPermission({
-            @DataColumn(key = "deptName",value = "t2.org_code"),
-            @DataColumn(key = "majorName",value = "t3.major_code"),
-            @DataColumn(key = "systemName",value = "t3.system_code"),
-            @DataColumn(key = "lineName",value = "t4.line_code"),
-            @DataColumn(key = "stationName",value = "t4.station_code")
-    })
+//    @DataPermission({
+//            @DataColumn(key = "deptName",value = "t2.org_code"),
+//            @DataColumn(key = "majorName",value = "t3.major_code"),
+//            @DataColumn(key = "systemName",value = "t3.system_code"),
+//            @DataColumn(key = "lineName",value = "t4.line_code"),
+//            @DataColumn(key = "stationName",value = "t4.station_code")
+//    })
     IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, @Param("condition") PatrolCondition condition, @Param("regexp") String regexp);
 
     /**
@@ -207,13 +205,13 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param condition
      * @return
      */
-    @DataPermission({
-            @DataColumn(key = "deptName",value = "t2.org_code"),
-            @DataColumn(key = "majorName",value = "t3.major_code"),
-            @DataColumn(key = "systemName",value = "t3.system_code"),
-            @DataColumn(key = "lineName",value = "t4.line_code"),
-            @DataColumn(key = "stationName",value = "t4.station_code")
-    })
+//    @DataPermission({
+//            @DataColumn(key = "deptName",value = "t2.org_code"),
+//            @DataColumn(key = "majorName",value = "t3.major_code"),
+//            @DataColumn(key = "systemName",value = "t3.system_code"),
+//            @DataColumn(key = "lineName",value = "t4.line_code"),
+//            @DataColumn(key = "stationName",value = "t4.station_code")
+//    })
     IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition);
 
     /**
@@ -223,29 +221,32 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param patrolTaskOrganizations
      * @return
      */
-    @DataPermission({
-            @DataColumn(key = "deptName",value = "pto.org_code"),
-            @DataColumn(key = "majorName",value = "pts2.major_code"),
-            @DataColumn(key = "systemName",value = "pts2.system_code"),
-            @DataColumn(key = "lineName",value = "pts.station_code"),
-            @DataColumn(key = "stationName",value = "pts.station_code")
-    })
-    IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, @Param("condition") IndexScheduleDTO indexScheduleDTO, @Param("patrolTaskOrganizations") List<PatrolTaskOrganization> patrolTaskOrganizations);
+//    @DataPermission({
+//            @DataColumn(key = "deptName",value = "pto.org_code"),
+//            @DataColumn(key = "majorName",value = "pts2.major_code"),
+//            @DataColumn(key = "systemName",value = "pts2.system_code"),
+//            @DataColumn(key = "lineName",value = "pts.station_code"),
+//            @DataColumn(key = "stationName",value = "pts.station_code")
+//    })
+//    IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, @Param("condition") IndexScheduleDTO indexScheduleDTO, @Param("patrolTaskOrganizations") List<PatrolTaskOrganization> patrolTaskOrganizations);
+    IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, @Param("condition") IndexScheduleDTO indexScheduleDTO);
 
     /**
      * 获取首页指定日期范围的任务列表
+     *
      * @param startDate
      * @param endDate
+     * @param filterConditions
      * @return
      */
-    @DataPermission({
-            @DataColumn(key = "deptName",value = "t2.org_code"),
-            @DataColumn(key = "stationName",value = "t4.station_code"),
-            @DataColumn(key = "lineName",value = "t4.line_code"),
-            @DataColumn(key = "majorName",value = "t3.major_code"),
-            @DataColumn(key = "systemName",value = "t3.subsystem_code")
-    })
-    List<PatrolTask> getOverviewInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+//    @DataPermission({
+//            @DataColumn(key = "deptName",value = "t2.org_code"),
+//            @DataColumn(key = "stationName",value = "t4.station_code"),
+//            @DataColumn(key = "lineName",value = "t4.line_code"),
+//            @DataColumn(key = "majorName",value = "t3.major_code"),
+//            @DataColumn(key = "systemName",value = "t3.subsystem_code")
+//    })
+    List<PatrolTask> getOverviewInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("jointSQL") String filterConditions);
 
     /**
      * 查看当前用户，当天的巡检任务
@@ -489,4 +490,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
             @DataColumn(key = "stationName",value = "t4.station_code")
     })
     List<PatrolTask> selectpatrolTaskList(@Param("firstDay")Date firstDay,@Param("lastDay") Date lastDay, @Param("status")Integer status);
+
+    /**
+     * 首页统计巡视数量(巡视总数、已巡视、未巡视、异常数)
+     */
+//    PatrolSituation getOverviewInfoCount(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("jointSQL") String filterConditions);
+    PatrolSituation getOverviewInfoCount(@Param("condition") IndexCountDTO indexCountDTO);
+
 }

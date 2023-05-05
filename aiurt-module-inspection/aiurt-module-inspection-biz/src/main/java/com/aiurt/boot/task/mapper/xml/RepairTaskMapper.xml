@@ -437,20 +437,40 @@
        WHERE
 	   repair_task_result_id =#{resultId}
     </select>
-    <select id="selectRepairPoolList" resultType="com.aiurt.boot.plan.dto.RepairPoolDetailsDTO">
-    select  rt.submit_time,rp.code as poolCode
-        from repair_task rt
-        left join repair_pool rp on rt.repair_pool_id = rp.id
-        left join repair_pool_org_rel t2 on rp.code = t2.repair_pool_code
-        left join repair_pool_station_rel t3 on rp.code = t3.repair_pool_code
-        left join repair_pool_rel t4 on rp.code = t4.repair_pool_code
-        left join repair_pool_code t5 on t4.repair_pool_sta_id = t4.id
-        where rt.status = 8
-        and date_format(submit_time ,'%Y-%m-%d') &gt;=date_format(#{startDate} ,'%Y-%m-%d')
-        and date_format(submit_time ,'%Y-%m-%d') &lt;=date_format(#{endDate} ,'%Y-%m-%d')
+    <select id="selectRepairPoolList" resultType="com.aiurt.boot.index.dto.RepairTaskNum">
+        SELECT
+            DATE_FORMAT(rt.submit_time, '%Y/%m/%d') AS currDateStr,
+            COUNT(DISTINCT rt.id) AS num
+        FROM
+            repair_task rt
+        LEFT JOIN repair_task_org_rel t2 ON rt.code = t2.repair_task_code
+        LEFT JOIN repair_task_station_rel t3 ON rt.code = t3.repair_task_code
+        LEFT JOIN repair_task_standard_rel t4 ON rt.id = t4.repair_task_id
+        WHERE
+            rt.status = 8
+        AND
+            DATE_FORMAT(rt.submit_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+        AND
+            DATE_FORMAT(rt.submit_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+        GROUP BY
+            DATE(rt.submit_time)
     </select>
-    <select id="selectOrgByCode" resultType="java.lang.String">
-            select org_code from  repair_task_org_rel where del_flag = 0 and repair_task_code = #{planCode}
+    <select id="selectOrgByCode" resultType="com.aiurt.boot.index.dto.MapDTO">
+       select
+            rtor.repair_task_code as  `value`,
+            GROUP_CONCAT(rtor.org_code) as `text`
+       from
+            repair_task_org_rel rtor
+       <where>
+        rtor.del_flag = 0
+        <if test="planCodes!=null and planCodes.size()>0">
+            and rtor.repair_task_code in
+            <foreach collection="planCodes" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+       </where>
+        group by rtor.repair_task_code
     </select>
     <select id="inspectionNumByDay" resultType="com.aiurt.boot.plan.dto.RepairPoolDetailsDTO">
         select rt.year,rt.code,rt.type,rt.weeks,rt.start_time,rt.end_time,rt.status from repair_task rt
@@ -907,5 +927,27 @@
         left join repair_pool_rel t4 on rp.code = t4.repair_pool_code
         left join repair_pool_code t5 on t4.repair_pool_sta_id = t4.id
         where rt.status = 8  and date_format(rt.submit_time ,'%Y-%m-%d') =date_format(#{startDate} ,'%Y-%m-%d')
+    </select>
+    <select id="getMaintenanceSituation" resultType="com.aiurt.boot.plan.dto.RepairPoolDetailsDTO">
+        SELECT DISTINCT
+            rt.year,
+            rt.code,
+            rt.type,
+            rt.weeks,
+            rt.start_time,
+            rt.end_time,
+            rt.status
+        FROM
+            repair_task rt
+                LEFT JOIN repair_task_station_rel rtsr ON rtsr.repair_task_code = rt.code
+                LEFT JOIN repair_task_org_rel rtor ON rtor.repair_task_code = rt.code
+                LEFT JOIN repair_task_standard_rel rtsrl ON rtsrl.repair_task_id = rt.id
+       <where>
+            rt.status = 8
+          AND DATE_FORMAT(rt.submit_time, '%Y-%m-%d') = DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+          <if test="stationCode!=null and stationCode!=''">
+              AND rtsr.station_code = #{stationCode}
+          </if>
+       </where>
     </select>
 </mapper>

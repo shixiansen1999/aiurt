@@ -1,6 +1,7 @@
 package com.aiurt.modules.index.mapper;
 
 import cn.hutool.core.date.DateTime;
+import com.aiurt.boot.index.dto.RepairTaskNum;
 import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
@@ -85,7 +86,6 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
 
     /**
      * 获取首页日待办事项故障完成数量
-     * @param dateTime
      * @return
      */
     @DataPermission({
@@ -95,7 +95,7 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
             @DataColumn(key = "systemName",value = "f.system_code"),
             @DataColumn(key = "stationName",value = "f.station_code")
     })
-    List<Fault> getDailyFaultNum(@Param("dateTime")DateTime dateTime);
+    List<RepairTaskNum> getDailyFaultNum(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
     /**
      * 待办事项故障情况
