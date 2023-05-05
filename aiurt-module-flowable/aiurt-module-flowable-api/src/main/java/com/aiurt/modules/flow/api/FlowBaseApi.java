@@ -19,6 +19,14 @@ public interface FlowBaseApi {
      */
     TaskInfoDTO viewRuntimeTaskInfo(String processInstanceId, String taskId);
 
+    /**
+     * 缓存板
+     * @param processInstanceId
+     * @param taskId
+     * @return
+     */
+    TaskInfoDTO viewRuntimeTaskInfoWithCache(String processInstanceId, String taskId, String userName);
+
 
     /**
      * 启动流程实例，如果当前登录用户为第一个用户任务的指派者，或者Assginee为流程启动人变量时，

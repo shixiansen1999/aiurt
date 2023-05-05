@@ -142,7 +142,14 @@
         </if>
         <if test="condition.matchName != null and  condition.matchName != ''">
             AND (
-            ( a.fault_phenomenon LIKE CONCAT ('%', #{condition.matchName}, '%')))
+                (
+                    ( a.fault_phenomenon LIKE CONCAT ('%', #{condition.matchName}, '%'))
+                    or
+                    (a.device_type_code in (select `code` from device_type where name LIKE CONCAT ('%', #{condition.matchName}, '%')))
+                    or
+                    (a.major_code in (select  material_code  from device_assembly where material_name LIKE CONCAT ('%', #{condition.matchName}, '%')))
+                )
+            )
         </if>
         <if test="condition.majorCode != null and  condition.majorCode != ''">
             and a.major_code= #{condition.majorCode}

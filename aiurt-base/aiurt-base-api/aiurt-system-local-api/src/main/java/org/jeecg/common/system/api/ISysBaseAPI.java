@@ -1102,5 +1102,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @param message 使用构造器赋值参数
      */
     void sendAllMessage(String message);
+
+    /**
+     * 根据编码查询设备分类
+     * @param list
+     * @return
+     */
+    List<DeviceType> selectDeviceTypeByCodes(Set<String> list);
 }
 
