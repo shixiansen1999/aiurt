@@ -183,10 +183,47 @@
                  t2.sort ASC;
     </select>
     <select id="getTaskList" resultType="com.aiurt.boot.task.param.PatrolTaskParam">
-        SELECT pt.*
-        FROM patrol_task pt
-        WHERE
-        pt.del_flag = 0
+        select pt.id,
+        pt.`code`,
+        <!--pt.plan_code,-->
+        pt.`name`,
+        <!--pt.type,-->
+        <!--pt.outsource,-->
+        <!--pt.plan_order_code,-->
+        <!--pt.plan_order_code_url,-->
+        <!--pt.period,-->
+        pt.patrol_date,
+        pt.start_time,
+        pt.end_time,
+        pt.source,
+        <!--pt.begin_time,-->
+        pt.submit_time,
+        <!--pt.end_user_id,-->
+        <!--pt.sign_url,-->
+        pt.`status`,
+        <!--pt.reject_reason,-->
+        <!--pt.auditor,-->
+        <!--pt.auditor_id,-->
+        pt.auditor_time,
+        <!--pt.auditor_remark,-->
+        <!--pt.abnormal_state,-->
+        pt.dispose_status,
+        pt.dispose_time,
+        pt.dispose_id,
+        pt.omit_status,
+        <!--pt.omit_explain,-->
+        <!--pt.back_id,-->
+        <!--pt.back_reason,-->
+        <!--pt.assign_id,-->
+        pt.discard_status,
+        <!--pt.discard_reason,-->
+        pt.`rebuild`,
+        pt.remark
+        from patrol_task pt
+        left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
+        left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
+        left join patrol_task_standard ptsd on pt.id = ptsd.task_id and pts.del_flag = 0
+        where pt.del_flag = 0
         <if test='patrolTask.identify != null and patrolTask.identify == "1"'>
             and pt.id not in (select id from patrol_task where source = 3 and (`status` = 0 or `status` = 3))
         </if>
@@ -263,12 +300,7 @@
         <if test="patrolTask.patrolDate != null and patrolTask.patrolDate != null">
             AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTask.patrolDate}, '%Y-%m-%d')
         </if>
-        <if test="taskCodes != null and taskCodes.size() > 0">
-            and pt.code in
-            <foreach collection="taskCodes" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
+        GROUP BY pt.id
         order by
         <if test='patrolTask.identify != null and patrolTask.identify == "2"'>
             pt.`status` asc,
@@ -307,18 +339,56 @@
         </if>
     </select>
     <select id="getPatrolTaskManualList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
-        SELECT t1.*
-        FROM patrol_task t1
-        where t1.source = 3
-        and t1.status in (0, 3)
-        and t1.discard_status = 0
-        and t1.omit_status = 0
+        select pt.id,
+        pt.`code`,
+        <!--pt.plan_code,-->
+        pt.`name`,
+        <!--pt.type,-->
+        <!--pt.outsource,-->
+        <!--pt.plan_order_code,-->
+        <!--pt.plan_order_code_url,-->
+        <!--pt.period,-->
+        pt.patrol_date,
+        pt.start_time,
+        pt.end_time,
+        <!--pt.source,-->
+        <!--pt.begin_time,-->
+        <!--pt.submit_time,-->
+        <!--pt.end_user_id,-->
+        <!--pt.sign_url,-->
+        pt.`status`,
+        <!--pt.reject_reason,-->
+        <!--pt.auditor,-->
+        <!--pt.auditor_id,-->
+        <!--pt.auditor_time,-->
+        <!--pt.auditor_remark,-->
+        <!--pt.abnormal_state,-->
+        <!--pt.dispose_status,-->
+        <!--pt.dispose_time,-->
+        <!--pt.dispose_id,-->
+        <!--pt.omit_status,-->
+        <!--pt.omit_explain,-->
+        <!--pt.back_id,-->
+        <!--pt.back_reason,-->
+        <!--pt.assign_id,-->
+        <!--pt.discard_status,-->
+        <!--pt.discard_reason,-->
+        <!--pt.`rebuild`,-->
+        pt.remark
+        FROM patrol_task pt
+        left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
+        left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
+        left join patrol_task_standard ptsd on pt.id = ptsd.task_id and pts.del_flag = 0
+        where pt.source = 3
+        and pt.status in (0, 3)
+        and pt.discard_status = 0
+        and pt.omit_status = 0
         <!--        and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND-->
         <!--            t2.org_code = #{patrolTaskDTO.loginOrgId})-->
         <if test="patrolTaskDTO.stationCode != null and patrolTaskDTO.stationCode != ''">
             <choose>
                 <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 1">
-                    and t1.code in (
+                    and pt.code in (
                     SELECT pps.task_code
                     FROM patrol_task_station pps
                     JOIN cs_station cs ON pps.station_code = cs.station_code
@@ -328,7 +398,7 @@
                     )
                 </when>
                 <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 2">
-                    and t1.code in (
+                    and pt.code in (
                     SELECT pps.task_code
                     FROM patrol_task_station pps
                     WHERE pps.del_flag = 0
@@ -338,32 +408,33 @@
             </choose>
         </if>
         <if test="patrolTaskDTO.orgCode != null and patrolTaskDTO.orgCode != ''">
-            and t1.code in (SELECT t2.task_code
+            and pt.code in (SELECT t2.task_code
             FROM patrol_task_organization t2
             where t2.org_code =
             #{patrolTaskDTO.orgCode})
         </if>
         <if test="patrolTaskDTO.name != null and patrolTaskDTO.name != ''">
-            and t1.name like concat('%', #{patrolTaskDTO.name}, '%')
+            and pt.name like concat('%', #{patrolTaskDTO.name}, '%')
         </if>
         <if test="patrolTaskDTO.code != null and patrolTaskDTO.code != ''">
-            and t1.code like concat('%', #{patrolTaskDTO.code}, '%')
+            and pt.code like concat('%', #{patrolTaskDTO.code}, '%')
         </if>
         <if test="patrolTaskDTO.status != null">
-            and t1.status = #{patrolTaskDTO.status}
+            and pt.status = #{patrolTaskDTO.status}
         </if>
         <if test="patrolTaskDTO.dateScope != null">
-            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d')
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
             between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
             and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
         </if>
-        <if test="patrolTaskDTO.taskCodes != null and patrolTaskDTO.taskCodes.size() > 0">
-            and t1.code in
-            <foreach collection="patrolTaskDTO.taskCodes" item="item" separator="," open="(" close=")">
-                #{item}
-            </foreach>
-        </if>
-        order by t1.create_time desc
+<!--        <if test="patrolTaskDTO.taskCodes != null and patrolTaskDTO.taskCodes.size() > 0">-->
+<!--            and pt.code in-->
+<!--            <foreach collection="patrolTaskDTO.taskCodes" item="item" separator="," open="(" close=")">-->
+<!--                #{item}-->
+<!--            </foreach>-->
+<!--        </if>-->
+        GROUP BY pt.id
+        order by pt.create_time desc
     </select>
     <select id="getMajorNameByMajorCode" resultType="java.lang.String">
         SELECT cm.major_name
@@ -506,9 +577,9 @@
         <if test="condition.orgCode != null and condition.orgCode != ''">
             AND pt.`code` IN (SELECT task_code FROM patrol_task_organization WHERE org_code = #{condition.orgCode})
         </if>
-        <if test="condition.jointSQL != null and condition.jointSQL != ''">
-            and ${condition.jointSQL}
-        </if>
+<!--        <if test="condition.jointSQL != null and condition.jointSQL != ''">-->
+<!--            and ${condition.jointSQL}-->
+<!--        </if>-->
         GROUP BY pt.`code`
     </select>
     <select id="getScheduleList" resultType="com.aiurt.boot.statistics.model.ScheduleTask">
@@ -556,9 +627,9 @@
         <!--            </foreach>-->
         <!--            )-->
         <!--        </if>-->
-        <if test="condition.jointSQL != null and condition.jointSQL != ''">
-            ${condition.jointSQL}
-        </if>
+<!--        <if test="condition.jointSQL != null and condition.jointSQL != ''">-->
+<!--            ${condition.jointSQL}-->
+<!--        </if>-->
         GROUP BY pt.`code`
     </select>
     <select id="getOverviewInfo" resultType="com.aiurt.boot.task.entity.PatrolTask">
@@ -576,9 +647,9 @@
         <if test="startDate != null and endDate != null">
             AND pt.patrol_date BETWEEN #{startDate} AND #{endDate}
         </if>
-        <if test="jointSQL != null and jointSQL != ''">
-            and ${jointSQL}
-        </if>
+<!--        <if test="jointSQL != null and jointSQL != ''">-->
+<!--            and ${jointSQL}-->
+<!--        </if>-->
         GROUP BY pt.`code`
     </select>
     <select id="getUserTask" resultType="com.aiurt.boot.task.entity.PatrolTask">
@@ -1394,9 +1465,9 @@
         <if test="condition.startDate != null and condition.endDate != null">
             AND pt.patrol_date BETWEEN #{condition.startDate} AND #{condition.endDate}
         </if>
-        <if test="condition.jointSQL != null and condition.jointSQL != ''">
-            and ${condition.jointSQL}
-        </if>
+<!--        <if test="condition.jointSQL != null and condition.jointSQL != ''">-->
+<!--            and ${condition.jointSQL}-->
+<!--        </if>-->
         GROUP BY pt.`code`
     </sql>
 

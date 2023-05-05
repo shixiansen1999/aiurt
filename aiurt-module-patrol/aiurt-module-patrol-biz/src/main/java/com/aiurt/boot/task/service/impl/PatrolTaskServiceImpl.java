@@ -127,14 +127,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
         // 数据权限过滤
-        List<String> taskCode = new ArrayList<>();
-        try {
-            taskCode = this.taskDataPermissionFilter();
-        } catch (Exception e) {
-            return page;
-        }
+//        List<String> taskCode = new ArrayList<>();
+//        try {
+//            taskCode = this.taskDataPermissionFilter();
+//        } catch (Exception e) {
+//            return page;
+//        }
 
-        IPage<PatrolTaskParam> taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam, taskCode);
+        IPage<PatrolTaskParam> taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam);
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("patrol_task-%d").build();
         ExecutorService patrolTask = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
                 0L, TimeUnit.MILLISECONDS,
@@ -1021,14 +1021,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskDTO.setDateEnd(dateEnd);
 
         }
-        // 数据权限过滤
-        List<String> taskCode = new ArrayList<>();
-        try {
-            taskCode = this.taskDataPermissionFilter();
-            patrolTaskDTO.setTaskCodes(taskCode);
-        } catch (Exception e) {
-            return pageList;
-        }
+//        // 数据权限过滤
+//        List<String> taskCode = new ArrayList<>();
+//        try {
+//            taskCode = this.taskDataPermissionFilter();
+//            patrolTaskDTO.setTaskCodes(taskCode);
+//        } catch (Exception e) {
+//            return pageList;
+//        }
         List<PatrolTaskDTO> taskDTOList = patrolTaskMapper.getPatrolTaskManualList(pageList, patrolTaskDTO);
         taskDTOList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
