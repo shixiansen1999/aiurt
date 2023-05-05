@@ -491,6 +491,16 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
             // 是否委外
             re.setIsOutsource(sysBaseApi.translateDict(DictConstant.INSPECTION_IS_MANUAL, String.valueOf(repairPool.getIsOutsource())));
+
+            // 查询该计划对应的任务
+            RepairTask repairTask = repairTaskMapper.selectOne(new LambdaQueryWrapper<RepairTask>()
+                    .eq(RepairTask::getRepairPoolId, repairPool.getId())
+                    .eq(RepairTask::getDelFlag, CommonConstant.DEL_FLAG_0));
+            // 任务提交人
+            if (ObjectUtil.isNotEmpty(repairTask)) {
+                re.setSubmitUserName(repairTask.getSumitUserName());
+            }
+
         }
         return re;
     }
