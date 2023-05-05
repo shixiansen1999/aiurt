@@ -30,4 +30,11 @@ public interface IFaultDeviceService extends IService<FaultDevice> {
      * @return
      */
     IPage<FaultDeviceRepairDTO> queryRepairDeviceList(Page<FaultDeviceRepairDTO> page, FaultDeviceRepairDTO FaultDeviceRepairDTO);
+
+    /**
+     * 批量查询
+     * @param faultCodeList
+     * @return
+     */
+    public List<FaultDevice> queryListByFaultCodeList(List<String> faultCodeList);
 }

@@ -2,7 +2,8 @@ package com.aiurt.modules.common.service;
 
 import com.aiurt.modules.common.dto.DeviceDTO;
 import com.aiurt.modules.common.entity.SelectTable;
-import com.aiurt.modules.system.entity.SysUser;
+import com.aiurt.modules.device.entity.Device;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import java.util.List;
 
@@ -36,4 +37,11 @@ public interface ICommonService {
      * @return
      */
     List<SelectTable> queryPositionTreeAsync(String name, String pid, String queryAll);
+
+    /**
+     * 分页查询设备
+     * @param deviceDTO
+     * @return
+     */
+    IPage<Device> queryPageDevice(DeviceDTO deviceDTO);
 }

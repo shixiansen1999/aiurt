@@ -210,7 +210,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
                 .stream().collect(Collectors.toMap(FaultAnalysisReport::getFaultCode, Function.identity()));
 
         Map<String, Integer> finalWeightMap = weightMap;
-        records.stream().forEach(fault1 -> {
+        records.parallelStream().forEach(fault1 -> {
 
             if(StrUtil.equalsIgnoreCase(user.getUsername(), fault1.getAppointUserName())){
                 fault1.setIsFault(true);

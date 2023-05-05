@@ -23,6 +23,7 @@ import com.aiurt.modules.system.service.impl.CsUserDepartServiceImpl;
 import com.aiurt.modules.workarea.entity.WorkArea;
 import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -205,6 +206,13 @@ public class CommonCtroller {
     public Result<List<SelectTable>> queryDevice(DeviceDTO deviceDTO) {
         List<SelectTable> list = commonService.queryDevice(deviceDTO);
         return Result.OK(list);
+    }
+
+    @GetMapping("/device/queryPageDevice")
+    @ApiOperation("查询分页查询设备")
+    public Result<IPage<Device>> queryPageDevice(DeviceDTO deviceDTO) {
+        IPage<Device> result = commonService.queryPageDevice(deviceDTO);
+        return Result.ok(result);
     }
 
     @ApiOperation("异步加载位置树")

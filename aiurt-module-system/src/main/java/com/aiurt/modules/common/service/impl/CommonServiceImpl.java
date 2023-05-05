@@ -22,12 +22,15 @@ import com.aiurt.modules.system.service.ICsUserStaionService;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.service.ISysUserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserStationModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -127,40 +130,7 @@ public class CommonServiceImpl implements ICommonService {
 
     @Override
     public List<SelectTable> queryDevice(DeviceDTO deviceDTO) {
-        LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
-        //todo 查询当前人员所管辖的站所
-        if (ObjectUtil.isNotEmpty(deviceDTO)) {
-            if (StrUtil.isNotBlank(deviceDTO.getLineCode())) {
-                queryWrapper.eq(Device::getLineCode, deviceDTO.getLineCode());
-            }
-
-            if (StrUtil.isNotBlank(deviceDTO.getDeviceTypeCode())) {
-                queryWrapper.eq(Device::getDeviceTypeCode, deviceDTO.getDeviceTypeCode());
-            }
-
-            if (StrUtil.isNotBlank(deviceDTO.getMajorCode())) {
-                queryWrapper.eq(Device::getMajorCode, deviceDTO.getMajorCode());
-            }
-
-            if (StrUtil.isNotBlank(deviceDTO.getSystemCode())) {
-                queryWrapper.eq(Device::getSystemCode, deviceDTO.getSystemCode());
-            }
-
-            if (StrUtil.isNotBlank(deviceDTO.getStationCode())) {
-                queryWrapper.eq(Device::getStationCode, deviceDTO.getStationCode());
-            }
-
-            if (StrUtil.isNotBlank(deviceDTO.getPositionCode())) {
-                queryWrapper.eq(Device::getPositionCode, deviceDTO.getPositionCode());
-            }
-
-            if (StrUtil.isNotBlank(deviceDTO.getName())) {
-                queryWrapper.like(Device::getName, deviceDTO.getName());
-            }
-            if (CollectionUtil.isNotEmpty(deviceDTO.getDeviceCodes())) {
-                queryWrapper.in(Device::getCode, deviceDTO.getDeviceCodes());
-            }
-        }
+        LambdaQueryWrapper<Device> queryWrapper = BuildDeviceQueryWrapper(deviceDTO);
         queryWrapper.eq(Device::getDelFlag, 0);
         List<Device> csMajorList = deviceService.getBaseMapper().selectList(queryWrapper);
 
@@ -405,5 +375,58 @@ public class CommonServiceImpl implements ICommonService {
         }).collect(Collectors.toList());
 
         return collect;
+    }
+
+    /**
+     * 分页查询设备
+     *
+     * @param deviceDTO
+     * @return
+     */
+    @Override
+    public IPage<Device> queryPageDevice(DeviceDTO deviceDTO) {
+        LambdaQueryWrapper<Device> queryWrapper = BuildDeviceQueryWrapper(deviceDTO);
+        queryWrapper.eq(Device::getDelFlag, 0);
+        Page<Device> page = new Page<>(deviceDTO.getPageNo(), deviceDTO.getPageSize());
+        IPage<Device> pageList = deviceService.page(page, queryWrapper);
+        return pageList;
+    }
+
+    @NotNull
+    private LambdaQueryWrapper<Device> BuildDeviceQueryWrapper(DeviceDTO deviceDTO) {
+        LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
+        if (ObjectUtil.isNotEmpty(deviceDTO)) {
+            if (StrUtil.isNotBlank(deviceDTO.getLineCode())) {
+                queryWrapper.eq(Device::getLineCode, deviceDTO.getLineCode());
+            }
+
+            if (StrUtil.isNotBlank(deviceDTO.getDeviceTypeCode())) {
+                queryWrapper.eq(Device::getDeviceTypeCode, deviceDTO.getDeviceTypeCode());
+            }
+
+            if (StrUtil.isNotBlank(deviceDTO.getMajorCode())) {
+                queryWrapper.eq(Device::getMajorCode, deviceDTO.getMajorCode());
+            }
+
+            if (StrUtil.isNotBlank(deviceDTO.getSystemCode())) {
+                queryWrapper.eq(Device::getSystemCode, deviceDTO.getSystemCode());
+            }
+
+            if (StrUtil.isNotBlank(deviceDTO.getStationCode())) {
+                queryWrapper.eq(Device::getStationCode, deviceDTO.getStationCode());
+            }
+
+            if (StrUtil.isNotBlank(deviceDTO.getPositionCode())) {
+                queryWrapper.eq(Device::getPositionCode, deviceDTO.getPositionCode());
+            }
+
+            if (StrUtil.isNotBlank(deviceDTO.getName())) {
+                queryWrapper.like(Device::getName, deviceDTO.getName());
+            }
+            if (CollectionUtil.isNotEmpty(deviceDTO.getDeviceCodes())) {
+                queryWrapper.in(Device::getCode, deviceDTO.getDeviceCodes());
+            }
+        }
+        return queryWrapper;
     }
 }
