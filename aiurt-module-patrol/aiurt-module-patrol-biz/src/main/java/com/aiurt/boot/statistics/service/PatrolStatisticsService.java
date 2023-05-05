@@ -333,9 +333,9 @@ public class PatrolStatisticsService {
         // 管理的部门
         columnMapping.put(DataPermRuleType.TYPE_MANAGE_DEPT, "pto.org_code");
         // 管理的线路
-        columnMapping.put(DataPermRuleType.TYPE_MANAGE_LINE_ONLY, "pts.station_code");
+        columnMapping.put(DataPermRuleType.TYPE_MANAGE_LINE_ONLY, "pts.line_code");
         // 管理的站点
-        columnMapping.put(DataPermRuleType.TYPE_MANAGE_STATION_ONLY, "pts.line_code");
+        columnMapping.put(DataPermRuleType.TYPE_MANAGE_STATION_ONLY, "pts.station_code");
         // 管理的专业
         columnMapping.put(DataPermRuleType.TYPE_MANAGE_MAJOR_ONLY, "ptsd.profession_code");
         // 管理的子系统
