@@ -95,4 +95,22 @@
                           left join sys_role sr on sr.id = sur.role_id
         where sr.role_name = '送修经办人'
     </select>
+
+    <select id="queryListByFaultCodeList" resultType="com.aiurt.modules.fault.entity.FaultDevice">
+        select
+            distinct
+            a.device_code,
+            a.fault_code,
+            b.name device_name
+        from
+            fault_device a
+                    LEFT JOIN device b ON  a.device_code = b.code
+        where 1=1
+        <if test="faultCodeList != null and faultCodeList.size() != 0">
+            and a.fault_code in
+            <foreach collection="faultCodeList" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
 </mapper>
