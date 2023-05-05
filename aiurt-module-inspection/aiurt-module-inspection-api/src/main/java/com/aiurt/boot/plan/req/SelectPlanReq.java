@@ -17,11 +17,11 @@ import java.util.List;
 @Data
 public class SelectPlanReq {
 
-    @ApiModelProperty(value = "开始时间",required = true)
+    @ApiModelProperty(value = "开始时间", required = true)
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @NotNull(message = "开始时间不能为空")
     private java.util.Date startTime;
-    @ApiModelProperty(value = "结束时间",required = true)
+    @ApiModelProperty(value = "结束时间", required = true)
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @NotNull(message = "结束时间不能为空")
     private Date endTime;
@@ -38,6 +38,17 @@ public class SelectPlanReq {
     @ApiModelProperty(value = "pageSize")
     private Integer pageSize = 30;
 
-    @ApiModelProperty(value = "多个状态,查询使用")
+    @ApiModelProperty(value = "组织结构code集合")
+    private List<String> orgCodeList;
+    @ApiModelProperty(value = "状态集合")
     private List<String> statusList;
+    @ApiModelProperty(value = "站点code集合")
+    private List<String> stationCodeList;
+    @ApiModelProperty(value = "是否是手工下发")
+    private Integer isManual;
+    @ApiModelProperty(value = "检修计划单号")
+    private java.lang.String code;
+    @ApiModelProperty(value = "检修周期类型")
+    private java.lang.Integer type;
+
 }

@@ -37,10 +37,8 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtNoDataException;
-import com.aiurt.common.util.ArchiveUtils;
-import com.aiurt.common.util.DateUtils;
-import com.aiurt.common.util.PdfUtil;
-import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.common.util.*;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -56,6 +54,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -136,45 +135,76 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             condition.setCode(condition.getCode().replaceAll(" ", ""));
         }
 
-        // 数据权限过滤
-        condition.setCodeList(handleDataPermission());
-
         // 开启线程处理
         List<RepairTask> lists = repairTaskMapper.selectables(pageList, condition);
-        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
-                .setNameFormat("repair-task-%d").build();
-        ExecutorService repairTask = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(), namedThreadFactory);
+        boolean filter = GlobalThreadLocal.setDataFilter(false);
+
+        // 获取所有 检修任务 的 id 列表
+        List<String> repairTaskIds = lists.stream().map(RepairTask::getId).collect(Collectors.toList());
+
+        // 同行人
+        Map<String, String> peerNameMap = repairTaskPeerRelMapper.selectTaskIdWithPeerNames(repairTaskIds)
+                .stream()
+                .collect(Collectors.toMap(RepairTaskPeerNameDTO::getId, RepairTaskPeerNameDTO::getPeerNames, (v1, v2) -> v1));
+
+        // 抽检人
+        Map<String, String> sampNameMap = repairTaskSamplingMapper.selectTaskIdWithSampNames(repairTaskIds)
+                .stream()
+                .collect(Collectors.toMap(RepairTaskSampNameDTO::getId, RepairTaskSampNameDTO::getSampNames, (v1, v2) -> v1));
+
+        // 检修任务状态
+        Map<String, String> inspectionTaskStateMap = sysBaseApi.queryEnableDictItemsByCode(DictConstant.INSPECTION_TASK_STATE)
+                .stream()
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+        // 检修周期类型
+        Map<String, String> taskTypeMap = sysBaseApi.queryEnableDictItemsByCode(DictConstant.INSPECTION_CYCLE_TYPE)
+                .stream()
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+
+        // 是否需要审核
+        Map<String, String> isConfirmMap = sysBaseApi.queryEnableDictItemsByCode(DictConstant.INSPECTION_IS_CONFIRM)
+                .stream()
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+
+        // 任务来源
+        Map<String, String> sourceMap = sysBaseApi.queryEnableDictItemsByCode(DictConstant.PATROL_TASK_ACCESS)
+                .stream()
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+
+        // 作业类型
+        Map<String, String> workTypeMap = sysBaseApi.queryEnableDictItemsByCode(DictConstant.WORK_TYPE)
+                .stream()
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+
+        // 检修归档状态
+        Map<String, String> ecmStatusMap = sysBaseApi.queryEnableDictItemsByCode(DictConstant.ECM_STATUS)
+                .stream()
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+
+        // 使用自定义线程池
+        AsyncThreadPoolExecutorUtil asyncThreadPoolExecutor = AsyncThreadPoolExecutorUtil.getExecutor();
         List<Future<RepairTask>> futureList = new ArrayList<>();
-        if (CollUtil.isNotEmpty(lists)){
-           lists.forEach(e -> {
-               Future<RepairTask> submit = repairTask.submit(new RepairTaskThreadService(e, repairTaskMapper, manager, repairTaskPeerRelMapper, repairTaskSamplingMapper, sysBaseApi, repairTaskEnclosureMapper, repairTaskUserMapper,this));
-            futureList.add(submit);
-        });
-        // 确认每个线程都执行完成
-        for (Future<RepairTask> fut : futureList) {
-            try {
-                fut.get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+        if (CollUtil.isNotEmpty(lists)) {
+            lists.forEach(e -> {
+                Future<RepairTask> submit = asyncThreadPoolExecutor.submitTask(() -> {
+                    RepairTaskThreadService repairTaskThreadService = new RepairTaskThreadService(e, repairTaskMapper, manager, repairTaskPeerRelMapper, repairTaskSamplingMapper, sysBaseApi, repairTaskEnclosureMapper, repairTaskUserMapper, this);
+                    repairTaskThreadService.call();
+                    return e;
+                });
+                futureList.add(submit);
+            });
+            // 确认每个线程都执行完成
+            for (Future<RepairTask> fut : futureList) {
+                try {
+                    fut.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
-        try {
-            repairTask.shutdown();
-            // (所有的任务都结束的时候，返回TRUE)
-            if (!repairTask.awaitTermination(5 * 1000, TimeUnit.MILLISECONDS)) {
-                // 5s超时的时候向线程池中所有的线程发出中断(interrupted)。
-                repairTask.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            // awaitTermination方法被中断的时候也中止线程池中全部的线程的执行。
-            log.error("awaitTermination interrupted:{}", e);
-            repairTask.shutdownNow();
-         }
-        }
+        // 禁用数据权限过滤-end
+        GlobalThreadLocal.setDataFilter(filter);
         return pageList.setRecords(lists);
     }
 

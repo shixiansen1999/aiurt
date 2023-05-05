@@ -21,5 +21,7 @@ public class StationDTO {
     /**位置编号*/
     @ApiModelProperty(value = "位置编号")
     private java.lang.String positionCode;
+    @ApiModelProperty(value = "检修任务code")
+    private String repairPoolCode;
 
 }

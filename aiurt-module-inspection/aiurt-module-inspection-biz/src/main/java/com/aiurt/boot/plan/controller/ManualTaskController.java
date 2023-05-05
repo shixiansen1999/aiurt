@@ -35,14 +35,14 @@ public class ManualTaskController {
     private IRepairPoolService repairPoolService;
 
     /**
-     * 分页查询手工下发任务列表
+     * 分页查询手工下发的检修任务列表
      *
-     * @param manualTaskReq
-     * @param pageNo
-     * @param pageSize
-     * @return
+     * @param manualTaskReq 查询条件对象，包含检修任务单号、检修类型、状态等筛选条件
+     * @param pageNo        当前页码，默认值为 1
+     * @param pageSize      每页显示的记录数，默认值为 10
+     * @return Result<IPage < RepairPool>> 结果对象，包含分页后的检修任务列表及分页信息
      */
-    @AutoLog(value = "检修管理-手工下发任务-列表查询", operateType =  1, operateTypeAlias = "列表查询", permissionUrl = "/views/overhaul/RepairManualPoolList")
+    @AutoLog(value = "检修管理-手工下发任务-列表查询", operateType = 1, operateTypeAlias = "列表查询", permissionUrl = "/views/overhaul/RepairManualPoolList")
     @ApiOperation(value = "分页查询手工下发任务列表", notes = "分页查询手工下发任务列表")
     @PermissionData(pageComponent = "overhaul/RepairManualPoolList")
     @GetMapping(value = "/listPage")
@@ -60,7 +60,7 @@ public class ManualTaskController {
      * @param repairPoolReq
      * @return
      */
-    @AutoLog(value = "检修管理-手工下发任务-添加手工下发任务", operateType =  2, operateTypeAlias = "添加手工下发任务", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-手工下发任务-添加手工下发任务", operateType = 2, operateTypeAlias = "添加手工下发任务", module = ModuleType.INSPECTION)
     @ApiOperation(value = "添加手工下发检修任务", notes = "添加手工下发检修任务")
     @PostMapping(value = "/addManualTask")
     public Result<String> addManualTask(@RequestBody RepairPoolReq repairPoolReq) {
@@ -74,7 +74,7 @@ public class ManualTaskController {
      * @param id
      * @return
      */
-    @AutoLog(value = "检修管理-手工下发任务-编辑手工下发任务", operateType =  1, operateTypeAlias = "编辑手工下发任务", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-手工下发任务-编辑手工下发任务", operateType = 1, operateTypeAlias = "编辑手工下发任务", module = ModuleType.INSPECTION)
     @ApiOperation(value = "通过id查询手工下发检修任务信息", notes = "通过id查询手工下发检修任务信息")
     @GetMapping(value = "/queryManualTaskById")
     public Result<RepairPoolDTO> queryManualTaskById(@RequestParam(name = "id", required = true) String id) {
@@ -88,7 +88,7 @@ public class ManualTaskController {
      * @param repairPoolReq
      * @return
      */
-    @AutoLog(value = "检修管理-手工下发任务-修改手工下发任务", operateType =  3, operateTypeAlias = "修改手工下发任务", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-手工下发任务-修改手工下发任务", operateType = 3, operateTypeAlias = "修改手工下发任务", module = ModuleType.INSPECTION)
     @ApiOperation(value = "修改手工下发检修任务信息", notes = "编辑手工下发检修任务信息")
     @PostMapping(value = "/updateManualTaskById")
     public Result<String> updateManualTaskById(@RequestBody RepairPoolReq repairPoolReq) {
@@ -102,7 +102,7 @@ public class ManualTaskController {
      * @param id
      * @return
      */
-    @AutoLog(value = "检修管理-手工下发任务-删除手工下发任务", operateType =  4, operateTypeAlias = "删除手工下发任务", module = ModuleType.INSPECTION,permissionUrl="/views/overhaul/RepairManualPoolList")
+    @AutoLog(value = "检修管理-手工下发任务-删除手工下发任务", operateType = 4, operateTypeAlias = "删除手工下发任务", module = ModuleType.INSPECTION, permissionUrl = "/views/overhaul/RepairManualPoolList")
     @ApiOperation(value = "通过id删除手工下发检修任务", notes = "通过id删除手工下发检修任务")
     @DeleteMapping(value = "/deleteManualTaskById")
     public Result<String> deleteManualTaskById(@RequestParam @ApiParam(name = "id", required = true, value = "任务id") String id) {
@@ -117,13 +117,13 @@ public class ManualTaskController {
      * @param id   检修标准id
      * @return
      */
-    @AutoLog(value = "检修管理-手工下发任务-查询设备", operateType =  1, operateTypeAlias = "查询设备", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-手工下发任务-查询设备", operateType = 1, operateTypeAlias = "查询设备", module = ModuleType.INSPECTION)
     @ApiOperation(value = "根据检修任务code和检修标准id查询检修标准对应的设备", notes = "根据检修任务code和检修标准id查询检修标准对应的设备")
     @GetMapping(value = "/queryDeviceByCodeAndId")
     public Result<IPage<RepairDeviceDTO>> queryDeviceByCodeAndId(@RequestParam @ApiParam(name = "code", required = true, value = "检修任务code") String code,
-                                                                     @RequestParam @ApiParam(name = "id", required = true, value = "检修标准id") String id,
-                                                                     @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                                     @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+                                                                 @RequestParam @ApiParam(name = "id", required = true, value = "检修标准id") String id,
+                                                                 @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         Page<RepairDeviceDTO> page = new Page<>(pageNo, pageSize);
         IPage<RepairDeviceDTO> pageList = repairPoolService.queryDeviceByCodeAndId(page, code, id);
         return Result.OK(pageList);
