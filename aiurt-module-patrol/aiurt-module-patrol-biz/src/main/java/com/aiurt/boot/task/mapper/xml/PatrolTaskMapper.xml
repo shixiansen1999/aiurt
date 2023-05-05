@@ -460,6 +460,12 @@
         <if test="condition.finishStatus != null">
             where sub.`status` = #{condition.finishStatus}
         </if>
+        <if test="condition.stationCode != null and condition.stationCode != ''">
+            AND sub.station_code = #{condition.stationCode}
+        </if>
+        <if test="condition.lineCode != null and condition.lineCode != ''">
+            AND sub.line_code = #{condition.lineCode}
+        </if>
     </select>
     <select id="getIndexTaskList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
         SELECT pt.id,pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time
