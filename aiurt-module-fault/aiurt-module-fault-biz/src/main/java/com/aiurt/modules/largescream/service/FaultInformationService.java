@@ -86,10 +86,14 @@ public class FaultInformationService {
         List<String> majors = getCurrentLoginUserMajors();
 
         int count = 0;
+
         List<Fault> faultList = faultInformationMapper.queryLargeFaultInformation(startDate, endDate, lineCode, majors);
+
+        List<Fault> faultList1 = faultInformationMapper.queryLargeFaultInformation(getTime(0), getTime(1), lineCode, majors);
+
         //总故障数
-        if (CollUtil.isNotEmpty(faultList)) {
-            result.setSum(faultList.size());
+        if (CollUtil.isNotEmpty(faultList1)) {
+            result.setSum(faultList1.size());
         } else {
             result.setSum(0);
         }
@@ -123,6 +127,17 @@ public class FaultInformationService {
         return result;
     }
 
+    private Date getTime(Integer integer){
+        Date time = null;
+        String dateTime1 = FaultLargeDateUtil.getDateTime(CommonConstant.BOARD_TIME_TYPE_3);
+        String[] split1 = dateTime1.split("~");
+        if (integer==0){
+            time = DateUtil.parse(split1[integer]);
+        }else {
+            time = DateUtil.parse(split1[integer]);
+        }
+        return time;
+    }
     /**
      * 综合大屏-故障信息统计详情
      *
@@ -143,8 +158,8 @@ public class FaultInformationService {
         switch (faultModule) {
             // 总故障数详情
             case 1:
-                faultScreenModule.setStartDate(startDate);
-                faultScreenModule.setEndDate(endDate);
+                faultScreenModule.setStartDate(getTime(0));
+                faultScreenModule.setEndDate(getTime(1));
                 faultScreenModule.setLineCode(lineCode);
                 faultScreenModule.setMajors(majors);
                 break;
