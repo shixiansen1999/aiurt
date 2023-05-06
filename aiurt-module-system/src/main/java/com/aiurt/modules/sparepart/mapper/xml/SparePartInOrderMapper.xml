@@ -62,6 +62,12 @@
                     #{item}
                 </foreach>)
             </if>
+            <if test="order.orgCodes!=null and order.orgCodes.size()!=0">
+                and t5.org_code in
+                <foreach collection="order.orgCodes" open="(" separator=","  close=")" item="item">
+                    #{item}
+                </foreach>
+            </if>
             order by spare_part_in_order.create_time desc
     </select>
 
