@@ -85,15 +85,15 @@ public class PatrolStatisticsService {
      *
      * @return
      */
-    @DisableDataFilter
+//    @DisableDataFilter
     public PatrolSituation getOverviewInfo(HttpServletRequest request, Date startDate, Date endDate, Integer isAllData) {
         Date newStartDate = DateUtil.parse(DateUtil.format(startDate, "yyyy-MM-dd 00:00:00"));
         Date newEndDate = DateUtil.parse(DateUtil.format(endDate, "yyyy-MM-dd 23:59:59"));
         PatrolSituation situation = new PatrolSituation();
 
-//        // 获取权限数据
-//        String filterConditions = this.getPermissionSQL(request);
-//        log.info("SQl:{}", filterConditions);
+        // 获取权限数据
+        String filterConditions = this.getPermissionSQL(request);
+        log.debug("SQl:{}", filterConditions);
 
 //        //  ******原统计实现方法-Begin********
 //        List<PatrolTask> list = patrolTaskMapper.getOverviewInfo(newStartDate, newEndDate,filterConditions);
@@ -122,14 +122,14 @@ public class PatrolStatisticsService {
 //        //  ******原统计实现方法-End********
 
         //  ******数据库统计实现方法-Begin********
-        IndexCountDTO indexCountDTO = new IndexCountDTO(newStartDate, newEndDate/*, filterConditions*/);
+        IndexCountDTO indexCountDTO = new IndexCountDTO(newStartDate, newEndDate, filterConditions);
         PatrolSituation overviewInfoCount = patrolTaskMapper.getOverviewInfoCount(indexCountDTO);
         // 漏巡数统计
         List<Date> startList = this.getOmitDateScope(startDate);
         List<Date> endList = this.getOmitDateScope(endDate);
         Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
         Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
-        IndexCountDTO indexCountOmitDTO = new IndexCountDTO(startTime, endTime/*, filterConditions*/);
+        IndexCountDTO indexCountOmitDTO = new IndexCountDTO(startTime, endTime, filterConditions);
         PatrolSituation overviewInfoOmitCount = patrolTaskMapper.getOverviewInfoCount(indexCountOmitDTO);
 
         Long sum = ObjectUtil.isEmpty(overviewInfoCount.getSum()) ? 0 : overviewInfoCount.getSum();
@@ -350,7 +350,7 @@ public class PatrolStatisticsService {
      * @param indexTaskDTO
      * @return
      */
-    @DisableDataFilter
+//    @DisableDataFilter
     public IPage<IndexTaskInfo> getIndexTaskList(HttpServletRequest request, Page<IndexTaskInfo> page, IndexTaskDTO indexTaskDTO) {
 
         Integer omitStatus = indexTaskDTO.getOmitStatus();
@@ -494,7 +494,7 @@ public class PatrolStatisticsService {
      * @param indexScheduleDTO
      * @return
      */
-    @DisableDataFilter
+//    @DisableDataFilter
     public IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page,HttpServletRequest request, IndexScheduleDTO indexScheduleDTO) {
         IPage<ScheduleTask> pageList = null;
         // 默认已完成

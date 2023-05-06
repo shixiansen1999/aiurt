@@ -1465,9 +1465,9 @@
         <if test="condition.startDate != null and condition.endDate != null">
             AND pt.patrol_date BETWEEN #{condition.startDate} AND #{condition.endDate}
         </if>
-<!--        <if test="condition.jointSQL != null and condition.jointSQL != ''">-->
-<!--            and ${condition.jointSQL}-->
-<!--        </if>-->
+        <if test="condition.jointSQL != null and condition.jointSQL != ''">
+            and ${condition.jointSQL}
+        </if>
         GROUP BY pt.`code`
     </sql>
 
