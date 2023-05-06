@@ -131,11 +131,7 @@ public class FaultInformationService {
         Date time = null;
         String dateTime1 = FaultLargeDateUtil.getDateTime(CommonConstant.BOARD_TIME_TYPE_3);
         String[] split1 = dateTime1.split("~");
-        if (integer==0){
-            time = DateUtil.parse(split1[integer]);
-        }else {
-            time = DateUtil.parse(split1[integer]);
-        }
+        time = DateUtil.parse(split1[integer]);
         return time;
     }
     /**
