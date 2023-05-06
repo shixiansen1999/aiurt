@@ -1,6 +1,5 @@
 package com.aiurt.modules.worklog.entity;
 
-import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -152,6 +151,11 @@ public class WorkLog {
     @Excel(name = "注意事项", width = 15)
     @ApiModelProperty(value = "注意事项")
     private  String  note;
+
+    /**工作安排*/
+    @Excel(name = "工作安排", width = 15)
+    @ApiModelProperty(value = "工作安排")
+    private String schedule;
 
     /**交班人id*/
     @Excel(name = "交班人id", width = 15)
