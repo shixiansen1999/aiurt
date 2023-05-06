@@ -164,7 +164,9 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
     </select>
 
     <select id="getLargeFaultDataDatails" resultType="com.aiurt.modules.fault.dto.FaultLargeInfoDTO">
-        select * from fault f
+        select f.id, f.sub_system_code, cs.system_name, f.fault_mode_code, f.station_code, ct.station_name,
+        f.happen_time, f.appoint_user_name, s.realname as real_name, f.status, f.fault_phenomenon, f.line_code
+        from fault f
         left join cs_subsystem cs on cs.system_code = f.sub_system_code
         left join  cs_line cl on cl.line_code = f.line_code
         left join cs_station ct on ct.station_code = f.station_code
