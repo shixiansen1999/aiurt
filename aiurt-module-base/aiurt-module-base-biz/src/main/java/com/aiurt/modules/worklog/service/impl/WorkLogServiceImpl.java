@@ -152,6 +152,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
         depot.setOtherWorkContent(dto.getOtherWorkContent());
         depot.setNote(dto.getNote());
+        depot.setSchedule(dto.getSchedule());
         depot.setHandoverId(dto.getHandoverId());
 
         depot.setSucceedId(dto.getSucceedId());
@@ -809,6 +810,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setFaultContent(dto.getFaultContent());
         workLog.setRepairContent(dto.getRepairContent());
         workLog.setPatrolContent(dto.getPatrolContent());
+        workLog.setSchedule(dto.getSchedule());
         if (dto.getStatus() != null) {
             workLog.setStatus(1);
             workLog.setSubmitTime(new Date());
