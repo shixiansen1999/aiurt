@@ -320,12 +320,15 @@ public class CommonCtroller {
     @GetMapping("/position/queryStationTree")
     @ApiOperation("根据个人权限获取站点树")
     public Result<List<SelectTable>> queryStationTree() {
-        List<CsLine> lineList = lineService.getBaseMapper().selectList(null);
+
+        LambdaQueryWrapper<CsLine> lineWrapper = new LambdaQueryWrapper<>();
+        lineWrapper.eq(CsLine::getDelFlag, 0);
+        List<CsLine> lineList = lineService.getBaseMapper().selectList(lineWrapper);
 
         Map<String, String> lineMap = lineList.stream().collect(Collectors.toMap(CsLine::getLineCode, CsLine::getLineName, (t1, t2) -> t2));
 
         LambdaQueryWrapper<CsStation> stationWrapper = new LambdaQueryWrapper<>();
-
+        stationWrapper.eq(CsStation::getDelFlag, 0);
         List<CsStation> stationList = stationService.getBaseMapper().selectList(stationWrapper);
 
         Map<String, List<CsStation>> stationMap = stationList.stream().collect(Collectors.groupingBy(CsStation::getLineCode));
