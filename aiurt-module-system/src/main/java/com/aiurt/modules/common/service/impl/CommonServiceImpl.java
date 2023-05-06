@@ -444,7 +444,7 @@ public class CommonServiceImpl implements ICommonService {
                 selectTable.setStationCode(csStation.getStationCode());
                 selectTable.setPid(lineCode);
                 selectTable.setId(csStation.getStationCode());
-                table.setIsLeaf(true);
+                selectTable.setIsLeaf(true);
                 return selectTable;
             }).collect(Collectors.toList());
             table.setChildren(lv2List);
