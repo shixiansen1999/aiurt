@@ -15,6 +15,7 @@
     <if test="id != null and id != ''">
         and cus.user_id = #{id}
     </if>
+    order by cl.sort,cl.line_code,cs.sort,cs.station_code
     </select>
 
 

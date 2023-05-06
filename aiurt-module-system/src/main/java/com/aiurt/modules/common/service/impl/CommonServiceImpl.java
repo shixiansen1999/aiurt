@@ -392,6 +392,71 @@ public class CommonServiceImpl implements ICommonService {
         return pageList;
     }
 
+    /**
+     * 线路站点
+     *
+     * @param name
+     * @param queryAll
+     * @return
+     */
+    @Override
+    public List<SelectTable> queryStationTree(String name, String queryAll) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = loginUser.getId();
+        String roleCodes = loginUser.getRoleCodes();
+
+        List<CsUserStationModel> stationModelList = Collections.emptyList();
+
+        // 查看全部的站点， // 系统管理员不做权限过滤
+        if ((StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) || StrUtil.equalsIgnoreCase(queryAll, String.valueOf(CommonConstant.DEL_FLAG_1))) {
+            stationModelList = userStationService.queryAllStation(null);
+        }else {
+            // 根据个人管理的站点
+            stationModelList = sysBaseApi.getStationByUserId(userId);
+        }
+
+        Map<String, List<CsUserStationModel>> stationMap = stationModelList.stream().collect(Collectors.groupingBy(CsUserStationModel::getLineCode,LinkedHashMap::new,Collectors.toList()));
+
+        List<CsLine> lineList = lineService.getBaseMapper().selectList(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag,0));
+
+        Map<String, String> lineMap = lineList.stream().collect(Collectors.toMap(CsLine::getLineCode, CsLine::getLineName, (t1, t2) -> t2));
+
+        List<SelectTable> list = new ArrayList<>();
+        stationMap.keySet().stream().forEach(lineCode -> {
+            SelectTable table = new SelectTable();
+            table.setLabel(lineMap.get(lineCode));
+            table.setValue(lineCode);
+            table.setLevel(1);
+            table.setTitle(lineMap.get(lineCode));
+            table.setLineCode(lineCode);
+            table.setIsLeaf(false);
+            table.setPid("0");
+            table.setId(lineCode);
+            //
+            List<CsUserStationModel> csStationList = stationMap.getOrDefault(lineCode, Collections.emptyList());
+            List<SelectTable> lv2List = csStationList.stream().map(csStation -> {
+                SelectTable selectTable = new SelectTable();
+                selectTable.setValue(csStation.getStationCode());
+                selectTable.setLabel(csStation.getStationName());
+                selectTable.setLevel(2);
+                selectTable.setKey(csStation.getId());
+                selectTable.setLineCode(lineCode);
+                selectTable.setStationCode(csStation.getStationCode());
+                selectTable.setPid(lineCode);
+                selectTable.setId(csStation.getStationCode());
+                table.setIsLeaf(true);
+                return selectTable;
+            }).collect(Collectors.toList());
+            table.setChildren(lv2List);
+            list.add(table);
+        });
+        //树形搜索匹配
+        if (StrUtil.isNotBlank(name) && CollUtil.isNotEmpty(list)) {
+            sysBaseApi.processingTreeList(name,list);
+        }
+        return list;
+    }
+
     @NotNull
     private LambdaQueryWrapper<Device> BuildDeviceQueryWrapper(DeviceDTO deviceDTO) {
         LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();

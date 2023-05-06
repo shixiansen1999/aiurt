@@ -4,7 +4,7 @@
 
     <select id="queryDeviceChangeByFaultCode" parameterType="string" resultType="com.aiurt.modules.fault.entity.DeviceChangeSparePart">
         select
-        a.*,
+        distinct a.*,
         b.name as new_spare_part_name,
         b.specifications,
         c.name as device_name,
