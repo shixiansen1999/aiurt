@@ -319,45 +319,36 @@ public class CommonCtroller {
          */
     @GetMapping("/position/queryStationTree")
     @ApiOperation("根据个人权限获取站点树")
-    public Result<List<SelectTable>> queryStationTree() {
-        List<CsLine> lineList = lineService.getBaseMapper().selectList(null);
-
-        Map<String, String> lineMap = lineList.stream().collect(Collectors.toMap(CsLine::getLineCode, CsLine::getLineName, (t1, t2) -> t2));
-
-        LambdaQueryWrapper<CsStation> stationWrapper = new LambdaQueryWrapper<>();
-
-        List<CsStation> stationList = stationService.getBaseMapper().selectList(stationWrapper);
-
-        Map<String, List<CsStation>> stationMap = stationList.stream().collect(Collectors.groupingBy(CsStation::getLineCode));
-
-        List<SelectTable> list = new ArrayList<>();
-        stationMap.keySet().stream().forEach(lineCode -> {
-            SelectTable table = new SelectTable();
-            table.setLabel(lineMap.get(lineCode));
-            table.setValue(lineCode);
-            table.setLevel(1);
-            table.setKey(lineCode);
-            table.setLineCode(lineCode);
-            table.setTitle(lineMap.get(lineCode));
-            //
-            List<CsStation> csStationList = stationMap.getOrDefault(lineCode, Collections.emptyList());
-
-            List<SelectTable> lv2List = csStationList.stream().map(csStation -> {
-                SelectTable selectTable = new SelectTable();
-                selectTable.setValue(csStation.getStationCode());
-                selectTable.setLabel(csStation.getStationName());
-                selectTable.setLevel(2);
-                selectTable.setTitle(csStation.getStationName());
-                selectTable.setKey(csStation.getId());
-                selectTable.setLineCode(lineCode);
-                selectTable.setStationCode(csStation.getStationCode());
-                return selectTable;
-            }).collect(Collectors.toList());
-
-            table.setChildren(lv2List);
-            list.add(table);
-        });
+    @ApiImplicitParams({
+            @ApiImplicitParam(dataTypeClass = String.class, name = "name", value = "搜索名称", required = false, paramType = "query"),
+            @ApiImplicitParam(dataTypeClass = String.class, name = "queryAll", value = "查询全部， 1是， 0否，或者不传", required = false, paramType = "query"),
+    })
+    public Result<List<SelectTable>> queryStationTree(@RequestParam(name = "name", required = false) String name,
+                                                      @RequestParam(name = "queryAll", required = false)String queryAll) {
+        List<SelectTable> list = commonService.queryStationTree(name,queryAll);
         return Result.OK(list);
+    }
+
+    @ApiOperation("根据站所编码查询站所数据")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "code", value = "站点编码", required = false, paramType = "query")
+    })
+    @GetMapping("/queryPositionStationByStationCode")
+    public Result<List<SelectTable>> queryPositionStationByStationCode(@RequestParam(value = "code",required = false)String code) {
+        LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsStationPosition::getStaionCode, code).orderByAsc(CsStationPosition::getCode);
+        List<CsStationPosition> stationList = stationPositionService.getBaseMapper().selectList(wrapper);
+        List<SelectTable> tableList = stationList.stream().map(stationPosition -> {
+            SelectTable selectTable = new SelectTable();
+            selectTable.setValue(stationPosition.getPositionCode());
+            selectTable.setLabel(stationPosition.getPositionName());
+            selectTable.setId(stationPosition.getId());
+            selectTable.setKey(stationPosition.getId());
+            selectTable.setLineCode(stationPosition.getLineCode());
+            selectTable.setStationCode(stationPosition.getStaionCode());
+            return selectTable;
+        }).collect(Collectors.toList());
+        return Result.OK(tableList);
     }
 
     @GetMapping("/system/queryMajorAndSystemTree")

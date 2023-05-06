@@ -44,4 +44,12 @@ public interface ICommonService {
      * @return
      */
     IPage<Device> queryPageDevice(DeviceDTO deviceDTO);
+
+    /**
+     * 线路站点
+     * @param name
+     * @param queryAll
+     * @return
+     */
+    List<SelectTable> queryStationTree(String name, String queryAll);
 }

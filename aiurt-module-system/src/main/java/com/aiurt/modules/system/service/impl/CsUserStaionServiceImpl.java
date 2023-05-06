@@ -35,7 +35,7 @@ public class CsUserStaionServiceImpl extends ServiceImpl<CsUserStaionMapper, CsU
     @Override
     public List<CsUserStationModel> queryAllStation(String lineCode) {
         LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsStation::getDelFlag, 0);
+        wrapper.eq(CsStation::getDelFlag, 0).orderByAsc(CsStation::getLineCode, CsStation::getSort);
         if (StrUtil.isNotBlank(lineCode)) {
             wrapper.eq(CsStation::getLineCode, lineCode);
         }
