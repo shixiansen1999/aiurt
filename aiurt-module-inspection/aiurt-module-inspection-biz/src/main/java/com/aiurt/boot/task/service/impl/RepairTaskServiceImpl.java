@@ -5,6 +5,7 @@ import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
@@ -37,6 +38,7 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtNoDataException;
+import com.aiurt.common.result.SpareResult;
 import com.aiurt.common.util.ArchiveUtils;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.PdfUtil;
@@ -3094,35 +3096,133 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             printRepairTaskDTO.setReceiptTime(DateUtil.format(one.getReceiptTime(),"yyyy-MM-dd HH:mm:ss"));
             printRepairTaskDTO.setErrorContent(one.getErrorContent());
 
-            List<String> arrayList = new ArrayList<>();
-            List<String> relList = new ArrayList<>();
-
+            List<RepairTaskResult> repairTaskResults = new ArrayList<>();
             //获取检修站点
             List<RepairTaskStationDTO> repairTaskStationDTOS = this.repairTaskStationList(id);
+            List<SpareResult> spareChange = new ArrayList<>();
+            StringBuilder stringBuilder = new StringBuilder();
+            List<String> enclosureUrl = new ArrayList<>();
             for (RepairTaskStationDTO repairTaskStationDTO : repairTaskStationDTOS) {
-                //根据站点和任务获取检修单
-                List<RepairTaskDTO> repairTaskDTOList = this.selectTaskList(id,repairTaskStationDTO.getStationCode());
-                for (RepairTaskDTO repairTaskDTO : repairTaskDTOList) {
-                    String deviceId = repairTaskDTO.getDeviceId();
-                    CheckListDTO checkListDto = this.selectRepairTaskInfo(id,repairTaskStationDTO.getStationCode(),deviceId);
-                    relList.addAll(checkListDto.getEnclosureUrl());
-                    List<RepairTaskResult> repairTaskResultList = checkListDto.getRepairTaskResultList();
-                    if (CollUtil.isNotEmpty(repairTaskResultList)) {
-                        for (RepairTaskResult result : repairTaskResultList) {
-                            String content = result.getName() + ":" + result.getQualityStandard();
-                            arrayList.add(content);
-                            if (result.getStatus() == 2) {
-                                printRepairTaskDTO.setRepairRecord("2");
+                //无设备
+                List<RepairTaskDTO> tasks = repairTaskMapper.selectTaskList(id, repairTaskStationDTO.getStationCode());
+                //有设备
+                List<RepairTaskDTO> repairDeviceTask = repairTaskMapper.selectDeviceTaskList(id);
+                for (RepairTaskDTO repairTaskDTO : repairDeviceTask) {
+                    String equipmentCode = repairTaskDTO.getEquipmentCode();
+                    if(StrUtil.isNotBlank(equipmentCode)){
+                        JSONObject deviceByCode = sysBaseApi.getDeviceByCode(equipmentCode);
+                        if (ObjectUtil.isNotEmpty(deviceByCode)) {
+                            String station_code = deviceByCode.getString("stationCode");
+                            if((repairTaskStationDTO.getStationCode()).equals(station_code)){
+                                tasks.add(repairTaskDTO);
                             }
                         }
                     }
                 }
+                int i = 1;
+                for (RepairTaskDTO repairTaskDTO : tasks) {
+                    repairTaskDTO.setSystemName(manager.translateMajor(Arrays.asList(repairTaskDTO.getSystemCode()), InspectionConstant.SUBSYSTEM));
+
+                    String deviceId = repairTaskDTO.getDeviceId();
+
+                    CheckListDTO checkListDTO = repairTaskMapper.selectRepairTaskInfo(id, repairTaskStationDTO.getStationCode(), deviceId);
+
+                    //判断设备code是否为空
+                    if (ObjectUtil.isNotEmpty(checkListDTO.getEquipmentCode())) {
+                        List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(checkListDTO.getEquipmentCode());
+                        String station = manager.translateStation(stationDTOList);
+                        //判断具体位置是否为空
+                        if (ObjectUtil.isNotEmpty(checkListDTO.getSpecificLocation())) {
+                            if (ObjectUtil.isNotEmpty(station)) {
+                                String string = checkListDTO.getSpecificLocation() + station;
+                                checkListDTO.setMaintenancePosition(string);
+                            } else {
+                                checkListDTO.setMaintenancePosition(checkListDTO.getSpecificLocation());
+                            }
+                        } else {
+                            checkListDTO.setMaintenancePosition(station);
+                        }
+                    } else {
+                        List<StationDTO> stationDTOList1 = new ArrayList<>();
+                        StationDTO stationDto = new StationDTO();
+                        stationDto.setStationCode(checkListDTO.getStationCode());
+                        stationDto.setLineCode(checkListDTO.getLineCode());
+                        stationDto.setPositionCode(checkListDTO.getPositionCode());
+                        stationDTOList1.add(stationDto);
+                        String station = manager.translateStation(stationDTOList1);
+                        if (ObjectUtil.isNotEmpty(checkListDTO.getSpecificLocation())) {
+                            if (ObjectUtil.isNotEmpty(station)) {
+                                String string = checkListDTO.getSpecificLocation() + station;
+                                checkListDTO.setMaintenancePosition(string);
+                            } else {
+                                checkListDTO.setMaintenancePosition(checkListDTO.getSpecificLocation());
+                            }
+                        } else {
+                            checkListDTO.setMaintenancePosition(station);
+                        }
+                    }
+
+                    String faultCode = checkListDTO.getFaultCode();
+
+                    if (StrUtil.isNotBlank(faultCode)) {
+                        //获取备件更换信息
+                        List<SpareResult> change = sysBaseApi.getSpareChange(faultCode);
+                        spareChange.addAll(change);
+
+                        //处理结果
+                        String faultRepairReuslt = sysBaseApi.getFaultRepairReuslt(faultCode);
+                        if (StrUtil.isNotBlank(faultRepairReuslt)) {
+                            stringBuilder.append(Convert.toStr(i)).append(".").append("故障编号：").append(faultCode).append(",").append(faultRepairReuslt).append(",");
+                        } else {
+                            stringBuilder.append(Convert.toStr(i)).append(".").append(faultCode).append(":该故障没有完成维修").append(",");
+                        }
+                    }
+
+
+                    //获取检查项
+                    List<RepairTaskResult> resultList = repairTaskMapper.selectSingle(deviceId, null);
+                    resultList.forEach(r -> {
+                        List<RepairTaskEnclosure> repairTaskDevice = repairTaskEnclosureMapper.selectList(
+                                new LambdaQueryWrapper<RepairTaskEnclosure>()
+                                        .eq(RepairTaskEnclosure::getRepairTaskResultId, r.getId()));
+                        if (CollectionUtils.isNotEmpty(repairTaskDevice)) {
+                            //获取检修单的检修结果的附件
+                            List<String> urllist = repairTaskDevice.stream().map(RepairTaskEnclosure::getUrl).collect(Collectors.toList());
+                            enclosureUrl.addAll(urllist);
+                        }
+
+                        if ("0".equals(r.getPid())) {
+                            r.setName(checkListDTO.getMaintenancePosition() + "-" + repairTaskDTO.getSystemName() + ":" + (r.getName() != null ? r.getName() : ""));
+                        }
+
+                        //检修结果
+                        r.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(r.getStatus())));
+
+                        //当第一次检修结果为空时，且有检修结果是正常
+                        if (ObjectUtil.isEmpty(printRepairTaskDTO.getRepairRecord())&& r.getStatus() != null && r.getStatus() == 1) {
+                            printRepairTaskDTO.setRepairRecord(r.getStatusName());
+                        }
+                        //当检修结果异常时覆盖
+                        if (r.getStatus() != null && r.getStatus() == 2) {
+                            printRepairTaskDTO.setRepairRecord(r.getStatusName());
+                        }
+                    });
+                    List<RepairTaskResult> repairTaskResults1 = RepairTaskServiceImpl.treeFirst(resultList);
+                    repairTaskResults.addAll(repairTaskResults1);
+                }
             }
-            printRepairTaskDTO.setRel(relList);
-            List<String> stationNames = repairTaskStationDTOS.stream().map(RepairTaskStationDTO::getStationName).collect(Collectors.toList());
-            printRepairTaskDTO.setStationName(CollUtil.join(stationNames,","));
-            printRepairTaskDTO.setTitle(CollUtil.join(stationNames,",")+"检修记录表");
-            printRepairTaskDTO.setContent(arrayList);
+            if (StrUtil.isEmpty(printRepairTaskDTO.getRepairRecord())) {
+                printRepairTaskDTO.setRepairRecord("无");
+            }
+            printRepairTaskDTO.setTitle(one.getSiteName()+"检修记录表");
+            printRepairTaskDTO.setRepairTaskResultList(repairTaskResults);
+            printRepairTaskDTO.setSpareChange(spareChange);
+            if (stringBuilder.length() > 0) {
+                // 截取字符
+                stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+                printRepairTaskDTO.setRepairResult(stringBuilder.toString());
+            }
+            printRepairTaskDTO.setEnclosureUrl(enclosureUrl);
             list.add(printRepairTaskDTO);
         }
         return list;
