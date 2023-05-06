@@ -28,8 +28,9 @@ public interface IRepairTaskService extends IService<RepairTask> {
     /**
      * 检修任务列表查询
      *
-     * @param condition
-     * @return
+     * @param pageList  分页查询条件
+     * @param condition 查询条件
+     * @return 分页的检修任务列表
      */
     Page<RepairTask> selectables(Page<RepairTask> pageList, RepairTask condition);
 

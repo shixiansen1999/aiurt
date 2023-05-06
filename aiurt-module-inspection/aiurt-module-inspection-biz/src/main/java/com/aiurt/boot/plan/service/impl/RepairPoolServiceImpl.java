@@ -144,29 +144,19 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         List<String> repairPoolCodes = result.stream().map(RepairPool::getCode).collect(Collectors.toList());
 
         // 获取检查周期类型字典映射
-        Map<String, String> cycleTypeMap = sysBaseApi.queryEnableDictItemsByCode(DictConstant.INSPECTION_CYCLE_TYPE)
-                .stream()
-                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+        Map<String, String> cycleTypeMap = getCycleTypeMap();
 
         // 获取检查任务状态字典映射
-        Map<String, String> inspectionTaskStateMap = sysBaseApi.queryEnableDictItemsByCode(DictConstant.INSPECTION_TASK_STATE)
-                .stream()
-                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+        Map<String, String> inspectionTaskStateMap = getInspectionTaskStateMap();
 
         // 获取工作类型映射
-        Map<String, String> workTypeMap = sysBaseApi.queryEnableDictItemsByCode(DictConstant.WORK_TYPE)
-                .stream()
-                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+        Map<String, String> workTypeMap = getWorkTypeMap();
 
         // 查询所有相关的组织机构
-        List<RepairPoolOrgRel> allRepairPoolOrgRels = orgRelMapper.selectList(
-                new LambdaQueryWrapper<RepairPoolOrgRel>()
-                        .in(RepairPoolOrgRel::getRepairPoolCode, repairPoolCodes)
-                        .eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<RepairPoolOrgRel> allRepairPoolOrgRels = getAllRepairPoolOrgRels(repairPoolCodes);
 
         // 查询所有相关的站点
-        Map<String, List<StationDTO>> allRepairPoolStationRels = repairPoolStationRelMapper.selectBatchStationList(repairPoolCodes)
-                .stream().collect(Collectors.groupingBy(StationDTO::getRepairPoolCode));
+        Map<String, List<StationDTO>> allRepairPoolStationRels = getAllRepairPoolStationRels(repairPoolCodes);
 
         if (CollUtil.isNotEmpty(result)) {
             processResultWithThreadPool(result, cycleTypeMap, inspectionTaskStateMap, workTypeMap, allRepairPoolOrgRels, allRepairPoolStationRels);
@@ -1097,20 +1087,13 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         List<String> repairPoolCodes = result.stream().map(RepairPool::getCode).collect(Collectors.toList());
 
         // 查询所有相关的组织机构
-        List<RepairPoolOrgRel> allRepairPoolOrgRels = orgRelMapper.selectList(
-                new LambdaQueryWrapper<RepairPoolOrgRel>()
-                        .in(RepairPoolOrgRel::getRepairPoolCode, repairPoolCodes)
-                        .eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<RepairPoolOrgRel> allRepairPoolOrgRels = getAllRepairPoolOrgRels(repairPoolCodes);
 
         // 查询所有相关的站点
-        Map<String, List<StationDTO>> allRepairPoolStationRels = repairPoolStationRelMapper.selectBatchStationList(repairPoolCodes)
-                .stream().collect(Collectors.groupingBy(StationDTO::getRepairPoolCode));
+        Map<String, List<StationDTO>> allRepairPoolStationRels = getAllRepairPoolStationRels(repairPoolCodes);
 
         // 检修任务状态
-        Map<String, String> inspectionTaskStateMap = sysBaseApi.queryEnableDictItemsByCode(DictConstant.INSPECTION_TASK_STATE)
-                .stream()
-                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
-
+        Map<String, String> inspectionTaskStateMap = getInspectionTaskStateMap();
 
         result.forEach(re -> {
             // 组织机构
@@ -1667,6 +1650,87 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                             .eq("del_flag", CommonConstant.DEL_FLAG_0));
         }
         return repairPoolCodes;
+    }
+    /**
+     * 获取检查周期类型字典映射
+     *
+     * @return 映射的 Map，键为周期类型值，值为周期类型文本描述
+     */
+    private Map<String, String> getCycleTypeMap() {
+        List<DictModel> dictItems = sysBaseApi.queryEnableDictItemsByCode(DictConstant.INSPECTION_CYCLE_TYPE);
+        if (dictItems == null || dictItems.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return dictItems.stream()
+                .filter(dictModel -> dictModel.getValue() != null && dictModel.getText() != null)
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+    }
+
+    /**
+     * 获取检查任务状态字典映射
+     *
+     * @return 映射的 Map，键为任务状态值，值为任务状态文本描述
+     */
+    private Map<String, String> getInspectionTaskStateMap() {
+        List<DictModel> dictItems = sysBaseApi.queryEnableDictItemsByCode(DictConstant.INSPECTION_TASK_STATE);
+        if (dictItems == null || dictItems.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return dictItems.stream()
+                .filter(dictModel -> dictModel.getValue() != null && dictModel.getText() != null)
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+    }
+
+    /**
+     * 获取工作类型映射
+     *
+     * @return 映射的 Map，键为工作类型值，值为工作类型文本描述
+     */
+    private Map<String, String> getWorkTypeMap() {
+        List<DictModel> dictItems = sysBaseApi.queryEnableDictItemsByCode(DictConstant.WORK_TYPE);
+        if (dictItems == null || dictItems.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return dictItems.stream()
+                .filter(dictModel -> dictModel.getValue() != null && dictModel.getText() != null)
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+    }
+
+    /**
+     * 查询所有相关的组织机构
+     *
+     * @param repairPoolCodes 维修池代码列表
+     * @return 与给定维修池代码相关的组织机构列表
+     */
+    private List<RepairPoolOrgRel> getAllRepairPoolOrgRels(List<String> repairPoolCodes) {
+        if(CollUtil.isEmpty(repairPoolCodes)){
+            return CollUtil.newArrayList();
+        }
+
+        return orgRelMapper.selectList(
+                new LambdaQueryWrapper<RepairPoolOrgRel>()
+                        .in(RepairPoolOrgRel::getRepairPoolCode, repairPoolCodes)
+                        .eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+    }
+
+    /**
+     * 查询所有相关的站点
+     *
+     * @param repairPoolCodes 维修池代码列表
+     * @return 与给定维修池代码相关的站点映射，键为维修池代码，值为站点DTO列表
+     */
+    private Map<String, List<StationDTO>> getAllRepairPoolStationRels(List<String> repairPoolCodes) {
+        if(CollUtil.isEmpty(repairPoolCodes)){
+            return CollUtil.newHashMap();
+        }
+
+        return Optional.ofNullable(repairPoolStationRelMapper.selectBatchStationList(repairPoolCodes))
+                .orElse(Collections.emptyList())
+                .stream()
+                .collect(Collectors.groupingBy(StationDTO::getRepairPoolCode));
     }
 
 }

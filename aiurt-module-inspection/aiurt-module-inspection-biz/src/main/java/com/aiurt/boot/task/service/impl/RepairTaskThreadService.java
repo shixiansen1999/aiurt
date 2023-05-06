@@ -1,21 +1,24 @@
 package com.aiurt.boot.task.service.impl;
 
 
-import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
+import com.aiurt.boot.plan.dto.StationDTO;
+import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.RepairTask;
-import com.aiurt.boot.task.entity.RepairTaskUser;
-import com.aiurt.boot.task.mapper.*;
+import com.aiurt.boot.task.entity.RepairTaskEnclosure;
+import com.aiurt.boot.task.entity.RepairTaskResult;
+import com.aiurt.common.result.SpareResult;
 import com.aiurt.common.util.DateUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import org.jeecg.common.system.api.ISysBaseAPI;
+import org.springframework.beans.BeanUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -29,41 +32,53 @@ import java.util.stream.Collectors;
  */
 public class RepairTaskThreadService implements Callable<RepairTask> {
     private RepairTask repairTask;
-
-    private RepairTaskMapper repairTaskMapper;
-
     private InspectionManager manager;
+    private Map<String, String> taskStateMap;
+    private Map<String, String> taskTypeMap;
+    private Map<String, String> isConfirmMap;
+    private Map<String, String> sourceMap;
+    private Map<String, String> workTypeMap;
+    private Map<String, String> ecmStatusMap;
+    private Map<String, RepairTaskUserNameDTO> overhaulNameMap;
+    private Map<String, String> peerNameMap;
+    private Map<String, String> sampNameMap;
+    private Map<String, RepairPrintMessage> printMessage;
 
-    private RepairTaskPeerRelMapper repairTaskPeerRelMapper;
-
-    private RepairTaskSamplingMapper repairTaskSamplingMapper;
-
-    private ISysBaseAPI sysBaseApi;
-
-    private RepairTaskEnclosureMapper repairTaskEnclosureMapper;
-
-    private RepairTaskUserMapper repairTaskUserMapper;
-
-    private RepairTaskServiceImpl repairTaskService;
-
-    public RepairTaskThreadService(RepairTask repairTask,
-                                   RepairTaskMapper repairTaskMapper,
-                                   InspectionManager manager,
-                                   RepairTaskPeerRelMapper repairTaskPeerRelMapper,
-                                   RepairTaskSamplingMapper repairTaskSamplingMapper,
-                                   ISysBaseAPI sysBaseApi,
-                                   RepairTaskEnclosureMapper repairTaskEnclosureMapper,
-                                   RepairTaskUserMapper repairTaskUserMapper,
-                                   RepairTaskServiceImpl repairTaskService) {
+    /**
+     * 构造方法
+     *
+     * @param repairTask    检修任务实例
+     * @param manager       巡检管理实例
+     * @param taskStateMap  检修任务状态映射
+     * @param taskTypeMap   检修周期类型映射
+     * @param isConfirmMap  是否需要审核映射
+     * @param sourceMap     任务来源映射
+     * @param workTypeMap   作业类型映射
+     * @param ecmStatusMap  检修归档状态映射
+     * @param overhaulNameMap 检修人名称映射（根据检修任务ID）
+     * @param peerNameMap   同行人名称映射（根据检修任务ID）
+     * @param sampNameMap   抽检人名称映射（根据检修任务ID）
+     * @param printMessage  打印信息映射
+     */
+    public RepairTaskThreadService(RepairTask repairTask, InspectionManager manager,
+                                   Map<String, String> taskStateMap, Map<String, String> taskTypeMap,
+                                   Map<String, String> isConfirmMap, Map<String, String> sourceMap,
+                                   Map<String, String> workTypeMap, Map<String, String> ecmStatusMap,
+                                   Map<String, RepairTaskUserNameDTO> overhaulNameMap,
+                                   Map<String, String> peerNameMap, Map<String, String> sampNameMap,
+                                   Map<String, RepairPrintMessage> printMessage) {
         this.repairTask = repairTask;
-        this.repairTaskMapper = repairTaskMapper;
         this.manager = manager;
-        this.repairTaskPeerRelMapper = repairTaskPeerRelMapper;
-        this.repairTaskSamplingMapper = repairTaskSamplingMapper;
-        this.sysBaseApi = sysBaseApi;
-        this.repairTaskEnclosureMapper = repairTaskEnclosureMapper;
-        this.repairTaskUserMapper = repairTaskUserMapper;
-        this.repairTaskService = repairTaskService;
+        this.taskStateMap = taskStateMap;
+        this.taskTypeMap = taskTypeMap;
+        this.isConfirmMap = isConfirmMap;
+        this.sourceMap = sourceMap;
+        this.workTypeMap = workTypeMap;
+        this.ecmStatusMap = ecmStatusMap;
+        this.overhaulNameMap = overhaulNameMap;
+        this.peerNameMap = peerNameMap;
+        this.sampNameMap = sampNameMap;
+        this.printMessage = printMessage;
     }
 
     /**
@@ -73,145 +88,20 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
      * @throws Exception if unable to compute a result
      */
     @Override
-    public RepairTask call() throws Exception {
+    public RepairTask call() {
         Lock lock = new ReentrantLock();
         lock.lock();
         try {
             // 更新检修任务的相关信息
-            updateRepairTaskInfo(repairTask,manager);
-
-            // TODO: 2023/3/17 同行人和抽检人代码待优化 
-//            List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTask(repairTask.getId());
-//            List<String> peerList = new ArrayList<String>();
-//            List<String> samplingList = new ArrayList<String>();
-//            repairTasks.forEach(e -> {
-//                // 查询同行人
-//                List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
-//                        new LambdaQueryWrapper<RepairTaskPeerRel>()
-//                                .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, e.getOverhaulCode()));
-//                //名称集合
-//                List<String> collect3 = repairTaskPeer.stream().distinct().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
-//                peerList.addAll(collect3);
-//
-//                //查询抽检人
-//                List<RepairTaskSampling> repairTaskSampling = repairTaskSamplingMapper.selectList(
-//                        new LambdaQueryWrapper<RepairTaskSampling>()
-//                                .eq(RepairTaskSampling::getRepairTaskDeviceCode, e.getOverhaulCode()));
-//                //抽检名称集合
-//                List<String> collect4 = repairTaskSampling.stream().map(RepairTaskSampling::getRealName).collect(Collectors.toList());
-//                samplingList.addAll(collect4);
-//            });
-//
-//            peerList.removeAll (Collections.singleton (null));
-//            samplingList.removeAll (Collections.singleton (null));
-//            //查询同行人
-//            HashSet<String> collect33 = new HashSet<>(peerList);
-//            if (CollectionUtil.isNotEmpty(collect33)) {
-//                StringBuffer stringBuffer = new StringBuffer();
-//                for (String t : collect33) {
-//                    stringBuffer.append(t);
-//                    stringBuffer.append(",");
-//                }
-//                if (stringBuffer.length() > 0) {
-//                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
-//                }
-//                repairTask.setPeerName(stringBuffer.toString());
-//            }
-//
-//            //查询抽检人
-//            HashSet<String> collect44 = new HashSet<>(samplingList);
-//            if (CollectionUtil.isNotEmpty(collect44)) {
-//                StringBuffer stringBuffer = new StringBuffer();
-//                for (String t : collect44) {
-//                    stringBuffer.append(t);
-//                    stringBuffer.append(",");
-//                }
-//                if (stringBuffer.length() > 0) {
-//                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
-//                }
-//                repairTask.setSamplingName(stringBuffer.toString());
-//            }
-//
-//            //检修周期类型
-//            repairTask.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairTask.getType())));
-//
-//            //检修任务状态
-//            repairTask.setStatusName(sysBaseApi.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(repairTask.getStatus())));
-//
-//            //是否需要审核
-//            repairTask.setIsConfirmName(sysBaseApi.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(repairTask.getIsConfirm())));
-//
-//            //是否需要验收
-//            repairTask.setIsReceiptName(sysBaseApi.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(repairTask.getIsReceipt())));
-//
-//            //任务来源
-//            repairTask.setSourceName(sysBaseApi.translateDict(DictConstant.PATROL_TASK_ACCESS, String.valueOf(repairTask.getSource())));
-//
-//            //作业类型
-//            repairTask.setWorkTypeName(sysBaseApi.translateDict(DictConstant.WORK_TYPE, String.valueOf(repairTask.getWorkType())));
-//            //检修归档状态
-//            repairTask.setEcmStatusName(sysBaseApi.translateDict(DictConstant.ECM_STATUS,String.valueOf(repairTask.getEcmStatus())));
-//            //备注
-            repairTask.setContent(repairTask.getErrorContent());
-            //附件
-            repairTask.setPath(repairTask.getUrl());
-
-            if (repairTask.getCode() != null) {
-                //根据检修任务code查询
-                List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(
-                        new LambdaQueryWrapper<RepairTaskUser>()
-                                .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode()));
-                //检修人id集合
-                List<String> collect = repairTaskUsers.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
-                if (CollectionUtil.isNotEmpty(collect)) {
-                    StringBuffer stringBuffer = new StringBuffer();
-                    for (String t : collect) {
-                        stringBuffer.append(t);
-                        stringBuffer.append(",");
-                    }
-                    if (stringBuffer.length() > 0) {
-                        stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
-                    }
-                    repairTask.setOverhaulId(stringBuffer.toString());
-
-                    ArrayList<String> userList = new ArrayList<>();
-                    collect.forEach(o -> {
-                        String realName = repairTaskMapper.getRealName(o);
-                        userList.add(realName);
-                    });
-                    if (CollectionUtil.isNotEmpty(userList)) {
-                        StringBuffer stringBuffer1 = new StringBuffer();
-                        for (String t : userList) {
-                            stringBuffer1.append(t);
-                            stringBuffer1.append(",");
-                        }
-                        if (stringBuffer1.length() > 0) {
-                            stringBuffer1 = stringBuffer1.deleteCharAt(stringBuffer1.length() - 1);
-                        }
-                        repairTask.setOverhaulName(stringBuffer1.toString());
-                    }
-                }
-
-            }
-
-            // 所属周（相对年）
-            if (repairTask.getYear() != null && repairTask.getWeeks() != null) {
-                Date[] dateByWeek = DateUtils.getDateByWeek(repairTask.getYear(), repairTask.getWeeks());
-                if (dateByWeek.length != 0) {
-                    String weekName = String.format("第%d周(%s~%s)", repairTask.getWeeks(), DateUtil.format(dateByWeek[0], "yyyy/MM/dd"), DateUtil.format(dateByWeek[1], "yyyy/MM/dd"));
-                    repairTask.setWeekName(weekName);
-                }
-            }
-
-            repairTask.setTitle(repairTask.getSiteName()+"检修记录表");
-        }
-        catch (Exception e) {
-            throw e;
+            updateRepairTaskInfo(repairTask, manager);
+        } catch (Exception e) {
+            throw new RuntimeException("Error occurred while updating repair task info", e);
         } finally {
             lock.unlock();
         }
         return repairTask;
     }
+
 
     /**
      * 更新检修任务的相关信息
@@ -220,8 +110,37 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
      * @param manager    用于翻译编码的管理器
      */
     public void updateRepairTaskInfo(RepairTask repairTask, InspectionManager manager) {
+        if(ObjectUtil.isEmpty(repairTask)){
+            return;
+        }
         // 对组织机构、站点、专业、子系统进行编码处理并设置相应的属性
         setTranslatedCode(repairTask, manager);
+
+        repairTask.setContent(repairTask.getErrorContent());
+        repairTask.setPath(repairTask.getUrl());
+        repairTask.setTitle(repairTask.getSiteName() + "检修记录表");
+
+        repairTask.setStatusName(taskStateMap.get(String.valueOf(repairTask.getStatus())));
+        repairTask.setTypeName(taskTypeMap.get(String.valueOf(repairTask.getType())));
+        repairTask.setIsConfirmName(isConfirmMap.get(String.valueOf(repairTask.getIsConfirm())));
+        repairTask.setIsReceiptName(isConfirmMap.get(String.valueOf(repairTask.getIsReceipt())));
+        repairTask.setSourceName(sourceMap.get(String.valueOf(repairTask.getSource())));
+        repairTask.setWorkTypeName(workTypeMap.get(repairTask.getWorkType()));
+        repairTask.setEcmStatusName(ecmStatusMap.get(String.valueOf(repairTask.getEcmStatus())));
+        repairTask.setPeerName(peerNameMap.get(repairTask.getId()));
+        repairTask.setSamplingName(sampNameMap.get(repairTask.getId()));
+
+        RepairPrintMessage repairPrintMessage = printMessage.get(repairTask.getId());
+        if(ObjectUtil.isNotEmpty(repairPrintMessage)){
+            BeanUtils.copyProperties(repairPrintMessage,repairTask);
+        }
+
+        RepairTaskUserNameDTO repairTaskUserNameDTO = overhaulNameMap.get(repairTask.getId());
+        if(ObjectUtil.isNotEmpty(repairTaskUserNameDTO)){
+            repairTask.setOverhaulName(repairTaskUserNameDTO.getUserNames());
+            repairTask.setOverhaulId(repairTaskUserNameDTO.getUserIds());
+        }
+
     }
 
     /**
@@ -231,17 +150,11 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
      * @param manager    用于翻译编码的管理器
      */
     private void setTranslatedCode(RepairTask repairTask, InspectionManager manager) {
-        // 组织机构
         setOrganizational(repairTask, manager);
-
-        // 站点
         setSiteName(repairTask, manager);
-
-        // 专业
         setMajorName(repairTask, manager);
-
-        // 子系统
         setSystemName(repairTask, manager);
+        setRepairTaskWeekName(repairTask);
     }
 
     /**
@@ -293,6 +206,22 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
         if (repairTask.getSystemCode() != null) {
             List<String> list4 = Arrays.asList(repairTask.getSystemCode().split(","));
             repairTask.setSystemName(manager.translateMajor(list4, InspectionConstant.SUBSYSTEM));
+        }
+    }
+
+    /**
+     * 设置检修任务的周名称。
+     * 周名称包含所属周次、周开始日期和结束日期。
+     *
+     * @param repairTask 检修任务对象
+     */
+    private void setRepairTaskWeekName(RepairTask repairTask) {
+        if (repairTask.getYear() != null && repairTask.getWeeks() != null) {
+            Date[] dateByWeek = DateUtils.getDateByWeek(repairTask.getYear(), repairTask.getWeeks());
+            if (dateByWeek.length != 0) {
+                String weekName = String.format("第%d周(%s~%s)", repairTask.getWeeks(), DateUtil.format(dateByWeek[0], "yyyy/MM/dd"), DateUtil.format(dateByWeek[1], "yyyy/MM/dd"));
+                repairTask.setWeekName(weekName);
+            }
         }
     }
 }

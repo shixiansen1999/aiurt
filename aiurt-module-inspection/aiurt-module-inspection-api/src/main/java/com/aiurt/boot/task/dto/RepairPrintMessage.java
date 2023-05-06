@@ -13,9 +13,6 @@ import java.util.List;
  */
 @Data
 public class RepairPrintMessage {
-    @TableField(exist = false)
-    @ApiModelProperty(value = "标题")
-    private String title;
     /** 状态名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检修结果名称")
