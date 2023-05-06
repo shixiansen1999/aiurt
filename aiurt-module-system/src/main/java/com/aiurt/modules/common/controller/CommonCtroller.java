@@ -336,7 +336,7 @@ public class CommonCtroller {
     @GetMapping("/queryPositionStationByStationCode")
     public Result<List<SelectTable>> queryPositionStationByStationCode(@RequestParam(value = "code",required = false)String code) {
         LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsStationPosition::getStaionCode, code).orderByAsc(CsStationPosition::getCode);
+        wrapper.eq(CsStationPosition::getStaionCode, code).orderByAsc(CsStationPosition::getStaionCode);
         List<CsStationPosition> stationList = stationPositionService.getBaseMapper().selectList(wrapper);
         List<SelectTable> tableList = stationList.stream().map(stationPosition -> {
             SelectTable selectTable = new SelectTable();
