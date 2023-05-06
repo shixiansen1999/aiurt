@@ -285,7 +285,7 @@ public class CommonController {
                 File file = new File(filePath);
                 if (!file.exists()) {
                     response.setStatus(404);
-                    throw new RuntimeException("文件[" + imgPath + "]不存在..");
+
                 }
 
 

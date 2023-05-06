@@ -28,4 +28,12 @@ public interface CsUserStaionMapper extends BaseMapper<CsUserStaion> {
      * @return
      */
     List<CsUserStationModel> getStationByUserId(@Param("id") String id);
+
+    /**
+     *
+     * @param userId
+     * @param lineCode
+     * @return
+     */
+    List<CsUserStationModel> queryByUserIdAndLineCode(@Param("userId")String userId, @Param("lineCode")String lineCode);
 }

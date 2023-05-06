@@ -105,7 +105,13 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      */
     List<FaultTimeoutLevelDTO> getMainFaultCondition(@Param("page") Page<FaultTimeoutLevelDTO> page, @Param("startDate") Date startDate);
 
-    List<String> getShiftLeader(@Param("faultApplicant")String faultApplicant,List<String>usersIdList );
+    /**
+     *
+     * @param faultApplicant 用户名
+     * @param roleCode 角色
+     * @return
+     */
+    List<String> getShiftLeader(@Param("faultApplicant")String faultApplicant, @Param("roleCode") String roleCode);
 
     String getbyForeman(@Param("foreman")String foreman);
 }

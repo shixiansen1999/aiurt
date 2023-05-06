@@ -26,5 +26,8 @@ public interface ICsUserStaionService extends IService<CsUserStaion> {
      * 获取所有站点
      * @return
      */
-    List<CsUserStationModel> queryAllStation();
+    List<CsUserStationModel> queryAllStation(String lineCode);
+
+
+    List<CsUserStationModel> queryByUserIdAndLineCode(String userId, String lineCode);
 }

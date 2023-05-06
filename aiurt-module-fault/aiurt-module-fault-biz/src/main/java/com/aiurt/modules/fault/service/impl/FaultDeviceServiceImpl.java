@@ -47,6 +47,8 @@ private ISysBaseAPI sysBaseApi;
         return faultDeviceList;
     }
 
+
+
     @Override
     public IPage<FaultDeviceRepairDTO> queryRepairDeviceList(Page<FaultDeviceRepairDTO> page, FaultDeviceRepairDTO FaultDeviceRepairDTO) {
         //只允许送修经办人查看和修改
@@ -119,6 +121,18 @@ private ISysBaseAPI sysBaseApi;
         }
         page.setRecords(faultDeviceRepairDtoList);
         return page;
+    }
+
+    /**
+     * 批量查询
+     *
+     * @param faultCodeList
+     * @return
+     */
+    @Override
+    public List<FaultDevice> queryListByFaultCodeList(List<String> faultCodeList) {
+        List<FaultDevice> faultDeviceList = baseMapper.queryListByFaultCodeList(faultCodeList);
+        return faultDeviceList;
     }
 
     private StringBuilder getUserNames( List<String> list) {

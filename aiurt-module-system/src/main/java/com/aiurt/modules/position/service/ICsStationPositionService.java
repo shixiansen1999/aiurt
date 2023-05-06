@@ -45,4 +45,12 @@ public interface ICsStationPositionService extends IService<CsStationPosition> {
      * @return
      */
     Result<?> importExcelMaterial(MultipartFile file, ImportParams params) throws Exception;
+
+    /**
+     * 异步加载
+     * @param name
+     * @param pid
+     * @return
+     */
+    List<CsStationPosition> queryTreeListAsync(String name, String pid);
 }

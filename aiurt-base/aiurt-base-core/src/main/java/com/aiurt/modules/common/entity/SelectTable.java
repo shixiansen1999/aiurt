@@ -1,8 +1,12 @@
 package com.aiurt.modules.common.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +16,9 @@ import java.util.List;
  */
 @Data
 @ApiModel("下列列表")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class SelectTable {
 
     @ApiModelProperty("id")
@@ -68,6 +75,8 @@ public class SelectTable {
     @ApiModelProperty("部门名称")
     private String orgName;
 
+    private Boolean isLeaf;
+
     public void addChildren(SelectTable child) {
         if (children == null) {
             children = new ArrayList<SelectTable>();
@@ -77,6 +86,8 @@ public class SelectTable {
 
     private String title;
 
+
+    @JsonProperty("pId")
     private String pid;
 
     private String systemCode;
