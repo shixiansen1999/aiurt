@@ -28,8 +28,8 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -75,31 +75,11 @@ public class FaultCountServiceImpl implements IFaultCountService {
         }
         boolean b = GlobalThreadLocal.setDataFilter(false);
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String[] split = user.getRoleCodes().split(",");
-        List<String> roleCodes = CollUtil.newArrayList(split);
-        // 系统管理员不做任务权限控制
-        roleCodes = roleCodes.stream().filter(s-> StrUtil.equalsAnyIgnoreCase(RoleConstant.ADMIN, s)).collect(Collectors.toList());
-        //当前登录人为主任，则根据当前用户所拥有的专业，查询该专业下的故障信息
-        boolean isAdmin = false;
         FaultIndexDTO faultIndexDTO = new FaultIndexDTO();
-        if(roleCodes.size()>0) {
-            isAdmin = true;
-        }
 //        List<String> ordCode = null;
         List<String> majors = null;
         List<String> stationCodeList = null;
-//        if (!isAdmin) {
-//            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
-//            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
 
-//            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-//
-//            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-
-//            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
-//
-//            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
-//        }
         GlobalThreadLocal.setDataFilter(b);
 
 
@@ -204,64 +184,42 @@ public class FaultCountServiceImpl implements IFaultCountService {
         Page<FaultCountInfoDTO> page = new Page<>(faultCountInfoReq.getPageNo(), faultCountInfoReq.getPageSize());
         //权限控制
         boolean b = GlobalThreadLocal.setDataFilter(false);
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String[] split = user.getRoleCodes().split(",");
-        List<String> roleCodes = CollUtil.newArrayList(split);
-        // 系统管理员不做任务权限控制
-        roleCodes = roleCodes.stream().filter(s-> StrUtil.equalsAnyIgnoreCase(RoleConstant.ADMIN, s)).collect(Collectors.toList());
-        //当前登录人为主任，则根据当前用户所拥有的专业，查询该专业下的故障信息
-        boolean isAdmin = false;
-        FaultIndexDTO faultIndexDTO = new FaultIndexDTO();
-        if(roleCodes.size()>0) {
-            isAdmin = true;
-        }
-        List<String> ordCode = null;
-        List<String> majors = null;
-        List<String> stationCodeList = null;
-//        if (!isAdmin) {
-//            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
-//            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-
-//            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-//
-//            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-
-//            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
-//
-//            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
-//        }
 
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultCountInfoReq.getAppointUserName());
         GlobalThreadLocal.setDataFilter(b);
-        List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq, majors, stationCodeList,userNameByRealName);
+        List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq, null, null,userNameByRealName);
         if (CollUtil.isNotEmpty(faultData)) {
+
+            Set<String> faultCodeSet = faultData.stream().map(FaultCountInfoDTO::getCode).collect(Collectors.toSet());
+            Map<String, Fault> faultMap = new HashMap<>(16);
+            Map<String, List<FaultDevice>> faultDeviceMap = new HashMap<>(16);
+            if (CollUtil.isNotEmpty(faultCodeSet)) {
+                List<Fault> faultList = faultService.list(new LambdaQueryWrapper<Fault>().in(Fault::getCode, faultCodeSet));
+
+                faultMap = faultList.stream().collect(Collectors.toMap(Fault::getCode, Function.identity()));
+
+
+                List<FaultDevice> faultDeviceList = faultDeviceService.queryListByFaultCodeList(new ArrayList<>(faultCodeSet));
+                faultDeviceMap = faultDeviceList.stream().collect(Collectors.groupingBy(FaultDevice::getFaultCode));
+            }
+
             for (FaultCountInfoDTO faultDatum : faultData) {
-                //查找设备编码
-                boolean b1 = GlobalThreadLocal.setDataFilter(false);
-                List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
-                GlobalThreadLocal.setDataFilter(b1);
-                if(CollUtil.isNotEmpty(faultDeviceList)){
-                    for (FaultDevice faultDevice : faultDeviceList) {
-                        faultDatum.setDeviceCode(faultDevice.getDeviceCode());
-                        faultDatum.setDeviceName(faultDevice.getDeviceName());
-                    }
+                List<FaultDevice> faultDeviceList = faultDeviceMap.get(faultDatum.getCode());
+
+                if (CollUtil.isNotEmpty(faultDeviceList)) {
+                    faultDatum.setDeviceCode(faultDeviceList.stream().map(FaultDevice::getDeviceCode).collect(Collectors.joining(",")));
+                    faultDatum.setDeviceName(faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.joining(",")));
                 }
                 //班组名称和班组负责人
                 faultDatum.setTeamName(faultDatum.getFaultApplicantDept());
                 //获取填报人组织机构
-                LambdaQueryWrapper<Fault> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(Fault::getCode,faultDatum.getCode());
-                Fault one = faultService.getOne(wrapper);
-                String realName = sysBaseApi.getUserByUserName(one.getFaultApplicant());
-                String foreman="foreman";
-                String foremanId = faultCountMapper.getbyForeman(foreman);
-                List<SysUserRoleModel> models = sysBaseApi.getUserByRoleId(foremanId);
-                //stream 流 过滤 填报人的组织机构 string
-                List<String> usersIdList = models.stream().map(SysUserRoleModel::getUserId).collect(Collectors.toList());
-                List<String> list = faultCountMapper.getShiftLeader(realName, usersIdList);
+                Fault one = faultMap.getOrDefault(faultDatum.getCode(), new Fault());
+
+                List<String> list = faultCountMapper.getShiftLeader(one.getFaultApplicant(), RoleConstant.FOREMAN);
                 String teamUser = list.stream().map(String::valueOf).collect(Collectors.joining(","));
                 faultDatum.setTeamUser(teamUser);
             }
+
         }
         page.setRecords(faultData);
         return page;
@@ -285,61 +243,41 @@ public class FaultCountServiceImpl implements IFaultCountService {
         Page<FaultCountInfosDTO> page = new Page<>(faultCountInfoReq.getPageNo(), faultCountInfoReq.getPageSize());
         //权限控制
         boolean b = GlobalThreadLocal.setDataFilter(false);
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String[] split = user.getRoleCodes().split(",");
-        List<String> roleCodes = CollUtil.newArrayList(split);
-        // 系统管理员不做任务权限控制
-        roleCodes = roleCodes.stream().filter(s-> StrUtil.equalsAnyIgnoreCase(RoleConstant.ADMIN, s)).collect(Collectors.toList());
-        //当前登录人为主任，则根据当前用户所拥有的专业，查询该专业下的故障信息
-        boolean isAdmin = false;
-        FaultIndexDTO faultIndexDTO = new FaultIndexDTO();
-        if(roleCodes.size()>0) {
-            isAdmin = true;
-        }
-//        List<String> ordCode = null;
-        List<String> majors = null;
-        List<String> stationCodeList = null;
-//        if (!isAdmin) {
-//            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
-//            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-
-//            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-//
-//            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-//
-//            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
-//
-//            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
-//        }
         //通过真实姓名模糊查询username
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultCountInfoReq.getAppointUserName());
         GlobalThreadLocal.setDataFilter(b);
-        List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq, majors, stationCodeList,userNameByRealName);
+        List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq, null, null,userNameByRealName);
+        boolean b1 = GlobalThreadLocal.setDataFilter(false);
+        //
         if (CollUtil.isNotEmpty(faultData)) {
+
+            Set<String> faultCodeSet = faultData.stream().map(FaultCountInfosDTO::getCode).collect(Collectors.toSet());
+            Map<String, Fault> faultMap = new HashMap<>(16);
+            Map<String, List<FaultDevice>> faultDeviceMap = new HashMap<>(16);
+            if (CollUtil.isNotEmpty(faultCodeSet)) {
+                List<Fault> faultList = faultService.list(new LambdaQueryWrapper<Fault>().in(Fault::getCode, faultCodeSet));
+
+                faultMap = faultList.stream().collect(Collectors.toMap(Fault::getCode, Function.identity()));
+
+                List<FaultDevice> faultDeviceList = faultDeviceService.queryListByFaultCodeList(new ArrayList<>(faultCodeSet));
+                faultDeviceMap = faultDeviceList.stream().collect(Collectors.groupingBy(FaultDevice::getFaultCode));
+            }
+
+
             for (FaultCountInfosDTO faultDatum : faultData) {
                 //查找设备编码
-                boolean b1 = GlobalThreadLocal.setDataFilter(false);
-                List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
-                GlobalThreadLocal.setDataFilter(b1);
-                if(CollUtil.isNotEmpty(faultDeviceList)){
-                    for (FaultDevice faultDevice : faultDeviceList) {
-                        faultDatum.setDeviceCode(faultDevice.getDeviceCode());
-                        faultDatum.setDeviceName(faultDevice.getDeviceName());
-                    }
+                List<FaultDevice> faultDeviceList = faultDeviceMap.get(faultDatum.getCode());
+                if (CollUtil.isNotEmpty(faultDeviceList)) {
+                    faultDatum.setDeviceCode(faultDeviceList.stream().map(FaultDevice::getDeviceCode).collect(Collectors.joining(",")));
+                    faultDatum.setDeviceName(faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.joining(",")));
                 }
                 //班组名称和班组负责人
                 faultDatum.setTeamName(faultDatum.getFaultApplicantDept());
                 //获取填报人组织机构
-                LambdaQueryWrapper<Fault> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(Fault::getCode,faultDatum.getCode());
-                Fault one = faultService.getOne(wrapper);
-                String realName = sysBaseApi.getUserByUserName(one.getFaultApplicant());
-                String foreman="foreman";
-                String foremanId = faultCountMapper.getbyForeman(foreman);
-                List<SysUserRoleModel> models = sysBaseApi.getUserByRoleId(foremanId);
+                Fault one = faultMap.getOrDefault(faultDatum.getCode(), new Fault());
+
                 //stream 流 过滤 填报人的组织机构 string
-                List<String> usersIdList = models.stream().map(SysUserRoleModel::getUserId).collect(Collectors.toList());
-                List<String> list = faultCountMapper.getShiftLeader(realName, usersIdList);
+                List<String> list = faultCountMapper.getShiftLeader(one.getFaultApplicant(), RoleConstant.FOREMAN);
                 String teamUser = list.stream().map(String::valueOf).collect(Collectors.joining(","));
                 faultDatum.setTeamUser(teamUser);
             }
@@ -365,48 +303,33 @@ public class FaultCountServiceImpl implements IFaultCountService {
         // 分页数据
         Page<FaultTimeoutLevelDTO> page = new Page<>(faultTimeoutLevelReq.getPageNo(), faultTimeoutLevelReq.getPageSize());
         boolean b = GlobalThreadLocal.setDataFilter(false);
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String[] split = user.getRoleCodes().split(",");
-        List<String> roleCodes = CollUtil.newArrayList(split);
-        roleCodes = roleCodes.stream().filter(s-> StrUtil.equalsAnyIgnoreCase(RoleConstant.ADMIN, s)).collect(Collectors.toList());
-        //当前登录人为主任，则根据当前用户所拥有的专业，查询该专业下的故障信息
-        boolean isAdmin = false;
-        FaultIndexDTO faultIndexDTO = new FaultIndexDTO();
-        if(roleCodes.size()>0) {
-            isAdmin = true;
-        }
-//        List<String> ordCode = null;
+
         List<String> majors = null;
         List<String> stationCodeList = null;
-//        if (!isAdmin) {
-//            List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(user.getId());
-//            majors = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
 
-//            List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(user.getId());
-//
-//            ordCode = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-
-//            List<CsUserStationModel> stationModels = sysBaseApi.getStationByUserId(user.getId());
-//
-//            stationCodeList = stationModels.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList());
-//        }
-//        faultTimeoutLevelReq.setOrgList(ordCode);
-        //通过真实姓名模糊查询username
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultTimeoutLevelReq.getAppointUserName());
-         GlobalThreadLocal.setDataFilter(b);
+        GlobalThreadLocal.setDataFilter(b);
         Date date = new Date();
         List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq, majors, stationCodeList, lv1Hours, lv2Hours, lv3Hours, userNameByRealName,date);
         if (CollUtil.isNotEmpty(faultData)) {
+
+            Set<String> faultCodeSet = faultData.stream().map(FaultTimeoutLevelDTO::getCode).collect(Collectors.toSet());
+            Map<String, Fault> faultMap = new HashMap<>(16);
+            Map<String, List<FaultDevice>> faultDeviceMap = new HashMap<>(16);
+            if (CollUtil.isNotEmpty(faultCodeSet)) {
+                List<Fault> faultList = faultService.list(new LambdaQueryWrapper<Fault>().in(Fault::getCode, faultCodeSet));
+                faultMap = faultList.stream().collect(Collectors.toMap(Fault::getCode, Function.identity()));
+
+                List<FaultDevice> faultDeviceList = faultDeviceService.queryListByFaultCodeList(new ArrayList<>(faultCodeSet));
+                faultDeviceMap = faultDeviceList.stream().collect(Collectors.groupingBy(FaultDevice::getFaultCode));
+            }
+
             for (FaultTimeoutLevelDTO faultDatum : faultData) {
                 //查找设备编码
-                boolean b1 = GlobalThreadLocal.setDataFilter(false);
-                List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
-                GlobalThreadLocal.setDataFilter(b1);
-                if(CollUtil.isNotEmpty(faultDeviceList)){
-                    for (FaultDevice faultDevice : faultDeviceList) {
-                        faultDatum.setDeviceCode(faultDevice.getDeviceCode());
-                        faultDatum.setDeviceName(faultDevice.getDeviceName());
-                    }
+                List<FaultDevice> faultDeviceList = faultDeviceMap.get(faultDatum.getDeviceCode());
+                if (CollUtil.isNotEmpty(faultDeviceList)) {
+                    faultDatum.setDeviceCode(faultDeviceList.stream().map(FaultDevice::getDeviceCode).collect(Collectors.joining(",")));
+                    faultDatum.setDeviceName(faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.joining(",")));
                 }
                 //计算超时时长
                 long hour=DateUtil.between(faultDatum.getHappenTime(),date, DateUnit.HOUR);
@@ -441,16 +364,9 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 //班组名称和班组负责人
                 faultDatum.setTeamName(faultDatum.getFaultApplicantDept());
                 //获取填报人组织机构
-                LambdaQueryWrapper<Fault> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(Fault::getCode,faultDatum.getCode());
-                Fault one = faultService.getOne(wrapper);
-                String realName = sysBaseApi.getUserByUserName(one.getFaultApplicant());
-                String foreman="foreman";
-                String foremanId = faultCountMapper.getbyForeman(foreman);
-                List<SysUserRoleModel> models = sysBaseApi.getUserByRoleId(foremanId);
-                //stream 流 过滤 填报人的组织机构 string
-                List<String> usersIdList = models.stream().map(SysUserRoleModel::getUserId).collect(Collectors.toList());
-                List<String> list = faultCountMapper.getShiftLeader(realName, usersIdList);
+                Fault one = faultMap.getOrDefault(faultDatum.getCode(), new Fault());
+
+                List<String> list = faultCountMapper.getShiftLeader(one.getFaultApplicant(), RoleConstant.FOREMAN);
                 String teamUser = list.stream().map(String::valueOf).collect(Collectors.joining(","));
                 faultDatum.setTeamUser(teamUser);
             }

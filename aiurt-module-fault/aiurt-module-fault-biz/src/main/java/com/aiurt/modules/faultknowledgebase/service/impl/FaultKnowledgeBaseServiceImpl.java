@@ -36,6 +36,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import liquibase.pro.packaged.I;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -93,15 +94,13 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     @Autowired
     private FlowBaseApi flowBaseApi;
+
+
+
+
     @Override
     public IPage<FaultKnowledgeBase> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-
-        LambdaQueryWrapper<FaultKnowledgeBase> queryWrapper = new LambdaQueryWrapper<>();
-        List<FaultKnowledgeBase> bases = faultKnowledgeBaseMapper.selectList(queryWrapper.eq(FaultKnowledgeBase::getDelFlag, "0"));
-        List<String> ids = bases.stream().map(FaultKnowledgeBase::getId).distinct().collect(Collectors.toList());
-        List<String> rolesByUsername = sysBaseApi.getRolesByUsername(sysUser.getUsername());
-
         //下面禁用数据过滤
         boolean b = GlobalThreadLocal.setDataFilter(false);
         String id = faultKnowledgeBase.getId();
@@ -110,58 +109,59 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             String substring = id.substring(0, id.length() - 1);
             faultKnowledgeBase.setId(substring);
         }
-        if (CollUtil.isNotEmpty(ids)) {
-            List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,ids,sysUser.getUsername());
-            //解决不是审核人去除审核按钮
-            if(CollUtil.isNotEmpty(faultKnowledgeBases)){
-                for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
-                    TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfo(knowledgeBase.getProcessInstanceId(), knowledgeBase.getTaskId());
-                    List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
-                    //operationList为空，没有审核按钮
-                    if(CollUtil.isNotEmpty(operationList)){
-                        knowledgeBase.setHaveButton(true);
-                    }else{
-                        knowledgeBase.setHaveButton(false);
-                    }
-                    //当前登录人不是创建人，则为false
-                    if(knowledgeBase.getCreateBy().equals(sysUser.getUsername())){
-                        knowledgeBase.setIsCreateUser(true);
-                    }else{
-                        knowledgeBase.setIsCreateUser(false);
-                    }
+        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,null,sysUser.getUsername());
+        //解决不是审核人去除审核按钮
+        if(CollUtil.isNotEmpty(faultKnowledgeBases)){
+            Set<String> deviceTypeCodeSet = faultKnowledgeBases.stream().map(FaultKnowledgeBase::getDeviceTypeCode).collect(Collectors.toSet());
+            Map<String, DeviceType> deviceTypeMap = new HashMap<>();
+            if (CollUtil.isNotEmpty(deviceTypeCodeSet)) {
+                List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodeSet);
+                if (CollUtil.isNotEmpty(typeList)) {
+                    deviceTypeMap = typeList.stream().collect(Collectors.toMap(DeviceType::getCode, Function.identity()));
                 }
             }
-
-            faultKnowledgeBases.forEach(f->{
-                String faultCodes = f.getFaultCodes();
+            for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
+                knowledgeBase.setHaveButton(false);
+                if (StrUtil.isNotBlank(knowledgeBase.getProcessInstanceId()) && StrUtil.isNotBlank(knowledgeBase.getTaskId())) {
+                    dealAuthButton(sysUser, knowledgeBase);
+                }
+                //当前登录人不是创建人，则为false
+                if(knowledgeBase.getCreateBy().equals(sysUser.getUsername())){
+                    knowledgeBase.setIsCreateUser(true);
+                }else{
+                    knowledgeBase.setIsCreateUser(false);
+                }
+                String faultCodes = knowledgeBase.getFaultCodes();
                 if (StrUtil.isNotBlank(faultCodes)) {
                     String[] split = faultCodes.split(",");
                     List<String> list = Arrays.asList(split);
-                    f.setFaultCodeList(list);
+                    knowledgeBase.setFaultCodeList(list);
                 }
-            });
-            GlobalThreadLocal.setDataFilter(b);
-            return page.setRecords(faultKnowledgeBases);
-        }
-        //正序
-       /* String asc = "asc";
-        if (asc.equals(faultKnowledgeBase.getOrder())) {
-            List<FaultKnowledgeBase> reportList = faultKnowledgeBases.stream().sorted(Comparator.comparing(FaultKnowledgeBase::getCreateTime)).collect(Collectors.toList());
-            return page.setRecords(reportList);
-        }*/
 
-        return page.setRecords(new ArrayList<>());
+                DeviceType deviceType = deviceTypeMap.getOrDefault(knowledgeBase.getDeviceTypeCode(), new DeviceType());
+                knowledgeBase.setDeviceTypeName(deviceType.getName());
+            }
+        }
+        GlobalThreadLocal.setDataFilter(b);
+        return page.setRecords(faultKnowledgeBases);
+    }
+
+    private void dealAuthButton(LoginUser sysUser, FaultKnowledgeBase knowledgeBase) {
+        TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfoWithCache(knowledgeBase.getProcessInstanceId(), knowledgeBase.getTaskId(),sysUser.getUsername());
+        List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
+        //operationList为空，没有审核按钮
+        if(CollUtil.isNotEmpty(operationList)){
+            knowledgeBase.setHaveButton(true);
+        }else{
+            knowledgeBase.setHaveButton(false);
+        }
+
     }
 
     @Override
     public List<FaultKnowledgeBase> queryAll(FaultKnowledgeBase faultKnowledgeBase) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
-        LambdaQueryWrapper<FaultKnowledgeBase> queryWrapper = new LambdaQueryWrapper<>();
-        List<FaultKnowledgeBase> bases = faultKnowledgeBaseMapper.selectList(queryWrapper.eq(FaultKnowledgeBase::getDelFlag, "0"));
-        List<String> ids = bases.stream().map(FaultKnowledgeBase::getId).distinct().collect(Collectors.toList());
-        List<String> rolesByUsername = sysBaseApi.getRolesByUsername(sysUser.getUsername());
-
         //下面禁用数据过滤
         boolean b = GlobalThreadLocal.setDataFilter(false);
         String id = faultKnowledgeBase.getId();
@@ -171,7 +171,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             faultKnowledgeBase.setId(substring);
         }
 
-        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.queryAll(faultKnowledgeBase,ids,sysUser.getUsername());
+        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.queryAll(faultKnowledgeBase,null,sysUser.getUsername());
 
         GlobalThreadLocal.setDataFilter(b);
         faultKnowledgeBases.forEach(f->{
@@ -182,13 +182,6 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 f.setFaultCodeList(list);
             }
         });
-        //正序
-       /* String asc = "asc";
-        if (asc.equals(faultKnowledgeBase.getOrder())) {
-            List<FaultKnowledgeBase> reportList = faultKnowledgeBases.stream().sorted(Comparator.comparing(FaultKnowledgeBase::getCreateTime)).collect(Collectors.toList());
-            return reportList;
-        }
-*/
         return faultKnowledgeBases;
     }
 

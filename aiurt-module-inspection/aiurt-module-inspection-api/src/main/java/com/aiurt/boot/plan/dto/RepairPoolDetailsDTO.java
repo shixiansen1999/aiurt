@@ -98,4 +98,7 @@ public class RepairPoolDetailsDTO {
 
     @ApiModelProperty(value = "计划code")
     private String poolCode;
+
+    @ApiModelProperty(value = "任务提交人名称")
+    private String submitUserName;
 }

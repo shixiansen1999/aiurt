@@ -46,4 +46,11 @@ public interface FaultDeviceMapper extends BaseMapper<FaultDevice> {
      * @return
      */
     List<String> queryRepairUserName();
+
+    /**
+     *
+     * @param faultCodeList
+     * @return
+     */
+    List<FaultDevice> queryListByFaultCodeList(@Param("faultCodeList") List<String> faultCodeList);
 }

@@ -4,6 +4,7 @@ import com.aiurt.boot.statistics.dto.IndexScheduleDTO;
 import com.aiurt.boot.statistics.dto.IndexTaskDTO;
 import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.statistics.service.PatrolStatisticsService;
+import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -18,7 +19,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author JB
@@ -48,8 +51,9 @@ public class PatrolStatisticsController {
                                                    @DateTimeFormat(pattern = "yyyy-MM-dd")
                                                    @RequestParam("endDate") Date endDate,
                                                    @ApiParam(name = "isAllData", value = "数据权限过滤，0按当前登录用户所管理的组织机构来进行过滤，1不进行过滤")
-                                                   @RequestParam("isAllData") Integer isAllData) {
-        PatrolSituation situation = patrolStatisticsService.getOverviewInfo(startDate, endDate, isAllData);
+                                                   @RequestParam("isAllData") Integer isAllData,
+                                                   HttpServletRequest request) {
+        PatrolSituation situation = patrolStatisticsService.getOverviewInfo(request, startDate, endDate, isAllData);
         return Result.ok(situation);
     }
 
@@ -64,9 +68,10 @@ public class PatrolStatisticsController {
     @PermissionData(pageComponent = "dashboard/Analysis")
     public Result<IPage<PatrolIndexTask>> getPatrolList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                        @Validated PatrolCondition patrolCondition) {
+                                                        @Validated PatrolCondition patrolCondition,
+                                                        HttpServletRequest request) {
         Page<PatrolIndexTask> page = new Page<PatrolIndexTask>(pageNo, pageSize);
-        IPage<PatrolIndexTask> pageList = patrolStatisticsService.getIndexPatrolList(page, patrolCondition);
+        IPage<PatrolIndexTask> pageList = patrolStatisticsService.getIndexPatrolList(page, patrolCondition,request);
         return Result.ok(pageList);
     }
 
@@ -79,10 +84,23 @@ public class PatrolStatisticsController {
     @ApiOperation(value = "首页-获取首页的巡视任务列表", notes = "首页-获取首页的巡视任务列表")
     @RequestMapping(value = "/getIndexTaskList", method = RequestMethod.POST)
     @PermissionData(pageComponent = "dashboard/Analysis")
-    public Result<IPage<IndexTaskInfo>> getIndexTaskList(@Validated @RequestBody IndexTaskDTO indexTaskDTO) {
+    public Result<IPage<IndexTaskInfo>> getIndexTaskList(HttpServletRequest request, @Validated @RequestBody IndexTaskDTO indexTaskDTO) {
         Page<IndexTaskInfo> page = new Page<>(indexTaskDTO.getPageNo(), indexTaskDTO.getPageSize());
-        IPage<IndexTaskInfo> pageList = patrolStatisticsService.getIndexTaskList(page, indexTaskDTO);
+        IPage<IndexTaskInfo> pageList = patrolStatisticsService.getIndexTaskList(request,page, indexTaskDTO);
         return Result.ok(pageList);
+    }
+
+    /**
+     * 首页-获取首页的巡视任务列表的工单和检查项树
+     *
+     * @return
+     */
+    @AutoLog(value = "首页-获取首页的巡视任务列表的工单和检查项树", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-获取首页的巡视任务列表的工单和检查项树", notes = "首页-获取首页的巡视任务列表的工单和检查项树")
+    @RequestMapping(value = "/getTaskBills", method = {RequestMethod.GET})
+    public Result<?> getTaskBills(@ApiParam(name = "taskId", value = "任务记录的ID") @RequestParam(name = "pageNo") String taskId) {
+        List<PatrolCheckResultDTO> list = patrolStatisticsService.getTaskBills(taskId);
+        return Result.OK(list);
     }
 
     /**
@@ -96,9 +114,10 @@ public class PatrolStatisticsController {
     @PermissionData(pageComponent = "dashboard/Analysis")
     public Result<IPage<ScheduleTask>> getScheduleList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                       HttpServletRequest request,
                                                        @Validated IndexScheduleDTO indexScheduleDTO) {
         Page<ScheduleTask> page = new Page<>(pageNo, pageSize);
-        IPage<ScheduleTask> pageList = patrolStatisticsService.getScheduleList(page, indexScheduleDTO);
+        IPage<ScheduleTask> pageList = patrolStatisticsService.getScheduleList(page,request, indexScheduleDTO);
         return Result.ok(pageList);
     }
 }

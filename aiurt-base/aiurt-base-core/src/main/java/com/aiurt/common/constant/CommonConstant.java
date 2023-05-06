@@ -645,4 +645,9 @@ public interface CommonConstant {
   * 逗号分隔符
   */
  public static final Character COMMA_SEPARATOR = ',';
+
+ /**
+  * 大屏故障统计参数（3，本月）
+  */
+ public static final Integer BOARD_TIME_TYPE_3 = 3;
 }

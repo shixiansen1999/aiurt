@@ -209,19 +209,20 @@
         SELECT su.realname
         FROM
             sys_user as su
+            left join  sys_user_role sur on su.id = sur.user_id
+            left join  sys_role sr ON  sr.id = sur.role_id
         where
-            su.id in
-        <foreach collection="usersIdList" item="item" index="index" open="(" close=")" separator=",">
-            #{item}
-        </foreach>
-        AND
-        su.org_code=(
-        SELECT org_code
-        FROM
-        sys_user
-        WHERE
-        id=#{faultApplicant}
-        )
+            sr.role_code = #{roleCode}
+            <if test="faultApplicant != null and faultApplicant != ''">
+                and  su.org_code = (
+                SELECT
+                org_code
+                FROM
+                sys_user
+                WHERE username = #{faultApplicant}
+                )
+            </if>
+
     </select>
     <select id="getbyForeman" resultType="java.lang.String">
         SELECT id
