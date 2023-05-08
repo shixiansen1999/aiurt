@@ -73,7 +73,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
    @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询备件出库",permissionUrl = "/sparepart/sparePartOutOrder/list")
    @ApiOperation(value="spare_part_out_order-分页列表查询", notes="spare_part_out_order-分页列表查询")
    @GetMapping(value = "/list")
-   @PermissionData(pageComponent = "sparePartsFor/SparePartOutOrderList")
+  // @PermissionData(pageComponent = "sparePartsFor/SparePartOutOrderList")
    public Result<IPage<SparePartOutOrder>> queryPageList(SparePartOutOrder sparePartOutOrder,
                                   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

@@ -19,6 +19,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: spare_part_out_order
@@ -196,4 +197,7 @@ public class SparePartOutOrder implements Serializable {
     @ApiModelProperty(value = "app出库查询")
     @TableField(exist = false)
     private String text;
+    @ApiModelProperty("管理部门")
+    @TableField(exist = false)
+    private List<String> orgCodes;
 }
