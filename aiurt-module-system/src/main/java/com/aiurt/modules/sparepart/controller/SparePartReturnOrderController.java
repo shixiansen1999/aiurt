@@ -13,7 +13,6 @@ import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
-import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
@@ -81,7 +80,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件退库-分页列表查询",permissionUrl = "/sparepart/sparePartReturnOrder/list")
 	@ApiOperation(value="备件退库-分页列表查询", notes="备件退库-分页列表查询")
 	@GetMapping(value = "/list")
-	@PermissionData(pageComponent = "sparePartsFor/back")
+	//@PermissionData(pageComponent = "sparePartsFor/back")
 	public Result<IPage<SparePartReturnOrder>> queryPageList(SparePartReturnOrder sparePartReturnOrder,
 															 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 															 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
