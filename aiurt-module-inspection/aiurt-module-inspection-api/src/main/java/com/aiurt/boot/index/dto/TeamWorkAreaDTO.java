@@ -19,4 +19,8 @@ public class TeamWorkAreaDTO {
     private String lineName;
     @ApiModelProperty("排序")
     private Integer sort;
+    /**
+     * 工区编号
+     */
+    private String workAreaCode;
 }

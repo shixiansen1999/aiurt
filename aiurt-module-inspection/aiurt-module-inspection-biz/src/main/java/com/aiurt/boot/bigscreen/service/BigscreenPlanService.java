@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.PatrolApi;
@@ -31,6 +32,9 @@ import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -39,6 +43,11 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -50,6 +59,7 @@ import java.util.stream.Collectors;
 @Service
 public class BigscreenPlanService {
 
+    private static final Logger log = LoggerFactory.getLogger(BigscreenPlanService.class);
     @Resource
     private ISysBaseAPI sysBaseAPI;
     @Resource
@@ -444,83 +454,127 @@ public class BigscreenPlanService {
         }
         if (CollUtil.isNotEmpty(teamPortraitDTOS)) {
             int i = 0;
-            for (TeamPortraitDTO teamPortraitDTO : teamPortraitDTOS) {
-                //找到当前班组关联的工区信息
-                List<TeamPortraitDTO> workAreaById = bigScreenPlanMapper.getWorkAreaByCode(teamPortraitDTO.getTeamCode());
-                if (CollUtil.isNotEmpty(workAreaById)) {
-                    List<String> teamLineName = workAreaById.stream().map(TeamPortraitDTO::getTeamLineName).collect(Collectors.toList());
-                    teamPortraitDTO.setTeamLineName(CollUtil.join(teamLineName, ","));
+            List<String> teamIds = teamPortraitDTOS.stream()
+                    .filter(teamPortrait -> ObjectUtil.isNotEmpty(teamPortrait.getTeamId()))
+                    .map(TeamPortraitDTO::getTeamId)
+                    .distinct()
+                    .collect(Collectors.toList());
+            Map<String, List<LoginUser>> userMap = sysBaseAPI.getUseList(teamIds)
+                    .stream()
+                    .collect(Collectors.groupingBy(LoginUser::getOrgId));
 
-                    List<String> position = workAreaById.stream().filter(a->a.getPosition() != null).map(TeamPortraitDTO::getPosition).collect(Collectors.toList());
-                    List<String> siteName = workAreaById.stream().map(TeamPortraitDTO::getSiteName).collect(Collectors.toList());
-                    int num = 0;
-                    int stationNum = 0;
-                    StringBuilder jurisdiction = new StringBuilder();
-                    List<TeamWorkAreaDTO> stationList = new ArrayList<>();
-                    for (TeamPortraitDTO portraitDTO : workAreaById) {
-                        num = num + portraitDTO.getStationNum();
-                        //jurisdiction.append(portraitDTO.getSiteName()).append(":");
-                        //获取工区管辖范围
-                        List<TeamWorkAreaDTO> stationDetails = bigScreenPlanMapper.getStationDetails(portraitDTO.getWorkAreaCode());
-                        if (CollUtil.isNotEmpty(stationDetails)) {
-                            List<String> line = stationDetails.stream().map(TeamWorkAreaDTO::getLineCode).distinct().collect(Collectors.toList());
-                            if (CollUtil.isNotEmpty(line)) {
-                                for (int j=0;j<line.size();j++) {
-                                    int finalJ = j;
-                                    List<TeamWorkAreaDTO> collect = stationDetails.stream().filter(t -> t.getLineCode().equals(line.get(finalJ))).collect(Collectors.toList());
-                                    stationList.addAll(collect);
-                                }
-                            }
-                        }
-                        stationNum = stationNum + stationDetails.size();
+            ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
+            for (TeamPortraitDTO teamPortraitDTO : teamPortraitDTOS) {
+                threadPoolExecutor.execute(() -> this.executeMethod(type, userMap, teamPortraitDTO));
+//                this.executeMethod(type, userMap, teamPortraitDTO);
+            }
+            threadPoolExecutor.shutdown();
+            try {
+                // 等待线程池中的任务全部完成
+                threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                // 处理中断异常
+                log.info("循环方法的线程中断异常", e.getMessage());
+            }
+        }
+        return teamPortraitDTOS;
+    }
+
+    private void executeMethod(Integer type, Map<String, List<LoginUser>> userMap, TeamPortraitDTO teamPortraitDTO) {
+        //找到当前班组关联的工区信息
+        List<TeamPortraitDTO> workAreaById = bigScreenPlanMapper.getWorkAreaByCode(teamPortraitDTO.getTeamCode());
+        if (CollUtil.isNotEmpty(workAreaById)) {
+            List<String> teamLineName = workAreaById.stream().map(TeamPortraitDTO::getTeamLineName).collect(Collectors.toList());
+            teamPortraitDTO.setTeamLineName(CollUtil.join(teamLineName, ","));
+
+            List<String> position = workAreaById.stream().filter(a->a.getPosition() != null).map(TeamPortraitDTO::getPosition).collect(Collectors.toList());
+            List<String> siteName = workAreaById.stream().map(TeamPortraitDTO::getSiteName).collect(Collectors.toList());
+            int num = 0;
+            int stationNum = 0;
+            StringBuilder jurisdiction = new StringBuilder();
+            List<TeamWorkAreaDTO> stationList = new ArrayList<>();
+
+            List<String> workAreaCodes = workAreaById.stream()
+                    .filter(teamPortrait -> ObjectUtil.isNotEmpty(teamPortrait.getWorkAreaCode()))
+                    .map(TeamPortraitDTO::getWorkAreaCode)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            //获取工区管辖范围
+            Map<String, List<TeamWorkAreaDTO>> stationMap = bigScreenPlanMapper.getStationDetails(workAreaCodes)
+                    .stream()
+                    .filter(station -> ObjectUtil.isNotEmpty(station.getWorkAreaCode()))
+                    .collect(Collectors.groupingBy(TeamWorkAreaDTO::getWorkAreaCode));
+
+            for (TeamPortraitDTO portraitDTO : workAreaById) {
+                //jurisdiction.append(portraitDTO.getSiteName()).append(":");
+                //获取工区管辖范围
+//                        List<TeamWorkAreaDTO> stationDetails = bigScreenPlanMapper.getStationDetails(portraitDTO.getWorkAreaCode());
+                List<TeamWorkAreaDTO> stationDetails = ObjectUtil.isEmpty(portraitDTO.getWorkAreaCode()) ? new ArrayList<>() : stationMap.get(portraitDTO.getWorkAreaCode());
+                if (CollUtil.isNotEmpty(stationDetails)) {
+                    List<String> lines = stationDetails.stream().map(TeamWorkAreaDTO::getLineCode).distinct().collect(Collectors.toList());
+                    if (CollUtil.isNotEmpty(lines)) {
+//                                for (int j=0;j<line.size();j++) {
+//                                    int finalJ = j;
+//                                    List<TeamWorkAreaDTO> collect = stationDetails.stream().filter(t -> t.getLineCode().equals(line.get(finalJ))).collect(Collectors.toList());
+//                                    stationList.addAll(collect);
+//                                }
+                        lines.forEach(line -> {
+                            List<TeamWorkAreaDTO> collect = stationDetails.stream()
+                                    .filter(t -> ObjectUtil.isNotEmpty(t.getLineCode()) && t.getLineCode().equals(line))
+                                    .collect(Collectors.toList());
+                            stationList.addAll(collect);
+                        });
                     }
-                    String stations = stationList.stream().map(TeamWorkAreaDTO::getStationName).collect(Collectors.joining("、"));
-                    jurisdiction.append(stations);
+                }
+                num = num + portraitDTO.getStationNum();
+                stationNum = stationNum + stationDetails.size();
+            }
+            String stations = stationList.stream().map(TeamWorkAreaDTO::getStationName).collect(Collectors.joining("、"));
+            jurisdiction.append(stations);
 //                    if (jurisdiction.length() > 0) {
 //                        // 截取字符，去掉最后一个，
 //                        jurisdiction.deleteCharAt(jurisdiction.length() - 1);
 //                    }
-                    //jurisdiction.append("共").append(stationNum).append("站；");
+            //jurisdiction.append("共").append(stationNum).append("站；");
 //                    if (jurisdiction.length() > 0) {
 //                        // 截取字符,去掉最后一个；
 //                        jurisdiction.deleteCharAt(jurisdiction.length() - 1);
 //                    }
-                    if (CollUtil.isNotEmpty(position)) {
-                        teamPortraitDTO.setPositionName(CollUtil.join(position, ","));
-                    }else {
-                        teamPortraitDTO.setPositionName("");
-                    }
+            if (CollUtil.isNotEmpty(position)) {
+                teamPortraitDTO.setPositionName(CollUtil.join(position, ","));
+            }else {
+                teamPortraitDTO.setPositionName("");
+            }
 
-                    teamPortraitDTO.setSiteName(CollUtil.join(siteName, ","));
-                    teamPortraitDTO.setStationNum(num);
-                    teamPortraitDTO.setJurisdiction(jurisdiction.toString());
-                }
-                //获取当前值班人员
-                // 班组的人员
-                List<LoginUser> userList = sysBaseAPI.getUserPersonnel(teamPortraitDTO.getTeamId());
-                String today = DateUtil.today();
-                if (CollUtil.isNotEmpty(userList)) {
-                    List<String> onDuty = bigScreenPlanMapper.getOnDuty(today, userList);
-                    if (CollUtil.isNotEmpty(onDuty)) {
-                        teamPortraitDTO.setStaffOnDuty(CollUtil.join(onDuty, ","));
-                    }
-                }
-                Date[] timeByType = getTimeByType(String.valueOf(type));
-                if (timeByType.length > 0 && CollUtil.isNotEmpty(userList)) {
-                    //获取一周内的班组平均维修响应时间
-                    List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList, timeByType[0], timeByType[1]);
-                    getAverageTime(repairDuration, teamPortraitDTO);
-                    //获取总工时
-                    getTotalTimes(teamPortraitDTO, userList, type, timeByType);
-                }else {
-                    teamPortraitDTO.setAverageTime("0");
-                    teamPortraitDTO.setPatrolTotalTime(new BigDecimal(0.0));
-                    teamPortraitDTO.setFaultTotalTime(new BigDecimal(0.0));
-                    teamPortraitDTO.setInspecitonTotalTime(new BigDecimal(0.0));
-                }
+            teamPortraitDTO.setSiteName(CollUtil.join(siteName, ","));
+            teamPortraitDTO.setStationNum(num);
+            teamPortraitDTO.setJurisdiction(jurisdiction.toString());
+        }
+        //获取当前值班人员
+        // 班组的人员
+//                List<LoginUser> userList = sysBaseAPI.getUserPersonnel(teamPortraitDTO.getTeamId());
+        List<LoginUser> userList = userMap.get(teamPortraitDTO.getTeamId());
+        String today = DateUtil.today();
+        if (CollUtil.isNotEmpty(userList)) {
+            List<String> onDuty = bigScreenPlanMapper.getOnDuty(today, userList);
+            if (CollUtil.isNotEmpty(onDuty)) {
+                teamPortraitDTO.setStaffOnDuty(CollUtil.join(onDuty, ","));
             }
         }
-        return teamPortraitDTOS;
+        Date[] timeByType = getTimeByType(String.valueOf(type));
+        if (timeByType.length > 0 && CollUtil.isNotEmpty(userList)) {
+            //获取一周内的班组平均维修响应时间
+            List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList, timeByType[0], timeByType[1]);
+            getAverageTime(repairDuration, teamPortraitDTO);
+            //获取总工时
+            getTotalTimes(teamPortraitDTO, userList, type, timeByType);
+        }else {
+            teamPortraitDTO.setAverageTime("0");
+            teamPortraitDTO.setPatrolTotalTime(new BigDecimal(0.0));
+            teamPortraitDTO.setFaultTotalTime(new BigDecimal(0.0));
+            teamPortraitDTO.setInspecitonTotalTime(new BigDecimal(0.0));
+        }
     }
 
     public void getAverageTime( List<RepairRecordDetailDTO> repairDuration,TeamPortraitDTO teamPortraitDTO) {
@@ -555,37 +609,104 @@ public class BigscreenPlanService {
 
     public void getTotalTimes(TeamPortraitDTO teamPortraitDTO, List<LoginUser> userList, Integer type, Date[] timeByType) {
         //一位小数点，四舍五入
+//        //获取班组维修总工时
+//        BigDecimal faultHours = dailyFaultApi.getFaultHours(type, teamPortraitDTO.getTeamId());
+//        teamPortraitDTO.setFaultTotalTime(faultHours);
+//
+//        //获取班组巡检总工时
+//        BigDecimal patrolHours = patrolApi.getPatrolHours(type, teamPortraitDTO.getTeamId());
+//        teamPortraitDTO.setPatrolTotalTime(patrolHours);
+//
+//        //获取班组检修总工时
+//        if (CollUtil.isNotEmpty(userList)) {
+//            //获取本班组指派人在指定时间范围内的所有任务时长(单位秒)
+//            List<TaskUserDTO> inspecitonTotalTime = bigScreenPlanMapper.getInspecitonTotalTime(userList, timeByType[0], timeByType[1]);
+//            //获取本班组同行人在指定时间范围内的所有任务时长(单位秒)
+//            List<TaskUserDTO> inspecitonTotalTimeByPeer = bigScreenPlanMapper.getInspecitonTotalTimeByPeer(userList, timeByType[0], timeByType[1]);
+//            List<String> collect = inspecitonTotalTime.stream().map(TaskUserDTO::getTaskId).collect(Collectors.toList());
+//            //若同行人和指派人同属一个班组，则该班组只取一次工时，不能累加
+//            List<TaskUserDTO> dtos = inspecitonTotalTimeByPeer.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
+//            dtos.addAll(inspecitonTotalTime);
+//            BigDecimal sum = new BigDecimal("0.00");
+//            for (TaskUserDTO dto : dtos) {
+//                if (ObjectUtil.isNotNull(dto.getInspecitonTotalTime())) {
+//                    sum = sum.add(dto.getInspecitonTotalTime());
+//                }
+//            }
+//            //秒转时
+//            BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);
+//            teamPortraitDTO.setInspecitonTotalTime(decimal);
+//        } else {
+//            teamPortraitDTO.setInspecitonTotalTime(new BigDecimal("0.00"));
+//        }
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        // 线程池核心线程数
+        executor.setCorePoolSize(3);
+        // 线程池最大线程数
+        executor.setMaxPoolSize(5);
+        // 线程池队列容量
+        executor.setQueueCapacity(100);
+        // 线程名称前缀
+        executor.setThreadNamePrefix("MyExecutorCount-");
+        // 初始化线程池
+        executor.initialize();
+
+        CountDownLatch latch = new CountDownLatch(3);
+
         //获取班组维修总工时
-        BigDecimal faultHours = dailyFaultApi.getFaultHours(type, teamPortraitDTO.getTeamId());
-        teamPortraitDTO.setFaultTotalTime(faultHours);
-
+        AtomicReference<BigDecimal> faultHours = new AtomicReference<>(new BigDecimal("0.00"));
         //获取班组巡检总工时
-        BigDecimal patrolHours = patrolApi.getPatrolHours(type, teamPortraitDTO.getTeamId());
-        teamPortraitDTO.setPatrolTotalTime(patrolHours);
-
+        AtomicReference<BigDecimal> patrolHours = new AtomicReference<>(new BigDecimal("0.00"));
         //获取班组检修总工时
-        if (CollUtil.isNotEmpty(userList)) {
-            //获取本班组指派人在指定时间范围内的所有任务时长(单位秒)
-            List<TaskUserDTO> inspecitonTotalTime = bigScreenPlanMapper.getInspecitonTotalTime(userList, timeByType[0], timeByType[1]);
-            //获取本班组同行人在指定时间范围内的所有任务时长(单位秒)
-            List<TaskUserDTO> inspecitonTotalTimeByPeer = bigScreenPlanMapper.getInspecitonTotalTimeByPeer(userList, timeByType[0], timeByType[1]);
-            List<String> collect = inspecitonTotalTime.stream().map(TaskUserDTO::getTaskId).collect(Collectors.toList());
-            //若同行人和指派人同属一个班组，则该班组只取一次工时，不能累加
-            List<TaskUserDTO> dtos = inspecitonTotalTimeByPeer.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
-            dtos.addAll(inspecitonTotalTime);
-            BigDecimal sum = new BigDecimal("0.00");
-            for (TaskUserDTO dto : dtos) {
-                if (ObjectUtil.isNotNull(dto.getInspecitonTotalTime())) {
-                    sum = sum.add(dto.getInspecitonTotalTime());
+        AtomicReference<BigDecimal> inspectionHours = new AtomicReference<>(new BigDecimal("0.00"));
+
+        executor.execute(() -> {
+            faultHours.set(dailyFaultApi.getFaultHours(type, teamPortraitDTO.getTeamId()));
+            latch.countDown();
+        });
+
+        executor.execute(() -> {
+            patrolHours.set(patrolApi.getPatrolHours(type, teamPortraitDTO.getTeamId()));
+            latch.countDown();
+        });
+
+        executor.execute(() -> {
+            if (CollUtil.isNotEmpty(userList)) {
+                //获取本班组指派人在指定时间范围内的所有任务时长(单位秒)
+                List<TaskUserDTO> inspecitonTotalTime = bigScreenPlanMapper.getInspecitonTotalTime(userList, timeByType[0], timeByType[1]);
+                //获取本班组同行人在指定时间范围内的所有任务时长(单位秒)
+                List<TaskUserDTO> inspecitonTotalTimeByPeer = bigScreenPlanMapper.getInspecitonTotalTimeByPeer(userList, timeByType[0], timeByType[1]);
+                List<String> collect = inspecitonTotalTime.stream().map(TaskUserDTO::getTaskId).collect(Collectors.toList());
+                //若同行人和指派人同属一个班组，则该班组只取一次工时，不能累加
+                List<TaskUserDTO> dtos = inspecitonTotalTimeByPeer.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
+                dtos.addAll(inspecitonTotalTime);
+                BigDecimal sum = new BigDecimal("0.00");
+                for (TaskUserDTO dto : dtos) {
+                    if (ObjectUtil.isNotNull(dto.getInspecitonTotalTime())) {
+                        sum = sum.add(dto.getInspecitonTotalTime());
+                    }
                 }
+                //秒转时
+                BigDecimal decimal = sum.divide(new BigDecimal("3600"), 1, BigDecimal.ROUND_HALF_UP);
+                inspectionHours.set(decimal);
             }
-            //秒转时
-            BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);
-            teamPortraitDTO.setInspecitonTotalTime(decimal);
-        } else {
-            teamPortraitDTO.setInspecitonTotalTime(new BigDecimal("0.00"));
+            latch.countDown();
+        });
+
+        // 等待所有操作完成
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            log.info("工时统计线程中断异常:{}", e.getMessage());
         }
 
+        // 所有操作完成后执行后续代码
+        teamPortraitDTO.setFaultTotalTime(faultHours.get());
+        teamPortraitDTO.setFaultTotalTime(patrolHours.get());
+        teamPortraitDTO.setFaultTotalTime(inspectionHours.get());
+
+        // 关闭线程池
+        executor.shutdown();
     }
 
     /**

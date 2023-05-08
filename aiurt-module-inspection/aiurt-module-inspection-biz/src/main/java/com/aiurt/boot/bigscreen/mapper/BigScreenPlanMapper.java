@@ -77,10 +77,12 @@ public interface BigScreenPlanMapper {
 
     /**
      * 获取工区管辖范围
-     * @param workAreaCode
+     *
+     * @param workAreaCodes
      * @return
      */
-    List<TeamWorkAreaDTO> getStationDetails(@Param("workAreaCode")String workAreaCode);
+//    List<TeamWorkAreaDTO> getStationDetails(@Param("workAreaCode")String workAreaCode);
+    List<TeamWorkAreaDTO> getStationDetails(@Param("workAreaCodes") List<String> workAreaCodes);
 
     /**
      * 班组的人员

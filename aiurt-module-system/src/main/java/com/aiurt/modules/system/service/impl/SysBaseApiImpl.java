@@ -1588,9 +1588,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<LoginUser> list = new ArrayList<>();
         for (SysUser user : userList) {
             LoginUser loginUser = new LoginUser();
-            loginUser.setId(user.getId());
-            loginUser.setUsername(user.getUsername());
-            loginUser.setRealname(user.getRealname());
+            BeanUtils.copyProperties(user,loginUser);
+            loginUser.setPassword(null);
+//            loginUser.setId(user.getId());
+//            loginUser.setUsername(user.getUsername());
+//            loginUser.setRealname(user.getRealname());
             list.add(loginUser);
         }
         return list;
