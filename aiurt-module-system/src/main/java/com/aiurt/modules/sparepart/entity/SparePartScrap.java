@@ -273,4 +273,7 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @Excel(name = "使用时间", width = 15)
     @ApiModelProperty(value = "使用时间")
     private String usageTime;
+    @ApiModelProperty("管理部门")
+    @TableField(exist = false)
+    private List<String> wareHouses;
 }

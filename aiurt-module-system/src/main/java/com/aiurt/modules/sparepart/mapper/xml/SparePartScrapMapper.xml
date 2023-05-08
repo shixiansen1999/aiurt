@@ -72,6 +72,12 @@
                 #{item}
             </foreach>)
         </if>
+        <if test="scrap.wareHouses!= null and scrap.wareHouses.size()!= 0">
+            and spare_part_scrap.warehouse_code in
+            <foreach collection="scrap.wareHouses" open="(" separator="," close=")" item="item">
+                #{item}
+            </foreach>
+        </if>
         order by spare_part_scrap.create_time desc
 
     </select>
