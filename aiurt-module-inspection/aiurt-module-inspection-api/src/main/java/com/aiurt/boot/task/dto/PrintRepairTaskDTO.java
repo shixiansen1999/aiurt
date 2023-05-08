@@ -60,6 +60,8 @@ public class PrintRepairTaskDTO {
     private String receiptUserName;
     @ApiModelProperty(value = "验收时间，精确到秒")
     private String receiptTime;
+    @ApiModelProperty(value = "站点名称")
+    private String siteName;
     @ApiModelProperty(value = "检修单附件")
     private List<String> enclosureUrl;
     @ApiModelProperty(value = "备件更换")

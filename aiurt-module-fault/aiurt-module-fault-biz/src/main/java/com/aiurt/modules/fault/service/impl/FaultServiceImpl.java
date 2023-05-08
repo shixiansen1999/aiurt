@@ -1126,6 +1126,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         RepairRecordDTO repairRecordDTO = new RepairRecordDTO();
         BeanUtils.copyProperties(repairRecord, repairRecordDTO);
 
+        repairRecordDTO.setStationCode(fault.getStationCode());
+        repairRecordDTO.setStationPositionCode(fault.getStationPositionCode());
         // 查询参与人
         List<FaultRepairParticipants> participantsList = repairParticipantsService.queryParticipantsByRecordId(repairRecord.getId());
         repairRecordDTO.setParticipantsList(participantsList);

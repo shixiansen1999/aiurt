@@ -721,7 +721,9 @@
         group by pto.org_code
     </select>
     <select id="getStatisticsDataList" resultType="com.aiurt.boot.screen.model.ScreenStatisticsTask">
-        SELECT pt.`code`,
+        SELECT
+        pt.`id`as taskId,
+        pt.`code`,
         pt.`name`,
         pt.submit_time,
         pt.auditor,
