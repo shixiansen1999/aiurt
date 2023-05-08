@@ -1,7 +1,9 @@
 package com.aiurt.modules.stock.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.XlsExport;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
@@ -11,6 +13,7 @@ import com.aiurt.modules.stock.service.IStockLevel2CheckDetailService;
 import com.aiurt.modules.stock.service.IStockLevel2CheckService;
 import com.aiurt.modules.stock.service.IStockLevel2InfoService;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
+import com.aiurt.modules.system.service.ICsUserDepartService;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -23,6 +26,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +37,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description:
@@ -57,6 +62,8 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 	private IStockLevel2Service stockLevel2Service;
 	@Autowired
 	private ISysDepartService iSysDepartService;
+	@Autowired
+	private ICsUserDepartService csUserDepartService;
 
 	@Override
 	public StockLevel2Check getStockCheckCode() throws ParseException {
@@ -265,6 +272,19 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 
 	@Override
 	public IPage<StockLevel2Check> pageList(Page<StockLevel2Check> page, StockLevel2Check stockLevel2Check) {
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		if (Objects.isNull(user)) {
+			throw new AiurtBootException("请重新登录");
+		}
+		// 根据当前登陆人的管理部门权限过滤（除了管理员角色用户）
+		if (!user.getRoleCodes().contains(CommonConstant.ADMIN)) {
+			List<CsUserDepartModel> departByUserId = csUserDepartService.getDepartByUserId(user.getId());
+			if (CollUtil.isEmpty(departByUserId)) {
+				return page;
+			}
+			List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+			stockLevel2Check.setUserOrgCodes(collect);
+		}
 		List<StockLevel2Check> baseList = baseMapper.pageList(page, stockLevel2Check);
 		page.setRecords(baseList);
 		return page;

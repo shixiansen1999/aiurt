@@ -22,6 +22,12 @@
             <if test="condition.status != null and condition.status != ''">
                 and stock_level2_check.status = #{condition.status}
             </if>
+            <if test="condition.userOrgCodes != null and condition.userOrgCodes.size() > 0">
+                and stock_level2_check.org_code in
+                <foreach collection="condition.userOrgCodes" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         order by stock_level2_check.create_time desc
     </select>

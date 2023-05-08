@@ -20,6 +20,12 @@
             <if test="condition.entryTimeBegin != null and condition.entryTimeEnd != null">
                 and Date(stock_in_order_level2.entry_time) &gt;= #{condition.entryTimeBegin} and Date(stock_in_order_level2.entry_time) &lt;= #{condition.entryTimeEnd}
             </if>
+            <if test="condition.userOrgCodes != null and condition.userOrgCodes.size() > 0">
+                and stock_in_order_level2.org_code in
+                <foreach collection="condition.userOrgCodes" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         order by stock_in_order_level2.create_time desc
     </select>
