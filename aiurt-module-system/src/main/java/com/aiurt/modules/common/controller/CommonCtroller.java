@@ -244,8 +244,7 @@ public class CommonCtroller {
         // 系统管理员不做权限过滤
 
 
-        List<CsLine> lineList = lineService.getBaseMapper().selectList(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag,0)
-                .ne(CsLine::getLineCode,"NO1").ne(CsLine::getLineCode,"ehx0001").ne(CsLine::getLineCode,"01").ne(CsLine::getLineCode,"02"));
+        List<CsLine> lineList = lineService.getBaseMapper().selectList(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag,0));
 
         Map<String, String> lineMap = lineList.stream().collect(Collectors.toMap(CsLine::getLineCode, CsLine::getLineName, (t1, t2) -> t2));
 
@@ -261,7 +260,7 @@ public class CommonCtroller {
         Map<String, List<CsUserStationModel>> stationMap = stationModelList.stream().collect(Collectors.groupingBy(CsUserStationModel::getLineCode));
 
         LambdaQueryWrapper<CsStationPosition> positionWrapper = new LambdaQueryWrapper<>();
-        positionWrapper.eq(CsStationPosition::getDelFlag, 0) .ne(CsStationPosition::getLineCode,"NO1").ne(CsStationPosition::getLineCode,"ehx0001").ne(CsStationPosition::getLineCode,"01").ne(CsStationPosition::getLineCode,"02");
+        positionWrapper.eq(CsStationPosition::getDelFlag, 0);
         List<CsStationPosition> positionList = stationPositionService.getBaseMapper().selectList(positionWrapper);
 
         Map<String, List<CsStationPosition>> positionMap = positionList.stream().collect(Collectors.groupingBy(CsStationPosition::getStaionCode));
@@ -352,6 +351,7 @@ public class CommonCtroller {
         List<SelectTable> tableList = stationList.stream().map(stationPosition -> {
             SelectTable selectTable = new SelectTable();
             selectTable.setValue(stationPosition.getPositionCode());
+            selectTable.setTitle(stationPosition.getPositionName());
             selectTable.setLabel(stationPosition.getPositionName());
             selectTable.setId(stationPosition.getId());
             selectTable.setKey(stationPosition.getId());
