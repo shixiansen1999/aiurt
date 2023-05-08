@@ -92,8 +92,8 @@ public class FaultInformationService {
         List<Fault> faultList1 = faultInformationMapper.queryLargeFaultInformation(getTime(0), getTime(1), lineCode, majors);
 
         //总故障数
-        if (CollUtil.isNotEmpty(faultList1)) {
-            result.setSum(faultList1.size());
+        if (CollUtil.isNotEmpty(faultList)) {
+            result.setSum(faultList.size());
         } else {
             result.setSum(0);
         }
@@ -154,8 +154,8 @@ public class FaultInformationService {
         switch (faultModule) {
             // 总故障数详情
             case 1:
-                faultScreenModule.setStartDate(getTime(0));
-                faultScreenModule.setEndDate(getTime(1));
+                faultScreenModule.setStartDate(startDate);
+                faultScreenModule.setEndDate(endDate);
                 faultScreenModule.setLineCode(lineCode);
                 faultScreenModule.setMajors(majors);
                 break;
@@ -524,7 +524,8 @@ public class FaultInformationService {
         List<String> majors = getCurrentLoginUserMajors();
 
         int count = 0;
-        List<Fault> faultList = faultInformationMapper.queryFaultDataInformation(lineCode, majors);
+        List<Fault> faultList = faultInformationMapper.queryFaultDataInformation(getTime(0), getTime(1),lineCode, majors);
+        List<Fault> faultList1 = faultInformationMapper.queryFaultDataInformation(null,null,lineCode, majors);
         //总故障数
         if (CollUtil.isNotEmpty(faultList)) {
             result.setSum(faultList.size());
@@ -532,8 +533,8 @@ public class FaultInformationService {
             result.setSum(0);
         }
         //未解决数
-        if (CollUtil.isNotEmpty(faultList)) {
-            for (Fault fault : faultList) {
+        if (CollUtil.isNotEmpty(faultList1)) {
+            for (Fault fault : faultList1) {
                 if (!FaultStatusEnum.Close.getStatus().equals(fault.getStatus())) {
                     count++;
                 }
@@ -600,6 +601,9 @@ public class FaultInformationService {
         switch (faultModule) {
             // 故障总数
             case 1:
+                faultScreenModule.setStartDate(getTime(0));
+                faultScreenModule.setEndDate(getTime(1));
+                faultScreenModule.setMoonSolve(1);
                 faultScreenModule.setLineCode(lineCode);
                 faultScreenModule.setMajors(majors);
                 break;
