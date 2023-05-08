@@ -213,4 +213,64 @@
             </if>
         </where>
     </select>
+    <select id="selectRepairPool" resultType="com.aiurt.boot.plan.entity.RepairPool">
+        SELECT
+        rp.id,
+        rp.`status`,
+        rp.`name`,
+        rp.`code`,
+        rp.weeks,
+        rp.type,
+        rp.inspection_str_code,
+        rp.start_time,
+        rp.end_time
+        FROM
+            repair_pool rp
+        LEFT JOIN repair_pool_rel AS rpr ON rpr.repair_pool_code = rp.`code`
+        LEFT JOIN repair_pool_code AS rpc ON rpc.id = rpr.repair_pool_sta_id
+        LEFT JOIN repair_pool_station_rel AS rpsr ON rpsr.repair_pool_code = rp.`code`
+        LEFT JOIN repair_pool_org_rel AS rpor ON rpor.repair_pool_code = rp.`code`
+        <where>
+            rp.del_flag = 0
+            <if test="selectPlanReq.startTime != null and selectPlanReq.endTime != null">
+                AND rp.start_time &gt;= #{selectPlanReq.startTime}
+                AND rp.start_time &lt;= #{selectPlanReq.endTime}
+            </if>
+            <if test="selectPlanReq.code != null and selectPlanReq.code != null">
+                AND rp.code =#{selectPlanReq.code}
+            </if>
+            <if test="selectPlanReq.type != null">
+                AND rp.type =#{selectPlanReq.type}
+            </if>
+            <if test="selectPlanReq.isManual != null">
+                AND rp.is_manual = #{selectPlanReq.isManual}
+            </if>
+            <if test="selectPlanReq.status != null">
+                AND rp.status = #{selectPlanReq.status}
+            </if>
+            <if test="selectPlanReq.workType != null">
+                AND rp.work_type = #{selectPlanReq.workType}
+            </if>
+            <if test="selectPlanReq.statusList != null and !selectPlanReq.statusList.isEmpty()">
+                AND rp.status IN
+                <foreach item="statusItem" collection="selectPlanReq.statusList" separator="," open="(" close=")">
+                    #{statusItem}
+                </foreach>
+            </if>
+            <if test="selectPlanReq.orgCodeList != null and !selectPlanReq.orgCodeList.isEmpty()">
+                AND rpor.org_code IN
+                <foreach item="item" collection="selectPlanReq.orgCodeList" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="selectPlanReq.stationCodeList != null and !selectPlanReq.stationCodeList.isEmpty()">
+                AND rpsr.station_code IN
+                <foreach item="item" collection="selectPlanReq.stationCodeList" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY rp.id
+        ORDER BY rp.start_time ASC, rp.type ASC, rp.create_time DESC
+    </select>
 </mapper>

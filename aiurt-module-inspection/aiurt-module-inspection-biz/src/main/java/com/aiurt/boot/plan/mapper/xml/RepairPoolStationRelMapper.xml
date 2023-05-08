@@ -31,4 +31,22 @@
         </where>
         group by rpsr.repair_pool_code
     </select>
+    <select id="selectBatchStationList" resultType="com.aiurt.boot.plan.dto.StationDTO">
+        SELECT
+        rpsr.repair_pool_code,
+        rpsr.line_code,
+        rpsr.station_code,
+        rpsr.position_code
+        FROM
+        repair_pool_station_rel rpsr
+        <where>
+            rpsr.del_flag = 0
+        <if test="repairPoolCodes!=null and !repairPoolCodes.isEmpty()">
+            AND rpsr.repair_pool_code IN
+            <foreach item="item" index="index" collection="repairPoolCodes" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        </where>
+    </select>
 </mapper>

@@ -4,6 +4,8 @@ import com.aiurt.boot.index.dto.MapDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.plan.entity.RepairPoolStationRel;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import io.swagger.annotations.ApiModelProperty;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.Collection;
 import java.util.List;
@@ -31,4 +33,11 @@ public interface RepairPoolStationRelMapper extends BaseMapper<RepairPoolStation
      * @return
      */
     List<MapDTO> selectStationToMapByPlanCode(List<String> planCodes);
+
+    /**
+     * 批量查询与给定的 repairPoolCodes 相关的站点信息
+     * @param repairPoolCodes 修理池编码列表
+     * @return 与给定的 repairPoolCodes 相关的站点信息列表
+     */
+    List<StationDTO> selectBatchStationList(@Param("repairPoolCodes") List<String> repairPoolCodes);
 }

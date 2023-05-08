@@ -39,6 +39,12 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @param condition
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "t2.org_code"),
+            @DataColumn(key = "stationName",value = "t4.station_code"),
+            @DataColumn(key = "majorName",value = "t6.major_code"),
+            @DataColumn(key = "systemName",value = "t6.subsystem_code")
+    })
     List<RepairTask> selectables(@Param("pageList") Page<RepairTask> pageList, @Param("condition") RepairTask condition);
 
 

@@ -6,6 +6,7 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.CodeManageDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCode;
+import com.aiurt.boot.plan.req.SelectPlanReq;
 import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
@@ -154,4 +155,17 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
             @DataColumn(key = "systemName",value = "rpc.subsystem_code")
     })
     List<RepairPool> getOverviewInfo(Date startDate, Date endDate);
+    /**
+     * 分页查询维修池中的维修任务。
+     * @param page 分页对象，包含当前页数、每页显示数量等分页信息
+     * @param selectPlanReq 查询条件对象，封装了查询所需的筛选参数，如起始时间、结束时间、状态等
+     * @return 返回一个维修池任务列表，包含符合查询条件的维修任务
+     */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "rpor.org_code"),
+            @DataColumn(key = "stationName",value = "rpsr.station_code"),
+            @DataColumn(key = "majorName",value = "rpc.major_code"),
+            @DataColumn(key = "systemName",value = "rpc.subsystem_code")
+    })
+    List<RepairPool> selectRepairPool(@Param("page")Page<RepairPool> page, @Param("selectPlanReq") SelectPlanReq selectPlanReq);
 }
