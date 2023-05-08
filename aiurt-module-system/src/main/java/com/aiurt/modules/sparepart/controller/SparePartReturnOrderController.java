@@ -7,7 +7,6 @@ import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
@@ -100,7 +99,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件退库-获取退入仓库查询条件",permissionUrl = "/sparepart/sparePartReturnOrder/list")
 	 @ApiOperation(value="备件退库-获取退入仓库查询条件", notes="备件退库-获取退入仓库查询条件")
 	 @GetMapping(value = "/selectList")
-	 @PermissionData(pageComponent = "sparePartsFor/back")
+	 //@PermissionData(pageComponent = "sparePartsFor/back")
 	 public Result<?> selectList(SparePartReturnOrder sparePartReturnOrder, HttpServletRequest req) {
 		 List<SparePartReturnOrder> list = sparePartReturnOrderService.selectList(null, sparePartReturnOrder);
 		 List<String> newList = list.stream().map(SparePartReturnOrder::getWarehouseName).collect(Collectors.toList());
