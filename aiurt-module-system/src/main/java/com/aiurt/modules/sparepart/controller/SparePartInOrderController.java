@@ -1,7 +1,6 @@
 package com.aiurt.modules.sparepart.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
@@ -76,7 +75,7 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件入库-获取保管仓库查询条件",permissionUrl = "/sparepart/sparePartInOrder/list")
 	@ApiOperation(value="备件入库-获取保管仓库查询条件", notes="备件入库-获取保管仓库查询条件")
 	@GetMapping(value = "/selectList")
-	@PermissionData(pageComponent = "sparePartsFor/SparePartInOrderList")
+	//@PermissionData(pageComponent = "sparePartsFor/SparePartInOrderList")
 	public Result<?> selectList(SparePartInOrder sparePartInOrder, HttpServletRequest req) {
 		List<SparePartInOrder> list = sparePartInOrderService.selectList(null, sparePartInOrder);
 		List<String> newList = list.stream().map(SparePartInOrder::getWarehouseName).collect(Collectors.toList());

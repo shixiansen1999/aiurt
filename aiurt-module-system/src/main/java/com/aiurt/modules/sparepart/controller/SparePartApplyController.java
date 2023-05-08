@@ -2,7 +2,6 @@ package com.aiurt.modules.sparepart.controller;
 
 import cn.hutool.core.collection.CollUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
@@ -93,7 +92,7 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件申领-获取保管仓库查询条件",permissionUrl = "/sparepart/sparePartApply/list")
 	 @ApiOperation(value="备件申领-获取保管仓库查询条件", notes="备件申领-获取保管仓库查询条件")
 	 @GetMapping(value = "/selectList")
-	 @PermissionData(pageComponent = "sparePartsFor/SparePartApplyList")
+	 //@PermissionData(pageComponent = "sparePartsFor/SparePartApplyList")
 	 public Result<?> selectList(SparePartApply sparePartApply,HttpServletRequest req) {
 		 List<SparePartApply> list = sparePartApplyService.selectList(null, sparePartApply);
 		 List<String> codeList = list.stream().map(SparePartApply::getWarehouseName).collect(Collectors.toList());
