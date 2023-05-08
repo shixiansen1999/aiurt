@@ -350,6 +350,46 @@ public class FaultInformationService {
         return monthList;
     }
 
+    /**
+     * 故障次数趋势图接口
+     * @param lineCode
+     * @return
+     */
+    public List<FaultMonthCountDTO> getLargeFaultMonthCount(String lineCode) {
+        List<FaultMonthCountDTO> faultMonthCountDTOList = new ArrayList<>();
+        //获取当前登录人的专业编码
+        List<String> majors = getCurrentLoginUserMajors();
+        int x = 5;
+        for (int i = 0; i <= x; i++) {
+            Integer sum = 0;
+            //创建一个新的系统故障单集合
+            List<FaultSystemMonthCountDTO> faultSystemMonthCountDTOList = new ArrayList<>();
+            //月份故障单
+            FaultMonthCountDTO faultMonthCountDTO = new FaultMonthCountDTO();
+            //获取最近半年月份，上一个月往前推半年
+            String month = FaultLargeDateUtil.getLast12Months(i);
+            String substring = month.substring(5, 7);
+            String changmonth = substring + "月";
+            faultMonthCountDTO.setMonth(changmonth);
+            //查询按系统分类好的并统计故障次数
+            List<FaultSystemMonthCountDTO> largeFaultMonthCount = faultInformationMapper.getLargeFaultMonthCount(month, lineCode, majors);
+            for (FaultSystemMonthCountDTO faultSystemCountDTO : largeFaultMonthCount) {
+                sum += faultSystemCountDTO.getFrequency();
+                //将名字改成系统+次数
+                if (ObjectUtil.isNotEmpty(faultSystemCountDTO.getSystemName())) {
+                    String name = faultSystemCountDTO.getSystemName() + " " + faultSystemCountDTO.getFrequency();
+                    faultSystemCountDTO.setSystemName(name);
+                }
+                faultSystemMonthCountDTOList.add(faultSystemCountDTO);
+            }
+            //将月份内的所有故障次数求和
+            faultMonthCountDTO.setSum(sum);
+            faultMonthCountDTO.setFaultSystemMonthCountDTOList(faultSystemMonthCountDTOList);
+            faultMonthCountDTOList.add(faultMonthCountDTO);
+        }
+        return faultMonthCountDTOList;
+    }
+
     public List<FaultDataStatisticsDTO> getYearFault(FaultDataStatisticsDTO faultDataStatisticsDTO) {
         //先获取用户管理的专业，根据专业筛选
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();

@@ -356,6 +356,28 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         group by f.sub_system_code,f.line_Code
     </select>
 
+    <select id="getLargeFaultMonthCount" resultType="com.aiurt.modules.fault.dto.FaultSystemMonthCountDTO">
+        SELECT cs.system_name, f.sub_system_code,f.line_code,count(*) as frequency
+        FROM fault f
+            LEFT JOIN cs_subsystem cs ON f.sub_system_code = cs.system_code
+        <where>
+            f.status > 2
+            <if test="month != null">
+                and DATE_FORMAT(f.approval_pass_time,'%Y-%m') = #{month}
+            </if>
+            <if test="lineCode != null and lineCode != ''">
+                and f.line_code  = #{lineCode}
+            </if>
+            <if test="majors != null and majors.size>0 ">
+                and f.major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by f.sub_system_code,f.line_Code
+    </select>
+
     <select id="getSystemFaultSum" resultType="com.aiurt.modules.fault.dto.FaultSystemTimesDTO">
         select cs.system_name,f.sub_system_code,f.line_code,f.happen_time,f.end_time,
         sum(TIMESTAMPDIFF(minute,f.happen_time,f.end_time)) as repairTime  from fault f
