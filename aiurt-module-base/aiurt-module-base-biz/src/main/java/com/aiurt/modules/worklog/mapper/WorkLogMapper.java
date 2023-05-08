@@ -7,6 +7,7 @@ import com.aiurt.common.result.AssortNumResult;
 import com.aiurt.common.result.LogCountResult;
 import com.aiurt.common.result.WorkLogDetailResult;
 import com.aiurt.common.result.WorkLogResult;
+import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.PatrolAppHomeParam;
@@ -120,5 +121,12 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      * @return
      */
     String getUnfinishedMatters(@Param("departList")List<String> departList);
+
+    /**
+     *
+     * @param code
+     * @return
+     */
+    List<CsStationPosition> queryPositionList(@Param("list") List<String> code);
 }
 

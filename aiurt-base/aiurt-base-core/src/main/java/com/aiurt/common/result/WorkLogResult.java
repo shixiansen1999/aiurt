@@ -313,4 +313,10 @@ public class WorkLogResult {
     private  String  orgId;
     @TableField(exist = false)
     private Boolean editFlag;
+
+    @ApiModelProperty(value = "站点编码，逗号隔开")
+    private String stationCode;
+
+    @ApiModelProperty(value = "位置编码，逗号隔开")
+    private String positionCode;
 }

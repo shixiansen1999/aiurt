@@ -22,6 +22,7 @@ import com.aiurt.common.util.*;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.worklog.constans.WorkLogConstans;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
@@ -172,6 +173,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setAssortNum(dto.getAssortNum());
         depot.setAssortContent(dto.getAssortContent());
         depot.setPatrolRepairContent(dto.getPatrolRepairContent());
+        depot.setStationCode(dto.getStationCode());
         depotMapper.insert(depot);
         dto.setId(depot.getId());
         //插入附件列表
@@ -602,14 +604,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         WorkLogDTO workLogDTO = new WorkLogDTO();
         BeanUtil.copyProperties(workLog,workLogDTO);
 
-        // 配合施工地点名称
-        if (StrUtil.isNotBlank(workLog.getAssortLocation())) {
-            List<String> locations = StrUtil.split(workLog.getAssortLocation(), ',', true, true);
-            String locationNames = locations.stream().map(location -> iSysBaseAPI.getPosition(location))
-                    .filter(name -> StrUtil.isNotBlank(name)).collect(Collectors.joining(","));
-            workLogDTO.setAssortLocationName(locationNames);
-        }
-
         // 所在班组名称，orgName当前存储的是班组的orgId
         if (StrUtil.isNotBlank(workLog.getOrgName())) {
             List<JSONObject> dept = iSysBaseAPI.queryDepartsByIds(workLog.getOrgName());
@@ -668,6 +662,40 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             workLogDTO.setSucceedName(realNames);
 
         }
+
+        // 配合施工地点名称
+        if (StrUtil.isNotBlank(workLog.getAssortLocation()) ||
+                (StrUtil.isBlank(workLog.getAssortLocation()) && StrUtil.isNotBlank(workLog.getStationCode()))) {
+            List<String> locations = new ArrayList<>();
+            if (StrUtil.isNotBlank(workLog.getAssortLocation())) {
+                locations = StrUtil.split(workLog.getAssortLocation(), ',', true, true);
+            }else {
+                locations = StrUtil.split(workLog.getStationCode(), ',', true, true);
+            }
+
+            String locationNames = locations.stream().map(location -> iSysBaseAPI.getPosition(location))
+                    .filter(name -> StrUtil.isNotBlank(name)).collect(Collectors.joining(","));
+            workLogDTO.setAssortLocationName(locationNames);
+        }
+
+        if (StrUtil.isBlank(workLogDTO.getAssortLocationName())) {
+            workLogDTO.setAssortLocationName(workLogDTO.getAssortLocation());
+        }
+
+        if (StrUtil.isNotBlank(workLog.getAssortLocation()) && !workLog.getAssortLocation().matches(".*[\\u4e00-\\u9fa5].*")) {
+            List<String> list = StrUtil.splitTrim(workLog.getAssortLocation(), ',');
+            if (CollUtil.isNotEmpty(list)) {
+                List<CsStationPosition> stationPositionList = baseMapper.queryPositionList(list);
+                if (CollUtil.isNotEmpty(stationPositionList)) {
+                    String stationcode = stationPositionList.stream().map(CsStationPosition::getStaionCode).collect(Collectors.joining(","));
+                    workLogDTO.setPositionCode(workLog.getAssortLocation());
+                    workLogDTO.setStationCode(stationcode);
+                }else {
+                    workLogDTO.setStationCode(workLog.getAssortLocation());
+                }
+            }
+        }
+
         return workLogDTO;
     }
 
@@ -836,6 +864,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setOtherWorkContent(dto.getOtherWorkContent());
         workLog.setNote(dto.getNote());
         workLog.setHandoverId(dto.getHandoverId());
+        workLog.setStationCode(dto.getStationCode());
+        workLog.setPositionCode(dto.getPositionCode());
         this.updateById(workLog);
         //删除原附件列表
         enclosureMapper.deleteByName(workLog.getId());

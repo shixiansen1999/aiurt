@@ -438,6 +438,7 @@ public class CommonServiceImpl implements ICommonService {
                 SelectTable selectTable = new SelectTable();
                 selectTable.setValue(csStation.getStationCode());
                 selectTable.setLabel(csStation.getStationName());
+                selectTable.setTitle(csStation.getStationName());
                 selectTable.setLevel(2);
                 selectTable.setKey(csStation.getId());
                 selectTable.setLineCode(lineCode);

@@ -17,11 +17,14 @@ import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.service.IFaultDeviceService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
+import com.aiurt.modules.largescream.dto.LargeFaultDataDatailDTO;
 import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
 import com.aiurt.modules.largescream.model.ReliabilityWorkTime;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
@@ -87,9 +90,7 @@ public class FaultInformationService {
 
         int count = 0;
 
-        List<Fault> faultList = faultInformationMapper.queryLargeFaultInformation(startDate, endDate, lineCode, majors);
-
-        List<Fault> faultList1 = faultInformationMapper.queryLargeFaultInformation(getTime(0), getTime(1), lineCode, majors);
+        List<Fault> faultList = faultInformationMapper.queryLargeFaultInformation(getTime(0), getTime(1), lineCode, majors);
 
         //总故障数
         if (CollUtil.isNotEmpty(faultList)) {
@@ -524,25 +525,15 @@ public class FaultInformationService {
         List<String> majors = getCurrentLoginUserMajors();
 
         int count = 0;
-        List<Fault> faultList = faultInformationMapper.queryFaultDataInformation(getTime(0), getTime(1),lineCode, majors);
-        List<Fault> faultList1 = faultInformationMapper.queryFaultDataInformation(null,null,lineCode, majors);
+        FaultDataAnalysisCountDTO countDTO = faultInformationMapper.countFaultDataInformation(lineCode, majors);
         //总故障数
-        if (CollUtil.isNotEmpty(faultList)) {
-            result.setSum(faultList.size());
+        if (Objects.nonNull(countDTO)) {
+            result.setSum(countDTO.getSum());
+            result.setUnSolve(countDTO.getUnSolve());
         } else {
             result.setSum(0);
         }
-        //未解决数
-        if (CollUtil.isNotEmpty(faultList1)) {
-            for (Fault fault : faultList1) {
-                if (!FaultStatusEnum.Close.getStatus().equals(fault.getStatus())) {
-                    count++;
-                }
-                result.setUnSolve(count);
-            }
-        } else {
-            result.setUnSolve(0);
-        }
+
         //本周已解决
         List<Fault> faultDataInformationweekSolve = faultInformationMapper.queryFaultDataInformationWeekSolve(weekStartDate, weekEndDate, lineCode, majors);
         if (CollUtil.isNotEmpty(faultDataInformationweekSolve)) {
@@ -584,7 +575,16 @@ public class FaultInformationService {
      * @param lineCode
      * @return
      */
-    public List<FaultLargeInfoDTO> getLargeFaultDataDatails(Integer boardTimeType, Integer faultModule, String lineCode) {
+    public IPage<FaultLargeInfoDTO> getLargeFaultDataDatails(LargeFaultDataDatailDTO largeFaultDataDatailDTO) {
+        Integer faultModule = largeFaultDataDatailDTO.getFaultModule();
+
+        Integer pageNo = largeFaultDataDatailDTO.getPageNo();
+        Integer pageSize = largeFaultDataDatailDTO.getPageSize();
+        Integer boardTimeType = largeFaultDataDatailDTO.getBoardTimeType();
+
+        String lineCode = largeFaultDataDatailDTO.getLineCode();
+
+
         FaultScreenModule faultScreenModule = new FaultScreenModule();
         //本周或本月时间
         String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
@@ -651,7 +651,9 @@ public class FaultInformationService {
                 break;
             default:
         }
-        List<FaultLargeInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataDatails(faultScreenModule);
+        // 分页
+        Page<FaultLargeInfoDTO> pageList = new Page<>(pageNo, pageSize);
+        List<FaultLargeInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataDatails(pageList, faultScreenModule);
         largeFaultDataInfo.stream().forEach(l -> {
             // 字典翻译
             String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream().filter(item -> item.getValue().equals(String.valueOf(l.getStatus()))).map(DictModel::getText).collect(Collectors.joining());
@@ -660,7 +662,7 @@ public class FaultInformationService {
             String faultModeName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_MODE_CODE).stream().filter(item -> item.getValue().equals(String.valueOf(l.getFaultModeCode()))).map(DictModel::getText).collect(Collectors.joining());
             l.setFaultModeName(faultModeName);
         });
-        return largeFaultDataInfo;
+        return pageList.setRecords(largeFaultDataInfo);
     }
 
 
