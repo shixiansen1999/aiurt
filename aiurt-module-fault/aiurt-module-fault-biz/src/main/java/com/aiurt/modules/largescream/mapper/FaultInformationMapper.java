@@ -57,7 +57,7 @@ public interface FaultInformationMapper {
      * @param majors
      * @return
      */
-    FaultDataAnalysisCountDTO countFaultDataInformation(@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+    FaultDataAnalysisCountDTO countFaultDataInformation(@Param("weekStartDate") Date weekStartDate,@Param("weekEndDate") Date weekEndDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
 
     /**

@@ -525,7 +525,7 @@ public class FaultInformationService {
         List<String> majors = getCurrentLoginUserMajors();
 
         int count = 0;
-        FaultDataAnalysisCountDTO countDTO = faultInformationMapper.countFaultDataInformation(lineCode, majors);
+        FaultDataAnalysisCountDTO countDTO = faultInformationMapper.countFaultDataInformation(getTime(0),getTime(1),lineCode, majors);
         //总故障数
         if (Objects.nonNull(countDTO)) {
             result.setSum(countDTO.getSum());
@@ -572,7 +572,7 @@ public class FaultInformationService {
     /**
      * 大屏-故障数据分析-故障数据统计详情
      *
-     * @param lineCode
+     * @param largeFaultDataDatailDTO
      * @return
      */
     public IPage<FaultLargeInfoDTO> getLargeFaultDataDatails(LargeFaultDataDatailDTO largeFaultDataDatailDTO) {
