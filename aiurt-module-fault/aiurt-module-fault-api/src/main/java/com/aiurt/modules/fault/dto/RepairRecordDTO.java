@@ -133,4 +133,10 @@ public class RepairRecordDTO extends DictEntity implements Serializable  {
     @ApiModelProperty(value = "处理方式:0维修，1委外维修，2委外送修")
     @Dict(dicCode = "usage_status")
     private Integer processing;
+
+    @ApiModelProperty(value = "故障设备：站点")
+    private String stationCode;
+
+    @ApiModelProperty(value = "故障设备：位置")
+    private String stationPositionCode;
 }
