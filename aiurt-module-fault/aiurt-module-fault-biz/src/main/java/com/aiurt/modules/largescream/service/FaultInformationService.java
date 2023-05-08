@@ -90,7 +90,7 @@ public class FaultInformationService {
 
         int count = 0;
 
-        List<Fault> faultList = faultInformationMapper.queryLargeFaultInformation(getTime(0), getTime(1), lineCode, majors);
+        List<Fault> faultList = faultInformationMapper.queryLargeFaultInformation(startDate, endDate, lineCode, majors);
 
         //总故障数
         if (CollUtil.isNotEmpty(faultList)) {
