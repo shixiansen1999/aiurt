@@ -236,4 +236,14 @@
     </if>
    order by create_time desc limit 1
     </select>
+
+    <select id="queryPositionList" resultType="com.aiurt.modules.position.entity.CsStationPosition">
+        select staion_code, position_code from cs_station_position where del_flag = 0
+        <if test="list != null and list.size() != 0">
+            and position_code in
+            <foreach collection="list" close=")" open="(" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
 </mapper>
