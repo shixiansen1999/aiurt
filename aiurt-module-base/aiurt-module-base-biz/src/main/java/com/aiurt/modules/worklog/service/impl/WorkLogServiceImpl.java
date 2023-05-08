@@ -1279,7 +1279,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public Boolean editFlag(Date  createTime,Integer  confirmStatus,Integer  checkStatus) {
         boolean edit = true;
-        Date date = new Date();
         //根据状态判断是否能编辑
         if (confirmStatus==1 || checkStatus==1){
             edit = false;
@@ -1304,12 +1303,12 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             String pmStart1 = today + " " + pmStart.getValue();
             String pmEnd1 = today + " " + pmEnd.getValue();
 
-            boolean isBeforeAmEnd = date.before(DateUtil.parse(amEnd1));
-            boolean isAfterAmStart = date.after(DateUtil.parse(amStart1));
+            boolean isBeforeAmEnd = createTime.before(DateUtil.parse(amEnd1));
+            boolean isAfterAmStart = createTime.after(DateUtil.parse(amStart1));
             boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
 
-            boolean isBeforePmEnd = date.before(DateUtil.parse(pmEnd1));
-            boolean isAfterPmStart = date.after(DateUtil.parse(pmStart1));
+            boolean isBeforePmEnd = createTime.before(DateUtil.parse(pmEnd1));
+            boolean isAfterPmStart = createTime.after(DateUtil.parse(pmStart1));
             boolean isEdit1 =  (isBeforePmEnd && isAfterPmStart);
 
             if (!isEdit && !isEdit1) {
