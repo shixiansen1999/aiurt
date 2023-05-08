@@ -706,4 +706,20 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
     <select id="getSumWorkTime" resultType="java.lang.String">
 			SELECT SUM(should_work_time) from reliability_work_time rwt WHERE system_code = #{systemCode}
     </select>
+
+    <select id="countFaultDataInformation" resultType="com.aiurt.modules.fault.dto.FaultDataAnalysisCountDTO">
+        SELECT count(*) as sum ,COUNT( CASE WHEN `status` !=12 and `status` >2 THEN 1 ELSE NULL END ) AS `un_solve` from fault
+        <where>
+            status > 2
+            <if test="lineCode != null and lineCode != ''">
+                and line_code  = #{lineCode}
+            </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

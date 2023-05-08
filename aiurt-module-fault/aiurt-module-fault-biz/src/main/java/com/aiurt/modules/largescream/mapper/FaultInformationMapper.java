@@ -50,6 +50,15 @@ public interface FaultInformationMapper {
     List<Fault> queryFaultDataInformation(@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
+     * 统计
+     * @param lineCode
+     * @param majors
+     * @return
+     */
+    FaultDataAnalysisCountDTO countFaultDataInformation(@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+
+
+    /**
      * 故障信息统计当天已解决
      * @param todayStartDate
      * @param todayEndDate

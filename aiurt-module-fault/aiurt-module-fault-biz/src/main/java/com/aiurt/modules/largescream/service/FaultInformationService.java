@@ -476,24 +476,15 @@ public class FaultInformationService {
         List<String> majors = getCurrentLoginUserMajors();
 
         int count = 0;
-        List<Fault> faultList = faultInformationMapper.queryFaultDataInformation(lineCode, majors);
+        FaultDataAnalysisCountDTO countDTO = faultInformationMapper.countFaultDataInformation(lineCode, majors);
         //总故障数
-        if (CollUtil.isNotEmpty(faultList)) {
-            result.setSum(faultList.size());
+        if (Objects.nonNull(countDTO)) {
+            result.setSum(countDTO.getSum());
+            result.setUnSolve(countDTO.getUnSolve());
         } else {
             result.setSum(0);
         }
-        //未解决数
-        if (CollUtil.isNotEmpty(faultList)) {
-            for (Fault fault : faultList) {
-                if (!FaultStatusEnum.Close.getStatus().equals(fault.getStatus())) {
-                    count++;
-                }
-                result.setUnSolve(count);
-            }
-        } else {
-            result.setUnSolve(0);
-        }
+
         //本周已解决
         List<Fault> faultDataInformationweekSolve = faultInformationMapper.queryFaultDataInformationWeekSolve(weekStartDate, weekEndDate, lineCode, majors);
         if (CollUtil.isNotEmpty(faultDataInformationweekSolve)) {
