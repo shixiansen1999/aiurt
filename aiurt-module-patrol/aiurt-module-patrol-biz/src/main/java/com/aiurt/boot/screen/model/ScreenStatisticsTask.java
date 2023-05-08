@@ -18,6 +18,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Accessors(chain = true)
 @ApiModel(value = "ScreenStatisticsTask", description = "大屏巡视模块-巡视数据统计任务列表对象")
 public class ScreenStatisticsTask {
+    @ApiModelProperty(value = "巡视任务id")
+    private java.lang.String taskId;
     /**
      * 任务编号
      */

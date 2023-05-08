@@ -190,6 +190,10 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
                 and date_format(f.happen_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.startDate},'%Y-%m-%d')
                 and date_format(f.happen_time ,'%Y-%m-%d') &lt;= date_format(#{condition.endDate},'%Y-%m-%d')
             </if>
+            <if test="condition.moonSolve != null and condition.moonSolve !=''">
+                and date_format(f.approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.startDate},'%Y-%m-%d')
+                and date_format(f.approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{condition.endDate},'%Y-%m-%d')
+            </if>
             <if test="condition.weekAdd != null and condition.weekAdd !=''">
                 and f.status > 2
             </if>
@@ -444,6 +448,10 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         select * from fault
         <where>
             status > 2
+            <if test="weekStartDate!=null and weekEndDate!=null">
+                and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{weekStartDate},'%Y-%m-%d')
+                and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{weekEndDate},'%Y-%m-%d')
+            </if>
             <if test="lineCode != null and lineCode != ''">
                 and line_code  = #{lineCode}
             </if>

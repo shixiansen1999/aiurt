@@ -1892,20 +1892,18 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<String> idList = StrUtil.splitTrim(ids, ",");
         for (String id : idList) {
             PrintPatrolTaskDTO taskDTO = new PrintPatrolTaskDTO();
-            PatrolTaskParam patrolTaskParam = new PatrolTaskParam();
-            patrolTaskParam.setId(id);
-            PatrolTaskParam taskParam = patrolTaskMapper.selectBasicInfo(patrolTaskParam);
-            Assert.notNull(taskParam, "未找到对应记录！");
-            taskDTO.setId(taskParam.getId());
-            taskDTO.setTitle(taskParam.getName());
+            PatrolTask patrolTask = patrolTaskMapper.selectById(id);
+            Assert.notNull(patrolTask, "未找到对应记录！");
+            taskDTO.setId(patrolTask.getId());
+            taskDTO.setTitle(patrolTask.getName());
             // 站点信息
-            List<PatrolTaskStationDTO> stationInfo = patrolTaskStationMapper.selectStationByTaskCode(taskParam.getCode());
+            List<PatrolTaskStationDTO> stationInfo = patrolTaskStationMapper.selectStationByTaskCode(patrolTask.getCode());
             taskDTO.setStationNames(stationInfo.stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.joining()));
-            if (StrUtil.isNotEmpty(taskParam.getEndUserId())) {
-                taskDTO.setUserName(patrolTaskMapper.getUsername(taskParam.getEndUserId()));
+            if (StrUtil.isNotEmpty(patrolTask.getEndUserId())) {
+                taskDTO.setUserName(patrolTaskMapper.getUsername(patrolTask.getEndUserId()));
             }
-            taskDTO.setSubmitTime(DateUtil.format(taskParam.getSubmitTime(),"yyyy-MM-dd HH:mm:ss"));
-            taskDTO.setSignUrl(patrolTaskParam.getSignUrl());
+            taskDTO.setSubmitTime(DateUtil.format(patrolTask.getSubmitTime(),"yyyy-MM-dd HH:mm:ss"));
+            taskDTO.setSignUrl(patrolTask.getSignUrl());
 
             //巡视单内容
 
@@ -1951,7 +1949,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             }
             taskDTO.setPrintStationDTOList(stationDTOS);
             List<String> collect = stationInfo.stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.toList());
-            taskDTO.setTitle(CollUtil.join(collect, ",") + taskParam.getName() + "巡视表");
+            taskDTO.setTitle(CollUtil.join(collect, ",") + patrolTask.getName() + "巡视表");
             arrayList.add(taskDTO);
         }
         return arrayList;

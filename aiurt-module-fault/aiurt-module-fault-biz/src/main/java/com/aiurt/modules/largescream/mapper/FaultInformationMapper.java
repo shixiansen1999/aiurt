@@ -42,11 +42,13 @@ public interface FaultInformationMapper {
 
     /**
      *  数据分析-故障数据统计总数和未解决
+     * @param weekStartDate
+     * @param weekEndDate
      * @param lineCode
      * @param majors
      * @return
      */
-    List<Fault> queryFaultDataInformation(@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+    List<Fault> queryFaultDataInformation(@Param("weekStartDate") Date weekStartDate,@Param("weekEndDate") Date weekEndDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
      * 故障信息统计当天已解决
