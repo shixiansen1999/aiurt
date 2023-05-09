@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.fault.dto.*;
@@ -20,8 +19,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsWorkAreaModel;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysUserRoleModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -215,8 +214,12 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 //获取填报人组织机构
                 Fault one = faultMap.getOrDefault(faultDatum.getCode(), new Fault());
 
-                List<String> list = faultCountMapper.getShiftLeader(one.getFaultApplicant(), RoleConstant.FOREMAN);
+                /*List<String> list = faultCountMapper.getShiftLeader(one.getFaultApplicant(), RoleConstant.FOREMAN);
                 String teamUser = list.stream().map(String::valueOf).collect(Collectors.joining(","));
+                faultDatum.setTeamUser(teamUser);*/
+                //根据站点找工区再找到班组获取工班长
+                List<String> list = getForemanByWorkArea(one.getStationCode());
+                String teamUser = CollUtil.isNotEmpty(list) ? list.stream().map(String::valueOf).collect(Collectors.joining(",")) : "";
                 faultDatum.setTeamUser(teamUser);
             }
 
@@ -277,9 +280,14 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 Fault one = faultMap.getOrDefault(faultDatum.getCode(), new Fault());
 
                 //stream 流 过滤 填报人的组织机构 string
-                List<String> list = faultCountMapper.getShiftLeader(one.getFaultApplicant(), RoleConstant.FOREMAN);
+                 /*List<String> list = faultCountMapper.getShiftLeader(one.getFaultApplicant(), RoleConstant.FOREMAN);
                 String teamUser = list.stream().map(String::valueOf).collect(Collectors.joining(","));
+                faultDatum.setTeamUser(teamUser);*/
+                //根据站点找工区再找到班组获取工班长
+                List<String> list = getForemanByWorkArea(one.getStationCode());
+                String teamUser = CollUtil.isNotEmpty(list) ? list.stream().map(String::valueOf).collect(Collectors.joining(",")) : "";
                 faultDatum.setTeamUser(teamUser);
+
             }
         }
         page.setRecords(faultData);
@@ -366,8 +374,12 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 //获取填报人组织机构
                 Fault one = faultMap.getOrDefault(faultDatum.getCode(), new Fault());
 
-                List<String> list = faultCountMapper.getShiftLeader(one.getFaultApplicant(), RoleConstant.FOREMAN);
+                 /*List<String> list = faultCountMapper.getShiftLeader(one.getFaultApplicant(), RoleConstant.FOREMAN);
                 String teamUser = list.stream().map(String::valueOf).collect(Collectors.joining(","));
+                faultDatum.setTeamUser(teamUser);*/
+                //根据站点找工区再找到班组获取工班长
+                List<String> list = getForemanByWorkArea(one.getStationCode());
+                String teamUser = CollUtil.isNotEmpty(list) ? list.stream().map(String::valueOf).collect(Collectors.joining(",")) : "";
                 faultDatum.setTeamUser(teamUser);
             }
         }
@@ -389,4 +401,17 @@ public class FaultCountServiceImpl implements IFaultCountService {
         return page.setRecords(mainFaultCondition);
     }
 
+    /**获取设备所在站点对应关联的班组的工班长*/
+    private List<String> getForemanByWorkArea(String stationCode) {
+        List<String> users = new ArrayList<>();
+        List<CsWorkAreaModel> workAreaByCode = sysBaseApi.getWorkAreaByCode(stationCode);
+        if (CollUtil.isNotEmpty(workAreaByCode)) {
+            for (CsWorkAreaModel csWorkAreaModel : workAreaByCode) {
+                List<String> orgCodeList = csWorkAreaModel.getOrgCodeList();
+                String realName = sysBaseApi.getRealNameByOrgCodeAndRoleCode(orgCodeList, Collections.singletonList(RoleConstant.FOREMAN));
+                users.add(realName);
+            }
+        }
+        return users;
+    }
 }
