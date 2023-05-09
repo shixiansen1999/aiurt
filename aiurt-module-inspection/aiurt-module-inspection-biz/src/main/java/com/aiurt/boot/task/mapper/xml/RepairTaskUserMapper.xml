@@ -19,4 +19,11 @@
         </where>
        GROUP BY t1.id
     </select>
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO repair_task_user (id,repair_task_code, user_id, name)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id},#{item.repairTaskCode}, #{item.userId}, #{item.name})
+        </foreach>
+    </insert>
 </mapper>

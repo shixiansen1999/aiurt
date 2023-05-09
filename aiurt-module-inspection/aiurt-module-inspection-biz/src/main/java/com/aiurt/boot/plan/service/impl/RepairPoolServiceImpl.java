@@ -26,6 +26,7 @@ import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
+import com.aiurt.boot.task.service.IRepairTaskStationRelService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
@@ -39,6 +40,7 @@ import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -140,6 +142,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             return page;
         }
 
+        boolean filter = GlobalThreadLocal.setDataFilter(false);
+
         // 获取所有 repairPool 的 code 列表
         List<String> repairPoolCodes = result.stream().map(RepairPool::getCode).collect(Collectors.toList());
 
@@ -161,7 +165,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (CollUtil.isNotEmpty(result)) {
             processResultWithThreadPool(result, cycleTypeMap, inspectionTaskStateMap, workTypeMap, allRepairPoolOrgRels, allRepairPoolStationRels);
         }
-
+        GlobalThreadLocal.setDataFilter(filter);
         // 返回带有查询结果的分页对象
         return page.setRecords(result);
     }
@@ -531,6 +535,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         check(assignDTO);
 
         List<String> ids = assignDTO.getIds();
+
         for (String id : ids) {
             // 修改检修计划状态
             RepairPool repairPool = baseMapper.selectById(id);
@@ -547,82 +552,24 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             repairPool.setStatus(InspectionConstant.TO_BE_CONFIRMED);
             baseMapper.updateById(repairPool);
 
-            // 添加任务
-            RepairTask repairTask = new RepairTask();
-            repairTask.setRepairPoolId(id);
-            repairTask.setYear(DateUtil.year(ObjectUtil.isNotEmpty(repairPool.getStartTime()) ? repairPool.getStartTime() : new Date()));
-            repairTask.setType(repairPool.getType());
-            repairTask.setIsOutsource(repairPool.getIsOutsource());
-            repairTask.setSource(assignDTO.getIsManual().equals(InspectionConstant.NO_IS_MANUAL) ? InspectionConstant.REGULAR_ASSIGNMENT : InspectionConstant.MANUAL_ASSIGNMENT);
-            repairTask.setCode(repairPool.getCode());
-            repairTask.setWeeks(repairPool.getWeeks());
-            repairTask.setStartTime(assignDTO.getStartTime());
-            repairTask.setEndTime(assignDTO.getEndTime());
-            repairTask.setStatus(InspectionConstant.TO_BE_CONFIRMED);
-            repairTask.setIsConfirm(repairPool.getIsConfirm());
-            repairTask.setIsReceipt(repairPool.getIsReceipt());
-            repairTask.setWorkType(assignDTO.getWorkType());
-            repairTask.setPlanOrderCode(assignDTO.getPlanOrderCode());
-            repairTask.setPlanOrderCodeUrl(assignDTO.getPlanOrderCodeUrl());
-
-            // 指派人信息
-            repairTask.setAssignUserId(manager.checkLogin().getId());
-            repairTask.setAssignUserName(manager.checkLogin().getRealname());
-            repairTask.setAssignTime(new Date());
-
-            // 保存检修任务信息
+            // 添加检修任务
+            RepairTask repairTask = createRepairTask(assignDTO, repairPool);
             repairTaskMapper.insert(repairTask);
 
             // 保存站点关联信息
-            List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(
-                    new LambdaQueryWrapper<RepairPoolStationRel>()
-                            .eq(RepairPoolStationRel::getRepairPoolCode, repairPool.getCode())
-                            .eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-            if (CollUtil.isNotEmpty(repairPoolStationRels)) {
-                for (RepairPoolStationRel repairPoolStationRel : repairPoolStationRels) {
-                    RepairTaskStationRel repairTaskStationRel = new RepairTaskStationRel();
-                    repairTaskStationRel.setLineCode(repairPoolStationRel.getLineCode());
-                    repairTaskStationRel.setStationCode(repairPoolStationRel.getStationCode());
-                    repairTaskStationRel.setPositionCode(repairPoolStationRel.getPositionCode());
-                    repairTaskStationRel.setRepairTaskCode(repairPool.getCode());
-                    repairTaskStationRelMapper.insert(repairTaskStationRel);
-                }
-            }
+            saveRepairTaskStationRel(repairPool);
 
             // 保存检修人信息
-            List<String> userIds = assignDTO.getUserIds();
-            if (CollUtil.isNotEmpty(userIds)) {
-                userIds.forEach(userId -> {
-                    LoginUser userById = sysBaseApi.getUserById(userId);
-                    if (ObjectUtil.isNotEmpty(userById)) {
-                        RepairTaskUser repairTaskUser = new RepairTaskUser();
-                        repairTaskUser.setRepairTaskCode(repairPool.getCode());
-                        repairTaskUser.setUserId(userById.getId());
-                        repairTaskUser.setName(userById.getRealname());
-                        repairTaskUserMapper.insert(repairTaskUser);
-                    }
-                });
-            }
+            saveRepairTaskUser(assignDTO, repairPool);
 
             // 保存组织机构信息
-            List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
-                    new LambdaQueryWrapper<RepairPoolOrgRel>()
-                            .eq(RepairPoolOrgRel::getRepairPoolCode, repairPool.getCode())
-                            .eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-            if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
-                for (RepairPoolOrgRel repairPoolOrgRel : repairPoolOrgRels) {
-                    RepairTaskOrgRel repairTaskOrgRel = new RepairTaskOrgRel();
-                    repairTaskOrgRel.setRepairTaskCode(repairPool.getCode());
-                    repairTaskOrgRel.setOrgCode(repairPoolOrgRel.getOrgCode());
-                    repairTaskOrgRelMapper.insert(repairTaskOrgRel);
-                }
-            }
+            saveRepairTaskOrgRel(repairPool);
 
             // 生成检修标准关联、检修设备清单、检修结果信息
             this.generate(repairPool, repairTask.getId(), repairPool.getCode());
 
             // 发送消息给对用的检修人
-            this.sendMessage(userIds, repairPool.getCode());
+            this.sendMessage(assignDTO.getUserIds(), repairPool.getCode());
         }
         return Result.ok();
     }
@@ -708,7 +655,6 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                         .eq(RepairPoolRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         if (CollUtil.isNotEmpty(repairPoolRels)) {
-
             List<String> staIds = repairPoolRels.stream().map(RepairPoolRel::getRepairPoolStaId).collect(Collectors.toList());
             List<RepairPoolCode> repairPoolCodes = repairPoolCodeMapper.selectList(
                     new LambdaQueryWrapper<RepairPoolCode>()
@@ -1741,6 +1687,129 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 .orElse(Collections.emptyList())
                 .stream()
                 .collect(Collectors.groupingBy(StationDTO::getRepairPoolCode));
+    }
+
+    //
+
+    /**
+     * 创建并返回一个新的 RepairTask 对象
+     * @param assignDTO    AssignDTO对象
+     * @param repairPool   RepairPool对象
+     * @return
+     */
+    private RepairTask createRepairTask(AssignDTO assignDTO, RepairPool repairPool) {
+        // 添加任务
+        RepairTask repairTask = new RepairTask();
+        repairTask.setRepairPoolId(repairPool.getId());
+        repairTask.setYear(DateUtil.year(ObjectUtil.isNotEmpty(repairPool.getStartTime()) ? repairPool.getStartTime() : new Date()));
+        repairTask.setType(repairPool.getType());
+        repairTask.setIsOutsource(repairPool.getIsOutsource());
+        repairTask.setSource(assignDTO.getIsManual().equals(InspectionConstant.NO_IS_MANUAL) ? InspectionConstant.REGULAR_ASSIGNMENT : InspectionConstant.MANUAL_ASSIGNMENT);
+        repairTask.setCode(repairPool.getCode());
+        repairTask.setWeeks(repairPool.getWeeks());
+        repairTask.setStartTime(assignDTO.getStartTime());
+        repairTask.setEndTime(assignDTO.getEndTime());
+        repairTask.setStatus(InspectionConstant.TO_BE_CONFIRMED);
+        repairTask.setIsConfirm(repairPool.getIsConfirm());
+        repairTask.setIsReceipt(repairPool.getIsReceipt());
+        repairTask.setWorkType(assignDTO.getWorkType());
+        repairTask.setPlanOrderCode(assignDTO.getPlanOrderCode());
+        repairTask.setPlanOrderCodeUrl(assignDTO.getPlanOrderCodeUrl());
+
+        // 指派人信息
+        repairTask.setAssignUserId(manager.checkLogin().getId());
+        repairTask.setAssignUserName(manager.checkLogin().getRealname());
+        repairTask.setAssignTime(new Date());
+
+        return repairTask;
+    }
+
+    /**
+     * 保存站点关联信息。
+     *
+     * @param repairPool  RepairPool对象
+     */
+    private void saveRepairTaskStationRel(RepairPool repairPool) {
+        List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(
+                new LambdaQueryWrapper<RepairPoolStationRel>()
+                        .eq(RepairPoolStationRel::getRepairPoolCode, repairPool.getCode())
+                        .eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isNotEmpty(repairPoolStationRels)) {
+            // 创建一个 RepairTaskStationRel 对象的列表，用于批量保存
+            List<RepairTaskStationRel> repairTaskStationRelList = new ArrayList<>();
+
+            for (RepairPoolStationRel repairPoolStationRel : repairPoolStationRels) {
+                RepairTaskStationRel repairTaskStationRel = new RepairTaskStationRel();
+                repairTaskStationRel.setLineCode(repairPoolStationRel.getLineCode());
+                repairTaskStationRel.setStationCode(repairPoolStationRel.getStationCode());
+                repairTaskStationRel.setPositionCode(repairPoolStationRel.getPositionCode());
+                repairTaskStationRel.setRepairTaskCode(repairPool.getCode());
+                repairTaskStationRel.setId(String.valueOf(IdWorker.getId()));
+                // 将新创建的 RepairTaskStationRel 对象添加到列表中
+                repairTaskStationRelList.add(repairTaskStationRel);
+            }
+
+            // 在循环结束后批量保存所有 RepairTaskStationRel 对象
+            repairTaskStationRelMapper.batchInsert(repairTaskStationRelList);
+        }
+    }
+
+    /**
+     * 保存检修人信息。
+     *
+     * @param assignDTO   AssignDTO对象
+     * @param repairPool  RepairPool对象
+     */
+    private void saveRepairTaskUser(AssignDTO assignDTO, RepairPool repairPool) {
+        List<String> userIds = assignDTO.getUserIds();
+        if (CollUtil.isNotEmpty(userIds)) {
+            // 创建一个 RepairTaskUser 对象的列表，用于批量保存
+            List<RepairTaskUser> repairTaskUserList = new ArrayList<>();
+
+            userIds.forEach(userId -> {
+                LoginUser userById = sysBaseApi.getUserById(userId);
+                if (ObjectUtil.isNotEmpty(userById)) {
+                    RepairTaskUser repairTaskUser = new RepairTaskUser();
+                    repairTaskUser.setRepairTaskCode(repairPool.getCode());
+                    repairTaskUser.setUserId(userById.getId());
+                    repairTaskUser.setName(userById.getRealname());
+                    repairTaskUser.setId(String.valueOf(IdWorker.getId()));
+                    // 将新创建的 RepairTaskUser 对象添加到列表中
+                    repairTaskUserList.add(repairTaskUser);
+                }
+            });
+
+            // 在循环结束后批量保存所有 RepairTaskUser 对象
+            repairTaskUserMapper.batchInsert(repairTaskUserList);
+        }
+    }
+
+    /**
+     * 保存组织机构信息。
+     *
+     * @param repairPool  RepairPool对象
+     */
+    private void saveRepairTaskOrgRel(RepairPool repairPool) {
+        List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
+                new LambdaQueryWrapper<RepairPoolOrgRel>()
+                        .eq(RepairPoolOrgRel::getRepairPoolCode, repairPool.getCode())
+                        .eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
+            // 创建一个 RepairTaskOrgRel 对象的列表，用于批量保存
+            List<RepairTaskOrgRel> repairTaskOrgRelList = new ArrayList<>();
+
+            for (RepairPoolOrgRel repairPoolOrgRel : repairPoolOrgRels) {
+                RepairTaskOrgRel repairTaskOrgRel = new RepairTaskOrgRel();
+                repairTaskOrgRel.setRepairTaskCode(repairPool.getCode());
+                repairTaskOrgRel.setOrgCode(repairPoolOrgRel.getOrgCode());
+                repairTaskOrgRel.setId(String.valueOf(IdWorker.getId()));
+                // 将新创建的 RepairTaskOrgRel 对象添加到列表中
+                repairTaskOrgRelList.add(repairTaskOrgRel);
+            }
+
+            // 在循环结束后批量保存所有 RepairTaskOrgRel 对象
+            repairTaskOrgRelMapper.batchInsert(repairTaskOrgRelList);
+        }
     }
 
 }

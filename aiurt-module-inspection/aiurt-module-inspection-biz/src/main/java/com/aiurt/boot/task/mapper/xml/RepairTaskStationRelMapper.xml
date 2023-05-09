@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.RepairTaskStationRelMapper">
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO repair_task_station_rel (id,line_code, station_code, position_code, repair_task_code)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id}, #{item.lineCode}, #{item.stationCode}, #{item.positionCode}, #{item.repairTaskCode})
+        </foreach>
+    </insert>
     <select id="selectStationToMapByPlanCode" resultType="com.aiurt.boot.index.dto.MapDTO">
         select
         rtsr.repair_task_code as `value`,

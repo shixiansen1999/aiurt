@@ -25,4 +25,10 @@ public interface RepairTaskStationRelMapper extends BaseMapper<RepairTaskStation
      * @return
      */
     List<MapDTO> selectStationToMapByPlanCode(List<String> planCodes);
+
+    /**
+     * 批量新增
+     * @param repairTaskStationRelList
+     */
+    void batchInsert(List<RepairTaskStationRel> repairTaskStationRelList);
 }
