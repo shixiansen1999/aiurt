@@ -83,6 +83,8 @@ public class NightWorkLogAutoAdd implements Job {
                 depot.setLogTime(DateUtil.parse(DateUtil.today(), "yyyy-MM-dd"));
                 depot.setDelFlag(0);
                 workLogMapper.insert(depot);
+                //1为白班，2为晚班
+                workLogService.sendMessage(sysDepartModel.getId(),date,2);
             }
         }
 

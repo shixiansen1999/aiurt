@@ -13,4 +13,25 @@ WHERE
 ORDER BY
 	r.date DESC
     </select>
+
+    <select id="getWorkUserToday" resultType="com.aiurt.modules.schedule.entity.ScheduleRecord">
+		SELECT
+		r.item_id,r.user_id
+		FROM
+		schedule_record r
+		left join schedule_item si on si.id = r.item_id
+		WHERE
+		r.del_flag = 0 and si.is_rest_day != 0
+		<if test="flag != null and flag ==1" >
+			and date_format(r.date ,'%Y-%m-%d') = date_sub(date_format(#{date} ,'%Y-%m-%d'),interval 1 day)
+		</if>
+		<if test="flag != null and flag ==2" >
+			and date_format(r.date ,'%Y-%m-%d') = date_format(#{date} ,'%Y-%m-%d')
+		</if>
+		and date_format(si.start_time ,'%Y-%m-%d %H:%i:%s') &gt;= date_format(#{date} ,'%Y-%m-%d %H:%i:%s')
+		and date_format(si.end_time ,'%Y-%m-%d %H:%i:%s') &lt;= date_format(#{date} ,'%Y-%m-%d %H:%i:%s')
+		AND r.user_id IN ( SELECT id FROM sys_user WHERE org_id = #{orgId} AND del_flag = 0 )
+		ORDER BY
+		r.date DESC
+    </select>
 </mapper>
