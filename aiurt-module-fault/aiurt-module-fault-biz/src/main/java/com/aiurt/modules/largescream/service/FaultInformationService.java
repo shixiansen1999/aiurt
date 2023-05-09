@@ -92,6 +92,8 @@ public class FaultInformationService {
 
         List<Fault> faultList = faultInformationMapper.queryLargeFaultInformation(startDate, endDate, lineCode, majors);
 
+        List<Fault> faultList1 = faultInformationMapper.queryLargeFaultInformation(getTime(0), getTime(1), lineCode, majors);
+
         //总故障数
         if (CollUtil.isNotEmpty(faultList)) {
             result.setSum(faultList.size());
@@ -526,14 +528,20 @@ public class FaultInformationService {
 
         int count = 0;
         FaultDataAnalysisCountDTO countDTO = faultInformationMapper.countFaultDataInformation(getTime(0),getTime(1),lineCode, majors);
+        FaultDataAnalysisCountDTO countDTO1 = faultInformationMapper.countFaultDataInformation(null,null,lineCode, majors);
         //总故障数
         if (Objects.nonNull(countDTO)) {
             result.setSum(countDTO.getSum());
-            result.setUnSolve(countDTO.getUnSolve());
         } else {
             result.setSum(0);
         }
 
+        //未修复数
+        if (Objects.nonNull(countDTO1)){
+            result.setUnSolve(countDTO1.getUnSolve());
+        }else {
+            result.setUnSolve(0);
+        }
         //本周已解决
         List<Fault> faultDataInformationweekSolve = faultInformationMapper.queryFaultDataInformationWeekSolve(weekStartDate, weekEndDate, lineCode, majors);
         if (CollUtil.isNotEmpty(faultDataInformationweekSolve)) {
