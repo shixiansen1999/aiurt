@@ -1,20 +1,16 @@
 package com.aiurt.boot.task.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.task.dto.*;
+import com.aiurt.boot.task.dto.PatrolTaskOrganizationDTO;
+import com.aiurt.boot.task.dto.PatrolTaskStationDTO;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
-import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.util.CollectionUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -104,7 +100,7 @@ public class PatrolTaskThreadService implements Callable<PatrolTaskParam> {
                 patrolTaskParam.setUserInfoName(userInfoName);
             }
 
-            //巡视单内容
+            /*//巡视单内容
             if (ObjectUtil.isNotEmpty(patrolTaskParam.getHavePrint()) && patrolTaskParam.getHavePrint()) {
                 List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(patrolTaskParam.getId());
                 List<PrintStationDTO> stationDTOS = new ArrayList<>();
@@ -150,7 +146,7 @@ public class PatrolTaskThreadService implements Callable<PatrolTaskParam> {
                 List<PatrolTaskStationDTO> stationInfo = patrolTaskParam.getStationInfo();
                 List<String> collect = stationInfo.stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.toList());
                 patrolTaskParam.setTitle(CollUtil.join(collect, ",") + patrolTaskParam.getName() + "巡视表");
-            }
+            }*/
         }
         catch (Exception e) {
             throw e;

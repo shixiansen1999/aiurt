@@ -1934,7 +1934,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                                 c.setCheckUserName(userName);
 
                                 PrintDetailDTO printDetailDTO = new PrintDetailDTO();
-                                printDetailDTO.setContent(c.getContent() + ":" + c.getQualityStandard());
+                                printDetailDTO.setContent(
+                                        Optional.ofNullable(c.getQualityStandard())
+                                                .map(qs -> c.getContent() + ":" + qs)
+                                                .orElse(c.getContent())
+                                );
                                 printDetailDTO.setResult(Convert.toStr(c.getCheckResult()));
                                 printDetailDTO.setRemark(c.getRemark());
                                 printDetailList.add(printDetailDTO);
