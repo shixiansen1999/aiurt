@@ -936,6 +936,14 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return 人员账号用逗号隔开
      */
     public String getUserNameByOrgCodeAndRoleCode(List<String> orgCode, List<String> roleCode);
+    /**
+     * 根据部门，角色编码查询人员姓名
+     *
+     * @param orgCode  组织机构编码
+     * @param roleCode 角色编码
+     * @return 人员账号用逗号隔开
+     */
+    public String getRealNameByOrgCodeAndRoleCode(List<String> orgCode, List<String> roleCode);
 
     /**
      * 根据站点获取工区信息
