@@ -69,6 +69,12 @@
         <if test="out.text!=null and out.text!=''">
             and (t8.realname like concat('%',  #{out.text}, '%')  or t1.`name` like concat('%', #{out.text}, '%'))
         </if>
+             <if test="out.orgCodes!= null and out.orgCodes.size()!= 0">
+                and t5.org_code in
+                <foreach collection="out.orgCodes" open="(" separator="," close=")" item="item">
+                    #{item}
+                </foreach>
+            </if>
         order by spare_part_out_order.create_time desc
 
     </select>

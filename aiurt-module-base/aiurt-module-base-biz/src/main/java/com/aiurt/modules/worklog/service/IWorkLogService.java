@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -142,5 +143,13 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @return
      */
     Result<String> getUnfinishedMatters();
+    /**
+     * 判断是否能编辑
+     * @param createTime
+     * @param confirmStatus
+     * @param checkStatus
+     * @return
+     * */
+    Boolean editFlag(Date createTime, Integer  confirmStatus, Integer  checkStatus);
 }
 

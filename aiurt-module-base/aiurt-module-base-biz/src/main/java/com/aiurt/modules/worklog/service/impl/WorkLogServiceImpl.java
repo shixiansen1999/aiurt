@@ -18,13 +18,11 @@ import com.aiurt.common.enums.WorkLogConfirmStatusEnum;
 import com.aiurt.common.enums.WorkLogStatusEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.result.*;
-import com.aiurt.common.util.ArchiveUtils;
-import com.aiurt.common.util.PdfUtil;
-import com.aiurt.common.util.RoleAdditionalUtils;
-import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.common.util.*;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.worklog.constans.WorkLogConstans;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
@@ -106,8 +104,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
     @Value("${support.path.exportWorkLogPath}")
     private String exportPath;
-
-    private String schedule = "1.对工区及材料库进行卫生清洁，2.对各站设备进行检修" ;
     /**
      * 新增工作日志
      * @param dto
@@ -157,6 +153,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
         depot.setOtherWorkContent(dto.getOtherWorkContent());
         depot.setNote(dto.getNote());
+        depot.setSchedule(dto.getSchedule());
         depot.setHandoverId(dto.getHandoverId());
 
         depot.setSucceedId(dto.getSucceedId());
@@ -176,7 +173,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setAssortNum(dto.getAssortNum());
         depot.setAssortContent(dto.getAssortContent());
         depot.setPatrolRepairContent(dto.getPatrolRepairContent());
+        depot.setStationCode(dto.getStationCode());
         depotMapper.insert(depot);
+        dto.setId(depot.getId());
         //插入附件列表
         if (ObjectUtil.isNotEmpty(dto.getUrlList())) {
             String[] urlList = dto.getUrlList().split(",");
@@ -337,7 +336,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
            // record.setAntiepidemicWork(stringBuffer.toString());
 
-            record.setSchedule(schedule);
 
             StringBuffer stringBuffer2 = new StringBuffer();
             if (WorkLogConstans.IS.equals(record.getIsEmergencyDisposal())) {
@@ -431,40 +429,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
         for (WorkLogResult record : records) {
             //判断是否能编辑
-            Date date = new Date();
-            Date createTime = record.getCreateTime();
-            if (record.getConfirmStatus()==1 || record.getCheckStatus()==1){
-                record.setEditFlag(false);
-            }else {
-                record.setEditFlag(true);
-            }
-            //控制在9点半之后、5点半之后编辑按钮隐藏
-            if (ObjectUtil.isNotEmpty(createTime)) {
-                SysParamModel sysParamModel1 = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_AM_STOPEDIT);
-                SysParamModel sysParamModel2 = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_PM_STOPEDIT);
-                if (ObjectUtil.isNotEmpty(sysParamModel1) && ObjectUtil.isNotEmpty(sysParamModel2)) {
-                    String today = DateUtil.today();
-                    String amStart = today + " " + "08:00:00";
-                    String amEnd = today + " " + sysParamModel1.getValue();
-                    String pmStart = today + " " + "16:00:00";
-                    String pmEnd = today + " " + sysParamModel2.getValue();
-
-                    boolean am = createTime.equals(DateUtil.parse(amStart));
-                    if (am) {
-                        boolean isBeforeAmEnd = date.before(DateUtil.parse(amEnd));
-                        boolean isAfterAmStart = date.after(DateUtil.parse(amStart));
-                        boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
-                        record.setEditFlag(isEdit);
-                    }
-                    boolean pm = createTime.equals(DateUtil.parse(pmStart));
-                    if (pm) {
-                        boolean isBeforePmEnd = date.before(DateUtil.parse(pmEnd));
-                        boolean isAfterPmStart = date.after(DateUtil.parse(pmStart));
-                        boolean isEdit2 =  (isBeforePmEnd && isAfterPmStart);
-                        record.setEditFlag(isEdit2);
-                    }
-                }
-            }
+            Boolean flag = editFlag(record.getCreateTime(), record.getConfirmStatus(), record.getCheckStatus());
+            record.setEditFlag(flag);
 
             if (departMap!=null && stationTeamIdMap!=null){
                 String id = departMap.get(record.getSubmitOrgId());
@@ -568,23 +534,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             }
             //获取参与人员
             record.setUserList(users);
-            //防疫相关工作
-           // StringBuffer stringBuffer = new StringBuffer();
-//            if (WorkLogConstans.IS.equals(record.getIsDisinfect())) {
-//                stringBuffer.append("完成工区消毒；");
-//            }else {stringBuffer.append("未完成工区消毒；");}
-
-//            if (WorkLogConstans.IS.equals(record.getIsClean())) {
-//                stringBuffer.append("完成工区卫生打扫；");
-//            }else { stringBuffer.append("未完成工区卫生打扫；");}
-
-//            if (WorkLogConstans.NORMAL.equals(record.getIsAbnormal())) {
-//                stringBuffer.append("班组上岗人员体温正常。");
-//            }else { stringBuffer.append("班组上岗人员体温异常。");}
-
-            //record.setAntiepidemicWork(stringBuffer.toString());
-
-            record.setSchedule(schedule);
 
             StringBuffer stringBuffer2 = new StringBuffer();
             if (WorkLogConstans.IS.equals(record.getIsEmergencyDisposal())) {
@@ -655,14 +604,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         WorkLogDTO workLogDTO = new WorkLogDTO();
         BeanUtil.copyProperties(workLog,workLogDTO);
 
-        // 配合施工地点名称
-        if (StrUtil.isNotBlank(workLog.getAssortLocation())) {
-            List<String> locations = StrUtil.split(workLog.getAssortLocation(), ',', true, true);
-            String locationNames = locations.stream().map(location -> iSysBaseAPI.getPosition(location))
-                    .filter(name -> StrUtil.isNotBlank(name)).collect(Collectors.joining(","));
-            workLogDTO.setAssortLocationName(locationNames);
-        }
-
         // 所在班组名称，orgName当前存储的是班组的orgId
         if (StrUtil.isNotBlank(workLog.getOrgName())) {
             List<JSONObject> dept = iSysBaseAPI.queryDepartsByIds(workLog.getOrgName());
@@ -721,6 +662,40 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             workLogDTO.setSucceedName(realNames);
 
         }
+
+        // 配合施工地点名称
+        if (StrUtil.isNotBlank(workLog.getAssortLocation()) ||
+                (StrUtil.isBlank(workLog.getAssortLocation()) && StrUtil.isNotBlank(workLog.getStationCode()))) {
+            List<String> locations = new ArrayList<>();
+            if (StrUtil.isNotBlank(workLog.getAssortLocation())) {
+                locations = StrUtil.split(workLog.getAssortLocation(), ',', true, true);
+            }else {
+                locations = StrUtil.split(workLog.getStationCode(), ',', true, true);
+            }
+
+            String locationNames = locations.stream().map(location -> iSysBaseAPI.getPosition(location))
+                    .filter(name -> StrUtil.isNotBlank(name)).collect(Collectors.joining(","));
+            workLogDTO.setAssortLocationName(locationNames);
+        }
+
+        if (StrUtil.isBlank(workLogDTO.getAssortLocationName())) {
+            workLogDTO.setAssortLocationName(workLogDTO.getAssortLocation());
+        }
+
+        if (StrUtil.isNotBlank(workLog.getAssortLocation()) && !workLog.getAssortLocation().matches(".*[\\u4e00-\\u9fa5].*")) {
+            List<String> list = StrUtil.splitTrim(workLog.getAssortLocation(), ',');
+            if (CollUtil.isNotEmpty(list)) {
+                List<CsStationPosition> stationPositionList = baseMapper.queryPositionList(list);
+                if (CollUtil.isNotEmpty(stationPositionList)) {
+                    String stationcode = stationPositionList.stream().map(CsStationPosition::getStaionCode).collect(Collectors.joining(","));
+                    workLogDTO.setPositionCode(workLog.getAssortLocation());
+                    workLogDTO.setStationCode(stationcode);
+                }else {
+                    workLogDTO.setStationCode(workLog.getAssortLocation());
+                }
+            }
+        }
+
         return workLogDTO;
     }
 
@@ -864,6 +839,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setFaultContent(dto.getFaultContent());
         workLog.setRepairContent(dto.getRepairContent());
         workLog.setPatrolContent(dto.getPatrolContent());
+        workLog.setSchedule(dto.getSchedule());
         if (dto.getStatus() != null) {
             workLog.setStatus(1);
             workLog.setSubmitTime(new Date());
@@ -888,6 +864,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setOtherWorkContent(dto.getOtherWorkContent());
         workLog.setNote(dto.getNote());
         workLog.setHandoverId(dto.getHandoverId());
+        workLog.setStationCode(dto.getStationCode());
+        workLog.setPositionCode(dto.getPositionCode());
         this.updateById(workLog);
         //删除原附件列表
         enclosureMapper.deleteByName(workLog.getId());
@@ -1325,7 +1303,58 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             workLog.setContent("无");
         }
         //workLog.setAntiepidemicWork(stringBuffer.toString());
-        workLog.setSchedule(schedule);
         return workLog;
+    }
+
+
+    @Override
+    public Boolean editFlag(Date  createTime,Integer  confirmStatus,Integer  checkStatus) {
+        boolean edit = true;
+        //根据状态判断是否能编辑
+        if (confirmStatus==1 || checkStatus==1){
+            edit = false;
+        }
+        //根据配置是否需要控制在指定时间端内开放编辑按钮，其余时间隐藏
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_EDIT);
+        boolean value = "1".equals(paramModel.getValue());
+        if (edit && value) {
+            SysParamModel amStart = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_AM_STARTEDIT);
+            SysParamModel amEnd = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_AM_STOPEDIT);
+            SysParamModel pmStart = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_PM_STARTEDIT);
+            SysParamModel pmEnd = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_PM_STOPEDIT);
+
+            validateTimeParam(amStart, "早上开始编辑时间");
+            validateTimeParam(amEnd, "早上停止编辑时间");
+            validateTimeParam(pmStart, "下午开始编辑时间");
+            validateTimeParam(pmEnd, "下午停止编辑时间");
+
+            String today = DateUtil.today();
+            String amStart1 = today + " " + amStart.getValue();
+            String amEnd1 = today + " " + amEnd.getValue();
+            String pmStart1 = today + " " + pmStart.getValue();
+            String pmEnd1 = today + " " + pmEnd.getValue();
+
+            boolean isBeforeAmEnd = createTime.before(DateUtil.parse(amEnd1));
+            boolean isAfterAmStart = createTime.after(DateUtil.parse(amStart1));
+            boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
+
+            boolean isBeforePmEnd = createTime.before(DateUtil.parse(pmEnd1));
+            boolean isAfterPmStart = createTime.after(DateUtil.parse(pmStart1));
+            boolean isEdit1 =  (isBeforePmEnd && isAfterPmStart);
+
+            if (!isEdit && !isEdit1) {
+                edit = false;
+            }
+        }
+
+        return edit;
+    }
+
+    private void validateTimeParam(SysParamModel param, String paramName) {
+        if (ObjectUtil.isEmpty(param)) {
+            throw new AiurtBootException("工作日志" + paramName + "没有配置");
+        } else if (!TimeUtil.isLegalDate(param.getValue().length(), param.getValue(), "HH:mm:ss")) {
+            throw new AiurtBootException("工作日志" + paramName + "格式不正确");
+        }
     }
 }

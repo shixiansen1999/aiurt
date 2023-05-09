@@ -35,5 +35,7 @@ public class SysUserTeamDTO {
     @ApiModelProperty(value = "工资编号")
     private String salaryCode;
 
+    @ApiModelProperty(value = "班次名称")
+    private String scheduleItemName;
 
 }

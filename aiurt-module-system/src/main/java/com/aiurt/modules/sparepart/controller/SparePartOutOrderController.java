@@ -7,7 +7,6 @@ import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
@@ -73,7 +72,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
    @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询备件出库",permissionUrl = "/sparepart/sparePartOutOrder/list")
    @ApiOperation(value="spare_part_out_order-分页列表查询", notes="spare_part_out_order-分页列表查询")
    @GetMapping(value = "/list")
-   @PermissionData(pageComponent = "sparePartsFor/SparePartOutOrderList")
+  // @PermissionData(pageComponent = "sparePartsFor/SparePartOutOrderList")
    public Result<IPage<SparePartOutOrder>> queryPageList(SparePartOutOrder sparePartOutOrder,
                                   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
@@ -93,7 +92,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
     @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件出库-获取出库仓库查询条件",permissionUrl = "/sparepart/sparePartOutOrder/list")
     @ApiOperation(value="备件出库-获取出库仓库查询条件", notes="备件出库-获取出库仓库查询条件")
     @GetMapping(value = "/selectList")
-    @PermissionData(pageComponent = "sparePartsFor/SparePartOutOrderList")
+    //@PermissionData(pageComponent = "sparePartsFor/SparePartOutOrderList")
     public Result<?> selectList(SparePartOutOrder sparePartOutOrder, HttpServletRequest req) {
         List<SparePartOutOrder> list = sparePartOutOrderService.selectList(null, sparePartOutOrder);
         List<String> newList = list.stream().map(SparePartOutOrder::getWarehouseName).collect(Collectors.toList());

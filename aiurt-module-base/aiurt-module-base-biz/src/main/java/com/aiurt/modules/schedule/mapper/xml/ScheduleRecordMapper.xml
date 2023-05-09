@@ -321,6 +321,7 @@
     <select id="getTodayOndutyDetail" resultType="com.aiurt.modules.schedule.dto.SysUserTeamDTO">
         SELECT
         sr.user_id AS userId,
+        sr.item_name AS scheduleItemName,
         su.realname AS realName,
         su.username,
         su.avatar,

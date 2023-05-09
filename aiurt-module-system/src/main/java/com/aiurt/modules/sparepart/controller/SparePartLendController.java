@@ -7,7 +7,6 @@ import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
@@ -75,7 +74,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询备件借入",permissionUrl = "/sparepart/sparePartLend/list")
 	@ApiOperation(value="spare_part_lend-分页列表查询", notes="spare_part_lend-分页列表查询")
 	@GetMapping(value = "/list")
-	@PermissionData(pageComponent = "sparePartsFor/SparePartLendList")
+	//@PermissionData(pageComponent = "sparePartsFor/SparePartLendList")
 	public Result<IPage<SparePartLend>> queryPageList(SparePartLend sparePartLend,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
@@ -96,7 +95,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件借出-获取仓库查询条件",permissionUrl = "/sparepart/sparePartLend/list")
 	 @ApiOperation(value="备件借出-获取仓库查询条件", notes="备件借出-获取仓库查询条件")
 	 @GetMapping(value = "/selectList")
-	 @PermissionData(pageComponent = "sparePartsFor/SparePartLendList")
+	 //@PermissionData(pageComponent = "sparePartsFor/SparePartLendList")
 	 public Result<?> selectList(SparePartLend sparePartLend, HttpServletRequest req) {
 		 List<SparePartLend> list = sparePartLendService.selectList(null, sparePartLend);
 		 List<String> backList = list.stream().map(SparePartLend::getBackWarehouseName).collect(Collectors.toList());

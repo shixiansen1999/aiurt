@@ -346,43 +346,10 @@ public class WorkLogController {
     @GetMapping(value = "/queryDetail")
     public Result<WorkLogDTO> queryDetail(@RequestParam String id) {
         Result<WorkLogDTO> result = new Result<WorkLogDTO>();
-        Date date = new Date();
         WorkLogDTO detailById = workLogDepotService.getDetailById(id);
-        Date createTime = detailById.getCreateTime();
-        if (detailById.getConfirmStatus()==1 || detailById.getCheckStatus()==1){
-            detailById.setEditFlag(false);
-        }else {
-            detailById.setEditFlag(true);
-        }
-        //控制在9点半之后、5点半之后编辑按钮隐藏
-        if (ObjectUtil.isNotEmpty(createTime)) {
-            SysParamModel sysParamModel1 = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_AM_STOPEDIT);
-            SysParamModel sysParamModel2 = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_PM_STOPEDIT);
-            if (ObjectUtil.isNotEmpty(sysParamModel1) && ObjectUtil.isNotEmpty(sysParamModel2)) {
-                String today = DateUtil.today();
-                String amStart = today + " " + "08:00:00";
-                String amEnd = today + " " + sysParamModel1.getValue();
-                String pmStart = today + " " + "16:00:00";
-                String pmEnd = today + " " + sysParamModel2.getValue();
-
-                boolean am = createTime.equals(DateUtil.parse(amStart));
-                if (am) {
-                    boolean isBeforeAmEnd = date.before(DateUtil.parse(amEnd));
-                    boolean isAfterAmStart = date.after(DateUtil.parse(amStart));
-                    boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
-                    detailById.setEditFlag(isEdit);
-                }
-                boolean pm = createTime.equals(DateUtil.parse(pmStart));
-                if (pm) {
-                    boolean isBeforePmEnd = date.before(DateUtil.parse(pmEnd));
-                    boolean isAfterPmStart = date.after(DateUtil.parse(pmStart));
-                    boolean isEdit2 =  (isBeforePmEnd && isAfterPmStart);
-                    detailById.setEditFlag(isEdit2);
-                }
-            }
-
-        }
-
+        //判断是否能编辑
+        Boolean flag = workLogDepotService.editFlag(detailById.getCreateTime(), detailById.getConfirmStatus(), detailById.getCheckStatus());
+        detailById.setEditFlag(flag);
         //result.setResult(detailById);
         return Result.ok(detailById);
     }

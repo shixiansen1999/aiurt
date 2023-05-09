@@ -20,6 +20,12 @@
             <if test="condition.outTimeBegin != null and condition.outTimeEnd != null">
                 and Date(stock_out_order_level2.out_time) &gt;= #{condition.outTimeBegin} and Date(stock_out_order_level2.out_time) &lt;= #{condition.outTimeEnd}
             </if>
+            <if test="condition.userOrgCodes != null and condition.userOrgCodes.size() > 0">
+                and spsi.org_code in
+                <foreach collection="condition.userOrgCodes" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         order by stock_out_order_level2.create_time desc
     </select>

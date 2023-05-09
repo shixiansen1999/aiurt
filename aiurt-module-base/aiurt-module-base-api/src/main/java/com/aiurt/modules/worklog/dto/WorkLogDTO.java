@@ -196,5 +196,7 @@ public class WorkLogDTO extends WorkLogResult {
     /**未完成事项*/
     @ApiModelProperty(value = "未完成事项")
     private  String  unfinishedMatters;
-
+    /**工作安排*/
+    @ApiModelProperty(value = "工作安排")
+    private String schedule;
 }
