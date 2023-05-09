@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +37,8 @@ import java.util.regex.Pattern;
 public class PatrolCheckResultController extends BaseController<PatrolCheckResult, IPatrolCheckResultService> {
 	@Autowired
 	private IPatrolCheckResultService patrolCheckResultService;
+	@Autowired
+	private ISysBaseAPI sysBaseApi;
 
 	/**
 	 * 分页列表查询
@@ -127,10 +130,9 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 					if(matcher.find())
 					{
 						updateWrapper.set(PatrolCheckResult::getWriteValue,patrolCheckDTO.getWriteValue()).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,patrolCheckDTO.getId());
-					}
-					else
-					{
-						return Result.error("填写有误，请重新填写");
+					} else {
+						String regex = sysBaseApi.translateDict("regex", patrolCheckDTO.getRegular());
+						return Result.error(regex);
 					}
 				}
 			 	else
