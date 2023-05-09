@@ -10,8 +10,6 @@ import com.aiurt.boot.plan.req.SelectPlanReq;
 import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
-import com.aiurt.common.aspect.annotation.DataColumn;
-import com.aiurt.common.aspect.annotation.DataPermission;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;

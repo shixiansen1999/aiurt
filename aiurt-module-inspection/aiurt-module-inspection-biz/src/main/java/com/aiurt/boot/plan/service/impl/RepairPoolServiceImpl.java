@@ -3,7 +3,6 @@ package com.aiurt.boot.plan.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
@@ -26,11 +25,10 @@ import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
-import com.aiurt.boot.task.service.IRepairTaskStationRelService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.exception.AiurtNoDataException;
+import com.aiurt.common.util.AsyncThreadPoolExecutorUtil;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.UpdateHelperUtils;
@@ -53,7 +51,6 @@ import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -569,7 +566,13 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             this.generate(repairPool, repairTask.getId(), repairPool.getCode());
 
             // 发送消息给对用的检修人
-            this.sendMessage(assignDTO.getUserIds(), repairPool.getCode());
+            // 提交任务到线程池
+            AsyncThreadPoolExecutorUtil.getExecutor().submitTask(() -> {
+                // 调用发送消息方法
+                this.sendMessage(assignDTO.getUserIds(), repairPool.getCode());
+                return null;
+            });
+
         }
         return Result.ok();
     }
