@@ -1,6 +1,7 @@
 package com.aiurt.modules.sparepart.service.impl;
 
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.RoleConstant;
@@ -35,6 +36,7 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +49,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * @Description: spare_part_apply
@@ -87,6 +90,16 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
      */
     @Override
     public List<SparePartApply> selectList(Page page, SparePartApply sparePartApply){
+        //权限过滤
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departModels = sysBaseApi.getDepartByUserId(user.getId());
+        if(!user.getRoleCodes().contains("admin")&&departModels.size()==0){
+            return CollUtil.newArrayList();
+        }
+        if(!user.getRoleCodes().contains("admin")&&departModels.size()!=0){
+            List<String> orgCodes = departModels.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+            sparePartApply.setOrgCodes(orgCodes);
+        }
         return sparePartApplyMapper.readAll(page,sparePartApply);
     }
 

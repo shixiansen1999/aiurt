@@ -1,6 +1,7 @@
 package com.aiurt.boot.index.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -12,24 +13,15 @@ import com.aiurt.boot.index.dto.*;
 import com.aiurt.boot.index.mapper.IndexPlanMapper;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
-import com.aiurt.boot.plan.entity.RepairPool;
-import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
+import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.task.entity.RepairTask;
+import com.aiurt.boot.task.entity.RepairTaskStationRel;
 import com.aiurt.boot.task.entity.RepairTaskUser;
 import com.aiurt.boot.task.mapper.*;
-import com.aiurt.common.aspect.annotation.DisableDataFilter;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.boot.task.mapper.RepairTaskMapper;
-import com.aiurt.boot.task.mapper.RepairTaskStationRelMapper;
-import com.aiurt.boot.task.mapper.RepairTaskUserMapper;
-import com.aiurt.common.aspect.annotation.DisableDataFilter;
 import com.aiurt.common.util.DateUtils;
-import com.aiurt.config.datafilter.constant.DataPermRuleType;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
-import com.aiurt.config.datafilter.utils.ContextUtil;
-import com.aiurt.config.datafilter.utils.ContextUtil;
-import com.aiurt.config.datafilter.utils.SqlBuilderUtil;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
@@ -37,14 +29,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import liquibase.pro.packaged.S;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.DictModel;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -479,27 +468,19 @@ public class IndexPlanService {
 
         if (CollUtil.isNotEmpty(result)) {
             // 获取检查周期类型字典映射
-            Map<String, String> inspectionCycleTypeMap = sysBaseApi.queryEnableDictItemsByCode(DictConstant.INSPECTION_CYCLE_TYPE)
-                    .stream()
-                    .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+            Map<String, String> inspectionCycleTypeMap = getInspectionCycleTypeMap();
 
             // 获取检查任务状态字典映射
-            Map<String, String> inspectionTaskStateMap = sysBaseApi.queryEnableDictItemsByCode(DictConstant.INSPECTION_TASK_STATE)
-                    .stream()
-                    .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+            Map<String, String> inspectionTaskStateMap = getInspectionTaskStateMap();
 
             // 获取任务编码列表
             List<String> taskCodes = result.stream().map(RepairPoolDetailsDTO::getCode).collect(Collectors.toList());
 
             // 根据任务编码获取组织机构编码映射
-            Map<String, String> orgCodeMap = repairTaskMapper.selectOrgByCode(taskCodes)
-                    .stream()
-                    .collect(Collectors.toMap(MapDTO::getValue, MapDTO::getText, (v1, v2) -> v1));
+            Map<String, String> orgCodeMap = getOrgCodeMap(taskCodes);
 
             // 根据任务编码获取站点编码映射
-            Map<String, String> stationCodeMap = repairTaskStationRelMapper.selectStationToMapByPlanCode(taskCodes)
-                    .stream()
-                    .collect(Collectors.toMap(MapDTO::getValue, MapDTO::getText, (v1, v2) -> v1));
+            Map<String, String> stationCodeMap = getStationCodeMap(taskCodes);
 
             // 填充维修任务池详细信息
             for (RepairPoolDetailsDTO repairPool : result) {
@@ -600,4 +581,67 @@ public class IndexPlanService {
         }
         return result;
     }
+
+    /**
+     * 获取检查周期类型字典映射
+     * @return 映射的 Map
+     */
+    private Map<String, String> getInspectionCycleTypeMap() {
+        List<DictModel> dictItems = sysBaseApi.queryEnableDictItemsByCode(DictConstant.INSPECTION_CYCLE_TYPE);
+        if (dictItems == null || dictItems.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return dictItems.stream()
+                .filter(dictModel -> dictModel.getValue() != null && dictModel.getText() != null)
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+    }
+
+    /**
+     * 获取检查任务状态字典映射
+     * @return 映射的 Map
+     */
+    private Map<String, String> getInspectionTaskStateMap() {
+        List<DictModel> dictItems = sysBaseApi.queryEnableDictItemsByCode(DictConstant.INSPECTION_TASK_STATE);
+        if (dictItems == null || dictItems.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return dictItems.stream()
+                .filter(dictModel -> dictModel.getValue() != null && dictModel.getText() != null)
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
+    }
+
+    /**
+     * 根据任务编码获取组织机构编码映射
+     * @param poolCodes 任务编码列表
+     * @return 映射的 Map
+     */
+    private Map<String, String> getOrgCodeMap(List<String> poolCodes) {
+        if (poolCodes == null || poolCodes.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return orgRelMapper.selectOrgByCode(poolCodes)
+                .stream()
+                .filter(mapDTO -> mapDTO.getValue() != null && mapDTO.getText() != null)
+                .collect(Collectors.toMap(MapDTO::getValue, MapDTO::getText, (v1, v2) -> v1));
+    }
+
+    /**
+     * 根据任务编码获取站点编码映射
+     * @param poolCodes 任务编码列表
+     * @return 映射的 Map
+     */
+    private Map<String, String> getStationCodeMap(List<String> poolCodes) {
+        if (poolCodes == null || poolCodes.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return repairPoolStationRelMapper.selectStationToMapByPlanCode(poolCodes)
+                .stream()
+                .filter(mapDTO -> mapDTO.getValue() != null && mapDTO.getText() != null)
+                .collect(Collectors.toMap(MapDTO::getValue, MapDTO::getText, (v1, v2) -> v1));
+    }
+
 }

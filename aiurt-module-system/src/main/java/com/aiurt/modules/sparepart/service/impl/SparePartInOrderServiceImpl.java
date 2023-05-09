@@ -37,6 +37,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
@@ -92,6 +93,16 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
      */
     @Override
     public List<SparePartInOrder> selectList(Page page, SparePartInOrder sparePartInOrder){
+        //权限过滤
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departModels = sysBaseApi.getDepartByUserId(user.getId());
+        if(!user.getRoleCodes().contains("admin")&&departModels.size()==0){
+            return CollUtil.newArrayList();
+        }
+        if(!user.getRoleCodes().contains("admin")&&departModels.size()!=0){
+            List<String> orgCodes = departModels.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+            sparePartInOrder.setOrgCodes(orgCodes);
+        }
          return sparePartInOrderMapper.readAll(page,sparePartInOrder);
     }
 

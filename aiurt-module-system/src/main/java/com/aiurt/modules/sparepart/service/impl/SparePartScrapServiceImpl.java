@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -12,8 +13,10 @@ import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartScrap;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartScrapMapper;
+import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
@@ -27,6 +30,7 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +67,8 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
     private ISparePartInOrderService sparePartInOrderService;
     @Autowired
     private SparePartStockMapper sparePartStockMapper;
+    @Autowired
+    private SparePartStockInfoMapper sparePartStockInfoMapper;
     /**
      * 查询列表
      * @param page
@@ -71,6 +77,21 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
      */
     @Override
     public List<SparePartScrap> selectList(Page page, SparePartScrap sparePartScrap){
+        //权限过滤
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departModels = sysBaseApi.getDepartByUserId(user.getId());
+        if(!user.getRoleCodes().contains("admin")&&departModels.size()==0){
+            return CollUtil.newArrayList();
+        }
+        if(!user.getRoleCodes().contains("admin")&&departModels.size()!=0){
+            List<String> orgCodes = departModels.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+            List<SparePartStockInfo> stockInfoList = sparePartStockInfoMapper.selectList(new LambdaQueryWrapper<SparePartStockInfo>().in(SparePartStockInfo::getOrgCode, orgCodes));
+            if(ObjectUtil.isEmpty(stockInfoList)){
+                return CollUtil.newArrayList();
+            }
+            List<String> wareHouses = stockInfoList.stream().map(SparePartStockInfo::getWarehouseCode).collect(Collectors.toList());
+            sparePartScrap.setWareHouses(wareHouses);
+        }
         List<SparePartScrap> sparePartScraps = sparePartScrapMapper.readAll(page, sparePartScrap);
         sparePartScraps.forEach(e->{
             if (StrUtil.isNotBlank(e.getCreateBy())){

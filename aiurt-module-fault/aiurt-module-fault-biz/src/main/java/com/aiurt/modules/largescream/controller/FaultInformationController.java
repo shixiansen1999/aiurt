@@ -128,6 +128,20 @@ public class FaultInformationController {
     }
 
     /**
+     * 故障次数趋势图接口
+     * @param lineCode
+     * @return
+     */
+    @AutoLog(value = "综合大屏-故障次数趋势图", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "综合大屏-故障次数趋势图", notes = "综合大屏-故障次数趋势图")
+    @RequestMapping(value = "/getLargeFaultMonthCount", method = RequestMethod.GET)
+    public Result<List<FaultMonthCountDTO>> getLargeFaultMonthCount(@ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode)
+    {
+        List<FaultMonthCountDTO> largeFaultMonthCount = faultInformationService.getLargeFaultMonthCount(lineCode);
+        return Result.ok(largeFaultMonthCount);
+    }
+
+    /**
      * 故障数据统计接口
      * @param boardTimeType
      * @param lineCode

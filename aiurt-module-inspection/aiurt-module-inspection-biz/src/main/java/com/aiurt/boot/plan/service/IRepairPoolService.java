@@ -22,8 +22,9 @@ import java.util.List;
  */
 public interface IRepairPoolService extends IService<RepairPool> {
     /**
-     * 检修计划池列表查询
-     * @return
+     * 分页查询检修计划池中的检修任务。
+     * @param selectPlanReq 查询条件对象，封装了查询所需的筛选参数，如起始时间、结束时间、状态等
+     * @return 返回一个检修计划池任务列表，包含符合查询条件的检修任务
      */
     IPage<RepairPool> queryList(SelectPlanReq selectPlanReq);
 
@@ -94,11 +95,11 @@ public interface IRepairPoolService extends IService<RepairPool> {
     List<StandardNewDTO> queryStandardList(String code, String majorCode, String systemCode);
 
     /**
-     * 分页查询手工下发任务列表
+     * 分页查询手工下发的检修任务列表
      *
-     * @param page
-     * @param manualTaskReq
-     * @return
+     * @param page          分页对象，包含当前页码和每页显示的记录数
+     * @param manualTaskReq 查询条件对象，包含检修任务单号、检修类型、状态等筛选条件
+     * @return IPage<RepairPool> 结果对象，包含分页后的检修任务列表及分页信息
      */
     IPage<RepairPool> listPage(Page<RepairPool> page, ManualTaskReq manualTaskReq);
 

@@ -2,4 +2,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.RepairTaskUserMapper">
 
+    <select id="selectTaskIdWithUserNames" resultType="com.aiurt.boot.task.dto.RepairTaskUserNameDTO">
+        SELECT
+        t1.id,
+        (SELECT group_concat(DISTINCT t2.name) FROM repair_task_user AS t2 WHERE t1.`code` = t2.repair_task_code AND t2.del_flag = 0) AS userNames,
+        (SELECT group_concat(DISTINCT t2.user_id) FROM repair_task_user AS t2 WHERE t1.`code` = t2.repair_task_code AND t2.del_flag = 0) AS userIds
+        FROM
+        repair_task t1
+        <where>
+        <if test="repairTaskIds != null and repairTaskIds.size() > 0">
+             t1.id IN
+            <foreach item="id" index="index" collection="repairTaskIds" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        </where>
+       GROUP BY t1.id
+    </select>
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO repair_task_user (id,repair_task_code, user_id, name)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id},#{item.repairTaskCode}, #{item.userId}, #{item.name})
+        </foreach>
+    </insert>
 </mapper>

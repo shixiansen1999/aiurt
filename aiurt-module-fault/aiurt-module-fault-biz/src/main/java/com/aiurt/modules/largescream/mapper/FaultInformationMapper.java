@@ -43,11 +43,13 @@ public interface FaultInformationMapper {
 
     /**
      *  数据分析-故障数据统计总数和未解决
+     * @param weekStartDate
+     * @param weekEndDate
      * @param lineCode
      * @param majors
      * @return
      */
-    List<Fault> queryFaultDataInformation(@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+    List<Fault> queryFaultDataInformation(@Param("weekStartDate") Date weekStartDate,@Param("weekEndDate") Date weekEndDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
      * 统计
@@ -55,7 +57,7 @@ public interface FaultInformationMapper {
      * @param majors
      * @return
      */
-    FaultDataAnalysisCountDTO countFaultDataInformation(@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+    FaultDataAnalysisCountDTO countFaultDataInformation(@Param("weekStartDate") Date weekStartDate,@Param("weekEndDate") Date weekEndDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
 
     /**
@@ -151,6 +153,15 @@ public interface FaultInformationMapper {
      * @return
      */
     List<FaultSystemTimeDTO> getLargeFaultTime(@Param("month") String month, @Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+
+    /**
+     * 获取子系统下故障次数
+     * @param month
+     * @param lineCode
+     * @param majors
+     * @return
+     */
+    List<FaultSystemMonthCountDTO> getLargeFaultMonthCount(@Param("month") String month, @Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
      * 按系统分类获取子系统下故障维修时长总数

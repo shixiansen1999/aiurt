@@ -4,13 +4,17 @@ import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
+import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCode;
+import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
 import org.jeecg.common.system.api.ISysBaseAPI;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -34,12 +38,36 @@ public class PoolThreadService implements Callable<RepairPool> {
 
     private RepairPoolMapper repairPoolMapper;
 
-    public PoolThreadService(RepairPool repairPool, ISysBaseAPI sysBaseApi, InspectionManager manager, RepairPoolStationRelMapper repairPoolStationRelMapper, RepairPoolMapper repairPoolMapper) {
+    private Map<String, String> cycleTypeMap;
+
+    private Map<String, String> inspectionTaskStateMap;
+
+    private Map<String, String> workTypeMap;
+
+    private List<RepairPoolOrgRel> allRepairPoolOrgRels;
+
+    private Map<String, List<StationDTO>> allRepairPoolStationRels;
+
+    public PoolThreadService(RepairPool repairPool,
+                             ISysBaseAPI sysBaseApi,
+                             InspectionManager manager,
+                             RepairPoolStationRelMapper repairPoolStationRelMapper,
+                             RepairPoolMapper repairPoolMapper,
+                             Map<String, String> cycleTypeMap,
+                             Map<String, String> inspectionTaskStateMap,
+                             Map<String, String> workTypeMap,
+                             List<RepairPoolOrgRel> allRepairPoolOrgRels,
+                             Map<String, List<StationDTO>> allRepairPoolStationRels) {
         this.repairPool = repairPool;
         this.sysBaseApi = sysBaseApi;
         this.manager = manager;
         this.repairPoolStationRelMapper = repairPoolStationRelMapper;
         this.repairPoolMapper = repairPoolMapper;
+        this.cycleTypeMap = cycleTypeMap;
+        this.inspectionTaskStateMap = inspectionTaskStateMap;
+        this.workTypeMap = workTypeMap;
+        this.allRepairPoolOrgRels = allRepairPoolOrgRels;
+        this.allRepairPoolStationRels = allRepairPoolStationRels;
     }
 
     /**
@@ -67,15 +95,21 @@ public class PoolThreadService implements Callable<RepairPool> {
             }
 
             // 组织机构
-            repairPool.setOrgName(manager.translateOrg(repairPoolMapper.selectOrgByCode(planCode)));
+            List<String> orgList = allRepairPoolOrgRels.stream()
+                    .filter(orgRel -> orgRel.getRepairPoolCode().equals(repairPool.getCode()))
+                    .map(RepairPoolOrgRel::getOrgCode)
+                    .collect(Collectors.toList());
+            repairPool.setOrgName(manager.translateOrg(orgList));
+
             // 站点
-            repairPool.setStationName(manager.translateStation(repairPoolStationRelMapper.selectStationList(planCode)));
+            List<StationDTO> repairPoolStationRels = allRepairPoolStationRels.getOrDefault(repairPool.getCode(), Collections.emptyList());
+            repairPool.setStationName(manager.translateStation(repairPoolStationRels));
             // 周期类型
-            repairPool.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairPool.getType())));
+            repairPool.setTypeName(cycleTypeMap.get(String.valueOf(repairPool.getType())));
             // 状态
-            repairPool.setStatusName(sysBaseApi.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(repairPool.getStatus())));
+            repairPool.setStatusName(inspectionTaskStateMap.get(String.valueOf(repairPool.getStatus())));
             // 作业类型
-            repairPool.setWorkTypeName(sysBaseApi.translateDict(DictConstant.WORK_TYPE, String.valueOf(repairPool.getWorkType())));
+            repairPool.setWorkTypeName(workTypeMap.get(String.valueOf(repairPool.getWorkType())));
         } catch (Exception e) {
             throw e;
         } finally {

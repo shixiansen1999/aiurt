@@ -12,6 +12,10 @@ import lombok.Data;
  */
 @Data
 public class InspectionDTO {
+
+    @ApiModelProperty(value = "检修任务/计划id")
+    private java.lang.String taskId;
+
     @ApiModelProperty("班组")
     private String teamName;
 

@@ -54,14 +54,16 @@
     </select>
     <select id="getMaintenancDataByStationCode" resultType="com.aiurt.boot.plan.dto.RepairPoolDetailsDTO">
         SELECT DISTINCT
-        rp.code,rp.name,rp.weeks,rp.type,rp.status,rp.start_time,rp.end_time
+        rp.code,rp.name,rp.weeks,rp.type,rp.status,rp.start_time,rp.end_time,ifnull(rt.id,rp.id) as taskId
         FROM repair_pool rp
         LEFT JOIN repair_pool_station_rel rpsr ON rpsr.repair_pool_code = rp.`code`
         LEFT JOIN repair_pool_org_rel AS rpor ON rpor.repair_pool_code = rp.code
         LEFT JOIN repair_pool_rel AS rpr ON rpr.repair_pool_code = rp.code
         LEFT JOIN repair_pool_code AS rpc ON rpc.id = rpr.repair_pool_sta_id
+        LEFT JOIN repair_task AS rt ON rt.repair_pool_id = rp.id
         <where>
-            rpsr.station_code = #{taskDetailsReq.stationCode} and rp.start_time is not null
+            rp.del_flag = 0
+            and rpsr.station_code = #{taskDetailsReq.stationCode} and rp.start_time is not null
             <if test="taskDetailsReq.status!=null">
                 and rp.status = #{taskDetailsReq.status}
             </if>

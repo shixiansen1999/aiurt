@@ -1,5 +1,7 @@
 package com.aiurt.boot.task.dto;
 
+import com.aiurt.boot.task.entity.RepairTaskResult;
+import com.aiurt.common.result.SpareResult;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -58,4 +60,12 @@ public class PrintRepairTaskDTO {
     private String receiptUserName;
     @ApiModelProperty(value = "验收时间，精确到秒")
     private String receiptTime;
+    @ApiModelProperty(value = "站点名称")
+    private String siteName;
+    @ApiModelProperty(value = "检修单附件")
+    private List<String> enclosureUrl;
+    @ApiModelProperty(value = "备件更换")
+    private List<SpareResult> spareChange;
+    @ApiModelProperty(value = "检修单（树形）")
+    List<RepairTaskResult> repairTaskResultList;
 }

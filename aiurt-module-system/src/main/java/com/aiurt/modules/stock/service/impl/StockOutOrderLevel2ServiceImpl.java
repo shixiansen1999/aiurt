@@ -1,6 +1,8 @@
 package com.aiurt.modules.stock.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.sparepart.entity.SparePartApplyMaterial;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
@@ -13,6 +15,7 @@ import com.aiurt.modules.stock.entity.*;
 import com.aiurt.modules.stock.mapper.StockOutOrderLevel2Mapper;
 import com.aiurt.modules.stock.service.*;
 import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.service.ICsUserDepartService;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -22,6 +25,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +35,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -61,8 +66,23 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
     private SparePartStockInfoMapper sparePartStockInfoMapper;
 	@Autowired
 	private ISysDepartService iSysDepartService;
+	@Autowired
+	private ICsUserDepartService csUserDepartService;
 	@Override
 	public IPage<StockOutOrderLevel2> pageList(Page<StockOutOrderLevel2> page, StockOutOrderLevel2 stockOutOrderLevel2) {
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		if (Objects.isNull(user)) {
+			throw new AiurtBootException("请重新登录");
+		}
+		// 根据当前登陆人的管理部门权限过滤（除了管理员角色用户）
+		if (!user.getRoleCodes().contains(CommonConstant.ADMIN)) {
+			List<CsUserDepartModel> departByUserId = csUserDepartService.getDepartByUserId(user.getId());
+			if (CollUtil.isEmpty(departByUserId)) {
+				return page;
+			}
+			List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+			stockOutOrderLevel2.setUserOrgCodes(collect);
+		}
 		List<StockOutOrderLevel2> baseList = baseMapper.pageList(page, stockOutOrderLevel2);
 		page.setRecords(baseList);
 		return page;

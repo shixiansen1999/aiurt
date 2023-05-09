@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.RoleConstant;
@@ -30,6 +31,7 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: spare_part_lend
@@ -79,6 +82,21 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
      */
     @Override
     public List<SparePartLend> selectList(Page page, SparePartLend sparePartLend){
+        //权限过滤
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departModels = sysBaseApi.getDepartByUserId(user.getId());
+        if(!user.getRoleCodes().contains("admin")&&departModels.size()==0){
+            return CollUtil.newArrayList();
+        }
+        if(!user.getRoleCodes().contains("admin")&&departModels.size()!=0){
+            List<String> orgCodes = departModels.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+            List<SparePartStockInfo> stockInfoList = sparePartStockInfoMapper.selectList(new LambdaQueryWrapper<SparePartStockInfo>().in(SparePartStockInfo::getOrgCode, orgCodes));
+            if(ObjectUtil.isEmpty(stockInfoList)){
+                return CollUtil.newArrayList();
+            }
+            List<String> wareHouses = stockInfoList.stream().map(SparePartStockInfo::getWarehouseCode).collect(Collectors.toList());
+            sparePartLend.setWareHouses(wareHouses);
+        }
         return sparePartLendMapper.readAll(page,sparePartLend);
     }
     /**

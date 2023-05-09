@@ -2,4 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.RepairTaskOrgRelMapper">
 
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO repair_task_org_rel (id,repair_task_code, org_code)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id}, #{item.repairTaskCode}, #{item.orgCode})
+        </foreach>
+    </insert>
 </mapper>

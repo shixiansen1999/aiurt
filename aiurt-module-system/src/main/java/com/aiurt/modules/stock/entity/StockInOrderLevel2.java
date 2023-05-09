@@ -126,4 +126,8 @@ public class StockInOrderLevel2 extends DictEntity {
 	/**锚点*/
 	@TableField(exist = false)
 	private  Integer  anchor;
+
+	/**登录用户管理部门权限集合*/
+	@TableField(exist = false)
+	private List<String> userOrgCodes;
 }
