@@ -419,15 +419,17 @@ public class CommonServiceImpl implements ICommonService {
 
         List<CsLine> lineList = lineService.getBaseMapper().selectList(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag,0));
 
-        Map<String, String> lineMap = lineList.stream().collect(Collectors.toMap(CsLine::getLineCode, CsLine::getLineName, (t1, t2) -> t2));
+        Map<String, CsLine> lineMap = lineList.stream().collect(Collectors.toMap(CsLine::getLineCode, t->t, (t1,t2)->t2));
 
         List<SelectTable> list = new ArrayList<>();
         stationMap.keySet().stream().forEach(lineCode -> {
+            CsLine csLine = lineMap.getOrDefault(lineCode, new CsLine());
             SelectTable table = new SelectTable();
-            table.setLabel(lineMap.get(lineCode));
+            table.setLabel(csLine.getLineName());
             table.setValue(lineCode);
             table.setLevel(1);
-            table.setTitle(lineMap.get(lineCode));
+            table.setKey(csLine.getId());
+            table.setTitle(csLine.getLineName());
             table.setLineCode(lineCode);
             table.setIsLeaf(false);
             table.setPid("0");
@@ -440,7 +442,7 @@ public class CommonServiceImpl implements ICommonService {
                 selectTable.setLabel(csStation.getStationName());
                 selectTable.setTitle(csStation.getStationName());
                 selectTable.setLevel(2);
-                selectTable.setKey(csStation.getId());
+                selectTable.setKey(StrUtil.isBlank(csStation.getId())?csStation.getStationId():csStation.getId());
                 selectTable.setLineCode(lineCode);
                 selectTable.setStationCode(csStation.getStationCode());
                 selectTable.setPid(lineCode);
