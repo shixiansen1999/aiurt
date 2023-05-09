@@ -23,6 +23,8 @@ import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.entity.CsStationPosition;
+import com.aiurt.modules.schedule.entity.ScheduleRecord;
+import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.modules.worklog.constans.WorkLogConstans;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
@@ -30,6 +32,7 @@ import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.entity.WorkLogEnclosure;
 import com.aiurt.modules.worklog.mapper.WorkLogEnclosureMapper;
 import com.aiurt.modules.worklog.mapper.WorkLogMapper;
+import com.aiurt.modules.worklog.mapper.WorkLogRemindMapper;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.WorkLogParam;
 import com.aiurt.modules.worklog.service.IWorkLogService;
@@ -102,6 +105,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Resource
     private ArchiveUtils archiveUtils;
 
+    @Autowired
+    private WorkLogRemindMapper workLogRemindMapper;
+    @Autowired
+    private ScheduleRecordMapper scheduleRecordMapper;
     @Value("${support.path.exportWorkLogPath}")
     private String exportPath;
     /**
@@ -1355,6 +1362,44 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             throw new AiurtBootException("工作日志" + paramName + "没有配置");
         } else if (!TimeUtil.isLegalDate(param.getValue().length(), param.getValue(), "HH:mm:ss")) {
             throw new AiurtBootException("工作日志" + paramName + "格式不正确");
+        }
+    }
+
+
+    /**发送消息*/
+    public void sendMessage(String orgId,Date date ,Integer flag) {
+        String dateNow= DateUtil.today();
+        //根据部门id,获取部门下的当天上班的人员
+        List<ScheduleRecord> allUserList =workLogRemindMapper.getWorkUserToday(date,orgId,flag);
+
+        //获取排班人的用户id
+        List<String> notWorkLogUserIds = allUserList.stream().map(ScheduleRecord::getUserId).collect(Collectors.toList());
+        String[] userIds = notWorkLogUserIds.toArray(new String[0]);
+        List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(userIds);
+        List<String> userName = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(userName)){
+            //发消息提醒
+            userName.forEach(
+                    u->{
+                        //发送通知
+                        try {
+                            MessageDTO messageDTO = new MessageDTO(null, u, "工作日志上报" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_8);
+                            //构建消息模板
+                            HashMap<String, Object> map = new HashMap<>();
+                            map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
+                            map.put("msgContent", "今日工作日志未上报");
+                            messageDTO.setData(map);
+                            messageDTO.setTemplateCode(com.aiurt.common.constant.CommonConstant.WORK_LOG_SERVICE_NOTICE);
+                            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_MESSAGE);
+                            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+                            messageDTO.setMsgAbstract("工作日志上报");
+                            messageDTO.setPublishingContent("今日工作日志未上报");
+                            iSysBaseAPI.sendTemplateMessage(messageDTO);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+            );
         }
     }
 }

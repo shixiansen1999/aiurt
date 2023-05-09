@@ -1550,9 +1550,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (ObjectUtil.isEmpty(repairTask)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
+
         // 是任务的检修人才可以提交
         List<RepairTaskUser> repairTaskUserss = repairTaskUserMapper.selectList(
                 new LambdaQueryWrapper<RepairTaskUser>()
+                        .select(RepairTaskUser::getUserId)
                         .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
                         .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(repairTaskUserss)) {

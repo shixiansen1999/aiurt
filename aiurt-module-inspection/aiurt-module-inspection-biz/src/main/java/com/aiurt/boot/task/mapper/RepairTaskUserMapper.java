@@ -21,4 +21,11 @@ public interface RepairTaskUserMapper extends BaseMapper<RepairTaskUser> {
      * @return 检修任务ID和用户名称列表的DTO对象
      */
     List<RepairTaskUserNameDTO> selectTaskIdWithUserNames(@Param("repairTaskIds") List<String> repairTaskIds);
+
+    /**
+     * 批量插入
+     * @param repairTaskUserList
+     * @return
+     */
+    int batchInsert(List<RepairTaskUser> repairTaskUserList);
 }
