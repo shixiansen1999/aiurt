@@ -492,6 +492,12 @@ public class CommonServiceImpl implements ICommonService {
             if (CollectionUtil.isNotEmpty(deviceDTO.getDeviceCodes())) {
                 queryWrapper.in(Device::getCode, deviceDTO.getDeviceCodes());
             }
+            if (StrUtil.isNotBlank(deviceDTO.getCode())) {
+                List<String> list = StrUtil.splitTrim(deviceDTO.getCode(), ',');
+                if (CollUtil.isNotEmpty(list)) {
+                    queryWrapper.in(Device::getCode, list);
+                }
+            }
         }
         return queryWrapper;
     }
