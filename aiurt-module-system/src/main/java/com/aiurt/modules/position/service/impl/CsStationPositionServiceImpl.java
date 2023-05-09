@@ -401,7 +401,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
             CsStation two = Optional.ofNullable(csStationService.getBaseMapper().selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, pid).last("limit 1"))).orElse(new CsStation());
             String codeCc3 = three.getLineCode() + "/" + three.getStaionCode() + "/" + three.getPositionCode();
             CsStationPosition threePosition = setEntity(three.getId(), 3, three.getSort(), three.getPositionCode(), three.getPositionName(), two.getStationCode(), two.getStationName(), codeCc3, three.getPositionType(), three.getLength(), three.getLongitude(), three.getLatitude());
-            threePosition.setIsLeaf(false);
+            threePosition.setIsLeaf(true);
             threePosition.setFid(pid);
             return threePosition;
         }).collect(Collectors.toList());
