@@ -6,6 +6,7 @@ import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.largescream.model.FaultDurationTask;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
 import com.aiurt.modules.largescream.model.ReliabilityWorkTime;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.LoginUser;
 
@@ -47,6 +48,15 @@ public interface FaultInformationMapper {
      * @return
      */
     List<Fault> queryFaultDataInformation(@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+
+    /**
+     * 统计
+     * @param lineCode
+     * @param majors
+     * @return
+     */
+    FaultDataAnalysisCountDTO countFaultDataInformation(@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+
 
     /**
      * 故障信息统计当天已解决
@@ -100,7 +110,7 @@ public interface FaultInformationMapper {
      * @param faultScreenModule
      * @return
      */
-    List<FaultLargeInfoDTO> getLargeFaultDataDatails(@Param("condition") FaultScreenModule faultScreenModule);
+    List<FaultLargeInfoDTO> getLargeFaultDataDatails(@Param("pageList") Page<FaultLargeInfoDTO> pageList, @Param("condition") FaultScreenModule faultScreenModule);
 
 
     /**

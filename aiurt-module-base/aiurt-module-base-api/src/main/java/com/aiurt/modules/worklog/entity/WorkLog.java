@@ -268,6 +268,11 @@ public class WorkLog {
     @ApiModelProperty(value = "未完成事项")
     private  String  unfinishedMatters;
 
+    @ApiModelProperty(value = "站点编码，逗号隔开")
+    private String stationCode;
+
+    private String positionCode;
+
     public static final String ID = "id";
     private static final String PATROL_CODE = "patrol_code";
     private static final String REPAIR_CODE = "repair_code";

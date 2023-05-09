@@ -392,7 +392,9 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         }
 
         //查询所有三级
-        List<CsStationPosition> positionList = list(new LambdaQueryWrapper<CsStationPosition>().eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(CsStationPosition::getSort).orderByDesc(CsStationPosition::getUpdateTime));
+        List<CsStationPosition> positionList =
+                list(new LambdaQueryWrapper<CsStationPosition>().eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0).eq(CsStationPosition::getStaionCode, pid)
+                        .orderByAsc(CsStationPosition::getSort).orderByDesc(CsStationPosition::getUpdateTime));
 
         //循环三级
         List<CsStationPosition> list = positionList.stream().map(three -> {

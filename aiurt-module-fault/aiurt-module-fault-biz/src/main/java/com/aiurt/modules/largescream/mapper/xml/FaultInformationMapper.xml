@@ -164,7 +164,9 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
     </select>
 
     <select id="getLargeFaultDataDatails" resultType="com.aiurt.modules.fault.dto.FaultLargeInfoDTO">
-        select * from fault f
+        select f.id, f.sub_system_code, cs.system_name, f.fault_mode_code, f.station_code, ct.station_name,
+        f.happen_time, f.appoint_user_name, s.realname as real_name, f.status, f.fault_phenomenon, f.line_code
+        from fault f
         left join cs_subsystem cs on cs.system_code = f.sub_system_code
         left join  cs_line cl on cl.line_code = f.line_code
         left join cs_station ct on ct.station_code = f.station_code
@@ -703,5 +705,21 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
 
     <select id="getSumWorkTime" resultType="java.lang.String">
 			SELECT SUM(should_work_time) from reliability_work_time rwt WHERE system_code = #{systemCode}
+    </select>
+
+    <select id="countFaultDataInformation" resultType="com.aiurt.modules.fault.dto.FaultDataAnalysisCountDTO">
+        SELECT count(*) as sum ,COUNT( CASE WHEN `status` !=12 and `status` >2 THEN 1 ELSE NULL END ) AS `un_solve` from fault
+        <where>
+            status > 2
+            <if test="lineCode != null and lineCode != ''">
+                and line_code  = #{lineCode}
+            </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>
