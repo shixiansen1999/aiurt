@@ -130,7 +130,7 @@
         </if>
     </select>
     <select id="getPatrolTaskDeviceList" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
-        SELECT (select dv.name from device dv where ptd.device_code = dv.code) as deviceName,
+        SELECT dv.`name` as deviceName,
                ptd.*
         FROM patrol_task_device ptd
                      LEFT JOIN device dv on ptd.device_code = dv.code
