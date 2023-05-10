@@ -201,7 +201,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         enclosure.setCreateBy(depot.getCreateBy());
         enclosure.setParentId(depot.getId());
         enclosure.setType(1);
-        enclosure.setUrl(dto.getSignature());
+        LoginUser user = iSysBaseAPI.getUserById(loginUser.getId());
+        enclosure.setUrl(user.getSignatureUrl());
         enclosure.setDelFlag(0);
         enclosureMapper.insert(enclosure);
         //完成任务
