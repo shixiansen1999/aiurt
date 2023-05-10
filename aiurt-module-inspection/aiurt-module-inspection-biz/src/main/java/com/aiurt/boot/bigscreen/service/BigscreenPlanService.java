@@ -702,9 +702,8 @@ public class BigscreenPlanService {
 
         // 所有操作完成后执行后续代码
         teamPortraitDTO.setFaultTotalTime(faultHours.get());
-        teamPortraitDTO.setFaultTotalTime(patrolHours.get());
-        teamPortraitDTO.setFaultTotalTime(inspectionHours.get());
-
+        teamPortraitDTO.setPatrolTotalTime(patrolHours.get());
+        teamPortraitDTO.setInspecitonTotalTime(inspectionHours.get());
         // 关闭线程池
         executor.shutdown();
     }
