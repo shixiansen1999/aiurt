@@ -101,15 +101,13 @@ public class PositionPanelController {
     /**
      * 通过线路站点查询
      *
-     * @param lineName
      * @param stationName
      * @return
      */
     @AutoLog(value = "综合看板监控设备信息-通过线路站点查询", operateType =  1, operateTypeAlias = "查询-通过线路站点查询", permissionUrl = "")
     @ApiOperation(value="综合看板监控设备信息-通过线路站点查询", notes="综合看板监控设备信息-通过线路站点查询")
     @PostMapping(value = "/getMonitorDevice")
-    public Result<IPage<Device>> getMonitorDevice(@RequestParam(name="lineName",required=true)  String lineName,
-                                                  @RequestParam(name="stationName",required=true)  String stationName,
+    public Result<IPage<Device>> getMonitorDevice(@RequestParam(name="stationName",required=true)  String stationName,
                                                   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
                                                   ){
@@ -123,9 +121,6 @@ public class PositionPanelController {
         //根据线路名称和站点名称查询线路编码和站点编码
         List<CsStation> csStation = new ArrayList<>();
         LambdaQueryWrapper<CsStation> csStationLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        if (StrUtil.isNotBlank(lineName)){
-            csStationLambdaQueryWrapper.eq(CsStation::getLineName,lineName);
-        }
         if (StrUtil.isNotBlank(stationName)){
             csStationLambdaQueryWrapper.eq(CsStation::getStationName,stationName);
         }
@@ -138,10 +133,6 @@ public class PositionPanelController {
             LambdaQueryWrapper<Device> deviceLambdaQueryWrapper = new LambdaQueryWrapper<>();
             deviceLambdaQueryWrapper.eq(Device::getDelFlag,CommonConstant.DEL_FLAG_0)
                     .in(Device::getDeviceTypeCode,collect);
-            if(CollUtil.isNotEmpty(csStation)){
-                List<String> collect1 = csStation.stream().map(CsStation::getLineCode).collect(Collectors.toList());
-                deviceLambdaQueryWrapper.in(Device::getLineCode,collect1);
-            }
             if (CollUtil.isNotEmpty(csStation)){
                 List<String> collect2 = csStation.stream().map(CsStation::getStationCode).collect(Collectors.toList());
                 deviceLambdaQueryWrapper.in(Device::getStationCode,collect2);
