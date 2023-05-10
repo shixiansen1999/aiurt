@@ -44,7 +44,6 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -163,7 +162,7 @@ public class BigscreenPlanService {
 
         // 查询计划数、完成数
         if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)) {
-            result = repairPoolMapper.getInspectionData(page, orgCodes, item, time[0], time[1],lineCode);
+            result = repairPoolMapper.getInspectionData(page, orgCodes, item, time[0], time[1], lineCode);
         }
 
         // TODO 漏检
@@ -367,11 +366,11 @@ public class BigscreenPlanService {
                 }
 
                 // null值默认给0处理
-                if(ObjectUtil.isEmpty(planIndexDTO.getFinish())){
+                if (ObjectUtil.isEmpty(planIndexDTO.getFinish())) {
                     planIndexDTO.setFinish(0L);
                 }
 
-                if(ObjectUtil.isEmpty(planIndexDTO.getUnfinish())){
+                if (ObjectUtil.isEmpty(planIndexDTO.getUnfinish())) {
                     planIndexDTO.setUnfinish(0L);
                 }
 
@@ -487,7 +486,7 @@ public class BigscreenPlanService {
             List<String> teamLineName = workAreaById.stream().map(TeamPortraitDTO::getTeamLineName).collect(Collectors.toList());
             teamPortraitDTO.setTeamLineName(CollUtil.join(teamLineName, ","));
 
-            List<String> position = workAreaById.stream().filter(a->a.getPosition() != null).map(TeamPortraitDTO::getPosition).collect(Collectors.toList());
+            List<String> position = workAreaById.stream().filter(a -> a.getPosition() != null).map(TeamPortraitDTO::getPosition).collect(Collectors.toList());
             List<String> siteName = workAreaById.stream().map(TeamPortraitDTO::getSiteName).collect(Collectors.toList());
             int num = 0;
             int stationNum = 0;
@@ -543,7 +542,7 @@ public class BigscreenPlanService {
 //                    }
             if (CollUtil.isNotEmpty(position)) {
                 teamPortraitDTO.setPositionName(CollUtil.join(position, ","));
-            }else {
+            } else {
                 teamPortraitDTO.setPositionName("");
             }
 
@@ -569,7 +568,7 @@ public class BigscreenPlanService {
             getAverageTime(repairDuration, teamPortraitDTO);
             //获取总工时
             getTotalTimes(teamPortraitDTO, userList, type, timeByType);
-        }else {
+        } else {
             teamPortraitDTO.setAverageTime("0");
             teamPortraitDTO.setPatrolTotalTime(new BigDecimal(0.0));
             teamPortraitDTO.setFaultTotalTime(new BigDecimal(0.0));
@@ -577,7 +576,7 @@ public class BigscreenPlanService {
         }
     }
 
-    public void getAverageTime( List<RepairRecordDetailDTO> repairDuration,TeamPortraitDTO teamPortraitDTO) {
+    public void getAverageTime(List<RepairRecordDetailDTO> repairDuration, TeamPortraitDTO teamPortraitDTO) {
         if (CollUtil.isNotEmpty(repairDuration)) {
             long l = 0;
             for (RepairRecordDetailDTO repairRecordDetailDTO : repairDuration) {
@@ -702,9 +701,8 @@ public class BigscreenPlanService {
 
         // 所有操作完成后执行后续代码
         teamPortraitDTO.setFaultTotalTime(faultHours.get());
-        teamPortraitDTO.setFaultTotalTime(patrolHours.get());
-        teamPortraitDTO.setFaultTotalTime(inspectionHours.get());
-
+        teamPortraitDTO.setPatrolTotalTime(patrolHours.get());
+        teamPortraitDTO.setInspecitonTotalTime(inspectionHours.get());
         // 关闭线程池
         executor.shutdown();
     }
