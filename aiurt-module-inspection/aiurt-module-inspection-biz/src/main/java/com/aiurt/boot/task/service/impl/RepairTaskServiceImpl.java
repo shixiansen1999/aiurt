@@ -3472,12 +3472,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 one.setWeekName(weekName);
             }
         }
-        BeanUtil.copyProperties(one, printRepairTaskDTO);
-        printRepairTaskDTO.setRepairPeople(one.getSumitUserName());
+        BeanUtil.copyProperties(one, printRepairTaskDTO,"repairRecord");
+        printRepairTaskDTO.setOverhaulName(one.getSumitUserName());
         printRepairTaskDTO.setStartRepairTime(DateUtil.format(one.getBeginTime(), "yyyy-MM-dd HH:mm"));
         printRepairTaskDTO.setType(one.getTypeName());
         printRepairTaskDTO.setSubmitTime(DateUtil.format(one.getSubmitTime(), "yyyy-MM-dd HH:mm"));
-        printRepairTaskDTO.setRepairRecord("1");
         printRepairTaskDTO.setConfirmTime(DateUtil.format(one.getConfirmTime(), "yyyy-MM-dd HH:mm:ss"));
         printRepairTaskDTO.setReceiptTime(DateUtil.format(one.getReceiptTime(), "yyyy-MM-dd HH:mm:ss"));
 

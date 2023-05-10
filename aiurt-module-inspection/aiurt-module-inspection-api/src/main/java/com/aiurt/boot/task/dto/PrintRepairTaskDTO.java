@@ -27,7 +27,7 @@ public class PrintRepairTaskDTO {
     @ApiModelProperty(value = "计划检修时间")
     private String planRepairTime;
     @ApiModelProperty(value = "检修人员")
-    private String repairPeople;
+    private String overhaulName;
     @ApiModelProperty(value = "检修开始时间")
     private String startRepairTime;
     @ApiModelProperty(value = "检修周期类型，0周检、1月检、2双月检、3季检、4半年检、5年检")
