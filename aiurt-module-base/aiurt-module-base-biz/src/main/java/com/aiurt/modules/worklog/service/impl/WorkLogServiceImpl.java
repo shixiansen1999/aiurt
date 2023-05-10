@@ -197,15 +197,13 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             }
         }
         //插入签名
-        /*if (StringUtils.isNotBlank(dto.getSignature())) {
-            WorkLogEnclosure enclosure = new WorkLogEnclosure();
-            enclosure.setCreateBy(depot.getCreateBy());
-            enclosure.setParentId(depot.getId());
-            enclosure.setType(1);
-            enclosure.setUrl(dto.getSignature());
-            enclosure.setDelFlag(0);
-            enclosureMapper.insert(enclosure);
-        }*/
+        WorkLogEnclosure enclosure = new WorkLogEnclosure();
+        enclosure.setCreateBy(depot.getCreateBy());
+        enclosure.setParentId(depot.getId());
+        enclosure.setType(1);
+        enclosure.setUrl(dto.getSignature());
+        enclosure.setDelFlag(0);
+        enclosureMapper.insert(enclosure);
         //完成任务
         //不存在userTaskService
         //userTaskService.completeWork(userId, DateUtils.date2Str(depot.getSubmitTime(), new SimpleDateFormat("yyyy-MM-dd")));
@@ -1367,8 +1365,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
 
     /**发送消息*/
-    public void sendMessage(String orgId,Date date ,Integer flag) {
-        String dateNow= DateUtil.today();
+    public void sendMessage(String orgId,Date date ,Integer flag,String workLogId) {
         //根据部门id,获取部门下的当天上班的人员
         List<ScheduleRecord> allUserList =workLogRemindMapper.getWorkUserToday(date,orgId,flag);
 
@@ -1386,6 +1383,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                             MessageDTO messageDTO = new MessageDTO(null, u, "工作日志上报" + DateUtil.today(), null, com.aiurt.common.constant.CommonConstant.MSG_CATEGORY_8);
                             //构建消息模板
                             HashMap<String, Object> map = new HashMap<>();
+                            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, workLogId);
                             map.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.WORKLOG.getType());
                             map.put("msgContent", "今日工作日志未上报");
                             messageDTO.setData(map);

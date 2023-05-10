@@ -80,7 +80,7 @@ public class DayWorkLogAutoAdd implements Job {
                 depot.setDelFlag(0);
                 workLogMapper.insert(depot);
                 //1为白班，2为晚班
-                workLogService.sendMessage(sysDepartModel.getId(),date,1);
+                workLogService.sendMessage(sysDepartModel.getId(),date,1,depot.getId());
             }
         }
     }
