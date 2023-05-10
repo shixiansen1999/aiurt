@@ -233,7 +233,7 @@ jeecg:
   minio:
     minio_url: $MINIO_URL
     minio_name: admin
-    minio_pass: gz*&1949
+    minio_pass: "gz*&1949"
     bucketName: platform
   #大屏报表参数设置
   jmreport:
