@@ -327,6 +327,6 @@ public class SysUser implements Serializable {
      */
     @ApiModelProperty(value = "签名")
     @Excel(name = "签名", width = 15,type = 2)
-    @TableField(exist = false)
+   // @TableField(exist = false)
     private String signatureUrl;
 }
