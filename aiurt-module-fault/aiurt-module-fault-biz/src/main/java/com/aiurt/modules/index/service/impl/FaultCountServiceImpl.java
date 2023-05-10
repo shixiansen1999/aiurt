@@ -286,7 +286,9 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 String teamUser = list.stream().map(String::valueOf).collect(Collectors.joining(","));
                 faultDatum.setTeamUser(teamUser);*/
                 //根据站点找工区再找到班组获取工班长
+                boolean a = GlobalThreadLocal.setDataFilter(false);
                 List<String> list = getForemanByWorkArea(one.getStationCode());
+                GlobalThreadLocal.setDataFilter(a);
                 String teamUser = CollUtil.isNotEmpty(list) ? list.stream().map(String::valueOf).collect(Collectors.joining(",")) : "";
                 faultDatum.setTeamUser(teamUser);
 
@@ -380,7 +382,9 @@ public class FaultCountServiceImpl implements IFaultCountService {
                 String teamUser = list.stream().map(String::valueOf).collect(Collectors.joining(","));
                 faultDatum.setTeamUser(teamUser);*/
                 //根据站点找工区再找到班组获取工班长
+                boolean a = GlobalThreadLocal.setDataFilter(false);
                 List<String> list = getForemanByWorkArea(one.getStationCode());
+                GlobalThreadLocal.setDataFilter(a);
                 String teamUser = CollUtil.isNotEmpty(list) ? list.stream().map(String::valueOf).collect(Collectors.joining(",")) : "";
                 faultDatum.setTeamUser(teamUser);
             }

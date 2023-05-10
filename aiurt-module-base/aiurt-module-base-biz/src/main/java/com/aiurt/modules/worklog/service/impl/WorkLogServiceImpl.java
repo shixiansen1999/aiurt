@@ -677,6 +677,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 locations = StrUtil.split(workLog.getAssortLocation(), ',', true, true);
             }else {
                 locations = StrUtil.split(workLog.getStationCode(), ',', true, true);
+                locations.addAll(StrUtil.split(workLog.getPositionCode(), ',', true, true));
             }
 
             String locationNames = locations.stream().map(location -> iSysBaseAPI.getPosition(location))
