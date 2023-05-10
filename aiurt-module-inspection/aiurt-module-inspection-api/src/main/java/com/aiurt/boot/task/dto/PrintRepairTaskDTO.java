@@ -2,8 +2,10 @@ package com.aiurt.boot.task.dto;
 
 import com.aiurt.boot.task.entity.RepairTaskResult;
 import com.aiurt.common.result.SpareResult;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.List;
 
@@ -68,4 +70,21 @@ public class PrintRepairTaskDTO {
     private List<SpareResult> spareChange;
     @ApiModelProperty(value = "检修单（树形）")
     List<RepairTaskResult> repairTaskResultList;
+    /**计划开始时间，精确到分钟*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "计划开始时间，精确到分钟")
+    private java.util.Date startTime;
+    /**计划结束时间，精确到分钟*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "计划结束时间，精确到分钟")
+    private java.util.Date endTime;
+    /**检修人点击开始执行任务的时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "检修人点击开始执行任务的时间")
+    private java.util.Date beginTime;
+    @ApiModelProperty(value = "所属周")
+    private String weekName;
 }

@@ -3412,13 +3412,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (ObjectUtil.isNotEmpty(year) && repairPool.getWeeks() != null) {
             Date[] dateByWeek = DateUtils.getDateByWeek(year, repairPool.getWeeks());
             if (dateByWeek.length != 0) {
-                String weekName = DateUtil.format(dateByWeek[0], "yyyy/MM/dd") + "-" + DateUtil.format(dateByWeek[1], "yyyy/MM/dd");
-                printRepairTaskDTO.setRepairTime(weekName);
+                String weekName = String.format("第%d周(%s~%s)", repairPool.getWeeks(), DateUtil.format(dateByWeek[0], "yyyy/MM/dd"), DateUtil.format(dateByWeek[1], "yyyy/MM/dd"));
+                printRepairTaskDTO.setWeekName(weekName);
             }
         }
         //周期类型和作业类型
         printRepairTaskDTO.setType(sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairPool.getType())));
         printRepairTaskDTO.setWorkType(sysBaseApi.translateDict(DictConstant.WORK_TYPE, String.valueOf(repairPool.getWorkType())));
+        printRepairTaskDTO.setStartTime(repairPool.getStartTime());
+        printRepairTaskDTO.setEndTime(repairPool.getEndTime());
 
         LambdaQueryWrapper<RepairPoolRel> lambdaQueryWrapper = new LambdaQueryWrapper<RepairPoolRel>();
         lambdaQueryWrapper.eq(RepairPoolRel::getRepairPoolCode, repairPool.getCode());
@@ -3461,29 +3463,25 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     /**获取任务检查项*/
     private void getRepairTaskResult(String id , PrintRepairTaskDTO printRepairTaskDTO, RepairTask one,List<PrintRepairTaskDTO> list){
         printRepairTaskDTO.setOrgName(one.getOrganizational());
+
         // 所属周（相对年）
         if (one.getYear() != null && one.getWeeks() != null) {
             Date[] dateByWeek = DateUtils.getDateByWeek(one.getYear(), one.getWeeks());
             if (dateByWeek.length != 0) {
-                String weekName = String.format(DateUtil.format(dateByWeek[0], "yyyy/MM/dd") + "-" + DateUtil.format(dateByWeek[1], "yyyy/MM/dd"));
-                printRepairTaskDTO.setRepairTime(weekName);
+                String weekName = String.format("第%d周(%s~%s)", one.getWeeks(), DateUtil.format(dateByWeek[0], "yyyy/MM/dd"), DateUtil.format(dateByWeek[1], "yyyy/MM/dd"));
+                one.setWeekName(weekName);
             }
         }
+        BeanUtil.copyProperties(one, printRepairTaskDTO);
         printRepairTaskDTO.setRepairPeople(one.getSumitUserName());
         printRepairTaskDTO.setStartRepairTime(DateUtil.format(one.getBeginTime(), "yyyy-MM-dd HH:mm"));
         printRepairTaskDTO.setType(one.getTypeName());
-        printRepairTaskDTO.setWorkType(one.getWorkType());
-        printRepairTaskDTO.setPlanOrderCode(one.getPlanOrderCode());
-        printRepairTaskDTO.setPlanOrderCodeUrl(one.getPlanOrderCodeUrl());
-        printRepairTaskDTO.setSubmitUserName(one.getSumitUserName());
         printRepairTaskDTO.setSubmitTime(DateUtil.format(one.getSubmitTime(), "yyyy-MM-dd HH:mm"));
         printRepairTaskDTO.setRepairRecord("1");
-        printRepairTaskDTO.setConfirmUserName(one.getConfirmUserName());
         printRepairTaskDTO.setConfirmTime(DateUtil.format(one.getConfirmTime(), "yyyy-MM-dd HH:mm:ss"));
-        printRepairTaskDTO.setReceiptUserName(one.getReceiptUserName());
         printRepairTaskDTO.setReceiptTime(DateUtil.format(one.getReceiptTime(), "yyyy-MM-dd HH:mm:ss"));
-        printRepairTaskDTO.setErrorContent(one.getErrorContent());
-        printRepairTaskDTO.setSiteName(one.getSiteName());
+
+
 
         List<RepairTaskResult> repairTaskResults = new ArrayList<>();
         //获取检修站点
