@@ -356,7 +356,10 @@ public class Device extends DictEntity {
 	@ApiModelProperty(value = "报废状态 0-未报废 1-已报废")
 	@Dict(dicCode = "device_scrap_flag")
 	private  Integer  scrapFlag;
-
+	@ApiModelProperty(value = "设备用户名")
+	private  String  deviceUserName;
+	@ApiModelProperty(value = "设备密码")
+	private  String  devicePassword;
 	@Excel(name = "报废状态",needMerge = true)
 	@ApiModelProperty(value = "报废状态 0-未报废 1-已报废")
 	@TableField(exist = false)
