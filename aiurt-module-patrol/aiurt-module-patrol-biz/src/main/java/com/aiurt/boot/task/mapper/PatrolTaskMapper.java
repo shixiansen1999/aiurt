@@ -281,10 +281,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      * 大屏巡视模块-巡视数据统计任务列表
      *
+     * @param page
      * @param screenTran
      * @return
      */
-    List<ScreenStatisticsTask> getScreenTask(@Param("condition") ScreenTran screenTran);
+    IPage<ScreenStatisticsTask> getScreenTask(Page<ScreenStatisticsTask> page, @Param("condition") ScreenTran screenTran);
 
     /**
      * 大屏巡视模块-巡视任务完成情况

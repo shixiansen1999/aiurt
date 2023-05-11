@@ -97,12 +97,15 @@ public class PatrolScreenController {
     @AutoLog(value = "大屏巡视模块-巡视数据统计任务列表", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "大屏巡视模块-巡视数据统计任务列表", notes = "大屏巡视模块-巡视数据统计任务列表")
     @RequestMapping(value = "/statisticsTaskInfo", method = {RequestMethod.GET, RequestMethod.POST})
-    public Result<List<ScreenStatisticsTask>> getStatisticsTaskInfo(@ApiParam(name = "timeType", value = "看板时间类型,不传默认本周：1本周、2上周、3本月、4上月")
+    public Result<IPage<ScreenStatisticsTask>> getStatisticsTaskInfo(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                    @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                    @ApiParam(name = "timeType", value = "看板时间类型,不传默认本周：1本周、2上周、3本月、4上月")
                                                                             Integer timeType,
                                                                     @ApiParam(name = "lineCode", value = "线路编号,多选的话英文逗号分割")
                                                                             String lineCode) {
-        List<ScreenStatisticsTask> list = screenService.getStatisticsTaskInfo(timeType, lineCode);
-        return Result.ok(list);
+        Page<ScreenStatisticsTask> page = new Page<>(pageNo, pageSize);
+        IPage<ScreenStatisticsTask> pageList = screenService.getStatisticsTaskInfo(page,timeType, lineCode);
+        return Result.ok(pageList);
     }
 
     /**
