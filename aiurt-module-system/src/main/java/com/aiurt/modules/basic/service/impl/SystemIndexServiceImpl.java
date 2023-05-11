@@ -107,7 +107,7 @@ public class SystemIndexServiceImpl implements ISystemIndexService, Serializable
             String weather = detailDTO.getWeather();
             qWeatherDTO.setTextDay(weather);
             WeatherIconEnum weatherIconEnum = WeatherIconEnum.getByCode(weather);
-            qWeatherDTO.setIconDay(Objects.nonNull(weatherIconEnum)?weatherIconEnum.getDetail() : WeatherIconEnum.CODE_999.getDetail());
+            qWeatherDTO.setIconDay(Objects.nonNull(weatherIconEnum)?String.valueOf(weatherIconEnum.getCode()) : String.valueOf( WeatherIconEnum.CODE_999.getCode()));
 
             return qWeatherDTO;
 
