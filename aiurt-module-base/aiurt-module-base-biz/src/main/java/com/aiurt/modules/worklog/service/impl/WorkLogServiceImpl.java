@@ -1343,11 +1343,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             String pmEnd1 = today + " " + pmEnd.getValue();
 
             boolean isBeforeAmEnd = createTime.before(DateUtil.parse(amEnd1));
-            boolean isAfterAmStart = createTime.after(DateUtil.parse(amStart1));
+            boolean isAfterAmStart =createTime.equals(DateUtil.parse(amStart1)) || createTime.after(DateUtil.parse(amStart1));
             boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
 
             boolean isBeforePmEnd = createTime.before(DateUtil.parse(pmEnd1));
-            boolean isAfterPmStart = createTime.after(DateUtil.parse(pmStart1));
+            boolean isAfterPmStart = createTime.equals(DateUtil.parse(pmStart1)) || createTime.after(DateUtil.parse(pmStart1));
             boolean isEdit1 =  (isBeforePmEnd && isAfterPmStart);
 
             if (!isEdit && !isEdit1) {
