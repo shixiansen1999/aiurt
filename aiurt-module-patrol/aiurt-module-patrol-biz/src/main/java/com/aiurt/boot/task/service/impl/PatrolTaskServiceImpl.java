@@ -1756,6 +1756,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                                     newResultList.add(checkResult);
                                 }
                         );
+                        if (CollUtil.isEmpty(newResultList)) {
+                            throw new AiurtBootException("未找到对应工单检查项目内容！");
+                        }
                         patrolCheckResultMapper.addResultList(newResultList);
                     }
             );

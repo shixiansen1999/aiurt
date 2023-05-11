@@ -17,13 +17,11 @@ import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.plan.dto.CodeManageDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
-import com.aiurt.boot.task.entity.RepairTaskUser;
+import com.aiurt.boot.task.dto.RepairTaskUserNameDTO;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.boot.task.mapper.RepairTaskUserMapper;
-import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
@@ -262,15 +260,21 @@ public class BigscreenPlanService {
             Map<String, List<StationDTO>> finalStaMap = staMap;
 
             // 检修人
-            Map<String, List<RepairTaskUser>> userMap = new HashMap<>(64);
-            List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(
-                    new LambdaQueryWrapper<RepairTaskUser>()
-                            .in(RepairTaskUser::getRepairTaskCode, taskCodes)
-                            .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
-            if (CollUtil.isNotEmpty(repairTaskUsers)) {
-                userMap = repairTaskUsers.stream().collect(Collectors.groupingBy(RepairTaskUser::getRepairTaskCode));
-            }
-            Map<String, List<RepairTaskUser>> finalUserMap = userMap;
+//            Map<String, List<RepairTaskUser>> userMap = new HashMap<>(64);
+//            List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(
+//                    new LambdaQueryWrapper<RepairTaskUser>()
+//                            .in(RepairTaskUser::getRepairTaskCode, taskCodes)
+//                            .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+//            if (CollUtil.isNotEmpty(repairTaskUsers)) {
+//                userMap = repairTaskUsers.stream().collect(Collectors.groupingBy(RepairTaskUser::getRepairTaskCode));
+//            }
+
+            Map<String, String> finalUserMap = Optional.ofNullable(repairTaskUserMapper.selectTaskIdWithUserNames(result.stream().map(InspectionDTO::getTaskId).collect(Collectors.toList())))
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .filter(repairTaskUserNameDTO -> repairTaskUserNameDTO.getId() != null && repairTaskUserNameDTO.getUserNames() != null)
+                    .collect(Collectors.toMap(RepairTaskUserNameDTO::getId, RepairTaskUserNameDTO::getUserNames, (v1, v2) -> v1));
+
 
             // 并行流处理
             result.parallelStream().forEach(inspectionDTO -> {
@@ -309,10 +313,7 @@ public class BigscreenPlanService {
                     inspectionDTO.setTime(CollUtil.isNotEmpty(inspectionTime) ? DateUtil.format(inspectionTime.get(0), "dd日 HH:mm") : "");
 
                     // 填充检修人
-                    List<LoginUser> loginUsers = sysBaseAPI.queryAllUserByIds(Optional.ofNullable(finalUserMap.get(inspectionDTO.getCode())).orElse(CollUtil.newArrayList()).stream().map(RepairTaskUser::getUserId).toArray(String[]::new));
-                    if (CollUtil.isNotEmpty(loginUsers)) {
-                        inspectionDTO.setRealName(loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining("；")));
-                    }
+                    inspectionDTO.setRealName(finalUserMap.get(inspectionDTO.getTaskId()));
                 }
             });
         }

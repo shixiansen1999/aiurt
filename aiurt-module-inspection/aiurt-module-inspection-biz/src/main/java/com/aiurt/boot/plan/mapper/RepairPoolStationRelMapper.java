@@ -4,10 +4,8 @@ import com.aiurt.boot.index.dto.MapDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.plan.entity.RepairPoolStationRel;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import io.swagger.annotations.ApiModelProperty;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.Collection;
 import java.util.List;
 
 /**

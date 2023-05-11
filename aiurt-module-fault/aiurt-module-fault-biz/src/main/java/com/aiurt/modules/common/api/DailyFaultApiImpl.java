@@ -90,7 +90,9 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         if (CollUtil.isNotEmpty(participantsList)) {
             participantsList.stream().forEach(p->{
                 FaultRepairRecord record = recordMapper.selectById(p.getFaultRepairRecordId());
-                faultRepairRecords.add(record);
+                if (ObjectUtil.isNotEmpty(record)) {
+                    faultRepairRecords.add(record);
+                }
             });
         }
 
