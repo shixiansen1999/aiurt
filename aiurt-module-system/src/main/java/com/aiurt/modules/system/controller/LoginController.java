@@ -614,8 +614,8 @@ public class LoginController {
 		}
 
 		List<CsUserStationModel> stationList = csUserStaionMapper.getStationByUserId(sysUser.getId());
-		List<String> stationIds = stationList.stream().map(CsUserStationModel::getStationId).collect(Collectors.toList());
-		sysUser.setStationIds(stationIds);
+		List<String> stationCodes = CollUtil.isNotEmpty(stationList)?stationList.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList()):new ArrayList<String>();
+		sysUser.setStationCodes(stationCodes);
 
 		JSONObject obj = new JSONObject();
 		//用户登录信息
