@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.Serializable;
@@ -112,7 +113,12 @@ public class SystemIndexServiceImpl implements ISystemIndexService, Serializable
             return qWeatherDTO;
 
         }else {
-            String resultJson = restTemplate.getForObject(url, String.class);
+            String resultJson = null;
+            try {
+                resultJson = restTemplate.getForObject(url, String.class);
+            } catch (RestClientException e) {
+               log.info(e.getMessage(),e);
+            }
             log.info("请求获取的天气结果:{}", resultJson);
             if (StrUtil.isBlank(resultJson)) {
                 return new QWeatherDTO();
