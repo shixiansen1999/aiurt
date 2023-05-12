@@ -59,7 +59,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     @AutoLog(value = "检修标准表-分页列表查询", operateType =  1, operateTypeAlias = "分页列表查询", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修标准表-分页列表查询", notes = "检修标准表-分页列表查询")
     @GetMapping(value = "/list")
-    @PermissionData(pageComponent="inspection/standardManage")
+    @PermissionData(pageComponent="overhaul/standardManage")
     public Result<IPage<InspectionCodeDTO>> queryPageList(InspectionCodeDTO inspectionCodeDTO,
                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
@@ -82,7 +82,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     @AutoLog(value = "检修标准表-分页列表查询是否配置巡检项", operateType =  1, operateTypeAlias = "列表查询筛选是否有检查项", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修标准表-分页列表查询是否配置巡检项", notes = "检修标准表-分页列表查询是否配置巡检项")
     @GetMapping(value = "/lists")
-    @PermissionData(pageComponent="inspection/standardManage")
+    @PermissionData(pageComponent="overhaul/standardManage")
     public Result<IPage<InspectionCodeDTO>> queryPageLists(InspectionCodeDTO inspectionCodeDTO,
                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
