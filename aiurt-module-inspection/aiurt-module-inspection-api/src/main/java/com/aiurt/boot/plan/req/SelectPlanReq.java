@@ -30,8 +30,12 @@ public class SelectPlanReq {
     private String statuList;
     @ApiModelProperty(value = "作业类型")
     private Integer workType;
+    @ApiModelProperty(value = "线路code")
+    private String lineCode;
     @ApiModelProperty(value = "站点code")
     private String stationCode;
+    @ApiModelProperty(value = "位置code")
+    private String positionCode;
     @ApiModelProperty(value = "pageNo")
     private Integer pageNo = 1;
     @ApiModelProperty(value = "pageSize")
