@@ -130,6 +130,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                        HttpServletRequest req) {
         Page<PatrolTaskParam> page = new Page<PatrolTaskParam>(pageNo, pageSize);
+        patrolTaskParam.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
         IPage<PatrolTaskParam> pageList = patrolTaskService.getTaskList(page, patrolTaskParam);
         return Result.OK(pageList);
     }

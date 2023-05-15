@@ -84,6 +84,7 @@ public class PatrolTaskMissingDetection implements Job {
                 patrolTaskService.lambdaQuery()
                         .in(PatrolTask::getStatus, status)
                         .eq(PatrolTask::getOmitStatus, PatrolConstant.UNOMIT_STATUS)
+                        .eq(PatrolTask::getDiscardStatus,PatrolConstant.TASK_UNDISCARD)
                         .list()
         ).orElseGet(Collections::emptyList);
         if (CollectionUtil.isEmpty(taskList)) {
