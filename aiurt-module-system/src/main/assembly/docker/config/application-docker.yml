@@ -161,7 +161,7 @@ spring:
         max-wait: -1ms  #最大建立连接等待时间。如果超过此时间将接到异常。设为-1表示无限制。
         min-idle: 0     #最小等待连接中的数量,设 0 为没有限制
       shutdown-timeout: 100ms
-    password: 1qaz@2wsx
+    password: '1qaz@2wsx'
     port: $REDIS_PORT
   elasticsearch:
     uris: $ES_URL    # 配置格式如下：http://192.168.1.29:9200
@@ -233,7 +233,7 @@ jeecg:
   minio:
     minio_url: $MINIO_URL
     minio_name: admin
-    minio_pass: "gz*&1949"
+    minio_pass: '1qaz@2wsx'
     bucketName: platform
   #大屏报表参数设置
   jmreport:
@@ -276,7 +276,7 @@ jeecg:
   #分布式锁配置
   redisson:
     address: $REDIS_IP:$REDIS_PORT
-    password: 1qaz@2wsx
+    password: '1qaz@2wsx'
     type: STANDALONE
     enabled: true
 #cas单点登录

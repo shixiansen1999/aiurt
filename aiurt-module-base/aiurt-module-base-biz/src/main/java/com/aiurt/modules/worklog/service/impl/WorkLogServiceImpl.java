@@ -1316,11 +1316,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
     @Override
     public Boolean editFlag(Date  createTime,Integer  confirmStatus,Integer  checkStatus) {
-        boolean edit = true;
         //根据状态判断是否能编辑
-        if (confirmStatus==1 || checkStatus==1){
-            edit = false;
-        }
+        boolean edit = confirmStatus != 1;
         //根据配置是否需要控制在指定时间端内开放编辑按钮，其余时间隐藏
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_EDIT);
         boolean value = "1".equals(paramModel.getValue());
@@ -1341,19 +1338,21 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             String pmStart1 = today + " " + pmStart.getValue();
             String pmEnd1 = today + " " + pmEnd.getValue();
 
+            DateTime date = DateUtil.date();
+            //当前时间小于早上可编辑停止时间，并且在可编辑时间范围内，则可编辑
+            boolean afterAM = date.before(DateUtil.parse(amEnd1));
             boolean isBeforeAmEnd = createTime.before(DateUtil.parse(amEnd1));
-            boolean isAfterAmStart = createTime.after(DateUtil.parse(amStart1));
-            boolean isEdit = (isBeforeAmEnd && isAfterAmStart);
+            boolean isAfterAmStart = createTime.equals(DateUtil.parse(amStart1)) || createTime.after(DateUtil.parse(amStart1));
+            boolean a = afterAM && isAfterAmStart && isBeforeAmEnd;
 
+            //当前时间小于下午可编辑停止时间，并且在可编辑时间范围内，则可编辑
+            boolean afterPM = date.before(DateUtil.parse(pmEnd1));
             boolean isBeforePmEnd = createTime.before(DateUtil.parse(pmEnd1));
-            boolean isAfterPmStart = createTime.after(DateUtil.parse(pmStart1));
-            boolean isEdit1 =  (isBeforePmEnd && isAfterPmStart);
+            boolean isAfterPmStart = createTime.equals(DateUtil.parse(pmStart1)) || createTime.after(DateUtil.parse(pmStart1));
+            boolean p = afterPM && isBeforePmEnd && isAfterPmStart;
 
-            if (!isEdit && !isEdit1) {
-                edit = false;
-            }
+            edit = a || p;
         }
-
         return edit;
     }
 

@@ -14,8 +14,6 @@ import com.aiurt.boot.statistics.dto.*;
 import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.dto.PatrolBillDTO;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
-import com.aiurt.boot.task.entity.PatrolAccessory;
-import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
@@ -26,8 +24,10 @@ import com.aiurt.config.datafilter.constant.DataPermRuleType;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.config.datafilter.utils.ContextUtil;
 import com.aiurt.config.datafilter.utils.SqlBuilderUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -268,44 +268,22 @@ public class PatrolStatisticsService {
         pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp);
 
 
-        // 巡视任务集
-       /* Set<String> taskCodeSet = new HashSet<>();
-        pageList.getRecords().stream().forEach(l -> {
-            if (StrUtil.isNotEmpty(l.getTaskCode())) {
-                taskCodeSet.addAll(Arrays.asList(l.getTaskCode().split(",")));
-            }
-        });
-*/
-        /*// 任务下的巡视人员
-        Map<String, Set<String>> userMap = new HashMap<>(16);
-        // 巡视人员对应的组织机构
-        Map<String, Set<String>> orgMap = new HashMap<>(16);
-        taskCodeSet.stream().forEach(code -> {
-            LambdaQueryWrapper<PatrolTaskUser> userWrapper = Wrappers.<PatrolTaskUser>lambdaQuery()
-                    .select(PatrolTaskUser::getUserId, PatrolTaskUser::getUserName)
-                    .eq(PatrolTaskUser::getDelFlag, 0)
-                    .eq(PatrolTaskUser::getTaskCode, code);
-            List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(userWrapper);
-            List<String> userId = patrolTaskUsers.stream().map(PatrolTaskUser::getUserId).distinct().collect(Collectors.toList());
-            List<String> username = patrolTaskUsers.stream().map(PatrolTaskUser::getUserName).distinct().collect(Collectors.toList());
-            // 用户名称
-            if (CollectionUtil.isNotEmpty(username)) {
-                userMap.put(code, new HashSet<>(username));
-            }
-            // 组织机构名称
-            if (CollectionUtil.isNotEmpty(userId)) {
-                List<String> deptName = patrolTaskUserMapper.getDeptName(userId);
-                if (CollectionUtil.isNotEmpty(deptName)) {
-                    orgMap.put(code, new HashSet<>(deptName));
-                }
-            }
-        });*/
-
-
         pageList.getRecords().stream().forEach(l -> {
             if (StrUtil.isNotEmpty(l.getOrgCode())) {
                 List<String> list = sysBaseApi.queryOrgNamesByOrgCodes(StrUtil.splitTrim(l.getOrgCode(), ","));
                 l.setOrgInfo(CollUtil.join(list, ","));
+            }
+            if (StrUtil.isNotEmpty(l.getTaskCode())) {
+                LambdaQueryWrapper<PatrolTaskUser> userWrapper = Wrappers.<PatrolTaskUser>lambdaQuery()
+                        .select(PatrolTaskUser::getUserName)
+                        .eq(PatrolTaskUser::getDelFlag, 0)
+                        .in(PatrolTaskUser::getTaskCode, StrUtil.splitTrim(l.getTaskCode(), ","));
+                List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(userWrapper);
+                List<String> username = patrolTaskUsers.stream().map(PatrolTaskUser::getUserName).distinct().collect(Collectors.toList());
+                l.setUserInfo(CollUtil.join(username, ","));
+
+                List<String> orgNames = patrolTaskOrganizationMapper.getOrgCodeByTaskCode(StrUtil.splitTrim(l.getTaskCode(), ","));
+                l.setOrgInfo(CollUtil.isNotEmpty(orgNames) ? CollUtil.join(orgNames, ",") : "");
             }
         });
         return pageList;

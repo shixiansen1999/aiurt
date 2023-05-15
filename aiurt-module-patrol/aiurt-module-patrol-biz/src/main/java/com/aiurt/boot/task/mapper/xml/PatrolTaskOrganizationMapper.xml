@@ -64,4 +64,23 @@
         from patrol_task_organization
         where del_flag = 0
     </select>
+
+    <select id="getOrgCodeByTaskCode" resultType="java.lang.String">
+        SELECT
+        GROUP_CONCAT(DISTINCT sd.depart_name)
+        FROM
+        patrol_task_organization p
+        JOIN sys_depart sd ON p.org_code = sd.org_code
+        WHERE
+        p.del_flag = 0
+        AND sd.del_flag = 0
+        <if test="taskCodes != null and taskCodes.size() > 0">
+            AND p.task_code in
+            <foreach collection="taskCodes" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+
+        </if>
+        order by sd.org_code
+    </select>
 </mapper>
