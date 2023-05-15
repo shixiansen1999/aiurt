@@ -828,21 +828,21 @@ public class FaultInformationService {
                                     if (ObjectUtil.isNotEmpty(faultSystemTimeDTO.getRepairTime())) {
                                         Double repairTime = faultSystemTimeDTO.getRepairTime();
                                         actualTime = actualTime - repairTime;
-                                        Double d = BigDecimal.valueOf(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                        Double d = new BigDecimal(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                         faultSystemReliabilityDTO.setActualRuntime(d);
                                     } else {
-                                        Double d = BigDecimal.valueOf(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                        Double d = new BigDecimal(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                         faultSystemReliabilityDTO.setActualRuntime(d);
                                     }
                                 } else {
-                                    Double d = BigDecimal.valueOf(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                    Double d = new BigDecimal(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                     faultSystemReliabilityDTO.setActualRuntime(d);
                                 }
                             }
 
                         }
                     } else {
-                        Double d = BigDecimal.valueOf(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                        Double d = new BigDecimal(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                         faultSystemReliabilityDTO.setActualRuntime(d);
                     }
 //                    planTime = planTime / 60;
