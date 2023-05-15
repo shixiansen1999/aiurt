@@ -17,7 +17,7 @@
         LEFT JOIN repair_pool_rel AS rpr ON rpr.repair_pool_code = rp.code
         LEFT JOIN repair_pool_code AS rpc ON rpc.id = rpr.repair_pool_sta_id
         <where>
-            rp.start_time IS NOT NULL
+            rp.start_time IS NOT NULL  AND rp.del_flag = 0
             <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
                 AND date_format(rp.start_time ,'%Y-%m-%d') &gt;= date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
                 AND date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
