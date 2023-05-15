@@ -1,5 +1,6 @@
 package com.aiurt.boot.statistics.model;
 
+import com.aiurt.boot.constant.PatrolConstant;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -64,6 +65,11 @@ public class PatrolCondition implements Serializable {
      */
     @ApiModelProperty(value = "完成状态：0未完成，1已完成")
     private Integer finishStatus;
+    /**
+     * 完成状态：0未作废、1已作废
+     */
+//    @ApiModelProperty(value = "完成状态：0未作废、1已作废")
+    private final Integer discardStatus = PatrolConstant.TASK_DISCARD;
 //    /**
 //     * 手工下发标志
 //     */

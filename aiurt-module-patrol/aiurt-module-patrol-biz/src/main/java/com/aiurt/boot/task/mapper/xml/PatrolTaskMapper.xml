@@ -523,6 +523,7 @@
         </if>
         <if test="condition.omitStatus != null">
             AND pt.omit_status = #{condition.omitStatus}
+            AND pt.discard_status = #{condition.discardStatus}
         </if>
         <if test="condition.jointSQL != null and condition.jointSQL != ''">
              ${condition.jointSQL}
