@@ -800,6 +800,10 @@ public class FaultInformationService {
         //查询按系统分类好的并计算了故障消耗总时长的记录
         List<FaultSystemTimesDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate, majors,lineCode);
         //查询子系统设备数
+
+        if(CollUtil.isNotEmpty(systemFaultSum)){
+            currentLoginUserSubsystems = systemFaultSum.stream().map(FaultSystemTimesDTO::getSubSystemCode).collect(Collectors.toList());
+        }
         List<FaultSystemDeviceSumDTO> systemDeviceSum = faultInformationMapper.getLineSystem(lineCode,currentLoginUserSubsystems);
         if (ObjectUtil.isNotEmpty(systemDeviceSum)) {
             //遍历所有设备
@@ -852,7 +856,7 @@ public class FaultInformationService {
                     if (planTime <= 0 || actualTime <= 0) {
                         faultSystemReliabilityDTO.setReliability("0");
                     } else {
-                        Double d = new BigDecimal(faultSystemReliabilityDTO.getActualRuntime() * 100 / plan).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                        Double d = new BigDecimal(faultSystemReliabilityDTO.getActualRuntime() * 100 / plan).setScale(3, BigDecimal.ROUND_DOWN).doubleValue();
                         faultSystemReliabilityDTO.setReliability(d + "%");
                     }
                 }
