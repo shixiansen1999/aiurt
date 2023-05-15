@@ -262,20 +262,24 @@ public class FaultInformationService {
         List<Fault> e03 = collect.get("03");
         List<Fault> e04 = collect.get("04");
         List<Fault> e08 = collect.get("08");
-        if (CollUtil.isEmpty(ehx0001) && StrUtil.isEmpty(lineCode)) {
-            collect.put("ehx0001",new ArrayList<Fault>());
-        }
-        if (CollUtil.isEmpty(NO1)&& StrUtil.isEmpty(lineCode)) {
-            collect.put("NO1",new ArrayList<Fault>());
-        }
-        if (CollUtil.isEmpty(e03)&& StrUtil.isEmpty(lineCode)) {
-            collect.put("03",new ArrayList<Fault>());
-        }
-        if (CollUtil.isEmpty(e04)&& StrUtil.isEmpty(lineCode)) {
-            collect.put("04",new ArrayList<Fault>());
-        }
-        if (CollUtil.isEmpty(e08)&& StrUtil.isEmpty(lineCode)) {
-            collect.put("08",new ArrayList<Fault>());
+        if (StrUtil.isEmpty(lineCode)) {
+            if (CollUtil.isEmpty(ehx0001)) {
+                collect.put("ehx0001", new ArrayList<Fault>());
+            }
+            if (CollUtil.isEmpty(NO1)) {
+                collect.put("NO1", new ArrayList<Fault>());
+            }
+            if (CollUtil.isEmpty(e03)) {
+                collect.put("03", new ArrayList<Fault>());
+            }
+            if (CollUtil.isEmpty(e04)) {
+                collect.put("04", new ArrayList<Fault>());
+            }
+            if (CollUtil.isEmpty(e08)) {
+                collect.put("08", new ArrayList<Fault>());
+            }
+        } else {
+            collect.put(lineCode, largeLineFaultInfo);
         }
         Set<String> keys = collect.keySet();
         Iterator<String> iterator = keys.iterator();
