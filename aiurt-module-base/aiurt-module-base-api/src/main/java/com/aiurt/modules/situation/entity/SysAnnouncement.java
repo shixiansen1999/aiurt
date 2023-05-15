@@ -184,12 +184,16 @@ public class SysAnnouncement implements Serializable {
     @Excel(name = "特情等级", width = 15, dicCode = "level")
     @Dict(dicCode = "level")
     private String level;
-
     /**
      * 特情等级
      */
     @TableField(exist = false)
     private String level_dictText;
+    /**
+     * 发布人
+     */
+    @TableField(exist = false)
+    private String sender_dictText;
 
     /**阅读状态（0未读，1已读）*/
     @Dict(dicCode = "read_flag")
