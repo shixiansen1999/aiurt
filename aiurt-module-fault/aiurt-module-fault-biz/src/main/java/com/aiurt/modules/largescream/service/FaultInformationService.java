@@ -257,6 +257,10 @@ public class FaultInformationService {
         List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startDate, endDate, majors,lineCode);
         //根据line_code分组，查询同一条线路下的所有故障
         Map<String, List<Fault>> collect = largeLineFaultInfo.stream().collect(Collectors.groupingBy(Fault::getLineCode));
+        List<Fault> ehx0001 = collect.get("ehx0001");
+        if (CollUtil.isEmpty(ehx0001)) {
+            collect.put("ehx0001",new ArrayList<Fault>());
+        }
         Set<String> keys = collect.keySet();
         Iterator<String> iterator = keys.iterator();
         while (iterator.hasNext()) {
@@ -265,6 +269,11 @@ public class FaultInformationService {
             faultLargeLineInfoDTO.setLineCode(key);
             Integer solveCount = 0;
             Integer hangCount = 0;
+            faultLargeLineInfoDTO.setSolve(solveCount);
+            faultLargeLineInfoDTO.setHang(hangCount);
+            if ("ehx0001".equals(key)) {
+                faultLargeLineInfoDTO.setLineName("2号线");
+            }
             List<Fault> faults = collect.get(key);
             //故障总数
             faultLargeLineInfoDTO.setSum(CollUtil.isNotEmpty(faults) ? faults.size() : 0L);
