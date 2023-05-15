@@ -257,9 +257,25 @@ public class FaultInformationService {
         List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startDate, endDate, majors,lineCode);
         //根据line_code分组，查询同一条线路下的所有故障
         Map<String, List<Fault>> collect = largeLineFaultInfo.stream().collect(Collectors.groupingBy(Fault::getLineCode));
+        List<Fault> NO1 = collect.get("NO1");
         List<Fault> ehx0001 = collect.get("ehx0001");
-        if (CollUtil.isEmpty(ehx0001)) {
+        List<Fault> e03 = collect.get("03");
+        List<Fault> e04 = collect.get("04");
+        List<Fault> e08 = collect.get("08");
+        if (CollUtil.isEmpty(ehx0001) && StrUtil.isEmpty(lineCode)) {
             collect.put("ehx0001",new ArrayList<Fault>());
+        }
+        if (CollUtil.isEmpty(NO1)&& StrUtil.isEmpty(lineCode)) {
+            collect.put("NO1",new ArrayList<Fault>());
+        }
+        if (CollUtil.isEmpty(e03)&& StrUtil.isEmpty(lineCode)) {
+            collect.put("03",new ArrayList<Fault>());
+        }
+        if (CollUtil.isEmpty(e04)&& StrUtil.isEmpty(lineCode)) {
+            collect.put("04",new ArrayList<Fault>());
+        }
+        if (CollUtil.isEmpty(e08)&& StrUtil.isEmpty(lineCode)) {
+            collect.put("08",new ArrayList<Fault>());
         }
         Set<String> keys = collect.keySet();
         Iterator<String> iterator = keys.iterator();
@@ -273,6 +289,18 @@ public class FaultInformationService {
             faultLargeLineInfoDTO.setHang(hangCount);
             if ("ehx0001".equals(key)) {
                 faultLargeLineInfoDTO.setLineName("2号线");
+            }
+            if ("NO1".equals(key)) {
+                faultLargeLineInfoDTO.setLineName("1号线");
+            }
+            if ("03".equals(key)) {
+                faultLargeLineInfoDTO.setLineName("3号线");
+            }
+            if ("04".equals(key)) {
+                faultLargeLineInfoDTO.setLineName("4号线");
+            }
+            if ("08".equals(key)) {
+                faultLargeLineInfoDTO.setLineName("8号线");
             }
             List<Fault> faults = collect.get(key);
             //故障总数
