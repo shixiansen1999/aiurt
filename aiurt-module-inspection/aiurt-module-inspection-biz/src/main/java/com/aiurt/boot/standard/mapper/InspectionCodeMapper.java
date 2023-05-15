@@ -31,9 +31,9 @@ public interface InspectionCodeMapper extends BaseMapper<InspectionCode> {
      * @return
      */
     @DataPermission({
-            @DataColumn(key = "majorName",value = "c.major_code"),
-            @DataColumn(key = "systemName",value = "d.subsystem_code"),
-            @DataColumn(key = "deptName",value = "e.org_code")
+            @DataColumn(key = "majorName",value = "ta.major_code"),
+            @DataColumn(key = "systemName",value = "ta.subsystem_code"),
+            @DataColumn(key = "deptName",value = "ta.org_code")
     })
     List<InspectionCodeDTO> pageList(@Param("page")Page<InspectionCodeDTO> page,@Param("inspectionCodeDTO") InspectionCodeDTO inspectionCodeDTO);
     /**
