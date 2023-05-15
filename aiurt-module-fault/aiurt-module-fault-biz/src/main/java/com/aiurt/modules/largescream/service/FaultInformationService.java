@@ -331,6 +331,10 @@ public class FaultInformationService {
             }
             largeLineInfoDtos.add(faultLargeLineInfoDTO);
         }
+        if (CollUtil.isNotEmpty(largeLineInfoDtos)) {
+            List<FaultLargeLineInfoDTO> collect1 = largeLineInfoDtos.stream().sorted(Comparator.comparing(FaultLargeLineInfoDTO::getLineName)).collect(Collectors.toList());
+            return collect1;
+        }
         return largeLineInfoDtos;
     }
 
