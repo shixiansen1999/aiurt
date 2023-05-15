@@ -3,7 +3,7 @@
 <mapper namespace="com.aiurt.boot.standard.mapper.InspectionCodeMapper">
 
     <select id="pageList" resultType="com.aiurt.boot.manager.dto.InspectionCodeDTO">
-        SELECT inspection_code.* ,b.`name` as deviceTypeName,c.major_name as majorName,d.system_name as subsystemName
+        SELECT DISTINCT inspection_code.* ,b.`name` as deviceTypeName,c.major_name as majorName,d.system_name as subsystemName
         FROM inspection_code as inspection_code
         LEFT JOIN device_type b on inspection_code.device_type_code =b.`code` and b.del_flag =0
         LEFT JOIN cs_major c on inspection_code.major_code =c.major_code and c.del_flag =0
