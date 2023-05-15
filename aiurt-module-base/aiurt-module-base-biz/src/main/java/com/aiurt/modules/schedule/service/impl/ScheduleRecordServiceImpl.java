@@ -286,12 +286,28 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     public IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page,String name) {
         List<SysUserTeamDTO> result = new ArrayList<>();
 
-        // 根据传入线路和自身管理专业获取班组信息
-        List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
+        //测试班组
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.TEST_ORGCODE);
+        String value = paramModel.getValue();
 
-        if (CollUtil.isNotEmpty(orgCodes)) {
+        /*// 根据传入线路和自身管理专业获取班组信息
+        List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);*/
+
+        // 查询总班组数,排除测试班组
+        List<SysDepartModel> allSysDepart = sysBaseAPI.getAllSysDepart();
+        if (CollUtil.isEmpty(allSysDepart)) {
+            throw new AiurtBootException("没有班组信息");
+        }
+        List<String> depart;
+        if (StrUtil.isNotEmpty(value)) {
+            depart = allSysDepart.stream().map(SysDepartModel::getOrgCode).filter(orgCode -> !value.contains(orgCode)).collect(Collectors.toList());
+        }else {
+            depart = allSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        }
+
+        if (CollUtil.isNotEmpty(depart)) {
             // 查询总人员列表
-            result = baseMapper.getUserByDepIds(orgCodes, page, orgcode,name);
+            result = baseMapper.getUserByDepIds(depart, page, orgcode,name);
 
             // 填充角色名称
             for (SysUserTeamDTO sysUserTeamDTO : result) {
