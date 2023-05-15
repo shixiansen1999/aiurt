@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.schedule.dto.*;
 import com.aiurt.modules.schedule.entity.*;
@@ -22,8 +23,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SiteModel;
+import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,7 +65,8 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     private IScheduleRuleItemService ruleItemService;
     @Autowired
     private IScheduleItemService ItemService;
-
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
 
     @Override
     public List<ScheduleRecord> getScheduleRecordBySchedule(Integer scheduleId) {
@@ -189,12 +194,23 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     @Override
     public ScheduleBigScreenDTO getTeamData(String lineCode) {
         ScheduleBigScreenDTO result = new ScheduleBigScreenDTO();
+        //测试班组
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.TEST_ORGCODE);
+        String value = paramModel.getValue();
 
-        // 查询总班组数
-        List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
+        // 查询总班组数,排除测试班组,不包含最顶层分部
+        List<String> list = sysBaseAPI.getTeamBylineAndMajor(lineCode);
+        List<String> orgCodes = list.stream().filter(orgCode -> !value.contains(orgCode)).collect(Collectors.toList());
 
+        // 查询总班组数,排除测试班组
+        List<SysDepartModel> allSysDepart = sysBaseAPI.getAllSysDepart();
+        List<String> depart = new ArrayList<>();
+        if (StrUtil.isNotEmpty(value)) {
+            depart = allSysDepart.stream().map(SysDepartModel::getOrgCode).filter(orgCode -> !value.contains(orgCode)).collect(Collectors.toList());
+        }
+        
         // 查询班组总人员数
-        List<LoginUser> userByDepIds = sysBaseAPI.getUserByDepIds(orgCodes);
+        List<LoginUser> userByDepIds = sysBaseAPI.getUserByDepIds(depart);
 
         // 填充总班组数
         result.setTeamTotal(CollUtil.isNotEmpty(orgCodes) ? orgCodes.size() : 0);
