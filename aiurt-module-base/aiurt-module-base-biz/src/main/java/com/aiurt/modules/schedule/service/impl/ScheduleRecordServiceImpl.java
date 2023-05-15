@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.schedule.dto.*;
 import com.aiurt.modules.schedule.entity.*;
@@ -204,11 +205,16 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
 
         // 查询总班组数,排除测试班组
         List<SysDepartModel> allSysDepart = sysBaseAPI.getAllSysDepart();
-        List<String> depart = new ArrayList<>();
+        if (CollUtil.isEmpty(allSysDepart)) {
+            throw new AiurtBootException("没有班组信息");
+        }
+        List<String> depart;
         if (StrUtil.isNotEmpty(value)) {
             depart = allSysDepart.stream().map(SysDepartModel::getOrgCode).filter(orgCode -> !value.contains(orgCode)).collect(Collectors.toList());
+        }else {
+            depart = allSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
         }
-        
+
         // 查询班组总人员数
         List<LoginUser> userByDepIds = sysBaseAPI.getUserByDepIds(depart);
 
