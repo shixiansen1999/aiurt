@@ -41,6 +41,10 @@ public class IndexCountDTO {
      * 任务漏巡状态
      */
     private Integer omitStatus = PatrolConstant.OMIT_STATUS;
+    /**
+     * 任务已作废状态
+     */
+    private Integer discardStatus = PatrolConstant.TASK_DISCARD;
 
     public IndexCountDTO(Date startDate, Date endDate, String jointSQL) {
         this.startDate = startDate;
