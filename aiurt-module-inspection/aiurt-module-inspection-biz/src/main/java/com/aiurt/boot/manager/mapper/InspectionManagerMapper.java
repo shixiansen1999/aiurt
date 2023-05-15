@@ -59,7 +59,7 @@ public interface InspectionManagerMapper {
      * @param
      * @return
      */
-    String translateStation(String code);
+    String translateStation(@Param("codeList") List<String> codeList);
 
     /**
      * 翻译线路信息

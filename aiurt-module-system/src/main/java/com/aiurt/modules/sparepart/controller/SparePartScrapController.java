@@ -10,7 +10,6 @@ import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
@@ -85,7 +84,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件报废分页列表查询",permissionUrl = "/sparepart/sparePartScrap/list")
 	@ApiOperation(value="spare_part_scrap-分页列表查询", notes="spare_part_scrap-分页列表查询")
 	@GetMapping(value = "/list")
-	@PermissionData(pageComponent = "sparePartsFor/SparePartScrap")
+	//@PermissionData(pageComponent = "sparePartsFor/SparePartScrap")
 	public Result<IPage<SparePartScrap>> queryPageList(SparePartScrap sparePartScrap,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

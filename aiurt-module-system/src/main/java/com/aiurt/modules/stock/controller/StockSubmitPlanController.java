@@ -1,5 +1,6 @@
 package com.aiurt.modules.stock.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -9,6 +10,7 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.stock.entity.StockSubmitPlan;
 import com.aiurt.modules.stock.service.IStockSubmitPlanService;
+import com.aiurt.modules.system.service.ICsUserDepartService;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -16,8 +18,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -32,10 +37,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 物资提报计划
@@ -53,6 +56,8 @@ public class StockSubmitPlanController {
     private IStockSubmitPlanService iStockSubmitPlanService;
     @Autowired
     private ISysDepartService iSysDepartService;
+    @Autowired
+    private ICsUserDepartService csUserDepartService;
 
     /**
      * 分页列表查询
@@ -76,6 +81,19 @@ public class StockSubmitPlanController {
             queryWrapper.lambda().eq(StockSubmitPlan::getOrgCode, stockSubmitPlan.getOrgCode());
         }
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (Objects.isNull(user)) {
+            throw new AiurtBootException("请重新登录");
+        }
+        // 根据当前登陆人的管理部门权限过滤（除了管理员角色用户）
+        if (!user.getRoleCodes().contains(CommonConstant.ADMIN)){
+            List<CsUserDepartModel> departByUserId = csUserDepartService.getDepartByUserId(user.getId());
+            if (CollUtil.isEmpty(departByUserId)) {
+                return Result.ok();
+            }
+            List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+            queryWrapper.lambda().in(StockSubmitPlan::getOrgCode, collect);
+        }
         queryWrapper.orderByDesc("create_time");
         Page<StockSubmitPlan> page = new Page<StockSubmitPlan>(pageNo, pageSize);
         IPage<StockSubmitPlan> pageList = iStockSubmitPlanService.page(page, queryWrapper);

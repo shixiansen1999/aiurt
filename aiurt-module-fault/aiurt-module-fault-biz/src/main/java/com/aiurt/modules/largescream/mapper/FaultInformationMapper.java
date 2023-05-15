@@ -6,6 +6,7 @@ import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.largescream.model.FaultDurationTask;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
 import com.aiurt.modules.largescream.model.ReliabilityWorkTime;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.LoginUser;
 
@@ -42,11 +43,22 @@ public interface FaultInformationMapper {
 
     /**
      *  数据分析-故障数据统计总数和未解决
+     * @param weekStartDate
+     * @param weekEndDate
      * @param lineCode
      * @param majors
      * @return
      */
-    List<Fault> queryFaultDataInformation(@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+    List<Fault> queryFaultDataInformation(@Param("weekStartDate") Date weekStartDate,@Param("weekEndDate") Date weekEndDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+
+    /**
+     * 统计
+     * @param lineCode
+     * @param majors
+     * @return
+     */
+    FaultDataAnalysisCountDTO countFaultDataInformation(@Param("weekStartDate") Date weekStartDate,@Param("weekEndDate") Date weekEndDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+
 
     /**
      * 故障信息统计当天已解决
@@ -100,7 +112,7 @@ public interface FaultInformationMapper {
      * @param faultScreenModule
      * @return
      */
-    List<FaultLargeInfoDTO> getLargeFaultDataDatails(@Param("condition") FaultScreenModule faultScreenModule);
+    List<FaultLargeInfoDTO> getLargeFaultDataDatails(@Param("pageList") Page<FaultLargeInfoDTO> pageList, @Param("condition") FaultScreenModule faultScreenModule);
 
 
     /**
@@ -141,6 +153,15 @@ public interface FaultInformationMapper {
      * @return
      */
     List<FaultSystemTimeDTO> getLargeFaultTime(@Param("month") String month, @Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+
+    /**
+     * 获取子系统下故障次数
+     * @param month
+     * @param lineCode
+     * @param majors
+     * @return
+     */
+    List<FaultSystemMonthCountDTO> getLargeFaultMonthCount(@Param("month") String month, @Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
      * 按系统分类获取子系统下故障维修时长总数

@@ -30,6 +30,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
@@ -46,10 +47,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -176,47 +175,55 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         List<Fault> records = pageList.getRecords();
         dealResult(records);
 
-        // todo 优化排序
         return Result.OK(pageList);
     }
 
     private void dealResult(List<Fault> records) {
+
+        if (CollUtil.isEmpty(records)) {
+            return;
+        }
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        records.stream().forEach(fault1 -> {
-            if(ObjectUtil.isNotEmpty(fault1.getAppointUserName())){
-                if(user.getUsername().equals(fault1.getAppointUserName())){
-                    fault1.setIsFault(true);
-                }else {
-                    fault1.setIsFault(false);
-                }
+
+        // 查询故障设备列表
+        Map<String, List<FaultDevice>> faultDeviceMap = faultDeviceService.list(new LambdaQueryWrapper<FaultDevice>()
+                .in(FaultDevice::getDeviceCode,records.stream().map(Fault::getCode).collect(Collectors.toList())))
+                .stream().collect(Collectors.groupingBy(FaultDevice::getFaultCode));
+        Map<String, Integer> weightMap = new HashMap<>();
+        List<String> faultLevelList = records.stream().map(Fault::getFaultLevel).filter(StrUtil::isNotBlank).distinct().collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(faultLevelList)) {
+           weightMap = faultLevelService.getBaseMapper().selectList(Wrappers.lambdaQuery(FaultLevel.class)
+                    .in(FaultLevel::getCode, faultLevelList))
+                    .stream().collect(Collectors.toMap(FaultLevel::getCode, faultLevel -> {
+                        try {
+                            return Integer.parseInt(faultLevel.getWeight());
+                        } catch (NumberFormatException e) {
+                            return 0;
+                        }
+                    }));
+        }
+
+
+        Map<String, FaultAnalysisReport> reportMap = faultAnalysisReportService.getBaseMapper().selectList(Wrappers.lambdaQuery(FaultAnalysisReport.class)
+                .in(FaultAnalysisReport::getFaultCode, records.stream().map(Fault::getCode).distinct().collect(Collectors.toList()))
+                .eq(FaultAnalysisReport::getDelFlag, 0))
+                .stream().collect(Collectors.toMap(FaultAnalysisReport::getFaultCode, Function.identity()));
+
+        Map<String, Integer> finalWeightMap = weightMap;
+        records.parallelStream().forEach(fault1 -> {
+
+            if(StrUtil.equalsIgnoreCase(user.getUsername(), fault1.getAppointUserName())){
+                fault1.setIsFault(true);
             }else {
                 fault1.setIsFault(false);
             }
-            List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(fault1.getCode());
+
             // 权重登记
             if (StrUtil.isNotBlank(fault1.getFaultLevel())) {
-                LambdaQueryWrapper<FaultLevel> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(FaultLevel::getCode, fault1.getFaultLevel()).last("limit 1");
-                FaultLevel faultLevel = faultLevelService.getBaseMapper().selectOne(wrapper);
-                if (Objects.isNull(faultLevel)) {
-                    fault1.setWeight(0);
-                }else {
-                    String weight = faultLevel.getWeight();
-                    if (StrUtil.isNotBlank(weight)) {
-                        try {
-                            fault1.setWeight(Integer.valueOf(weight));
-                        } catch (NumberFormatException e) {
-                            fault1.setWeight(0);
-                        }
-                    }else {
-                        fault1.setWeight(0);
-                    }
-                }
-
+                fault1.setWeight(finalWeightMap.get(fault1.getFaultLevel()));
             }else {
                 fault1.setWeight(0);
             }
-            fault1.setFaultDeviceList(faultDeviceList);
 
             // 是否重新指派
             LambdaQueryWrapper<FaultRepairRecord> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -224,24 +231,19 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             Long count = faultRepairRecordService.getBaseMapper().selectCount(lambdaQueryWrapper);
             fault1.setSignAgainFlag(count>0?1:0);
 
-            //判断是否已经进行过故障分析
-            fault1.setIsFaultAnalysisReport(false);
-            String code = fault1.getCode();
-            LambdaQueryWrapper<FaultAnalysisReport> faultAnalysisReportWrapper = new LambdaQueryWrapper<>();
-            faultAnalysisReportWrapper.eq(FaultAnalysisReport::getFaultCode, code);
-            faultAnalysisReportWrapper.eq(FaultAnalysisReport::getDelFlag, 0).last("limit 1");
-            FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.getBaseMapper().selectOne(faultAnalysisReportWrapper);
+
             //如果存在故障分析则返回true
-            if (ObjectUtil.isNotNull(faultAnalysisReport)) {
+            if (ObjectUtil.isNotNull(reportMap.get(fault1.getCode()))) {
                 fault1.setIsFaultAnalysisReport(true);
             }
 
+            List<FaultDevice> faultDeviceList = faultDeviceMap.get(fault1.getCode());
+            fault1.setFaultDeviceList(faultDeviceList);
             if (CollUtil.isNotEmpty(faultDeviceList)) {
                 List<String> collect = faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList());
                 fault1.setDeviceName(CollUtil.join(collect,","));
             }
         });
-
     }
 
     /**

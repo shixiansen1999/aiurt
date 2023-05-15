@@ -15,6 +15,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Data
 public class RepairPoolDetailsDTO {
 
+    @ApiModelProperty(value = "检修任务/计划id")
+    private java.lang.String taskId;
+
     @ApiModelProperty(value = "检修计划名称")
     private java.lang.String name;
 
@@ -98,4 +101,7 @@ public class RepairPoolDetailsDTO {
 
     @ApiModelProperty(value = "计划code")
     private String poolCode;
+
+    @ApiModelProperty(value = "任务提交人名称")
+    private String submitUserName;
 }

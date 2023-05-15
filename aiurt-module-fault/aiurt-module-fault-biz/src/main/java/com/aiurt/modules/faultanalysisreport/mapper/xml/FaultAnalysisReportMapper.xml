@@ -34,7 +34,7 @@
                     LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
     WHERE
             far.del_flag = 0
-            and far.status = 2
+            and far.status = 1
     )
     union
     ( SELECT
@@ -65,8 +65,8 @@
                     LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
     WHERE
             far.del_flag = 0
-            and far.status in (1,0)
-            and far.create_by =#{condition.createBy}
+            and far.status in (2,0)
+            and (far.create_by = #{userName}
             or (ara.ASSIGNEE_ = #{userName} OR ara.ID_ in (
             SELECT TASK_ID_
             FROM act_ru_identitylink ari
@@ -74,7 +74,7 @@
             AND ari.USER_ID_ = #{userName}
             AND ari.TASK_ID_ = ara.ID_
             AND (ara.assignee_ = '' or ara.assignee_ is null)
-            ))
+            )))
     ))a
     where 1=1
         <if test="condition.faultCode != null and condition.faultCode != ''">
@@ -90,12 +90,7 @@
             and DATE_FORMAT(a.createTime ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime},'%Y-%m-%d')
             and DATE_FORMAT(a.createTime ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime},'%Y-%m-%d')
         </if>
-        <if test="ids != null and ids.size() > 0">
-            and a.faultId in
-            <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
+
         ORDER BY a.createTime DESC
 </select>
 

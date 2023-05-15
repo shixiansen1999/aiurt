@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.index.dto.RepairTaskNum;
 import com.aiurt.modules.fault.dto.FaultReportDTO;
 import com.aiurt.modules.fault.dto.UserTimeDTO;
 import com.aiurt.modules.fault.entity.Fault;
@@ -89,7 +90,9 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         if (CollUtil.isNotEmpty(participantsList)) {
             participantsList.stream().forEach(p->{
                 FaultRepairRecord record = recordMapper.selectById(p.getFaultRepairRecordId());
-                faultRepairRecords.add(record);
+                if (ObjectUtil.isNotEmpty(record)) {
+                    faultRepairRecords.add(record);
+                }
             });
         }
 
@@ -358,13 +361,9 @@ public class DailyFaultApiImpl implements DailyFaultApi {
      */
     public Map<String, Integer> getDailyFaultNum(Date beginDate, int dayNum) {
         Map<String, Integer> map = new HashMap<>(32);
-        if (ObjectUtil.isNotEmpty(beginDate)) {
-            for (int i = 0; i < dayNum; i++) {
-                DateTime dateTime = DateUtil.offsetDay(beginDate, i);
-                String currDateStr = DateUtil.format(dateTime, "yyyy/MM/dd");
-                List<Fault> dailyFaultNumList = faultCountMapper.getDailyFaultNum(dateTime);
-                map.put(currDateStr, CollUtil.isNotEmpty(dailyFaultNumList) ? dailyFaultNumList.size() : 0);
-            }
+        List<RepairTaskNum> repairTaskNums = faultCountMapper.getDailyFaultNum(DateUtil.offsetDay(beginDate, 0), DateUtil.offsetDay(beginDate, dayNum - 1));
+        if(CollUtil.isNotEmpty(repairTaskNums)){
+            map = repairTaskNums.stream().collect(Collectors.toMap(RepairTaskNum::getCurrDateStr, RepairTaskNum::getNum, (v1, v2) -> v1));
         }
         return map;
     }

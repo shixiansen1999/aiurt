@@ -25,6 +25,10 @@ public interface SysParamCodeConstant {
      */
     String FAULT_PROCESS = "fault_process";
     /**
+     * 工作日志上报是否需要在指定时间点内编辑
+     */
+    String WORKLOG_EDIT = "worklog_edit";
+    /**
      * 故障上报单个设备一个月内重复出现两次故障，系统是否自动发布一条特情
      */
     String FAULT_SITUATION = "fault_situation";
@@ -189,4 +193,20 @@ public interface SysParamCodeConstant {
      * 工作日志下午停止编辑时间
      */
     String WORKLOG_PM_STOPEDIT = "worklog_pm_stopedit";
+    /**
+     * 工作日志早上开始编辑时间
+     */
+    String WORKLOG_AM_STARTEDIT	 = "WORKLOG_AM_STARTEDIT";
+    /**
+     * 工作日志下午开始编辑时间
+     */
+    String WORKLOG_PM_STARTEDIT	 = "worklog_pm_startedit";
+    /**
+     * 工作内容安排默认内容
+     */
+    String 	WORK_SCHEDULE = "work_schedule";
+    /**
+     * 工作内容注意事项默认内容
+     */
+    String WORK_NOTE = "work_note";
 }

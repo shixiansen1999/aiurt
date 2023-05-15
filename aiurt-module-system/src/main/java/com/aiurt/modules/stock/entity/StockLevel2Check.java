@@ -147,4 +147,8 @@ public class StockLevel2Check extends DictEntity {
 	@ApiModelProperty(value = "提报物资列表")
 	@TableField(exist = false)
 	private List<StockLevel2CheckDetail> stockLevel2CheckDetailList;
+
+	/**登录用户管理部门权限集合*/
+	@TableField(exist = false)
+	private List<String> userOrgCodes;
 }

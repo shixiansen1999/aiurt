@@ -13,7 +13,9 @@ import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.position.mapper.CsLineMapper;
 import com.aiurt.modules.position.mapper.CsStationMapper;
 import com.aiurt.modules.position.mapper.CsStationPositionMapper;
+import com.aiurt.modules.position.service.ICsLineService;
 import com.aiurt.modules.position.service.ICsStationPositionService;
+import com.aiurt.modules.position.service.ICsStationService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -38,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,6 +68,11 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
     private ISysBaseAPI sysBaseAPI;
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
+
+    @Autowired
+    private ICsStationService csStationService;
+    @Autowired
+    private ICsLineService csLineService;
 
     /**
      * 查询列表
@@ -337,5 +345,98 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         successLines += (listMaterial.size() - errorLines);
         return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorStrs, null);
     }
+
+    /**
+     * 异步加载
+     *
+     * @param name
+     * @param pid
+     * @return
+     */
+    @Override
+    public List<CsStationPosition> queryTreeListAsync(String name, String pid) {
+        // 顶级的数据
+        if (StrUtil.isBlank(pid) || StrUtil.equalsIgnoreCase(pid, "0")) {
+            //查询所有一级
+            List<CsLine> lineList = csLineService.list(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(CsLine::getSort).orderByDesc(CsLine::getUpdateTime));
+            //循环一级
+            List<CsStationPosition> lineResultList = lineList.stream().map(line -> {
+                String codeCc1 = line.getLineCode();
+                CsStationPosition onePosition = setEntity(line.getId(), 1, line.getSort(), line.getLineCode(), line.getLineName(), null, null, codeCc1, line.getLineType(), "", line.getLongitude(), line.getLatitude());
+                onePosition.setFid("0");
+                onePosition.setIsLeaf(false);
+                return onePosition;
+            }).collect(Collectors.toList());
+            return lineResultList;
+        }
+
+        // 二级或者三级
+        //查询所有二级
+        List<CsStation> stationList = csStationService.list(new LambdaQueryWrapper<CsStation>()
+                .eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(CsStation::getLineCode, pid)
+                .orderByAsc(CsStation::getSort).orderByDesc(CsStation::getUpdateTime));
+
+        if (CollUtil.isNotEmpty(stationList)) {
+            CsLine csLine = Optional.ofNullable(csLineService.getBaseMapper().selectOne(new LambdaQueryWrapper<CsLine>().eq(CsLine::getLineCode, pid).last("limit 1"))).orElse(new CsLine());
+            //循环二级
+            List<CsStationPosition> positionList = stationList.stream().map(two -> {
+                String codeCc2 = two.getLineCode() + "/" + two.getStationCode();
+                CsStationPosition twoPosition = setEntity(two.getId(), 2, two.getSort(), two.getStationCode(), two.getStationName(), two.getLineCode(), csLine.getLineName(), codeCc2, two.getStationType(), "", two.getLongitude(), two.getLatitude());
+                twoPosition.setIsLeaf(false);
+                twoPosition.setFid(pid);
+                return twoPosition;
+            }).collect(Collectors.toList());
+
+            return positionList;
+        }
+
+        //查询所有三级
+        List<CsStationPosition> positionList =
+                list(new LambdaQueryWrapper<CsStationPosition>().eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0).eq(CsStationPosition::getStaionCode, pid)
+                        .orderByAsc(CsStationPosition::getSort).orderByDesc(CsStationPosition::getUpdateTime));
+
+        //循环三级
+        List<CsStationPosition> list = positionList.stream().map(three -> {
+            CsStation two = Optional.ofNullable(csStationService.getBaseMapper().selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, pid).last("limit 1"))).orElse(new CsStation());
+            String codeCc3 = three.getLineCode() + "/" + three.getStaionCode() + "/" + three.getPositionCode();
+            CsStationPosition threePosition = setEntity(three.getId(), 3, three.getSort(), three.getPositionCode(), three.getPositionName(), two.getStationCode(), two.getStationName(), codeCc3, three.getPositionType(), three.getLength(), three.getLongitude(), three.getLatitude());
+            threePosition.setIsLeaf(true);
+            threePosition.setFid(pid);
+            return threePosition;
+        }).collect(Collectors.toList());
+
+        return list;
+
+    }
+
+    /**
+     * 位置管理树-转换实体
+     * @param id
+     * @param level
+     * @param sort
+     * @param positionCode
+     * @param positionName
+     * @return
+     */
+    public CsStationPosition setEntity(String id, Integer level, Integer sort, String positionCode, String positionName, String pCode, String pName, String codeCc, Integer positionType, String length, BigDecimal longitude, BigDecimal latitude){
+        CsStationPosition position = new CsStationPosition();
+        position.setId(id);
+        position.setLevel(level);
+        position.setSort(sort);
+        position.setPositionCode(positionCode);
+        position.setPositionName(positionName);
+        position.setLongitude(longitude);
+        position.setLatitude(latitude);
+        position.setPCode(pCode);
+        position.setPUrl(pName);
+        position.setCodeCc(codeCc);
+        position.setPositionType(positionType);
+        position.setLength(length);
+        position.setTitle(positionName);
+        position.setValue(positionCode);
+        return position;
+    }
+
 
 }

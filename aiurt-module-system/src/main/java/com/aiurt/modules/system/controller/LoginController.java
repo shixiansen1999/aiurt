@@ -22,6 +22,7 @@ import com.aiurt.common.util.*;
 import com.aiurt.common.util.encryption.EncryptedString;
 import com.aiurt.config.thirdapp.ThirdAppConfig;
 import com.aiurt.modules.system.entity.*;
+import com.aiurt.modules.system.mapper.CsUserStaionMapper;
 import com.aiurt.modules.system.model.SysLoginModel;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
@@ -41,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserStationModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
 import org.jeecg.modules.base.service.BaseCommonService;
@@ -52,6 +54,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static cn.hutool.crypto.SecureUtil.sha1;
 
@@ -89,6 +92,9 @@ public class LoginController {
 
 	@Autowired
 	private IWeaverSsoService weaverSsoService;
+
+	@Autowired
+	private CsUserStaionMapper csUserStaionMapper;
 
 	@Autowired
 	ThirdAppConfig thirdAppConfig;
@@ -606,6 +612,11 @@ public class LoginController {
 				sysUser.setOrgName(sysDepart.getDepartName());
 			}
 		}
+
+		List<CsUserStationModel> stationList = csUserStaionMapper.getStationByUserId(sysUser.getId());
+		List<String> stationCodes = CollUtil.isNotEmpty(stationList)?stationList.stream().map(CsUserStationModel::getStationCode).collect(Collectors.toList()):new ArrayList<String>();
+		sysUser.setStationCodes(stationCodes);
+
 		JSONObject obj = new JSONObject();
 		//用户登录信息
 		obj.put("userInfo", sysUser);

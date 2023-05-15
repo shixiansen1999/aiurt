@@ -14,6 +14,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.XlsExport;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.common.util.oConvertUtils;
@@ -32,6 +33,7 @@ import com.aiurt.modules.stock.service.*;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.service.ICsUserDepartService;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.alibaba.fastjson.JSONObject;
@@ -52,6 +54,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
@@ -108,6 +111,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	private IMaterialBaseService iMaterialBaseService;
 	@Autowired
 	private MaterialBaseMapper materialBaseMapper;
+	@Autowired
+	private ICsUserDepartService csUserDepartService;
 	@Autowired
 	@Value("${jeecg.path.errorExcelUpload}")
 	private String errorExcelUpload;
@@ -894,6 +899,19 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	}
 	@Override
 	public IPage<StockInOrderLevel2> pageList(Page<StockInOrderLevel2> page, StockInOrderLevel2 stockInOrderLevel2) {
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		if (Objects.isNull(user)) {
+			throw new AiurtBootException("请重新登录");
+		}
+		// 根据当前登陆人的管理部门权限过滤（除了管理员角色用户）
+		if (!user.getRoleCodes().contains(CommonConstant.ADMIN)) {
+			List<CsUserDepartModel> departByUserId = csUserDepartService.getDepartByUserId(user.getId());
+			if (CollUtil.isEmpty(departByUserId)) {
+				return page;
+			}
+			List<String> collect = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+			stockInOrderLevel2.setUserOrgCodes(collect);
+		}
 		List<StockInOrderLevel2> baseList = baseMapper.pageList(page, stockInOrderLevel2);
 		page.setRecords(baseList);
 		return page;

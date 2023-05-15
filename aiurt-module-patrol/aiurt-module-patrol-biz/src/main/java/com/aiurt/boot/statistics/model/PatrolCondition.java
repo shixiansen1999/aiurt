@@ -75,4 +75,8 @@ public class PatrolCondition implements Serializable {
     @ApiModelProperty(value = "数据权限过滤，0按当前登录用户所管理的组织机构来进行过滤，1不进行过滤")
     private Integer isAllData;
 
+    /**
+     * 自定义SQL
+     */
+    private String jointSQL;
 }

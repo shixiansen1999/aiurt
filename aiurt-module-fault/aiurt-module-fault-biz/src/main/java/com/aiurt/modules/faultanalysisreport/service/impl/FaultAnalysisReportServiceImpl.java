@@ -67,33 +67,29 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     @Override
     public IPage<FaultAnalysisReport> readAll(Page<FaultAnalysisReport> page, FaultAnalysisReport faultAnalysisReport) {
         //获取权限查询的数据集合
-        LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
-        List<Fault> faults = faultMapper.selectList(queryWrapper);
-        List<String> ids = faults.stream().map(Fault::getId).distinct().collect(Collectors.toList());
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        faultAnalysisReport.setCreateBy(sysUser.getUsername());
-        if (CollUtil.isEmpty(ids)) {
-            return page.setRecords(new ArrayList<>());
-        }
 
-        List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,ids,sysUser.getUsername());
+        List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,null,sysUser.getUsername());
 
         //解决不是审核人去除审核按钮
         if(CollUtil.isNotEmpty(faultAnalysisReports)){
             for (FaultAnalysisReport report : faultAnalysisReports) {
-                TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfo(report.getProcessInstanceId(), report.getTaskId());
-                List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
-                //operationList为空，没有审核按钮
-                if(CollUtil.isNotEmpty(operationList)){
-                    report.setHaveButton(true);
-                }else{
-                    report.setHaveButton(false);
-                }
-                //当前登录人不是创建人，则为false
-                if(report.getCreateBy().equals(sysUser.getUsername())){
-                    report.setIsCreateUser(true);
-                }else{
-                    report.setIsCreateUser(false);
+                report.setHaveButton(false);
+                if (StrUtil.isNotBlank(report.getProcessInstanceId()) && StrUtil.isNotBlank(report.getTaskId())) {
+                    TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfoWithCache(report.getProcessInstanceId(), report.getTaskId(),sysUser.getUsername());
+                    List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
+                    //operationList为空，没有审核按钮
+                    if(CollUtil.isNotEmpty(operationList)){
+                        report.setHaveButton(true);
+                    }else{
+
+                    }
+                    //当前登录人不是创建人，则为false
+                    if(report.getCreateBy().equals(sysUser.getUsername())){
+                        report.setIsCreateUser(true);
+                    }else{
+                        report.setIsCreateUser(false);
+                    }
                 }
             }
         }

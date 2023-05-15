@@ -1,5 +1,6 @@
 package com.aiurt.modules.basic.controller;
 
+import com.aiurt.modules.basic.dto.QWeatherDTO;
 import com.aiurt.modules.basic.dto.WeatherDetailDTO;
 import com.aiurt.modules.basic.service.ISystemIndexService;
 import io.swagger.annotations.Api;
@@ -30,4 +31,10 @@ public class SystemIndexController {
         return Result.OK(weatherDetailDTO);
     }
 
+    @ApiOperation("获取和风天气信息")
+    @GetMapping("/getQWeatherInfo")
+    public Result<QWeatherDTO> getQWeatherInfo() {
+        QWeatherDTO qWeatherDTO = systemIndexService.getQWeatherInfo();
+        return Result.OK(qWeatherDTO);
+    }
 }

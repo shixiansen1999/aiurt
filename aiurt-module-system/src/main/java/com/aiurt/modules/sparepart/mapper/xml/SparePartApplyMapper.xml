@@ -42,6 +42,12 @@
             <if test="sparePartApply.status != null and sparePartApply.status != null">
                 and spare_part_apply.status = #{sparePartApply.status}
             </if>
+            <if test="sparePartApply.orgCodes != null and sparePartApply.orgCodes.size() != 0">
+            and t1.org_code in
+                <foreach collection="sparePartApply.orgCodes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+</if>
         </where>
         order by spare_part_apply.create_time desc
     </select>

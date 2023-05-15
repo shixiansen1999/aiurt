@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.service.ICsStationService;
 import com.aiurt.modules.system.entity.CsUserStaion;
@@ -32,10 +33,12 @@ public class CsUserStaionServiceImpl extends ServiceImpl<CsUserStaionMapper, CsU
     }
 
     @Override
-    public List<CsUserStationModel> queryAllStation() {
+    public List<CsUserStationModel> queryAllStation(String lineCode) {
         LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsStation::getDelFlag, 0) .ne(CsStation::getLineCode,"NO1").ne(CsStation::getLineCode,"ehx0001").ne(CsStation::getLineCode,"01").ne(CsStation::getLineCode,"02");
-
+        wrapper.eq(CsStation::getDelFlag, 0).orderByAsc(CsStation::getLineCode, CsStation::getSort);
+        if (StrUtil.isNotBlank(lineCode)) {
+            wrapper.eq(CsStation::getLineCode, lineCode);
+        }
         List<CsStation> list = csStationService.list(wrapper);
 
         List<CsUserStationModel> modelList = list.stream().map(csStation -> {
@@ -47,5 +50,10 @@ public class CsUserStaionServiceImpl extends ServiceImpl<CsUserStaionMapper, CsU
             return csUserStationModel;
         }).collect(Collectors.toList());
         return modelList;
+    }
+
+    @Override
+    public List<CsUserStationModel> queryByUserIdAndLineCode(String userId, String lineCode) {
+        return  baseMapper.queryByUserIdAndLineCode(userId, lineCode);
     }
 }

@@ -36,6 +36,10 @@ public class FaultScreenModule {
      */
     private Integer status;
     /**
+     * 本月总数状态
+     */
+    private Integer moonSolve;
+    /**
      * 未解决状态
      */
     private Integer unSo;

@@ -79,7 +79,7 @@ public class Device extends DictEntity {
 	/**设备类型编码*/
 	@Excel(name = "设备类型编码", width = 15,needMerge = true)
 	@ApiModelProperty(value = "设备类型编码")
-	@Dict(dictTable ="device_Type",dicText = "name",dicCode = "code")
+	@Dict(dictTable ="device_type",dicText = "name",dicCode = "code")
 	private  String  deviceTypeCode;
 	/**设备类型编码*/
 	@Excel(name = "设备类型编码名称", width = 15,needMerge = true)
@@ -356,7 +356,10 @@ public class Device extends DictEntity {
 	@ApiModelProperty(value = "报废状态 0-未报废 1-已报废")
 	@Dict(dicCode = "device_scrap_flag")
 	private  Integer  scrapFlag;
-
+	@ApiModelProperty(value = "设备用户名")
+	private  String  deviceUserName;
+	@ApiModelProperty(value = "设备密码")
+	private  String  devicePassword;
 	@Excel(name = "报废状态",needMerge = true)
 	@ApiModelProperty(value = "报废状态 0-未报废 1-已报废")
 	@TableField(exist = false)

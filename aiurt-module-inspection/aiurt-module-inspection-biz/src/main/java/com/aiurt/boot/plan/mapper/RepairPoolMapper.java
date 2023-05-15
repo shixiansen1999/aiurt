@@ -6,8 +6,10 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.CodeManageDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCode;
+import com.aiurt.boot.plan.req.SelectPlanReq;
 import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -22,6 +24,7 @@ import java.util.Set;
  * @Date: 2022-06-22
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface RepairPoolMapper extends BaseMapper<RepairPool> {
 
     /**
@@ -60,6 +63,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
 
     /**
      * 根据专业获取检修任务编码
+     *
      * @param majorList
      * @return
      */
@@ -67,6 +71,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
 
     /**
      * 检修计划总数和完成总数（带分页）
+     *
      * @param page
      * @param orgCodes
      * @param item
@@ -74,10 +79,11 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @param endDate
      * @return
      */
-    List<InspectionDTO> getInspectionData(@Param("page") Page<InspectionDTO> page,@Param("orgCodes") List<String> orgCodes,@Param("item") Integer item,@Param("beginDate") Date beginDate,@Param("endDate") Date endDate,@Param("lineCode") String lineCode);
+    List<InspectionDTO> getInspectionData(@Param("page") Page<InspectionDTO> page, @Param("orgCodes") List<String> orgCodes, @Param("item") Integer item, @Param("beginDate") Date beginDate, @Param("endDate") Date endDate,@Param("lineCode")String lineCode);
 
     /**
      * 今日检修（带分页）
+     *
      * @param page
      * @param date
      * @param codeList
@@ -87,25 +93,28 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
 
     /**
      * 获取完成数量和未完成数量
+     *
      * @param orgCode
      * @param beginDate
      * @param endDate
      * @return
      */
-    PlanIndexDTO getNumByTimeAndOrgCode(@Param("orgCode") String orgCode,@Param("beginDate") Date beginDate,@Param("endDate") Date endDate);
+    PlanIndexDTO getNumByTimeAndOrgCode(@Param("orgCode") String orgCode, @Param("beginDate") Date beginDate, @Param("endDate") Date endDate);
 
     /**
      * 检修计划总数和完成总数（不带分页）
+     *
      * @param orgCodes
      * @param item
      * @param beginDate
      * @param endDate
      * @return
      */
-    List<InspectionDTO> getInspectionDataNoPage(@Param("orgCodes") List<String> orgCodes,@Param("item") Integer item,@Param("beginDate") Date beginDate,@Param("endDate") Date endDate);
+    List<InspectionDTO> getInspectionDataNoPage(@Param("orgCodes") List<String> orgCodes, @Param("item") Integer item, @Param("beginDate") Date beginDate, @Param("endDate") Date endDate);
 
     /**
      * 今日检修(不带分页)
+     *
      * @param date
      * @param orgCodes
      * @return
@@ -114,6 +123,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
 
     /**
      * 根据检修任务code查询关联的组织机构
+     *
      * @param taskCodes
      * @return
      */
@@ -121,6 +131,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
 
     /**
      * 根据检修任务code查询关联的站点
+     *
      * @param taskCodes
      * @return
      */
@@ -133,4 +144,32 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
             @DataColumn(key = "systemName",value = "t5.subsystem_code")
     })
     List<RepairPool> getList(@Param("startDate")Date startDate,@Param("endDate") Date endDate);
+
+    /**
+     * 获取符合条件的检修计划概览信息。
+     *
+     * @param startDate        查询的开始日期
+     * @param endDate          查询的结束日期
+     * @return 符合条件的检修计划列表
+     */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "rpor.org_code"),
+            @DataColumn(key = "stationName",value = "rpsr.station_code"),
+            @DataColumn(key = "majorName",value = "rpc.major_code"),
+            @DataColumn(key = "systemName",value = "rpc.subsystem_code")
+    })
+    List<RepairPool> getOverviewInfo(Date startDate, Date endDate);
+    /**
+     * 分页查询维修池中的维修任务。
+     * @param page 分页对象，包含当前页数、每页显示数量等分页信息
+     * @param selectPlanReq 查询条件对象，封装了查询所需的筛选参数，如起始时间、结束时间、状态等
+     * @return 返回一个维修池任务列表，包含符合查询条件的维修任务
+     */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "rpor.org_code"),
+            @DataColumn(key = "stationName",value = "rpsr.station_code"),
+            @DataColumn(key = "majorName",value = "rpc.major_code"),
+            @DataColumn(key = "systemName",value = "rpc.subsystem_code")
+    })
+    List<RepairPool> selectRepairPool(@Param("page")Page<RepairPool> page, @Param("selectPlanReq") SelectPlanReq selectPlanReq);
 }

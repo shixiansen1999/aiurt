@@ -13,7 +13,7 @@ public class PathMatcherUtil {
 
     public static void main(String[] args) {
         String url = "/sys/dict/loadDictOrderByValue/tree,s2,2";
-        String p = "/sys/dict/loadDictOrderByValue/*";
+        String p = "/sys/dict/loadDictOrderByValue/**";
 
         System.out.println(PathMatcherUtil.match(p,url));
     }

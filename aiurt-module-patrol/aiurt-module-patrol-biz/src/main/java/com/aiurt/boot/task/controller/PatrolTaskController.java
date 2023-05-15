@@ -742,7 +742,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "巡检任务表-打印巡视详情")
     @ApiOperation(value = "巡检任务表-打印巡视详情", notes = "巡检任务表-打印巡视详情")
     @GetMapping(value = "/printPatrolTaskById")
-    public Result<List<PrintPatrolTaskDTO>> printPatrolTaskById(@RequestParam(name="id",required=true) String ids,
+    public Result<List<PrintPatrolTaskDTO>> printPatrolTaskById(@RequestParam(name="ids",required=true) String ids,
                                                       HttpServletRequest req) {
 
         List<PrintPatrolTaskDTO> printPatrolTaskDTOS = patrolTaskService.printPatrolTaskById(ids);

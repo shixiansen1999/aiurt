@@ -4,14 +4,20 @@ import com.aiurt.boot.index.dto.TaskDetailsDTO;
 import com.aiurt.boot.index.dto.TaskDetailsReq;
 import com.aiurt.boot.index.dto.TaskStateDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
+import com.aiurt.boot.plan.entity.RepairPoolDeviceRel;
 import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
 import com.aiurt.boot.plan.entity.RepairPoolRel;
 import com.aiurt.boot.plan.entity.RepairPoolStationRel;
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @Description: 首页检修模块
@@ -19,7 +25,7 @@ import java.util.List;
  * @Date: 2022-06-22
  * @Version: V1.0
  */
-public interface IndexPlanMapper {
+public interface IndexPlanMapper  {
 
     /**
      * 分页聚合检修数据
@@ -29,30 +35,33 @@ public interface IndexPlanMapper {
      * @param taskDetailsReq
      * @return
      */
-    List<TaskDetailsDTO> getGropuByData(@Param("type") Integer type, @Param("page") Page<TaskDetailsDTO> page, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq,@Param("codeByOrgCode") List<RepairPoolOrgRel> codeByOrgCode, @Param("repairPoolRels")List<RepairPoolRel> repairPoolRels,@Param("repairPoolStationRels")List<RepairPoolStationRel> repairPoolStationRels);
+    List<TaskDetailsDTO> getGropuByData(@Param("type") Integer type, @Param("page") Page<TaskDetailsDTO> page, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq, @Param("filterConditions") String filterConditions);
 
     /**
      * 点击站点获取检修数据
      * @param page
      * @param type
      * @param taskDetailsReq
+     * @param filterConditions
      * @return
      */
-    List<RepairPoolDetailsDTO> getMaintenancDataByStationCode(@Param("page")Page<RepairPoolDetailsDTO> page,@Param("type")Integer type, @Param("taskDetailsReq")TaskDetailsReq taskDetailsReq,@Param("codeByOrgCode") List<RepairPoolOrgRel> codeByOrgCode, @Param("repairPoolRels")List<RepairPoolRel> repairPoolRels,@Param("repairPoolStationRels")List<RepairPoolStationRel> repairPoolStationRels);
+    List<RepairPoolDetailsDTO> getMaintenancDataByStationCode(@Param("page") Page<RepairPoolDetailsDTO> page, @Param("type") Integer type, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq, @Param("filterConditions") String filterConditions);
 
     /**
      * 根据条件查询检修数据（无分页）
+     *
      * @param stationCode
      * @param taskDetailsReq
      * @return
      */
-    List<RepairPoolDetailsDTO> getMainDataByStationCodeNoPage(@Param("stationCode") String stationCode,@Param("taskDetailsReq") TaskDetailsReq taskDetailsReq);
+    List<RepairPoolDetailsDTO> getMainDataByStationCodeNoPage(@Param("stationCode") String stationCode, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq);
 
     /**
      * 查询站点下的检修任务是否已经完成
+     *
      * @param startTime
      * @param endTime
      * @return
      */
-    List<TaskStateDTO> selectStationState(@Param("startTime") Date startTime, @Param("endTime")  Date endTime);
+    List<TaskStateDTO> selectStationState(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
 }

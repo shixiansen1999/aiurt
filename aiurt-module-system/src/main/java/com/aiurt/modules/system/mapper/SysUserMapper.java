@@ -273,4 +273,12 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 
 	@MapKey("userId")
 	List<Map<String,String>> getRealNameMap(@Param("orgId")String orgId);
+
+	/**
+	 * 根据部门，角色编码查询人员姓名
+	 * @param orgCode
+	 * @param roleCode
+	 * @return
+	 */
+	List<String> getRealNameByOrgCodeAndRoleCode(@Param("orgCode") List<String> orgCode,@Param("roleCode") List<String> roleCode);
 }

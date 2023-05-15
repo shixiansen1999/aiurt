@@ -13,4 +13,40 @@
     <select id="selectStationList" resultType="com.aiurt.boot.plan.dto.StationDTO">
         select station_code,position_code,line_code from repair_pool_station_rel where del_flag = 0 and  repair_pool_code = #{planCode}
     </select>
+
+    <select id="selectStationToMapByPlanCode" resultType="com.aiurt.boot.index.dto.MapDTO">
+        select
+        rpsr.repair_pool_code as `value`,
+        GROUP_CONCAT(rpsr.station_code) as `text`
+        from
+        repair_pool_station_rel rpsr
+        <where>
+            rpsr.del_flag = 0
+            <if test="planCodes!=null and planCodes.size()>0">
+                and rpsr.repair_pool_code in
+                <foreach collection="planCodes" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by rpsr.repair_pool_code
+    </select>
+    <select id="selectBatchStationList" resultType="com.aiurt.boot.plan.dto.StationDTO">
+        SELECT
+        rpsr.repair_pool_code,
+        rpsr.line_code,
+        rpsr.station_code,
+        rpsr.position_code
+        FROM
+        repair_pool_station_rel rpsr
+        <where>
+            rpsr.del_flag = 0
+        <if test="repairPoolCodes!=null and !repairPoolCodes.isEmpty()">
+            AND rpsr.repair_pool_code IN
+            <foreach item="item" index="index" collection="repairPoolCodes" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        </where>
+    </select>
 </mapper>

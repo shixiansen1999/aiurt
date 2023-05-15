@@ -39,4 +39,12 @@ public class DeviceDTO implements Serializable {
 
     @ApiModelProperty(value = "设备编号列表")
     private List<String> deviceCodes;
+
+
+    @ApiModelProperty(value = "编码")
+    private String code;
+
+    private Integer pageNo = 1;
+
+    private Integer pageSize = 10;
 }

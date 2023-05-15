@@ -14,13 +14,14 @@ import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -46,6 +47,8 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
     private SparePartOutOrderMapper sparePartOutOrderMapper;
     @Autowired
     private ISparePartOutOrderService sparePartOutOrderService;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
     /**
      * 查询列表
      * @param page
@@ -54,6 +57,16 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
      */
     @Override
     public List<SparePartReturnOrder> selectList(Page page, SparePartReturnOrder sparePartReturnOrder){
+        //权限过滤
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departModels = sysBaseApi.getDepartByUserId(user.getId());
+        if(!user.getRoleCodes().contains("admin")&&departModels.size()==0){
+            return CollUtil.newArrayList();
+        }
+        if(!user.getRoleCodes().contains("admin")&&departModels.size()!=0){
+            List<String> orgCodes = departModels.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+            sparePartReturnOrder.setOrgCodes(orgCodes);
+        }
         List<SparePartReturnOrder> sparePartReturnOrders = sparePartReturnOrderMapper.readAll(page, sparePartReturnOrder);
         List<SparePartReturnOrder> list = new ArrayList<>();
         if (CollUtil.isNotEmpty(sparePartReturnOrders)){

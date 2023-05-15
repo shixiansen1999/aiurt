@@ -10,6 +10,7 @@ import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.service.ICsStationService;
 import com.aiurt.modules.syntheticalpanel.model.PositionPanelModel;
 import com.aiurt.modules.syntheticalpanel.service.PositionPanelService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -23,6 +24,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,6 +50,9 @@ public class PositionPanelController {
 
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
+
+    @Autowired
+    private ICsStationService iCsStationService;
 
 
     /**
@@ -94,15 +99,15 @@ public class PositionPanelController {
     }
 
     /**
-     * 通过站点查询
+     * 通过线路站点查询
      *
-     * @param stationCode
+     * @param stationName
      * @return
      */
-    @AutoLog(value = "综合看板监控设备信息-通过站点查询", operateType =  1, operateTypeAlias = "查询-通过站点查询", permissionUrl = "")
-    @ApiOperation(value="综合看板监控设备信息-通过站点查询", notes="综合看板监控设备信息-通过站点查询")
+    @AutoLog(value = "综合看板监控设备信息-通过线路站点查询", operateType =  1, operateTypeAlias = "查询-通过线路站点查询", permissionUrl = "")
+    @ApiOperation(value="综合看板监控设备信息-通过线路站点查询", notes="综合看板监控设备信息-通过线路站点查询")
     @PostMapping(value = "/getMonitorDevice")
-    public Result<IPage<Device>> getMonitorDevice(@RequestParam(name="stationCode",required=true)  String stationCode,
+    public Result<IPage<Device>> getMonitorDevice(@RequestParam(name="stationName",required=true)  String stationName,
                                                   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
                                                   ){
@@ -113,13 +118,26 @@ public class PositionPanelController {
                   .eq(DeviceType::getName,string);
         List<DeviceType> deviceTypeList = deviceTypeService.list(deviceTypeLambdaQueryWrapper);
 
+        //根据线路名称和站点名称查询线路编码和站点编码
+        List<CsStation> csStation = new ArrayList<>();
+        LambdaQueryWrapper<CsStation> csStationLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if (StrUtil.isNotBlank(stationName)){
+            csStationLambdaQueryWrapper.eq(CsStation::getStationName,stationName);
+        }
+        csStationLambdaQueryWrapper.eq(CsStation::getDelFlag,CommonConstant.DEL_FLAG_0);
+        csStation = iCsStationService.list(csStationLambdaQueryWrapper);
+
         Page<Device> devicePage = new Page<>();
         if (CollUtil.isNotEmpty(deviceTypeList)){
             List<String> collect = deviceTypeList.stream().map(DeviceType::getCode).collect(Collectors.toList());
             LambdaQueryWrapper<Device> deviceLambdaQueryWrapper = new LambdaQueryWrapper<>();
             deviceLambdaQueryWrapper.eq(Device::getDelFlag,CommonConstant.DEL_FLAG_0)
-                    .eq(Device::getStationCode,stationCode)
                     .in(Device::getDeviceTypeCode,collect);
+            if (CollUtil.isNotEmpty(csStation)){
+                List<String> collect2 = csStation.stream().map(CsStation::getStationCode).collect(Collectors.toList());
+                deviceLambdaQueryWrapper.in(Device::getStationCode,collect2);
+            }
+
            devicePage = deviceService.page(new Page<>(pageNo, pageSize), deviceLambdaQueryWrapper);
         }
         if (CollUtil.isNotEmpty(devicePage.getRecords())){

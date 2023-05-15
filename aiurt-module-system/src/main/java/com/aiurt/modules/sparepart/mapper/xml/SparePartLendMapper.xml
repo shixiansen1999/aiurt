@@ -110,6 +110,16 @@
                     #{item}
                 </foreach>)
             </if>
+            <if test="lend.wareHouses!= null and lend.wareHouses.size()!= 0">
+            and spare_part_lend.lend_warehouse_code in
+            <foreach collection="lend.wareHouses" open="(" separator=","  close=")" item="item">
+                #{item}
+            </foreach>
+             or spare_part_lend.back_warehouse_code in
+             <foreach collection="lend.wareHouses" open="(" separator=","  close=")" item="item">
+                #{item}
+            </foreach>
+        </if>
 
         ) spare_part_lend
         LEFT JOIN sys_depart t11 ON t11.org_code = spare_part_lend.create_org_code

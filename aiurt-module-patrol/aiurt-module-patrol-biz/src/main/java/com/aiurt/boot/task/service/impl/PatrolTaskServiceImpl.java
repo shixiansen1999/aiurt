@@ -8,7 +8,10 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.constant.*;
+import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.constant.PatrolMessageUrlConstant;
+import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
@@ -30,6 +33,7 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.ArchiveUtils;
+import com.aiurt.common.util.AsyncThreadPoolExecutorUtil;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.IBaseApi;
@@ -47,6 +51,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -54,7 +59,6 @@ import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +81,7 @@ import java.util.stream.Collectors;
  * @Date: 2022-06-21
  * @Version: V1.0
  */
+@Slf4j
 @Service
 public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolTask> implements IPatrolTaskService {
 
@@ -86,6 +91,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private IPatrolTaskDeviceService patrolTaskDeviceService;
     @Autowired
     private PatrolTaskUserMapper patrolTaskUserMapper;
+    @Autowired
+    private IPatrolTaskUserService patrolTaskUserService;
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
     @Autowired
@@ -127,14 +134,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
         // 数据权限过滤
-        List<String> taskCode = new ArrayList<>();
-        try {
-            taskCode = this.taskDataPermissionFilter();
-        } catch (Exception e) {
-            return page;
-        }
+//        List<String> taskCode = new ArrayList<>();
+//        try {
+//            taskCode = this.taskDataPermissionFilter();
+//        } catch (Exception e) {
+//            return page;
+//        }
 
-        IPage<PatrolTaskParam> taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam, taskCode);
+        IPage<PatrolTaskParam> taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam);
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("patrol_task-%d").build();
         ExecutorService patrolTask = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
                 0L, TimeUnit.MILLISECONDS,
@@ -148,7 +155,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             l.setHavePrint(patrolTaskParam.getHavePrint());
 
             Future<PatrolTaskParam> submit = patrolTask.submit(new PatrolTaskThreadService(l, patrolTaskOrganizationMapper, patrolTaskStationMapper,
-                     patrolCheckResultMapper, patrolTaskMapper, patrolTaskDeviceMapper, patrolTaskUserMapper, patrolTaskDeviceService, sysBaseApi));
+                    patrolCheckResultMapper, patrolTaskMapper, patrolTaskDeviceMapper, patrolTaskUserMapper, patrolTaskDeviceService, sysBaseApi));
             futureList.add(submit);
 
         });
@@ -246,77 +253,152 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
         // 用户信息数据
         Map<String, List<PatrolAppointUserDTO>> map = Optional.ofNullable(patrolAppointInfoDTO.getMap()).orElseGet(ConcurrentHashMap::new);
-        AtomicInteger count = new AtomicInteger();
-        for (Map.Entry<String, List<PatrolAppointUserDTO>> listEntry : map.entrySet()) {
-            List<PatrolAppointUserDTO> list = listEntry.getValue();
+        // userId:username
+        Map<String, String> userInfoMap = new HashMap<>(16);
+        // 批量指派用户信息
+        List<PatrolTaskUser> taskUsers = new ArrayList<>();
+
+        for (Map.Entry<String, List<PatrolAppointUserDTO>> entry : map.entrySet()) {
+            List<PatrolAppointUserDTO> list = entry.getValue();
             if (CollUtil.isEmpty(list)) {
-                throw new AiurtBootException("未指定用户，请指定用户！");
+                throw new AiurtBootException("编号为：" + entry.getKey() + "的任务未指定用户！");
             }
-            // 根据任务code查找未指派的任务
-            QueryWrapper<PatrolTask> taskWrapper = new QueryWrapper<>();
-            taskWrapper.lambda()
-                    .eq(PatrolTask::getCode, listEntry.getKey())
+            list.forEach(user -> {
+                if (ObjectUtil.isEmpty(user) || ObjectUtil.isEmpty(user.getUserId())) {
+                    return;
+                }
+                if (ObjectUtil.isEmpty(user.getUserName())) {
+                    String username = userInfoMap.get(user.getUserId());
+                    if (StrUtil.isEmpty(username)) {
+                        username = patrolTaskUserMapper.getUsername(user.getUserId());
+                        userInfoMap.put(user.getUserId(), username);
+                    }
+                    user.setUserName(username);
+                }
+                // 指派用户信息
+                PatrolTaskUser taskUser = new PatrolTaskUser();
+                taskUser.setTaskCode(entry.getKey());
+                taskUser.setUserId(user.getUserId());
+                taskUser.setUserName(user.getUserName());
+                taskUsers.add(taskUser);
+            });
+        }
+
+        Set<String> codeSet = map.keySet();
+        codeSet.remove(null);
+        if (CollUtil.isNotEmpty(codeSet)) {
+            List<PatrolTask> tasks = this.lambdaQuery()
+                    .eq(PatrolTask::getDelFlag, 0)
                     .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISCARD)
                     .and(status -> status.eq(PatrolTask::getStatus, PatrolConstant.TASK_INIT)
                             .or()
-                            .eq(PatrolTask::getStatus, PatrolConstant.TASK_RETURNED));
-            PatrolTask patrolTask = patrolTaskMapper.selectOne(taskWrapper);
+                            .eq(PatrolTask::getStatus, PatrolConstant.TASK_RETURNED))
+                    .in(PatrolTask::getCode, codeSet)
+                    .list();
+            // 指派之前查询是否指派过巡检用户，存在则删除掉然后再添加(主要是重新生成接口)
+            QueryWrapper<PatrolTaskUser> userQueryWrapper = new QueryWrapper<>();
+            userQueryWrapper.lambda().in(PatrolTaskUser::getTaskCode, codeSet);
+            patrolTaskUserMapper.delete(userQueryWrapper);
+            // 保存指派用户
+            patrolTaskUserService.saveBatch(taskUsers);
 
-            if (ObjectUtil.isNotEmpty(patrolTask)) {
-                // 指派之前查询是否指派过巡检用户，存在则删除掉然后再添加(主要是重新生成接口)
-                QueryWrapper<PatrolTaskUser> taskUserWrapper = new QueryWrapper<>();
-                taskUserWrapper.lambda().eq(PatrolTaskUser::getTaskCode, listEntry.getKey());
-                List<PatrolTaskUser> taskUserList = patrolTaskUserMapper.selectList(taskUserWrapper);
-                if (CollectionUtil.isNotEmpty(taskUserList)) {
-                    List<String> collect = taskUserList.stream().map(l -> l.getId()).collect(Collectors.toList());
-                    patrolTaskUserMapper.deleteBatchIds(collect);
+            // 更新巡视任务状态
+            tasks.forEach(task -> {
+                // 作业类型
+                task.setType(patrolAppointInfoDTO.getType());
+                // 计划令编号和图片地址
+                task.setPlanOrderCode(patrolAppointInfoDTO.getPlanOrderCode());
+                task.setPlanOrderCodeUrl(patrolAppointInfoDTO.getPlanOrderCodeUrl());
+                if (ObjectUtil.isEmpty(task.getSource())) {
+                    task.setSource(PatrolConstant.TASK_COMMON);
                 }
-
-                // 标记是否插入指派的用户信息
-                AtomicInteger insert = new AtomicInteger();
-                Optional.ofNullable(list).orElseGet(Collections::emptyList).stream().forEach(l -> {
-                    if (ObjectUtil.isEmpty(l) || ObjectUtil.isEmpty(l.getUserId())) {
-                        return;
-                    }
-                    if (ObjectUtil.isEmpty(l.getUserName())) {
-                        l.setUserName(patrolTaskUserMapper.getUsername(l.getUserId()));
-                    }
-                    // 指派用户信息
-                    PatrolTaskUser taskUser = new PatrolTaskUser();
-                    taskUser.setTaskCode(listEntry.getKey());
-                    taskUser.setUserId(l.getUserId());
-                    taskUser.setUserName(l.getUserName());
-
-                    // 添加指派用户
-                    insert.addAndGet(patrolTaskUserMapper.insert(taskUser));
-                });
-                // 若插入指派的人员后则更新任务状态
-                if (insert.get() > 0) {
-                    PatrolTask task = new PatrolTask();
-                    // 作业类型
-                    task.setType(patrolAppointInfoDTO.getType());
-                    // 计划令编号和图片地址
-                    task.setPlanOrderCode(patrolAppointInfoDTO.getPlanOrderCode());
-                    task.setPlanOrderCodeUrl(patrolAppointInfoDTO.getPlanOrderCodeUrl());
-                    if (ObjectUtil.isEmpty(patrolTask.getSource())) {
-                        task.setSource(PatrolConstant.TASK_COMMON);
-                    }
-                    // 更新检查开始结束时间
-                    task.setStartTime(patrolAppointInfoDTO.getStartTime());
-                    task.setEndTime(patrolAppointInfoDTO.getEndTime());
-                    // 任务状态
-                    task.setStatus(PatrolConstant.TASK_CONFIRM);
-                    // 记录指派人
-                    task.setAssignId(loginUser.getId());
-                    // 更改任务状态为待确认
-                    patrolTaskMapper.update(task, taskWrapper);
-                    count.getAndIncrement();
-                }
-            }
+                // 更新检查开始结束时间
+                task.setStartTime(patrolAppointInfoDTO.getStartTime());
+                task.setEndTime(patrolAppointInfoDTO.getEndTime());
+                // 任务状态
+                task.setStatus(PatrolConstant.TASK_CONFIRM);
+                // 记录指派人
+                task.setAssignId(loginUser.getId());
+            });
+            this.updateBatchById(tasks);
         }
+
+//        for (Map.Entry<String, List<PatrolAppointUserDTO>> listEntry : map.entrySet()) {
+//            List<PatrolAppointUserDTO> list = listEntry.getValue();
+//            if (CollUtil.isEmpty(list)) {
+//                throw new AiurtBootException("未指定用户，请指定用户！");
+//            }
+//            // 根据任务code查找未指派的任务
+//            QueryWrapper<PatrolTask> taskWrapper = new QueryWrapper<>();
+//            taskWrapper.lambda()
+//                    .eq(PatrolTask::getCode, listEntry.getKey())
+//                    .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISCARD)
+//                    .and(status -> status.eq(PatrolTask::getStatus, PatrolConstant.TASK_INIT)
+//                            .or()
+//                            .eq(PatrolTask::getStatus, PatrolConstant.TASK_RETURNED));
+//            PatrolTask patrolTask = patrolTaskMapper.selectOne(taskWrapper);
+//
+//            if (ObjectUtil.isNotEmpty(patrolTask)) {
+//                // 指派之前查询是否指派过巡检用户，存在则删除掉然后再添加(主要是重新生成接口)
+//                QueryWrapper<PatrolTaskUser> taskUserWrapper = new QueryWrapper<>();
+//                taskUserWrapper.lambda().eq(PatrolTaskUser::getTaskCode, listEntry.getKey());
+//                List<PatrolTaskUser> taskUserList = patrolTaskUserMapper.selectList(taskUserWrapper);
+//                if (CollectionUtil.isNotEmpty(taskUserList)) {
+//                    List<String> collect = taskUserList.stream().map(l -> l.getId()).collect(Collectors.toList());
+//                    patrolTaskUserMapper.deleteBatchIds(collect);
+//                }
+//
+//                // 标记是否插入指派的用户信息
+//                AtomicInteger insert = new AtomicInteger();
+//                Optional.ofNullable(list).orElseGet(Collections::emptyList).stream().forEach(l -> {
+//                    if (ObjectUtil.isEmpty(l) || ObjectUtil.isEmpty(l.getUserId())) {
+//                        return;
+//                    }
+//                    if (ObjectUtil.isEmpty(l.getUserName())) {
+//                        l.setUserName(patrolTaskUserMapper.getUsername(l.getUserId()));
+//                    }
+//                    // 指派用户信息
+//                    PatrolTaskUser taskUser = new PatrolTaskUser();
+//                    taskUser.setTaskCode(listEntry.getKey());
+//                    taskUser.setUserId(l.getUserId());
+//                    taskUser.setUserName(l.getUserName());
+//
+//                    // 添加指派用户
+//                    insert.addAndGet(patrolTaskUserMapper.insert(taskUser));
+//                });
+//                // 若插入指派的人员后则更新任务状态
+//                if (insert.get() > 0) {
+//                    PatrolTask task = new PatrolTask();
+//                    // 作业类型
+//                    task.setType(patrolAppointInfoDTO.getType());
+//                    // 计划令编号和图片地址
+//                    task.setPlanOrderCode(patrolAppointInfoDTO.getPlanOrderCode());
+//                    task.setPlanOrderCodeUrl(patrolAppointInfoDTO.getPlanOrderCodeUrl());
+//                    if (ObjectUtil.isEmpty(patrolTask.getSource())) {
+//                        task.setSource(PatrolConstant.TASK_COMMON);
+//                    }
+//                    // 更新检查开始结束时间
+//                    task.setStartTime(patrolAppointInfoDTO.getStartTime());
+//                    task.setEndTime(patrolAppointInfoDTO.getEndTime());
+//                    // 任务状态
+//                    task.setStatus(PatrolConstant.TASK_CONFIRM);
+//                    // 记录指派人
+//                    task.setAssignId(loginUser.getId());
+//                    // 更改任务状态为待确认
+//                    patrolTaskMapper.update(task, taskWrapper);
+//                    count.getAndIncrement();
+//                }
+//            }
+//        }
         // 发送消息
-        this.sendMessagePC(map);
-        return count.get();
+//        this.sendMessagePC(map);
+        // 用一个线程发消息
+        AsyncThreadPoolExecutorUtil executor = AsyncThreadPoolExecutorUtil.getExecutor();
+        executor.submitTask(() -> {
+            this.sendMessagePC(map);
+            return "Send Message PC!";
+        });
+        return codeSet.size();
     }
 
     /**
@@ -1021,14 +1103,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskDTO.setDateEnd(dateEnd);
 
         }
-        // 数据权限过滤
-        List<String> taskCode = new ArrayList<>();
-        try {
-            taskCode = this.taskDataPermissionFilter();
-            patrolTaskDTO.setTaskCodes(taskCode);
-        } catch (Exception e) {
-            return pageList;
-        }
+//        // 数据权限过滤
+//        List<String> taskCode = new ArrayList<>();
+//        try {
+//            taskCode = this.taskDataPermissionFilter();
+//            patrolTaskDTO.setTaskCodes(taskCode);
+//        } catch (Exception e) {
+//            return pageList;
+//        }
         List<PatrolTaskDTO> taskDTOList = patrolTaskMapper.getPatrolTaskManualList(pageList, patrolTaskDTO);
         taskDTOList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
@@ -1669,10 +1751,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                                             .setInputType(result.getInputType())
                                             .setDictCode(result.getDictCode())
                                             .setRegular(result.getRegular())
-                                            .setRequired(result.getRequired());
+                                            .setRequired(result.getRequired())
+                                            .setDelFlag(0);
                                     newResultList.add(checkResult);
                                 }
                         );
+                        if (CollUtil.isEmpty(newResultList)) {
+                            throw new AiurtBootException("未找到对应工单检查项目内容！");
+                        }
                         patrolCheckResultMapper.addResultList(newResultList);
                     }
             );
@@ -1890,16 +1976,20 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<String> idList = StrUtil.splitTrim(ids, ",");
         for (String id : idList) {
             PrintPatrolTaskDTO taskDTO = new PrintPatrolTaskDTO();
-            PatrolTaskParam patrolTaskParam = new PatrolTaskParam();
-            patrolTaskParam.setId(id);
-            PatrolTaskParam param = this.selectBasicInfo(patrolTaskParam);
-            taskDTO.setId(param.getId());
-            taskDTO.setTitle(param.getName());
-            List<PatrolTaskStationDTO> stationInfo = param.getStationInfo();
+            PatrolTask patrolTask = patrolTaskMapper.selectById(id);
+            Assert.notNull(patrolTask, "未找到对应记录！");
+            taskDTO.setId(patrolTask.getId());
+            taskDTO.setTitle(patrolTask.getName());
+            // 站点信息
+            List<PatrolTaskStationDTO> stationInfo = patrolTaskStationMapper.selectStationByTaskCode(patrolTask.getCode());
             taskDTO.setStationNames(stationInfo.stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.joining()));
-            taskDTO.setUserName(param.getEndUsername());
-            taskDTO.setSubmitTime(DateUtil.format(param.getSubmitTime(),"yyyy-MM-dd HH:mm:ss"));
-            taskDTO.setSignUrl(patrolTaskParam.getSignUrl());
+            if (StrUtil.isNotEmpty(patrolTask.getEndUserId())) {
+                taskDTO.setUserName(patrolTaskMapper.getUsername(patrolTask.getEndUserId()));
+            }
+            taskDTO.setSubmitTime(DateUtil.format(patrolTask.getSubmitTime(),"yyyy-MM-dd HH:mm:ss"));
+            taskDTO.setSignUrl(patrolTask.getSignUrl());
+
+            //巡视单内容
 
             List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
             List<PrintStationDTO> stationDTOS = new ArrayList<>();
@@ -1915,56 +2005,39 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     for (PatrolBillDTO patrolBillDTO : billInfo) {
                         //根据检修单号查询检修项
                         String billCode = patrolBillDTO.getBillCode();
-                        PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(billCode))
-                                .orElseGet(PatrolTaskDeviceParam::new);
-
                         PrintSystemDTO printSystemDTO = new PrintSystemDTO();
-                        printStationDTO.setStationName(taskDeviceParam.getSubsystemName());
-                        List<PrintDetailDTO> printDetailList = new ArrayList<>();
+                        if (StrUtil.isNotEmpty(billCode)) {
+                            PatrolTaskDeviceParam taskDeviceParam = patrolTaskDeviceMapper.getIdAndSystemName(billCode);
+                            printSystemDTO.setSystemName(taskDeviceParam.getSubsystemName());
+                            List<PrintDetailDTO> printDetailList = new ArrayList<>();
 
-                        List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
-                        // 字典翻译
-                        Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
-                                .stream().filter(l->StrUtil.isNotEmpty(l.getText()))
-                                .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+                            List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceId(taskDeviceParam.getId());
+                            for (PatrolCheckResultDTO c : checkResultList) {
+                                String userName = patrolTaskMapper.getUserName(c.getUserId());
+                                c.setCheckUserName(userName);
 
-                        for (PatrolCheckResultDTO c : checkResultList) {
-                            c.setRequiredDictName(requiredItems.get(String.valueOf(c.getRequired())));
-                            if (ObjectUtil.isNotNull(c.getDictCode())) {
-                                List<DictModel> list = sysBaseApi.getDictItems(c.getDictCode());
-                                list.stream().forEach(l -> {
-                                    if (PatrolConstant.DEVICE_INP_TYPE.equals(c.getInputType())) {
-                                        if (l.getValue().equals(c.getOptionValue())) {
-                                            c.setCheckDictName(l.getTitle());
-                                        }
-                                    }
-                                });
-                            }
-
-                            String userName = patrolTaskMapper.getUserName(c.getUserId());
-                            c.setCheckUserName(userName);
-
-                            PrintDetailDTO printDetailDTO = new PrintDetailDTO();
-                            printDetailDTO.setContent(c.getContent() + ":" + c.getQualityStandard());
-                            if (c.getInputType() == 0) {
+                                PrintDetailDTO printDetailDTO = new PrintDetailDTO();
+                                printDetailDTO.setContent(
+                                        Optional.ofNullable(c.getQualityStandard())
+                                                .map(qs -> c.getContent() + ":" + qs)
+                                                .orElse(c.getContent())
+                                );
                                 printDetailDTO.setResult(Convert.toStr(c.getCheckResult()));
-                            }else if (c.getInputType() == 1){
-                                printDetailDTO.setResult(c.getCheckDictName());
-                            }else {
-                                printDetailDTO.setResult(c.getWriteValue());
+                                printDetailDTO.setRemark(c.getRemark());
+                                printDetailList.add(printDetailDTO);
                             }
-                            printDetailDTO.setRemark(c.getRemark());
-                            printDetailList.add(printDetailDTO);
-                        }
 
-                        printSystemDTO.setPrintDetailDTOS(printDetailList);
-                        printSystemDTOS.add(printSystemDTO);
+                            printSystemDTO.setPrintDetailDTOS(printDetailList);
+                            printSystemDTOS.add(printSystemDTO);
+                        }
                     }
                     printStationDTO.setPrintSystemDTOS(printSystemDTOS);
                     stationDTOS.add(printStationDTO);
                 }
             }
             taskDTO.setPrintStationDTOList(stationDTOS);
+            List<String> collect = stationInfo.stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.toList());
+            taskDTO.setTitle(CollUtil.join(collect, ",") + patrolTask.getName() + "巡视表");
             arrayList.add(taskDTO);
         }
         return arrayList;

@@ -17,11 +17,14 @@ import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.service.IFaultDeviceService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
+import com.aiurt.modules.largescream.dto.LargeFaultDataDatailDTO;
 import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
 import com.aiurt.modules.largescream.model.ReliabilityWorkTime;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
@@ -86,7 +89,11 @@ public class FaultInformationService {
         List<String> majors = getCurrentLoginUserMajors();
 
         int count = 0;
+
         List<Fault> faultList = faultInformationMapper.queryLargeFaultInformation(startDate, endDate, lineCode, majors);
+
+        List<Fault> faultList1 = faultInformationMapper.queryLargeFaultInformation(getTime(0), getTime(1), lineCode, majors);
+
         //总故障数
         if (CollUtil.isNotEmpty(faultList)) {
             result.setSum(faultList.size());
@@ -123,6 +130,13 @@ public class FaultInformationService {
         return result;
     }
 
+    private Date getTime(Integer integer){
+        Date time = null;
+        String dateTime1 = FaultLargeDateUtil.getDateTime(CommonConstant.BOARD_TIME_TYPE_3);
+        String[] split1 = dateTime1.split("~");
+        time = DateUtil.parse(split1[integer]);
+        return time;
+    }
     /**
      * 综合大屏-故障信息统计详情
      *
@@ -339,6 +353,46 @@ public class FaultInformationService {
         return monthList;
     }
 
+    /**
+     * 故障次数趋势图接口
+     * @param lineCode
+     * @return
+     */
+    public List<FaultMonthCountDTO> getLargeFaultMonthCount(String lineCode) {
+        List<FaultMonthCountDTO> faultMonthCountDTOList = new ArrayList<>();
+        //获取当前登录人的专业编码
+        List<String> majors = getCurrentLoginUserMajors();
+        int x = 5;
+        for (int i = 0; i <= x; i++) {
+            Integer sum = 0;
+            //创建一个新的系统故障单集合
+            List<FaultSystemMonthCountDTO> faultSystemMonthCountDTOList = new ArrayList<>();
+            //月份故障单
+            FaultMonthCountDTO faultMonthCountDTO = new FaultMonthCountDTO();
+            //获取最近半年月份，上一个月往前推半年
+            String month = FaultLargeDateUtil.getLast12Months(i);
+            String substring = month.substring(5, 7);
+            String changmonth = substring + "月";
+            faultMonthCountDTO.setMonth(changmonth);
+            //查询按系统分类好的并统计故障次数
+            List<FaultSystemMonthCountDTO> largeFaultMonthCount = faultInformationMapper.getLargeFaultMonthCount(month, lineCode, majors);
+            for (FaultSystemMonthCountDTO faultSystemCountDTO : largeFaultMonthCount) {
+                sum += faultSystemCountDTO.getFrequency();
+                //将名字改成系统+次数
+                if (ObjectUtil.isNotEmpty(faultSystemCountDTO.getSystemName())) {
+                    String name = faultSystemCountDTO.getSystemName() + " " + faultSystemCountDTO.getFrequency();
+                    faultSystemCountDTO.setSystemName(name);
+                }
+                faultSystemMonthCountDTOList.add(faultSystemCountDTO);
+            }
+            //将月份内的所有故障次数求和
+            faultMonthCountDTO.setSum(sum);
+            faultMonthCountDTO.setFaultSystemMonthCountDTOList(faultSystemMonthCountDTOList);
+            faultMonthCountDTOList.add(faultMonthCountDTO);
+        }
+        return faultMonthCountDTOList;
+    }
+
     public List<FaultDataStatisticsDTO> getYearFault(FaultDataStatisticsDTO faultDataStatisticsDTO) {
         //先获取用户管理的专业，根据专业筛选
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -473,22 +527,19 @@ public class FaultInformationService {
         List<String> majors = getCurrentLoginUserMajors();
 
         int count = 0;
-        List<Fault> faultList = faultInformationMapper.queryFaultDataInformation(lineCode, majors);
+        FaultDataAnalysisCountDTO countDTO = faultInformationMapper.countFaultDataInformation(getTime(0),getTime(1),lineCode, majors);
+        FaultDataAnalysisCountDTO countDTO1 = faultInformationMapper.countFaultDataInformation(null,null,lineCode, majors);
         //总故障数
-        if (CollUtil.isNotEmpty(faultList)) {
-            result.setSum(faultList.size());
+        if (Objects.nonNull(countDTO)) {
+            result.setSum(countDTO.getSum());
         } else {
             result.setSum(0);
         }
-        //未解决数
-        if (CollUtil.isNotEmpty(faultList)) {
-            for (Fault fault : faultList) {
-                if (!FaultStatusEnum.Close.getStatus().equals(fault.getStatus())) {
-                    count++;
-                }
-                result.setUnSolve(count);
-            }
-        } else {
+
+        //未修复数
+        if (Objects.nonNull(countDTO1)){
+            result.setUnSolve(countDTO1.getUnSolve());
+        }else {
             result.setUnSolve(0);
         }
         //本周已解决
@@ -529,10 +580,19 @@ public class FaultInformationService {
     /**
      * 大屏-故障数据分析-故障数据统计详情
      *
-     * @param lineCode
+     * @param largeFaultDataDatailDTO
      * @return
      */
-    public List<FaultLargeInfoDTO> getLargeFaultDataDatails(Integer boardTimeType, Integer faultModule, String lineCode) {
+    public IPage<FaultLargeInfoDTO> getLargeFaultDataDatails(LargeFaultDataDatailDTO largeFaultDataDatailDTO) {
+        Integer faultModule = largeFaultDataDatailDTO.getFaultModule();
+
+        Integer pageNo = largeFaultDataDatailDTO.getPageNo();
+        Integer pageSize = largeFaultDataDatailDTO.getPageSize();
+        Integer boardTimeType = largeFaultDataDatailDTO.getBoardTimeType();
+
+        String lineCode = largeFaultDataDatailDTO.getLineCode();
+
+
         FaultScreenModule faultScreenModule = new FaultScreenModule();
         //本周或本月时间
         String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
@@ -549,6 +609,9 @@ public class FaultInformationService {
         switch (faultModule) {
             // 故障总数
             case 1:
+                faultScreenModule.setStartDate(getTime(0));
+                faultScreenModule.setEndDate(getTime(1));
+                faultScreenModule.setMoonSolve(1);
                 faultScreenModule.setLineCode(lineCode);
                 faultScreenModule.setMajors(majors);
                 break;
@@ -596,7 +659,9 @@ public class FaultInformationService {
                 break;
             default:
         }
-        List<FaultLargeInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataDatails(faultScreenModule);
+        // 分页
+        Page<FaultLargeInfoDTO> pageList = new Page<>(pageNo, pageSize);
+        List<FaultLargeInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataDatails(pageList, faultScreenModule);
         largeFaultDataInfo.stream().forEach(l -> {
             // 字典翻译
             String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream().filter(item -> item.getValue().equals(String.valueOf(l.getStatus()))).map(DictModel::getText).collect(Collectors.joining());
@@ -605,7 +670,7 @@ public class FaultInformationService {
             String faultModeName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_MODE_CODE).stream().filter(item -> item.getValue().equals(String.valueOf(l.getFaultModeCode()))).map(DictModel::getText).collect(Collectors.joining());
             l.setFaultModeName(faultModeName);
         });
-        return largeFaultDataInfo;
+        return pageList.setRecords(largeFaultDataInfo);
     }
 
 
@@ -763,21 +828,21 @@ public class FaultInformationService {
                                     if (ObjectUtil.isNotEmpty(faultSystemTimeDTO.getRepairTime())) {
                                         Double repairTime = faultSystemTimeDTO.getRepairTime();
                                         actualTime = actualTime - repairTime;
-                                        Double d = new BigDecimal(actualTime ).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                        Double d = new BigDecimal(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                         faultSystemReliabilityDTO.setActualRuntime(d);
                                     } else {
-                                        Double d = new BigDecimal(actualTime ).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                        Double d = new BigDecimal(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                         faultSystemReliabilityDTO.setActualRuntime(d);
                                     }
                                 } else {
-                                    Double d = new BigDecimal(actualTime ).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                    Double d = new BigDecimal(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                     faultSystemReliabilityDTO.setActualRuntime(d);
                                 }
                             }
 
                         }
                     } else {
-                        Double d = new BigDecimal(actualTime ).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                        Double d = new BigDecimal(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                         faultSystemReliabilityDTO.setActualRuntime(d);
                     }
 //                    planTime = planTime / 60;

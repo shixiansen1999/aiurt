@@ -162,11 +162,12 @@ public class PatrolScreenService {
     /**
      * 大屏巡视模块-巡视数据统计任务列表
      *
+     * @param page
      * @param timeType
      * @param lineCode
      * @return
      */
-    public List<ScreenStatisticsTask> getStatisticsTaskInfo(Integer timeType, String lineCode) {
+    public IPage<ScreenStatisticsTask> getStatisticsTaskInfo(Page<ScreenStatisticsTask> page, Integer timeType, String lineCode) {
         // 默认本周
         if (ObjectUtil.isEmpty(timeType)) {
             timeType = ScreenConstant.THIS_WEEK;
@@ -178,7 +179,7 @@ public class PatrolScreenService {
 
         List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
         if (CollectionUtil.isEmpty(orgCodes)) {
-            return new ArrayList<>();
+            return page;
         }
         ScreenTran tran = new ScreenTran();
         tran.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
@@ -186,7 +187,7 @@ public class PatrolScreenService {
         tran.setEndTime(endTime);
         tran.setOrgCodes(orgCodes);
 
-        List<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(tran);
+        IPage<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(page,tran);
 
         // 字典翻译
         Map<String, String> statusItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
@@ -195,7 +196,7 @@ public class PatrolScreenService {
                 .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
         Map<String, String> abnormalItems = sysBaseApi.getDictItems(PatrolDictCode.ABNORMAL_STATE)
                 .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        for (ScreenStatisticsTask task : list) {
+        for (ScreenStatisticsTask task : list.getRecords()) {
             String statusName = statusItems.get(String.valueOf(task.getStatus()));
             String omitStatusName = omitItems.get(String.valueOf(task.getOmitStatus()));
             String abnormalName = abnormalItems.get(String.valueOf(task.getAbnormalState()));

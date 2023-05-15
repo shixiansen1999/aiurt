@@ -279,6 +279,11 @@ public class SysUser implements Serializable {
     @TableField(exist = false)
     private List<String> stationIds;
 
+    /**站点*/
+    @ApiModelProperty(value = "站所Codes")
+    @TableField(exist = false)
+    private List<String> stationCodes;
+
     @ApiModelProperty(value = "站所名称")
     @TableField(exist = false)
     private String stationNames;
@@ -327,5 +332,6 @@ public class SysUser implements Serializable {
      */
     @ApiModelProperty(value = "签名")
     @Excel(name = "签名", width = 15,type = 2)
+   // @TableField(exist = false)
     private String signatureUrl;
 }

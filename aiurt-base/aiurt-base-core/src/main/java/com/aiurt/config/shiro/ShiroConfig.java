@@ -137,6 +137,7 @@ public class ShiroConfig {
 
         //测试示例
         filterChainDefinitionMap.put("/test/bigScreen/**", "anon"); //大屏模板例子
+        filterChainDefinitionMap.put("/plan/repairPoolUser/**", "anon");
         //filterChainDefinitionMap.put("/test/jeecgDemo/rabbitMqClientTest/**", "anon"); //MQ测试
         //filterChainDefinitionMap.put("/test/jeecgDemo/html", "anon"); //模板页面
         //filterChainDefinitionMap.put("/test/jeecgDemo/redis/**", "anon"); //redis测试
@@ -152,6 +153,7 @@ public class ShiroConfig {
         //大屏统计
         filterChainDefinitionMap.put("/task/repairTask/getSystemInformation", "anon");
         filterChainDefinitionMap.put("/fault/getHitchDrilling", "anon");
+        filterChainDefinitionMap.put("/system/index/getQWeatherInfo", "anon");
 
         //wps
         filterChainDefinitionMap.put("/v1/**","anon");
@@ -208,6 +210,7 @@ public class ShiroConfig {
         bigSet.add("/patrolScreen/statisticsGraph");
         bigSet.add("/patrolScreen/statistics");
         bigSet.add("/patrolScreen/statisticsTaskInfo");
+        bigSet.add("/system/index/getQWeatherInfo");
 
 
         JwtFilter jwtFilter = new JwtFilter(cloudServer == null);

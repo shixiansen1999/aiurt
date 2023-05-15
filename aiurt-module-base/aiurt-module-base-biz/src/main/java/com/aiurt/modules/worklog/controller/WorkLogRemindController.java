@@ -1,6 +1,7 @@
 package com.aiurt.modules.worklog.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.QuartConstant;
 import com.aiurt.common.util.QuartzUtils;
@@ -10,6 +11,7 @@ import com.aiurt.modules.worklog.entity.WorkLogRemind;
 import com.aiurt.modules.worklog.service.IWorkLogRemindService;
 import com.aiurt.modules.worklog.task.WorkLogJob;
 import com.aiurt.modules.worklog.task.WorkLogJobNight;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -149,6 +151,39 @@ public class WorkLogRemindController {
                 result.success("修改成功!");
             }
         }
+        return result;
+    }
+
+    /**
+     * 工作日志删除部门定时任务
+     * @param departId
+     * @return
+     */
+    @AutoLog(value = "工作日志删除部门定时任务")
+    @ApiOperation(value = "工作日志删除部门定时任务", notes = "工作日志删除部门定时任务")
+    @PutMapping(value = "/deleteJob")
+    public Result<?> deleteJob(@RequestParam(name = "departId", required = false) String departId) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String orgId = user.getOrgId();
+        if (StrUtil.isNotEmpty(departId)) {
+            orgId = departId;
+        }
+        Result<?> result = new Result<>();
+        //删除调度任务
+        quartzUtils.removeJob(QuartConstant.WORK_LOG_JOB +orgId,
+                QuartConstant.WORK_LOG_JOB+orgId+QuartConstant.GROUP,
+                QuartConstant.WORK_LOG_TRIGGER + orgId,
+                QuartConstant.WORK_LOG_TRIGGER+ orgId+QuartConstant.GROUP);
+        //删除夜班提醒调度任务
+        quartzUtils.removeJob(QuartConstant.WORK_LOG_JOB_NIGHT +orgId,
+                QuartConstant.WORK_LOG_JOB_NIGHT+orgId+QuartConstant.GROUP,
+                QuartConstant.WORK_LOG_TRIGGER_NIGHT + orgId,
+                QuartConstant.WORK_LOG_TRIGGER_NIGHT+ orgId+QuartConstant.GROUP);
+
+        LambdaUpdateWrapper<WorkLogRemind> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(WorkLogRemind::getOrgId, orgId).set(WorkLogRemind::getDelFlag, 1);
+        workLogRemindService.update(updateWrapper);
+        result.success("删除成功!");
         return result;
     }
 }

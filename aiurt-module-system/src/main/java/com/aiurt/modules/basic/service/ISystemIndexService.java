@@ -1,5 +1,6 @@
 package com.aiurt.modules.basic.service;
 
+import com.aiurt.modules.basic.dto.QWeatherDTO;
 import com.aiurt.modules.basic.dto.WeatherDetailDTO;
 
 /**
@@ -12,4 +13,10 @@ public interface ISystemIndexService {
      * @return
      */
     public WeatherDetailDTO getWeatherInfo();
+
+    /**
+     * 获取和风环境的
+     * @return
+     */
+    QWeatherDTO getQWeatherInfo();
 }

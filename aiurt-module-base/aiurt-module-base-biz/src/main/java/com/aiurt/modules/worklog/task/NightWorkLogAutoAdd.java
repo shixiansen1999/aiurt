@@ -2,12 +2,15 @@ package com.aiurt.modules.worklog.task;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.mapper.WorkLogMapper;
 import com.aiurt.modules.worklog.service.impl.WorkLogServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -15,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -29,6 +33,8 @@ public class NightWorkLogAutoAdd implements Job {
     private WorkLogMapper workLogMapper;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -51,12 +57,13 @@ public class NightWorkLogAutoAdd implements Job {
      * 每天早上8点生成晚班工作日志
      */
     private void autoAdd() {
+        Date date = new Date();
         List<SysDepartModel> allSysDepart = iSysBaseAPI.getAllSysDepart();
         if (CollUtil.isNotEmpty(allSysDepart)) {
             for (SysDepartModel sysDepartModel : allSysDepart) {
                 WorkLog depot = new WorkLog();
                 depot.setOrgId(sysDepartModel.getId());
-                depot.setCreateTime(DateUtil.parse(DateUtil.today()+" 08:00:00", "yyyy-MM-dd HH:mm:ss"));
+                depot.setCreateTime(date);
                 String logCode = workLogService.generateLogCode();
                 depot.setCode(logCode);
 
@@ -68,11 +75,16 @@ public class NightWorkLogAutoAdd implements Job {
                 depot.setIsEmergencyDisposal(0);
                 depot.setIsDocumentPublicity(0);
 
-                depot.setNote("需穿戴工装，工作证上岗，维修及巡检时全程带好口罩");
+                SysParamModel schedule = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_SCHEDULE);
+                SysParamModel note = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_NOTE);
+                depot.setNote(note.getValue());
+                depot.setSchedule(schedule.getValue());
 
                 depot.setLogTime(DateUtil.parse(DateUtil.today(), "yyyy-MM-dd"));
                 depot.setDelFlag(0);
                 workLogMapper.insert(depot);
+                //1为白班，2为晚班
+                workLogService.sendMessage(sysDepartModel.getId(),date,2,depot.getId());
             }
         }
 

@@ -254,8 +254,6 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
      * 我的通知分页列表查询
      *
      * @param
-     * @param pageNo
-     * @param pageSize
      * @param req
      * @return
      */
@@ -284,6 +282,12 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
                 String replace1 = StrUtil.replace(replace, "</p>", "");
                 List<DictModel> level = iSysBaseAPI.getDictItems("level");
                 String s = level.stream().filter(l -> l.getValue().equals(announcement.getLevel())).map(DictModel::getText).collect(Collectors.joining());
+                if(ObjectUtil.isNotEmpty(announcement.getSender())){
+                    LoginUser user = iSysBaseAPI.getUserByName(announcement.getSender());
+                    if(ObjectUtil.isNotEmpty(user)){
+                        announcement.setSender_dictText(user.getRealname());
+                    }
+                }
                 announcement.setLevel_dictText(s);
                 announcement.setMsgContent(replace1);
                 bdInfoListService.getUserNames(announcement);

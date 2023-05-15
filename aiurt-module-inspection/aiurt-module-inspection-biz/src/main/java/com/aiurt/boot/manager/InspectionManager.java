@@ -181,7 +181,8 @@ public class InspectionManager {
         if (StrUtil.isEmpty(stationCode)) {
             return "";
         }
-        String stationName = StrUtil.isNotEmpty(inspectionManagerMapper.translateStation(stationCode)) ? inspectionManagerMapper.translateStation(stationCode) : "";
+        List<String> stationCodes = StrUtil.split(stationCode, ',');
+        String stationName = StrUtil.isNotEmpty(inspectionManagerMapper.translateStation(stationCodes)) ? inspectionManagerMapper.translateStation(stationCodes) : "";
         redisUtil.set("station_code_" + stationCode, stationName);
         return stationName;
     }
@@ -339,5 +340,17 @@ public class InspectionManager {
         return result;
     }
 
-
+    /**
+     * 翻译组织机构信息
+     *
+     * @param codeList code值
+     * @return
+     */
+    public String translateOrgToMap(List<String> codeList) {
+        if (CollUtil.isEmpty(codeList)) {
+            return "";
+        }
+        List<String> nameList = inspectionManagerMapper.translateOrg(codeList);
+        return CollUtil.isNotEmpty(nameList) ? StrUtil.join("；", nameList) : "";
+    }
 }

@@ -185,6 +185,7 @@
             </foreach>
         </if>
     </select>
+
     <select id="getList" resultType="com.aiurt.boot.plan.entity.RepairPool">
         select rt.year,rt.code,rt.type,rt.weeks,rt.start_time,rt.end_time,rt.status from repair_task rt
         left join repair_pool rp on rt.repair_pool_id = rp.id

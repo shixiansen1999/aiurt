@@ -1,14 +1,14 @@
 package com.aiurt.boot.task.mapper;
 
-import java.util.List;
-
 import com.aiurt.boot.statistics.dto.IndexOrgDTO;
 import com.aiurt.boot.task.dto.PatrolTaskOrganizationDTO;
 import com.aiurt.boot.task.dto.PatrolUserInfoDTO;
-import com.aiurt.common.aspect.annotation.EnableDataPerm;
-import org.apache.ibatis.annotations.Param;
 import com.aiurt.boot.task.entity.PatrolTaskOrganization;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Description: patrol_task_organization
@@ -55,4 +55,19 @@ public interface PatrolTaskOrganizationMapper extends BaseMapper<PatrolTaskOrgan
      * @return
      */
     List<String> getTaskCodeByUserOrg();
+
+    /**
+     * 首页巡视异常任务的组织机构信息
+     *
+     * @param taskCodes
+     * @return
+     */
+    List<IndexOrgDTO> getOrgInfo(@Param("taskCodes") List<String> taskCodes);
+
+    /**
+     * 根据多个任务获取组织机构
+     * @param taskCodes
+     * @return
+     */
+    List<String> getOrgCodeByTaskCode(@Param("taskCodes") List<String> taskCodes);
 }

@@ -1,6 +1,7 @@
 package com.aiurt.modules.index.mapper;
 
 import cn.hutool.core.date.DateTime;
+import com.aiurt.boot.index.dto.RepairTaskNum;
 import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
@@ -85,7 +86,6 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
 
     /**
      * 获取首页日待办事项故障完成数量
-     * @param dateTime
      * @return
      */
     @DataPermission({
@@ -95,7 +95,7 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
             @DataColumn(key = "systemName",value = "f.system_code"),
             @DataColumn(key = "stationName",value = "f.station_code")
     })
-    List<Fault> getDailyFaultNum(@Param("dateTime")DateTime dateTime);
+    List<RepairTaskNum> getDailyFaultNum(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
     /**
      * 待办事项故障情况
@@ -105,7 +105,13 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      */
     List<FaultTimeoutLevelDTO> getMainFaultCondition(@Param("page") Page<FaultTimeoutLevelDTO> page, @Param("startDate") Date startDate);
 
-    List<String> getShiftLeader(@Param("faultApplicant")String faultApplicant,List<String>usersIdList );
+    /**
+     *
+     * @param faultApplicant 用户名
+     * @param roleCode 角色
+     * @return
+     */
+    List<String> getShiftLeader(@Param("faultApplicant")String faultApplicant, @Param("roleCode") String roleCode);
 
     String getbyForeman(@Param("foreman")String foreman);
 }

@@ -382,7 +382,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             if (f.getLastYearNum() != 0) {
                 double sub = NumberUtil.sub(f.getYearNum(), f.getLastYearNum());
                 BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastYearNum(), 2));
-                f.setLastMonthStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
+                f.setLastYearStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
             } else {
                 f.setLastYearStr(NumberUtil.mul(NumberUtil.round(f.getYearNum(), 2), 100).toString() + "%");
             }
