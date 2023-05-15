@@ -810,9 +810,6 @@ public class FaultInformationService {
         List<FaultSystemTimesDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate, majors,lineCode);
         //查询子系统设备数
 
-        if(CollUtil.isNotEmpty(systemFaultSum)){
-            currentLoginUserSubsystems = systemFaultSum.stream().map(FaultSystemTimesDTO::getSubSystemCode).collect(Collectors.toList());
-        }
         List<FaultSystemDeviceSumDTO> systemDeviceSum = faultInformationMapper.getLineSystem(lineCode,currentLoginUserSubsystems);
         if (ObjectUtil.isNotEmpty(systemDeviceSum)) {
             //遍历所有设备
