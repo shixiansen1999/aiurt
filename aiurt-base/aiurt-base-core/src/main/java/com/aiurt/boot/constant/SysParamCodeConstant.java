@@ -217,4 +217,16 @@ public interface SysParamCodeConstant {
      * 测试部门
      */
     String TEST_ORGCODE = "test_orgcode";
+    /**
+     * 故障上报是否需要根据故障级别自动抄送
+     */
+    String AUTO_CC = "auto_cc";
+    /**
+     * 	故障级别权重小于等于5抄送班组长
+     */
+    String FAULT_LEVEL_LITTLE = "fault_level_little";
+    /**
+     * 故障级别权重大于5抄送线路负责人及分部主任角色包含班组长
+     */
+    String FAULT_LEVEL_HIGH = "fault_level_high";
 }

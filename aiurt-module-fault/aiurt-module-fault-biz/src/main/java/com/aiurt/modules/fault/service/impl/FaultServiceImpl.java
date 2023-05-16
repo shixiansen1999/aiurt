@@ -53,10 +53,7 @@ import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISparePartBaseApi;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
-import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.CsWorkAreaModel;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysParamModel;
+import org.jeecg.common.system.vo.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -142,6 +139,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String add(Fault fault) {
+
+        //根据配置实现是否需要自动抄送
+        getRemindUserName(fault);
 
         LoginUser user = checkLogin();
         log.info("故障上报：操作人员：[{}], 请求参数：{}", user.getRealname(), JSON.toJSONString(fault));
@@ -251,6 +251,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
 
             if (value) {
+
                 // 抄送
                 String remindUserName = fault.getRemindUserName();
                 if (StrUtil.isNotBlank(remindUserName)) {
@@ -286,6 +287,52 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
         return builder.toString();
+    }
+    /**
+     * 根据配置实现是否需要自动抄送
+     *
+     * @param fault 故障对象
+     */
+    private void getRemindUserName(Fault fault) {
+        SysParamModel sysParam = iSysParamAPI.selectByCode(SysParamCodeConstant.AUTO_CC);
+        boolean autoCc = "1".equals(sysParam.getValue());
+        if (autoCc) {
+            if (StrUtil.isEmpty(fault.getFaultLevel())) {
+                throw new AiurtBootException("故障级别不能为空");
+            }
+            //获取对应故障级别应当抄送给哪些角色
+            LambdaQueryWrapper<FaultLevel> queryWrapper = new LambdaQueryWrapper<>();
+
+            FaultLevel one = faultLevelService.getOne(queryWrapper.eq(FaultLevel::getCode, fault.getFaultLevel()).eq(FaultLevel::getDelFlag, 0));
+
+            List<String> roles = new ArrayList<>();
+
+            List<String> userNames = new ArrayList<>();
+            int i = 5;
+            if (Integer.parseInt(one.getWeight()) > i) {
+                SysParamModel high = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_LEVEL_HIGH);
+                roles.addAll(StrUtil.splitTrim(high.getValue(), ","));
+            } else {
+                SysParamModel little = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_LEVEL_LITTLE);
+                roles.addAll(StrUtil.splitTrim(little.getValue(), ","));
+            }
+
+            for (String role : roles) {
+                if (StrUtil.equalsAnyIgnoreCase(role, RoleConstant.FOREMAN)) {
+                    //根据部门，角色编码查询人员账号
+                    String userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(role, ','), null, null, null, fault.getSysOrgCode());
+                    userNames.add(userName);
+                } else {
+                    String roleId = sysBaseAPI.getRoleIdByCode(role);
+                    List<SysUserRoleModel> userList = sysBaseAPI.getUserByRoleId(roleId);
+                    if (CollUtil.isNotEmpty(userList)) {
+                        List<String> list = userList.stream().map(SysUserRoleModel::getUserName).collect(Collectors.toList());
+                        userNames.addAll(list);
+                    }
+                }
+            }
+            fault.setRemindUserName(CollUtil.isNotEmpty(userNames) ? StrUtil.join(",", userNames) : "");
+        }
     }
 
     /**
