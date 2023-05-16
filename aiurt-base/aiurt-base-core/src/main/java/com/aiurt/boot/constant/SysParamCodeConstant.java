@@ -209,4 +209,8 @@ public interface SysParamCodeConstant {
      * 工作内容注意事项默认内容
      */
     String WORK_NOTE = "work_note";
+    /**
+     * 测试部门
+     */
+    String TEST_ORGCODE = "test_orgcode";
 }

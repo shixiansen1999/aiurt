@@ -37,6 +37,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -268,6 +269,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
         Result<List<SysAnnouncement>> result = new Result<>();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysAnnouncement> myInfo = sysInfoListMapper.getMyInfo( sysUser.getId());
+        List<SysAnnouncement> list = new ArrayList<>();
         //List<SysAnnouncement> collect = myInfo.stream().filter(s -> "1".equals(s.getReadFlag())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(myInfo)) {
            /* SysAnnouncement s = myInfo.get(0);
@@ -277,6 +279,12 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             result.setResult(page.setRecords(myInfo));
             return result;*/
             for (SysAnnouncement announcement : myInfo) {
+                if (ObjectUtil.isNotEmpty(announcement.getEndTime())) {
+                    Date date = new Date();
+                    if (announcement.getEndTime().before(date)) {
+                        continue;
+                    }
+                }
                 String msgContent = announcement.getMsgContent();
                 String replace = StrUtil.replace(msgContent, "<p>", "");
                 String replace1 = StrUtil.replace(replace, "</p>", "");
@@ -291,8 +299,9 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
                 announcement.setLevel_dictText(s);
                 announcement.setMsgContent(replace1);
                 bdInfoListService.getUserNames(announcement);
+                list.add(announcement);
                 result.setSuccess(true);
-                result.setResult(myInfo);
+                result.setResult(list);
                 return result;
             }
         }

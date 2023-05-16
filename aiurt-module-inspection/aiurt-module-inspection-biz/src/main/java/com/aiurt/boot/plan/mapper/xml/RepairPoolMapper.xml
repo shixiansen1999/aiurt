@@ -185,6 +185,7 @@
             </foreach>
         </if>
     </select>
+
     <select id="getList" resultType="com.aiurt.boot.plan.entity.RepairPool">
         select rt.year,rt.code,rt.type,rt.weeks,rt.start_time,rt.end_time,rt.status from repair_task rt
         left join repair_pool rp on rt.repair_pool_id = rp.id
@@ -206,7 +207,8 @@
         LEFT JOIN repair_pool_rel AS rpr ON rpr.repair_pool_code = rp.code
         LEFT JOIN repair_pool_code AS rpc ON rpc.id = rpr.repair_pool_sta_id
         <where>
-            rp.start_time IS NOT NULL  AND rp.del_flag = 0
+            rp.del_flag = 0
+            and rp.start_time IS NOT NULL
             <if test="startDate!=null and endDate!=null">
                 AND date_format(rp.start_time ,'%Y-%m-%d') &gt;= date_format(#{startDate},'%Y-%m-%d')
                 AND date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
@@ -236,7 +238,7 @@
                 AND rp.start_time &gt;= #{selectPlanReq.startTime}
                 AND rp.start_time &lt;= #{selectPlanReq.endTime}
             </if>
-            <if test="selectPlanReq.code != null and selectPlanReq.code != null">
+            <if test="selectPlanReq.code != null and selectPlanReq.code != ''">
                 AND rp.code =#{selectPlanReq.code}
             </if>
             <if test="selectPlanReq.type != null">
@@ -262,6 +264,15 @@
                 <foreach item="item" collection="selectPlanReq.orgCodeList" separator="," open="(" close=")">
                     #{item}
                 </foreach>
+            </if>
+            <if test="selectPlanReq.lineCode != null and selectPlanReq.lineCode != ''">
+                AND rpsr.line_code = #{selectPlanReq.lineCode}
+            </if>
+            <if test="selectPlanReq.stationCode != null and selectPlanReq.stationCode != ''">
+                AND rpsr.station_code = #{selectPlanReq.stationCode}
+            </if>
+            <if test="selectPlanReq.positionCode != null and selectPlanReq.positionCode != ''">
+                AND rpsr.position_code = #{selectPlanReq.positionCode}
             </if>
             <if test="selectPlanReq.stationCodeList != null and !selectPlanReq.stationCodeList.isEmpty()">
                 AND rpsr.station_code IN

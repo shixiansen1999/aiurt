@@ -257,6 +257,30 @@ public class FaultInformationService {
         List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startDate, endDate, majors,lineCode);
         //根据line_code分组，查询同一条线路下的所有故障
         Map<String, List<Fault>> collect = largeLineFaultInfo.stream().collect(Collectors.groupingBy(Fault::getLineCode));
+        List<Fault> NO1 = collect.get("NO1");
+        List<Fault> ehx0001 = collect.get("ehx0001");
+        List<Fault> e03 = collect.get("03");
+        List<Fault> e04 = collect.get("04");
+        List<Fault> e08 = collect.get("08");
+        if (StrUtil.isEmpty(lineCode)) {
+            if (CollUtil.isEmpty(ehx0001)) {
+                collect.put("ehx0001", new ArrayList<Fault>());
+            }
+            if (CollUtil.isEmpty(NO1)) {
+                collect.put("NO1", new ArrayList<Fault>());
+            }
+            if (CollUtil.isEmpty(e03)) {
+                collect.put("03", new ArrayList<Fault>());
+            }
+            if (CollUtil.isEmpty(e04)) {
+                collect.put("04", new ArrayList<Fault>());
+            }
+            if (CollUtil.isEmpty(e08)) {
+                collect.put("08", new ArrayList<Fault>());
+            }
+        } else {
+            collect.put(lineCode, largeLineFaultInfo);
+        }
         Set<String> keys = collect.keySet();
         Iterator<String> iterator = keys.iterator();
         while (iterator.hasNext()) {
@@ -265,6 +289,23 @@ public class FaultInformationService {
             faultLargeLineInfoDTO.setLineCode(key);
             Integer solveCount = 0;
             Integer hangCount = 0;
+            faultLargeLineInfoDTO.setSolve(solveCount);
+            faultLargeLineInfoDTO.setHang(hangCount);
+            if ("ehx0001".equals(key)) {
+                faultLargeLineInfoDTO.setLineName("2号线");
+            }
+            if ("NO1".equals(key)) {
+                faultLargeLineInfoDTO.setLineName("1号线");
+            }
+            if ("03".equals(key)) {
+                faultLargeLineInfoDTO.setLineName("3号线");
+            }
+            if ("04".equals(key)) {
+                faultLargeLineInfoDTO.setLineName("4号线");
+            }
+            if ("08".equals(key)) {
+                faultLargeLineInfoDTO.setLineName("8号线");
+            }
             List<Fault> faults = collect.get(key);
             //故障总数
             faultLargeLineInfoDTO.setSum(CollUtil.isNotEmpty(faults) ? faults.size() : 0L);
@@ -289,6 +330,10 @@ public class FaultInformationService {
                 faultLargeLineInfoDTO.setSolveRate(d + "%");
             }
             largeLineInfoDtos.add(faultLargeLineInfoDTO);
+        }
+        if (CollUtil.isNotEmpty(largeLineInfoDtos)) {
+            List<FaultLargeLineInfoDTO> collect1 = largeLineInfoDtos.stream().sorted(Comparator.comparing(FaultLargeLineInfoDTO::getLineName)).collect(Collectors.toList());
+            return collect1;
         }
         return largeLineInfoDtos;
     }
