@@ -526,7 +526,7 @@
             AND pt.discard_status != #{condition.discardStatus}
         </if>
         <if test="condition.jointSQL != null and condition.jointSQL != ''">
-            and ${condition.jointSQL}
+             and ${condition.jointSQL}
         </if>
         GROUP BY pts.station_code
         <if test="condition.type != null and condition.type == 1">
