@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.sensorinformation.mapper.SensorInformationMapper">
+    <select id="queryPageList" resultType="com.aiurt.modules.sensorinformation.entity.SensorInformation">
+        SELECT id,
+               line_code,
+               line_name,
+               station_code,
+               station_name,
+               station_ip,
+               subnet_mask,
+               gateway_address,
+               remark
+        FROM sensor_information
+                WHERE del_flag = 0
+        <if test="condition.lineName != null and condition.lineName != ''">
+            and line_name like concat('%', #{condition.lineName}, '%')
+        </if>
+        <if test="condition.stationName() != null and condition.stationName != ''">
+            and station_name like concat('%', #{condition.stationName}, '%')
+        </if>
+    </select>
+    <select id="getList" resultType="com.aiurt.modules.sensorinformation.entity.SensorInformation">
+        SELECT id,
+               line_code,
+               line_name,
+               station_code,
+               station_name,
+               station_ip,
+               subnet_mask,
+               gateway_address,
+               remark
+        FROM sensor_information
+                WHERE del_flag = 0
+        <if test="condition.lineName != null and condition.lineName != ''">
+            and line_name like concat('%', #{condition.lineName}, '%')
+        </if>
+        <if test="condition.stationName() != null and condition.stationName != ''">
+            and station_name like concat('%', #{condition.stationName}, '%')
+        </if>
+    </select>
+</mapper>

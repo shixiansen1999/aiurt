@@ -1,0 +1,186 @@
+package com.aiurt.modules.sensorinformation.controller;
+
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.sensorinformation.entity.SensorInformation;
+import com.aiurt.modules.sensorinformation.service.ISensorInformationService;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.jeecg.common.api.vo.Result;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @Description: sensor_information
+ * @Author: aiurt
+ * @Date: 2023-05-15
+ * @Version: V1.0
+ */
+@Api(tags = "传感器信息")
+@RestController
+@RequestMapping("/sensorinformation/sensorInformation")
+@Slf4j
+public class SensorInformationController extends BaseController<SensorInformation, ISensorInformationService> {
+    @Autowired
+    private ISensorInformationService sensorInformationService;
+
+    /**
+     * 分页列表查询
+     *
+     * @param sensorInformation
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    //@AutoLog(value = "sensor_information-分页列表查询")
+    @ApiOperation(value = "传感器信息-分页列表查询", notes = "传感器信息-分页列表查询")
+    @GetMapping(value = "/list")
+    public Result<Page<SensorInformation>> queryPageList(SensorInformation sensorInformation,
+                                                         @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                         HttpServletRequest req) {
+        Page<SensorInformation> page = new Page<SensorInformation>(pageNo, pageSize);
+        Page<SensorInformation> pageList = sensorInformationService.queryPageList(page, sensorInformation);
+        return Result.OK(pageList);
+    }
+
+    /**
+     * 添加
+     *
+     * @param sensorInformation
+     * @return
+     */
+    @AutoLog(value = "传感器信息-添加")
+    @ApiOperation(value = "传感器信息-添加", notes = "传感器信息-添加")
+    @PostMapping(value = "/add")
+    public Result<String> add(@RequestBody SensorInformation sensorInformation) {
+        sensorInformationService.add(sensorInformation);
+        return Result.OK("添加成功！");
+    }
+
+    /**
+     * 编辑
+     *
+     * @param sensorInformation
+     * @return
+     */
+    @AutoLog(value = "传感器信息-编辑")
+    @ApiOperation(value = "传感器信息-编辑", notes = "传感器信息-编辑")
+    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
+    public Result<String> edit(@RequestBody SensorInformation sensorInformation) {
+        sensorInformationService.edit(sensorInformation);
+        return Result.OK("编辑成功!");
+    }
+
+    /**
+     * 通过id删除
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "传感器信息-通过id删除")
+    @ApiOperation(value = "传感器信息-通过id删除", notes = "传感器信息-通过id删除")
+    @DeleteMapping(value = "/delete")
+    public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
+        SensorInformation sensorInformation = sensorInformationService.getById(id);
+        sensorInformation.setDelFlag(1);
+        sensorInformationService.updateById(sensorInformation);
+        return Result.OK("删除成功!");
+    }
+
+
+    /**
+     * 下载模板
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    @AutoLog(value = "传感器信息-下载模板")
+    @ApiOperation(value = "传感器信息-下载模板", notes = "传感器信息-下载模板")
+    @RequestMapping(value = "/downloadTemple", method = RequestMethod.GET)
+    public void downloadTemple(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        //获取输入流，原始模板位置
+        Resource resource = new ClassPathResource("/templates/sensorinformation.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+        //2.获取临时文件
+        File fileTemp = new File("/templates/sensorinformation.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(16);
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+        String fileName = "传感器信息导入模板.xlsx";
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename=" + "传感器信息导入模板.xlsx");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 导出excel
+     *
+     * @param request
+     * @param sensorInformation
+     */
+    @RequestMapping(value = "/exportXls")
+    public ModelAndView exportXls(HttpServletRequest request, SensorInformation sensorInformation) {
+        List<SensorInformation> list = sensorInformationService.getList(sensorInformation);
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        mv.addObject(NormalExcelConstants.FILE_NAME, "传感器信息");
+        mv.addObject(NormalExcelConstants.CLASS, SensorInformation.class);
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("传感器信息", "传感器信息导出信息", ExcelType.XSSF));
+        mv.addObject(NormalExcelConstants.DATA_LIST, list);
+        return mv;
+    }
+
+
+    /**
+     * 通过excel导入数据
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        return sensorInformationService.importExcel(request, response);
+    }
+
+}
