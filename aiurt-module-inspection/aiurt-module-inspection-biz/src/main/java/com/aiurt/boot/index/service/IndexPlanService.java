@@ -1,6 +1,7 @@
 package com.aiurt.boot.index.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -41,6 +42,10 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -584,6 +589,41 @@ public class IndexPlanService {
         } else {
             double d = new BigDecimal((double) result.getOmit() * 100 / result.getSum()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
             result.setOmitRate(d + "%");
+        }
+        //年
+        int year = DateUtil.year(new Date());
+        //月份
+        int month = DateUtil.month(new Date())+1;
+
+        //当前时间
+        Date date = new Date();
+
+        //计算每个月第一个完整周的开始时间
+        LocalDate firstDayOfMonth = LocalDate.of(year, month, 1);
+        LocalDate firstDayOfFirstFullWeek = firstDayOfMonth.with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
+        Date from = Date.from(firstDayOfFirstFullWeek.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        String format = DateUtil.format(from, "yyyy-MM-dd");
+        String format1 = DateUtil.format(date, "yyyy-MM-dd");
+
+        //如果当前时间在本月第一个完整周的开始时间之前或者当前时间等于第一个完整周的开始时间未维保数量就是0
+        if (date.before(from) || format.equals(format1)){
+            result.setQuantity(0L);
+        }else {
+            LambdaQueryWrapper<RepairPool> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(RepairPool::getDelFlag,0)
+                    .eq(RepairPool::getStatus,InspectionConstant.COMPLETED)
+                    .ge(RepairPool::getStartTime,DateUtil.beginOfDay(from))
+                    .le(RepairPool::getStartTime,DateUtil.endOfDay(date));
+            List<RepairPool> repairPools = repairPoolMapper.selectList(lambdaQueryWrapper);
+
+            //时间差乘2就是实际应该维保的数量
+            long between = DateUtil.between(from, date, DateUnit.DAY)*2;
+            if (CollUtil.isNotEmpty(repairPools)){
+                int size = repairPools.size();
+                //实际维保数量-已完成的维保数量=未完成的维保数量
+                result.setQuantity(between-size);
+            }
         }
         return result;
     }

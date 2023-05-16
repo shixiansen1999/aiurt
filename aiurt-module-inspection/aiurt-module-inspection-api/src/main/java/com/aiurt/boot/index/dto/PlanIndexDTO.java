@@ -43,6 +43,12 @@ public class PlanIndexDTO implements Serializable {
      */
     @ApiModelProperty(value = "今日已检修数")
     private Long todayFinish;
+
+    /**
+     * 未维保数量
+     */
+    @ApiModelProperty(value = "未维保数量")
+    private Long quantity;
     /**
      * 未检修数
      */
