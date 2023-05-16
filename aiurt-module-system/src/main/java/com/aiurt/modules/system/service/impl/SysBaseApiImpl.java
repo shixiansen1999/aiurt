@@ -56,6 +56,8 @@ import com.aiurt.modules.position.mapper.CsStationMapper;
 import com.aiurt.modules.position.mapper.CsStationPositionMapper;
 import com.aiurt.modules.quartz.entity.QuartzJob;
 import com.aiurt.modules.quartz.service.IQuartzJobService;
+import com.aiurt.modules.sensorinformation.entity.SensorInformation;
+import com.aiurt.modules.sensorinformation.mapper.SensorInformationMapper;
 import com.aiurt.modules.sm.entity.CsSafetyAttention;
 import com.aiurt.modules.sm.entity.SafetyRelatedForm;
 import com.aiurt.modules.sm.mapper.CsSafetyAttentionMapper;
@@ -261,6 +263,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private FaultMapper faultMapper;
     @Autowired
     private WorkAreaOrgMapper workAreaOrgMapper;
+    @Autowired
+    private SensorInformationMapper sensorInformationMapper;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -3144,5 +3148,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         List<DeviceType> typeList = deviceTypeService.list(new LambdaQueryWrapper<DeviceType>().in(DeviceType::getCode, list));
         return typeList;
+    }
+
+    @Override
+    public List<SensorInformation> getSensorList() {
+        List<SensorInformation> sensorList = sensorInformationMapper.selectList(new LambdaQueryWrapper<SensorInformation>()
+                .eq(SensorInformation::getDelFlag, CommonConstant.DEL_FLAG_0));
+        return sensorList;
     }
 }
