@@ -1,6 +1,7 @@
 package com.aiurt.common.exception;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.enums.SentinelErrorInfoEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.AuthorizationException;
@@ -12,6 +13,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.connection.PoolException;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -223,5 +225,14 @@ public class AiurtBootExceptionHandler {
     public Result<?> handleWebServiceException(WebServiceException e) {
         log.error(e.getMessage(), e);
         return Result.error("远程机器人连接超时");
+    }
+
+    @ExceptionHandler(value = {BadSqlGrammarException.class})
+    public Result<?> handleSQLSyntaxErrorException(BadSqlGrammarException e) {
+        String message = e.getMessage();
+        if (StrUtil.isNotBlank(message) && message.indexOf("Unknown column")>-1 && message.indexOf("order clause")>-1) {
+            return Result.error("该列不支持排序");
+        }
+        return Result.error(message);
     }
 }
