@@ -294,6 +294,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @param fault 故障对象
      */
     private void getRemindUserName(Fault fault) {
+        //获取配置信息
         SysParamModel sysParam = iSysParamAPI.selectByCode(SysParamCodeConstant.AUTO_CC);
         boolean autoCc = "1".equals(sysParam.getValue());
         if (autoCc) {
@@ -301,34 +302,39 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 throw new AiurtBootException("故障级别不能为空");
             }
             //获取对应故障级别应当抄送给哪些角色
-            LambdaQueryWrapper<FaultLevel> queryWrapper = new LambdaQueryWrapper<>();
+            String faultLevelCode = fault.getFaultLevel();
+            FaultLevel one = faultLevelService.getOne(new LambdaQueryWrapper<FaultLevel>()
+                    .eq(FaultLevel::getCode, faultLevelCode)
+                    .eq(FaultLevel::getDelFlag, 0));
 
-            FaultLevel one = faultLevelService.getOne(queryWrapper.eq(FaultLevel::getCode, fault.getFaultLevel()).eq(FaultLevel::getDelFlag, 0));
-
-            List<String> roles = new ArrayList<>();
-
-            List<String> userNames = new ArrayList<>();
+            List<String> roles;
             int i = 5;
             if (Integer.parseInt(one.getWeight()) > i) {
                 SysParamModel high = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_LEVEL_HIGH);
-                roles.addAll(StrUtil.splitTrim(high.getValue(), ","));
+                roles = StrUtil.splitTrim(high.getValue(), ",");
             } else {
                 SysParamModel little = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_LEVEL_LITTLE);
-                roles.addAll(StrUtil.splitTrim(little.getValue(), ","));
+                roles = StrUtil.splitTrim(little.getValue(), ",");
             }
+
+            //通过站点从工区获取部门
+            List<String> userNames = new ArrayList<>();
+
+            List<String> departs = sysBaseAPI.getWorkAreaByCode(fault.getStationCode())
+                    .stream()
+                    .flatMap(csWorkAreaModel -> csWorkAreaModel.getOrgCodeList().stream())
+                    .collect(Collectors.toList());
 
             for (String role : roles) {
                 if (StrUtil.equalsAnyIgnoreCase(role, RoleConstant.FOREMAN)) {
-                    //根据部门，角色编码查询人员账号
-                    String userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(role, ','), null, null, null, fault.getSysOrgCode());
-                    userNames.add(userName);
+                    for (String orgCode : departs) {
+                        String userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(role, ','), null, null, null, orgCode);
+                        userNames.add(userName);
+                    }
                 } else {
                     String roleId = sysBaseAPI.getRoleIdByCode(role);
                     List<SysUserRoleModel> userList = sysBaseAPI.getUserByRoleId(roleId);
-                    if (CollUtil.isNotEmpty(userList)) {
-                        List<String> list = userList.stream().map(SysUserRoleModel::getUserName).collect(Collectors.toList());
-                        userNames.addAll(list);
-                    }
+                    userNames.addAll(userList.stream().map(SysUserRoleModel::getUserName).collect(Collectors.toList()));
                 }
             }
             fault.setRemindUserName(CollUtil.isNotEmpty(userNames) ? StrUtil.join(",", userNames) : "");
