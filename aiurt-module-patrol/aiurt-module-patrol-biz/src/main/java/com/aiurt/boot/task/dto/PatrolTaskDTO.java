@@ -122,6 +122,7 @@ public class PatrolTaskDTO
     /*** 巡检频次：1 一天1次、2 一周1次、3 一周2次*/
     @Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次", width = 15)
     @ApiModelProperty(value = "巡检频次：1 一天1次、2 一周1次、3 一周2次")
+    @Dict(dicCode = "patrol_plan_period")
     private String period;
     /*** 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成*/
     @Excel(name = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成", width = 15)
