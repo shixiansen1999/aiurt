@@ -193,4 +193,14 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "false无安全事项，true为有安全事项", width = 15)
     @ApiModelProperty(value = "false无安全事项，true为有安全事项")
     private Boolean isNullSafetyPrecautions;
+
+    /**wifi mac地址*/
+    @Excel(name = "wifi mac地址", width = 15)
+    @ApiModelProperty(value = "wifi mac地址")
+    private String mac;
+
+    /**wifi地址管理中的mac*/
+    @Excel(name = "wifi地址管理中的mac", width = 15)
+    @ApiModelProperty(value = "wifi地址管理中的mac")
+    private String macRecord;
 }

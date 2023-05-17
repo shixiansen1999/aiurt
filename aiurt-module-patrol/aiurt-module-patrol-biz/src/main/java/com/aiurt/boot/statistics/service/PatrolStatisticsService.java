@@ -14,6 +14,7 @@ import com.aiurt.boot.statistics.dto.*;
 import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.dto.PatrolBillDTO;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
+import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
@@ -376,21 +377,7 @@ public class PatrolStatisticsService {
 
         pageList.getRecords().stream().forEach(l -> {
             String taskCode = l.getCode();
-//            // 巡视用户信息
-//            QueryWrapper<PatrolTaskUser> userWrapper = new QueryWrapper<>();
-//            userWrapper.lambda().eq(PatrolTaskUser::getTaskCode, taskCode).eq(PatrolTaskUser::getDelFlag, 0);
-//            List<PatrolTaskUser> userList = patrolTaskUserMapper.selectList(userWrapper);
-//            ArrayList<IndexUserDTO> indexUsers = new ArrayList<>();
-//            userList.stream().forEach(u -> {
-//                IndexUserDTO user = new IndexUserDTO();
-//                user.setUserId(u.getUserId());
-//                user.setUserName(u.getUserName());
-//                if (StrUtil.isEmpty(u.getUserName())) {
-//                    String username = patrolTaskUserMapper.getUsername(u.getUserId());
-//                    user.setUserName(username);
-//                }
-//                indexUsers.add(user);
-//            });
+
             List<PatrolTaskUser> userList = Optional.ofNullable(userMap.get(taskCode)).orElseGet(ArrayList::new);
             List<IndexUserDTO> indexUsers = new ArrayList<>();
             userList.forEach(u -> {
@@ -414,6 +401,20 @@ public class PatrolStatisticsService {
                 String stationName = patrolTaskDeviceMapper.getStationName(stationCode);
                 stationInfo.add(new IndexStationDTO(stationCode, stationName));
             }
+            //获取mac地址
+            List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(l.getId());
+            if (CollUtil.isNotEmpty(mac)) {
+                for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
+                    if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMacRecord()) && patrolTaskDeviceDTO.getMac().equals(patrolTaskDeviceDTO.getMacRecord())) {
+                        l.setMacMatchResult("正常");
+                    } else {
+                        l.setMacMatchResult("异常");
+                        break;
+                    }
+                }
+            } else {
+                l.setMacMatchResult("异常");
+            }
 
             // 字典翻译
             String abnormalDictName = dictItems.stream()
@@ -432,37 +433,6 @@ public class PatrolStatisticsService {
             }
             l.setStatusDictName(statusDictName);
 
-            //获取巡视单和检查项
-//            List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGangedInfo(l.getId());
-//            List<PatrolCheckResultDTO> patrolCheckResultDTOS = new ArrayList<PatrolCheckResultDTO>();
-//            for (PatrolBillDTO patrolBillDTO : billGangedInfo) {
-//                PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(patrolBillDTO.getBillCode()))
-//                        .orElseGet(PatrolTaskDeviceParam::new);
-//                List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
-//                // 字典翻译
-//                Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
-//                        .stream().filter(l1 -> StrUtil.isNotEmpty(l1.getText()))
-//                        .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-//                checkResultList.stream().forEach(c -> {
-//                    c.setRequiredDictName(requiredItems.get(String.valueOf(c.getRequired())));
-//                    if (ObjectUtil.isNotNull(c.getDictCode())) {
-//                        List<DictModel> list = sysBaseApi.getDictItems(c.getDictCode());
-//                        list.stream().forEach(l2 -> {
-//                            if (PatrolConstant.DEVICE_INP_TYPE.equals(c.getInputType())) {
-//                                if (l2.getValue().equals(c.getOptionValue())) {
-//                                    c.setCheckDictName(l2.getTitle());
-//                                }
-//                            }
-//                        });
-//                    }
-//                    String userName = patrolTaskMapper.getUserName(c.getUserId());
-//                    c.setCheckUserName(userName);
-//                });
-//                List<PatrolCheckResultDTO> tree = patrolTaskDeviceService.getTree(checkResultList, "0");
-//                patrolCheckResultDTOS.addAll(tree);
-//            }
-//
-//            l.setChildren(patrolCheckResultDTOS);
         });
         GlobalThreadLocal.setDataFilter(b1);
         return pageList;

@@ -212,4 +212,12 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     PatrolTaskDeviceParam getIdAndSystemName(@Param("patrolNumber") String patrolNumber);
+
+    /**
+     * 获取mac地址
+     * @param id
+     * @return
+     */
+    List<PatrolTaskDeviceDTO>  getMac(@Param("id")String id);
+
 }
