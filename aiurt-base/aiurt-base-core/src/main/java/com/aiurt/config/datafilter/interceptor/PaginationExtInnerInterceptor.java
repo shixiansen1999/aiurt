@@ -147,6 +147,15 @@ public class PaginationExtInnerInterceptor extends PaginationInnerInterceptor {
 				// do nothing
 			}
 		}
+
+		if (Objects.isNull(page)) {
+			try {
+				page = parameterMap.getOrDefault("pageList", null);
+			} catch (Exception exception) {
+				// do nothing
+			}
+		}
+
 		if (Objects.nonNull(page) && page instanceof Page) {
 			Page p = (Page) page;
 			List orderList = p.orders();
