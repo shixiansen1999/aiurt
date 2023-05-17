@@ -51,9 +51,9 @@ public class PatrolPlan extends DictEntity implements Serializable {
     @ApiModelProperty(value = "是否委外：0否、1是")
     @Dict(dicCode = "patrol_outsource")
     private java.lang.Integer outsource;
-	/**巡检频次：1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次、6两天1次、7三天1次*/
-	@Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次、6两天1次、7三天1次", width = 15)
-    @ApiModelProperty(value = "1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次、6两天1次、7三天1次")
+	/**巡检频次：1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次、6两天1次、7三天1次、8三月1次*/
+	@Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次、6两天1次、7三天1次、8三月1次", width = 15)
+    @ApiModelProperty(value = "1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次、6两天1次、7三天1次、8三月1次")
     @Dict(dicCode = "patrol_plan_period")
     private java.lang.Integer period;
 	/**生效状态：0停用、1启用*/

@@ -203,6 +203,18 @@ public class TaskPool implements Job {
                 return true;
             }
         }
+        if (PatrolConstant.STRATEGY_QUARTER.equals(type)) {
+            int year = date.year();
+            // 获取每个季度的第一天
+            for (int i = 1; i <= 12; i=i+3) {
+                // 构建日期字符串，格式为 "yyyy-MM-dd"
+                String dateStr = year + "-" + i + "-01";
+                DateTime dateTime = DateUtil.beginOfMonth(DateUtil.parse(dateStr));
+                if (date.equals(dateTime)) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 

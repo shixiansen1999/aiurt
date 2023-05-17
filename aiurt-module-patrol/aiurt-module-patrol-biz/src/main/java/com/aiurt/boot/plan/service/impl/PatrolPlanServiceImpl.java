@@ -171,57 +171,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         patrolPlan.setStatus(0);
         baseMapper.insert(patrolPlan);
         PatrolPlan id = baseMapper.selectByCode(patrolPlanDto.getCode());
-        if (patrolPlanDto.getPeriod() != null) {
-            if (patrolPlanDto.getPeriod() == 1 || PatrolConstant.PLAN_PERIOD_TWO_DAY.equals(patrolPlanDto.getPeriod())
-                    || PatrolConstant.PLAN_PERIOD_THREE_DAY.equals(patrolPlanDto.getPeriod())) {
-                PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
-                patrolPlanStrategy.setPlanId(id.getId());
-                patrolPlanStrategy.setType(0);
-                Date strategyStartTime = patrolPlanDto.getStrategyStartTime();
-                Date strategyEndTime = patrolPlanDto.getStrategyEndTime();
-                if (ObjectUtil.isNotEmpty(strategyEndTime) && ObjectUtil.isNotEmpty(strategyEndTime)) {
-                    Date startTime = DateUtil.parse(DateUtil.format(strategyStartTime, "HH:mm"), "HH:mm");
-                    Date endTime = DateUtil.parse(DateUtil.format(strategyEndTime, "HH:mm"), "HH:mm");
-                    int compare = DateUtil.compare(startTime, endTime);
-//                    if (compare > 0) {
-//                        throw new AiurtBootException("巡检策略设置的开始时间不能晚于结束时间！");
-//                    } else
-                    if (compare == 0) {
-                        throw new AiurtBootException("巡检策略设置的开始和结束时间不能相等！");
-                    }
-                }
-                patrolPlanStrategy.setEndTime(strategyEndTime);
-                patrolPlanStrategy.setStartTime(strategyStartTime);
-                patrolPlanStrategyMapper.insert(patrolPlanStrategy);
-            } else if (patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_TWO) || patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_THREE)) {
-                List<Integer> week = patrolPlanDto.getWeek();
-                for (Integer f : week) {
-                    PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
-                    patrolPlanStrategy.setPlanId(id.getId());
-                    patrolPlanStrategy.setType(1);
-                    patrolPlanStrategy.setWeek(f);
-                    patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
-                    patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
-                    patrolPlanStrategyMapper.insert(patrolPlanStrategy);
-                }
-            } else if (patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_FOUR) || patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_FIVE)) {
-                List<Integer> week = patrolPlanDto.getWeek();
-                for (Integer f : week) {
-                    PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
-                    patrolPlanStrategy.setPlanId(id.getId());
-                    patrolPlanStrategy.setType(2);
-                    patrolPlanStrategy.setTime((int) Math.ceil(1.0 * f / 7));
-                    int s = f % 7;
-                    if (s == 0) {
-                        s = 7;
-                    }
-                    patrolPlanStrategy.setWeek(s);
-                    patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
-                    patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
-                    patrolPlanStrategyMapper.insert(patrolPlanStrategy);
-                }
-            }
-        }
+        //生成巡检计划策略关联
+        addPatrolPlanStrategy( patrolPlanDto, id);
         List<PatrolStandardDto> list = patrolPlanDto.getPatrolStandards();
         if (CollectionUtils.isNotEmpty(list)) {
             for (PatrolStandard r : list) {
@@ -262,6 +213,66 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 patrolPlanDevice.setPlanStandardId(standardId);
                 patrolPlanDevice.setDeviceCode(p.getCode());
                 patrolPlanDeviceMapper.insert(patrolPlanDevice);
+            }
+        }
+    }
+
+    private void addPatrolPlanStrategy(PatrolPlanDto patrolPlanDto,PatrolPlan plan) {
+        if (patrolPlanDto.getPeriod() != null) {
+            if (patrolPlanDto.getPeriod() == 1 || PatrolConstant.PLAN_PERIOD_TWO_DAY.equals(patrolPlanDto.getPeriod())
+                    || PatrolConstant.PLAN_PERIOD_THREE_DAY.equals(patrolPlanDto.getPeriod())) {
+                PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
+                patrolPlanStrategy.setPlanId(plan.getId());
+                patrolPlanStrategy.setType(0);
+                Date strategyStartTime = patrolPlanDto.getStrategyStartTime();
+                Date strategyEndTime = patrolPlanDto.getStrategyEndTime();
+                if (ObjectUtil.isNotEmpty(strategyEndTime) && ObjectUtil.isNotEmpty(strategyEndTime)) {
+                    Date startTime = DateUtil.parse(DateUtil.format(strategyStartTime, "HH:mm"), "HH:mm");
+                    Date endTime = DateUtil.parse(DateUtil.format(strategyEndTime, "HH:mm"), "HH:mm");
+                    int compare = DateUtil.compare(startTime, endTime);
+//                    if (compare > 0) {
+//                        throw new AiurtBootException("巡检策略设置的开始时间不能晚于结束时间！");
+//                    } else
+                    if (compare == 0) {
+                        throw new AiurtBootException("巡检策略设置的开始和结束时间不能相等！");
+                    }
+                }
+                patrolPlanStrategy.setEndTime(strategyEndTime);
+                patrolPlanStrategy.setStartTime(strategyStartTime);
+                patrolPlanStrategyMapper.insert(patrolPlanStrategy);
+            } else if (patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_TWO) || patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_THREE)) {
+                List<Integer> week = patrolPlanDto.getWeek();
+                for (Integer f : week) {
+                    PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
+                    patrolPlanStrategy.setPlanId(plan.getId());
+                    patrolPlanStrategy.setType(1);
+                    patrolPlanStrategy.setWeek(f);
+                    patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
+                    patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
+                    patrolPlanStrategyMapper.insert(patrolPlanStrategy);
+                }
+            } else if (patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_FOUR) || patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_FIVE)) {
+                List<Integer> week = patrolPlanDto.getWeek();
+                for (Integer f : week) {
+                    PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
+                    patrolPlanStrategy.setPlanId(plan.getId());
+                    patrolPlanStrategy.setType(2);
+                    patrolPlanStrategy.setTime((int) Math.ceil(1.0 * f / 7));
+                    int s = f % 7;
+                    if (s == 0) {
+                        s = 7;
+                    }
+                    patrolPlanStrategy.setWeek(s);
+                    patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
+                    patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
+                    patrolPlanStrategyMapper.insert(patrolPlanStrategy);
+                }
+            } else if (patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_THREE_MONTH)) {
+                PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
+                patrolPlanStrategy.setType(3);
+                patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
+                patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
+                patrolPlanStrategyMapper.insert(patrolPlanStrategy);
             }
         }
     }

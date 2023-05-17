@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author cgkj0
  */
 @RestController
+@RequestMapping("/PatrolPool/taskPoolTest")
 public class PatrolPoolController {
     @Autowired
     private TaskPool pool;
