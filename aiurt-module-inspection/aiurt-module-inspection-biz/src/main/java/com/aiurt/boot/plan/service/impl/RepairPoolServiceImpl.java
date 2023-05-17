@@ -452,6 +452,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             // 任务提交人
             if (ObjectUtil.isNotEmpty(repairTask)) {
                 re.setSubmitUserName(repairTask.getSumitUserName());
+                re.setConfirmUrl(repairTask.getConfirmUrl());
             }
 
         }
