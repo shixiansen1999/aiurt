@@ -8,7 +8,6 @@ import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.result.*;
 import com.aiurt.common.util.ArchiveUtils;
@@ -35,6 +34,7 @@ import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
@@ -115,7 +115,7 @@ public class WorkLogController {
     @AutoLog(value = "工作日志确认-分页列表查询")
     @ApiOperation(value="工作日志确认-分页列表查询", notes="工作日志确认-分页列表查询")
     @GetMapping(value = "/confirmList")
-    @PermissionData(pageComponent = "workLog/affirm")
+   // @PermissionData(pageComponent = "workLog/affirm")
     public Result<IPage<WorkLogResult>> queryConfirmList(@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                                          @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
                                                          WorkLogParam param, HttpServletRequest req) {
@@ -400,6 +400,21 @@ public class WorkLogController {
                 {
                     throw new AiurtBootException("您不是该日志的接班人！");
                 }
+            }
+            //根据配置是否需要控制在指定时间端内开放编辑按钮，其余时间隐藏
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_CONFIRM);
+            boolean value = "1".equals(paramModel.getValue());
+            if(value){
+                //接班人为部门为空
+                if(ObjectUtil.isEmpty(user.getOrgCode())){
+                    throw new AiurtBootException("您不是该日志的接班人！");
+                }
+                Set<SysDepartModel> sysDepartModels = iSysBaseAPI.getDeptByUserId(byId.getHandoverId());
+                sysDepartModels = sysDepartModels.stream().filter(e->e.getOrgCode().equals(user.getOrgCode())).collect(Collectors.toSet());
+                if(CollUtil.isEmpty(sysDepartModels)){
+                    throw new AiurtBootException("您不是该日志的接班人！");
+                }
+                byId.setSucceedId(user.getId());
             }
             byId.setConfirmStatus(1).setSucceedTime(new Date());
             workLogDepotService.updateById(byId);

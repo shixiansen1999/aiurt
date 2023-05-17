@@ -37,6 +37,10 @@ public interface SysParamCodeConstant {
      */
     String SPAREPARTSCRAP_SPECIAL_EXPORT = "sparepartscrap_special_export";
     /**
+     * 工作日志确认-谁点确认，谁就是接班人
+     */
+    String WORKLOG_CONFIRM = "worklog_confirm";
+    /**
      * 固定资产业务消息发送渠道
      */
     String FIXED_ASSETS_MESSAGE = "fixed_assets_message";
