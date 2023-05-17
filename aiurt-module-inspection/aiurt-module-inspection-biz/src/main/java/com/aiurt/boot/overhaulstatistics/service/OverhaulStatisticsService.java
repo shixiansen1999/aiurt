@@ -15,7 +15,9 @@ import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -54,15 +56,17 @@ public class OverhaulStatisticsService{
 
 
     public Page<OverhaulStatisticsDTOS> getOverhaulList(Page<OverhaulStatisticsDTOS> pageList, OverhaulStatisticsDTOS condition) {
-        //根据当前登录人获取班组权限，管理员获取全部
-        List<String> collect1 = sysBaseAPI.getDepartByUser(1);
-        if(StrUtil.isEmpty(condition.getOrgCode()))
-        {
-            condition.setOrgCodeList(collect1);
-        }
-
         //查询管理负责人班组的所有信息
         List<OverhaulStatisticsDTOS> dtoList2 = this.selectDepart();
+        if(StrUtil.isEmpty(condition.getOrgCode()))
+        {
+            if (CollUtil.isNotEmpty(dtoList2)) {
+                List<String> collect1 = dtoList2.stream().map(OverhaulStatisticsDTOS::getOrgCode).collect(Collectors.toList());
+                condition.setOrgCodeList(collect1);
+            } else {
+                return pageList;
+            }
+        }
 
         //查询管理负责人检修班组的信息
         List<OverhaulStatisticsDTOS> statisticsDTOList = repairTaskMapper.readTeamList(pageList,condition);
@@ -262,32 +266,34 @@ public class OverhaulStatisticsService{
 
     public List<OverhaulStatisticsDTOS> selectDepart () {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<OverhaulStatisticsDTOS> lacerations = repairTaskMapper.selectDepart(sysUser.getId());
-        //获取自己及管辖的下的班组
-        if (CollUtil.isEmpty(lacerations)) {
-            return CollUtil.newArrayList();
-        } else {
-            List<OverhaulStatisticsDTOS> list = new ArrayList<>();
-            for (OverhaulStatisticsDTOS model : lacerations) {
-                if ("3".equals(model.getOrgCategory()) || "4".equals(model.getOrgCategory()) || "5".equals(model.getOrgCategory())) {
-                    list.add(model);
-                    List<OverhaulStatisticsDTOS> models = repairTaskMapper.getUserOrgCategory(model.getOrgId());
-                    if (CollUtil.isNotEmpty(models)) {
-                        list.addAll(models);
-                    }
-                } else {
-                    List<OverhaulStatisticsDTOS> models = repairTaskMapper.getUserOrgCategory(model.getOrgId());
-                    if (CollUtil.isNotEmpty(models)) {
-                        list.addAll(models);
-                    }
+        //根据当前登录人班组权限获取班组,管理员获取全部
+        boolean admin = SecurityUtils.getSubject().hasRole("admin");
+        List<OverhaulStatisticsDTOS> list = new ArrayList<>();
+        if (!admin) {
+            List<CsUserDepartModel>  departByUserId = sysBaseAPI.getDepartByUserId(sysUser.getId());
+            if (CollUtil.isNotEmpty(departByUserId)) {
+                for (CsUserDepartModel csUserDepartModel : departByUserId) {
+                    OverhaulStatisticsDTOS overhaulStatisticsDTOS = new OverhaulStatisticsDTOS();
+                    overhaulStatisticsDTOS.setOrgId(csUserDepartModel.getDepartId());
+                    overhaulStatisticsDTOS.setOrgCode(csUserDepartModel.getOrgCode());
+                    overhaulStatisticsDTOS.setOrgName(csUserDepartModel.getDepartName());
+                    list.add(overhaulStatisticsDTOS);
                 }
             }
-            if (CollUtil.isEmpty(list)) {
-                return CollUtil.newArrayList();
-            } else {
-                return list;
+
+        } else {
+            List<SysDepartModel> allSysDepart = sysBaseAPI.getAllSysDepart();
+            if (CollUtil.isNotEmpty(allSysDepart)) {
+                for (SysDepartModel sysDepartModel : allSysDepart) {
+                    OverhaulStatisticsDTOS overhaulStatisticsDTOS = new OverhaulStatisticsDTOS();
+                    overhaulStatisticsDTOS.setOrgId(sysDepartModel.getId());
+                    overhaulStatisticsDTOS.setOrgCode(sysDepartModel.getOrgCode());
+                    overhaulStatisticsDTOS.setOrgName(sysDepartModel.getDepartName());
+                    list.add(overhaulStatisticsDTOS);
+                }
             }
         }
+        return list;
     }
 
     /**

@@ -28,8 +28,6 @@ import com.aiurt.config.datafilter.constant.DataPermRuleType;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.config.datafilter.utils.ContextUtil;
 import com.aiurt.config.datafilter.utils.SqlBuilderUtil;
-import com.aiurt.config.datafilter.utils.ContextUtil;
-import com.aiurt.config.datafilter.utils.SqlBuilderUtil;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
@@ -487,8 +485,10 @@ public class IndexPlanService {
      * @return 包含维修任务详细信息的分页对象。
      */
     public IPage<RepairPoolDetailsDTO> getMaintenanceSituation(Page<RepairPoolDetailsDTO> page, Date startDate, String stationCode) {
+        // //根据配置决定统计的维保数按照维保开始时间还是提交时间进行筛选
+        SysParamModel sysParam = iSysParamAPI.selectByCode(SysParamCodeConstant.AUTO_CC);
         // 查询维修任务池的维修情况列表
-        List<RepairPoolDetailsDTO> result = repairTaskMapper.getMaintenanceSituation(page, startDate, stationCode);
+        List<RepairPoolDetailsDTO> result = repairTaskMapper.getMaintenanceSituation(page, startDate, stationCode,sysParam.getValue());
 
         // 禁用数据过滤
         boolean dataFilterEnable = GlobalThreadLocal.setDataFilter(false);

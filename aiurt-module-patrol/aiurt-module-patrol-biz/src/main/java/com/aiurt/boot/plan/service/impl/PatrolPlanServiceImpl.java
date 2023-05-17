@@ -269,6 +269,9 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 }
             } else if (patrolPlanDto.getPeriod().equals(PatrolConstant.PLAN_PERIOD_THREE_MONTH)) {
                 PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
+                patrolPlanStrategy.setPlanId(plan.getId());
+                patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
+                patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
                 patrolPlanStrategy.setType(3);
                 patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
                 patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());

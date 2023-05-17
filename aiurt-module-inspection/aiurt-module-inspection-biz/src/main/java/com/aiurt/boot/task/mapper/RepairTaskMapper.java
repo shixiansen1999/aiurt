@@ -195,6 +195,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @param page 分页对象，用于指定查询的页码和每页记录数。
      * @param startDate 查询开始日期，根据此日期筛选符合条件的检修情任务。
      * @param stationCode 车站编码，用于筛选指定车站的检修情任务。
+     * @param flag 车站编码，用于筛选指定车站的检修情任务。
      * @return 返回一个包含检修情任务详细信息的列表，每个检修情任务由一个 RepairPoolDetailsDTO 对象表示。
      */
     @DataPermission({
@@ -204,7 +205,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
             @DataColumn(key = "majorName",value = "rtsrl.major_code"),
             @DataColumn(key = "systemName",value = "rtsrl.subsystem_code")
     })
-    List<RepairPoolDetailsDTO> getMaintenanceSituation(@Param("page") Page<RepairPoolDetailsDTO> page, @Param("startDate") Date startDate, @Param("stationCode") String stationCode);
+    List<RepairPoolDetailsDTO> getMaintenanceSituation(@Param("page") Page<RepairPoolDetailsDTO> page, @Param("startDate") Date startDate, @Param("stationCode") String stationCode,@Param("flag") String flag);
 
     @DataPermission({
             @DataColumn(key = "deptName",value = "t2.org_code"),
