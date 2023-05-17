@@ -1,7 +1,9 @@
 package com.aiurt.boot.task.controller;
 
 import com.aiurt.boot.pool.PatrolTaskMissingDetection;
+import com.aiurt.boot.pool.PatrolTaskMissingDetectionQuarter;
 import com.aiurt.boot.pool.TaskPool;
+import com.aiurt.boot.pool.TaskPoolQuarter;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,10 @@ public class PatrolPoolController {
     @Autowired
     private TaskPool pool;
     @Autowired
+    private TaskPoolQuarter poolQuarter;
+    @Autowired
+    private PatrolTaskMissingDetectionQuarter patrolTaskMissingDetectionQuarter;
+    @Autowired
     private PatrolTaskMissingDetection taskMissingDetection;
 
     /**
@@ -27,7 +33,8 @@ public class PatrolPoolController {
     @AutoLog(value = "定时生成巡检任务触发接口(供测试用)", operateType = 2, operateTypeAlias = "新增", permissionUrl = "/taskpool")
     @RequestMapping(value = "/taskpool", method = RequestMethod.POST)
     public Result<?> taskPool() {
-        pool.execute();
+       // pool.execute();
+        poolQuarter.execute();
         return Result.ok();
     }
 
@@ -39,7 +46,8 @@ public class PatrolPoolController {
     @AutoLog(value = "漏检任务检测触发接口(供测试用)", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/taskmiss")
     @RequestMapping(value = "/taskmiss", method = RequestMethod.POST)
     public Result<?> taskMissDetection() {
-        taskMissingDetection.execute();
+        //taskMissingDetection.execute();
+        patrolTaskMissingDetectionQuarter.execute();
         return Result.ok();
     }
 }

@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
@@ -209,8 +210,12 @@ public class OverhaulStatisticsService{
                     List<PersonnelTeamDTO> dtos = teamPeerTime.stream().filter(t -> !collect5.contains(t.getTaskId())).collect(Collectors.toList());
                     dtos.addAll(teamTime);
                     BigDecimal sum = new BigDecimal("0.00");
-                    for (PersonnelTeamDTO dto : dtos) {
-                        sum = sum.add(dto.getInspecitonTotalTime());
+                    if (CollUtil.isNotEmpty(dtos)) {
+                        for (PersonnelTeamDTO dto : dtos) {
+                            if (ObjectUtil.isNotEmpty(dto.getInspecitonTotalTime())) {
+                                sum = sum.add(dto.getInspecitonTotalTime());
+                            }
+                        }
                     }
                     //秒转时
                     BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);
