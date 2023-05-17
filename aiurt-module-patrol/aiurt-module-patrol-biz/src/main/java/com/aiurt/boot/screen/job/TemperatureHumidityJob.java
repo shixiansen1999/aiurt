@@ -2,7 +2,9 @@ package com.aiurt.boot.screen.job;
 
 import com.aiurt.boot.task.entity.TemperatureHumidity;
 import com.aiurt.boot.task.mapper.TemperatureHumidityMapper;
+import com.aiurt.modules.sensorinformation.entity.SensorInformation;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -16,10 +18,13 @@ import org.snmp4j.smi.*;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 每日2点系统记录传感器的温湿度
@@ -30,34 +35,46 @@ public class TemperatureHumidityJob implements Job {
 
     @Autowired
     TemperatureHumidityMapper temperatureHumidityMapper;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
 
     //长春
     private String ip="172.16.254.172";
     //端口统一设置为161
     private String port="161";
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         log.info("开始采集传感器的温湿度...");
-        try{
-            //设定CommunityTarget
-            CommunityTarget myTarget = new CommunityTarget();
-            //定义远程主机的地址
-            String deviceIp="udp:"+ip+"/"+port;
-            Address deviceAdd = GenericAddress.parse(deviceIp);
-            //设定远程主机的地址
-            myTarget.setAddress(deviceAdd);
-            //设置snmp共同体
-            myTarget.setCommunity(new OctetString("public"));
-            //设置超时重试次数
-            myTarget.setRetries(2);
-            //设置超时的时间
-            myTarget.setTimeout(5*60);
-            //设置使用的snmp版本
-            myTarget.setVersion(SnmpConstants.version1);
+
+        // 获取ip地址集合
+        List<SensorInformation> sensorList = sysBaseApi.getSensorList();
+
+        // 记录传感器温湿度
+        for (SensorInformation sensor : sensorList) {
+            // 创建回滚点
+            Object savepoint = TransactionAspectSupport.currentTransactionStatus().createSavepoint();
+            try {
+                //设定CommunityTarget
+                CommunityTarget myTarget = new CommunityTarget();
+                //定义远程主机的地址
+                String deviceIp = "udp:" + sensor.getStationIp() + "/" + port;
+                Address deviceAdd = GenericAddress.parse(deviceIp);
+                //设定远程主机的地址
+                myTarget.setAddress(deviceAdd);
+                //设置snmp共同体
+                myTarget.setCommunity(new OctetString("public"));
+                //设置超时重试次数
+                myTarget.setRetries(2);
+                //设置超时的时间
+                myTarget.setTimeout(5 * 60);
+                //设置使用的snmp版本
+                myTarget.setVersion(SnmpConstants.version1);
 
             //设定采取的协议
-            TransportMapping transport = new DefaultUdpTransportMapping();//设定传输协议为UDP
+            //设定传输协议为UDP
+            TransportMapping transport = new DefaultUdpTransportMapping();
             //调用TransportMapping中的listen()方法，启动监听进程，接收消息，由于该监听进程是守护进程，最后应调用close()方法来释放该进程
             transport.listen();
             //创建SNMP对象，用于发送请求PDU
@@ -107,9 +124,12 @@ public class TemperatureHumidityJob implements Job {
                  */
             }
 
-        }catch(IOException e){
-            e.printStackTrace();
+            } catch (IOException e) {
+                TransactionAspectSupport.currentTransactionStatus().rollbackToSavepoint(savepoint);
+                String message = "记录传感器温湿度失败！线路：{},站点:{},传感器ip:{}";
+                log.error(message, sensor.getLineName(), sensor.getStationName(), sensor.getStationIp());
+                e.printStackTrace();
+            }
         }
     }
-
 }

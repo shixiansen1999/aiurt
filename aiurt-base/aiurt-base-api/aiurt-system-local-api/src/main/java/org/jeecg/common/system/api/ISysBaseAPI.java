@@ -11,6 +11,7 @@ import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.sensorinformation.entity.SensorInformation;
 import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.vo.*;
@@ -1117,5 +1118,11 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<DeviceType> selectDeviceTypeByCodes(Set<String> list);
+
+    /**
+     * 查询传感器
+     * @return
+     */
+    List<SensorInformation> getSensorList();
 }
 
