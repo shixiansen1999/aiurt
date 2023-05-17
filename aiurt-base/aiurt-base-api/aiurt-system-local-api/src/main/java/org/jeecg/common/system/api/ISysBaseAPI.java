@@ -809,6 +809,13 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<LoginUser> getUserByDeptCode(String deptCode);
+    /**
+     * 根据用户ids，获取部门List信息
+     *
+     * @param ids
+     * @return
+     */
+    Set<SysDepartModel> getDeptByUserId(String ids);
 
 
 
@@ -1042,8 +1049,7 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     List<CsLine> getAllLine();
     /**
-     * 获取所有del_flag=0的线路
-     * 按照sort排序
+     * 获取所有del_flag=0的子系统
      * @return
      */
     List<JSONObject> getAllSystem();

@@ -2363,6 +2363,27 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
+    public Set<SysDepartModel> getDeptByUserId(String ids) {
+        String[] split = ids.split(",");
+        Set<SysDepartModel> sysDepartModels = new HashSet<>();
+        if(split.length!=0){
+            List<SysUser> userList = userMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, split));
+            if(CollUtil.isNotEmpty(userList)){
+                List<String> userOrgIds = userList.stream().map(SysUser::getOrgId).collect(Collectors.toList());
+                List<SysDepart> sysDepartList = sysDepartService.list(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).in(SysDepart::getId, userOrgIds));
+               if(CollUtil.isNotEmpty(sysDepartList)){
+                   for (SysDepart sysDepart : sysDepartList) {
+                       SysDepartModel sysDepartModel = new SysDepartModel();
+                       BeanUtils.copyProperties(sysDepart,sysDepartModel);
+                       sysDepartModels.add(sysDepartModel);
+                   }
+               }
+            }
+        }
+        return sysDepartModels;
+    }
+
+    @Override
     public List<PatrolStandardItemsModel> patrolStandardList(String id) {
         List<PatrolStandardItemsModel> patrolStandardItemsModels = new ArrayList<>();
         List<PatrolStandardItems> patrolStandardItems = patrolStandardItemsService.queryPageList(id);
