@@ -104,4 +104,8 @@ public class RepairPoolDetailsDTO {
 
     @ApiModelProperty(value = "任务提交人名称")
     private String submitUserName;
+
+    @ApiModelProperty(value = "提交签名url")
+    private String confirmUrl;
+
 }
