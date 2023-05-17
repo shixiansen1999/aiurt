@@ -405,8 +405,15 @@ public class PatrolStatisticsService {
             List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(l.getId());
             if (CollUtil.isNotEmpty(mac)) {
                 for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
-                    if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMacRecord()) && patrolTaskDeviceDTO.getMac().equals(patrolTaskDeviceDTO.getMacRecord())) {
-                        l.setMacMatchResult("正常");
+                    if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMacRecord())) {
+                        int i = patrolTaskDeviceDTO.getMac().compareToIgnoreCase(patrolTaskDeviceDTO.getMacRecord());
+                        if (i == 0) {
+                            l.setMacMatchResult("正常");
+                        } else {
+                            l.setMacMatchResult("异常");
+                            break;
+                        }
+
                     } else {
                         l.setMacMatchResult("异常");
                         break;
