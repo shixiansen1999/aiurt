@@ -52,7 +52,8 @@
                 where pts.subsystem_code = #{condition.subsystemCode}
             )
         </if>
-        and pt.`status` = 7
+        and( pt.`status` = 7
+        or pt.`status` = 6)
         GROUP BY pt.id
     </select>
     <select id="getPeopleNowNumber" resultType="com.aiurt.boot.report.model.PatrolReport">
@@ -160,7 +161,7 @@ FROM
                 where pts.subsystem_code = #{condition.subsystemCode}
             )
         </if>
-         and pt.abnormal_state = 1
+         and pt.omit_status = 1
          GROUP BY pt.id
 </select>
 <select id="getPeopleOmitTasksNumber" resultType="com.aiurt.boot.report.model.PatrolReport">
@@ -213,7 +214,7 @@ FROM
                 where pts.subsystem_code = #{condition.subsystemCode}
             )
         </if>
-    and pt.abnormal_state = 1
+    and pt.omit_status = 1
 	GROUP BY
 	pt.id
 </select>
@@ -324,5 +325,53 @@ FROM
         </if>
 	GROUP BY
 	pt.id
+</select>
+<select id="getOrgOmitTestNumber" resultType="java.lang.String">
+        SELECT
+            count( pt.id ) as omitNubmer
+        FROM
+            patrol_task pt
+        JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
+        <if test="orgCode != null and orgCode != ''">
+            AND pto.org_code = #{orgCode}
+        </if>
+       <if test="condition.startDate != null and condition.startDate != ''">
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+        </if>
+        <if test="condition.lineCode != null and condition.stationCode != ''">
+            and pt.code in (
+            SELECT pps.task_code
+            FROM patrol_task_station pps
+            LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+            where pps.station_code = #{condition.stationCode}
+            and cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.lineCode != null and condition.stationCode == null">
+            and pt.code in (
+            SELECT pps.task_code
+            FROM patrol_task_station pps
+            LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+            where cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.stationCode != null and condition.lineCode == null">
+            and pt.code in (
+            SELECT pps.task_code
+            FROM patrol_task_station pps
+            LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+            where pps.station_code = #{condition.stationCode}
+            )
+        </if>
+        <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
+            and pt.id in (
+            SELECT pts.task_id
+            FROM patrol_task_standard pts
+            where pts.subsystem_code = #{condition.subsystemCode}
+            )
+        </if>
+            AND pt.omit_status = 1
+        GROUP BY
+            pto.org_code
 </select>
 </mapper>
