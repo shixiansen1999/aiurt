@@ -3,11 +3,13 @@ package com.aiurt.boot.screen.service;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.PatrolDictCode;
 import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.*;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
+import com.aiurt.boot.task.dto.TemperatureHumidityDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.TemperatureHumidity;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
@@ -209,9 +211,9 @@ public class PatrolScreenService {
 
 
 
-    public List<TemperatureHumidity> getTemAndHum(String date){
-        if (date!=null){
-            List<TemperatureHumidity> temAndHum = patrolTaskMapper.getTemAndHum(date);
+    public List<TemperatureHumidityDTO> getTemAndHum(String date, String lineCode, String stationCode){
+        if (date!=null && StrUtil.isNotEmpty(lineCode) && StrUtil.isNotEmpty(stationCode)) {
+            List<TemperatureHumidityDTO> temAndHum = patrolTaskMapper.getTemAndHum(date, lineCode, stationCode);
             return temAndHum;
         }else {
         }
