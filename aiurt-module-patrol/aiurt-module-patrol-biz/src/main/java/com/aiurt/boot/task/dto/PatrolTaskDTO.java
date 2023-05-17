@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -10,6 +11,7 @@ import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -20,7 +22,7 @@ import java.util.List;
  * @desc
  */
 @Data
-public class PatrolTaskDTO
+public class PatrolTaskDTO extends DictEntity implements Serializable
 {
     /**主键ID*/
     @TableId(type = IdType.ASSIGN_ID)
