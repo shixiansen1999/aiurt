@@ -1444,12 +1444,17 @@
             </foreach>
         </if>
     </select>
-    <select id="getTemAndHum" resultType="com.aiurt.boot.task.entity.TemperatureHumidity">
-        SELECT *
-        from `temperature_humidity`
-        where DATE_SUB(#{date}, INTERVAL 30 DAY) <![CDATA[ <= ]]> date (create_time)
+    <select id="getTemAndHum" resultType="com.aiurt.boot.task.dto.TemperatureHumidityDTO">
+        SELECT t.*, s.line_code, s.line_name, s.station_code, s.station_name
+        from `temperature_humidity` t
+        left join sensor_information s on t.station_code = s.station_code
+        where t.create_time between DATE_SUB(now(), INTERVAL 30 DAY) and now()
           AND
-            create_time <![CDATA[ <= ]]> #{date}
+            DATE_FORMAT(t.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{date}
+          AND
+            s.line_code = #{lineCode}
+          AND
+            s.station_code = #{stationCode}
         order by create_time desc
     </select>
 

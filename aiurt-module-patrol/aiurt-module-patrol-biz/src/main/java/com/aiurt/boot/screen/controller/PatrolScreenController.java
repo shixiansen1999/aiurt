@@ -1,7 +1,11 @@
 package com.aiurt.boot.screen.controller;
 
-import com.aiurt.boot.screen.model.*;
+import com.aiurt.boot.screen.model.ScreenImportantData;
+import com.aiurt.boot.screen.model.ScreenStatistics;
+import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
+import com.aiurt.boot.screen.model.ScreenStatisticsTask;
 import com.aiurt.boot.screen.service.PatrolScreenService;
+import com.aiurt.boot.task.dto.TemperatureHumidityDTO;
 import com.aiurt.boot.task.entity.TemperatureHumidity;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
 /**
  * @author JB
@@ -121,6 +126,11 @@ public class PatrolScreenController {
         return Result.ok(list);
     }
 
+
+    public void getStations() {
+
+    }
+
     /**
      * 大屏巡视模块-温湿度
      *
@@ -129,8 +139,10 @@ public class PatrolScreenController {
     @AutoLog(value = "大屏巡视模块-温湿度", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "大屏巡视模块-温湿度", notes = "大屏巡视模块-温湿度")
     @RequestMapping(value = "/temAndHum", method = {RequestMethod.GET})
-    public Result<List<TemperatureHumidity>> getTemAndHum(@ApiParam(name = "date", value = "当天时间") String date) {
-        List<TemperatureHumidity> list = screenService.getTemAndHum(date);
+    public Result<List<TemperatureHumidityDTO>> getTemAndHum(@ApiParam(name = "date", value = "当天时间") String date,
+                                                             @ApiParam(name = "lineCode", value = "线路code") String lineCode,
+                                                             @ApiParam(name = "stationCode", value = "站点code") String stationCode) {
+        List<TemperatureHumidityDTO> list = screenService.getTemAndHum(date, lineCode, stationCode);
         return Result.ok(list);
     }
 

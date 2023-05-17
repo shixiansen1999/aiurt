@@ -1,30 +1,22 @@
 package com.aiurt.boot.screen.job;
 
+import com.aiurt.boot.screen.service.TemperatureHumidityService;
 import com.aiurt.boot.task.entity.TemperatureHumidity;
 import com.aiurt.boot.task.mapper.TemperatureHumidityMapper;
 import com.aiurt.modules.sensorinformation.entity.SensorInformation;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.snmp4j.CommunityTarget;
-import org.snmp4j.PDU;
-import org.snmp4j.Snmp;
-import org.snmp4j.TransportMapping;
-import org.snmp4j.event.ResponseEvent;
-import org.snmp4j.mp.SnmpConstants;
-import org.snmp4j.smi.*;
-import org.snmp4j.transport.DefaultUdpTransportMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * 每日2点系统记录传感器的温湿度
@@ -41,7 +33,7 @@ public class TemperatureHumidityJob implements Job {
     //长春
     private String ip="172.16.254.172";
     //端口统一设置为161
-    private String port="161";
+    private static String port="161";
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -51,6 +43,40 @@ public class TemperatureHumidityJob implements Job {
         // 获取ip地址集合
         List<SensorInformation> sensorList = sysBaseApi.getSensorList();
 
+        ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("TemperatureHumidityJob-%d").build();
+        ExecutorService executor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(), threadFactory);
+        List<Future<TemperatureHumidity>> futureList = new ArrayList<>();
+        sensorList.forEach(e -> {
+            Future<TemperatureHumidity> submit = executor.submit(new TemperatureHumidityService(e, temperatureHumidityMapper, port));
+            futureList.add(submit);
+        });
+        // 确认每个线程都执行完成
+        for (Future<TemperatureHumidity> th : futureList) {
+            try {
+                th.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            executor.shutdown();
+            // (所有的任务都结束的时候，返回TRUE)
+            long timeOut = 5 * 1000;
+            if (!executor.awaitTermination(timeOut, TimeUnit.MILLISECONDS)) {
+                // 5s超时的时候向线程池中所有的线程发出中断(interrupted)。
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            // awaitTermination方法被中断的时候也中止线程池中全部的线程的执行。
+            log.error("awaitTermination interrupted:{}", e);
+            executor.shutdownNow();
+        }
+
+/*
         // 记录传感器温湿度
         for (SensorInformation sensor : sensorList) {
             // 创建回滚点
@@ -107,7 +133,8 @@ public class TemperatureHumidityJob implements Job {
                 float temperature = (float)tem / 10;
                 float humidity=(float)hum / 10;
                 TemperatureHumidity th = new TemperatureHumidity();
-                th.setIp(ip);
+                th.setIp(sensor.getStationIp());
+                th.setStationCode(sensor.getStationCode());
                 th.setTemperature(temperature);
                 th.setHumidity(humidity);
                 Date time = new Date(System.currentTimeMillis());
@@ -116,12 +143,12 @@ public class TemperatureHumidityJob implements Job {
                 temperatureHumidityMapper.insert(th);
                 //调用close()方法释放该进程
                 transport.close();
-                /**
+                *//**
                  * 输出结果：
                  * request.size()=2
                  * 1.3.6.1.4.1.58162.1.0 = 243
                  * 1.3.6.1.4.1.58162.2.0 = 337
-                 */
+                 *//*
             }
 
             } catch (IOException e) {
@@ -130,6 +157,6 @@ public class TemperatureHumidityJob implements Job {
                 log.error(message, sensor.getLineName(), sensor.getStationName(), sensor.getStationIp());
                 e.printStackTrace();
             }
-        }
+        }*/
     }
 }

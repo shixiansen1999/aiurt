@@ -1,6 +1,6 @@
-package com.aiurt.boot.task.entity;
+package com.aiurt.boot.task.dto;
 
-
+import com.aiurt.modules.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -10,36 +10,44 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.io.Serializable;
+
+/**
+ * @author : sbx
+ * @Classname : TemperatureHumidityDTO
+ * @Description : TODO
+ * @Date : 2023/5/16 12:28
+ */
 @Data
 @TableName("temperature_humidity")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="temperature_humidity对象", description="temperature_humidity")
-public class TemperatureHumidity {
+public class TemperatureHumidityDTO extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private java.lang.String id;
-    /**站点code*/
-    @Excel(name = "站点code", width = 15)
-    @ApiModelProperty(value = "站点code")
-    private java.lang.String stationCode;
     /**站点ip*/
-    @Excel(name = "站点ip", width = 15)
     @ApiModelProperty(value = "站点ip")
     private java.lang.String ip;
     /**温度*/
-    @Excel(name = "温度", width = 15)
     @ApiModelProperty(value = "温度")
-    private float temperature;
+    private Float temperature;
     /**湿度*/
-    @Excel(name = "湿度", width = 15)
     @ApiModelProperty(value = "湿度")
-    private float humidity;
-
+    private Float humidity;
+    @ApiModelProperty(value = "线路code")
+    private String lineCode;
+    @ApiModelProperty(value = "线路名称")
+    private String lineName;
+    @ApiModelProperty(value = "站点code")
+    private String stationCode;
+    @ApiModelProperty(value = "站点名称")
+    private String stationName;
     /**创建时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd")
@@ -52,3 +60,4 @@ public class TemperatureHumidity {
     private java.util.Date updateTime;
 
 }
+
