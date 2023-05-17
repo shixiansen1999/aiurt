@@ -15,13 +15,10 @@ import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @Description: repair_task
@@ -366,5 +363,18 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     Long getFaultQuantity(@Param("faultCode") List<String> faultCode);
-
+    /**
+     * 检修池查找
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "t2.org_code"),
+            @DataColumn(key = "stationName",value = "t3.station_code"),
+            @DataColumn(key = "lineName",value = "t3.line_code"),
+            @DataColumn(key = "majorName",value = "t3.major_code"),
+            @DataColumn(key = "systemName",value = "t3.subsystem_code")
+    })
+    List<RepairTaskNum> selectRepairPoolListSpecial(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 }

@@ -950,4 +950,24 @@
           </if>
        </where>
     </select>
+
+    <select id="selectRepairPoolListSpecial" resultType="com.aiurt.boot.index.dto.RepairTaskNum">
+        SELECT
+        DATE_FORMAT(t5.start_time, '%Y/%m/%d') AS currDateStr,
+        COUNT(DISTINCT rt.id) AS num
+        FROM
+        repair_task rt
+        LEFT JOIN repair_task_org_rel t2 ON rt.code = t2.repair_task_code
+        LEFT JOIN repair_task_station_rel t3 ON rt.code = t3.repair_task_code
+        LEFT JOIN repair_task_standard_rel t4 ON rt.id = t4.repair_task_id
+        LEFT JOIN repair_task_device_rel t5 ON rt.id = t5.repair_task_id
+        WHERE
+        rt.status = 8
+        AND
+        DATE_FORMAT(t5.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+        AND
+        DATE_FORMAT(t5.start_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+        GROUP BY
+        DATE(rt.start_time)
+    </select>
 </mapper>
