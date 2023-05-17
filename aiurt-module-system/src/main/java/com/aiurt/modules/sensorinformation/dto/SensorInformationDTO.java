@@ -1,5 +1,6 @@
 package com.aiurt.modules.sensorinformation.dto;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -7,7 +8,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -31,17 +31,18 @@ public class SensorInformationDTO implements Serializable {
     @ApiModelProperty(value = "主键")
     private String id;
 	/**线路code*/
+    @Excel(name = "线路code", width = 15)
     @ApiModelProperty(value = "线路code")
     private String lineCode;
 	/**线路名称*/
-	@Excel(name = "线路名称", width = 15)
+
     @ApiModelProperty(value = "线路名称")
     private String lineName;
 	/**站点code*/
+    @Excel(name = "站点code", width = 15)
     @ApiModelProperty(value = "站点code")
     private String stationCode;
 	/**站点名称*/
-	@Excel(name = "站点名称", width = 15)
     @ApiModelProperty(value = "站点名称")
     private String stationName;
 	/**站点ip*/
@@ -80,4 +81,8 @@ public class SensorInformationDTO implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private Date updateTime;
+    /**错误原因*/
+    @Excel(name = "错误原因", width = 15)
+    @ApiModelProperty(value = "错误原因")
+    private java.lang.String wrongReason;
 }
