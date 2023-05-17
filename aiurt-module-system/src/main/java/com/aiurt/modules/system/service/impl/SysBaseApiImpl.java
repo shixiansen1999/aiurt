@@ -3156,4 +3156,35 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 .eq(SensorInformation::getDelFlag, CommonConstant.DEL_FLAG_0));
         return sensorList;
     }
+
+    @Override
+    public List<String> getDepartByUser(Integer flag) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //根据当前登录人班组权限获取班组,管理员获取全部
+        boolean admin = SecurityUtils.getSubject().hasRole("admin");
+        List<String> list = new ArrayList<>();
+        if (!admin) {
+            List<CsUserDepartModel>  departByUserId = this.getDepartByUserId(user.getId());
+            if (CollUtil.isNotEmpty(departByUserId)) {
+                if (flag == 0) {
+                    list =departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+                }else {
+                    list =departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+                }
+            }
+
+        } else {
+            List<SysDepartModel> allSysDepart = this.getAllSysDepart();
+            if (CollUtil.isNotEmpty(allSysDepart)) {
+                if (flag == 0) {
+                    list =allSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+                }else {
+                    list =allSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+                }
+            }
+        }
+        return list;
+    }
+
+
 }
