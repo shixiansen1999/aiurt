@@ -1130,5 +1130,13 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<SensorInformation> getSensorList();
+
+    /**
+     * 根据当前登录人获取班组权限，管理员获取全部,flag为0返回班组id ,1返回班组code
+     * @return
+     */
+    List<String> getDepartByUser(Integer flag);
+
+
 }
 

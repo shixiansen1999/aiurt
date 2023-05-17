@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
@@ -408,9 +409,9 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         return monthDtos;
     }
     public List<MonthDTO> getMonthOrgNum(String lineCode, List<String> stationCode, List<String> systemCode) {
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = sysBaseApi.getUserSysDepart(user.getId());
-        List<String> orgCodes = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        //根据当前登录人获取班组权限，管理员获取全部
+        List<String> orgCodes = sysBaseApi.getDepartByUser(1);
+
         if (CollectionUtil.isEmpty(orgCodes)){
             return new ArrayList<MonthDTO>() ;
         }
@@ -427,9 +428,9 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
     }
 
     public IPage<FailureOrgReport> getFailureOrgReport(Page<FailureOrgReport> page,String lineCode, List<String> stationCode, String startTime, String endTime, List<String> systemCode) {
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = sysBaseApi.getUserSysDepart(user.getId());
-        List<String> ids =userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+        //根据当前登录人获取班组权限，管理员获取全部
+        List<String> ids = sysBaseApi.getDepartByUser(0);
+
         if (CollectionUtil.isEmpty(ids)){
             return page.setRecords(new ArrayList<>()) ;
         }
@@ -548,25 +549,36 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
        }
 
     public List<LineOrStationDTO> selectDepart () {
+
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<LineOrStationDTO> lineOrStationDtos = patrolTaskMapper.selectDepart(sysUser.getId());
-        //获取自己及管辖的下的班组
-        if (CollUtil.isEmpty(lineOrStationDtos)) {
-            return CollUtil.newArrayList();
-        } else {
-            List<LineOrStationDTO> list = new ArrayList<>();
-            for (LineOrStationDTO model : lineOrStationDtos) {
-                List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getCode());
-                if (CollUtil.isNotEmpty(models)) {
-                    list.addAll(models);
+        //根据当前登录人班组权限获取班组,管理员获取全部
+        boolean admin = SecurityUtils.getSubject().hasRole("admin");
+        List<LineOrStationDTO> list = new ArrayList<>();
+
+        if (!admin) {
+            List<CsUserDepartModel>  departByUserId = sysBaseApi.getDepartByUserId(sysUser.getId());
+            if (CollUtil.isNotEmpty(departByUserId)) {
+                for (CsUserDepartModel csUserDepartModel : departByUserId) {
+                    LineOrStationDTO lineOrStationDTO = new LineOrStationDTO();
+                    lineOrStationDTO.setId(csUserDepartModel.getDepartId());
+                    lineOrStationDTO.setCode(csUserDepartModel.getOrgCode());
+                    lineOrStationDTO.setName(csUserDepartModel.getDepartName());
+                    list.add(lineOrStationDTO);
                 }
             }
-            if (CollUtil.isEmpty(list)) {
-                return CollUtil.newArrayList();
-            } else {
-                 List<LineOrStationDTO> dtoList = list.stream().distinct().collect(Collectors.toList());
-                return dtoList;
+
+        } else {
+            List<SysDepartModel> allSysDepart = sysBaseApi.getAllSysDepart();
+            if (CollUtil.isNotEmpty(allSysDepart)) {
+                for (SysDepartModel sysDepartModel : allSysDepart) {
+                    LineOrStationDTO lineOrStationDTO = new LineOrStationDTO();
+                    lineOrStationDTO.setId(sysDepartModel.getId());
+                    lineOrStationDTO.setCode(sysDepartModel.getOrgCode());
+                    lineOrStationDTO.setName(sysDepartModel.getDepartName());
+                    list.add(lineOrStationDTO);
+                }
             }
         }
+        return list;
     }
 }
