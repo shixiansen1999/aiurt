@@ -426,7 +426,10 @@ public class PatrolStatisticsService {
             l.setUserInfo(indexUsers);
             l.setOrgInfo(orgInfo);
             l.setStationInfo(stationInfo);
-            l.setAbnormalDictName(abnormalDictName);
+            // 待审核和已完成状态才返显异常状态
+            if (PatrolConstant.TASK_AUDIT.equals(l.getStatus()) || PatrolConstant.TASK_COMPLETE.equals(l.getStatus())) {
+                l.setAbnormalDictName(abnormalDictName);
+            }
             l.setStatusDictName(statusDictName);
 
             //获取巡视单和检查项
@@ -473,7 +476,7 @@ public class PatrolStatisticsService {
      * @return
      */
 //    @DisableDataFilter
-    public IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page,HttpServletRequest request, IndexScheduleDTO indexScheduleDTO) {
+    public IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, HttpServletRequest request, IndexScheduleDTO indexScheduleDTO) {
         IPage<ScheduleTask> pageList = null;
         // 默认已完成
         if (ObjectUtil.isEmpty(indexScheduleDTO.getStatus())) {
@@ -496,7 +499,7 @@ public class PatrolStatisticsService {
 //        indexScheduleDTO.setJointSQL(filterConditions);
 
         pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO);
-        if(CollectionUtil.isNotEmpty(pageList.getRecords())) {
+        if (CollectionUtil.isNotEmpty(pageList.getRecords())) {
             // 字典翻译
             Map<String, String> statusItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
                     .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
