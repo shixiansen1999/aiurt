@@ -58,7 +58,7 @@ public class OverhaulStatisticsService{
 
     public Page<OverhaulStatisticsDTOS> getOverhaulList(Page<OverhaulStatisticsDTOS> pageList, OverhaulStatisticsDTOS condition) {
         //查询管理负责人班组的所有信息
-        List<OverhaulStatisticsDTOS> dtoList2 = this.selectDepart();
+        List<OverhaulStatisticsDTOS> dtoList2 = this.selectDepart(condition.getOrgCode());
         if(StrUtil.isEmpty(condition.getOrgCode()))
         {
             if (CollUtil.isNotEmpty(dtoList2)) {
@@ -269,7 +269,7 @@ public class OverhaulStatisticsService{
         }
     }
 
-    public List<OverhaulStatisticsDTOS> selectDepart () {
+    public List<OverhaulStatisticsDTOS> selectDepart (String orgCode) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //根据当前登录人班组权限获取班组,管理员获取全部
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
@@ -282,7 +282,14 @@ public class OverhaulStatisticsService{
                     overhaulStatisticsDTOS.setOrgId(csUserDepartModel.getDepartId());
                     overhaulStatisticsDTOS.setOrgCode(csUserDepartModel.getOrgCode());
                     overhaulStatisticsDTOS.setOrgName(csUserDepartModel.getDepartName());
-                    list.add(overhaulStatisticsDTOS);
+                    if (StrUtil.isNotEmpty(orgCode) && csUserDepartModel.getOrgCode().equals(orgCode)) {
+                        List<OverhaulStatisticsDTOS> one = new ArrayList<>();
+                        one.add(overhaulStatisticsDTOS);
+                        return one;
+                    } else {
+                        list.add(overhaulStatisticsDTOS);
+                    }
+
                 }
             }
 
@@ -294,7 +301,13 @@ public class OverhaulStatisticsService{
                     overhaulStatisticsDTOS.setOrgId(sysDepartModel.getId());
                     overhaulStatisticsDTOS.setOrgCode(sysDepartModel.getOrgCode());
                     overhaulStatisticsDTOS.setOrgName(sysDepartModel.getDepartName());
-                    list.add(overhaulStatisticsDTOS);
+                    if (StrUtil.isNotEmpty(orgCode) && sysDepartModel.getOrgCode().equals(orgCode)) {
+                        List<OverhaulStatisticsDTOS> one = new ArrayList<>();
+                        one.add(overhaulStatisticsDTOS);
+                        return one;
+                    } else {
+                        list.add(overhaulStatisticsDTOS);
+                    }
                 }
             }
         }
