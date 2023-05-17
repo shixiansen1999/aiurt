@@ -1,5 +1,6 @@
 package com.aiurt.modules.sensorinformation.entity;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -9,7 +10,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -37,7 +37,7 @@ public class SensorInformation implements Serializable {
     @ApiModelProperty(value = "线路code")
     private String lineCode;
 	/**线路名称*/
-	@Excel(name = "线路名称", width = 15)
+	@Excel(name = "线路", width = 15)
     @ApiModelProperty(value = "线路名称")
     private String lineName;
 	/**站点code*/

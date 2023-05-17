@@ -16,7 +16,7 @@
         <if test="condition.lineName != null and condition.lineName != ''">
             and line_name like concat('%', #{condition.lineName}, '%')
         </if>
-        <if test="condition.stationName() != null and condition.stationName != ''">
+        <if test="condition.stationName != null and condition.stationName != ''">
             and station_name like concat('%', #{condition.stationName}, '%')
         </if>
     </select>
@@ -35,7 +35,7 @@
         <if test="condition.lineName != null and condition.lineName != ''">
             and line_name like concat('%', #{condition.lineName}, '%')
         </if>
-        <if test="condition.stationName() != null and condition.stationName != ''">
+        <if test="condition.stationName != null and condition.stationName != ''">
             and station_name like concat('%', #{condition.stationName}, '%')
         </if>
     </select>
