@@ -1,6 +1,5 @@
 package com.aiurt.modules.sysfile.entity;
 
-import com.aiurt.modules.sysfile.vo.UploadVO;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -132,32 +131,32 @@ public class SysFile {
 	@ApiModelProperty("可查看人员")
 	@TableField(exist = false)
 	@NotEmpty(message = "小主，请添加可查看人员哦！")
-	private List<UploadVO> lookIds;
+	private List<String> lookIds;
 
 	@ApiModelProperty("可编辑人员")
 	@TableField(exist = false)
 	@NotEmpty(message = "小主，请添加可编辑人员哦！")
-	private List<UploadVO> editIds;
+	private List<String> editIds;
 
 	@ApiModelProperty("可上传人员")
 	@TableField(exist = false)
 	@NotEmpty(message = "小主，请添加可上传人员哦！")
-	private List<UploadVO> uploads;
+	private List<String> uploads;
 
 	@ApiModelProperty("可下载人员")
 	@TableField(exist = false)
 	@NotEmpty(message = "小主，请添加可下载人员哦！")
-	private List<UploadVO> downloads;
+	private List<String> downloads;
 
 	@ApiModelProperty("可删除人员")
 	@TableField(exist = false)
 	@NotEmpty(message = "小主，请添加可删除人员哦！")
-	private List<UploadVO> deletes;
+	private List<String> deletes;
 
 	@ApiModelProperty("可在线编辑人员")
 	@TableField(exist = false)
 	@NotEmpty(message = "小主，请添加可在线编辑人员哦！")
-	private List<UploadVO> onlineEditing;
+	private List<String> onlineEditing;
 
 	@ApiModelProperty("标记")
 	@TableField(exist = false)
