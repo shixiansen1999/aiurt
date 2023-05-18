@@ -309,9 +309,9 @@
         </if>
         GROUP BY pt.id
         order by
-        <if test='patrolTask.identify != null and patrolTask.identify == "2"'>
+
             pt.`status` asc,
-        </if>
+
         pt.create_time desc
     </select>
     <select id="getUserName" resultType="java.lang.String">
