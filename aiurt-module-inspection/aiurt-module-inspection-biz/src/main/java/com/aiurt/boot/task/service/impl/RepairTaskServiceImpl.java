@@ -2089,11 +2089,12 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
         if (InspectionConstant.GIVE_BACK.equals(examineDTO.getInspectionStatus())) {
             System.out.println(examineDTO.getId() + "将被退回改为执行中");
-            // 修改对应检修计划状态
-            if (ObjectUtil.isNotEmpty(repairPool)) {
-                repairPool.setStatus(InspectionConstant.IN_EXECUTION);
-                repairPoolMapper.updateById(repairPool);
-            }
+//            // 修改对应检修计划状态
+//            if (ObjectUtil.isNotEmpty(repairPool)) {
+//                repairPool.setStatus(InspectionConstant.IN_EXECUTION);
+//                repairPoolMapper.updateById(repairPool);
+//            }
+            return excuteInspectionTask(repairPool);
         }
         examineDTO.setInspectionStatus(InspectionConstant.IN_EXECUTION);
         return examineDTO.getId();
@@ -2174,6 +2175,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTask.setSource(InspectionConstant.PICK_UP_MANUALLY);
         repairTask.setCode(repairPool.getCode());
         repairTask.setWeeks(repairPool.getWeeks());
+        repairTask.setBeginTime(new Date());
         repairTask.setStartTime(new Date());
         repairTask.setTaskConfirmationTime(new Date());
         repairTask.setStatus(InspectionConstant.PENDING);
