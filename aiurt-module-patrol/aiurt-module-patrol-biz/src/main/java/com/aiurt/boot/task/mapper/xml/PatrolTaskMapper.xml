@@ -914,7 +914,9 @@
         SELECT count(pt.id) AS taskTotal,
         GROUP_CONCAT(pt.id) as taskId
         FROM patrol_task pt
-        JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
+        JOIN patrol_task_organization pto ON pt.`code` = pto.task_code and pto.del_flag = 0
+        and pt.discard_status = 0
+		and pt.del_flag = 0
         <if test="orgCode != null and orgCode != ''">
             AND pto.org_code = #{orgCode}
         </if>

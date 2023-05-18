@@ -63,14 +63,15 @@ public class PatrolReportService {
     public Page<PatrolReport> getTaskDate(Page<PatrolReport> pageList, PatrolReportModel report) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> orgCodes = sysBaseApi.getDepartByUser(1);
-
+        List<String> orgIdList = sysBaseApi.getDepartByUser(0);
         if(ObjectUtil.isNotEmpty(report.getOrgCode())) {
+            SysDepartModel departByOrgCode = sysBaseApi.getDepartByOrgCode(report.getOrgCode());
             orgCodes = orgCodes.stream().filter(u->report.getOrgCode().contains(u)).collect(Collectors.toList());
+            orgIdList = orgIdList.stream().filter(u->departByOrgCode.getId().contains(u)).collect(Collectors.toList());
         }
         if(CollUtil.isEmpty(orgCodes)&&(!user.getRoleCodes().contains("admin")||!user.getRoleCodes().contains("zhuren"))) {
             return  pageList.setRecords(new ArrayList<>());
         }
-        List<String> orgIdList = sysBaseApi.getDepartByUser(0);
         report.setOrgCodeList(orgCodes);
         if(ObjectUtil.isNotEmpty(report.getLineCode()))
         {

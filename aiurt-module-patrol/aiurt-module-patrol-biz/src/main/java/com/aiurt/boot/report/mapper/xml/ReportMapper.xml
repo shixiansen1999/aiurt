@@ -9,9 +9,11 @@
                 FROM
                 patrol_task pt
                 JOIN
-                patrol_task_user ptu ON pt.`code` = ptu.task_code
-                JOIN sys_user su ON su.id = ptu.user_id
-                JOIN sys_depart sd ON sd.id = su.org_id
+                patrol_task_user ptu ON pt.`code` = ptu.task_code and ptu.del_flag = 0
+                JOIN sys_user su ON su.id = ptu.user_id and su.del_flag = 0
+                JOIN sys_depart sd ON sd.id = su.org_id and sd.del_flag = 0
+                and pt.discard_status = 0
+		        and pt.del_flag = 0
         <if test="useIds != null and useIds.size() != 0">
             and ptu.user_id in
             <foreach collection="useIds" item="item" open="(" separator="," close=")">
@@ -64,10 +66,12 @@
 	pt.id AS taskId
     FROM
 	patrol_task pt
-    JOIN patrol_task_device ptd ON pt.id = ptd.task_id
-    JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
-	JOIN sys_user su ON su.id = pa.user_id
-	JOIN sys_depart sd ON sd.id = su.org_id
+    JOIN patrol_task_device ptd ON pt.id = ptd.task_id and ptd.del_flag = 0
+    JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code and pa.del_flag = 0
+	JOIN sys_user su ON su.id = pa.user_id and su.del_flag = 0
+	JOIN sys_depart sd ON sd.id = su.org_id and sd.del_flag = 0
+	and pt.discard_status = 0
+	and pt.del_flag = 0
    <if test="useIds != null and useIds.size() != 0">
             AND pa.user_id IN
             <foreach collection="useIds" item="item" open="(" separator="," close=")">
@@ -119,8 +123,10 @@
 FROM
 	patrol_task pt
 	JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
-	JOIN sys_user su ON su.id = ptu.user_id
-	JOIN sys_depart sd ON sd.id = su.org_id
+	JOIN sys_user su ON su.id = ptu.user_id and su.del_flag = 0
+	JOIN sys_depart sd ON sd.id = su.org_id and sd.del_flag = 0
+	and pt.discard_status = 0
+	and pt.del_flag = 0
 	  <if test="useIds != null and useIds.size() != 0">
      and ptu.user_id in
      <foreach collection="useIds" item="item" open="(" separator="," close=")">
@@ -170,10 +176,12 @@ FROM
 	pt.id AS taskId
     FROM
 	patrol_task pt
-    JOIN patrol_task_device ptd ON pt.id = ptd.task_id
-    JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
-	JOIN sys_user su ON su.id = pa.user_id
-	JOIN sys_depart sd ON sd.id = su.org_id
+    JOIN patrol_task_device ptd ON pt.id = ptd.task_id and ptd.del_flag = 0
+    JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code and pa.del_flag = 0
+	JOIN sys_user su ON su.id = pa.user_id and su.del_flag = 0
+	JOIN sys_depart sd ON sd.id = su.org_id and sd.del_flag = 0
+	and pt.discard_status = 0
+	and pt.del_flag = 0
 	<if test="useIds != null and useIds.size() != 0">
     AND pa.user_id IN
      <foreach collection="useIds" item="item" open="(" separator="," close=")">
@@ -226,9 +234,11 @@ FROM
                 FROM
                 patrol_task pt
                 JOIN
-                patrol_task_user ptu ON pt.`code` = ptu.task_code
-                JOIN sys_user su ON su.id = ptu.user_id
-                JOIN sys_depart sd ON sd.id = su.org_id
+                patrol_task_user ptu ON pt.`code` = ptu.task_code and ptu.del_flag = 0
+                JOIN sys_user su ON su.id = ptu.user_id and su.del_flag = 0
+                JOIN sys_depart sd ON sd.id = su.org_id and sd.del_flag = 0
+                and pt.discard_status = 0
+	            and pt.del_flag = 0
         <if test="useIds != null and useIds.size() != 0">
             and ptu.user_id in
             <foreach collection="useIds" item="item" open="(" separator="," close=")">
@@ -279,10 +289,12 @@ FROM
 	pt.id AS taskId
     FROM
 	patrol_task pt
-    JOIN patrol_task_device ptd ON pt.id = ptd.task_id
-    JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
-	JOIN sys_user su ON su.id = pa.user_id
-	JOIN sys_depart sd ON sd.id = su.org_id
+    JOIN patrol_task_device ptd ON pt.id = ptd.task_id and ptd.del_flag = 0
+    JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code and pa.del_flag = 0
+	JOIN sys_user su ON su.id = pa.user_id and su.del_flag = 0
+	JOIN sys_depart sd ON sd.id = su.org_id and sd.del_flag = 0
+	and pt.discard_status = 0
+	and pt.del_flag = 0
    <if test="useIds != null and useIds.size() != 0">
             AND pa.user_id IN
             <foreach collection="useIds" item="item" open="(" separator="," close=")">
@@ -331,7 +343,7 @@ FROM
             count( pt.id ) as omitNubmer
         FROM
             patrol_task pt
-        JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
+        JOIN patrol_task_organization pto ON pt.`code` = pto.task_code and pto.del_flag = 0
         <if test="orgCode != null and orgCode != ''">
             AND pto.org_code = #{orgCode}
         </if>
@@ -370,7 +382,9 @@ FROM
             where pts.subsystem_code = #{condition.subsystemCode}
             )
         </if>
-            AND pt.omit_status = 1
+        AND pt.omit_status = 1
+        and pt.discard_status = 0
+		and pt.del_flag = 0
         GROUP BY
             pto.org_code
 </select>
