@@ -2077,4 +2077,17 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             throw new AiurtBootException("操作失败");
         }
     }
+
+    @Override
+    public MacDto getMac(String id) {
+        List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(id);
+        MacDto macDto = new MacDto();
+        if (CollUtil.isNotEmpty(mac)) {
+            String s = mac.stream().map(PatrolTaskDeviceDTO::getMacRecord).filter(StrUtil::isNotEmpty).findFirst().orElse("");
+            List<String> list = mac.stream().map(PatrolTaskDeviceDTO::getMac).filter(StrUtil::isNotEmpty).collect(Collectors.toList());
+            macDto.setLocalMac(s);
+            macDto.setStationMac(list);
+        }
+        return macDto;
+    }
 }

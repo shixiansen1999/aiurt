@@ -215,4 +215,12 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param id
      */
     void patrolTaskManualDelete(String id);
+
+    /**
+     *获取mac地址
+     *
+     * @param id
+     * @return author lkj
+     */
+    MacDto getMac(String id);
 }

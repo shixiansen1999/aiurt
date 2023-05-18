@@ -28,6 +28,11 @@ public class SysUserRoleModel {
     @ApiModelProperty(value = "用户名称")
     private String userName;
 
+    /**用户名称*/
+    @Excel(name = "用户名称", width = 15)
+    @ApiModelProperty(value = "用户名称")
+    private String realName;
+
     /**角色Id*/
     @Excel(name = "角色Id", width = 15)
     @ApiModelProperty(value = "角色Id")
