@@ -393,21 +393,21 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastMonthNum(), 2));
                 f.setLastMonthStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
             } else {
-                f.setLastMonthStr(NumberUtil.mul(NumberUtil.round(f.getMonthNum(), 2), 100).toString() + "%");
+                f.setLastMonthStr("-");
             }
             if (f.getLastYearNum() != 0) {
                 double sub = NumberUtil.sub(f.getYearNum(), f.getLastYearNum());
                 BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastYearNum(), 2));
                 f.setLastYearStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
             } else {
-                f.setLastYearStr(NumberUtil.mul(NumberUtil.round(f.getYearNum(), 2), 100).toString() + "%");
+                f.setLastYearStr("-");
             }
             List<Integer> num = patrolTaskMapper.selectNum(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
-            int s = num.stream().reduce(Integer::sum).orElse(0);
+            int s = num.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
             f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
             f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
             List<Integer> num1 = patrolTaskMapper.selectNum1(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
-            int s1 = num1.stream().reduce(Integer::sum).orElse(0);
+            int s1 = num1.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
             f.setAverageResolution(f.getResolvedNum() == 0 ? 0 : s1 / f.getResolvedNum());
         });
         return failureReportIpage;
@@ -471,21 +471,21 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastMonthNum(), 2));
                 f.setLastMonthStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
             } else {
-                f.setLastMonthStr(NumberUtil.mul(NumberUtil.round(f.getMonthNum(), 2), 100).toString() + "%");
+                f.setLastMonthStr("-");
             }
             if (f.getLastYearNum() != 0) {
                 double sub = NumberUtil.sub(f.getYearNum(), f.getLastYearNum());
                 BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastYearNum(), 2));
-                f.setLastMonthStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
+                f.setLastYearStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
             } else {
-                f.setLastYearStr(NumberUtil.mul(NumberUtil.round(f.getYearNum(), 2), 100).toString() + "%");
+                f.setLastYearStr("-");
             }
             List<Integer> num = patrolTaskMapper.selectNum(null, f.getOrgCode(), lineCode, finalStationCode, finalStartTime, finalEndTime);
-            int s = num.stream().reduce(Integer::sum).orElse(0);
+            int s = num.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
             f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
             f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
             List<Integer> num1 = patrolTaskMapper.selectNum1(null, f.getOrgCode(), lineCode, finalStationCode, finalStartTime, finalEndTime);
-            int s1 = num1.stream().reduce(Integer::sum).orElse(0);
+            int s1 = num1.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
             f.setAverageResolution(f.getResolvedNum() == 0 ? 0 : s1 / f.getResolvedNum());
         });
                   return orgReport;

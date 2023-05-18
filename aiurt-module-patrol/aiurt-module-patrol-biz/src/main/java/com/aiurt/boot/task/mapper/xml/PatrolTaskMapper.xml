@@ -862,7 +862,7 @@
         ) as yearNum,
         (SELECT COUNT(id)
         FROM fault WHERE a.system_code = sub_system_code
-        and `status` > 0
+        and `status` > 2
         AND
         DATE_FORMAT(happen_time, '%Y') = DATE_FORMAT(date_sub(curdate(), interval 1 year), '%Y')
         <if test="lineCode != null">
