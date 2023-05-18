@@ -874,8 +874,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 		// 查询父级, 创建人拥有所有的权限
 		List<SysFileType> types = this.lambdaQuery()
 				.eq(SysFileType::getParentId, parentId)
-				.in(SysFileType::getId, role).or(q->q.eq(SysFileType::getCreateBy, loginUser.getUsername())
-						.eq(SysFileType::getParentId, parentId)).list();
+			    .list();
 		if (types != null && types.size() > 0) {
 			types.forEach(type -> {
 				Optional.ofNullable(type).ifPresent(t -> {

@@ -77,6 +77,12 @@ public class IndexTaskInfo implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "巡检结果提交时间,格式yyyy-MM-dd HH:mm:ss")
     private java.util.Date submitTime;
+
+    /**
+     * mac地址匹配结果
+     */
+    @ApiModelProperty(value = "mac地址匹配结果")
+    private String macMatchResult;
     /**
      * 任务的站点
      */

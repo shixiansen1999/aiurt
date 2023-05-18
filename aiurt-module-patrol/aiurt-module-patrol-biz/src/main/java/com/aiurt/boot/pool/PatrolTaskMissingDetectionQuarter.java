@@ -11,6 +11,7 @@ import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskOrganization;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
+import com.aiurt.boot.task.mapper.PatrolTaskMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskStationMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskUserMapper;
 import com.aiurt.boot.task.service.IPatrolTaskOrganizationService;
@@ -45,7 +46,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Component
-public class PatrolTaskMissingDetection implements Job {
+public class PatrolTaskMissingDetectionQuarter implements Job {
 
     @Autowired
     private IPatrolTaskService patrolTaskService;
@@ -61,6 +62,9 @@ public class PatrolTaskMissingDetection implements Job {
     private PatrolTaskStationMapper patrolTaskStationMapper;
     @Autowired
     private PatrolTaskUserMapper patrolTaskUserMapper;
+    @Autowired
+    private PatrolTaskMapper patrolTaskMapper;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -73,11 +77,11 @@ public class PatrolTaskMissingDetection implements Job {
     }
 
     /**
-     * 周一和周五0点检测漏检的任务
+     * 1,4,7,10月的第一天检查漏检
      */
     private void taskDetection() {
 
-        // 获取以下状态为0待指派、1待确认、2待执行、3已退回、4执行中的任务
+        // 获取以下状态为0待指派、1待确认、2待执行、3已退回、4执行中并且巡检频次为三个月一次的任务
         List<Integer> status = Arrays.asList(PatrolConstant.TASK_INIT, PatrolConstant.TASK_CONFIRM,
                 PatrolConstant.TASK_EXECUTE, PatrolConstant.TASK_RETURNED, PatrolConstant.TASK_RUNNING);
         List<PatrolTask> taskList = Optional.ofNullable(
@@ -85,9 +89,10 @@ public class PatrolTaskMissingDetection implements Job {
                         .in(PatrolTask::getStatus, status)
                         .eq(PatrolTask::getOmitStatus, PatrolConstant.UNOMIT_STATUS)
                         .eq(PatrolTask::getDiscardStatus,PatrolConstant.TASK_UNDISCARD)
-                        .ne(PatrolTask::getPeriod,PatrolConstant.PLAN_PERIOD_THREE_MONTH)
+                        .eq(PatrolTask::getPeriod,PatrolConstant.PLAN_PERIOD_THREE_MONTH)
                         .list()
         ).orElseGet(Collections::emptyList);
+
         if (CollectionUtil.isEmpty(taskList)) {
             return;
         }
@@ -103,8 +108,6 @@ public class PatrolTaskMissingDetection implements Job {
 
         // 统计漏检数
         AtomicInteger missNum = new AtomicInteger();
-
-//        List<LoginUser> users = sysBaseApi.getUserByRoleCode("String roleCode");
 
         taskList.stream().forEach(l -> {
             if (null == l.getPatrolDate()) {

@@ -40,6 +40,10 @@ public interface PatrolConstant {
      */
     Integer PLAN_PERIOD_THREE_DAY = 7;
     /**
+     * 巡检计划-巡检频次：三月1次
+     */
+    Integer PLAN_PERIOD_THREE_MONTH = 8;
+    /**
      * 巡检任务初始状态(待指派）
      */
     Integer TASK_INIT = 0;
@@ -147,6 +151,10 @@ public interface PatrolConstant {
      * 巡检策略月巡
      */
     Integer STRATEGY_MONTH = 2;
+    /**
+     * 巡检策略季巡
+     */
+    Integer STRATEGY_QUARTER = 3;
     /**
      * 巡检检查结果正常状态
      */

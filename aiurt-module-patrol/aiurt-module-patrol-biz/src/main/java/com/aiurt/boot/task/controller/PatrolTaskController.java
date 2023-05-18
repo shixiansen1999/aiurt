@@ -396,6 +396,9 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @GetMapping(value = "/patrolTaskPoolDetail")
     public Result<PatrolTaskDTO> patrolTaskPoolDetail(@RequestParam(name="id",required=true) String id,
                                                            HttpServletRequest req) {
+
+
+
         PatrolTaskDTO patrolTaskDTO = patrolTaskService.getDetail(id);
         return Result.OK(patrolTaskDTO);
     }

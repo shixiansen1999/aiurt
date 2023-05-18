@@ -181,7 +181,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setAssortContent(dto.getAssortContent());
         depot.setPatrolRepairContent(dto.getPatrolRepairContent());
         depot.setStationCode(dto.getStationCode());
-        depot.setPositionCode(dto.getPositionCode());
         depotMapper.insert(depot);
         dto.setId(depot.getId());
         //插入附件列表

@@ -19,6 +19,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.DateUtils;
@@ -52,6 +53,8 @@ public class PatrolScreenService {
     private PatrolTaskMapper patrolTaskMapper;
     @Autowired
     private TemperatureHumidityMapper temperatureHumidityMapper;
+    @Autowired
+    private ISysParamAPI sysParamApi;
 
     /**
      * 大屏巡视模块-重要数据展示
@@ -456,7 +459,6 @@ public class PatrolScreenService {
             return DateUtil.format(friday, "yyyy-MM-dd 00:00:00").concat(ScreenConstant.TIME_SEPARATOR).concat(DateUtil.format(sunday, "yyyy-MM-dd 23:59:59"));
         }
     }
-
     /**
      * 获取当前登录用户的专业编号
      *

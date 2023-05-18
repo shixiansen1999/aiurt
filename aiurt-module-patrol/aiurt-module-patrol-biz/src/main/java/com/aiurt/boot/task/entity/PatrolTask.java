@@ -90,6 +90,7 @@ public class PatrolTask extends DictEntity implements Serializable {
      */
     @Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次", width = 15)
     @ApiModelProperty(value = "巡检频次：1 一天1次、2 一周1次、3 一周2次")
+    @Dict(dicCode = "patrol_plan_period")
     private java.lang.Integer period;
     /**
      * 巡检的日期(yyyy-MM-dd)

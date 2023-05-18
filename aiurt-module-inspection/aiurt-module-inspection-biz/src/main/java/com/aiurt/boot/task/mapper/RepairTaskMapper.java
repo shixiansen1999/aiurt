@@ -15,13 +15,10 @@ import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * @Description: repair_task
@@ -188,8 +185,8 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
             @DataColumn(key = "deptName",value = "t2.org_code"),
             @DataColumn(key = "stationName",value = "t3.station_code"),
             @DataColumn(key = "lineName",value = "t3.line_code"),
-            @DataColumn(key = "majorName",value = "t3.major_code"),
-            @DataColumn(key = "systemName",value = "t3.subsystem_code")
+            @DataColumn(key = "majorName",value = "t4.major_code"),
+            @DataColumn(key = "systemName",value = "t4.subsystem_code")
     })
     List<RepairTaskNum> selectRepairPoolList(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
     /**
@@ -198,6 +195,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @param page 分页对象，用于指定查询的页码和每页记录数。
      * @param startDate 查询开始日期，根据此日期筛选符合条件的检修情任务。
      * @param stationCode 车站编码，用于筛选指定车站的检修情任务。
+     * @param flag 车站编码，用于筛选指定车站的检修情任务。
      * @return 返回一个包含检修情任务详细信息的列表，每个检修情任务由一个 RepairPoolDetailsDTO 对象表示。
      */
     @DataPermission({
@@ -207,7 +205,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
             @DataColumn(key = "majorName",value = "rtsrl.major_code"),
             @DataColumn(key = "systemName",value = "rtsrl.subsystem_code")
     })
-    List<RepairPoolDetailsDTO> getMaintenanceSituation(@Param("page") Page<RepairPoolDetailsDTO> page, @Param("startDate") Date startDate, @Param("stationCode") String stationCode);
+    List<RepairPoolDetailsDTO> getMaintenanceSituation(@Param("page") Page<RepairPoolDetailsDTO> page, @Param("startDate") Date startDate, @Param("stationCode") String stationCode,@Param("flag") String flag);
 
     @DataPermission({
             @DataColumn(key = "deptName",value = "t2.org_code"),
@@ -366,5 +364,18 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     Long getFaultQuantity(@Param("faultCode") List<String> faultCode);
-
+    /**
+     * 检修池查找
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "t2.org_code"),
+            @DataColumn(key = "stationName",value = "t3.station_code"),
+            @DataColumn(key = "lineName",value = "t3.line_code"),
+            @DataColumn(key = "majorName",value = "t3.major_code"),
+            @DataColumn(key = "systemName",value = "t3.subsystem_code")
+    })
+    List<RepairTaskNum> selectRepairPoolListSpecial(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 }

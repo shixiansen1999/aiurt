@@ -119,7 +119,7 @@
                   AND PPO.del_flag = 0) AS mechanismName,
                (SELECT GROUP_CONCAT(f.station_name)
                 FROM patrol_plan_station d
-                         LEFT JOIN cs_station f ON d.station_code = f.station_code
+                         LEFT JOIN cs_station f ON d.station_code = f.station_code and f.del_flag = 0
                 WHERE d.plan_code = #{code}
                   AND d.del_flag = 0)   AS siteName,
                (SELECT GROUP_CONCAT(e.org_code)
@@ -129,7 +129,7 @@
                   AND PPO.del_flag = 0) AS mechanismCode,
                (SELECT GROUP_CONCAT(f.station_code)
                 FROM patrol_plan_station d
-                         LEFT JOIN cs_station f ON d.station_code = f.station_code
+                         LEFT JOIN cs_station f ON d.station_code = f.station_code and f.del_flag = 0
                 WHERE d.plan_code = #{code}
                   AND d.del_flag = 0)   AS siteCode,
                (SELECT GROUP_CONCAT(d.id)

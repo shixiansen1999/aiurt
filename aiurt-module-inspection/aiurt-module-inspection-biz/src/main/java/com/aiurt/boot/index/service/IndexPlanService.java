@@ -9,6 +9,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.index.dto.*;
 import com.aiurt.boot.index.mapper.IndexPlanMapper;
 import com.aiurt.boot.manager.InspectionManager;
@@ -35,8 +36,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.SysParamModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -85,6 +89,8 @@ public class IndexPlanService {
     private RepairPoolRelMapper poolRelMapper;
     @Resource
     private RepairPoolCodeMapper poolCodeMapper;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
 
     /**
      * 获取计划概览信息
@@ -334,7 +340,15 @@ public class IndexPlanService {
      */
     private Map<String, Integer> inspectionNumByDay(Date beginDate, int dayNum) {
         Map<String, Integer> result = new HashMap<>(32);
-        List<RepairTaskNum> repairTaskNums = repairTaskMapper.selectRepairPoolList(DateUtil.beginOfMonth(beginDate), DateUtil.endOfMonth(beginDate));
+        //根据配置决定统计的维保数按照维保开始时间还是提交时间进行筛选
+        SysParamModel sysParam = iSysParamAPI.selectByCode(SysParamCodeConstant.AUTO_CC);
+        boolean autoCc = "1".equals(sysParam.getValue());
+        List<RepairTaskNum> repairTaskNums = new ArrayList<>();
+        if (autoCc) {
+            repairTaskNums = repairTaskMapper.selectRepairPoolListSpecial(DateUtil.beginOfMonth(beginDate), DateUtil.endOfMonth(beginDate));
+        } else {
+            repairTaskNums = repairTaskMapper.selectRepairPoolList(DateUtil.beginOfMonth(beginDate), DateUtil.endOfMonth(beginDate));
+        }
         if (CollUtil.isNotEmpty(repairTaskNums)) {
             result = repairTaskNums.stream().collect(Collectors.toMap(RepairTaskNum::getCurrDateStr, RepairTaskNum::getNum, (v1, v2) -> v1));
         }
@@ -471,8 +485,10 @@ public class IndexPlanService {
      * @return 包含维修任务详细信息的分页对象。
      */
     public IPage<RepairPoolDetailsDTO> getMaintenanceSituation(Page<RepairPoolDetailsDTO> page, Date startDate, String stationCode) {
+        // //根据配置决定统计的维保数按照维保开始时间还是提交时间进行筛选
+        SysParamModel sysParam = iSysParamAPI.selectByCode(SysParamCodeConstant.AUTO_CC);
         // 查询维修任务池的维修情况列表
-        List<RepairPoolDetailsDTO> result = repairTaskMapper.getMaintenanceSituation(page, startDate, stationCode);
+        List<RepairPoolDetailsDTO> result = repairTaskMapper.getMaintenanceSituation(page, startDate, stationCode,sysParam.getValue());
 
         // 禁用数据过滤
         boolean dataFilterEnable = GlobalThreadLocal.setDataFilter(false);

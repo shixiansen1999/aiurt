@@ -24,10 +24,8 @@ import com.aiurt.modules.personnelgroupstatistics.model.TeamPortraitModel;
 import com.aiurt.modules.personnelgroupstatistics.model.TeamUserModel;
 import com.aiurt.modules.personnelgroupstatistics.service.PersonnelGroupStatisticsService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -473,13 +471,12 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
     }
 
     private List<String> getDepartIds(List<String> departIds) {
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = iSysBaseApi.getUserSysDepart(sysUser.getId());
+        List<String> orgIds = iSysBaseApi.getDepartByUser(0);
         List<String> ids = new ArrayList<>();
         if (CollUtil.isNotEmpty(departIds)) {
             ids.addAll(departIds);
         }else {
-            ids.addAll(userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList()) );
+            ids.addAll(orgIds );
         }
         return ids;
     }

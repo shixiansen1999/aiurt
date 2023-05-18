@@ -65,6 +65,13 @@ public class SysFileRole {
 	private Integer lookStatus;
 
 	/**
+	 * 查看状态标记
+	 */
+	@Excel(name = "查看状态标记", width = 15)
+	@ApiModelProperty(value = "查看状态标记")
+	private String lookStatusMark;
+
+	/**
 	 * 原编辑状态
 	 */
 	@Excel(name = "原编辑状态", width = 15)
@@ -76,6 +83,14 @@ public class SysFileRole {
 	@Excel(name = "编辑状态", width = 15)
 	@ApiModelProperty(value = "编辑状态")
 	private Integer editStatus;
+
+
+	/**
+	 * 编辑状态标记
+	 */
+	@Excel(name = "编辑状态标记", width = 15)
+	@ApiModelProperty(value = "编辑状态标记")
+	private String editStatusMark;
 	/**
 	 * 原上传状态
 	 */
@@ -88,6 +103,14 @@ public class SysFileRole {
 	@Excel(name = "上传状态", width = 15)
 	@ApiModelProperty(value = "上传状态")
 	private Integer uploadStatus;
+
+
+	/**
+	 * 上传状态标记
+	 */
+	@Excel(name = "上传状态标记", width = 15)
+	@ApiModelProperty(value = "上传状态标记")
+	private String uploadStatusMark;
 
 	/**
 	 * 上传标记
@@ -107,6 +130,13 @@ public class SysFileRole {
 	@Excel(name = "下载状态", width = 15)
 	@ApiModelProperty(value = "下载状态")
 	private Integer downloadStatus;
+
+	/**
+	 * 下载状态标记
+	 */
+	@Excel(name = "下载状态标记", width = 15)
+	@ApiModelProperty(value = "下载状态标记")
+	private String downloadStatusMark;
 	/**
 	 * 原删除状态
 	 */
@@ -119,6 +149,13 @@ public class SysFileRole {
 	@Excel(name = "删除状态", width = 15)
 	@ApiModelProperty(value = "删除状态")
 	private Integer deleteStatus;
+
+	/**
+	 * 删除状态标记
+	 */
+	@Excel(name = "删除状态标记", width = 15)
+	@ApiModelProperty(value = "删除状态标记")
+	private String deleteStatusMark;
 	/**
 	 * 原重命名状态
 	 */
@@ -131,6 +168,13 @@ public class SysFileRole {
 	@Excel(name = "重命名状态", width = 15)
 	@ApiModelProperty(value = "重命名状态")
 	private Integer renameStatus;
+
+	/**
+	 * 重命名状态标记
+	 */
+	@Excel(name = "重命名状态标记", width = 15)
+	@ApiModelProperty(value = "重命名状态标记")
+	private String renameStatusMark;
 	/**
 	 * 原在线编辑状态
 	 */
@@ -143,6 +187,13 @@ public class SysFileRole {
 	@Excel(name = "在线编辑状态", width = 15)
 	@ApiModelProperty(value = "在线编辑状态")
 	private Integer onlineEditing;
+
+	/**
+	 * 在线编辑状态标记
+	 */
+	@Excel(name = "在线编辑状态标记", width = 15)
+	@ApiModelProperty(value = "在线编辑状态标记")
+	private String onlineEditingMark;
 	/**
 	 * 删除状态
 	 */

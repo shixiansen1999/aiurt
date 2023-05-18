@@ -2123,6 +2123,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (InspectionConstant.TO_BE_CONFIRMED.equals(repairTask.getStatus())) {
             repairTask.setStatus(InspectionConstant.IN_EXECUTION);
             repairTask.setTaskConfirmationTime(new Date());
+            repairTask.setBeginTime(new Date());
             repairTaskMapper.updateById(repairTask);
 
             // 修改对应检修计划状态
