@@ -350,7 +350,7 @@
         pt.`code`,
         <!--pt.plan_code,-->
         pt.`name`,
-        <!--pt.type,-->
+        pt.type,
         <!--pt.outsource,-->
         <!--pt.plan_order_code,-->
         <!--pt.plan_order_code_url,-->
@@ -365,7 +365,7 @@
         <!--pt.sign_url,-->
         pt.`status`,
         <!--pt.reject_reason,-->
-        <!--pt.auditor,-->
+        pt.auditor,
         <!--pt.auditor_id,-->
         <!--pt.auditor_time,-->
         <!--pt.auditor_remark,-->
