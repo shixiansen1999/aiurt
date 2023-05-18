@@ -54,6 +54,12 @@ public class RepairPoolCode implements Serializable {
     @ApiModelProperty(value = "检修标准名称")
     private java.lang.String title;
     /**
+     * 检修标准名称
+     */
+    @ApiModelProperty(value = "检修标准名称(拿值冲突，给前端用)")
+    @TableField(exist = false)
+    private java.lang.String name;
+    /**
      * 检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)
      */
     @Excel(name = "检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)", width = 15)

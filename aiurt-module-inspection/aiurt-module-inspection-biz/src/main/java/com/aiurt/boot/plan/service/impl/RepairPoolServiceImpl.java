@@ -1386,7 +1386,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                         repairPoolCodes.setDeviceCodes(repairPoolDeviceRels.stream().map(RepairPoolDeviceRel::getDeviceCode).collect(Collectors.toList()));
                     }
                     repairPoolCodes.setSpecifyDevice(CollUtil.isNotEmpty(repairPoolDeviceRels) ? "是" : "否");
-
+                    repairPoolCodes.setName(ObjectUtil.isNotEmpty(repairPoolCodes.getTitle())?repairPoolCodes.getTitle():null);
                     temp.add(repairPoolCodes);
                 }
             });
