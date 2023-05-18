@@ -560,7 +560,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
             LoginUser loginUser = sysBaseApi.getUserById(sysUserRoleModel.getUserId());
             BdStaffInfoReturnTypeDTO bdStaffInfoReturnType = new BdStaffInfoReturnTypeDTO();
             bdStaffInfoReturnType.setId(sysUserRoleModel.getUserId());
-            bdStaffInfoReturnType.setName(sysUserRoleModel.getUserName());
+            bdStaffInfoReturnType.setName(sysUserRoleModel.getRealName());
             bdStaffInfoReturnType.setRoleId(sysUserRoleModel.getRoleId());
             bdStaffInfoReturnType.setPhoneNo(loginUser.getPhone());
             bdStaffInfoReturnType.setTeamId(loginUser.getOrgId());

@@ -337,7 +337,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     userNames.addAll(userList.stream().map(SysUserRoleModel::getUserName).collect(Collectors.toList()));
                 }
             }
-            fault.setRemindUserName(CollUtil.isNotEmpty(userNames) ? StrUtil.join(",", userNames) : "");
+            if (CollUtil.isNotEmpty(userNames)) {
+                String join = StrUtil.join(",", userNames);
+                fault.setRemindUserName(StrUtil.isNotEmpty(fault.getRemindUserName())?fault.getRemindUserName()+","+join:join);
+            }
         }
     }
 
