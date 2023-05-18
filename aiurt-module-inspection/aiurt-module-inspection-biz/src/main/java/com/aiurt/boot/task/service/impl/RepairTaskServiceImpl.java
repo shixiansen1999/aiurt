@@ -142,11 +142,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     public Page<RepairTask> selectables(Page<RepairTask> pageList, RepairTask condition) {
         // 去掉查询参数的所有空格
         removeSpacesFromQueryCondition(condition);
-        // 排序
-        String column = "status,create_time";
-        String order = "asc,desc";
-        condition.setColumn(column);
-        condition.setOrder(order);
 
         List<RepairTask> lists = repairTaskMapper.selectables(pageList, condition);
         boolean filter = GlobalThreadLocal.setDataFilter(false);
@@ -485,7 +480,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
             }
         });
-        return pageList.setRecords(repairTasks);
+        List<RepairTaskDTO> collect = repairTasks.stream().sorted(Comparator.comparing(RepairTaskDTO::getTaskStatus)).collect(Collectors.toList());
+        return pageList.setRecords(collect);
     }
 
     @Override
