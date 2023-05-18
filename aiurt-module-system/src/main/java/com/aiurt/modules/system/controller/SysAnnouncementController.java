@@ -158,6 +158,22 @@ public class SysAnnouncementController {
         return result;
     }
 
+    @AutoLog(value = "首页系统公告", operateType = 1, operateTypeAlias = "首页系统公告查询", permissionUrl = "/system/SysAnnouncementList")
+    @ApiOperation(value = "首页系统公告")
+    @RequestMapping(value = "/queryHomeSysAnnouncement", method = RequestMethod.GET)
+    public Result<Page<SysAnnouncement>> queryHomeSysAnnouncement(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<SysAnnouncement> page = new Page<>(pageNo, pageSize);
+        sysAnnouncementService.page(page, new LambdaQueryWrapper<SysAnnouncement>()
+                .in(SysAnnouncement::getMsgCategory, CommonConstant.MSG_CATEGORY_1, CommonConstant.MSG_CATEGORY_2)
+                .eq(SysAnnouncement::getSendStatus, ANNOUNCEMENT_SEND_STATUS_1)
+                .and(s -> s.ne(SysAnnouncement::getBusType, "bpm").or().isNull(SysAnnouncement::getBusType))
+                .eq(SysAnnouncement::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .apply("(end_time is null or (end_time is not null and end_time > NOW()))")
+                .orderByDesc(SysAnnouncement::getSendTime));
+        return Result.ok(page);
+    }
+
     private void getUserNames(@RequestBody SysAnnouncement sysAnnouncement) {
         if (StrUtil.isNotBlank(sysAnnouncement.getUserIds())) {
             String[] split = sysAnnouncement.getUserIds().split(",");
