@@ -644,7 +644,9 @@ public class IndexPlanService {
                     int size = repairPools.size();
                     //实际维保数量-已完成的维保数量=未完成的维保数量
                     if (count > size) {
-                        result.setQuantity(count-size);
+                        result.setQuantity(count - size);
+                    } else {
+                        result.setQuantity(0L);
                     }
 
                 }
@@ -656,13 +658,6 @@ public class IndexPlanService {
                     //实际维保数量-已完成的维保数量=未完成的维保数量
                     result.setQuantity(between1-size);
                 }
-                if (total < size) {
-                    result.setQuantity(0L);
-                } else {
-                    result.setQuantity(total);
-                }
-
-
             }
         }
         return result;
