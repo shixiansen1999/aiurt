@@ -23,11 +23,12 @@
         <if test="condition.startDate != null and condition.startDate != ''">
             and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
         </if>
-         <if test="condition.lineCode != null and condition.stationCode != ''">
+         <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+             and pps.del_flag= 0
                 where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
             )
         </if>
@@ -35,7 +36,8 @@
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where cs.line_code = #{condition.lineCode}
             )
         </if>
@@ -43,7 +45,8 @@
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where pps.station_code = #{condition.stationCode}
             )
         </if>
@@ -81,11 +84,12 @@
         <if test="condition.startDate != null and condition.startDate != ''">
             and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
         </if>
-         <if test="condition.lineCode != null and condition.stationCode != ''">
+         <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
             )
         </if>
@@ -93,7 +97,8 @@
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where cs.line_code = #{condition.lineCode}
             )
         </if>
@@ -101,7 +106,8 @@
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where pps.station_code = #{condition.stationCode}
             )
         </if>
@@ -122,7 +128,7 @@
 	pt.id AS taskId
 FROM
 	patrol_task pt
-	JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
+	JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code and ptu.del_flag = 0
 	JOIN sys_user su ON su.id = ptu.user_id and su.del_flag = 0
 	JOIN sys_depart sd ON sd.id = su.org_id and sd.del_flag = 0
 	and pt.discard_status = 0
@@ -136,11 +142,12 @@ FROM
      <if test="condition.startDate != null and condition.startDate != ''">
             and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
         </if>
-         <if test="condition.lineCode != null and condition.stationCode != ''">
+         <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
             )
         </if>
@@ -148,7 +155,8 @@ FROM
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where cs.line_code = #{condition.lineCode}
             )
         </if>
@@ -156,7 +164,8 @@ FROM
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where pps.station_code = #{condition.stationCode}
             )
         </if>
@@ -191,11 +200,12 @@ FROM
 	 <if test="condition.startDate != null and condition.startDate != ''">
             and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
         </if>
-         <if test="condition.lineCode != null and condition.stationCode != ''">
+         <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
             )
         </if>
@@ -203,7 +213,8 @@ FROM
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where cs.line_code = #{condition.lineCode}
             )
         </if>
@@ -211,7 +222,8 @@ FROM
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where pps.station_code = #{condition.stationCode}
             )
         </if>
@@ -248,11 +260,12 @@ FROM
         <if test="condition.startDate != null and condition.startDate != ''">
             and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
         </if>
-         <if test="condition.lineCode != null and condition.stationCode != ''">
+         <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
             )
         </if>
@@ -260,7 +273,8 @@ FROM
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where cs.line_code = #{condition.lineCode}
             )
         </if>
@@ -268,7 +282,8 @@ FROM
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where pps.station_code = #{condition.stationCode}
             )
         </if>
@@ -304,11 +319,12 @@ FROM
         <if test="condition.startDate != null and condition.startDate != ''">
             and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
         </if>
-         <if test="condition.lineCode != null and condition.stationCode != ''">
+         <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
             )
         </if>
@@ -316,7 +332,8 @@ FROM
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where cs.line_code = #{condition.lineCode}
             )
         </if>
@@ -324,7 +341,8 @@ FROM
             and pt.code in (
                 SELECT pps.task_code
                 FROM patrol_task_station pps
-                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+                and pps.del_flag= 0
                 where pps.station_code = #{condition.stationCode}
             )
         </if>
@@ -350,11 +368,12 @@ FROM
        <if test="condition.startDate != null and condition.startDate != ''">
             and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
         </if>
-        <if test="condition.lineCode != null and condition.stationCode != ''">
+        <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
             SELECT pps.task_code
             FROM patrol_task_station pps
-            LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+            LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+            and pps.del_flag= 0
             where pps.station_code = #{condition.stationCode}
             and cs.line_code = #{condition.lineCode}
             )
@@ -363,7 +382,8 @@ FROM
             and pt.code in (
             SELECT pps.task_code
             FROM patrol_task_station pps
-            LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+            LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+            and pps.del_flag= 0
             where cs.line_code = #{condition.lineCode}
             )
         </if>
@@ -371,7 +391,8 @@ FROM
             and pt.code in (
             SELECT pps.task_code
             FROM patrol_task_station pps
-            LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+            LEFT JOIN cs_station cs on pps.station_code = cs.station_code and cs.del_flag = 0
+            and pps.del_flag= 0
             where pps.station_code = #{condition.stationCode}
             )
         </if>

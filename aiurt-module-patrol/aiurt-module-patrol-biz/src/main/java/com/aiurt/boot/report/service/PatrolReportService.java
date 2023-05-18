@@ -69,7 +69,7 @@ public class PatrolReportService {
             orgCodes = orgCodes.stream().filter(u->report.getOrgCode().contains(u)).collect(Collectors.toList());
             orgIdList = orgIdList.stream().filter(u->departByOrgCode.getId().contains(u)).collect(Collectors.toList());
         }
-        if(CollUtil.isEmpty(orgCodes)&&(!user.getRoleCodes().contains("admin")||!user.getRoleCodes().contains("zhuren"))) {
+        if(CollUtil.isEmpty(orgCodes)&&(!user.getRoleCodes().contains("admin")||!user.getRoleCodes().contains("director"))) {
             return  pageList.setRecords(new ArrayList<>());
         }
         report.setOrgCodeList(orgCodes);
