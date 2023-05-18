@@ -409,6 +409,9 @@ public class WorkLogController {
                 if(ObjectUtil.isEmpty(user.getOrgCode())){
                     throw new AiurtBootException("您不是该日志的接班人！");
                 }
+                if(ObjectUtil.isEmpty(byId.getHandoverId())){
+                    throw new AiurtBootException("没有交班人，无法点确认！");
+                }
                 Set<SysDepartModel> sysDepartModels = iSysBaseAPI.getDeptByUserId(byId.getHandoverId());
                 sysDepartModels = sysDepartModels.stream().filter(e->e.getOrgCode().equals(user.getOrgCode())).collect(Collectors.toSet());
                 if(CollUtil.isEmpty(sysDepartModels)){
@@ -418,7 +421,6 @@ public class WorkLogController {
             }
             byId.setConfirmStatus(1).setSucceedTime(new Date());
             workLogDepotService.updateById(byId);
-
             try {
 
                 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
