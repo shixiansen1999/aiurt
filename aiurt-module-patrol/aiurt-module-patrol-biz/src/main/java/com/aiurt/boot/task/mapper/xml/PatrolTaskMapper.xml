@@ -674,7 +674,9 @@
           and ptu.user_id = #{userId}
     </select>
     <select id="getScreenTask" resultType="com.aiurt.boot.screen.model.ScreenStatisticsTask">
-        SELECT pt.`code`,
+        SELECT
+        pt.`id`as taskId,
+        pt.`code`,
         pt.`name`,
         pt.submit_time,
         pt.auditor,

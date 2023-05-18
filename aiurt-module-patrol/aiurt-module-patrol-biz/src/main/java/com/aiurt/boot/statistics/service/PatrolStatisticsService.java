@@ -406,7 +406,12 @@ public class PatrolStatisticsService {
             if (CollUtil.isNotEmpty(mac)) {
                 for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
                     if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMacRecord())) {
-                        int i = patrolTaskDeviceDTO.getMac().compareToIgnoreCase(patrolTaskDeviceDTO.getMacRecord());
+                        //mac最后两位不用匹配
+                        String mac1 = patrolTaskDeviceDTO.getMac();
+                        String substring1 = mac1.substring(0, mac1.length() - 3);
+                        String macRecord = patrolTaskDeviceDTO.getMacRecord();
+                        String substring2 = macRecord.substring(0, macRecord.length() - 3);
+                        int i = substring1.compareToIgnoreCase(substring2);
                         if (i == 0) {
                             l.setMacMatchResult("正常");
                         } else {
