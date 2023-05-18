@@ -1895,8 +1895,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         PatrolTaskDTO e = patrolTaskMapper.getDetail(id);
         String userName = patrolTaskMapper.getUserName(e.getBackId());
         List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(e.getId());
-        String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).distinct().collect(Collectors.joining("；"));
-        String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).distinct().collect(Collectors.joining("；"));
+        if (ObjectUtil.isNotEmpty(patrolTaskStandard)) {
+            String majorName = patrolTaskStandard.stream().filter(t -> StrUtil.isNotEmpty(t.getMajorName())).map(PatrolTaskStandardDTO::getMajorName).distinct().collect(Collectors.joining(";"));
+            String sysName = patrolTaskStandard.stream().filter(t -> StrUtil.isNotEmpty(t.getSysName())).map(PatrolTaskStandardDTO::getSysName).distinct().collect(Collectors.joining(";"));
+            e.setMajorName(majorName);
+            e.setSysName(sysName);
+        }
         List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
         e.setOrganizationName(manager.translateOrg(orgCodes));
         List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
@@ -1904,8 +1908,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         e.setEndUserName(e.getEndUserName() == null ? "-" : e.getEndUserName());
         e.setSubmitTime(e.getSubmitTime() == null ? "-" : e.getSubmitTime());
         e.setPeriod(e.getPeriod() == null ? "-" : e.getPeriod());
-        e.setSysName(sysName);
-        e.setMajorName(majorName);
         e.setOrgCodeList(orgCodes);
         e.setPatrolUserName(manager.spliceUsername(e.getCode()));
         e.setPatrolReturnUserName(userName == null ? "-" : userName);

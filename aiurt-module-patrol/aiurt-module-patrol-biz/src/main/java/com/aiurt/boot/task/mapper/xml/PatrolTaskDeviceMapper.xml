@@ -139,6 +139,7 @@
         <if test="search != null and search != ''">
             and CONCAT_WS(',', ptd.patrol_number, ptd.device_code, dv.name) like concat('%', #{search}, '%')
         </if>
+        order by ptd.status asc
     </select>
     <select id="getSubmitName" resultType="java.lang.String">
         select realname

@@ -57,7 +57,7 @@
             </if>
         </where>
         group by t1.id
-        order by t1.`status` asc,t1.create_time desc,t1.start_time desc
+        order by t1.create_time desc,t1.start_time desc
     </select>
 
     <select id="selectTasklet" resultType="com.aiurt.boot.task.dto.RepairTaskDTO">
