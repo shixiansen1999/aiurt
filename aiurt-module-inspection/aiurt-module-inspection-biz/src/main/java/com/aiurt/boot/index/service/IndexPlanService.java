@@ -637,12 +637,16 @@ public class IndexPlanService {
             long total  = 36;
             long between = DateUtil.between(from, date, DateUnit.DAY);
             long between1 = DateUtil.between(from, date, DateUnit.DAY)*2;
+
             if (CollUtil.isNotEmpty(repairPools)){
                 if (between>15 && between<=21){
                     long count = 15*2+between-15;
                     int size = repairPools.size();
                     //实际维保数量-已完成的维保数量=未完成的维保数量
-                    result.setQuantity(count-size);
+                    if (count > size) {
+                        result.setQuantity(count-size);
+                    }
+
                 }
                 int size = repairPools.size();
                 if (between>21){
@@ -652,6 +656,13 @@ public class IndexPlanService {
                     //实际维保数量-已完成的维保数量=未完成的维保数量
                     result.setQuantity(between1-size);
                 }
+                if (total < size) {
+                    result.setQuantity(0L);
+                } else {
+                    result.setQuantity(total);
+                }
+
+
             }
         }
         return result;
