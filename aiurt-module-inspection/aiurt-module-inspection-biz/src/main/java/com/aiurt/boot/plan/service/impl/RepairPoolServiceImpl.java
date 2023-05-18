@@ -1024,6 +1024,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         // 构造查询条件
         SelectPlanReq selectPlanReq = new SelectPlanReq();
         selectPlanReq.setIsManual(InspectionConstant.IS_MANUAL_1);
+        selectPlanReq.setIsManualSign(true);
         selectPlanReq.setStationCodeList(StrUtil.split(manualTaskReq.getStationList(), ','));
         selectPlanReq.setOrgCodeList(StrUtil.split(manualTaskReq.getOrgList(), ','));
         selectPlanReq.setCode(manualTaskReq.getCode());

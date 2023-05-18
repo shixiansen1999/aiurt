@@ -248,6 +248,9 @@
             <if test="selectPlanReq.isManual != null">
                 AND rp.is_manual = #{selectPlanReq.isManual}
             </if>
+             <if test="selectPlanReq.isManualSign != null and selectPlanReq.isManualSign ==true">
+               AND (rp.`status` = 0 or rp.`status` = 3)
+            </if>
             <if test="selectPlanReq.status != null">
                 AND rp.status = #{selectPlanReq.status}
             </if>
