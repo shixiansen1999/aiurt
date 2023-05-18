@@ -62,16 +62,16 @@ public class PatrolReportService {
     private ReportMapper reportMapper;
     public Page<PatrolReport> getTaskDate(Page<PatrolReport> pageList, PatrolReportModel report) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserDepartModel> departModels = sysBaseApi.getDepartByUserId(user.getId());
+        List<String> orgCodes = sysBaseApi.getDepartByUser(1);
+
         if(ObjectUtil.isNotEmpty(report.getOrgCode())) {
-            departModels = departModels.stream().filter(u->report.getOrgCode().contains(u.getOrgCode())).collect(Collectors.toList());
+            orgCodes = orgCodes.stream().filter(u->report.getOrgCode().contains(u)).collect(Collectors.toList());
         }
-        if(CollUtil.isEmpty(departModels)&&(!user.getRoleCodes().contains("admin")||!user.getRoleCodes().contains("zhuren"))) {
+        if(CollUtil.isEmpty(orgCodes)&&(!user.getRoleCodes().contains("admin")||!user.getRoleCodes().contains("zhuren"))) {
             return  pageList.setRecords(new ArrayList<>());
         }
-        List<String> orgCodeList = departModels.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-        List<String> orgIdList = departModels.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
-        report.setOrgCodeList(orgCodeList);
+        List<String> orgIdList = sysBaseApi.getDepartByUser(0);
+        report.setOrgCodeList(orgCodes);
         if(ObjectUtil.isNotEmpty(report.getLineCode()))
         {
             //查询该线路下，用户所拥有的站点code
