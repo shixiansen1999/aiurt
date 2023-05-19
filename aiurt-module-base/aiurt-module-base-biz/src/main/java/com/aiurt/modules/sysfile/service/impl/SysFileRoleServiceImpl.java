@@ -1,6 +1,7 @@
 package com.aiurt.modules.sysfile.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
 import com.aiurt.modules.sysfile.mapper.SysFileRoleMapper;
@@ -173,9 +174,10 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 	public List<Long> queryRoleByUserId(String userId) {
 
 		List<SysFileRole> roleList = this.lambdaQuery()
+				.select(SysFileRole::getTypeId)
 				.eq(SysFileRole::getDelFlag, 0).eq(SysFileRole::getUserId, userId).list();
 
-		return (roleList != null && roleList.size() > 0) ? roleList.stream().map(SysFileRole::getTypeId).collect(Collectors.toList()) : null;
+		return (roleList != null && roleList.size() > 0) ? roleList.stream().filter(l-> ObjectUtil.isNotEmpty(l)&&ObjectUtil.isNotEmpty(l.getTypeId())).map(SysFileRole::getTypeId).collect(Collectors.toList()) : null;
 	}
 
 	@Override
