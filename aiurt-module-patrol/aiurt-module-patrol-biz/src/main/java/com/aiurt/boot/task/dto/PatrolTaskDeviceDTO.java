@@ -198,9 +198,4 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "wifi mac地址", width = 15)
     @ApiModelProperty(value = "wifi mac地址")
     private String mac;
-
-    /**wifi地址管理中的mac*/
-    @Excel(name = "wifi地址管理中的mac", width = 15)
-    @ApiModelProperty(value = "wifi地址管理中的mac")
-    private String macRecord;
 }

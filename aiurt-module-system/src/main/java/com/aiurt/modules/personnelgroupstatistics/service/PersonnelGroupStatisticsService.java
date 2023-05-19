@@ -5,6 +5,7 @@ import com.aiurt.modules.personnelgroupstatistics.model.PersonnelModel;
 import com.aiurt.modules.personnelgroupstatistics.model.TeamPortraitModel;
 import com.aiurt.modules.personnelgroupstatistics.model.TeamUserModel;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -74,4 +75,9 @@ public interface PersonnelGroupStatisticsService {
     ModelAndView reportUserExport(HttpServletRequest request,String startTime, String endTime,String exportField);
 
 
+    /**
+     * 班组下拉框
+     * @return
+     */
+    List<SysDepartModel> selectDepart();
 }

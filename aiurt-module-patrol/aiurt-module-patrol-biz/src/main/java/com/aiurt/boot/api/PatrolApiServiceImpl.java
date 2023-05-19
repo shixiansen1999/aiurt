@@ -251,14 +251,9 @@ public class PatrolApiServiceImpl implements PatrolApi {
 
     @Override
     public Map<String, UserTeamPatrolDTO> getUserParameter(UserTeamParameter userTeamParameter) {
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = sysBaseApi.getUserSysDepart(user.getId());
-        if (CollUtil.isNotEmpty(userTeamParameter.getOrgIdList())) {
-            userSysDepart = userSysDepart.stream().filter(u -> userTeamParameter.getOrgIdList().contains(u.getId())).collect(Collectors.toList());
-        }
-        List<String> orgIds = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+
         //获取部门list下的人员
-        List<LoginUser> useList = sysBaseApi.getUseList(orgIds);
+        List<LoginUser> useList = sysBaseApi.getUseList(userTeamParameter.getOrgIdList());
         List<String> useIds = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
         List<UserTeamPatrolDTO> userBaseList = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(userTeamParameter.getUserId())) {

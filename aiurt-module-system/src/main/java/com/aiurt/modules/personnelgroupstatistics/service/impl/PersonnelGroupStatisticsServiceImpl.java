@@ -24,8 +24,11 @@ import com.aiurt.modules.personnelgroupstatistics.model.TeamPortraitModel;
 import com.aiurt.modules.personnelgroupstatistics.model.TeamUserModel;
 import com.aiurt.modules.personnelgroupstatistics.service.PersonnelGroupStatisticsService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -468,6 +471,34 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             mv.addObject(NormalExcelConstants.DATA_LIST, records);
         }
         return mv;
+    }
+
+    @Override
+    public List<SysDepartModel> selectDepart() {
+
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //根据当前登录人班组权限获取班组,管理员获取全部
+        boolean admin = SecurityUtils.getSubject().hasRole("admin");
+        List<SysDepartModel> list = new ArrayList<>();
+
+        if (!admin) {
+            List<CsUserDepartModel>  departByUserId = iSysBaseApi.getDepartByUserId(sysUser.getId());
+            if (CollUtil.isNotEmpty(departByUserId)) {
+                for (CsUserDepartModel csUserDepartModel : departByUserId) {
+                    SysDepartModel sysDepartModel = new SysDepartModel();
+                    sysDepartModel.setId(csUserDepartModel.getDepartId());
+                    sysDepartModel.setOrgCode(csUserDepartModel.getOrgCode());
+                    sysDepartModel.setDepartName(csUserDepartModel.getDepartName());
+                    list.add(sysDepartModel);
+                }
+            }
+        } else {
+            List<SysDepartModel> allSysDepart = iSysBaseApi.getAllSysDepart();
+            if (CollUtil.isNotEmpty(allSysDepart)) {
+                list.addAll(allSysDepart);
+            }
+        }
+        return list;
     }
 
     private List<String> getDepartIds(List<String> departIds) {

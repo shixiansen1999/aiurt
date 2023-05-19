@@ -1,9 +1,10 @@
 package com.aiurt.modules.positionwifi.mapper;
 
-import java.util.List;
-
 import com.aiurt.modules.positionwifi.entity.CsPositionWifi;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Description: wiif位置管理
@@ -12,5 +13,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @Version: V1.0
  */
 public interface CsPositionWifiMapper extends BaseMapper<CsPositionWifi> {
-
+    /**
+     * 获取mac地址
+     * @param stationCodes
+     * @return
+     */
+    List<String> getMac(@Param("stationCodes") List<String> stationCodes);
 }

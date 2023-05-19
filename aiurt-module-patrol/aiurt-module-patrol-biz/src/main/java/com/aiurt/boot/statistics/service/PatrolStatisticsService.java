@@ -46,6 +46,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author JB
@@ -403,22 +404,28 @@ public class PatrolStatisticsService {
             }
             //获取mac地址
             List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(l.getId());
+
+            List<String> list = Optional.ofNullable(stationInfo)
+                    .map(Collection::stream)
+                    .orElseGet(Stream::empty)
+                    .map(IndexStationDTO::getStationCode)
+                    .collect(Collectors.toList());
+
+            List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(list);
+
             if (CollUtil.isNotEmpty(mac)) {
                 for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
-                    if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMacRecord())) {
+                    if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && CollUtil.isNotEmpty(wifiMac)) {
                         //mac最后两位不用匹配
                         String mac1 = patrolTaskDeviceDTO.getMac();
                         String substring1 = mac1.substring(0, mac1.length() - 3);
-                        String macRecord = patrolTaskDeviceDTO.getMacRecord();
-                        String substring2 = macRecord.substring(0, macRecord.length() - 3);
-                        int i = substring1.compareToIgnoreCase(substring2);
-                        if (i == 0) {
+                        String join = CollUtil.join(wifiMac, ",");
+                        if (join.toLowerCase().contains(substring1.toLowerCase())) {
                             l.setMacMatchResult("正常");
                         } else {
                             l.setMacMatchResult("异常");
                             break;
                         }
-
                     } else {
                         l.setMacMatchResult("异常");
                         break;

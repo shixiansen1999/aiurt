@@ -316,14 +316,11 @@
     <select id="getMac" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
         SELECT
                 ptd.id,
+                ptd.patrol_number,
                 ptd.mac,
-                ptd.station_code,
-                cpw.mac AS macRecord
+                ptd.station_code
         FROM
                 patrol_task_device ptd
-                        LEFT JOIN cs_position_wifi cpw ON cpw.line_code = ptd.line_code
-                        AND cpw.station_code = ptd.station_code
-                        AND cpw.del_flag = 0
         WHERE
                 ptd.task_id = #{id}
           AND ptd.del_flag = 0
