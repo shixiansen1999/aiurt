@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
@@ -12,13 +13,11 @@ import com.aiurt.modules.sysfile.mapper.SysFileRoleMapper;
 import com.aiurt.modules.sysfile.mapper.SysFileTypeMapper;
 import com.aiurt.modules.sysfile.param.FileAppParam;
 import com.aiurt.modules.sysfile.param.SysFileRoleParam;
-import com.aiurt.modules.sysfile.param.SysFileTypeParam;
 import com.aiurt.modules.sysfile.service.ISysFileRoleService;
 import com.aiurt.modules.sysfile.service.ISysFileService;
 import com.aiurt.modules.sysfile.service.ISysFileTypeService;
 import com.aiurt.modules.sysfile.vo.FIlePlanVO;
 import com.aiurt.modules.sysfile.vo.FileAppVO;
-import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sysfile.vo.SimpUserVO;
 import com.aiurt.modules.sysfile.vo.SysFileTypeDetailVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -26,6 +25,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -37,6 +37,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
  * @Date: 2021-10-26
  * @Version: V1.0
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> implements ISysFileService {
@@ -62,6 +64,8 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 	private ISysFileTypeService sysFileTypeService;
 
 	private final ISysFileRoleService roleService;
+
+	public static Map<String,SimpUserVO> userMap = new ConcurrentHashMap<>(16);
 
 	@Override
 	public IPage<FileAppVO> selectAppList(HttpServletRequest req,FileAppParam param) {
@@ -302,6 +306,21 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 
 	@Override
 	public Result<SysFileTypeDetailVO> detail(HttpServletRequest req, Long id) {
+
+		// 先初始化
+		synchronized (this) {
+			// 在这里执行需要同步的操作
+			if (CollUtil.isEmpty(userMap)) {
+				List<LoginUser> allUsers = iSysBaseAPI.getAllUsers();
+				if (CollUtil.isNotEmpty(allUsers)) {
+					Map<String, SimpUserVO> map = allUsers.stream().collect(Collectors.toMap(LoginUser::getId, loginUser -> {
+						return new SimpUserVO().setUserId(loginUser.getId()).setUserName(loginUser.getRealname());
+					}, (t1, t2) -> t1));
+					userMap.putAll(map);
+				}
+			}
+		}
+
 		SysFile sysFile = this.getById(id);
 		if (sysFile==null){
 			return Result.error("未查询到此条记录");
@@ -338,19 +357,10 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
-								vo.setEditUsers(userList);
-							}
+							Set<SimpUserVO> userList = roles.parallelStream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
+							vo.setEditUsers(userList);
+
 						});
 					}
 				}
@@ -370,20 +380,10 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap6.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap6.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
-								Optional.ofNullable(vo.getEditUsers()).ifPresent(userList::addAll);
+							Set<SimpUserVO> userList = roles.parallelStream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
 								vo.setLookUsers(userList);
-							}
+
 						});
 					}
 				}
@@ -402,19 +402,10 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap1.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap1.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
+							Set<SimpUserVO> userList = roles.parallelStream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
 								vo.setUploadStatus(userList);
-							}
+
 						});
 					}
 				}
@@ -434,19 +425,9 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap2.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap2.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
+							Set<SimpUserVO> userList = roles.stream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
 								vo.setDownloadStatus(userList);
-							}
 						});
 					}
 				}
@@ -466,19 +447,9 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap3.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap3.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
+							Set<SimpUserVO> userList = roles.stream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
 								vo.setDeleteStatus(userList);
-							}
 						});
 					}
 				}
@@ -498,19 +469,9 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap4.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap4.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
+							Set<SimpUserVO> userList = roles.stream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
 								vo.setOnlineEditing(userList);
-							}
 						});
 					}
 				}
@@ -530,19 +491,9 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap5.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap5.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
+							Set<SimpUserVO> userList = roles.stream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
 								vo.setRenameStatus(userList);
-							}
 						});
 					}
 				}
@@ -562,19 +513,9 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap7.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap7.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
+							Set<SimpUserVO> userList = roles.stream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
 								vo.setPrimaryLookStatus(userList);
-							}
 						});
 					}
 				}
@@ -594,19 +535,9 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap8.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap8.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
+							Set<SimpUserVO> userList = roles.stream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
 								vo.setPrimaryEditStatus(userList);
-							}
 						});
 					}
 				}
@@ -625,19 +556,9 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap9.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap9.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
+							Set<SimpUserVO> userList = roles.stream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
 								vo.setPrimaryUploadStatus(userList);
-							}
 						});
 					}
 				}
@@ -657,19 +578,9 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap10.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap10.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
+							Set<SimpUserVO> userList = roles.stream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
 								vo.setPrimaryDownloadStatus(userList);
-							}
 						});
 					}
 				}
@@ -689,19 +600,9 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap11.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap11.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
+							Set<SimpUserVO> userList = roles.stream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
 								vo.setPrimaryDeleteStatus(userList);
-							}
 						});
 					}
 				}
@@ -721,19 +622,9 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap12.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap12.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
+							Set<SimpUserVO> userList = roles.stream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
 								vo.setPrimaryRenameStatus(userList);
-							}
 						});
 					}
 				}
@@ -753,19 +644,9 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					if (org.apache.commons.collections.CollectionUtils.isNotEmpty(listMap13.get(1))) {
 						List<SysFileRole> sysFileRole = getSysFileRole(sysFileRoleList1, listMap13.get(1));
 						Optional.ofNullable(sysFileRole).ifPresent(roles -> {
-							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							String[] array = new String[ids.size()];
-							for(int i = 0; i < ids.size();i++){
-								array[i] = ids.get(i);
-							}
-							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
-							if (loginUsers != null && loginUsers.size() > 0) {
-								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : loginUsers) {
-									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
-								}
+							Set<SimpUserVO> userList = roles.stream().map(SysFileRole::getUserId)
+									.map(userId -> userMap.get(userId)).collect(Collectors.toSet());
 								vo.setPrimaryOnlineEditing(userList);
-							}
 						});
 					}
 				}

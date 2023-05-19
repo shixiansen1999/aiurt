@@ -2,10 +2,12 @@ package com.aiurt.modules.sysfile.controller;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.EsFileAPI;
+import com.aiurt.boot.index.dto.TeamPortraitDTO;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.MinioUtil;
@@ -23,6 +25,7 @@ import com.aiurt.modules.sysfile.service.ISysFileInfoService;
 import com.aiurt.modules.sysfile.service.ISysFileRoleService;
 import com.aiurt.modules.sysfile.service.ISysFileService;
 import com.aiurt.modules.sysfile.service.ISysFileTypeService;
+import com.aiurt.modules.sysfile.service.impl.SysFileServiceImpl;
 import com.aiurt.modules.sysfile.vo.*;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -64,6 +67,8 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -143,7 +148,6 @@ public class SysFileController {
 		}
 
 		if (StringUtils.isNotBlank(sysFile.getCreateByName())) {
-			// todo 后期修改
 			List<String> userLikeName = iSysBaseAPI.getUserLikeName(sysFile.getCreateByName());
 			if (CollectionUtil.isNotEmpty(userLikeName)) {
 				queryWrapper.in(SysFile::getCreateBy, userLikeName);
@@ -154,19 +158,26 @@ public class SysFileController {
 
 		IPage<SysFile> pageList = sysFileService.page(new Page<>(pageNo, pageSize), queryWrapper);
 		Map<Long, SysFileType> map = null;
-		Map<String, LoginUser> userMap = null;
 
-		if (CollectionUtils.isNotEmpty(pageList.getRecords())) {
+
+		List<SysFile> records1 = pageList.getRecords();
+		Map<String, String> userMap = new HashMap<>();
+		if (CollectionUtils.isNotEmpty(records1)) {
 			//获取类型
-			List<Long> list = pageList.getRecords().stream().map(SysFile::getTypeId).collect(Collectors.toList());
+			List<Long> list = records1.parallelStream().map(SysFile::getTypeId).collect(Collectors.toList());
 			Collection<SysFileType> types = sysFileTypeService.listByIds(list);
 			map = types.stream().collect(Collectors.toMap(SysFileType::getId, s -> s));
-			//获取用户
-			List<String> userIds = pageList.getRecords().stream().map(SysFile::getCreateBy).collect(Collectors.toList());
-			// todo 后期修改
-			Collection<LoginUser> users = new ArrayList<>();
-//			Collection<LoginUser> users = sysUserService.listByIds(userIds);
-			userMap = users.stream().collect(Collectors.toMap(LoginUser::getId, s -> s));
+
+
+			Set<String> userNameSet = records1.parallelStream().map(SysFile::getCreateBy).collect(Collectors.toSet());
+			if (CollUtil.isNotEmpty(userNameSet)) {
+				String[] userNameArr = userNameSet.toArray(new String[userNameSet.size()]);
+				List<LoginUser>  loginUserList = iSysBaseAPI.queryUserByNames(userNameArr);
+				if (CollUtil.isNotEmpty(loginUserList)) {
+					Map<String, String> collect = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, LoginUser::getRealname, (t1, t2) -> t1));
+					userMap.putAll(collect);
+				}
+			}
 		}
 		IPage<SysFileVO> pages = new Page<>();
 
@@ -174,8 +185,9 @@ public class SysFileController {
 		List<SysFileVO> records = new ArrayList<>();
 		//若为此用户文件,给予全部权限
 		final Map<Long, SysFileType> finalMap = map;
-		final Map<String, LoginUser> finalUserMap = userMap;
-		pageList.getRecords().forEach(e -> {
+		SysFileServiceImpl.userMap.clear();
+		ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
+		records1.forEach(e -> {
 			SysFileVO vo = new SysFileVO();
 			BeanUtils.copyProperties(e, vo);
 			if (e.getCreateBy().equals(userName)) {
@@ -189,16 +201,26 @@ public class SysFileController {
 					vo.setTypeName(sysFileType.getName());
 				}
 			}
+			vo.setCreateByName(userMap.get(vo.getCreateBy()));
 
-			LoginUser loginUser = iSysBaseAPI.queryUser(vo.getCreateBy());
-			if (loginUser != null) {
-					vo.setCreateByName(loginUser.getRealname());
-				}
-			Result<SysFileTypeDetailVO> detail = sysFileService.detail(request, e.getId());
-			SysFileTypeDetailVO result1 = detail.getResult();
-			vo.setDetail(result1);
+			threadPoolExecutor.execute(() -> {
+				Result<SysFileTypeDetailVO> detail = sysFileService.detail(request, e.getId());
+				SysFileTypeDetailVO result1 = detail.getResult();
+				vo.setDetail(result1);
+			});
+
 			records.add(vo);
 		});
+
+		threadPoolExecutor.shutdown();
+		try {
+			// 等待线程池中的任务全部完成
+			threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			// 处理中断异常
+			log.info("循环方法的线程中断异常", e.getMessage());
+		}
+		SysFileServiceImpl.userMap.clear();
 		pages.setRecords(records);
 
 		result.setSuccess(true);
@@ -316,7 +338,7 @@ public class SysFileController {
 					sysFileService.add(req,sysFile);
 
 					// ES更新规范规程知识库的文件数据
-					this.saveEsDate(sysFile);
+					new Thread(() -> this.saveEsDate(sysFile)).start();
 
 					result.success("添加成功！");
 				} catch (Exception e) {
@@ -328,20 +350,25 @@ public class SysFileController {
 		return result;
 	}
 
-    private IndexResponse saveEsDate(SysFile sysFile) throws IOException {
+    private IndexResponse saveEsDate(SysFile sysFile) {
+		IndexResponse response = null;
+		try {
+			// 根据文件地址获取文件
+			byte[] bytes = this.getBytes(sysFile);
 
-		// 根据文件地址获取文件
-		byte[] bytes = this.getBytes(sysFile);
+			FileDataDTO fileDataDTO = new FileDataDTO();
+			fileDataDTO.setId(String.valueOf(sysFile.getId()));
+			fileDataDTO.setName(sysFile.getName());
+			fileDataDTO.setTypeId(String.valueOf(sysFile.getTypeId()));
+			fileDataDTO.setFormat(sysFile.getType());
+			fileDataDTO.setAddress(sysFile.getUrl());
+			fileDataDTO.setFileBytes(bytes);
 
-		FileDataDTO fileDataDTO = new FileDataDTO();
-        fileDataDTO.setId(String.valueOf(sysFile.getId()));
-        fileDataDTO.setName(sysFile.getName());
-        fileDataDTO.setTypeId(String.valueOf(sysFile.getTypeId()));
-        fileDataDTO.setFormat(sysFile.getType());
-        fileDataDTO.setAddress(sysFile.getUrl());
-		fileDataDTO.setFileBytes(bytes);
-        IndexResponse response = esFileAPI.saveFileData(fileDataDTO);
-        return response;
+			response = esFileAPI.saveFileData(fileDataDTO);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		return response;
     }
 
 	private byte[] getBytes(SysFile sysFile) throws IOException {
