@@ -390,6 +390,7 @@
         and pt.status in (0, 3)
         and pt.discard_status = 0
         and pt.omit_status = 0
+        and pt.del_flag = 0
         <!--        and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND-->
         <!--            t2.org_code = #{patrolTaskDTO.loginOrgId})-->
         <if test="patrolTaskDTO.stationCode != null and patrolTaskDTO.stationCode != ''">
