@@ -246,7 +246,7 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 
 		List<SysFileRole> fileRoles = this.lambdaQuery()
 				.eq(SysFileRole::getDelFlag, 0)
-				.like(SysFileRole::getUserId, userId)
+				.eq(SysFileRole::getUserId, userId)
 				.in(SysFileRole::getTypeId, typeIdList).list();
 		if (CollectionUtil.isNotEmpty(fileRoles)) {
 			List<Long> longs = fileRoles.stream().map(SysFileRole::getTypeId).collect(Collectors.toList());

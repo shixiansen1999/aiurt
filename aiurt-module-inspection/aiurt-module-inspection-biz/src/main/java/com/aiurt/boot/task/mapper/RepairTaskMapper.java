@@ -249,13 +249,12 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
      * 查询管理负责人检修班组的信息
-     * @param pageList
      * @param condition
      * @return
      */
-    List<OverhaulStatisticsDTOS> readTeamList(@Param("pageList") Page<OverhaulStatisticsDTOS> pageList,@Param("condition") OverhaulStatisticsDTOS condition);
+    List<OverhaulStatisticsDTOS> readTeamList(@Param("condition") OverhaulStatisticsDTOS condition);
 
-    Long readTaskList(@Param("pageList") Page<OverhaulStatisticsDTOS> pageList,@Param("condition") OverhaulStatisticsDTOS condition);
+    Long readTaskList(@Param("condition") OverhaulStatisticsDTOS condition);
 
     /**
      * 查询管理负责人检修班组的信息
@@ -378,4 +377,11 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
             @DataColumn(key = "systemName",value = "t3.subsystem_code")
     })
     List<RepairTaskNum> selectRepairPoolListSpecial(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+    /**
+     * 查询管理负责人检修班组的信息
+     * @param pageList
+     * @param condition
+     * @return
+     */
+    Page<OverhaulStatisticsDTOS> getAllTaskList(@Param("pageList") Page<OverhaulStatisticsDTOS> pageList, @Param("condition") OverhaulStatisticsDTOS condition);
 }
