@@ -57,7 +57,6 @@ public class OverhaulStatisticsService{
 
 
     public Page<OverhaulStatisticsDTOS> getOverhaulList(Page<OverhaulStatisticsDTOS> pageList, OverhaulStatisticsDTOS condition) {
-        //查询管理负责人班组的所有信息
         List<OverhaulStatisticsDTOS> dtoList2 = this.selectDepart(condition.getOrgCode());
         if(StrUtil.isEmpty(condition.getOrgCode()))
         {
@@ -69,8 +68,12 @@ public class OverhaulStatisticsService{
             }
         }
 
+        List<OverhaulStatisticsDTOS> allTaskList = repairTaskMapper.getAllTaskList(pageList, condition);
+
         //查询管理负责人检修班组的信息
-        List<OverhaulStatisticsDTOS> statisticsDTOList = repairTaskMapper.readTeamList(pageList,condition);
+        List<String> collect1 = allTaskList.stream().map(OverhaulStatisticsDTOS::getOrgCode).collect(Collectors.toList());
+        condition.setOrgCodeList(collect1);
+        List<OverhaulStatisticsDTOS> statisticsDTOList = repairTaskMapper.readTeamList(condition);
 
         //查询班组下所有人员
         List<OverhaulStatisticsDTO> dtoList1 = repairTaskMapper.realNameList(condition);
@@ -79,13 +82,18 @@ public class OverhaulStatisticsService{
         List<OverhaulStatisticsDTO> nameList = repairTaskMapper.readNameList(condition);
 
         if(CollectionUtil.isNotEmpty(statisticsDTOList)){
-            statisticsDTOList.addAll(dtoList2);
+            for (OverhaulStatisticsDTOS statisticsDTOS : allTaskList) {
+                OverhaulStatisticsDTOS dtos = statisticsDTOList.stream().filter(s -> s.getOrgCode().equals(statisticsDTOS.getOrgCode())).findFirst().orElse(new OverhaulStatisticsDTOS());
+                if (ObjectUtil.isNotEmpty(dtos.getId())) {
+                    BeanUtil.copyProperties(dtos,statisticsDTOS);
+                }
+            }
         }
         if(CollectionUtil.isNotEmpty(nameList)) {
             nameList.addAll(dtoList1);
         }
         //去重处理
-        ArrayList<OverhaulStatisticsDTOS> distinct1 = CollectionUtil.distinct(CollectionUtil.isNotEmpty(statisticsDTOList) ? statisticsDTOList : dtoList2);
+        //ArrayList<OverhaulStatisticsDTOS> distinct1 = CollectionUtil.distinct(CollectionUtil.isNotEmpty(statisticsDTOList) ? statisticsDTOList : dtoList2);
 
         //去重处理
         ArrayList<OverhaulStatisticsDTO> distinct = CollectionUtil.distinct(CollectionUtil.isNotEmpty(nameList) ? nameList : dtoList1);
@@ -149,9 +157,9 @@ public class OverhaulStatisticsService{
                 }
             });
         }
-        if (CollectionUtil.isNotEmpty(distinct1)){
+        if (CollectionUtil.isNotEmpty(allTaskList)){
             OverhaulStatisticsDTOS overhaulStatisticsDTO = new OverhaulStatisticsDTOS();
-            distinct1.forEach(e->{
+            allTaskList.forEach(e->{
                 //查询已完成的班组信息
                 overhaulStatisticsDTO.setStatus(8L);
                 if (e.getTaskId()!=null){
@@ -235,7 +243,7 @@ public class OverhaulStatisticsService{
                 }
             });
         }
-        return pageList.setRecords(distinct1);
+        return pageList.setRecords(allTaskList);
     }
 
     private void getCompletionRate(OverhaulStatisticsDTO e, int size2) {
