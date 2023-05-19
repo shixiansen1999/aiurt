@@ -99,8 +99,8 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 			sysFileTypes.forEach(t -> {
 				FileAppVO appVO = new FileAppVO();
 				appVO.setTypeName(t.getName()).setTypeId(t.getId()).setStatus(0).setParentId(t.getParentId());
-				Result<SysFileTypeDetailVO> detail = sysFileTypeService.detail(req, t.getId());
-				appVO.setFileTypeDetail(detail.getResult());
+//				Result<SysFileTypeDetailVO> detail = sysFileTypeService.detail(req, t.getId());
+//				appVO.setFileTypeDetail(detail.getResult());
 				list.add(appVO);
 			});
 		});
@@ -122,11 +122,11 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 				sysFiles.forEach(f -> {
 					FileAppVO appVO = new FileAppVO();
 					appVO.setFileName(f.getName()).setId(f.getId()).setUrl(f.getUrl()).setStatus(1).setTypeId(f.getTypeId()).setDownStatus(f.getDownStatus());
-					Result<SysFileTypeDetailVO> detail = this.detail(req, f.getId());
-					appVO.setFileDetail(detail.getResult());
-
-					Result<SysFileTypeDetailVO> detail1 = sysFileTypeService.detail(req, f.getTypeId());
-					appVO.setFileTypeDetail(detail1.getResult());
+//					Result<SysFileTypeDetailVO> detail = this.detail(req, f.getId());
+//					appVO.setFileDetail(detail.getResult());
+//
+//					Result<SysFileTypeDetailVO> detail1 = sysFileTypeService.detail(req, f.getTypeId());
+//					appVO.setFileTypeDetail(detail1.getResult());
 					list.add(appVO);
 				});
 			});
@@ -148,11 +148,11 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 				sysFiles.forEach(f -> {
 					FileAppVO appVO = new FileAppVO();
 					appVO.setFileName(f.getName()).setId(f.getId()).setUrl(f.getUrl()).setStatus(1).setTypeId(f.getTypeId()).setDownStatus(f.getDownStatus());
-					Result<SysFileTypeDetailVO> detail = this.detail(req, f.getId());
-					appVO.setFileDetail(detail.getResult());
-
-					Result<SysFileTypeDetailVO> detail1 = sysFileTypeService.detail(req, f.getTypeId());
-					appVO.setFileTypeDetail(detail1.getResult());
+//					Result<SysFileTypeDetailVO> detail = this.detail(req, f.getId());
+//					appVO.setFileDetail(detail.getResult());
+//
+//					Result<SysFileTypeDetailVO> detail1 = sysFileTypeService.detail(req, f.getTypeId());
+//					appVO.setFileTypeDetail(detail1.getResult());
 					list.add(appVO);
 				});
 			});
@@ -186,11 +186,11 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 				sysFiles.forEach(f -> {
 					FileAppVO appVO = new FileAppVO();
 					appVO.setFileName(f.getName()).setId(f.getId()).setUrl(f.getUrl()).setStatus(1).setTypeId(f.getTypeId()).setDownStatus(f.getDownStatus());
-					Result<SysFileTypeDetailVO> detail = this.detail(req, f.getId());
-					appVO.setFileDetail(detail.getResult());
-
-					Result<SysFileTypeDetailVO> detail1 = sysFileTypeService.detail(req, f.getTypeId());
-					appVO.setFileTypeDetail(detail1.getResult());
+//					Result<SysFileTypeDetailVO> detail = this.detail(req, f.getId());
+//					appVO.setFileDetail(detail.getResult());
+//
+//					Result<SysFileTypeDetailVO> detail1 = sysFileTypeService.detail(req, f.getTypeId());
+//					appVO.setFileTypeDetail(detail1.getResult());
 					list.add(appVO);
 				});
 			});
