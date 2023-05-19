@@ -68,10 +68,10 @@ public class OverhaulStatisticsService{
             }
         }
 
-        List<OverhaulStatisticsDTOS> allTaskList = repairTaskMapper.getAllTaskList(pageList, condition);
-
+        Page<OverhaulStatisticsDTOS> allTaskList = repairTaskMapper.getAllTaskList(pageList, condition);
+        List<OverhaulStatisticsDTOS> records = allTaskList.getRecords();
         //查询管理负责人检修班组的信息
-        List<String> collect1 = allTaskList.stream().map(OverhaulStatisticsDTOS::getOrgCode).collect(Collectors.toList());
+        List<String> collect1 = records.stream().map(OverhaulStatisticsDTOS::getOrgCode).collect(Collectors.toList());
         condition.setOrgCodeList(collect1);
         List<OverhaulStatisticsDTOS> statisticsDTOList = repairTaskMapper.readTeamList(condition);
 
@@ -82,7 +82,7 @@ public class OverhaulStatisticsService{
         List<OverhaulStatisticsDTO> nameList = repairTaskMapper.readNameList(condition);
 
         if(CollectionUtil.isNotEmpty(statisticsDTOList)){
-            for (OverhaulStatisticsDTOS statisticsDTOS : allTaskList) {
+            for (OverhaulStatisticsDTOS statisticsDTOS : records) {
                 OverhaulStatisticsDTOS dtos = statisticsDTOList.stream().filter(s -> s.getOrgCode().equals(statisticsDTOS.getOrgCode())).findFirst().orElse(new OverhaulStatisticsDTOS());
                 if (ObjectUtil.isNotEmpty(dtos.getId())) {
                     BeanUtil.copyProperties(dtos,statisticsDTOS);
@@ -157,9 +157,9 @@ public class OverhaulStatisticsService{
                 }
             });
         }
-        if (CollectionUtil.isNotEmpty(allTaskList)){
+        if (CollectionUtil.isNotEmpty(records)){
             OverhaulStatisticsDTOS overhaulStatisticsDTO = new OverhaulStatisticsDTOS();
-            allTaskList.forEach(e->{
+            records.forEach(e->{
                 //查询已完成的班组信息
                 overhaulStatisticsDTO.setStatus(8L);
                 if (e.getTaskId()!=null){
@@ -173,7 +173,7 @@ public class OverhaulStatisticsService{
                 }
                 List<OverhaulStatisticsDTOS> dtoList = repairTaskMapper.readTeamLists(overhaulStatisticsDTO);
                 //查询管理负责人检修班组本周内的任务总数
-                Long tasksList = repairTaskMapper.readTaskList(pageList,overhaulStatisticsDTO);
+                Long tasksList = repairTaskMapper.readTaskList(overhaulStatisticsDTO);
                 e.setTaskTotal(tasksList);
                 //已完成数
                 int size2 = dtoList.size();
@@ -243,7 +243,7 @@ public class OverhaulStatisticsService{
                 }
             });
         }
-        return pageList.setRecords(allTaskList);
+        return allTaskList;
     }
 
     private void getCompletionRate(OverhaulStatisticsDTO e, int size2) {
