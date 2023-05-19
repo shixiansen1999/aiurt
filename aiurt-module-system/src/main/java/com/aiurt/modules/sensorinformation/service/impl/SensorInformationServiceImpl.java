@@ -99,6 +99,12 @@ public class SensorInformationServiceImpl extends ServiceImpl<SensorInformationM
         if(ObjectUtil.isNotEmpty(informationIP)){
             throw new AiurtBootException("该ip已被添加！");
         }
+        CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, sensorInformation.getStationCode()).eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (ObjectUtil.isNotEmpty(csStation.getLineName())) {
+            sensorInformation.setLineName(csStation.getLineName());
+        }
+        sensorInformation.setLineCode(csStation.getLineCode());
+        sensorInformation.setStationName(csStation.getStationName());
         informationMapper.updateById(sensorInformation);
     }
 
