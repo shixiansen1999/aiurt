@@ -72,9 +72,9 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             Map<String, UserTeamPatrolDTO> teamParameter = patrolApi.getUserTeamParameter(userTeamParameter);
 
             //获取所有班组维修参数数据
-            Map<String, FaultReportDTO> faultOrgReport = dailyFaultApi.getFaultOrgReport(departIds, startTime, endTime);
+            Map<String, FaultReportDTO> faultOrgReport = dailyFaultApi.getFaultOrgReport(ids, startTime, endTime);
             ///获取所有班组检修参数数据
-            Map<String, PersonnelTeamDTO> teamInformation = overhaulApi.teamInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), departIds);
+            Map<String, PersonnelTeamDTO> teamInformation = overhaulApi.teamInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), ids);
 
             for (GroupModel model : personnelGroupModels) {
                 String teamId = model.getTeamId();
@@ -150,9 +150,9 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             userTeamParameter.setOrgIdList(ids);
             Map<String, UserTeamPatrolDTO> userParameter = patrolApi.getUserParameter(userTeamParameter);
             //获取所有人员维修参数数据
-            Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(departIds, startTime, endTime, null);
+            Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(ids, startTime, endTime, null);
             //获取所有人员检修参数数据
-            Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), departIds, null);
+            Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), ids, null);
 
             for (PersonnelModel model : personnelModels) {
                 String userId = model.getUserId();
@@ -297,9 +297,10 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 //获取工区管辖范围
                 List<TeamWorkAreaDTO> stationDetails = personnelGroupStatisticsMapper.getStationDetails(portraitDTO.getWorkAreaCode());
                 if (CollUtil.isNotEmpty(stationDetails)) {
-                    List<String> line = stationDetails.stream().map(TeamWorkAreaDTO::getLineCode).collect(Collectors.toList());
-                    if (CollUtil.isNotEmpty(line)) {
-                        for (String s : line) {
+                    List<String> lines = stationDetails.stream().map(TeamWorkAreaDTO::getLineCode).collect(Collectors.toList());
+                    if (CollUtil.isNotEmpty(lines)) {
+                        List<String> list = lines.stream().distinct().collect(Collectors.toList());
+                        for (String s : list) {
                             List<TeamWorkAreaDTO> collect = stationDetails.stream().filter(t -> t.getLineCode().equals(s)).collect(Collectors.toList());
                             jurisdiction.append(collect.get(0).getLineName())
                                     .append(collect.get(0).getStationName())
@@ -502,11 +503,11 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
     }
 
     private List<String> getDepartIds(List<String> departIds) {
-        List<String> orgIds = iSysBaseApi.getDepartByUser(0);
         List<String> ids = new ArrayList<>();
         if (CollUtil.isNotEmpty(departIds)) {
             ids.addAll(departIds);
         }else {
+            List<String> orgIds = iSysBaseApi.getDepartByUser(0);
             ids.addAll(orgIds );
         }
         return ids;

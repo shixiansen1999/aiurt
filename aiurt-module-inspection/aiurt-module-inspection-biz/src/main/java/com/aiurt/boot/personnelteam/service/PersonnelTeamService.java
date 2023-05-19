@@ -6,10 +6,8 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.api.OverhaulApi;
 import com.aiurt.boot.personnelteam.mapper.PersonnelTeamMapper;
 import com.aiurt.boot.task.dto.PersonnelTeamDTO;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,15 +32,6 @@ public class PersonnelTeamService implements OverhaulApi {
 
       @Override
       public Map<String, PersonnelTeamDTO> personnelInformation (Date startDate, Date endDate, List<String> teamId,String userId){
-          LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-          //根据登录人的id查询所属班组
-          List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(sysUser.getId());
-          //所属班组id的list集合
-          List<String> collect = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
-
-          if (CollectionUtil.isEmpty(teamId) && CollectionUtil.isNotEmpty(collect)){
-              return this.getUserList(startDate, endDate, collect, null);
-          }
 
           if (CollectionUtil.isNotEmpty(teamId)){
               return this.getUserList(startDate, endDate, teamId, null);
@@ -147,26 +136,11 @@ public class PersonnelTeamService implements OverhaulApi {
 
     @Override
     public Map<String, PersonnelTeamDTO> teamInformation (Date startDate, Date endDate, List<String> teamId){
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //根据登录人的id查询所属班组
-        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(sysUser.getId());
 
-        if(CollectionUtil.isNotEmpty(userSysDepart)){
-            //所属班组id的list集合
-            List<String> collect = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
-
-            //所属班组code的list集合
-            List<String> collect1 = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-
-            if (CollectionUtil.isNotEmpty(teamId)){
-                //根据班组id查询班组code
-                List<String> codeList = personnelTeamMapper.getIdList(teamId);
-
-                return getTeamList(startDate, endDate, teamId,codeList);
-
-            }else {
-                return getTeamList(startDate, endDate, collect,collect1);
-            }
+        if (CollectionUtil.isNotEmpty(teamId)){
+            //根据班组id查询班组code
+            List<String> codeList = personnelTeamMapper.getIdList(teamId);
+            return getTeamList(startDate, endDate, teamId,codeList);
         }
         return new HashMap<>(16);
     }
@@ -237,7 +211,9 @@ public class PersonnelTeamService implements OverhaulApi {
                                         dtos.addAll(teamTime);
                                         BigDecimal sum = new BigDecimal("0.00");
                                         for (PersonnelTeamDTO dto : dtos) {
-                                            sum = sum.add(dto.getInspecitonTotalTime());
+                                            if (ObjectUtil.isNotEmpty(dto.getInspecitonTotalTime())) {
+                                                sum = sum.add(dto.getInspecitonTotalTime());
+                                            }
                                         }
                                         //秒转时
                                         BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);

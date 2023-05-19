@@ -2099,7 +2099,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
         MacDto macDto = new MacDto();
         if (CollUtil.isNotEmpty(mac)) {
-            List<String> macs = mac.stream().map(PatrolTaskDeviceDTO::getMac).filter(StrUtil::isNotEmpty).collect(Collectors.toList());
+            List<String> macs = mac.stream().map(PatrolTaskDeviceDTO::getMac).filter(StrUtil::isNotEmpty).distinct().collect(Collectors.toList());
             macDto.setLocalMac(macs);
             macDto.setStationMac(wifiMac);
             //TODO 暂时不展示异常工单信息
