@@ -1459,7 +1459,7 @@
         SELECT t.*, s.line_code, s.line_name, s.station_code, s.station_name
         from `temperature_humidity` t
         left join sensor_information s on t.station_code = s.station_code
-        where t.create_time between DATE_SUB(now(), INTERVAL 30 DAY) and now()
+        where s.del_flag = 0 and  t.create_time between DATE_SUB(now(), INTERVAL 30 DAY) and now()
           AND
             DATE_FORMAT(t.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{date}
           AND
