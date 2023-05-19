@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -77,6 +78,13 @@ public class IndexTaskInfo implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "巡检结果提交时间,格式yyyy-MM-dd HH:mm:ss")
     private java.util.Date submitTime;
+
+    /**
+     * mac匹配；0异常；1正常
+     */
+    @Excel(name = "mac匹配；0异常；1正常", width = 15)
+    @ApiModelProperty(value = "mac匹配；0异常；1正常")
+    private java.lang.Integer macStatus;
 
     /**
      * mac地址匹配结果

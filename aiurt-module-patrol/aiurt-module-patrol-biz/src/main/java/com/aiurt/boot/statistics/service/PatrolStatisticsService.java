@@ -14,7 +14,6 @@ import com.aiurt.boot.statistics.dto.*;
 import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.dto.PatrolBillDTO;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
-import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
@@ -46,7 +45,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author JB
@@ -402,37 +400,13 @@ public class PatrolStatisticsService {
                 String stationName = patrolTaskDeviceMapper.getStationName(stationCode);
                 stationInfo.add(new IndexStationDTO(stationCode, stationName));
             }
-            //获取mac地址
-            List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(l.getId());
 
-            List<String> list = Optional.ofNullable(stationInfo)
-                    .map(Collection::stream)
-                    .orElseGet(Stream::empty)
-                    .map(IndexStationDTO::getStationCode)
-                    .collect(Collectors.toList());
-
-            List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(list);
-
-            if (CollUtil.isNotEmpty(mac)) {
-                for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
-                    if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && CollUtil.isNotEmpty(wifiMac)) {
-                        //mac最后两位不用匹配
-                        String mac1 = patrolTaskDeviceDTO.getMac();
-                        String substring1 = mac1.substring(0, mac1.length() - 3);
-                        String join = CollUtil.join(wifiMac, ",");
-                        if (join.toLowerCase().contains(substring1.toLowerCase())) {
-                            l.setMacMatchResult("正常");
-                        } else {
-                            l.setMacMatchResult("异常");
-                            break;
-                        }
-                    } else {
-                        l.setMacMatchResult("异常");
-                        break;
-                    }
-                }
-            } else {
+            //从任务获取mac地址匹配结果
+            Integer macStatus = l.getMacStatus();
+            if (0 == macStatus) {
                 l.setMacMatchResult("异常");
+            } else {
+                l.setMacMatchResult("正常");
             }
 
             // 字典翻译
