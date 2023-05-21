@@ -317,11 +317,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 if (CollUtil.isNotEmpty(mac)) {
                     for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
                         if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && CollUtil.isNotEmpty(wifiMac)) {
-                            //mac最后两位不用匹配
+                            //忽略大小写全匹配
                             String mac1 = patrolTaskDeviceDTO.getMac();
-                            String substring1 = mac1.substring(0, mac1.length() - 6);
                             String join = CollUtil.join(wifiMac, ",");
-                            if (join.toLowerCase().contains(substring1.toLowerCase())) {
+                            if (join.toLowerCase().contains(mac1.toLowerCase())) {
                                 updateWrapper.set(PatrolTask::getMacStatus, 1);
                             } else {
                                 updateWrapper.set(PatrolTask::getMacStatus, 0);
