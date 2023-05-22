@@ -63,7 +63,7 @@ public interface ReportMapper extends BaseMapper<PatrolReport> {
     List<PatrolReport> getAllPeopleTask(@Param("useIds") List<String> useIds, @Param("condition")PatrolReportModel condition);
 
     /**
-     * 获取未指派的漏巡任务
+     * 获取   漏巡任务
      * @param orgCode
      * @param omitModel
      * @return

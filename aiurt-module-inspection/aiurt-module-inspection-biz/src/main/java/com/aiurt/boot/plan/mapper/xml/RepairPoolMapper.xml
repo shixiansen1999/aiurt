@@ -92,9 +92,11 @@
         </where>
     </select>
     <select id="getInspectionTodayData" resultType="com.aiurt.boot.index.dto.InspectionDTO">
-        select  distinct rp.code,rp.weeks,rp.status, ifnull(rt.id,rp.id) as taskId from repair_pool rp
+        select  distinct rp.code,rp.weeks,rp.status, ifnull(rt.id,rp.id) as taskId
+        from repair_pool rp
         left join repair_pool_org_rel rpor on rpor.repair_pool_code = rp.code
         LEFT JOIN repair_task AS rt ON rt.repair_pool_id = rp.id
+        LEFT JOIN repair_pool_station_rel rr ON rr.repair_pool_code = rp.`code` and rr.del_flag = 0
         <where>
             rp.del_flag = 0
             <if test="date!=null">
@@ -107,6 +109,9 @@
                     #{code}
                 </foreach>
             </if>
+            <if test="lineCode != null and lineCode != ''">
+                and rr.line_code = #{lineCode}
+            </if>
         </where>
     </select>
     <select id="getNumByTimeAndOrgCode" resultType="com.aiurt.boot.index.dto.PlanIndexDTO">
@@ -118,6 +123,7 @@
 	(
 	SELECT DISTINCT rp.id,rp.CODE,rp.`status` FROM repair_pool rp
 	LEFT JOIN repair_pool_org_rel rpor ON rpor.repair_pool_code = rp.CODE
+    LEFT JOIN repair_pool_station_rel rr ON rr.repair_pool_code = rp.`code` and rr.del_flag = 0
 	<where>
         rp.del_flag = 0
         <if test="orgCode!=null and orgCode != ''">
@@ -127,12 +133,17 @@
             and date_format(rp.start_time ,'%Y-%m-%d') &gt;= date_format(#{beginDate} ,'%Y-%m-%d')
             and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{endDate} ,'%Y-%m-%d')
         </if>
+        <if test="lineCode != null and lineCode != ''">
+            and rr.line_code = #{lineCode}
+        </if>
     </where>
 	) temp
     </select>
     <select id="getInspectionDataNoPage" resultType="com.aiurt.boot.index.dto.InspectionDTO">
-        select distinct code,weeks,status from repair_pool rp
+        select distinct code,weeks,status
+        from repair_pool rp
         left join repair_pool_org_rel rpor on rpor.repair_pool_code = rp.code
+        LEFT JOIN repair_pool_station_rel rr ON rr.repair_pool_code = rp.`code` and rr.del_flag = 0
         <where>
             rp.del_flag = 0
             <if test="beginDate!=null and endDate!=null">
@@ -148,11 +159,16 @@
             <if test="item!=null and item==2">
                 and status = 8
             </if>
+            <if test="lineCode != null and lineCode != ''">
+                and rr.line_code = #{lineCode}
+            </if>
         </where>
     </select>
     <select id="getInspectionTodayDataNoPage" resultType="com.aiurt.boot.index.dto.InspectionDTO">
-        select  distinct code,weeks,status from repair_pool rp
+        select  distinct code,weeks,status
+        from repair_pool rp
         left join repair_pool_org_rel rpor on rpor.repair_pool_code = rp.code
+        LEFT JOIN repair_pool_station_rel rr ON rr.repair_pool_code = rp.`code` and rr.del_flag = 0
         <where>
             rp.del_flag = 0
             <if test="date!=null">
@@ -164,6 +180,9 @@
                 <foreach collection="orgCodes" separator="," open="(" close=")" item="code">
                     #{code}
                 </foreach>
+            </if>
+            <if test="lineCode != null and lineCode != ''">
+                and rr.line_code = #{lineCode}
             </if>
         </where>
     </select>
@@ -247,6 +266,9 @@
             </if>
             <if test="selectPlanReq.isManual != null">
                 AND rp.is_manual = #{selectPlanReq.isManual}
+            </if>
+             <if test="selectPlanReq.isManualSign != null and selectPlanReq.isManualSign ==true">
+               AND (rp.`status` = 0 or rp.`status` = 3)
             </if>
             <if test="selectPlanReq.status != null">
                 AND rp.status = #{selectPlanReq.status}

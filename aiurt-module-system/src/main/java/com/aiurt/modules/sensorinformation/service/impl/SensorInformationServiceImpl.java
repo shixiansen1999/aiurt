@@ -99,6 +99,12 @@ public class SensorInformationServiceImpl extends ServiceImpl<SensorInformationM
         if(ObjectUtil.isNotEmpty(informationIP)){
             throw new AiurtBootException("该ip已被添加！");
         }
+        CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, sensorInformation.getStationCode()).eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (ObjectUtil.isNotEmpty(csStation.getLineName())) {
+            sensorInformation.setLineName(csStation.getLineName());
+        }
+        sensorInformation.setLineCode(csStation.getLineCode());
+        sensorInformation.setStationName(csStation.getStationName());
         informationMapper.updateById(sensorInformation);
     }
 
@@ -184,7 +190,7 @@ public class SensorInformationServiceImpl extends ServiceImpl<SensorInformationM
             stringBuilder.append("文件存在相同的数据，");
         }
         if(ObjectUtil.isNotEmpty(information.getLineCode())&&ObjectUtil.isNotEmpty(information.getStationCode())&&ObjectUtil.isNotEmpty(information.getStationIp())
-                &&ObjectUtil.isNotEmpty(information.getGatewayAddress())&&ObjectUtil.isNotEmpty(information.getSubnetMask())&&ObjectUtil.isNotEmpty(information.getRemark())){
+                &&ObjectUtil.isNotEmpty(information.getGatewayAddress())&&ObjectUtil.isNotEmpty(information.getSubnetMask())){
             //查询是否有相同的线路下的站点添加
             //1.文件
             List<SensorInformationDTO> fileStationLineInformationList = list.stream().filter(l -> l.getLineCode().equals(information.getLineCode())&&l.getStationCode().equals(information.getStationCode())).collect(Collectors.toList());
@@ -223,7 +229,7 @@ public class SensorInformationServiceImpl extends ServiceImpl<SensorInformationM
                 }
             }
         }else {
-            stringBuilder.append("线路、站点、对应IP地址、子网掩码、网关地址、备注为必填字段，");
+            stringBuilder.append("线路、站点、对应IP地址、子网掩码、网关地址为必填字段，");
         }
 
         if (stringBuilder.length() > 0) {

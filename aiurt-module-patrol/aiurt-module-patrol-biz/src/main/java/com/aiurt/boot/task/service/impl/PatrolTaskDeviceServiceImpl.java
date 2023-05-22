@@ -13,6 +13,7 @@ import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
+import com.aiurt.boot.statistics.dto.IndexStationDTO;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
@@ -47,6 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @Description: patrol_task_device
@@ -300,6 +302,40 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                                 .eq(PatrolTask::getId, task.getId());
                     }
 
+                }
+
+                //获取mac地址
+                List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(task.getId());
+                List<IndexStationDTO> stationInfo = patrolTaskStationMapper.getStationInfo(task.getCode());
+                List<String> list = Optional.ofNullable(stationInfo)
+                        .map(Collection::stream)
+                        .orElseGet(Stream::empty)
+                        .map(IndexStationDTO::getStationCode)
+                        .collect(Collectors.toList());
+                List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(list);
+
+                if (CollUtil.isNotEmpty(mac)) {
+                    for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
+                        if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && CollUtil.isNotEmpty(wifiMac)) {
+                            //忽略大小写全匹配
+                            String mac1 = patrolTaskDeviceDTO.getMac();
+                            String join = CollUtil.join(wifiMac, ",");
+                            if (join.toLowerCase().contains(mac1.toLowerCase())) {
+                                updateWrapper.set(PatrolTask::getMacStatus, 1);
+                            } else {
+                                updateWrapper.set(PatrolTask::getMacStatus, 0);
+                                break;
+                            }
+                            //wifi地址管理该地址为空算正常
+                        } else if (CollUtil.isEmpty(wifiMac)){
+                            updateWrapper.set(PatrolTask::getMacStatus, 1);
+                        }else {
+                            updateWrapper.set(PatrolTask::getMacStatus, 0);
+                            break;
+                        }
+                    }
+                } else {
+                    updateWrapper.set(PatrolTask::getMacStatus, 0);
                 }
                 patrolTaskMapper.update(new PatrolTask(), updateWrapper);
                 // 提交任务如果需要审核则发送一条审核待办消息

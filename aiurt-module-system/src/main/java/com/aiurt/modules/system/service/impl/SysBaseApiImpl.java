@@ -54,6 +54,7 @@ import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.position.mapper.CsLineMapper;
 import com.aiurt.modules.position.mapper.CsStationMapper;
 import com.aiurt.modules.position.mapper.CsStationPositionMapper;
+import com.aiurt.modules.positionwifi.mapper.CsPositionWifiMapper;
 import com.aiurt.modules.quartz.entity.QuartzJob;
 import com.aiurt.modules.quartz.service.IQuartzJobService;
 import com.aiurt.modules.sensorinformation.entity.SensorInformation;
@@ -265,6 +266,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private WorkAreaOrgMapper workAreaOrgMapper;
     @Autowired
     private SensorInformationMapper sensorInformationMapper;
+    @Autowired
+    private CsPositionWifiMapper csPositionWifiMapper;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -1595,8 +1598,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public List<LoginUser> getUseList(List<String> orgIds) {
-        List<SysUser> userList = userMapper.selectList(new QueryWrapper<SysUser>().in("org_id", orgIds).eq("status", 1).eq("del_flag", 0));
         List<LoginUser> list = new ArrayList<>();
+        if (CollUtil.isEmpty(orgIds)) {
+            return list;
+        }
+        List<SysUser> userList = userMapper.selectList(new QueryWrapper<SysUser>().in("org_id", orgIds).eq("status", 1).eq("del_flag", 0));
+
         for (SysUser user : userList) {
             LoginUser loginUser = new LoginUser();
             BeanUtils.copyProperties(user,loginUser);
@@ -3184,6 +3191,15 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             }
         }
         return list;
+    }
+
+    @Override
+    public List<String> getWifiMacByStationCode(List<String> stationCodes) {
+        if (CollUtil.isNotEmpty(stationCodes)) {
+            List<String> mac = csPositionWifiMapper.getMac(stationCodes);
+            return mac;
+        }
+        return new ArrayList<>();
     }
 
 

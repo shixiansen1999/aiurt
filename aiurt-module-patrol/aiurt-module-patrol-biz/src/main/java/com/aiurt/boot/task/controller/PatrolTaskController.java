@@ -737,7 +737,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     }
 
     /**
-     *打印巡视详情（弃用）
+     *打印巡视详情
      *
      * @param ids
      * @param req
@@ -751,5 +751,20 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
 
         List<PrintPatrolTaskDTO> printPatrolTaskDTOS = patrolTaskService.printPatrolTaskById(ids);
         return Result.OK(printPatrolTaskDTOS);
+    }
+
+    /**
+     *获取mac地址
+     *
+     * @param id 任务id
+     * @return author lkj
+     */
+    @AutoLog(value = "巡检任务表-获取mac地址")
+    @ApiOperation(value = "巡检任务表-获取mac地址", notes = "巡检任务表-获取mac地址")
+    @GetMapping(value = "/getMac")
+    public Result<MacDto> getMac(@RequestParam(name="id",required=true) String id) {
+
+        MacDto mac = patrolTaskService.getMac(id);
+        return Result.OK(mac);
     }
 }

@@ -50,6 +50,8 @@ public class SelectPlanReq {
     private List<String> stationCodeList;
     @ApiModelProperty(value = "是否是手工下发")
     private Integer isManual;
+    @ApiModelProperty(value = "手工下发列表查询标志")
+    private Boolean isManualSign;
     @ApiModelProperty(value = "检修计划单号")
     private java.lang.String code;
     @ApiModelProperty(value = "检修周期类型")

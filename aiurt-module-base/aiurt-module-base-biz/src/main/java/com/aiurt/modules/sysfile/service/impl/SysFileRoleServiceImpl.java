@@ -1,6 +1,7 @@
 package com.aiurt.modules.sysfile.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
 import com.aiurt.modules.sysfile.mapper.SysFileRoleMapper;
@@ -81,13 +82,6 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 		SysFileRole fileRole = new SysFileRole();
 		fileRole.setDelFlag(0).setFileId(param.getFileId()).setUserId(param.getUserId());
 		fileRole.setLookStatus(1);
-		fileRole.setEditStatusMark(param.getEditStatusMark());
-		fileRole.setUploadStatusMark(param.getUploadStatusMark());
-		fileRole.setLookStatusMark(param.getLookStatusMark());
-		fileRole.setDownloadStatusMark(param.getDownloadStatusMark());
-		fileRole.setDeleteStatusMark(param.getDeleteStatusMark());
-		fileRole.setRenameStatusMark(param.getRenameStatusMark());
-		fileRole.setOnlineEditingMark(param.getOnlineEditingMark());
 		fileRole.setEditStatus(Optional.ofNullable(param.getEditStatus()).orElse(0));
 		fileRole.setUploadStatus(Optional.ofNullable(param.getUploadStatus()).orElse(0));
 		fileRole.setDownloadStatus(Optional.ofNullable(param.getDownloadStatus()).orElse(0));
@@ -180,9 +174,10 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 	public List<Long> queryRoleByUserId(String userId) {
 
 		List<SysFileRole> roleList = this.lambdaQuery()
+				.select(SysFileRole::getTypeId)
 				.eq(SysFileRole::getDelFlag, 0).eq(SysFileRole::getUserId, userId).list();
 
-		return (roleList != null && roleList.size() > 0) ? roleList.stream().map(SysFileRole::getTypeId).collect(Collectors.toList()) : null;
+		return (roleList != null && roleList.size() > 0) ? roleList.stream().filter(l-> ObjectUtil.isNotEmpty(l)&&ObjectUtil.isNotEmpty(l.getTypeId())).map(SysFileRole::getTypeId).collect(Collectors.toList()) : null;
 	}
 
 	@Override
@@ -251,7 +246,7 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 
 		List<SysFileRole> fileRoles = this.lambdaQuery()
 				.eq(SysFileRole::getDelFlag, 0)
-				.like(SysFileRole::getUserId, userId)
+				.eq(SysFileRole::getUserId, userId)
 				.in(SysFileRole::getTypeId, typeIdList).list();
 		if (CollectionUtil.isNotEmpty(fileRoles)) {
 			List<Long> longs = fileRoles.stream().map(SysFileRole::getTypeId).collect(Collectors.toList());

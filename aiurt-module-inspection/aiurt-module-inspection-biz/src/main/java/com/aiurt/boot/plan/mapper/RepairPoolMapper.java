@@ -89,7 +89,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @param codeList
      * @return
      */
-    List<InspectionDTO> getInspectionTodayData(@Param("page") Page<InspectionDTO> page, @Param("date") Date date, @Param("codeList") List<String> codeList);
+    List<InspectionDTO> getInspectionTodayData(@Param("page") Page<InspectionDTO> page, @Param("date") Date date, @Param("codeList") List<String> codeList,@Param("lineCode")String lineCode);
 
     /**
      * 获取完成数量和未完成数量
@@ -99,7 +99,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @param endDate
      * @return
      */
-    PlanIndexDTO getNumByTimeAndOrgCode(@Param("orgCode") String orgCode, @Param("beginDate") Date beginDate, @Param("endDate") Date endDate);
+    PlanIndexDTO getNumByTimeAndOrgCode(@Param("orgCode") String orgCode, @Param("beginDate") Date beginDate, @Param("endDate") Date endDate,@Param("lineCode")String lineCode);
 
     /**
      * 检修计划总数和完成总数（不带分页）
@@ -110,7 +110,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @param endDate
      * @return
      */
-    List<InspectionDTO> getInspectionDataNoPage(@Param("orgCodes") List<String> orgCodes, @Param("item") Integer item, @Param("beginDate") Date beginDate, @Param("endDate") Date endDate);
+    List<InspectionDTO> getInspectionDataNoPage(@Param("orgCodes") List<String> orgCodes, @Param("item") Integer item, @Param("beginDate") Date beginDate, @Param("endDate") Date endDate,@Param("lineCode")String lineCode);
 
     /**
      * 今日检修(不带分页)
@@ -119,7 +119,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @param orgCodes
      * @return
      */
-    List<InspectionDTO> getInspectionTodayDataNoPage(@Param("date") Date date, @Param("orgCodes") List<String> orgCodes);
+    List<InspectionDTO> getInspectionTodayDataNoPage(@Param("date") Date date, @Param("orgCodes") List<String> orgCodes,@Param("lineCode")String lineCode);
 
     /**
      * 根据检修任务code查询关联的组织机构

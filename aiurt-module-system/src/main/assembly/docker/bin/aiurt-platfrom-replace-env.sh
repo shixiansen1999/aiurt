@@ -60,4 +60,4 @@ if [ ! -z "$miniourl" ] && [ ! -z "$uploadtype" ] && [ ! -z "$mysqlip" ] && [ ! 
   fi
 fi
 cd /aiurt-platfrom/aiurt-module-system
-java  -jar -Xms2048M  -Xmx2048M aiurt-module-system-3.2.0.jar
+java  -jar -Duser.timezone=GMT+8 -Xms2048M  -Xmx2048M aiurt-module-system-3.2.0.jar

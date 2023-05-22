@@ -25,7 +25,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -251,14 +250,12 @@ public class PatrolApiServiceImpl implements PatrolApi {
 
     @Override
     public Map<String, UserTeamPatrolDTO> getUserParameter(UserTeamParameter userTeamParameter) {
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = sysBaseApi.getUserSysDepart(user.getId());
-        if (CollUtil.isNotEmpty(userTeamParameter.getOrgIdList())) {
-            userSysDepart = userSysDepart.stream().filter(u -> userTeamParameter.getOrgIdList().contains(u.getId())).collect(Collectors.toList());
-        }
-        List<String> orgIds = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+
         //获取部门list下的人员
-        List<LoginUser> useList = sysBaseApi.getUseList(orgIds);
+        List<LoginUser> useList = sysBaseApi.getUseList(userTeamParameter.getOrgIdList());
+        if (CollUtil.isEmpty(useList)) {
+            return new HashMap<String, UserTeamPatrolDTO>();
+        }
         List<String> useIds = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
         List<UserTeamPatrolDTO> userBaseList = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(userTeamParameter.getUserId())) {
@@ -401,17 +398,18 @@ public class PatrolApiServiceImpl implements PatrolApi {
 
     @Override
     public Map<String, UserTeamPatrolDTO> getUserTeamParameter(UserTeamParameter userTeamParameter) {
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = sysBaseApi.getUserSysDepart(user.getId());
-        //条件查询
-        if (CollUtil.isNotEmpty(userTeamParameter.getOrgIdList())) {
-            userSysDepart = userSysDepart.stream().filter(u -> userTeamParameter.getOrgIdList().contains(u.getId())).collect(Collectors.toList());
+
+        List<String> orgIds = new ArrayList<>();
+        if (StrUtil.isNotEmpty(userTeamParameter.getOrgId())) {
+            orgIds.add(userTeamParameter.getUserId());
+        } else {
+            orgIds.addAll(userTeamParameter.getOrgIdList());
         }
-        //点击班组，查询
-        if (ObjectUtil.isNotEmpty(userTeamParameter.getOrgId())) {
-            userSysDepart = userSysDepart.stream().filter(u -> userTeamParameter.getOrgId().contains(u.getId())).collect(Collectors.toList());
+
+        if (CollUtil.isEmpty(orgIds)) {
+            return new HashMap<>();
         }
-        List<String> orgIds = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+
         List<UserTeamPatrolDTO> userBaseList = new ArrayList<>();
         for (String orgId : orgIds) {
             UserTeamPatrolDTO zero = setTeamZero(orgId);

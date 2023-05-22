@@ -224,6 +224,12 @@ public class PatrolTask extends DictEntity implements Serializable {
     @Dict(dicCode = "patrol_omit_status")
     private java.lang.Integer omitStatus;
     /**
+     * mac匹配；0异常；1正常
+     */
+    @Excel(name = "mac匹配；0异常；1正常", width = 15)
+    @ApiModelProperty(value = "mac匹配；0异常；1正常")
+    private java.lang.Integer macStatus;
+    /**
      * 漏检说明
      */
     @Excel(name = "漏检说明", width = 15)

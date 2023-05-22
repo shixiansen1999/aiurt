@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.aiurt.boot.poswifi.mapper.CsPositionWifiMapper">
+<mapper namespace="com.aiurt.modules.positionwifi.mapper.CsPositionWifiMapper">
 
+<select id="getMac" resultType="java.lang.String">
+    select mac from cs_position_wifi where del_flag = 0 and station_code in
+    <foreach collection="stationCodes" open="(" separator="," close=")" item="item" index="index">
+        #{item}
+    </foreach>
+    </select>
 </mapper>

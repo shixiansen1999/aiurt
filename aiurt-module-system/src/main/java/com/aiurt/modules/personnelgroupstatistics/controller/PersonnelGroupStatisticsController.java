@@ -12,10 +12,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -161,7 +159,6 @@ public class PersonnelGroupStatisticsController {
     @ApiOperation(value = "统计报表人员报表-班组下拉框", notes = "统计报表人员报表-班组下拉框")
     @GetMapping(value = "/selectDepart")
     public List<SysDepartModel> selectDepart() {
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        return iSysBaseApi.getUserSysDepart(sysUser.getId());
+        return personnelGroupStatisticsService.selectDepart();
     }
 }

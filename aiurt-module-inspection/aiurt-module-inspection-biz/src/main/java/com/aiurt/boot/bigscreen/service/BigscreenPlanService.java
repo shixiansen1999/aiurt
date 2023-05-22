@@ -103,7 +103,7 @@ public class BigscreenPlanService {
             }
 
             // 根据传入的进行时间过滤
-            List<InspectionDTO> inspectionDataNoPage = repairPoolMapper.getInspectionDataNoPage(orgCodes, null, time[0], time[1]);
+            List<InspectionDTO> inspectionDataNoPage = repairPoolMapper.getInspectionDataNoPage(orgCodes, null, time[0], time[1],lineCode);
 
             // 填充计划检修数
             result.setSum(CollUtil.isNotEmpty(inspectionDataNoPage) ? inspectionDataNoPage.size() : 0L);
@@ -115,7 +115,7 @@ public class BigscreenPlanService {
             result.setOmit(0L);
 
             // 填充今日检修数（规则：当前时间在检修计划的开始时间和结束时间范围内）
-            List<InspectionDTO> todayInspectionNum = repairPoolMapper.getInspectionTodayDataNoPage(new Date(), orgCodes);
+            List<InspectionDTO> todayInspectionNum = repairPoolMapper.getInspectionTodayDataNoPage(new Date(), orgCodes,lineCode);
             result.setTodayFinish(CollUtil.isNotEmpty(todayInspectionNum) ? todayInspectionNum.size() : 0L);
         }
         return result;
@@ -166,7 +166,7 @@ public class BigscreenPlanService {
         // TODO 漏检
         // 查询今日检修
         if (InspectionConstant.PLAN_TODAY_4.equals(item)) {
-            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes);
+            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes,lineCode);
         }
 
         // 统一处理结果
@@ -213,13 +213,13 @@ public class BigscreenPlanService {
 
         // 填充计划数、完成数
         if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)) {
-            result = repairPoolMapper.getInspectionDataNoPage(orgCodes, item, time[0], time[1]);
+            result = repairPoolMapper.getInspectionDataNoPage(orgCodes, item, time[0], time[1],lineCode);
         }
 
         // TODO 漏检
         // 填充今日检修
         if (InspectionConstant.PLAN_TODAY_4.equals(item)) {
-            result = repairPoolMapper.getInspectionTodayDataNoPage(new Date(), orgCodes);
+            result = repairPoolMapper.getInspectionTodayDataNoPage(new Date(), orgCodes,lineCode);
         }
 
         // 统一处理结果
@@ -345,7 +345,7 @@ public class BigscreenPlanService {
                 PlanIndexDTO planIndexDTO = new PlanIndexDTO();
 
                 // 查询已完成数量、未完成数量
-                planIndexDTO = repairPoolMapper.getNumByTimeAndOrgCode(teamBylineAndMajor.getOrgCode(), time[0], time[1]);
+                planIndexDTO = repairPoolMapper.getNumByTimeAndOrgCode(teamBylineAndMajor.getOrgCode(), time[0], time[1],lineCode);
 
                 // 填充班组名称
                 planIndexDTO.setTeamName(teamBylineAndMajor.getDepartName());

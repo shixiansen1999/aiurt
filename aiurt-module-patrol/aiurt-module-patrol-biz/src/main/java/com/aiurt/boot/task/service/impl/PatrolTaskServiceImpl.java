@@ -18,6 +18,7 @@ import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
+import com.aiurt.boot.statistics.dto.IndexStationDTO;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
@@ -74,6 +75,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @Description: patrol_task
@@ -2078,5 +2080,45 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         } else {
             throw new AiurtBootException("操作失败");
         }
+    }
+
+    @Override
+    public MacDto getMac(String id) {
+        //获取巡视单mac地址
+        List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(id);
+        PatrolTask byId = this.getById(id);
+
+        List<IndexStationDTO> stationInfo = patrolTaskStationMapper.getStationInfo(byId.getCode());
+        List<String> list = Optional.ofNullable(stationInfo)
+                .map(Collection::stream)
+                .orElseGet(Stream::empty)
+                .map(IndexStationDTO::getStationCode)
+                .collect(Collectors.toList());
+        //获取WiFi地址管理mac地址
+        List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(list);
+
+        MacDto macDto = new MacDto();
+        if (CollUtil.isNotEmpty(mac)) {
+            List<String> macs = mac.stream().map(PatrolTaskDeviceDTO::getMac).filter(StrUtil::isNotEmpty).distinct().collect(Collectors.toList());
+            macDto.setLocalMac(macs);
+            macDto.setStationMac(wifiMac);
+            //TODO 暂时不展示异常工单信息
+            /*List<String> errorMac = new ArrayList<>();
+            for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
+                if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && CollUtil.isNotEmpty(wifiMac)) {
+                    //mac最后两位不用匹配
+                    String mac1 = patrolTaskDeviceDTO.getMac();
+                    String substring1 = mac1.substring(0, mac1.length() - 3);
+                    String join = CollUtil.join(wifiMac, ",");
+                    if (join.toLowerCase().contains(substring1.toLowerCase())) {
+                        errorMac.add(patrolTaskDeviceDTO.getPatrolNumber());
+                    }
+                } else {
+                    errorMac.add(patrolTaskDeviceDTO.getPatrolNumber());
+                }
+            }
+            macDto.setErrorMac(errorMac);*/
+        }
+        return macDto;
     }
 }

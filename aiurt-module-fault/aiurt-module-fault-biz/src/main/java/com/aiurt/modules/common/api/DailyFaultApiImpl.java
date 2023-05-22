@@ -23,7 +23,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -213,15 +212,11 @@ public class DailyFaultApiImpl implements DailyFaultApi {
     @Override
     public Map<String, FaultReportDTO> getFaultOrgReport(List<String> teamId, String startTime, String endTime) {
         Map<String, FaultReportDTO> map = new HashMap<>(32);
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> sysDepartModels = sysBaseApi.getUserSysDepart(sysUser.getId());
-        List<String> orgIds = new ArrayList<>();
-        if (CollectionUtil.isNotEmpty(teamId)){
-            orgIds = teamId;
-        }else {
-            orgIds= sysDepartModels.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+
+        if (CollectionUtil.isEmpty(teamId)){
+            return map;
         }
-        orgIds.forEach(orgId->{
+        teamId.forEach(orgId->{
             FaultReportDTO f = faultInformationMapper.getFaultOrgReport(startTime,endTime,orgId);
             f.setConstructorsNum(faultInformationMapper.getConstructorsNum(startTime,endTime,orgId));
             //查询指派人任务时长
@@ -270,17 +265,13 @@ public class DailyFaultApiImpl implements DailyFaultApi {
     @Override
     public Map<String, FaultReportDTO> getFaultUserReport(List<String> teamId, String startTime, String endTime,String userId) {
         Map<String, FaultReportDTO> map = new HashMap<>(32);
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> sysDepartModels = sysBaseApi.getUserSysDepart(sysUser.getId());
-        List<String> orgCodes = sysDepartModels.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
         List<LoginUser> loginUsers = new ArrayList<>();
-        if (CollectionUtil.isNotEmpty(teamId)){
-           loginUsers= sysBaseApi.getUseList(teamId);
-        }else {
-          loginUsers = sysBaseApi.getUserByDepIds(orgCodes);
+        loginUsers= sysBaseApi.getUseList(teamId);
+        if (CollUtil.isEmpty(loginUsers)) {
+            return map;
         }
         loginUsers.forEach(f->{
-            FaultReportDTO faultReportDTO = faultInformationMapper.getFaultUserReport(teamId,startTime,endTime,orgCodes,f.getId());
+            FaultReportDTO faultReportDTO = faultInformationMapper.getFaultUserReport(teamId,startTime,endTime,null,f.getId());
             Long sum = faultInformationMapper.getUserTimes(f.getId(),startTime,endTime);
             faultReportDTO.setNum(faultReportDTO.getNum()+sum);
             List<String> str = faultInformationMapper.getUserConstructionHours(f.getId(),startTime,endTime);

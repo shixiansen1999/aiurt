@@ -256,7 +256,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 String remindUserName = fault.getRemindUserName();
                 if (StrUtil.isNotBlank(remindUserName)) {
                     //发送通知
-                    MessageDTO messageDTO = new MessageDTO(user.getUsername(),remindUserName, "故障上报审核" + DateUtil.today(), null);
+                    MessageDTO messageDTO = new MessageDTO(user.getUsername(), remindUserName, "故障上报审核" + DateUtil.today(), null);
 
                     //业务类型，消息类型，消息模板编码，摘要，发布内容
                     faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
@@ -264,7 +264,22 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     messageDTO.setMsgAbstract("有新的故障信息");
                     messageDTO.setPublishingContent("有新的故障信息，请审核");
 
-                    sendMessage(messageDTO,faultMessageDTO);
+                    sendMessage(messageDTO, faultMessageDTO);
+                }
+            } else {
+                // 抄送
+                String remindUserName = fault.getRemindUserName();
+                if (StrUtil.isNotBlank(remindUserName)) {
+                    //发送通知
+                    MessageDTO messageDTO = new MessageDTO(user.getUsername(), remindUserName, "有新的故障信息" + DateUtil.today(), null);
+
+                    //业务类型，消息类型，消息模板编码，摘要，发布内容
+                    faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+                    messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                    messageDTO.setMsgAbstract("有新的故障信息");
+                    messageDTO.setPublishingContent("您有一条新的故障信息");
+
+                    sendMessage(messageDTO, faultMessageDTO);
                 }
             }
         } catch (Exception e) {
@@ -337,7 +352,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     userNames.addAll(userList.stream().map(SysUserRoleModel::getUserName).collect(Collectors.toList()));
                 }
             }
-            fault.setRemindUserName(CollUtil.isNotEmpty(userNames) ? StrUtil.join(",", userNames) : "");
+            if (CollUtil.isNotEmpty(userNames)) {
+                String join = StrUtil.join(",", userNames);
+                fault.setRemindUserName(StrUtil.isNotEmpty(fault.getRemindUserName())?fault.getRemindUserName()+","+join:join);
+            }
         }
     }
 

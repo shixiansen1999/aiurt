@@ -1024,6 +1024,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         // 构造查询条件
         SelectPlanReq selectPlanReq = new SelectPlanReq();
         selectPlanReq.setIsManual(InspectionConstant.IS_MANUAL_1);
+        selectPlanReq.setIsManualSign(true);
         selectPlanReq.setStationCodeList(StrUtil.split(manualTaskReq.getStationList(), ','));
         selectPlanReq.setOrgCodeList(StrUtil.split(manualTaskReq.getOrgList(), ','));
         selectPlanReq.setCode(manualTaskReq.getCode());
@@ -1385,7 +1386,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                         repairPoolCodes.setDeviceCodes(repairPoolDeviceRels.stream().map(RepairPoolDeviceRel::getDeviceCode).collect(Collectors.toList()));
                     }
                     repairPoolCodes.setSpecifyDevice(CollUtil.isNotEmpty(repairPoolDeviceRels) ? "是" : "否");
-
+                    repairPoolCodes.setName(ObjectUtil.isNotEmpty(repairPoolCodes.getTitle())?repairPoolCodes.getTitle():null);
                     temp.add(repairPoolCodes);
                 }
             });
