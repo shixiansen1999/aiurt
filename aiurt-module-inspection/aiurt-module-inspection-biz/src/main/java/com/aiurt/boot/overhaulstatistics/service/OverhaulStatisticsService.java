@@ -58,14 +58,11 @@ public class OverhaulStatisticsService{
 
     public Page<OverhaulStatisticsDTOS> getOverhaulList(Page<OverhaulStatisticsDTOS> pageList, OverhaulStatisticsDTOS condition) {
         List<OverhaulStatisticsDTOS> dtoList2 = this.selectDepart(condition.getOrgCode());
-        if(StrUtil.isEmpty(condition.getOrgCode()))
-        {
-            if (CollUtil.isNotEmpty(dtoList2)) {
-                List<String> collect1 = dtoList2.stream().map(OverhaulStatisticsDTOS::getOrgCode).collect(Collectors.toList());
-                condition.setOrgCodeList(collect1);
-            } else {
-                return pageList;
-            }
+        if (CollUtil.isNotEmpty(dtoList2)) {
+            List<String> collect1 = dtoList2.stream().map(OverhaulStatisticsDTOS::getOrgCode).collect(Collectors.toList());
+            condition.setOrgCodeList(collect1);
+        } else {
+            return pageList;
         }
 
         Page<OverhaulStatisticsDTOS> allTaskList = repairTaskMapper.getAllTaskList(pageList, condition);
