@@ -633,12 +633,25 @@ public class IndexPlanService {
                     .le(RepairPool::getStartTime,DateUtil.endOfDay(date));
             List<RepairPool> repairPools = repairPoolMapper.selectList(lambdaQueryWrapper);
 
-            //时间差乘2就是实际应该维保的数量
-            long between = DateUtil.between(from, date, DateUnit.DAY)*2;
+
+            long total  = 36;
+            long between = DateUtil.between(from, date, DateUnit.DAY);
+            long between1 = DateUtil.between(from, date, DateUnit.DAY)*2;
             if (CollUtil.isNotEmpty(repairPools)){
+                if (between>15 && between<=21){
+                    long count = 15*2+between-15;
+                    int size = repairPools.size();
+                    //实际维保数量-已完成的维保数量=未完成的维保数量
+                    result.setQuantity(count-size);
+                }
                 int size = repairPools.size();
-                //实际维保数量-已完成的维保数量=未完成的维保数量
-                result.setQuantity(between-size);
+                if (between>21){
+                    result.setQuantity(total-size);
+                }
+                if(between<15 && between>1){
+                    //实际维保数量-已完成的维保数量=未完成的维保数量
+                    result.setQuantity(between1-size);
+                }
             }
         }
         return result;
