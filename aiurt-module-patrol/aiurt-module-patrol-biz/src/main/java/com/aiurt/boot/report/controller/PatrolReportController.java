@@ -108,7 +108,7 @@ public class PatrolReportController {
                                                                @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
                                                                @RequestParam(name = "lineCode",required = false) String lineCode,
                                                                @RequestParam(name = "stationCode",required = false) List<String> stationCode,
-                                                               @RequestParam(name = "systemCode",required = false) List<String> systemCode,
+                                                               @RequestParam(name = "subsystemCode",required = false) List<String> systemCode,
                                                                @RequestParam(name = "startTime",required = false) String startTime,
                                                                @RequestParam(name = "endTime",required = false) String endTime,
                                                                 HttpServletRequest req) {
