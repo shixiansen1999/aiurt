@@ -150,14 +150,18 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         }
         sparePartApplyMapper.insert(sparePartApply);
         //物资清单
+        AtomicReference<Integer> applyNumber = new AtomicReference<>(0);
         if(!sparePartApply.getStockLevel2List().isEmpty()){
             sparePartApply.getStockLevel2List().stream().forEach(sparePartApplyMaterial ->{
                 sparePartApplyMaterial.setApplyId(sparePartApply.getId());
                 sparePartApplyMaterial.setWarehouseCode(sparePartApply.getApplyWarehouseCode());
                 sparePartApplyMaterial.setApplyCode(code);
+                applyNumber.set(applyNumber.get() + sparePartApplyMaterial.getApplyNum());
             });
             sparePartApplyMaterialService.saveBatch(sparePartApply.getStockLevel2List());
         }
+        sparePartApply.setApplyNumber(applyNumber.get());
+        sparePartApplyMapper.updateById(sparePartApply);
         return Result.OK("添加成功！");
     }
     /**
@@ -176,14 +180,17 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         queryWrapper.eq("apply_code",partApply.getCode());
         sparePartApplyMaterialService.remove(queryWrapper);
         //物资清单
+        AtomicReference<Integer> applyNumber = new AtomicReference<>(0);
         if(!sparePartApply.getStockLevel2List().isEmpty()){
             sparePartApply.getStockLevel2List().stream().forEach(sparePartApplyMaterial ->{
                 sparePartApplyMaterial.setApplyId(sparePartApply.getId());
                 sparePartApplyMaterial.setWarehouseCode(sparePartApply.getApplyWarehouseCode());
                 sparePartApplyMaterial.setApplyCode(partApply.getCode());
+                applyNumber.set(applyNumber.get() + sparePartApplyMaterial.getApplyNum());
             });
             sparePartApplyMaterialService.saveBatch(sparePartApply.getStockLevel2List());
         }
+        sparePartApply.setApplyNumber(applyNumber.get());
         sparePartApply.setSysOrgCode(user.getOrgCode());
         sparePartApplyMapper.updateById(sparePartApply);
         return Result.OK("编辑成功！");
