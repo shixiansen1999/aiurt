@@ -11,6 +11,7 @@ import com.aiurt.boot.dto.UserTeamParameter;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.ScreenDurationTask;
+import com.aiurt.boot.screen.model.ScreenModule;
 import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
@@ -25,6 +26,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -329,19 +331,11 @@ public class PatrolApiServiceImpl implements PatrolApi {
         omitModel.setEndDate(end.split("~")[1]);
         // 统计部门人员的指派的漏检数
         List<UserTeamPatrolDTO> userOmitTaskNumber = new ArrayList<>();
-        // 统计部门人员同行人的漏检数
-        List<UserTeamPatrolDTO> peopleOmitTaskNumber = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(useIds)) {
             userOmitTaskNumber.addAll(patrolTaskUserMapper.getUserOmitNumber(useIds, omitModel.getStartDate(), omitModel.getEndDate()));
-            peopleOmitTaskNumber.addAll(patrolTaskUserMapper.getPeopleOmitNumber(useIds, omitModel.getStartDate(), omitModel.getEndDate()));
         }
         for (UserTeamPatrolDTO userPatrol : userOmitTaskNumber) {
-            Integer omitNumber = 0;
-            for (UserTeamPatrolDTO peoplePatrol : peopleOmitTaskNumber) {
-                if (userPatrol.getUserId().equals(peoplePatrol.getUserId())) {
-                    omitNumber = userPatrol.getMissPatrolNumber() + peoplePatrol.getMissPatrolNumber();
-                }
-            }
+            Integer omitNumber = userPatrol.getMissPatrolNumber();
             if (omitNumber != 0) {
                 userPatrol.setMissPatrolNumber(omitNumber);
                 BigDecimal avgMissNumber = NumberUtil.div(new BigDecimal(omitNumber), new BigDecimal(12)).setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -351,9 +345,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
                 userPatrol.setAvgMissPatrolNumber(new BigDecimal(0));
             }
         }
-        //额外人员漏检
-        List<UserTeamPatrolDTO> extraOmitList = peopleOmitTaskNumber.stream().filter(p -> !userOmitTaskNumber.contains(p)).collect(Collectors.toList());
-        userOmitTaskNumber.addAll(extraOmitList);
+
         for (UserTeamPatrolDTO patrolDTO : userBaseList) {
             for (UserTeamPatrolDTO dto : userPlanTaskNumber) {
                 if (patrolDTO.getUserId().equals(dto.getUserId())) {
@@ -454,21 +446,22 @@ public class PatrolApiServiceImpl implements PatrolApi {
                 dto.setWorkHours(scale);
             }
             //计算漏检数（先推算漏检日期）
-            String start = screenService.getOmitDateScope(DateUtil.parse(userTeamParameter.getStartDate()));
-            String end = screenService.getOmitDateScope(DateUtil.parse(userTeamParameter.getEndDate()));
-            //计算指派的漏检数、同行人的漏检数
-            List<UserTeamPatrolDTO> userOmitTasks = patrolTaskMapper.getUserOmitTasksNumber(useIds, start, end);
-            List<UserTeamPatrolDTO> peopleOmitTasks = patrolTaskMapper.getPeopleOmitTasksNumber(useIds, start, end);
-            //过滤漏检数不是同一任务的班组
-            List<String> omitTaskIds = userOmitTasks.stream().map(UserTeamPatrolDTO::getTaskId).collect(Collectors.toList());
-            List<UserTeamPatrolDTO> notOmitTaskIds = peopleOmitTasks.stream().filter(u -> !omitTaskIds.contains(u.getTaskId())).collect(Collectors.toList());
-            userOmitTasks.addAll(notOmitTaskIds);
-            if (userOmitTasks.size() != 0) {
-                dto.setMissPatrolNumber(userOmitTasks.size());
-                //计算平均每月漏检次数
-                BigDecimal avgMissNumber = NumberUtil.div(new BigDecimal(userOmitTasks.size()), new BigDecimal(12)).setScale(2, BigDecimal.ROUND_HALF_UP);
-                dto.setAvgMissPatrolNumber(avgMissNumber);
-            }
+            String start = screenService.getOmitDateScope(DateUtil.parse(userTeamParameter.getStartDate())).split(ScreenConstant.TIME_SEPARATOR)[0];
+            String end = screenService.getOmitDateScope(DateUtil.parse(userTeamParameter.getEndDate())).split(ScreenConstant.TIME_SEPARATOR)[1];
+            ScreenModule module = new ScreenModule();
+            module.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
+            SysDepartModel sysDepartModel = sysBaseApi.selectAllById(dto.getOrgId());
+            module.setOrgCodes(StrUtil.splitTrim(sysDepartModel.getOrgCode(), ","));
+            module.setStartTime(DateUtil.parse(start));
+            module.setEndTime(DateUtil.parse(end));
+            module.setOmit(PatrolConstant.OMIT_STATUS);
+            long omitNum = patrolTaskMapper.getScreenDataCount(module).stream().count();
+
+            dto.setMissPatrolNumber((int) omitNum);
+            //计算平均每月漏检次数
+            BigDecimal avgMissNumber = NumberUtil.div(new BigDecimal((int) omitNum), new BigDecimal(12)).setScale(2, BigDecimal.ROUND_HALF_UP);
+            dto.setAvgMissPatrolNumber(avgMissNumber);
+
         }
         Map<String, UserTeamPatrolDTO> groupBy = userBaseList.stream().collect(Collectors.toMap(UserTeamPatrolDTO::getOrgId, v -> v, (a, b) -> a));
         return groupBy;
