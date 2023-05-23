@@ -401,7 +401,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
 
         List<String> orgIds = new ArrayList<>();
         if (StrUtil.isNotEmpty(userTeamParameter.getOrgId())) {
-            orgIds.add(userTeamParameter.getUserId());
+            orgIds.add(userTeamParameter.getOrgId());
         } else {
             orgIds.addAll(userTeamParameter.getOrgIdList());
         }
