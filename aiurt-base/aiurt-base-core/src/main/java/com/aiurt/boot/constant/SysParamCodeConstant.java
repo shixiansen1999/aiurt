@@ -229,4 +229,8 @@ public interface SysParamCodeConstant {
      * 故障级别权重大于5抄送线路负责人及分部主任角色包含班组长
      */
     String FAULT_LEVEL_HIGH = "fault_level_high";
+    /**
+     * 根据配置决定工作日志是否需要自动签名
+     */
+    String AUTO_SIGNATURE = "auto_signature";
 }
