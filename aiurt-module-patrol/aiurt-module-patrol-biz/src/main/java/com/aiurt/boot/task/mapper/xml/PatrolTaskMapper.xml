@@ -823,6 +823,7 @@
             </foreach>
             )
         </if>
+        group by pt.code
     </select>
     <select id="getFailureReport" resultType="com.aiurt.boot.report.model.FailureReport">
         SELECT
