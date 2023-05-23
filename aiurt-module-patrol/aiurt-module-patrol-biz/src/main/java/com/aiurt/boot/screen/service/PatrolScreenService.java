@@ -82,7 +82,7 @@ public class PatrolScreenService {
         module.setOrgCodes(orgCodes);
         module.setStartTime(startTime);
         module.setEndTime(endTime);
-
+        module.setLineCode(lineCode);
         List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
 
         String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
