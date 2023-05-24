@@ -141,7 +141,7 @@ public class DeviceController extends BaseController<Device, IDeviceService> {
     @AutoLog(value = "设备管理-设备台账-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")
     @ApiOperation(value = "设备管理-设备主数据-分页列表查询", notes = "设备管理-设备主数据-分页列表查询")
     @GetMapping(value = "/listTz")
-    @PermissionData(pageComponent = "/equipmentData/standingBook")
+    @PermissionData(pageComponent = "equipmentData/standingBook")
     public Result<IPage<Device>> queryPageTzList(
             @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
             @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
