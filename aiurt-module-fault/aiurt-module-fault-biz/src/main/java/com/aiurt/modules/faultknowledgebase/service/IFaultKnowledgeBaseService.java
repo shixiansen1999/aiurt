@@ -1,6 +1,8 @@
 package com.aiurt.modules.faultknowledgebase.service;
 
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
+import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
+import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -78,4 +80,11 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @return
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
+
+    /**
+     * 查找故障现象模板
+     * @param symptomReqDTO
+     * @return
+     */
+    Page<SymptomResDTO> querySymptomTemplate(SymptomReqDTO symptomReqDTO);
 }

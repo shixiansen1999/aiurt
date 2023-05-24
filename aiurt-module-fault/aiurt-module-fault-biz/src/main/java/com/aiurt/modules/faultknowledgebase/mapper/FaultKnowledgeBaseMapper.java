@@ -3,6 +3,8 @@ package com.aiurt.modules.faultknowledgebase.mapper;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
+import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
+import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -81,4 +83,13 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
      * @return
      */
     List<DeviceAssemblyDTO> getDeviceAssemblyCode(String deviceAssemblyName);
+
+    /**
+     * 查找故障现象
+     * @param pageList 分页
+     * @param symptomReqDTO 查询条件
+     * @return
+     */
+    List<SymptomResDTO> querySymptomTemplate(@Param("pageList") Page<SymptomResDTO> pageList, @Param("condition") SymptomReqDTO symptomReqDTO);
+
 }

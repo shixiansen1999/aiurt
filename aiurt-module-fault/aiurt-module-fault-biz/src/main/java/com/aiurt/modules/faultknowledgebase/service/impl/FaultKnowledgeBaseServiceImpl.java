@@ -23,6 +23,8 @@ import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.dto.FaultKnowledgeBaseModel;
+import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
+import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
@@ -413,6 +415,20 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         return imporReturnRes(errorLines, successLines, tipMessage, true, null);
     }
 
+
+    /**
+     * 查找故障现象模板
+     *
+     * @param symptomReqDTO
+     * @return
+     */
+    @Override
+    public Page<SymptomResDTO> querySymptomTemplate(SymptomReqDTO symptomReqDTO) {
+        Page<SymptomResDTO> page = new Page<>(symptomReqDTO.getPageNo(), symptomReqDTO.getPageSize());
+        List<SymptomResDTO> symptomResDTOS = baseMapper.querySymptomTemplate(page, symptomReqDTO);
+        page.setRecords(symptomResDTOS);
+        return page;
+    }
 
     private void examine(FaultKnowledgeBaseModel faultKnowledgeBaseModel, FaultKnowledgeBase faultKnowledgeBase, StringBuilder stringBuilder, List<FaultKnowledgeBaseModel> list) {
         BeanUtils.copyProperties(faultKnowledgeBaseModel, faultKnowledgeBase);
