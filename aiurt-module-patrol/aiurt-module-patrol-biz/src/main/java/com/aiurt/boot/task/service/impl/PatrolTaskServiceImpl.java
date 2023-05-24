@@ -1228,6 +1228,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LoginUser user = sysBaseApi.getUserById(sysUser.getId());
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_SUBMIT_SIGNATURE);
+        boolean value = "1".equals(paramModel.getValue());
         if (manager.checkTaskUser(patrolTask.getCode()) == false && !admin) {
             throw new AiurtBootException("只有该任务的巡检人才可以提交任务");
         } else {
@@ -1238,14 +1240,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 if (CollUtil.isNotEmpty(errDeviceList)) {
                     updateWrapper.set(PatrolTask::getStatus, 6)
                             .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, user.getSignatureUrl())
+                            .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
                             .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                             .set(PatrolTask::getAbnormalState, 0)
                             .eq(PatrolTask::getId, patrolTaskDTO.getId());
                 } else {
                     updateWrapper.set(PatrolTask::getStatus, 6)
                             .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, user.getSignatureUrl())
+                            .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
                             .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                             .set(PatrolTask::getAbnormalState, 1)
                             .eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -1254,14 +1256,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 if (CollUtil.isNotEmpty(errDeviceList)) {
                     updateWrapper.set(PatrolTask::getStatus, 7)
                             .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, user.getSignatureUrl())
+                            .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
                             .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                             .set(PatrolTask::getAbnormalState, 0)
                             .eq(PatrolTask::getId, patrolTaskDTO.getId());
                 } else {
                     updateWrapper.set(PatrolTask::getStatus, 7)
                             .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, user.getSignatureUrl())
+                            .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
                             .set(PatrolTask::getAbnormalState, 1)
                             .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                             .eq(PatrolTask::getId, patrolTaskDTO.getId());

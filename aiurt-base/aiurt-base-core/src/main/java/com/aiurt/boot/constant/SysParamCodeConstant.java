@@ -9,6 +9,10 @@ public interface SysParamCodeConstant {
      */
     String PATROL_SCHEDULING = "patrol_scheduling";
     /**
+     * 巡视模块最后的工单是否需要自动提交，并写入签名
+     */
+    String PATROL_SUBMIT_SIGNATURE = "patrol_submit_signature";
+    /**
      * 巡检星期，星期几执行检测漏检
      */
     String PATROL_WEEKDAYS = "patrol_weekdays";
@@ -17,6 +21,10 @@ public interface SysParamCodeConstant {
      */
     String INSPECTION_SCHEDULING = "inspection_scheduling";
     /**
+     * 检修模块最后的工单是否需要自动提交，并写入签名
+     */
+    String INSPECTION_SUBMIT_SIGNATURE = "inspection_submit_signature";
+    /**
      * 故障模块是否关联排班标识
      */
     String FAULT_SCHEDULING = "fault_scheduling";
@@ -24,6 +32,10 @@ public interface SysParamCodeConstant {
      * 故障上报是否需要审核
      */
     String FAULT_PROCESS = "fault_process";
+    /**
+     * 故障提交是否自动提交签名
+     */
+    String FAULT_SUBMIT_SIGNATURE = "fault_submit_signature";
     /**
      * 工作日志上报是否需要在指定时间点内编辑
      */

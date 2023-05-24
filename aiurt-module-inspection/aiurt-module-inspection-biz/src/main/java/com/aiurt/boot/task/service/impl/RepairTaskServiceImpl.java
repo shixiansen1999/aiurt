@@ -1568,12 +1568,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LoginUser user = sysBaseApi.getUserById(sysUser.getId());
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SUBMIT_SIGNATURE);
+        boolean value = "1".equals(paramModel.getValue());
         if (InspectionConstant.IS_CONFIRM_1.equals(repairTask.getIsConfirm())) {
             //修改检修任务状态
             repairTask.setSubmitUserId(sysUser.getId());
             repairTask.setSumitUserName(sysUser.getRealname());
             repairTask.setSubmitTime(new Date());
-            repairTask.setConfirmUrl(user.getSignatureUrl());
+            repairTask.setConfirmUrl(value?user.getSignatureUrl():examineDTO.getConfirmUrl());
             repairTask.setStatus(InspectionConstant.PENDING_REVIEW);
             // 修改对应检修计划状态
             RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
@@ -1586,7 +1588,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             repairTask.setSubmitUserId(sysUser.getId());
             repairTask.setSumitUserName(sysUser.getRealname());
             repairTask.setSubmitTime(new Date());
-            repairTask.setConfirmUrl(user.getSignatureUrl());
+            repairTask.setConfirmUrl(value?user.getSignatureUrl():examineDTO.getConfirmUrl());
             repairTask.setStatus(InspectionConstant.COMPLETED);
             // 修改对应检修计划状态
             RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
@@ -2555,13 +2557,18 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTaskDeviceRel.setStaffId(manager.checkLogin().getId());
         repairTaskDeviceRel.setIsSubmit(InspectionConstant.SUBMITTED);
         repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
+        //是否需要自动提交工单，并写入签名
         //未驳回，检查是否是最后工单提交
-        List<RepairTaskDeviceRel> deviceRels = repairTaskDeviceRelMapper.selectList(new LambdaQueryWrapper<RepairTaskDeviceRel>().eq(RepairTaskDeviceRel::getRepairTaskId, repairTaskDeviceRel.getRepairTaskId()));
-        List<RepairTaskDeviceRel> noSubmitDeviceList = deviceRels.stream().filter(d -> d.getIsSubmit() != 1).collect(Collectors.toList());
-        RepairTask repairTask = repairTaskMapper.selectById(repairTaskDeviceRel.getRepairTaskId());
-        if (!repairTask.getStatus().equals(InspectionConstant.REJECTED)) {
-            if (CollUtil.isEmpty(noSubmitDeviceList)) {
-                repairTaskDeviceCheck(repairTask);
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_SUBMIT_SIGNATURE);
+        boolean value = "1".equals(paramModel.getValue());
+        if(value){
+            List<RepairTaskDeviceRel> deviceRels = repairTaskDeviceRelMapper.selectList(new LambdaQueryWrapper<RepairTaskDeviceRel>().eq(RepairTaskDeviceRel::getRepairTaskId, repairTaskDeviceRel.getRepairTaskId()));
+            List<RepairTaskDeviceRel> noSubmitDeviceList = deviceRels.stream().filter(d -> d.getIsSubmit() != 1).collect(Collectors.toList());
+            RepairTask repairTask = repairTaskMapper.selectById(repairTaskDeviceRel.getRepairTaskId());
+            if (!repairTask.getStatus().equals(InspectionConstant.REJECTED)) {
+                if (CollUtil.isEmpty(noSubmitDeviceList)) {
+                    repairTaskDeviceCheck(repairTask);
+                }
             }
         }
     }

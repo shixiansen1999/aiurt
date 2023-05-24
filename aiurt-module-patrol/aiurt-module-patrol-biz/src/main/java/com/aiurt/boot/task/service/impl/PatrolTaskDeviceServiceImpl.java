@@ -88,9 +88,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     @Autowired
     private PatrolTaskOrganizationMapper patrolTaskOrganizationMapper;
     @Autowired
-    private ISTodoBaseAPI isTodoBaseAPI;
+    private ISTodoBaseAPI todoBaseApi;
     @Autowired
-    private ISysParamAPI iSysParamAPI;
+    private ISysParamAPI sysParamApi;
 
 
     @Override
@@ -254,8 +254,12 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     .set(PatrolTaskDevice::getMac, patrolTaskDevice.getMac())
                     .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
             patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);
-            if(!patrolTask.getStatus().equals(PatrolConstant.TASK_BACK)){
-                getPatrolTaskSubmit(patrolTask);
+            SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_SUBMIT_SIGNATURE);
+            boolean value = "1".equals(paramModel.getValue());
+            if(value){
+                if(!patrolTask.getStatus().equals(PatrolConstant.TASK_BACK)){
+                    getPatrolTaskSubmit(patrolTask);
+                }
             }
         }
     }
@@ -360,7 +364,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                         String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
 
                         //构建消息模板
-                        HashMap<String, Object> map = new HashMap<>();
+                        HashMap<String, Object> map = new HashMap<>(16);
                         map.put("code",patrolTask.getCode());
                         map.put("patrolTaskName",patrolTask.getName());
                         List<String>  station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
@@ -382,7 +386,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                         //发送代办
                         TodoDTO todoDTO = new TodoDTO();
                         todoDTO.setData(map);
-                        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
+                        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
                         todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
 
                         todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
@@ -399,10 +403,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                         todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
                         todoDTO.setUrl(PatrolMessageUrlConstant.AUDIT_URL);
                         todoDTO.setAppUrl(PatrolMessageUrlConstant.AUDIT_APP_URL);
-                        isTodoBaseAPI.createTodoTask(todoDTO);
+                        todoBaseApi.createTodoTask(todoDTO);
 
                         // 更新待办
-                        isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_EXECUTE.getType(), patrolTask.getId(), sysUser.getUsername(), "1");
+                        todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_EXECUTE.getType(), patrolTask.getId(), sysUser.getUsername(), "1");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
