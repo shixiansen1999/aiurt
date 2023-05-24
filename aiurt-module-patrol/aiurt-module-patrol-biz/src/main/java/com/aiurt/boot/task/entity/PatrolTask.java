@@ -310,4 +310,31 @@ public class PatrolTask extends DictEntity implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
+    /**
+     * 巡视抽查状态：0未确认，1已确认
+     */
+    @Dict(dicCode = "spot_check_status")
+    @ApiModelProperty(value = "巡视抽查状态：0未确认，1已确认")
+    private Integer spotCheckStatus;
+    /**
+     * 巡视抽查时间
+     */
+    @ApiModelProperty(value = "巡视抽查时间")
+    private String spotCheckTime;
+    /**
+     * 巡视抽查人id
+     */
+    @Dict(dictTable = "sys_user",dicCode = "id", dicText = "realname")
+    @ApiModelProperty(value = "巡视抽查人id")
+    private String spotCheckUserId;
+    /**
+     * 巡视抽查备注
+     */
+    @ApiModelProperty(value = "巡视抽查备注")
+    private String spotCheckRemark;
+    /**
+     * 标准工时
+     */
+    @ApiModelProperty(value = "标准工时：单位分钟")
+    private java.lang.Integer standardDuration;
 }

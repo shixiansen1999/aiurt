@@ -1393,6 +1393,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         patrolTask.setStartTime(patrolTaskManualDTO.getStartTime());
         patrolTask.setEndTime(patrolTaskManualDTO.getEndTime());
         patrolTask.setAuditor(patrolTaskManualDTO.getAuditor());
+        patrolTask.setStandardDuration(patrolTaskManualDTO.getStandardDuration());
         patrolTaskMapper.insert(patrolTask);
         //保存组织信息
         String taskCode = patrolTask.getCode();
@@ -2153,5 +2154,22 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             macDto.setErrorMac(errorMac);*/
         }
         return macDto;
+    }
+
+    @Override
+    public void spotCheck(PatrolTaskDTO patrolTaskDTO) {
+        PatrolTask patrolTask = this.getById(patrolTaskDTO.getId());
+        if (ObjectUtil.isEmpty(patrolTask)) {
+            throw new AiurtBootException("未找到此条数据");
+        }
+        if (PatrolConstant.SPOT_CHECK_STATUS_0.equals(patrolTaskDTO.getSpotCheckStatus()) && StrUtil.isEmpty(patrolTaskDTO.getSpotCheckRemark())) {
+            throw new AiurtBootException("抽查情况为未确认时：必须填写抽查备注");
+        }
+        // 设置抽查信息
+        patrolTask.setSpotCheckStatus(patrolTaskDTO.getSpotCheckStatus())
+                .setSpotCheckTime(patrolTaskDTO.getSpotCheckTime())
+                .setSpotCheckUserId(patrolTaskDTO.getSpotCheckUserId())
+                .setSpotCheckRemark(patrolTaskDTO.getSpotCheckRemark());
+        this.updateById(patrolTask);
     }
 }
