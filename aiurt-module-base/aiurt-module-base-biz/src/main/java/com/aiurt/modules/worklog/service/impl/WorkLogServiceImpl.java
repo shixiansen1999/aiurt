@@ -201,8 +201,15 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         enclosure.setCreateBy(depot.getCreateBy());
         enclosure.setParentId(depot.getId());
         enclosure.setType(1);
-        LoginUser user = iSysBaseAPI.getUserById(loginUser.getId());
-        enclosure.setUrl(user.getSignatureUrl());
+        // 根据配置决定是否需要自动签名
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.AUTO_SIGNATURE);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            LoginUser user = iSysBaseAPI.getUserById(loginUser.getId());
+            enclosure.setUrl(user.getSignatureUrl());
+        } else {
+            enclosure.setUrl(dto.getSignature());
+        }
         enclosure.setDelFlag(0);
         enclosureMapper.insert(enclosure);
         //完成任务
@@ -894,8 +901,15 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         enclosure.setCreateBy(workLog.getCreateBy());
         enclosure.setParentId(workLog.getId());
         enclosure.setType(1);
-        LoginUser user = iSysBaseAPI.getUserById(loginUser.getId());
-        enclosure.setUrl(user.getSignatureUrl());
+        // 根据配置决定是否需要自动签名
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.AUTO_SIGNATURE);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            LoginUser user = iSysBaseAPI.getUserById(loginUser.getId());
+            enclosure.setUrl(user.getSignatureUrl());
+        } else {
+            enclosure.setUrl(dto.getSignature());
+        }
         enclosure.setDelFlag(0);
         enclosureMapper.insert(enclosure);
 
