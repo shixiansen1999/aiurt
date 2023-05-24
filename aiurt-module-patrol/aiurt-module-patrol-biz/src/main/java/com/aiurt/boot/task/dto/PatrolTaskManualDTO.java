@@ -77,4 +77,7 @@ public class PatrolTaskManualDTO {
     @ApiModelProperty(value = "多选组织集合")
     @TableField(exist = false)
     List<String> orgCodeList;
+    /**标准工时*/
+    @ApiModelProperty(value = "标准工时：单位分钟")
+    private java.lang.Integer standardDuration;
 }

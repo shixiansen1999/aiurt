@@ -256,4 +256,8 @@ public interface PatrolConstant {
      * 巡检配置项-无父级
      */
     String NO_PARENT= "无";
+    /**
+     * 巡视抽查状态：0未确认
+     */
+    Integer SPOT_CHECK_STATUS_0 = 0;
 }
