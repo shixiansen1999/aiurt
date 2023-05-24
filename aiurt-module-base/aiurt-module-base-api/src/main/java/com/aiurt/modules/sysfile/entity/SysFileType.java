@@ -40,6 +40,14 @@ public class SysFileType {
 	@Excel(name = "分类名称", width = 15)
 	@ApiModelProperty(value = "分类名称")
 	private String name;
+
+	@Excel(name = "编码", width = 15)
+	@ApiModelProperty(value = "编码")
+	private String folderCode;
+
+	@Excel(name = "编码层级结构", width = 15)
+	@ApiModelProperty(value = "编码层级结构，用于存储编码的层级路径")
+	private String folderCodeCc;
 	/**
 	 * 等级
 	 */

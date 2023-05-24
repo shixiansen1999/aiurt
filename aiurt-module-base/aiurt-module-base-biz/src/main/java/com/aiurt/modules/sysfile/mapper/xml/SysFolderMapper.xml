@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.sysfile.mapper.SysFolderMapper">
+
+    <select id="queryFolderTree" resultType="com.aiurt.modules.sysfile.vo.SysFolderTreeVO">
+        SELECT
+        sft1.id AS id,
+        sft1.parent_id AS parentId,
+        sft1.`name` AS name,
+        MAX(sffp1.permission) AS permission
+        FROM sys_file_type sft1
+        LEFT JOIN sys_folder_file_permission sffp1 ON (
+        sft1.id = sffp1.folder_id
+        AND (sffp1.user_id = #{userId} OR sffp1.org_code = #{orgCode}))
+        WHERE EXISTS(
+        SELECT 1
+        FROM sys_folder_file_permission sffp
+        WHERE sffp.del_flag = 0
+        AND (sffp.user_id = #{userId} OR sffp.org_code = #{orgCode})
+        AND sffp.folder_id IN (
+        SELECT s1.id
+        FROM sys_file_type s1
+        WHERE s1.folder_code IS NOT NULL
+        AND s1.folder_code != ''
+        AND s1.folder_code_cc LIKE CONCAT( sft1.folder_code_cc, '%' )
+        ))
+        AND sft1.del_flag = 0
+        AND sft1.folder_code_cc != ''
+        AND sft1.folder_code_cc IS NOT NULL
+        AND sft1.parent_id = #{parentId}
+        <if test="name!='' and name !=null">
+            AND sft1.name LIKE CONCAT('%',#{name}, '%' )
+        </if>
+        GROUP BY
+        sft1.id
+        ORDER BY sft.create_time desc
+    </select>
+</mapper>
