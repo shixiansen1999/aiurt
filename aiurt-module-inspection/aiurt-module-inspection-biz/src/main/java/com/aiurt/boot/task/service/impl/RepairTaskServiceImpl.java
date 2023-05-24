@@ -2473,6 +2473,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 sampling.setUserId(userId);
                 sampling.setRealName(ObjectUtil.isNotEmpty(sysBaseApi.getUserById(userId)) ? sysBaseApi.getUserById(userId).getRealname() : "");
                 sampling.setRepairTaskDeviceCode(repairTaskDeviceRel.getCode());
+                sampling.setDelFlag(0);
                 repairTaskSamplingMapper.insert(sampling);
             });
         }
