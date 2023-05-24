@@ -400,4 +400,29 @@
             and da.material_name = #{deviceAssemblyName} limit 1
         </if>
     </select>
+
+    <select id="querySymptomTemplate" resultType="com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO">
+        select
+            id,major_code,system_code,knowledge_base_type_code,device_type_code,fault_level_code,material_code,fault_phenomenon
+        from fault_knowledge_base
+        where del_flag = 0
+        <if test="condition.majorCode != null and condition.majorCode != ''">
+            and major_code = #{condition.majorCode}
+        </if>
+        <if test="condition.systemCode != null and condition.systemCode != ''">
+            and system_code = #{condition.systemCode}
+        </if>
+        <if test="condition.deviceTypeCode != null and condition.deviceTypeCode != ''">
+            and device_type_code = #{condition.deviceTypeCode}
+        </if>
+        <if test="condition.faultLevelCode != null and condition.faultLevelCode != ''">
+            and fault_level_code = #{condition.faultLevelCode}
+        </if>
+        <if test="condition.materialCode != null and condition.materialCode != ''">
+            and material_code = #{condition.materialCode}
+        </if>
+        <if test="condition.faultPhenomenon != null and condition.faultPhenomenon != ''">
+            and fault_phenomenon = #{condition.faultPhenomenon}
+        </if>
+    </select>
 </mapper>

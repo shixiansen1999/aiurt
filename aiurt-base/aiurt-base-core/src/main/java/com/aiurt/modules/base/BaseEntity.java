@@ -24,4 +24,12 @@ public class BaseEntity implements Serializable {
 	@ApiModelProperty(value = "排序类型")
 	@TableField(exist = false)
 	protected String order;
+
+	@ApiModelProperty(value = "页码")
+	@TableField(exist = false)
+	private int pageNo = 1;
+
+	@ApiModelProperty(value = "页大小")
+	@TableField(exist = false)
+	private int pageSize =10;
 }

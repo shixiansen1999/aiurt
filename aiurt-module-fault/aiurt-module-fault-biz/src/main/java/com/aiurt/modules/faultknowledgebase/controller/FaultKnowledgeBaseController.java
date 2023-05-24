@@ -22,6 +22,8 @@ import com.aiurt.modules.faultcausesolution.entity.FaultCauseSolution;
 import com.aiurt.modules.faultcausesolution.service.IFaultCauseSolutionService;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.dto.FaultKnowledgeBaseDTO;
+import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
+import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
@@ -466,5 +468,13 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@RequestMapping(value = "/exportTemplateXls")
 	public void  exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
 		faultKnowledgeBaseService.exportTemplateXls(response);
+	}
+
+
+	@GetMapping("/querySymptomTemplate")
+	@ApiOperation(value="查找故障现象模板", notes="查故障现象模板")
+	public Result<IPage<SymptomResDTO>> querySymptomTemplate(SymptomReqDTO symptomReqDTO) {
+		Page<SymptomResDTO> page = faultKnowledgeBaseService.querySymptomTemplate(symptomReqDTO);
+		return Result.OK(page);
 	}
  }
