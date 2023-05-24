@@ -1976,9 +1976,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             return "";
         }
         List<String> result = baseMapper.selectUserNameByComplex(roleCode, majorCode, subSystemCode, stationCode,sysOrgCode);
-        if (CollUtil.isEmpty(result)) {
+        /*if (CollUtil.isEmpty(result)) {
             result = baseMapper.selectUserNameByComplex(roleCode, null, null, null,null);
-        }
+        }*/
         return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
     }
 
