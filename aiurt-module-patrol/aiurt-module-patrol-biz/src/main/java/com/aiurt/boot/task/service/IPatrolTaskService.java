@@ -223,4 +223,12 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @return author lkj
      */
     MacDto getMac(String id);
+
+    /**
+     * 巡视抽查
+     *
+     * @param patrolTaskDTO
+     * @return
+     */
+    void spotCheck(PatrolTaskDTO patrolTaskDTO);
 }

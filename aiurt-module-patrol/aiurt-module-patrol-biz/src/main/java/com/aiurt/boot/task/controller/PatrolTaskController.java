@@ -767,4 +767,18 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         MacDto mac = patrolTaskService.getMac(id);
         return Result.OK(mac);
     }
+
+    /**
+     * 巡视抽查
+     * @param patrolTaskDTO
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "巡视抽查", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL, permissionUrl = "/pollingCheck/issue")
+    @ApiOperation(value = "巡视抽查", notes = "巡视抽查")
+    @PostMapping(value = "/spotCheck")
+    public Result spotCheck(@RequestBody PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
+        patrolTaskService.spotCheck(patrolTaskDTO);
+        return Result.ok();
+    }
 }
