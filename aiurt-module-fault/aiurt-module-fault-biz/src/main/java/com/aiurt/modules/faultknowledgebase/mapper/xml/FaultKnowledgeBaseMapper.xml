@@ -26,7 +26,8 @@
         fkb.approved_remark,
         fkb.status,
         fkb.del_flag,
-        fkb.tools
+        fkb.tools,
+        fkb.fault_level_code
         FROM fault_knowledge_base fkb
         left join sys_user su on su.username = fkb.create_by
         Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fkb.id
@@ -59,7 +60,8 @@
         fkb.approved_remark,
         fkb.status,
         fkb.del_flag,
-        fkb.tools
+        fkb.tools,
+        fkb.fault_level_code
         FROM fault_knowledge_base fkb
         left join sys_user su on su.username = fkb.create_by
         Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fkb.id
@@ -96,7 +98,8 @@
         fkb.approved_remark,
         fkb.status,
         fkb.del_flag,
-        fkb.tools
+        fkb.tools,
+        fkb.fault_level_code
         FROM fault_knowledge_base fkb
         left join sys_user su on su.username = fkb.create_by
         Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fkb.id

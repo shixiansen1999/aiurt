@@ -5,6 +5,7 @@ import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
+import com.aiurt.modules.faultcausesolution.dto.FaultCauseSolutionDTO;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -44,6 +45,10 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @ApiModelProperty(value = "故障知识分类编码")
     @Dict(dictTable = "fault_knowledge_base_type", dicText = "name", dicCode = "code")
     private String knowledgeBaseTypeCode;
+    /**故障现象编号*/
+    @Excel(name = "故障现象编号", width = 15)
+    @ApiModelProperty(value = "故障现象编号")
+    private String faultPhenomenonCode;
 	/**故障现象*/
 	@Excel(name = "故障现象", width = 15)
     @ApiModelProperty(value = "故障现象")
@@ -108,6 +113,11 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @ApiModelProperty(value = "设备类型")
     @Dict(dictTable ="device_Type",dicText = "name",dicCode = "code")
     private String deviceTypeCode;
+    /**故障等级*/
+    @Excel(name = "故障等级", width = 15)
+    @ApiModelProperty(value = "故障等级")
+    @Dict(dictTable ="fault_level",dicText = "name",dicCode = "code")
+    private String faultLevelCode;
 	/**设备组件*/
 	@Excel(name = "设备组件", width = 15)
     @ApiModelProperty(value = "设备组件")
@@ -228,5 +238,23 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String modelKey;
 
+    /**
+     * 故障原因及解决方案数据集
+     */
+    @ApiModelProperty(value = "故障原因及解决方案数据集")
+    @TableField(exist = false)
+    private List<FaultCauseSolutionDTO> faultCauseSolutions;
+    /**
+     * 故障原因数据
+     */
+    @ApiModelProperty(value = "故障原因数据")
+    @TableField(exist = false)
+    private String causes;
+    /**
+     * 解决方案数据
+     */
+    @ApiModelProperty(value = "解决方案数据")
+    @TableField(exist = false)
+    private String solutions;
 
 }

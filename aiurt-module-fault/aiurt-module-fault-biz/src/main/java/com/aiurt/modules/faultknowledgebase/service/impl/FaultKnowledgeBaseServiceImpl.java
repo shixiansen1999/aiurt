@@ -6,10 +6,13 @@ import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.lang.Snowflake;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.common.api.CommonAPI;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
@@ -21,6 +24,10 @@ import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
+import com.aiurt.modules.faultcausesolution.dto.FaultCauseSolutionDTO;
+import com.aiurt.modules.faultcausesolution.dto.FaultSparePartDTO;
+import com.aiurt.modules.faultcausesolution.entity.FaultCauseSolution;
+import com.aiurt.modules.faultcausesolution.service.IFaultCauseSolutionService;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.dto.FaultKnowledgeBaseModel;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
@@ -33,10 +40,10 @@ import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import liquibase.pro.packaged.I;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -56,6 +63,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -95,6 +103,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     @Autowired
     private FlowBaseApi flowBaseApi;
 
+    @Autowired
+    private IFaultCauseSolutionService faultCauseSolutionService;
+
 
 
 
@@ -120,6 +131,22 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     deviceTypeMap = typeList.stream().collect(Collectors.toMap(DeviceType::getCode, Function.identity()));
                 }
             }
+            // 获取备件信息
+            List<String> baseIds = faultKnowledgeBases.stream().map(FaultKnowledgeBase::getId).collect(Collectors.toList());
+            List<FaultCauseSolution> faultCauseSolutions = faultCauseSolutionService.lambdaQuery()
+                    .eq(FaultCauseSolution::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .in(FaultCauseSolution::getKnowledgeBaseId, baseIds)
+                    .list();
+            Map<String, List<FaultCauseSolution>> faultCauseSolutionMap = faultCauseSolutions.stream()
+                    .collect(Collectors.groupingBy(FaultCauseSolution::getKnowledgeBaseId));
+
+            // 备件编码获取备件名
+            List<String> sparePartCodes = faultCauseSolutions.stream()
+                    .map(FaultCauseSolution::getSparePartCode)
+                    .distinct()
+                    .collect(Collectors.toList());
+            Map<String, String> sparePartMap = CollUtil.isEmpty(sparePartCodes) ? Collections.emptyMap() : sysBaseApi.getMaterialNameByCode(sparePartCodes);
+
             for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
                 knowledgeBase.setHaveButton(false);
                 if (StrUtil.isNotBlank(knowledgeBase.getProcessInstanceId()) && StrUtil.isNotBlank(knowledgeBase.getTaskId())) {
@@ -140,6 +167,21 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
                 DeviceType deviceType = deviceTypeMap.getOrDefault(knowledgeBase.getDeviceTypeCode(), new DeviceType());
                 knowledgeBase.setDeviceTypeName(deviceType.getName());
+
+                // 备件信息
+                List<FaultCauseSolution> causeSolutions = faultCauseSolutionMap.get(knowledgeBase.getId());
+                if (CollUtil.isNotEmpty(causeSolutions)) {
+                    List<FaultCauseSolutionDTO> faultCauseSolutionList = this.selectCauseSolutionList(knowledgeBase.getId(), causeSolutions, sparePartMap);
+                    String causes = faultCauseSolutionList.stream()
+                            .map(FaultCauseSolutionDTO::getFaultCause)
+                            .collect(Collectors.joining(","));
+                    String solutions = faultCauseSolutionList.stream()
+                            .map(FaultCauseSolutionDTO::getSolution)
+                            .collect(Collectors.joining(","));
+                    knowledgeBase.setCauses(causes);
+                    knowledgeBase.setSolutions(solutions);
+                    knowledgeBase.setFaultCauseSolutions(faultCauseSolutionList);
+                }
             }
         }
         GlobalThreadLocal.setDataFilter(b);
@@ -233,6 +275,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         } else {
             byId.setDelFlag(1);
             this.updateById(byId);
+            QueryWrapper<FaultCauseSolution> wrapper = new QueryWrapper<>();
+            wrapper.lambda().eq(FaultCauseSolution::getKnowledgeBaseId,id);
+            faultCauseSolutionService.remove(wrapper);
         }
         return Result.OK("删除成功!");
     }
@@ -240,20 +285,33 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<String> deleteBatch(List<String> ids) {
-        for (String id : ids) {
-            FaultKnowledgeBase byId = this.getById(id);
-            if (ObjectUtil.isEmpty(byId)) {
-                return Result.error("没找到对应实体");
-            }
-            //获取知识库被使用的次数
-            int num = faultKnowledgeBaseMapper.getNum(id);
+//        for (String id : ids) {
+//            FaultKnowledgeBase byId = this.getById(id);
+//            if (ObjectUtil.isEmpty(byId)) {
+//                return Result.error("没找到对应实体");
+//            }
+//            //获取知识库被使用的次数
+//            int num = faultKnowledgeBaseMapper.getNum(id);
+//            if (num > 0) {
+//                return Result.error("所选知识库中有已经被使用的知识库，不能删除");
+//            } else {
+//                byId.setDelFlag(1);
+//                this.updateById(byId);
+//            }
+//        }
+        List<FaultKnowledgeBase> knowledgeBases = this.lambdaQuery()
+                .eq(FaultKnowledgeBase::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .in(FaultKnowledgeBase::getId, ids)
+                .list();
+        for (FaultKnowledgeBase knowledgeBase : knowledgeBases) {
+            int num = faultKnowledgeBaseMapper.getNum(knowledgeBase.getId());
             if (num > 0) {
                 return Result.error("所选知识库中有已经被使用的知识库，不能删除");
-            } else {
-                byId.setDelFlag(1);
-                this.updateById(byId);
             }
         }
+        this.lambdaUpdate().in(FaultKnowledgeBase::getId, ids)
+                .set(FaultKnowledgeBase::getDelFlag,1)
+                .update();
         return  Result.OK("批量删除成功!");
     }
 
@@ -411,6 +469,83 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             }
         }
         return imporReturnRes(errorLines, successLines, tipMessage, true, null);
+    }
+
+    @Override
+    public FaultKnowledgeBase readOne(String id) {
+        FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseMapper.readOne(id);
+        if (faultKnowledgeBase == null) {
+            throw new AiurtBootException("未找到相关数据！");
+        }
+        String faultCodes = faultKnowledgeBase.getFaultCodes();
+        if (StrUtil.isNotBlank(faultCodes)) {
+            String[] split = faultCodes.split(",");
+            List<String> list = Arrays.asList(split);
+            faultKnowledgeBase.setFaultCodeList(list);
+        }
+        // 查询备件信息
+        List<FaultCauseSolution> faultCauseSolutions = faultCauseSolutionService.lambdaQuery()
+                .eq(FaultCauseSolution::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(FaultCauseSolution::getKnowledgeBaseId, id)
+                .list();
+        if (CollUtil.isNotEmpty(faultCauseSolutions)) {
+            // 备件编码获取备件名
+            List<String> sparePartCodes = faultCauseSolutions.stream()
+                    .map(FaultCauseSolution::getSparePartCode)
+                    .distinct()
+                    .collect(Collectors.toList());
+            Map<String, String> sparePartMap = CollUtil.isEmpty(sparePartCodes) ? Collections.emptyMap() : sysBaseApi.getMaterialNameByCode(sparePartCodes);
+
+            List<FaultCauseSolutionDTO> faultCauseSolutionList = this.selectCauseSolutionList(id, faultCauseSolutions, sparePartMap);
+            faultKnowledgeBase.setFaultCauseSolutions(faultCauseSolutionList);
+        }
+        return faultKnowledgeBase;
+    }
+
+    /**
+     * @param id                  故障知识库ID
+     * @param faultCauseSolutions 备件信息列表
+     * @param sparePartMap        备件编码:备件名
+     * @return
+     */
+    private List<FaultCauseSolutionDTO> selectCauseSolutionList(@NonNull String id,
+                                                                @NonNull List<FaultCauseSolution> faultCauseSolutions,
+                                                                Map<String, String> sparePartMap) {
+        Map<String, List<FaultCauseSolution>> faultCauseSolutionMap = faultCauseSolutions.stream()
+                .collect(Collectors.groupingBy(this::jointKey));
+        List<FaultCauseSolutionDTO> faultCauseSolutionList = new ArrayList<>();
+        FaultCauseSolutionDTO faultCauseSolutionDTO = null;
+
+        for (Map.Entry<String, List<FaultCauseSolution>> entry : faultCauseSolutionMap.entrySet()) {
+            List<FaultCauseSolution> entryValue = entry.getValue();
+            List<FaultSparePartDTO> faultSpareParts = new ArrayList<>();
+            entryValue.forEach(value -> faultSpareParts.add(
+                    new FaultSparePartDTO(
+                            value.getSparePartCode(),
+                            sparePartMap.get(value.getSparePartCode()),
+                            value.getSpecification(),
+                            value.getNumber()
+                    ))
+            );
+            String[] key = StrUtil.split(entry.getKey(), "~");
+            faultCauseSolutionDTO = new FaultCauseSolutionDTO();
+            if (2 == key.length) {
+                faultCauseSolutionDTO.setFaultCause(key[0]);
+                faultCauseSolutionDTO.setSolution(key[1]);
+            }
+            faultCauseSolutionDTO.setId(IdUtil.getSnowflake(2,2).nextIdStr());
+            faultCauseSolutionDTO.setKnowledgeBaseId(id);
+            faultCauseSolutionDTO.setSpareParts(faultSpareParts);
+
+            faultCauseSolutionList.add(faultCauseSolutionDTO);
+        }
+        return faultCauseSolutionList;
+    }
+
+    private String jointKey(FaultCauseSolution faultCauseSolution) {
+        String faultCause = faultCauseSolution.getFaultCause();
+        String solution = faultCauseSolution.getSolution();
+        return faultCause + "~" + solution;
     }
 
 
@@ -674,6 +809,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         if (StrUtil.isEmpty(id)) {
             //list转string
             getFaultCodeList(faultKnowledgeBase);
+            // 获取故障现象编号
+            String faultPhenomenonCode = this.getFaultPhenomenonCode("GZXX");
+            faultKnowledgeBase.setFaultPhenomenonCode(faultPhenomenonCode);
             faultKnowledgeBase.setStatus(FaultConstant.PENDING);
             faultKnowledgeBase.setDelFlag(0);
             if (StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode())|| StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
@@ -681,14 +819,79 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 result.error500("设备或组件不能为空");
             }
             faultKnowledgeBaseMapper.insert(faultKnowledgeBase);
+            // 添加故障原因和解决方案
+            List<FaultCauseSolutionDTO> faultCauseSolutions = faultKnowledgeBase.getFaultCauseSolutions();
+            if (CollUtil.isNotEmpty(faultCauseSolutions)) {
+                List<FaultCauseSolution> causeSolutions = new ArrayList<>();
+                FaultCauseSolution causeSolution = null;
+                for (FaultCauseSolutionDTO faultCauseSolution : faultCauseSolutions) {
+                    List<FaultSparePartDTO> spareParts = faultCauseSolution.getSpareParts();
+                    // 存在备件信息
+                    if(CollUtil.isNotEmpty(spareParts)){
+                        for (FaultSparePartDTO sparePart : spareParts) {
+                            causeSolution = new FaultCauseSolution();
+                            BeanUtils.copyProperties(faultCauseSolution, causeSolution);
+                            causeSolution.setKnowledgeBaseId(faultKnowledgeBase.getId());
+                            causeSolution.setSparePartCode(sparePart.getSparePartCode());
+                            causeSolution.setNumber(sparePart.getNumber());
+                            causeSolutions.add(causeSolution);
+                        }
+                        continue;
+                    }
+                    // 备件信息为空
+                    causeSolution = new FaultCauseSolution();
+                    BeanUtils.copyProperties(faultCauseSolution, causeSolution);
+                    causeSolution.setKnowledgeBaseId(faultKnowledgeBase.getId());
+                    causeSolutions.add(causeSolution);
+                }
+                faultCauseSolutionService.saveBatch(causeSolutions);
+            }
             String newId = faultKnowledgeBase.getId();
             return newId;
         }else{
             getFaultCodeList(faultKnowledgeBase);
             faultKnowledgeBaseMapper.updateById(faultKnowledgeBase);
+            // 修改故障原因和解决方案
+            List<FaultCauseSolutionDTO> faultCauseSolutions = faultKnowledgeBase.getFaultCauseSolutions();
+            if (CollUtil.isNotEmpty(faultCauseSolutions)) {
+                List<FaultCauseSolution> causeSolutions = new ArrayList<>();
+                FaultCauseSolution causeSolution = null;
+                for (FaultCauseSolutionDTO faultCauseSolution : faultCauseSolutions) {
+                    List<FaultSparePartDTO> spareParts = faultCauseSolution.getSpareParts();
+                    // 存在备件信息
+                    if(CollUtil.isNotEmpty(spareParts)){
+                        for (FaultSparePartDTO sparePart : spareParts) {
+                            causeSolution = new FaultCauseSolution();
+                            BeanUtils.copyProperties(faultCauseSolution, causeSolution);
+                            causeSolution.setKnowledgeBaseId(faultKnowledgeBase.getId());
+                            causeSolution.setSparePartCode(sparePart.getSparePartCode());
+                            causeSolution.setNumber(sparePart.getNumber());
+                            causeSolutions.add(causeSolution);
+                        }
+                        continue;
+                    }
+                    // 备件信息为空
+                    causeSolution = new FaultCauseSolution();
+                    BeanUtils.copyProperties(faultCauseSolution, causeSolution);
+                    causeSolution.setKnowledgeBaseId(faultKnowledgeBase.getId());
+                    causeSolutions.add(causeSolution);
+                }
+                faultCauseSolutionService.updateBatchById(causeSolutions);
+            }
             return id;
         }
 
+    }
+
+    /**
+     * 故障现象编码生成
+     *
+     * @return
+     */
+    private String getFaultPhenomenonCode(String prefix) {
+        Snowflake snowflake = IdUtil.getSnowflake(1, 1);
+        String code = String.format("%s%s", prefix, snowflake.nextIdStr());
+        return code;
     }
 
     /**list转string*/

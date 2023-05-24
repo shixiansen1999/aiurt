@@ -16,6 +16,10 @@ import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
+import com.aiurt.modules.faultcausesolution.dto.FaultCauseSolutionDTO;
+import com.aiurt.modules.faultcausesolution.dto.FaultSparePartDTO;
+import com.aiurt.modules.faultcausesolution.entity.FaultCauseSolution;
+import com.aiurt.modules.faultcausesolution.service.IFaultCauseSolutionService;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.dto.FaultKnowledgeBaseDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
@@ -30,11 +34,12 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,6 +71,8 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 private IFaultAnalysisReportService faultAnalysisReportService;
 	 @Autowired
 	 private ISysBaseAPI iSysBaseAPI;
+	@Autowired
+	private IFaultCauseSolutionService faultCauseSolutionService;
 
 	/**
 	 * 分页列表查询
@@ -90,24 +97,52 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	}
 
 	/**
-	 *   添加
+	 * 添加
 	 *
 	 * @param faultKnowledgeBase
 	 * @return
 	 */
-	@AutoLog(value = "故障知识库-故障知识库分页列表-添加", operateType =  2, operateTypeAlias = "添加", permissionUrl = "/fault/faultKnowledgeBaseList")
-	@ApiOperation(value="故障知识库-添加", notes="故障知识库-添加")
+	@AutoLog(value = "故障知识库-故障知识库分页列表-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/fault/faultKnowledgeBaseList")
+	@ApiOperation(value = "故障知识库-添加", notes = "故障知识库-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
 		//list转string
 		getFaultCodeList(faultKnowledgeBase);
 		faultKnowledgeBase.setStatus(FaultConstant.PENDING);
 		faultKnowledgeBase.setDelFlag(0);
-		if (StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode())||StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
+		if (org.apache.commons.lang.StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode())|| StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
 			Result<String> result = new Result<>();
 			result.error500("设备或组件不能为空");
 		}
-		faultKnowledgeBaseService.save(faultKnowledgeBase);
+		faultKnowledgeBaseMapper.insert(faultKnowledgeBase);
+		String id = faultKnowledgeBase.getId();
+		// 添加故障原因和解决方案
+		List<FaultCauseSolutionDTO> faultCauseSolutions = faultKnowledgeBase.getFaultCauseSolutions();
+		if (CollUtil.isNotEmpty(faultCauseSolutions)) {
+			List<FaultCauseSolution> causeSolutions = new ArrayList<>();
+			FaultCauseSolution causeSolution = null;
+			for (FaultCauseSolutionDTO faultCauseSolution : faultCauseSolutions) {
+				List<FaultSparePartDTO> spareParts = faultCauseSolution.getSpareParts();
+				// 存在备件信息
+				if(CollUtil.isNotEmpty(spareParts)){
+					for (FaultSparePartDTO sparePart : spareParts) {
+						causeSolution = new FaultCauseSolution();
+						BeanUtils.copyProperties(faultCauseSolution, causeSolution);
+						causeSolution.setKnowledgeBaseId(id);
+						causeSolution.setSparePartCode(sparePart.getSparePartCode());
+						causeSolution.setNumber(sparePart.getNumber());
+						causeSolutions.add(causeSolution);
+					}
+					continue;
+				}
+				// 备件信息为空
+				causeSolution = new FaultCauseSolution();
+				BeanUtils.copyProperties(faultCauseSolution, causeSolution);
+				causeSolution.setKnowledgeBaseId(id);
+				causeSolutions.add(causeSolution);
+			}
+			faultCauseSolutionService.saveBatch(causeSolutions);
+		}
 		return Result.OK("添加成功！");
 	}
 
@@ -138,6 +173,34 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	public Result<String> edit(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
 		getFaultCodeList(faultKnowledgeBase);
 		faultKnowledgeBaseService.updateById(faultKnowledgeBase);
+		String id = faultKnowledgeBase.getId();
+		// 修改故障原因和解决方案
+		List<FaultCauseSolutionDTO> faultCauseSolutions = faultKnowledgeBase.getFaultCauseSolutions();
+		if (CollUtil.isNotEmpty(faultCauseSolutions)) {
+			List<FaultCauseSolution> causeSolutions = new ArrayList<>();
+			FaultCauseSolution causeSolution = null;
+			for (FaultCauseSolutionDTO faultCauseSolution : faultCauseSolutions) {
+				List<FaultSparePartDTO> spareParts = faultCauseSolution.getSpareParts();
+				// 存在备件信息
+				if(CollUtil.isNotEmpty(spareParts)){
+					for (FaultSparePartDTO sparePart : spareParts) {
+						causeSolution = new FaultCauseSolution();
+						BeanUtils.copyProperties(faultCauseSolution, causeSolution);
+						causeSolution.setKnowledgeBaseId(id);
+						causeSolution.setSparePartCode(sparePart.getSparePartCode());
+						causeSolution.setNumber(sparePart.getNumber());
+						causeSolutions.add(causeSolution);
+					}
+					continue;
+				}
+				// 备件信息为空
+				causeSolution = new FaultCauseSolution();
+				BeanUtils.copyProperties(faultCauseSolution, causeSolution);
+				causeSolution.setKnowledgeBaseId(id);
+				causeSolutions.add(causeSolution);
+			}
+			faultCauseSolutionService.updateBatchById(causeSolutions);
+		}
 		return Result.OK("编辑成功!");
 	}
 
@@ -208,16 +271,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-通过id查询", notes="故障知识库-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<FaultKnowledgeBase> queryById(@RequestParam(name="id",required=true) String id) {
-		FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseMapper.readOne(id);
-		if(faultKnowledgeBase==null) {
-			return Result.error("未找到对应数据");
-		}
-		String faultCodes = faultKnowledgeBase.getFaultCodes();
-		if (StrUtil.isNotBlank(faultCodes)) {
-			String[] split = faultCodes.split(",");
-			List<String> list = Arrays.asList(split);
-			faultKnowledgeBase.setFaultCodeList(list);
-		}
+		FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.readOne(id);
 		return Result.OK(faultKnowledgeBase);
 	}
 

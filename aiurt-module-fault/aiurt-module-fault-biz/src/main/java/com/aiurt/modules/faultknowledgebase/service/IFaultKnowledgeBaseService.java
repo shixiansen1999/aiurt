@@ -78,4 +78,12 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @return
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
+
+    /**
+     * 故障知识库-通过id查询
+     *
+     * @param id
+     * @return
+     */
+    FaultKnowledgeBase readOne(String id);
 }
