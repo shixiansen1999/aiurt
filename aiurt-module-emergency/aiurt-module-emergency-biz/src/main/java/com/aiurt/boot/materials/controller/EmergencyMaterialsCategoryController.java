@@ -74,7 +74,9 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 			lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getDelFlag,CommonConstant.DEL_FLAG_0);
 			lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,emergencyMaterialsCategory.getCategoryCode());
 			EmergencyMaterialsCategory one = emergencyMaterialsCategoryService.getOne(lambdaQueryWrapper);
-
+			if (ObjectUtil.isEmpty(one)) {
+				return Result.OK();
+			}
 			List<EmergencyMaterialsCategory> emergencyMaterialsCategoryList = new ArrayList<>();
 			List<EmergencyMaterialsCategory> emergencyMaterialsCategories = treeMenuList(list, one, emergencyMaterialsCategoryList);
 			emergencyMaterialsCategories.add(one);
