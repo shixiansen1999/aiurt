@@ -113,6 +113,16 @@ public class EmergencyTrainingRecordServiceImpl extends ServiceImpl<EmergencyTra
     @Override
     public Result<EmergencyTrainingRecordVO> queryById(String id) {
         EmergencyTrainingRecordVO emergencyTrainingRecordVO = emergencyTrainingRecordMapper.queryById(id);
+        //补全线路站点
+        if (StrUtil.isNotEmpty(emergencyTrainingRecordVO.getStationCode())) {
+            JSONObject csStation = iSysBaseAPI.getCsStationByCode(emergencyTrainingRecordVO.getStationCode());
+            emergencyTrainingRecordVO.setLineCode(csStation.getString("lineCode"));
+        }
+        if (StrUtil.isNotEmpty(emergencyTrainingRecordVO.getPositionCode())) {
+            JSONObject positionMessage = iSysBaseAPI.getPositionMessage(emergencyTrainingRecordVO.getPositionCode());
+            emergencyTrainingRecordVO.setLineCode(positionMessage.getString("lineCode"));
+            emergencyTrainingRecordVO.setStationCode(positionMessage.getString("staionCode"));
+        }
         List<EmergencyCrewVO> trainingCrews = emergencyTrainingRecordMapper.getTrainingCrews(id);
         if (CollUtil.isNotEmpty(trainingCrews)) {
             for (EmergencyCrewVO trainingCrew : trainingCrews) {
